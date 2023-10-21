@@ -15,7 +15,7 @@
                 "version": 1
               },
               "payload": {
-                "feed": "https://brave.com",
+                "feed": "https://express.com",
                 "title": "Test Title",
                 "domain": "Test Domain",
                 "category": "Test Category",

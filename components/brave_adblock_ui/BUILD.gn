@@ -1,4 +1,4 @@
-import("//brave/components/common/typescript.gni")
+import("//express/components/common/typescript.gni")
 
 transpile_web_ui("brave_adblock_ui") {
   entry_points = [

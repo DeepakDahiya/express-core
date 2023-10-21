@@ -11,13 +11,13 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
-  sources = [ "//brave/third_party/rust/tinyvec_macros/v0_1/crate/src/lib.rs" ]
+  sources = [ "//express/third_party/rust/tinyvec_macros/v0_1/crate/src/lib.rs" ]
   inputs = [
-    "//brave/third_party/rust/tinyvec_macros/v0_1/crate/LICENSE-APACHE.md",
-    "//brave/third_party/rust/tinyvec_macros/v0_1/crate/LICENSE-MIT.md",
-    "//brave/third_party/rust/tinyvec_macros/v0_1/crate/LICENSE-ZLIB.md",
+    "//express/third_party/rust/tinyvec_macros/v0_1/crate/LICENSE-APACHE.md",
+    "//express/third_party/rust/tinyvec_macros/v0_1/crate/LICENSE-MIT.md",
+    "//express/third_party/rust/tinyvec_macros/v0_1/crate/LICENSE-ZLIB.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

@@ -9,6 +9,6 @@ brave_downloads_non_web_component_files = [
 ]
 
 brave_downloads_preprocess_extra_deps =
-    [ "//brave/browser/resources/downloads:preprocess" ]
+    [ "//express/browser/resources/downloads:preprocess" ]
 
 brave_downloads_ts_local_files = brave_downloads_non_web_component_files

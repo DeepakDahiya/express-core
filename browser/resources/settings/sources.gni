@@ -3,15 +3,15 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # you can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/browser/shell_integrations/buildflags/buildflags.gni")
-import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
+import("//express/browser/shell_integrations/buildflags/buildflags.gni")
+import("//express/components/brave_vpn/common/buildflags/buildflags.gni")
 
 # Provide our file list to chromium's settings page build
 # Since our components start in a different path, we'll do the first step (move them to
 # the generated preprocessed path via preprocess_if_expr, but let chromium handle the rest of the
 # webui build pipeline.
 brave_settings_preprocess_deps =
-    [ "//brave/browser/resources/settings:preprocess" ]
+    [ "//express/browser/resources/settings:preprocess" ]
 
 brave_settings_web_component_files = [
   "brave_appearance_page/bookmark_bar.ts",
@@ -137,9 +137,9 @@ if (enable_pin_shortcut) {
 
 brave_settings_icons_html_files = [ "brave_icons.html" ]
 brave_settings_ts_definitions = [
-  "//brave/components/definitions/chrome_brave_theme.d.ts",
-  "//brave/components/definitions/chrome_ipfs.d.ts",
-  "//brave/components/definitions/chrome_brave_wallet.d.ts",
+  "//express/components/definitions/chrome_brave_theme.d.ts",
+  "//express/components/definitions/chrome_ipfs.d.ts",
+  "//express/components/definitions/chrome_brave_wallet.d.ts",
 ]
 
 # Generate the list for inclusion via preprocess and exclusion for chromium's preprocess
@@ -154,4 +154,4 @@ foreach(component_file, brave_settings_web_component_files) {
 brave_settings_local_html_files += brave_settings_icons_html_files
 
 brave_settings_ts_extra_deps =
-    [ "//brave/browser/resources/settings:preprocess" ]
+    [ "//express/browser/resources/settings:preprocess" ]

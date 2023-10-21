@@ -14,7 +14,7 @@ source_set("web_image") {
 
   deps = [
     "//base",
-    "//brave/ios/browser/svg",
+    "//express/ios/browser/svg",
     "//components/image_fetcher/ios",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/ui/util",

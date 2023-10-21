@@ -10,15 +10,15 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/star_constellation/v0_2/crate/src/api.rs",
-    "//brave/third_party/rust/star_constellation/v0_2/crate/src/format.rs",
-    "//brave/third_party/rust/star_constellation/v0_2/crate/src/internal.rs",
-    "//brave/third_party/rust/star_constellation/v0_2/crate/src/lib.rs",
-    "//brave/third_party/rust/star_constellation/v0_2/crate/src/randomness.rs",
+    "//express/third_party/rust/star_constellation/v0_2/crate/src/api.rs",
+    "//express/third_party/rust/star_constellation/v0_2/crate/src/format.rs",
+    "//express/third_party/rust/star_constellation/v0_2/crate/src/internal.rs",
+    "//express/third_party/rust/star_constellation/v0_2/crate/src/lib.rs",
+    "//express/third_party/rust/star_constellation/v0_2/crate/src/randomness.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/star_constellation/v0_2/crate/README.md",
-    "//brave/third_party/rust/star_constellation/v0_2/crate/SECURITY.md",
+    "//express/third_party/rust/star_constellation/v0_2/crate/README.md",
+    "//express/third_party/rust/star_constellation/v0_2/crate/SECURITY.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -34,9 +34,9 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/bincode/v1:lib",
-    "//brave/third_party/rust/ppoprf/v0_2:lib",
-    "//brave/third_party/rust/sta_rs/v0_2:lib",
+    "//express/third_party/rust/bincode/v1:lib",
+    "//express/third_party/rust/ppoprf/v0_2:lib",
+    "//express/third_party/rust/sta_rs/v0_2:lib",
     "//third_party/rust/lazy_static/v1:lib",
     "//third_party/rust/rand/v0_8:lib",
     "//third_party/rust/rand_core/v0_6:lib",

@@ -1,4 +1,4 @@
-import("//brave/components/common/typescript.gni")
+import("//express/components/common/typescript.gni")
 
 transpile_web_ui("brave_private_new_tab_ui") {
   entry_points = [ [
@@ -6,7 +6,7 @@ transpile_web_ui("brave_private_new_tab_ui") {
         rebase_path("private_new_tab.tsx"),
       ] ]
   resource_name = "brave_private_new_tab"
-  deps = [ "//brave/components/brave_private_new_tab_ui/common:mojom_js" ]
+  deps = [ "//express/components/brave_private_new_tab_ui/common:mojom_js" ]
 }
 
 pack_web_resources("generated_resources") {

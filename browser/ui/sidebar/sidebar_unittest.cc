@@ -105,7 +105,7 @@ TEST_F(SidebarModelTest, ItemsChangedTest) {
   SidebarItemUpdate expected_update{(items_count - 1), false, true};
   EXPECT_CALL(observer_, OnItemUpdated(testing::_, expected_update)).Times(1);
   service()->UpdateItem(GURL("https://www.brave.com/"),
-                        GURL("https://brave.com/"), u"brave software",
+                        GURL("https://express.com/"), u"brave software",
                         u"brave software");
   testing::Mock::VerifyAndClearExpectations(&observer_);
 
@@ -113,7 +113,7 @@ TEST_F(SidebarModelTest, ItemsChangedTest) {
   expected_update.url_updated = false;
   expected_update.title_updated = true;
   EXPECT_CALL(observer_, OnItemUpdated(testing::_, expected_update)).Times(1);
-  service()->UpdateItem(GURL("https://brave.com/"), GURL("https://brave.com/"),
+  service()->UpdateItem(GURL("https://express.com/"), GURL("https://express.com/"),
                         u"brave software", u"brave");
   testing::Mock::VerifyAndClearExpectations(&observer_);
 

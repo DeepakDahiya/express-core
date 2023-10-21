@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # you can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/components/common/typescript.gni")
-import("//brave/resources/brave_grit.gni")
+import("//express/components/common/typescript.gni")
+import("//express/resources/brave_grit.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
@@ -15,8 +15,8 @@ transpile_web_ui("brave_vpn_panel_ui") {
       ] ]
   resource_name = "brave_vpn_panel"
   deps = [
-    "//brave/components/brave_vpn/common/mojom:mojom_js",
-    "//brave/components/brave_vpn/common/mojom:preprocess_mojo",
+    "//express/components/brave_vpn/common/mojom:mojom_js",
+    "//express/components/brave_vpn/common/mojom:preprocess_mojo",
   ]
 }
 

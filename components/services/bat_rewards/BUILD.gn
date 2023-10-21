@@ -5,7 +5,7 @@
 
 static_library("lib") {
   visibility = [
-    "//brave/test:*",
+    "//express/test:*",
     "//chrome/utility:*",
   ]
 
@@ -16,7 +16,7 @@ static_library("lib") {
 
   public_deps = [
     "public/interfaces",
-    "//brave/components/brave_rewards/core",
+    "//express/components/brave_rewards/core",
   ]
 
   deps = [ "//mojo/public/cpp/system" ]

@@ -13,10 +13,10 @@ source_set("browser_state") {
   ]
   deps = [
     "//base",
-    "//brave/ios/browser/brave_wallet",
-    "//brave/ios/browser/component_updater",
-    "//brave/ios/browser/favicon",
-    "//brave/ios/browser/skus",
-    "//brave/ios/browser/url_sanitizer",
+    "//express/ios/browser/brave_wallet",
+    "//express/ios/browser/component_updater",
+    "//express/ios/browser/favicon",
+    "//express/ios/browser/skus",
+    "//express/ios/browser/url_sanitizer",
   ]
 }

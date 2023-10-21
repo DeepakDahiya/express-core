@@ -11,22 +11,22 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/num_integer/v0_1/crate/benches/average.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/benches/gcd.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/benches/roots.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/build.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/src/average.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/src/lib.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/src/roots.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/tests/average.rs",
-    "//brave/third_party/rust/num_integer/v0_1/crate/tests/roots.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/benches/average.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/benches/gcd.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/benches/roots.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/build.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/src/average.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/src/lib.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/src/roots.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/tests/average.rs",
+    "//express/third_party/rust/num_integer/v0_1/crate/tests/roots.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/num_integer/v0_1/crate/README.md",
-    "//brave/third_party/rust/num_integer/v0_1/crate/RELEASES.md",
+    "//express/third_party/rust/num_integer/v0_1/crate/README.md",
+    "//express/third_party/rust/num_integer/v0_1/crate/RELEASES.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -40,7 +40,7 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//brave/third_party/rust/num_traits/v0_2:lib" ]
+  deps = [ "//express/third_party/rust/num_traits/v0_2:lib" ]
   build_deps = [ "//third_party/rust/autocfg/v1:buildrs_support" ]
   features = [
     "i128",

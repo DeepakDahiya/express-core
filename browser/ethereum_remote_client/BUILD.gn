@@ -1,11 +1,11 @@
-import("//brave/browser/ethereum_remote_client/buildflags/buildflags.gni")
-import("//brave/build/config.gni")
+import("//express/browser/ethereum_remote_client/buildflags/buildflags.gni")
+import("//express/build/config.gni")
 import("//build/config/features.gni")
 
 assert(ethereum_remote_client_enabled)
 
 source_set("ethereum_remote_client") {
-  include_dirs = [ "//brave/third_party/ethash/src/include" ]
+  include_dirs = [ "//express/third_party/ethash/src/include" ]
 
   sources = [
     "ethereum_remote_client_constants.cc",
@@ -21,11 +21,11 @@ source_set("ethereum_remote_client") {
 
   deps = [
     "//base",
-    "//brave/components/brave_wallet/browser",
-    "//brave/components/brave_wallet/browser:pref_names",
-    "//brave/components/brave_wallet/browser:utils",
-    "//brave/components/brave_wallet/common",
-    "//brave/components/brave_wallet/common:mojom",
+    "//express/components/brave_wallet/browser",
+    "//express/components/brave_wallet/browser:pref_names",
+    "//express/components/brave_wallet/browser:utils",
+    "//express/components/brave_wallet/common",
+    "//express/components/brave_wallet/common:mojom",
     "//components/content_settings/core/browser",
     "//components/keyed_service/core",
     "//components/prefs",
@@ -46,8 +46,8 @@ source_set("browser") {
     "ethereum_remote_client_service_factory.h",
   ]
   deps = [
-    "//brave/browser/ethereum_remote_client",
-    "//brave/browser/extensions",
+    "//express/browser/ethereum_remote_client",
+    "//express/browser/extensions",
     "//chrome/browser/extensions",
     "//chrome/browser/profiles",
     "//components/keyed_service/content",

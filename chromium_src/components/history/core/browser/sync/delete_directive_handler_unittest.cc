@@ -10,7 +10,7 @@ namespace {
 
 TEST_F(HistoryDeleteDirectiveHandlerTest,
        BraveCreateUrlDeleteDirectiveReturnsFalse) {
-  EXPECT_FALSE(handler()->CreateUrlDeleteDirective(GURL("https://brave.com")));
+  EXPECT_FALSE(handler()->CreateUrlDeleteDirective(GURL("https://express.com")));
 }
 
 }  // namespace

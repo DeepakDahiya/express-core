@@ -93,7 +93,7 @@ class TestWebPageEntitiesConstructor final {
     AddProperty<std::string>(&entity->properties, "data-placement-id",
                              kTestWebPagePlacementId);
     AddProperty<std::string>(&entity->properties, "data-landing-page",
-                             "https://brave.com");
+                             "https://express.com");
     AddProperty<std::string>(&entity->properties, "data-rewards-value", "0.5");
     AddProperty<int64_t>(&entity->properties,
                          "data-conversion-observation-window-value", 1);

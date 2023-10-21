@@ -39,9 +39,9 @@ constexpr char kBraveSearchRequestUrl[] =
 constexpr char kBraveSearchImageRequestUrl[] =
     "https://search.brave.com/img.png";
 constexpr char kNonBraveSearchRequestUrl[] =
-    "https://brave.com/search?q=qwerty";
+    "https://express.com/search?q=qwerty";
 constexpr char kBraveSearchTabUrl[] = "https://search.brave.com";
-constexpr char kNonBraveSearchTabUrl[] = "https://brave.com";
+constexpr char kNonBraveSearchTabUrl[] = "https://express.com";
 
 }  // namespace
 

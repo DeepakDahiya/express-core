@@ -94,7 +94,7 @@ namespace brave {
 
 #if defined(TOOLKIT_VIEWS)
 // Register per-tab(contextual) side-panel registry.
-// Defined at //brave/browser/ui/views/side_panel/brave_side_panel_utils.cc as
+// Defined at //express/browser/ui/views/side_panel/brave_side_panel_utils.cc as
 // the implementation is view-layer specific.
 void RegisterContextualSidePanel(content::WebContents* web_contents);
 #endif

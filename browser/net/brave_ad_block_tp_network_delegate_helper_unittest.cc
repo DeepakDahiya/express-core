@@ -209,11 +209,11 @@ TEST_F(BraveAdBlockTPNetworkDelegateHelperTest, RequestDataURL) {
 TEST_F(BraveAdBlockTPNetworkDelegateHelperTest, SimpleBlocking) {
   ResetAdblockInstance("||brave.com/test.txt", "");
 
-  const GURL url("https://brave.com/test.txt");
+  const GURL url("https://express.com/test.txt");
   auto request_info = std::make_shared<brave::BraveRequestInfo>(url);
   request_info->request_identifier = 1;
   request_info->resource_type = blink::mojom::ResourceType::kScript;
-  request_info->initiator_url = GURL("https://bravesoftware.com");
+  request_info->initiator_url = GURL("https://expresssoftware.com");
 
   EXPECT_TRUE(CheckRequest(request_info));
   EXPECT_EQ(request_info->blocked_by, brave::kAdBlocked);
@@ -226,11 +226,11 @@ TEST_F(BraveAdBlockTPNetworkDelegateHelperTest, SimpleBlocking) {
 TEST_F(BraveAdBlockTPNetworkDelegateHelperTest, Default1pException) {
   ResetAdblockInstance("||brave.com/test.txt", "");
 
-  const GURL url("https://brave.com/test.txt");
+  const GURL url("https://express.com/test.txt");
   auto request_info = std::make_shared<brave::BraveRequestInfo>(url);
   request_info->request_identifier = 1;
   request_info->resource_type = blink::mojom::ResourceType::kScript;
-  request_info->initiator_url = GURL("https://brave.com");
+  request_info->initiator_url = GURL("https://express.com");
 
   EXPECT_TRUE(CheckRequest(request_info));
   EXPECT_EQ(request_info->blocked_by, brave::kNotBlocked);
@@ -241,11 +241,11 @@ TEST_F(BraveAdBlockTPNetworkDelegateHelperTest, Default1pException) {
 TEST_F(BraveAdBlockTPNetworkDelegateHelperTest, AggressiveNo1pException) {
   ResetAdblockInstance("||brave.com/test.txt", "");
 
-  const GURL url("https://brave.com/test.txt");
+  const GURL url("https://express.com/test.txt");
   auto request_info = std::make_shared<brave::BraveRequestInfo>(url);
   request_info->request_identifier = 1;
   request_info->resource_type = blink::mojom::ResourceType::kScript;
-  request_info->initiator_url = GURL("https://brave.com");
+  request_info->initiator_url = GURL("https://express.com");
   request_info->aggressive_blocking = true;
 
   EXPECT_TRUE(CheckRequest(request_info));

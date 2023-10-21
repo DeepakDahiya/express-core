@@ -11,7 +11,7 @@ source_set("features") {
 
   deps = [
     "//base",
-    "//brave/components/brave_rewards/common/buildflags:buildflags",
+    "//express/components/brave_rewards/common/buildflags:buildflags",
   ]
 }
 
@@ -28,7 +28,7 @@ static_library("common") {
   deps = [
     ":features",
     "//base",
-    "//brave/components/l10n/common",
+    "//express/components/l10n/common",
     "//components/prefs",
     "//third_party/abseil-cpp:absl",
   ]

@@ -6,7 +6,7 @@ index 31bf3d854d9a672e535f747fb8734d66ac0c37e9..b8ebd1a9ba83304bc4d4053b45bce645
        "metrics/family_link_user_metrics_provider.h",
      ]
    }
-+  import("//brave/browser/sources.gni") sources += brave_chrome_browser_sources deps += brave_chrome_browser_deps public_deps += brave_chrome_browser_public_deps allow_circular_includes_from += brave_chrome_browser_allow_circular_includes_from
++  import("//express/browser/sources.gni") sources += brave_chrome_browser_sources deps += brave_chrome_browser_deps public_deps += brave_chrome_browser_public_deps allow_circular_includes_from += brave_chrome_browser_allow_circular_includes_from
  
    if (!is_chromeos_ash) {
      sources += [

@@ -20,7 +20,7 @@ source_set("bookmark") {
 
   deps = [
     "//base",
-    "//brave/common",
+    "//express/common",
     "//components/bookmarks/common",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
@@ -47,7 +47,7 @@ source_set("unittest") {
   sources = [ "bookmark_helper_unittest.cc" ]
 
   deps = [
-    "//brave/browser/ui/bookmark",
+    "//express/browser/ui/bookmark",
     "//components/bookmarks/browser",
     "//components/sync_preferences:test_support",
     "//testing/gtest",

@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
+import("//express/build/config.gni")
 import("//build/config/features.gni")
 
 static_library("browser") {
@@ -50,14 +50,14 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//brave/brave_domains",
-    "//brave/components/api_request_helper",
-    "//brave/components/brave_ads/browser",
-    "//brave/components/brave_news/api",
-    "//brave/components/brave_private_cdn",
-    "//brave/components/l10n/common",
-    "//brave/components/p3a_utils",
-    "//brave/components/time_period_storage",
+    "//express/brave_domains",
+    "//express/components/api_request_helper",
+    "//express/components/brave_ads/browser",
+    "//express/components/brave_news/api",
+    "//express/components/brave_private_cdn",
+    "//express/components/l10n/common",
+    "//express/components/p3a_utils",
+    "//express/components/time_period_storage",
     "//components/favicon/core:core",
     "//components/favicon_base:favicon_base",
     "//components/feed:buildflags",
@@ -76,7 +76,7 @@ static_library("browser") {
 
   public_deps = [
     "../rust:rust_lib",
-    "//brave/components/brave_news/common",
-    "//brave/components/brave_news/common:mojom",
+    "//express/components/brave_news/common",
+    "//express/components/brave_news/common:mojom",
   ]
 }

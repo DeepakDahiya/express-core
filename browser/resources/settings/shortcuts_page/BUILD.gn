@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/common/typescript.gni")
+import("//express/components/common/typescript.gni")
 
 transpile_web_ui("commands_ui") {
   entry_points = [ [
@@ -12,7 +12,7 @@ transpile_web_ui("commands_ui") {
       ] ]
 
   public_deps = [
-    "//brave/components/commands/common:mojom_js",
+    "//express/components/commands/common:mojom_js",
     "//mojo/public/mojom/base",
   ]
 

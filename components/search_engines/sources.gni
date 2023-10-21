@@ -4,6 +4,6 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_components_search_engines_sources = [
-  "//brave/components/search_engines/brave_prepopulated_engines.cc",
-  "//brave/components/search_engines/brave_prepopulated_engines.h"
+  "//express/components/search_engines/brave_prepopulated_engines.cc",
+  "//express/components/search_engines/brave_prepopulated_engines.h"
 ]

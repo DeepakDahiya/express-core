@@ -61,7 +61,7 @@ bool IsChromeDev(const std::u16string& browser_name) {
 
 WelcomeDOMHandler::WelcomeDOMHandler(Profile* profile) : profile_(profile) {
   base::MakeRefCounted<shell_integration::DefaultSchemeClientWorker>(
-      GURL("https://brave.com"))
+      GURL("https://express.com"))
       ->StartCheckIsDefaultAndGetDefaultClientName(
           base::BindOnce(&WelcomeDOMHandler::OnGetDefaultBrowser,
                          weak_ptr_factory_.GetWeakPtr()));

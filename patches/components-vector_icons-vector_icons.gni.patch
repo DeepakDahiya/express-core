@@ -6,7 +6,7 @@ index 9f086f7d6962d4e49eb49cbf717e8a2b6ee01b73..0219cf7bb24734518c18b0b8b4093dd1
      inputs =
          rebase_path(templates + invoker.sources, ".", invoker.icon_directory) +
          [ "//components/vector_icons/aggregate_vector_icons.py" ]
-+    alt_icons_dir = "//brave/vector_icons/" + rebase_path(invoker.icon_directory, "//") alt_icons_dir_rel = rebase_path(alt_icons_dir, root_build_dir) inputs += ["//brave/vector_icons/leo_overrides.json"]
++    alt_icons_dir = "//express/vector_icons/" + rebase_path(invoker.icon_directory, "//") alt_icons_dir_rel = rebase_path(alt_icons_dir, root_build_dir) inputs += ["//express/vector_icons/leo_overrides.json"]
  
      outputs = [
        output_cc,

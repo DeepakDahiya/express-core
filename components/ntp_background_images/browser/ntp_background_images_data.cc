@@ -21,9 +21,9 @@
       "name": "ntp-2020/2021-1",
       "source": "background-image-source.png",
       "author": "Brave Software",
-      "link": "https://brave.com/",
+      "link": "https://express.com/",
       "originalUrl": "Contributor sent the hi-res version through email",
-      "license": "https://brave.com/about/"
+      "license": "https://express.com/about/"
     },
   ]
 }

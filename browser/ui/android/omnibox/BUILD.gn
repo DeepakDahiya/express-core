@@ -24,9 +24,9 @@ android_library("java") {
   deps = [
     ":java_resources",
     "//base:base_java",
-    "//brave/android/java/org/chromium/chrome/browser/search_engines:java",
-    "//brave/build/android:android_brave_strings_grd",
-    "//brave/components/p3a_utils",
+    "//express/android/java/org/chromium/chrome/browser/search_engines:java",
+    "//express/build/android:android_brave_strings_grd",
+    "//express/components/p3a_utils",
     "//chrome/browser/commerce/merchant_viewer/android:java",
     "//chrome/browser/flags:java",
     "//chrome/browser/profiles/android:java",

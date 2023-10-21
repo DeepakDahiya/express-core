@@ -42,7 +42,7 @@ export function getPromotionURL (key: PromotionKey) {
     case 'gemini':
       return 'https://www.gemini.com/brave'
     case 'tap-network':
-      return 'https://brave.tapnetwork.io'
+      return 'https://express.tapnetwork.io'
     case 'uphold-card':
       return 'https://uphold.com/brave/upholdcard'
   }

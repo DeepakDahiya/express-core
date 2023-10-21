@@ -4,8 +4,8 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import(
-    "//brave/browser/brave_vpn/win/brave_vpn_wireguard_service/allowlist.gni")
-import("//brave/build/config.gni")
+    "//express/browser/brave_vpn/win/brave_vpn_wireguard_service/allowlist.gni")
+import("//express/build/config.gni")
 import("//build/toolchain/gcc_toolchain.gni")
 import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
@@ -15,8 +15,8 @@ assert(is_win)
 
 copy("brave_vpn_wireguard_binaries") {
   sources = [
-    "//brave/third_party/brave-vpn-wireguard-nt-dlls/${target_cpu}/wireguard.dll",
-    "//brave/third_party/brave-vpn-wireguard-tunnel-dlls/${target_cpu}/tunnel.dll",
+    "//express/third_party/brave-vpn-wireguard-nt-dlls/${target_cpu}/wireguard.dll",
+    "//express/third_party/brave-vpn-wireguard-tunnel-dlls/${target_cpu}/tunnel.dll",
   ]
   outputs = [ "$root_out_dir/{{source_file_part}}" ]
 }
@@ -52,8 +52,8 @@ executable("brave_vpn_wireguard_service") {
     "status_tray",
     "//base",
     "//base:base_static",
-    "//brave/components/brave_vpn/common/wireguard/win",
-    "//brave/components/resources:strings_grit",
+    "//express/components/brave_vpn/common/wireguard/win",
+    "//express/components/resources:strings_grit",
     "//build/win:default_exe_manifest",
     "//chrome/install_static:install_static_util",
     "//components/crash/core/app",

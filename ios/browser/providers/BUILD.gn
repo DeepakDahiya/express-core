@@ -8,7 +8,7 @@
 # providers we don't need.
 group("brave_providers") {
   deps = [
-    "//brave/ios/browser/providers/lottie:chromium_lottie_animation",
+    "//express/ios/browser/providers/lottie:chromium_lottie_animation",
 
     # The individual API implementations.
     "//ios/chrome/browser/providers/app_distribution:chromium_app_distribution",

@@ -4,7 +4,7 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 group("core") {
-  deps = [ "//brave/components/brave_ads/core/internal" ]
+  deps = [ "//express/components/brave_ads/core/internal" ]
 
-  public_deps = [ "//brave/components/brave_ads/core/public:headers" ]
+  public_deps = [ "//express/components/brave_ads/core/public:headers" ]
 }

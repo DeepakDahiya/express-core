@@ -23,8 +23,8 @@ const deleteFile = (path) => {
 
 const getDefaultOptions = () => {
   let options = Object.assign({}, config.defaultOptions)
-  // options.env.PYLINTRC = path.join(config.braveCoreDir, '.pylintrc')
-  options.cwd = config.braveCoreDir
+  // options.env.PYLINTRC = path.join(config.expressCodeDir, '.pylintrc')
+  options.cwd = config.expressCodeDir
   return options
 }
 

@@ -1,5 +1,5 @@
-import("//brave/build/config.gni")
-import("//brave/build/mac/config.gni")
+import("//express/build/config.gni")
+import("//express/build/mac/config.gni")
 import("//build/util/branding.gni")
 import("//chrome/common/features.gni")
 import("//chrome/version.gni")
@@ -61,7 +61,7 @@ if (is_universal_binary) {
 
   # placeholder script to allow manual copying of binary into output dir
   action("copy_x64") {
-    script = "//brave/installer/mac/copy_x64_binary.py"
+    script = "//express/installer/mac/copy_x64_binary.py"
 
     x64_root_out_dir = string_replace(root_out_dir, "_arm64", "")
     x64_arch_src_path = "$x64_root_out_dir/$brave_exe"
@@ -98,9 +98,9 @@ if (!is_release_channel) {
   dmg_icon_file_name = "dmg-$brave_channel"
 }
 
-dmg_background_image = rebase_path("//brave/build/mac/dmg-background.png")
-ds_store = rebase_path("//brave/build/mac/$ds_store_file_name")
-dmg_icon = rebase_path("//brave/build/mac/$dmg_icon_file_name.icns")
+dmg_background_image = rebase_path("//express/build/mac/dmg-background.png")
+ds_store = rebase_path("//express/build/mac/$ds_store_file_name")
+dmg_icon = rebase_path("//express/build/mac/$dmg_icon_file_name.icns")
 
 action("generate_dsa_sig_for_dmg") {
   script = "generate_sig.py"
@@ -136,7 +136,7 @@ action("generate_dsa_sig_for_dmg") {
   deps = [ ":copy_dmg_pkg" ]
 
   if (build_sparkle) {
-    deps += [ "//brave/vendor/sparkle:copy_old_sign_update" ]
+    deps += [ "//express/vendor/sparkle:copy_old_sign_update" ]
   }
 }
 
@@ -175,7 +175,7 @@ action("generate_eddsa_sig_for_dmg") {
   deps = [ ":copy_dmg_pkg" ]
 
   if (build_sparkle) {
-    deps += [ "//brave/vendor/sparkle:build_sparkle_framework" ]
+    deps += [ "//express/vendor/sparkle:build_sparkle_framework" ]
   }
 }
 
@@ -215,7 +215,7 @@ action("build_delta_installer") {
   deps = [ ":copy_dmg_pkg" ]
 
   if (build_sparkle) {
-    deps += [ "//brave/vendor/sparkle:build_sparkle_framework" ]
+    deps += [ "//express/vendor/sparkle:build_sparkle_framework" ]
   }
 }
 
@@ -261,19 +261,19 @@ group("finalize_app") {
 
 action("sign_app") {
   script = "//build/gn_run_binary.py"
-  shell_script = "//brave/build/mac/sign_app.sh"
+  shell_script = "//express/build/mac/sign_app.sh"
 
   if (is_official_build) {
     if (is_release_channel) {
-      provisioning_profile = "//brave/build/mac/release.provisionprofile"
+      provisioning_profile = "//express/build/mac/release.provisionprofile"
     } else {
       provisioning_profile =
-          "//brave/build/mac/${brave_channel}.provisionprofile"
+          "//express/build/mac/${brave_channel}.provisionprofile"
     }
     is_development = "False"
   } else {
     # an empty dummy file just to simplify things
-    provisioning_profile = "//brave/build/mac/dummy.provisionprofile"
+    provisioning_profile = "//express/build/mac/dummy.provisionprofile"
     is_development = "True"
   }
 
@@ -304,7 +304,7 @@ action("sign_app") {
     unsigned_app_path,
     provisioning_profile,
     "$packaging_dir/app-entitlements.plist",
-    "//brave/script/signing_helper.py",
+    "//express/script/signing_helper.py",
   ]
 
   outputs = [ signed_app_path ]
@@ -318,7 +318,7 @@ action("sign_app") {
 copy("copies") {
   visibility = [ ":sign_app" ]
 
-  sources = [ "//brave/app/helper-entitlements.plist" ]
+  sources = [ "//express/app/helper-entitlements.plist" ]
 
   public_deps = [ "//chrome/installer/mac" ]
 
@@ -327,12 +327,12 @@ copy("copies") {
 
 action("create_pkg") {
   script = "//build/gn_run_binary.py"
-  shell_script = "//brave/build/mac/create_pkg.sh"
+  shell_script = "//express/build/mac/create_pkg.sh"
 
   args = [
     rebase_path(shell_script, root_build_dir),
     rebase_path(app_path, root_build_dir),
-    rebase_path("//brave/build/mac/pkg-scripts"),
+    rebase_path("//express/build/mac/pkg-scripts"),
     rebase_path("$root_out_dir/Brave Browser Component.plist"),
     "$mac_unsigned_output_prefix/$brave_pkg",
   ]
@@ -477,14 +477,14 @@ action("notarize_dmg_pkg") {
   if (is_official_build) {
     development_arg = ""
     if (is_release_channel) {
-      provisioning_profile = "//brave/build/mac/release.provisionprofile"
+      provisioning_profile = "//express/build/mac/release.provisionprofile"
     } else {
       provisioning_profile =
-          "//brave/build/mac/${brave_channel}.provisionprofile"
+          "//express/build/mac/${brave_channel}.provisionprofile"
     }
   } else {
     development_arg = "--development"
-    provisioning_profile = "//brave/build/mac/dummy.provisionprofile"
+    provisioning_profile = "//express/build/mac/dummy.provisionprofile"
   }
 
   args = [

@@ -32,7 +32,7 @@ IN_PROC_BROWSER_TEST_F(BraveSharingHubTest, SharingHubIconVisibility) {
 
   // Visible icon.
   ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), GURL("https://brave.com/")));
+      ui_test_utils::NavigateToURL(browser(), GURL("https://express.com/")));
   EXPECT_TRUE(sharing_hub_icon->GetVisible());
 }
 

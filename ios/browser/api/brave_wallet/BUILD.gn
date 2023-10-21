@@ -3,14 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/build/ios/mojom/mojom_wrappers.gni")
+import("//express/build/ios/mojom/mojom_wrappers.gni")
 import("//build/config/ios/rules.gni")
 import("//ios/build/config.gni")
 
 config("mojom_header_config") {
   visibility = [
     ":*",
-    "//brave/ios/app",
+    "//express/ios/app",
   ]
   include_dirs = [ "$target_gen_dir" ]
 }
@@ -32,14 +32,14 @@ source_set("brave_wallet") {
   deps = [
     ":wallet_mojom_wrappers",
     "//base",
-    "//brave/base/mac",
-    "//brave/components/brave_wallet/browser",
-    "//brave/components/brave_wallet/browser:constants",
-    "//brave/components/brave_wallet/common",
-    "//brave/components/brave_wallet/resources:ethereum_provider_generated_resources",
-    "//brave/components/resources:static_resources_grit",
-    "//brave/ios/browser/api/url",
-    "//brave/ios/browser/brave_wallet",
+    "//express/base/mac",
+    "//express/components/brave_wallet/browser",
+    "//express/components/brave_wallet/browser:constants",
+    "//express/components/brave_wallet/common",
+    "//express/components/brave_wallet/resources:ethereum_provider_generated_resources",
+    "//express/components/resources:static_resources_grit",
+    "//express/ios/browser/api/url",
+    "//express/ios/browser/brave_wallet",
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/shared/model/browser_state",
     "//ios/chrome/browser/shared/model/paths",
@@ -49,8 +49,8 @@ source_set("brave_wallet") {
 }
 
 ios_objc_mojom_wrappers("wallet_mojom_wrappers") {
-  mojom_target = "//brave/components/brave_wallet/common:mojom"
-  sources = [ "//brave/components/brave_wallet/common/brave_wallet.mojom" ]
+  mojom_target = "//express/components/brave_wallet/common:mojom"
+  sources = [ "//express/components/brave_wallet/common/brave_wallet.mojom" ]
   exclude_types = [
     "PageHandlerFactory",
     "PanelHandlerFactory",

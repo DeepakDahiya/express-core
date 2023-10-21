@@ -45,10 +45,10 @@ template("ios_objc_mojom_wrappers") {
   generate_wrappers_target = "${target_name}_generate_wrappers"
 
   action_foreach(generate_wrappers_target) {
-    script = "//brave/build/ios/mojom/gen_model_wrappers.py"
+    script = "//express/build/ios/mojom/gen_model_wrappers.py"
     inputs = [
-      "//brave/build/ios/mojom/cpp_transformations.h",
-      "//brave/build/ios/mojom/mojom_objc_generator.py",
+      "//express/build/ios/mojom/cpp_transformations.h",
+      "//express/build/ios/mojom/mojom_objc_generator.py",
       "$root_gen_dir/brave/build/ios/mojom/objc_templates.zip",
     ]
     sources = invoker.sources
@@ -72,7 +72,7 @@ template("ios_objc_mojom_wrappers") {
       args += [ "--exclude=$_excluded_types" ]
     }
     deps = [
-      "//brave/build/ios/mojom:precompile_templates",
+      "//express/build/ios/mojom:precompile_templates",
       "//mojo/public/cpp/bindings",
       mojom_target,
       mojom_target_parser,
@@ -83,8 +83,8 @@ template("ios_objc_mojom_wrappers") {
 
   config(type_headers_target_name) {
     include_dirs = [
-      "//brave/build/ios/mojom/public/base",
-      "//brave/ios/browser/api/url",
+      "//express/build/ios/mojom/public/base",
+      "//express/ios/browser/api/url",
     ]
   }
 
@@ -103,8 +103,8 @@ template("ios_objc_mojom_wrappers") {
     public_deps += [
       ":$generate_wrappers_target",
       "//base",
-      "//brave/build/ios/mojom:precompile_templates",
-      "//brave/build/ios/mojom/public/base",
+      "//express/build/ios/mojom:precompile_templates",
+      "//express/build/ios/mojom/public/base",
       "//net",
       mojom_target,
     ]

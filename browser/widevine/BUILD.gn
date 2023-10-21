@@ -6,7 +6,7 @@
 import("//third_party/widevine/cdm/widevine.gni")
 
 if (is_win) {
-  import("//brave/build/win/sign.gni")
+  import("//express/build/win/sign.gni")
 }
 
 assert(enable_widevine)
@@ -16,9 +16,9 @@ source_set("widevine") {
   check_includes = false
   deps = [
     "//base",
-    "//brave/app:brave_generated_resources_grit",
-    "//brave/components/constants",
-    "//brave/components/widevine:constants",
+    "//express/app:brave_generated_resources_grit",
+    "//express/components/constants",
+    "//express/components/widevine:constants",
     "//chrome/common",
     "//components/component_updater/",
     "//components/content_settings/core/common",
@@ -49,7 +49,7 @@ source_set("widevine_cdm_component_installer_unittest") {
   sources = [ "widevine_cdm_component_installer_unittest.cc" ]
   deps = [
     "//base",
-    "//brave/common",
+    "//express/common",
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//components/permissions",
@@ -69,7 +69,7 @@ source_set("widevine_permission_android_unittest") {
   deps = [
     ":widevine",
     "//base",
-    "//brave/common",
+    "//express/common",
     "//chrome/browser:browser",
     "//chrome/browser/profiles:profile",
     "//chrome/test:test_support",
@@ -110,10 +110,10 @@ source_set("browser_tests") {
     deps += [
       ":widevine",
       "//base",
-      "//brave/browser",
-      "//brave/common",
-      "//brave/components/constants",
-      "//brave/components/widevine:constants",
+      "//express/browser",
+      "//express/common",
+      "//express/components/constants",
+      "//express/components/widevine:constants",
       "//chrome/browser",
       "//chrome/browser:browser_process",
       "//chrome/browser/profiles:profile",
@@ -144,12 +144,12 @@ if (is_win && !skip_signing) {
     file = "$root_out_dir/presigned_binaries/brave.exe"
     signature_file = "$root_out_dir/brave.exe.sig"
     flags = "1"
-    deps = [ "//brave:signed_brave_exe" ]
+    deps = [ "//express:signed_brave_exe" ]
   }
   widevine_sign_file("chrome_dll_sig") {
     file = "$root_out_dir/presigned_binaries/chrome.dll"
     signature_file = "$root_out_dir/chrome.dll.sig"
     flags = "0"
-    deps = [ "//brave:signed_chrome_dll" ]
+    deps = [ "//express:signed_chrome_dll" ]
   }
 }

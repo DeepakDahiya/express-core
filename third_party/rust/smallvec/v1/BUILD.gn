@@ -11,20 +11,20 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/smallvec/v1/crate/benches/bench.rs",
-    "//brave/third_party/rust/smallvec/v1/crate/src/arbitrary.rs",
-    "//brave/third_party/rust/smallvec/v1/crate/src/lib.rs",
-    "//brave/third_party/rust/smallvec/v1/crate/src/specialization.rs",
-    "//brave/third_party/rust/smallvec/v1/crate/src/tests.rs",
-    "//brave/third_party/rust/smallvec/v1/crate/tests/debugger_visualizer.rs",
-    "//brave/third_party/rust/smallvec/v1/crate/tests/macro.rs",
+    "//express/third_party/rust/smallvec/v1/crate/benches/bench.rs",
+    "//express/third_party/rust/smallvec/v1/crate/src/arbitrary.rs",
+    "//express/third_party/rust/smallvec/v1/crate/src/lib.rs",
+    "//express/third_party/rust/smallvec/v1/crate/src/specialization.rs",
+    "//express/third_party/rust/smallvec/v1/crate/src/tests.rs",
+    "//express/third_party/rust/smallvec/v1/crate/tests/debugger_visualizer.rs",
+    "//express/third_party/rust/smallvec/v1/crate/tests/macro.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/smallvec/v1/crate/README.md",
-    "//brave/third_party/rust/smallvec/v1/crate/debug_metadata/README.md",
+    "//express/third_party/rust/smallvec/v1/crate/README.md",
+    "//express/third_party/rust/smallvec/v1/crate/debug_metadata/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

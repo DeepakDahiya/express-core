@@ -1010,7 +1010,7 @@ TEST_F(EthereumProviderImplUnitTest, EmptyDelegate) {
 }
 
 TEST_F(EthereumProviderImplUnitTest, OnAddEthereumChain) {
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   base::RunLoop run_loop;
 
@@ -1041,7 +1041,7 @@ TEST_F(EthereumProviderImplUnitTest, OnAddEthereumChain) {
 }
 
 TEST_F(EthereumProviderImplUnitTest, OnAddEthereumChainRequestCompletedError) {
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   base::RunLoop run_loop;
   provider()->AddEthereumChain(
@@ -1074,7 +1074,7 @@ TEST_F(EthereumProviderImplUnitTest, AddAndApproveTransaction) {
   CreateWallet();
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
 
@@ -1152,7 +1152,7 @@ TEST_F(EthereumProviderImplUnitTest, AddAndApproveTransactionError) {
   CreateWallet();
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   // Bad address
@@ -1234,7 +1234,7 @@ TEST_F(EthereumProviderImplUnitTest, AddAndApprove1559Transaction) {
   CreateWallet();
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   std::string normalized_json_request =
@@ -1305,7 +1305,7 @@ TEST_F(EthereumProviderImplUnitTest, AddAndApprove1559TransactionNoChainId) {
   CreateWallet();
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   SetNetwork(mojom::kSepoliaChainId, GetOrigin());
   // Wait for EthTxStateManager::ChainChangedEvent to be called.
@@ -1378,7 +1378,7 @@ TEST_F(EthereumProviderImplUnitTest, AddAndApprove1559TransactionError) {
   CreateWallet();
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   std::string normalized_json_request =
@@ -1461,7 +1461,7 @@ TEST_F(EthereumProviderImplUnitTest, RequestEthereumPermissionNotNewSetup) {
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
   auto address_0 = base::ToLowerASCII(account_0->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   base::RunLoop run_loop;
@@ -1552,7 +1552,7 @@ TEST_F(EthereumProviderImplUnitTest, RequestEthereumPermissionsWithAccounts) {
   auto address_0 = base::ToLowerASCII(account_0->address);
   auto address_1 = base::ToLowerASCII(account_1->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   // Allowing 1 account should return that account for allowed accounts
@@ -1608,7 +1608,7 @@ TEST_F(EthereumProviderImplUnitTest, RequestEthereumPermissionsLocked) {
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
   auto address_0 = base::ToLowerASCII(account_0->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   // Allowing 1 account should return that account for allowed accounts
@@ -1651,11 +1651,11 @@ TEST_F(EthereumProviderImplUnitTest, RequestEthereumPermissionsLocked) {
 TEST_F(EthereumProviderImplUnitTest, SignMessage) {
   CreateWallet();
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
-  Navigate(GURL("https://brave.com"));
+  Navigate(GURL("https://express.com"));
   for (const auto& message : {
            std::string("0x1234"),
-           ToHex(GetSIWEMessage("https://brave.com", account_0->address,
-                                "https://brave.com/login", "1")),
+           ToHex(GetSIWEMessage("https://express.com", account_0->address,
+                                "https://express.com/login", "1")),
        }) {
     SCOPED_TRACE(message);
     std::string signature;
@@ -1727,7 +1727,7 @@ TEST_F(EthereumProviderImplUnitTest, SigninWithEthereumError) {
   std::string error_message;
   CreateBraveWalletTabHelper();
   brave_wallet_tab_helper()->SetSkipDelegateForTesting(true);
-  Navigate(GURL("https://brave.com"));
+  Navigate(GURL("https://express.com"));
   AddEthereumPermission(account_0->account_id);
 
   struct {
@@ -1741,7 +1741,7 @@ TEST_F(EthereumProviderImplUnitTest, SigninWithEthereumError) {
     mojom::ProviderError provider_err;
     std::string provider_err_msg;
   } cases[]{
-      {"https://brave.com", account_0->address, "https://brave.com/login",
+      {"https://express.com", account_0->address, "https://express.com/login",
        "5566", mojom::SignMessageErrorType::kChainIdMismatched,
        l10n_util::GetStringFUTF8(
            IDS_BRAVE_WALLET_SIGN_MESSAGE_MISMATCH_ERR,
@@ -1751,7 +1751,7 @@ TEST_F(EthereumProviderImplUnitTest, SigninWithEthereumError) {
        std::string("5566"), mojom::ProviderError::kInternalError,
        l10n_util::GetStringFUTF8(
            IDS_BRAVE_WALLET_SIGN_MESSAGE_CHAIN_ID_MISMATCH, u"5566")},
-      {"https://brave.com", account_1->address, "https://brave.com/login", "1",
+      {"https://express.com", account_1->address, "https://express.com/login", "1",
        mojom::SignMessageErrorType::kAccountMismatched,
        l10n_util::GetStringFUTF8(
            IDS_BRAVE_WALLET_SIGN_MESSAGE_MISMATCH_ERR,
@@ -1760,7 +1760,7 @@ TEST_F(EthereumProviderImplUnitTest, SigninWithEthereumError) {
        absl::nullopt, mojom::ProviderError::kInternalError,
        l10n_util::GetStringFUTF8(IDS_BRAVE_WALLET_SIGN_MESSAGE_ACCOUNT_MISMATCH,
                                  base::ASCIIToUTF16(account_1->address))},
-      {"https://example.com", account_0->address, "https://brave.com/login",
+      {"https://example.com", account_0->address, "https://express.com/login",
        "1", mojom::SignMessageErrorType::kDomainMismatched,
        l10n_util::GetStringFUTF8(
            IDS_BRAVE_WALLET_SIGN_MESSAGE_MISMATCH_ERR,
@@ -1769,7 +1769,7 @@ TEST_F(EthereumProviderImplUnitTest, SigninWithEthereumError) {
        absl::nullopt, mojom::ProviderError::kInternalError,
        l10n_util::GetStringFUTF8(IDS_BRAVE_WALLET_SIGN_MESSAGE_DOMAIN_MISMATCH,
                                  u"https://example.com")},
-      {"https://brave.com", account_0->address, "https://example.com/login",
+      {"https://express.com", account_0->address, "https://example.com/login",
        "1", mojom::SignMessageErrorType::kDomainMismatched,
        l10n_util::GetStringFUTF8(
            IDS_BRAVE_WALLET_SIGN_MESSAGE_MISMATCH_ERR,
@@ -1814,7 +1814,7 @@ TEST_F(EthereumProviderImplUnitTest, RecoverAddress) {
   const std::vector<std::string> addresses = GetAddresses();
 
   std::string message = "0x68656c6c6f20776f726c64";
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   SignMessage(true, addresses[0], message, &signature, &error, &error_message);
@@ -1931,7 +1931,7 @@ TEST_F(EthereumProviderImplUnitTest, SignTypedMessage) {
   EXPECT_TRUE(signature.empty());
   EXPECT_EQ(error, mojom::ProviderError::kUnauthorized);
   EXPECT_EQ(error_message, l10n_util::GetStringUTF8(IDS_WALLET_NOT_AUTHED));
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   SignTypedMessage(true, address_0, "{...}", domain_hash, primary_hash,
@@ -1981,7 +1981,7 @@ TEST_F(EthereumProviderImplUnitTest, SignMessageRequestQueue) {
   std::string hardware = "0xA99D71De40D67394eBe68e4D0265cA6C9D421029";
   auto account_hw = AddHardwareAccount(hardware);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   AddEthereumPermission(account_hw->account_id);
@@ -2102,7 +2102,7 @@ TEST_F(EthereumProviderImplUnitTest, SignMessageRequestQueue) {
 }
 
 TEST_F(EthereumProviderImplUnitTest, ChainChangedEvent) {
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   EXPECT_CALL(*observer_, ChainChangedEvent(mojom::kGoerliChainId)).Times(1);
@@ -2135,7 +2135,7 @@ TEST_F(EthereumProviderImplUnitTest, AccountsChangedEvent) {
   auto account_1 = GetAccountUtils().EnsureEthAccount(1);
   auto address_0 = base::ToLowerASCII(account_0->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   EXPECT_FALSE(observer_->AccountsChangedFired());
   AddEthereumPermission(account_0->account_id);
@@ -2156,7 +2156,7 @@ TEST_F(EthereumProviderImplUnitTest, AccountsChangedEvent) {
   observer_->Reset();
 
   // Does not fire for a different origin that has no permissions
-  Navigate(GURL("https://bravesoftware.com"));
+  Navigate(GURL("https://expresssoftware.com"));
   AddEthereumPermission(account_1->account_id);
   SetSelectedAccount(account_0->account_id);
   EXPECT_FALSE(observer_->AccountsChangedFired());
@@ -2436,7 +2436,7 @@ TEST_F(EthereumProviderImplUnitTest, AccountsChangedEventSelectedAccount) {
   auto address_0 = base::ToLowerASCII(account_0->address);
   auto address_1 = base::ToLowerASCII(account_1->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   // Multiple accounts can be returned
@@ -2485,7 +2485,7 @@ TEST_F(EthereumProviderImplUnitTest, GetAllowedAccounts) {
   auto account_1 = GetAccountUtils().EnsureEthAccount(1);
   auto account_2 = GetAccountUtils().EnsureEthAccount(2);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   auto address_0 = base::ToLowerASCII(account_0->address);
@@ -2547,7 +2547,7 @@ TEST_F(EthereumProviderImplUnitTest, SignMessageHardware) {
   std::string expected_signature = "0xExpectedSignature";
   mojom::ProviderError error = mojom::ProviderError::kUnknown;
   std::string error_message;
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(added_hw_account->account_id);
 
@@ -2579,7 +2579,7 @@ TEST_F(EthereumProviderImplUnitTest, SignMessageHardware) {
 TEST_F(EthereumProviderImplUnitTest, SwitchEthereumChain) {
   // CreateWallet();
   CreateBraveWalletTabHelper();
-  Navigate(GURL("https://bravesoftware.com"));
+  Navigate(GURL("https://expresssoftware.com"));
   brave_wallet_tab_helper()->SetSkipDelegateForTesting(true);
   mojom::ProviderError error = mojom::ProviderError::kUnknown;
   std::string error_message;
@@ -2646,7 +2646,7 @@ TEST_F(EthereumProviderImplUnitTest, SwitchEthereumChain) {
 
 TEST_F(EthereumProviderImplUnitTest, AddEthereumChainSwitchesForInnactive) {
   CreateBraveWalletTabHelper();
-  Navigate(GURL("https://bravesoftware.com"));
+  Navigate(GURL("https://expresssoftware.com"));
   brave_wallet_tab_helper()->SetSkipDelegateForTesting(true);
 
   // AddEthereumChain switches for already added networks
@@ -2684,7 +2684,7 @@ TEST_F(EthereumProviderImplUnitTest, AddEthereumChainSwitchesForInnactive) {
 
 TEST_F(EthereumProviderImplUnitTest, AddSuggestToken) {
   CreateBraveWalletTabHelper();
-  Navigate(GURL("https://brave.com"));
+  Navigate(GURL("https://express.com"));
   brave_wallet_tab_helper()->SetSkipDelegateForTesting(true);
 
   mojom::BlockchainTokenPtr token = mojom::BlockchainToken::New(
@@ -2715,7 +2715,7 @@ TEST_F(EthereumProviderImplUnitTest, GetEncryptionPublicKey) {
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
 
   CreateBraveWalletTabHelper();
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   brave_wallet_tab_helper()->SetSkipDelegateForTesting(true);
@@ -2768,7 +2768,7 @@ TEST_F(EthereumProviderImplUnitTest, Decrypt) {
   auto address_0 = account_0->address;
 
   CreateBraveWalletTabHelper();
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
   AddEthereumPermission(account_0->account_id);
   brave_wallet_tab_helper()->SetSkipDelegateForTesting(true);
@@ -2888,7 +2888,7 @@ TEST_F(EthereumProviderImplUnitTest, RequestEthCoinbase) {
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
   auto address_0 = base::ToLowerASCII(account_0->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   // Fresh wallet should return empty base::Value for eth_coinbase
@@ -3005,7 +3005,7 @@ TEST_F(EthereumProviderImplUnitTest, ProviderResponseFormat) {
   auto account_0 = GetAccountUtils().EnsureEthAccount(0);
   auto address_0 = base::ToLowerASCII(account_0->address);
 
-  GURL url("https://brave.com");
+  GURL url("https://express.com");
   Navigate(url);
 
   // Success case:

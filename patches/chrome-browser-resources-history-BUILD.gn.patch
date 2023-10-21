@@ -6,5 +6,5 @@ index e31d6e35da8ccecf0e769d87fd6f04a150a421c6..6f68140fe80014157a9a954dc61c4e2f
        "lazy_load.js",
      ]
    }
-+  import("//brave/browser/resources/history/sources.gni") web_component_files += brave_history_web_component_files non_web_component_files += brave_history_non_web_component_files exclude_ts_preprocess_files = brave_history_local_ts_files exclude_html_css_preprocess_files = brave_history_local_html_files preprocess_deps = brave_history_preprocess_extra_deps
++  import("//express/browser/resources/history/sources.gni") web_component_files += brave_history_web_component_files non_web_component_files += brave_history_non_web_component_files exclude_ts_preprocess_files = brave_history_local_ts_files exclude_html_css_preprocess_files = brave_history_local_html_files preprocess_deps = brave_history_preprocess_extra_deps
  }

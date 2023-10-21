@@ -14,7 +14,7 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//brave/components/constants",
+    "//express/components/constants",
     "//components/pref_registry",
     "//components/prefs",
     "//content/public/browser",

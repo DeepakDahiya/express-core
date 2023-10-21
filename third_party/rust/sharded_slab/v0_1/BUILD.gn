@@ -11,31 +11,31 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/benches/bench.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/cfg.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/clear.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/implementation.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/iter.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/lib.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/macros.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/page/mod.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/page/slot.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/page/stack.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/pool.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/shard.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/sync.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/tests/loom_pool.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/tests/loom_slab.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/tests/mod.rs",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/src/tid.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/benches/bench.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/cfg.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/clear.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/implementation.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/iter.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/lib.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/macros.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/page/mod.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/page/slot.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/page/stack.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/pool.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/shard.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/sync.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/tests/loom_pool.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/tests/loom_slab.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/tests/mod.rs",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/src/tid.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/CHANGELOG.md",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/IMPLEMENTATION.md",
-    "//brave/third_party/rust/sharded_slab/v0_1/crate/README.md",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/CHANGELOG.md",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/IMPLEMENTATION.md",
+    "//express/third_party/rust/sharded_slab/v0_1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

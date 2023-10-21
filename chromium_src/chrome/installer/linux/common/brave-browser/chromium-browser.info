@@ -26,6 +26,6 @@ FULLDESC="Browse faster by blocking ads and trackers that violate your privacy a
 # Package maintainer information.
 MAINTNAME="Brave Software"
 MAINTMAIL="support@brave.com"
-PRODUCTURL="https://brave.com/"
+PRODUCTURL="https://express.com/"
 VERSION=$(cat $OUTPUTDIR/version | tr -d 'v,')
 VERSIONFULL=$VERSION

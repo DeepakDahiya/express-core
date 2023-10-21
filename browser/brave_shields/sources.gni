@@ -4,28 +4,28 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 brave_browser_brave_shields_sources = [
-  "//brave/browser/brave_shields/ad_block_pref_service_factory.cc",
-  "//brave/browser/brave_shields/ad_block_pref_service_factory.h",
-  "//brave/browser/brave_shields/ad_block_subscription_download_manager_getter.cc",
-  "//brave/browser/brave_shields/ad_block_subscription_download_manager_getter.h",
-  "//brave/browser/brave_shields/brave_shields_web_contents_observer.cc",
-  "//brave/browser/brave_shields/brave_shields_web_contents_observer.h",
-  "//brave/browser/brave_shields/cookie_list_opt_in_service_factory.cc",
-  "//brave/browser/brave_shields/cookie_list_opt_in_service_factory.h",
-  "//brave/browser/brave_shields/filter_list_service_factory.cc",
-  "//brave/browser/brave_shields/filter_list_service_factory.h",
-  "//brave/browser/brave_shields/https_everywhere_component_installer.cc",
-  "//brave/browser/brave_shields/https_everywhere_component_installer.h",
+  "//express/browser/brave_shields/ad_block_pref_service_factory.cc",
+  "//express/browser/brave_shields/ad_block_pref_service_factory.h",
+  "//express/browser/brave_shields/ad_block_subscription_download_manager_getter.cc",
+  "//express/browser/brave_shields/ad_block_subscription_download_manager_getter.h",
+  "//express/browser/brave_shields/brave_shields_web_contents_observer.cc",
+  "//express/browser/brave_shields/brave_shields_web_contents_observer.h",
+  "//express/browser/brave_shields/cookie_list_opt_in_service_factory.cc",
+  "//express/browser/brave_shields/cookie_list_opt_in_service_factory.h",
+  "//express/browser/brave_shields/filter_list_service_factory.cc",
+  "//express/browser/brave_shields/filter_list_service_factory.h",
+  "//express/browser/brave_shields/https_everywhere_component_installer.cc",
+  "//express/browser/brave_shields/https_everywhere_component_installer.h",
 ]
 
 brave_browser_brave_shields_deps = [
   "//base",
-  "//brave/browser:browser_process",
-  "//brave/common",
-  "//brave/components/brave_perf_predictor/browser",
-  "//brave/components/brave_shields/browser",
-  "//brave/components/brave_shields/common",
-  "//brave/components/constants",
+  "//express/browser:browser_process",
+  "//express/common",
+  "//express/components/brave_perf_predictor/browser",
+  "//express/components/brave_shields/browser",
+  "//express/components/brave_shields/common",
+  "//express/components/constants",
   "//chrome/browser/profiles:profile",
   "//chrome/common",
   "//components/content_settings/core/browser",
@@ -39,11 +39,11 @@ brave_browser_brave_shields_deps = [
 
 if (is_android) {
   brave_browser_brave_shields_sources += [
-    "//brave/browser/brave_shields/android/filter_list_service_factory_android.cc",
-    "//brave/browser/brave_shields/brave_shields_web_contents_observer_android.cc",
+    "//express/browser/brave_shields/android/filter_list_service_factory_android.cc",
+    "//express/browser/brave_shields/brave_shields_web_contents_observer_android.cc",
   ]
   brave_browser_brave_shields_deps += [
-    "//brave/browser/android:android_browser_process",
-    "//brave/build/android:jni_headers",
+    "//express/browser/android:android_browser_process",
+    "//express/build/android:jni_headers",
   ]
 }

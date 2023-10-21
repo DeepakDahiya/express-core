@@ -43,7 +43,7 @@ class BraveAdsTransferTest : public UnitTestBase {
 TEST_F(BraveAdsTransferTest, DoNotTransferInvalidAd) {
   // Arrange
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
       /*is_visible=*/true);
 
   const AdInfo ad;
@@ -57,7 +57,7 @@ TEST_F(BraveAdsTransferTest,
        DoNotTransferAdIfTheUrlDoesNotMatchTheLastClickedAd) {
   // Arrange
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
       /*is_visible=*/true);
 
   const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
@@ -73,7 +73,7 @@ TEST_F(BraveAdsTransferTest,
 TEST_F(BraveAdsTransferTest, DoNotTransferAdIfTheSameAdIsAlreadyTransferring) {
   // Arrange
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
       /*is_visible=*/true);
 
   const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
@@ -82,10 +82,10 @@ TEST_F(BraveAdsTransferTest, DoNotTransferAdIfTheSameAdIsAlreadyTransferring) {
   EXPECT_CALL(observer_mock_,
               OnWillTransferAd(ad, Now() + kTransferAfter.Get()));
   EXPECT_CALL(observer_mock_, OnDidTransferAd(ad));
-  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
 
   // Act & Assert
-  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
   FastForwardClockBy(kTransferAfter.Get());
 }
 
@@ -93,7 +93,7 @@ TEST_F(BraveAdsTransferTest, TransferAdIfAnotherAdIsAlreadyTransferring) {
   // Arrange
   {
     NotifyTabDidChange(
-        /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
+        /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
         /*is_visible=*/true);
 
     const AdInfo ad_1 = BuildAdForTesting(AdType::kNotificationAd,
@@ -101,12 +101,12 @@ TEST_F(BraveAdsTransferTest, TransferAdIfAnotherAdIsAlreadyTransferring) {
     transfer_->SetLastClickedAd(ad_1);
     EXPECT_CALL(observer_mock_,
                 OnWillTransferAd(ad_1, Now() + kTransferAfter.Get()));
-    transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+    transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
   }
 
   {
     NotifyTabDidChange(
-        /*tab_id=*/2, /*redirect_chain=*/{GURL("https://brave.com")},
+        /*tab_id=*/2, /*redirect_chain=*/{GURL("https://express.com")},
         /*is_visible=*/true);
 
     const AdInfo ad_2 = BuildAdForTesting(AdType::kNotificationAd,
@@ -115,7 +115,7 @@ TEST_F(BraveAdsTransferTest, TransferAdIfAnotherAdIsAlreadyTransferring) {
     EXPECT_CALL(observer_mock_,
                 OnWillTransferAd(ad_2, Now() + kTransferAfter.Get()));
     EXPECT_CALL(observer_mock_, OnDidTransferAd(ad_2));
-    transfer_->MaybeTransferAd(/*tab_id=*/2, {GURL("https://brave.com")});
+    transfer_->MaybeTransferAd(/*tab_id=*/2, {GURL("https://express.com")});
   }
 
   // Act & Assert
@@ -126,7 +126,7 @@ TEST_F(BraveAdsTransferTest,
        TransferAdIfTheTabIsVisibleAndTheUrlIsTheSameAsTheDomainOrHost) {
   // Arrange
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
       /*is_visible=*/true);
 
   const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
@@ -137,14 +137,14 @@ TEST_F(BraveAdsTransferTest,
   EXPECT_CALL(observer_mock_,
               OnWillTransferAd(ad, Now() + kTransferAfter.Get()));
   EXPECT_CALL(observer_mock_, OnDidTransferAd(ad));
-  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
   FastForwardClockBy(kTransferAfter.Get());
 }
 
 TEST_F(BraveAdsTransferTest, FailToTransferAdIfNotVisible) {
   // Arrange
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com/new_tab")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com/new_tab")},
       /*is_visible=*/false);
 
   const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
@@ -155,7 +155,7 @@ TEST_F(BraveAdsTransferTest, FailToTransferAdIfNotVisible) {
   EXPECT_CALL(observer_mock_,
               OnWillTransferAd(ad, Now() + kTransferAfter.Get()));
   EXPECT_CALL(observer_mock_, OnFailedToTransferAd(ad));
-  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
   FastForwardClockBy(kTransferAfter.Get());
 }
 
@@ -175,14 +175,14 @@ TEST_F(BraveAdsTransferTest,
   EXPECT_CALL(observer_mock_,
               OnWillTransferAd(ad, Now() + kTransferAfter.Get()));
   EXPECT_CALL(observer_mock_, OnFailedToTransferAd(ad));
-  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
   FastForwardClockBy(kTransferAfter.Get());
 }
 
 TEST_F(BraveAdsTransferTest, CancelTransferAdIfTheTabIsClosed) {
   // Arrange
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
       /*is_visible=*/true);
 
   const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
@@ -193,7 +193,7 @@ TEST_F(BraveAdsTransferTest, CancelTransferAdIfTheTabIsClosed) {
   EXPECT_CALL(observer_mock_,
               OnWillTransferAd(ad, Now() + kTransferAfter.Get()));
   EXPECT_CALL(observer_mock_, OnCanceledTransfer(ad, /*tab_id=*/1));
-  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://brave.com")});
+  transfer_->MaybeTransferAd(/*tab_id=*/1, {GURL("https://express.com")});
   NotifyDidCloseTab(/*tab_id=*/1);
 }
 

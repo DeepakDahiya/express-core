@@ -11,20 +11,20 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/iovec/v0_1/crate/src/lib.rs",
-    "//brave/third_party/rust/iovec/v0_1/crate/src/sys/mod.rs",
-    "//brave/third_party/rust/iovec/v0_1/crate/src/sys/unix.rs",
-    "//brave/third_party/rust/iovec/v0_1/crate/src/sys/unknown.rs",
-    "//brave/third_party/rust/iovec/v0_1/crate/src/sys/windows.rs",
-    "//brave/third_party/rust/iovec/v0_1/crate/src/unix.rs",
-    "//brave/third_party/rust/iovec/v0_1/crate/src/windows.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/lib.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/sys/mod.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/sys/unix.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/sys/unknown.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/sys/windows.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/unix.rs",
+    "//express/third_party/rust/iovec/v0_1/crate/src/windows.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/iovec/v0_1/crate/CHANGELOG.md",
-    "//brave/third_party/rust/iovec/v0_1/crate/README.md",
+    "//express/third_party/rust/iovec/v0_1/crate/CHANGELOG.md",
+    "//express/third_party/rust/iovec/v0_1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

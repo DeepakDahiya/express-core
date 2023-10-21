@@ -24,7 +24,7 @@ if (process.platform === 'win32') {
   dirName = fs.realpathSync.native(dirName)
 }
 const rootDir = path.resolve(dirName, '..', '..', '..', '..', '..')
-const braveCoreDir = path.join(rootDir, 'src', 'brave')
+const expressCodeDir = path.join(rootDir, 'src', 'express')
 
 const run = (cmd, args = []) => {
   const prog = spawnSync(cmd, args)
@@ -36,7 +36,7 @@ const run = (cmd, args = []) => {
   return prog
 }
 
-var packageConfig = function (key, sourceDir = braveCoreDir) {
+var packageConfig = function (key, sourceDir = expressCodeDir) {
   let packages = { config: {} }
   const configAbsolutePath = path.join(sourceDir, 'package.json')
   if (fs.existsSync(configAbsolutePath)) {
@@ -103,17 +103,17 @@ const Config = function () {
   this.defaultBuildConfig = 'Component'
   this.buildConfig = this.defaultBuildConfig
   this.signTarget = 'sign_app'
-  this.buildTarget = 'brave'
+  this.buildTarget = 'express'
   this.rootDir = rootDir
   this.isUniversalBinary = false
   this.scriptDir = path.join(this.rootDir, 'scripts')
   this.srcDir = path.join(this.rootDir, 'src')
   this.chromeVersion = this.getProjectVersion('chrome')
   this.chromiumRepo = getNPMConfig(['projects', 'chrome', 'repository', 'url'])
-  this.braveCoreDir = braveCoreDir
+  this.expressCodeDir = expressCodeDir
   this.buildToolsDir = path.join(this.srcDir, 'build')
   this.resourcesDir = path.join(this.rootDir, 'resources')
-  this.depotToolsDir = path.join(this.braveCoreDir, 'vendor', 'depot_tools')
+  this.depotToolsDir = path.join(this.expressCodeDir, 'vendor', 'depot_tools')
   this.defaultGClientFile = path.join(this.rootDir, '.gclient')
   this.gClientFile = process.env.BRAVE_GCLIENT_FILE || this.defaultGClientFile
   this.gClientVerbose = getNPMConfig(['gclient_verbose']) || false
@@ -313,7 +313,7 @@ Config.prototype.buildArgs = function () {
     disable_fieldtrial_testing_config: true,
     safe_browsing_mode: 1,
     brave_services_key: this.braveServicesKey,
-    root_extra_deps: ["//brave"],
+    root_extra_deps: ["//express"],
     // TODO: Re-enable when chromium_src overrides work for files in relative
     // paths like widevine_cmdm_compoennt_installer.cc
     // use_jumbo_build: !this.officialBuild,
@@ -620,13 +620,13 @@ Config.prototype.buildArgs = function () {
     // https://github.com/brave/brave-browser/issues/29934
     args.ios_partition_alloc_enabled = false
 
-    args.ios_provider_target = "//brave/ios/browser/providers:brave_providers"
+    args.ios_provider_target = "//express/ios/browser/providers:brave_providers"
 
     args.ios_locales_pack_extra_source_patterns = [
       "%root_gen_dir%/components/brave_components_strings_",
     ]
     args.ios_locales_pack_extra_deps = [
-      "//brave/components/resources:strings",
+      "//express/components/resources:strings",
     ]
 
     delete args.brave_services_production_domain
@@ -1084,7 +1084,7 @@ Config.prototype.update = function (options) {
   if (options.xcode_gen) {
     assert(process.platform === 'darwin' || options.target_os === 'ios')
     if (options.xcode_gen === 'ios') {
-      this.xcode_gen_target = '//brave/ios:*'
+      this.xcode_gen_target = '//express/ios:*'
     } else {
       this.xcode_gen_target = options.xcode_gen
     }
@@ -1177,7 +1177,7 @@ Object.defineProperty(Config.prototype, 'defaultOptions', {
       // Use hermetic toolchain only internally.
       env.DEPOT_TOOLS_WIN_TOOLCHAIN = '1'
       env.GYP_MSVS_HASH_27370823e7 = '01b3b59461'
-      env.DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL = 'https://brave-build-deps-public.s3.brave.com/windows-hermetic-toolchain/'
+      env.DEPOT_TOOLS_WIN_TOOLCHAIN_BASE_URL = 'https://express-build-deps-public.s3.brave.com/windows-hermetic-toolchain/'
     }
 
     if (this.getCachePath()) {

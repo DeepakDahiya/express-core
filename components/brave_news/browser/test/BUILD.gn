@@ -3,36 +3,36 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
+import("//express/build/config.gni")
 import("//testing/test.gni")
 
 source_set("brave_news_unit_tests") {
   testonly = true
   sources = [
-    "//brave/components/brave_news/browser/brave_news_p3a_unittest.cc",
-    "//brave/components/brave_news/browser/channels_controller_unittest.cc",
-    "//brave/components/brave_news/browser/combined_feed_parsing_unittest.cc",
-    "//brave/components/brave_news/browser/direct_feed_controller_unittest.cc",
-    "//brave/components/brave_news/browser/direct_feed_fetcher_unittest.cc",
-    "//brave/components/brave_news/browser/feed_building_unittest.cc",
-    "//brave/components/brave_news/browser/html_parsing_unittest.cc",
-    "//brave/components/brave_news/browser/locales_helper_unittest.cc",
-    "//brave/components/brave_news/browser/publishers_controller_unittest.cc",
-    "//brave/components/brave_news/browser/publishers_parsing_unittest.cc",
-    "//brave/components/brave_news/browser/suggestions_controller_unittest.cc",
-    "//brave/components/brave_news/browser/unsupported_publisher_migrator_unittest.cc",
+    "//express/components/brave_news/browser/brave_news_p3a_unittest.cc",
+    "//express/components/brave_news/browser/channels_controller_unittest.cc",
+    "//express/components/brave_news/browser/combined_feed_parsing_unittest.cc",
+    "//express/components/brave_news/browser/direct_feed_controller_unittest.cc",
+    "//express/components/brave_news/browser/direct_feed_fetcher_unittest.cc",
+    "//express/components/brave_news/browser/feed_building_unittest.cc",
+    "//express/components/brave_news/browser/html_parsing_unittest.cc",
+    "//express/components/brave_news/browser/locales_helper_unittest.cc",
+    "//express/components/brave_news/browser/publishers_controller_unittest.cc",
+    "//express/components/brave_news/browser/publishers_parsing_unittest.cc",
+    "//express/components/brave_news/browser/suggestions_controller_unittest.cc",
+    "//express/components/brave_news/browser/unsupported_publisher_migrator_unittest.cc",
   ]
 
   deps = [
     "//base/test:test_support",
-    "//brave/components/api_request_helper",
-    "//brave/components/brave_news/browser",
-    "//brave/components/brave_news/common",
-    "//brave/components/brave_news/common:mojom",
-    "//brave/components/brave_news/rust:unit_tests",
-    "//brave/components/l10n/common",
-    "//brave/components/l10n/common:test_support",
-    "//brave/components/time_period_storage",
+    "//express/components/api_request_helper",
+    "//express/components/brave_news/browser",
+    "//express/components/brave_news/common",
+    "//express/components/brave_news/common:mojom",
+    "//express/components/brave_news/rust:unit_tests",
+    "//express/components/l10n/common",
+    "//express/components/l10n/common:test_support",
+    "//express/components/time_period_storage",
     "//chrome/browser",
     "//chrome/test:test_support",
     "//content/test:test_support",
@@ -41,5 +41,5 @@ source_set("brave_news_unit_tests") {
     "//url",
   ]
 
-  public_deps = [ "//brave/components/brave_news/rust:rust_lib" ]
+  public_deps = [ "//express/components/brave_news/rust:rust_lib" ]
 }

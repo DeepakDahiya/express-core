@@ -36,7 +36,7 @@ function MainPanel () {
   }
 
   const handleLearnMoreClick = () => {
-    chrome.tabs.create({ url: 'https://brave.com/privacy-features/', active: true })
+    chrome.tabs.create({ url: 'https://express.com/privacy-features/', active: true })
   }
 
   const onSettingsClick = () => {

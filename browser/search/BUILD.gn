@@ -11,8 +11,8 @@ source_set("search") {
 
     deps += [
       "//base",
-      "//brave/browser/profiles:profiles",
-      "//brave/components/constants",
+      "//express/browser/profiles:profiles",
+      "//express/components/constants",
       "//chrome/browser/ui",
       "//chrome/common",
       "//components/pref_registry",
@@ -27,8 +27,8 @@ source_set("unit_tests") {
   if (!is_android) {
     sources = [ "ntp_utils_unittest.cc" ]
     deps = [
-      "//brave/browser/search",
-      "//brave/components/constants",
+      "//express/browser/search",
+      "//express/components/constants",
       "//chrome/test:test_support",
       "//components/prefs",
       "//components/sync_preferences",

@@ -11,7 +11,7 @@ const path = require('path')
 const runPerfTests = (passthroughArgs, perf_config, targets) => {
   args = [
     path.join(
-      config.braveCoreDir, 'tools', 'perf', 'run_perftests.py'),
+      config.expressCodeDir, 'tools', 'perf', 'run_perftests.py'),
     perf_config,
   ]
 

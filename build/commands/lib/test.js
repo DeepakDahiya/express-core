@@ -45,7 +45,7 @@ const getApplicableFilters = (suite) => {
     [suite, targetPlatform, config.targetArch].join('-'),
   ]
   possibleFilters.forEach(filterName => {
-    let filterFilePath = path.join(config.braveCoreDir, 'test', 'filters',  `${filterName}.filter`)
+    let filterFilePath = path.join(config.expressCodeDir, 'test', 'filters',  `${filterName}.filter`)
     if (fs.existsSync(filterFilePath))
       filterFilePaths.push(filterFilePath)
   });

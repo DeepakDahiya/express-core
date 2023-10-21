@@ -129,17 +129,17 @@ constexpr char kTestBackgroundImages[] = R"(
           "name": "ntp-2020/2021-1",
           "source": "background-image-source.webp",
           "author": "Brave Software",
-          "link": "https://brave.com/",
+          "link": "https://express.com/",
           "originalUrl": "Contributor sent the hi-res version through email",
-          "license": "https://brave.com/about/"
+          "license": "https://express.com/about/"
         },
         {
           "name": "ntp-2020/2021-2",
           "source": "background-image-source.avif",
           "author": "Brave Software",
-          "link": "https://brave.com/",
+          "link": "https://express.com/",
           "originalUrl": "Contributor sent the hi-res version through email",
-          "license": "https://brave.com/about/"
+          "license": "https://express.com/about/"
         }
       ]
     })";
@@ -343,7 +343,7 @@ TEST_F(NTPBackgroundImagesServiceTest, InternalDataTest) {
   EXPECT_EQ(bi_image_count, bi_data->backgrounds.size());
   // Check values are loaded correctly
   EXPECT_EQ("Brave Software", bi_data->backgrounds[0].author);
-  EXPECT_EQ("https://brave.com/", bi_data->backgrounds[0].link);
+  EXPECT_EQ("https://express.com/", bi_data->backgrounds[0].link);
   EXPECT_TRUE(observer.on_bi_updated_);
   EXPECT_TRUE(*bi_data->GetBackgroundAt(0).FindBool(kIsBackgroundKey));
   EXPECT_EQ("chrome://background-wallpaper/background-image-source.webp",
@@ -396,9 +396,9 @@ TEST_F(NTPBackgroundImagesServiceTest, InternalDataTest) {
         "name": "ntp-2020/2021-1",
         "source": "background-image-source.png",
         "author": "Brave Software",
-        "link": "https://brave.com/",
+        "link": "https://express.com/",
         "originalUrl": "Contributor sent the hi-res version through email",
-        "license": "https://brave.com/about/"
+        "license": "https://express.com/about/"
       }
     ]
   })";
@@ -517,7 +517,7 @@ const char kTestSuperReferral[] = R"(
       "topSites": [
         {
           "name": "Brave",
-          "destinationUrl": "https://brave.com/",
+          "destinationUrl": "https://express.com/",
           "backgroundColor": "#e22919",
           "iconUrl": "brave.png"
         },

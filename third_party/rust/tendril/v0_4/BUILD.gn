@@ -11,20 +11,20 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/tendril/v0_4/crate/examples/fuzz.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/bench.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/buf32.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/fmt.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/lib.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/stream.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/tendril.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/utf8_decode.rs",
-    "//brave/third_party/rust/tendril/v0_4/crate/src/util.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/examples/fuzz.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/bench.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/buf32.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/fmt.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/lib.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/stream.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/tendril.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/utf8_decode.rs",
+    "//express/third_party/rust/tendril/v0_4/crate/src/util.rs",
   ]
-  inputs = [ "//brave/third_party/rust/tendril/v0_4/crate/README.md" ]
+  inputs = [ "//express/third_party/rust/tendril/v0_4/crate/README.md" ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
@@ -38,11 +38,11 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/futf/v0_1:lib",
-    "//brave/third_party/rust/mac/v0_1:lib",
-    "//brave/third_party/rust/utf_8/v0_7:lib",
+    "//express/third_party/rust/futf/v0_1:lib",
+    "//express/third_party/rust/mac/v0_1:lib",
+    "//express/third_party/rust/utf_8/v0_7:lib",
   ]
   aliased_deps = {
-    utf8 = "//brave/third_party/rust/utf_8/v0_7:lib__rlib"
+    utf8 = "//express/third_party/rust/utf_8/v0_7:lib__rlib"
   }
 }

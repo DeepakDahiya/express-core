@@ -51,7 +51,7 @@ const TermsOfUseText: React.FC<{}> = () => {
   return <p key={text.duringTag}>
     {text.beforeTag}
     <LinkText
-      href='https://brave.com/terms-of-use/'
+      href='https://express.com/terms-of-use/'
       target='_blank'
       rel='noopener noreferrer'
       onClick={

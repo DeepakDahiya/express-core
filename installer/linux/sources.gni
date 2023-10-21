@@ -4,11 +4,11 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 common_packaging_files_sources = [
-  "//brave/LICENSE",
-  "//brave/chromium_src/chrome/app/resources/manpage.1.in",
-  "//brave/chromium_src/chrome/installer/linux/common/brave-browser/chromium-browser.appdata.xml",
-  "//brave/chromium_src/chrome/installer/linux/common/brave-browser/chromium-browser.info",
-  "//brave/installer/linux/common/brave_installer.include",
+  "//express/LICENSE",
+  "//express/chromium_src/chrome/app/resources/manpage.1.in",
+  "//express/chromium_src/chrome/installer/linux/common/brave-browser/chromium-browser.appdata.xml",
+  "//express/chromium_src/chrome/installer/linux/common/brave-browser/chromium-browser.info",
+  "//express/installer/linux/common/brave_installer.include",
 ]
 
 common_packaging_files_excluded_sources = [
@@ -28,10 +28,10 @@ excluded_packaging_files_executables = [
 ]
 
 brave_installer_deps = [
-  "//brave/build/linux:copy_exe",
-  "//brave/build/linux:copy_sandbox",
+  "//express/build/linux:copy_exe",
+  "//express/build/linux:copy_sandbox",
 ]
 
-strip_chrome_binary_deps = [ "//brave/build/linux:copy_exe" ]
+strip_chrome_binary_deps = [ "//express/build/linux:copy_exe" ]
 
-strip_chrome_sandbox_deps = [ "//brave/build/linux:copy_sandbox" ]
+strip_chrome_sandbox_deps = [ "//express/build/linux:copy_sandbox" ]

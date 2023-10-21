@@ -11,27 +11,27 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/bincode/v1/crate/src/byteorder.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/config/endian.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/config/int.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/config/legacy.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/config/limit.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/config/mod.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/config/trailing.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/de/mod.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/de/read.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/error.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/internal.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/lib.rs",
-    "//brave/third_party/rust/bincode/v1/crate/src/ser/mod.rs",
-    "//brave/third_party/rust/bincode/v1/crate/tests/test.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/byteorder.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/config/endian.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/config/int.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/config/legacy.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/config/limit.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/config/mod.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/config/trailing.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/de/mod.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/de/read.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/error.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/internal.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/lib.rs",
+    "//express/third_party/rust/bincode/v1/crate/src/ser/mod.rs",
+    "//express/third_party/rust/bincode/v1/crate/tests/test.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/bincode/v1/crate/LICENSE.md",
-    "//brave/third_party/rust/bincode/v1/crate/readme.md",
+    "//express/third_party/rust/bincode/v1/crate/LICENSE.md",
+    "//express/third_party/rust/bincode/v1/crate/readme.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

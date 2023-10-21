@@ -11,15 +11,15 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/tap/v1/crate/src/conv.rs",
-    "//brave/third_party/rust/tap/v1/crate/src/lib.rs",
-    "//brave/third_party/rust/tap/v1/crate/src/pipe.rs",
-    "//brave/third_party/rust/tap/v1/crate/src/tap.rs",
+    "//express/third_party/rust/tap/v1/crate/src/conv.rs",
+    "//express/third_party/rust/tap/v1/crate/src/lib.rs",
+    "//express/third_party/rust/tap/v1/crate/src/pipe.rs",
+    "//express/third_party/rust/tap/v1/crate/src/tap.rs",
   ]
-  inputs = [ "//brave/third_party/rust/tap/v1/crate/README.md" ]
+  inputs = [ "//express/third_party/rust/tap/v1/crate/README.md" ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false

@@ -5,7 +5,7 @@ const l10nUtil = require('./l10nUtil')
 
 const pullL10n = (options) => {
   const cmdOptions = config.defaultOptions
-  cmdOptions.cwd = config.braveCoreDir
+  cmdOptions.cwd = config.expressCodeDir
   if (options.extension) {
     const extensionPath = options.extension_path
     if (options.extension === 'greaselion') {

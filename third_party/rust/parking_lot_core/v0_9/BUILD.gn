@@ -11,26 +11,26 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/build.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/lib.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/parking_lot.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/spinwait.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/generic.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/linux.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/mod.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/redox.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/sgx.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/unix.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/wasm.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/wasm_atomic.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/windows/keyed_event.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/windows/mod.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/windows/waitaddress.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/util.rs",
-    "//brave/third_party/rust/parking_lot_core/v0_9/crate/src/word_lock.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/build.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/lib.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/parking_lot.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/spinwait.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/generic.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/linux.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/mod.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/redox.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/sgx.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/unix.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/wasm.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/wasm_atomic.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/windows/keyed_event.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/windows/mod.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/thread_parker/windows/waitaddress.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/util.rs",
+    "//express/third_party/rust/parking_lot_core/v0_9/crate/src/word_lock.rs",
   ]
   inputs = []
 
@@ -47,14 +47,14 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/smallvec/v1:lib",
+    "//express/third_party/rust/smallvec/v1:lib",
     "//third_party/rust/cfg_if/v1:lib",
   ]
   if (!is_win) {
     deps += [ "//third_party/rust/libc/v0_2:lib" ]
   }
   if (is_win) {
-    deps += [ "//brave/third_party/rust/windows_sys/v0_45:lib" ]
+    deps += [ "//express/third_party/rust/windows_sys/v0_45:lib" ]
   }
   build_root = "crate/build.rs"
   build_sources = [ "crate/build.rs" ]

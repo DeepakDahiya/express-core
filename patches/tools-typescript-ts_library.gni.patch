@@ -6,7 +6,7 @@ index 3750d3f841c61a89b4232cc91f6874b4af12c344..c038dc1a3fc43100945ee7d791f043f1
        # other ts_library() deps are automatically inferred from |deps| in
        # path_mappings.py. Don't add any such mappings here.
      ]
-+    import("//brave/tools/typescript/sources.gni") foreach(mapping, brave_path_mappings) { path_mappings += [ mapping[0] + rebase_path(mapping[1], target_gen_dir) ] }
++    import("//express/tools/typescript/sources.gni") foreach(mapping, brave_path_mappings) { path_mappings += [ mapping[0] + rebase_path(mapping[1], target_gen_dir) ] }
  
      # The |platform| flag is used in path_mappings.py and validate_tsconfig.py,
      # to limit some logic to certain platforms, like preventing special iOS

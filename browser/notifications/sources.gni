@@ -4,8 +4,8 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_browser_notifications_sources = [
-  "//brave/browser/notifications/ads_notification_handler.cc",
-  "//brave/browser/notifications/ads_notification_handler.h",
+  "//express/browser/notifications/ads_notification_handler.cc",
+  "//express/browser/notifications/ads_notification_handler.h",
 ]
 
 brave_browser_notifications_deps = [
@@ -17,10 +17,10 @@ brave_browser_notifications_deps = [
 
 if (is_android) {
   brave_browser_notifications_sources += [
-    "//brave/browser/notifications/brave_notification_platform_bridge_helper_android.cc",
-    "//brave/browser/notifications/brave_notification_platform_bridge_helper_android.h",
+    "//express/browser/notifications/brave_notification_platform_bridge_helper_android.cc",
+    "//express/browser/notifications/brave_notification_platform_bridge_helper_android.h",
   ]
 
   brave_browser_notifications_deps +=
-      [ "//brave/android:brave_android_java_enums_srcjar" ]
+      [ "//express/android:brave_android_java_enums_srcjar" ]
 }

@@ -39,7 +39,7 @@ void CheckRequiredAttributes(
   EXPECT_EQ(search_result_ad->advertiser_id, "value3");
   EXPECT_EQ(search_result_ad->headline_text, "value4");
   EXPECT_EQ(search_result_ad->description, "value5");
-  EXPECT_EQ(search_result_ad->target_url, GURL("https://brave.com"));
+  EXPECT_EQ(search_result_ad->target_url, GURL("https://express.com"));
   EXPECT_EQ(search_result_ad->value, 0.5);
 }
 
@@ -246,7 +246,7 @@ TEST(SearchResultAdConvertingTest, NotValidAdEntityWrongPropertyType) {
         schema_org::mojom::Property::New();
     extra_property->name = "data-landing-page";
     extra_property->values =
-        schema_org::mojom::Values::NewStringValues({"http://brave.com"});
+        schema_org::mojom::Values::NewStringValues({"http://express.com"});
     ad_entity->properties.push_back(std::move(extra_property));
 
     const auto search_result_ads =

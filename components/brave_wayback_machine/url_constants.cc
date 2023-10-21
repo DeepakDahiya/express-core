@@ -6,5 +6,5 @@
 #include "brave/components/brave_wayback_machine/url_constants.h"
 
 const char kWaybackQueryURL[] =
-    "https://brave-api.archive.org/wayback/available?url=";
+    "https://express-api.archive.org/wayback/available?url=";
 const char kWaybackHost[] = "web.archive.org";

@@ -10,12 +10,12 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/hmac/v0_10/crate/src/lib.rs",
-    "//brave/third_party/rust/hmac/v0_10/crate/tests/lib.rs",
+    "//express/third_party/rust/hmac/v0_10/crate/src/lib.rs",
+    "//express/third_party/rust/hmac/v0_10/crate/tests/lib.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/hmac/v0_10/crate/CHANGELOG.md",
-    "//brave/third_party/rust/hmac/v0_10/crate/README.md",
+    "//express/third_party/rust/hmac/v0_10/crate/CHANGELOG.md",
+    "//express/third_party/rust/hmac/v0_10/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -31,7 +31,7 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/crypto_mac/v0_10:lib",
-    "//brave/third_party/rust/digest/v0_9:lib",
+    "//express/third_party/rust/crypto_mac/v0_10:lib",
+    "//express/third_party/rust/digest/v0_9:lib",
   ]
 }

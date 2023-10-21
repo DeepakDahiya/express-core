@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
-import("//brave/components/brave_wallet/common/config.gni")
+import("//express/build/config.gni")
+import("//express/components/brave_wallet/common/config.gni")
 import("//build/buildflag_header.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/test.gni")
@@ -27,7 +27,7 @@ buildflag_header("buildflags") {
 }
 
 static_library("common") {
-  include_dirs = [ "//brave/third_party/ethash/src/include" ]
+  include_dirs = [ "//express/third_party/ethash/src/include" ]
 
   sources = [
     "bitcoin_utils.cc",
@@ -78,9 +78,9 @@ static_library("common") {
     ":mojom",
     ":mojom__generator",
     ":pref_names",
-    "//brave/third_party/argon2",
-    "//brave/third_party/bitcoin-core",
-    "//brave/third_party/ethash",
+    "//express/third_party/argon2",
+    "//express/third_party/bitcoin-core",
+    "//express/third_party/ethash",
     "//components/base32",
     "//components/prefs",
     "//net",
@@ -121,7 +121,7 @@ generated_types("generated_eth_requests") {
 }
 
 preprocess_if_expr("preprocess_mojo") {
-  deps = [ "//brave/components/brave_wallet/common:mojom_js" ]
+  deps = [ "//express/components/brave_wallet/common:mojom_js" ]
   in_folder = "$target_gen_dir"
   out_folder = "$target_gen_dir/$preprocess_folder"
   out_manifest = "$target_gen_dir/$preprocess_mojo_manifest"

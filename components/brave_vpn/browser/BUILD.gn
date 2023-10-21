@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
+import("//express/components/brave_vpn/common/buildflags/buildflags.gni")
 
 assert(enable_brave_vpn)
 
@@ -23,13 +23,13 @@ static_library("browser") {
     "connection:api",
     "connection:common",
     "//base",
-    "//brave/components/brave_vpn/common",
-    "//brave/components/brave_vpn/common/mojom",
-    "//brave/components/p3a_utils",
-    "//brave/components/resources:strings",
-    "//brave/components/skus/browser",
-    "//brave/components/skus/common:mojom",
-    "//brave/components/version_info",
+    "//express/components/brave_vpn/common",
+    "//express/components/brave_vpn/common/mojom",
+    "//express/components/p3a_utils",
+    "//express/components/resources:strings",
+    "//express/components/skus/browser",
+    "//express/components/skus/common:mojom",
+    "//express/components/version_info",
     "//build:buildflag_header_h",
     "//components/keyed_service/core",
     "//components/pref_registry",
@@ -41,7 +41,7 @@ static_library("browser") {
     "//url",
   ]
   if (is_win) {
-    deps += [ "//brave/components/brave_vpn/common/wireguard/win" ]
+    deps += [ "//express/components/brave_vpn/common/wireguard/win" ]
   }
 }
 
@@ -55,13 +55,13 @@ source_set("unit_tests") {
     "api",
     "api:unit_tests",
     "//base",
-    "//brave/components/brave_vpn/browser/connection:api",
-    "//brave/components/brave_vpn/browser/connection:common",
-    "//brave/components/brave_vpn/browser/connection/wireguard/credentials:unit_tests",
-    "//brave/components/brave_vpn/common",
-    "//brave/components/skus/browser",
-    "//brave/components/skus/common",
-    "//brave/components/skus/common:mojom",
+    "//express/components/brave_vpn/browser/connection:api",
+    "//express/components/brave_vpn/browser/connection:common",
+    "//express/components/brave_vpn/browser/connection/wireguard/credentials:unit_tests",
+    "//express/components/brave_vpn/common",
+    "//express/components/skus/browser",
+    "//express/components/skus/common",
+    "//express/components/skus/common:mojom",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",
     "//content/test:test_support",
@@ -75,10 +75,10 @@ source_set("unit_tests") {
   if (!is_android) {
     deps += [
       "connection:unit_tests",
-      "//brave/components/brave_vpn/browser/connection/ikev2:sim",
+      "//express/components/brave_vpn/browser/connection/ikev2:sim",
     ]
   }
   if (is_win) {
-    deps += [ "//brave/components/brave_vpn/browser/connection/ikev2/win/brave_vpn_helper:unit_tests" ]
+    deps += [ "//express/components/brave_vpn/browser/connection/ikev2/win/brave_vpn_helper:unit_tests" ]
   }
 }

@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
+import("//express/components/brave_vpn/common/buildflags/buildflags.gni")
 
 assert(enable_brave_vpn)
 assert(is_android)
@@ -16,10 +16,10 @@ source_set("android") {
 
   deps = [
     "//base",
-    "//brave/components/brave_vpn/common",
-    "//brave/components/brave_vpn/common/buildflags",
-    "//brave/components/brave_vpn/common/mojom",
-    "//brave/components/skus/renderer",
+    "//express/components/brave_vpn/common",
+    "//express/components/brave_vpn/common/buildflags",
+    "//express/components/brave_vpn/common/mojom",
+    "//express/components/skus/renderer",
     "//content/public/renderer",
     "//gin",
     "//mojo/public/cpp/bindings",
@@ -38,9 +38,9 @@ source_set("browser_tests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
 
   deps = [
-    "//brave/components/brave_vpn/common",
-    "//brave/components/brave_vpn/renderer/android",
-    "//brave/components/skus/common",
+    "//express/components/brave_vpn/common",
+    "//express/components/brave_vpn/renderer/android",
+    "//express/components/skus/common",
     "//chrome/common",
     "//content/public/common",
     "//content/test:test_support",
@@ -55,7 +55,7 @@ source_set("unit_tests") {
 
   deps = [
     "//base",
-    "//brave/components/brave_vpn/renderer/android",
+    "//express/components/brave_vpn/renderer/android",
     "//content/public/renderer",
     "//testing/gtest",
     "//v8",

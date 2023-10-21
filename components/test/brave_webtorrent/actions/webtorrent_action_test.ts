@@ -18,7 +18,7 @@ const torrent: Torrent = {
   ratio: 0,
   numPeers: 0,
   torrentFile: Buffer.from('1337', 'utf-8'),
-  torrentFileBlobURL: 'https://brave.com',
+  torrentFileBlobURL: 'https://express.com',
   files: [],
   received: 1337,
   path: '/',

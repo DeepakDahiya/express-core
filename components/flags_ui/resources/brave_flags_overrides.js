@@ -13,10 +13,10 @@ document.addEventListener('DOMContentLoaded', function () {
     node.appendChild(link)
     node.appendChild(text2)
     if (index === 0) {
-      link.setAttribute('href', 'https://brave.com/download-beta/')
+      link.setAttribute('href', 'https://express.com/download-beta/')
       link.textContent = 'beta channel'
     } else {
-      link.setAttribute('href', 'https://brave.com/download-nightly/')
+      link.setAttribute('href', 'https://express.com/download-nightly/')
       link.textContent = 'nightly channel'
     }
   })

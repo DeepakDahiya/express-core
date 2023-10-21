@@ -11,9 +11,9 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/lib.rs"
-  sources = [ "//brave/third_party/rust/servo_arc/v0_1/crate/lib.rs" ]
+  sources = [ "//express/third_party/rust/servo_arc/v0_1/crate/lib.rs" ]
   inputs = []
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -28,7 +28,7 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/nodrop/v0_1:lib",
-    "//brave/third_party/rust/stable_deref_trait/v1:lib",
+    "//express/third_party/rust/nodrop/v0_1:lib",
+    "//express/third_party/rust/stable_deref_trait/v1:lib",
   ]
 }

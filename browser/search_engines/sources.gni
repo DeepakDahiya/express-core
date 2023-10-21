@@ -6,16 +6,16 @@
 import("//extensions/buildflags/buildflags.gni")
 
 brave_browser_search_engines_sources = [
-  "//brave/browser/search_engines/search_engine_provider_service_factory.cc",
-  "//brave/browser/search_engines/search_engine_provider_service_factory.h",
-  "//brave/browser/search_engines/search_engine_tracker.cc",
-  "//brave/browser/search_engines/search_engine_tracker.h",
+  "//express/browser/search_engines/search_engine_provider_service_factory.cc",
+  "//express/browser/search_engines/search_engine_provider_service_factory.h",
+  "//express/browser/search_engines/search_engine_tracker.cc",
+  "//express/browser/search_engines/search_engine_tracker.h",
 ]
 
 brave_browser_search_engines_deps = [
   "//base",
-  "//brave/components/brave_search_conversion",
-  "//brave/components/time_period_storage",
+  "//express/components/brave_search_conversion",
+  "//express/components/time_period_storage",
   "//chrome/browser/profiles:profile",
   "//components/keyed_service/content",
   "//components/keyed_service/core",
@@ -27,37 +27,37 @@ brave_browser_search_engines_deps = [
 
 if (is_android) {
   brave_browser_search_engines_sources += [
-    "//brave/browser/search_engines/brave_search_engine_pref_helper_android.cc",
-    "//brave/browser/search_engines/normal_window_search_engine_provider_service_android.cc",
-    "//brave/browser/search_engines/normal_window_search_engine_provider_service_android.h",
-    "//brave/browser/search_engines/private_window_search_engine_provider_service_android.cc",
-    "//brave/browser/search_engines/private_window_search_engine_provider_service_android.h",
+    "//express/browser/search_engines/brave_search_engine_pref_helper_android.cc",
+    "//express/browser/search_engines/normal_window_search_engine_provider_service_android.cc",
+    "//express/browser/search_engines/normal_window_search_engine_provider_service_android.h",
+    "//express/browser/search_engines/private_window_search_engine_provider_service_android.cc",
+    "//express/browser/search_engines/private_window_search_engine_provider_service_android.h",
   ]
 
   brave_browser_search_engines_deps += [
-    "//brave/components/brave_search/browser",
+    "//express/components/brave_search/browser",
     "//chrome/browser/profiles:profile",
     "//components/prefs",
   ]
 } else {
   brave_browser_search_engines_sources += [
-    "//brave/browser/search_engines/normal_window_search_engine_provider_service.cc",
-    "//brave/browser/search_engines/normal_window_search_engine_provider_service.h",
-    "//brave/browser/search_engines/pref_names.h",
-    "//brave/browser/search_engines/private_window_search_engine_provider_service.cc",
-    "//brave/browser/search_engines/private_window_search_engine_provider_service.h",
-    "//brave/browser/search_engines/private_window_search_engine_provider_service_base.cc",
-    "//brave/browser/search_engines/private_window_search_engine_provider_service_base.h",
-    "//brave/browser/search_engines/search_engine_provider_util.cc",
-    "//brave/browser/search_engines/search_engine_provider_util.h",
-    "//brave/browser/search_engines/tor_window_search_engine_provider_service.cc",
-    "//brave/browser/search_engines/tor_window_search_engine_provider_service.h",
+    "//express/browser/search_engines/normal_window_search_engine_provider_service.cc",
+    "//express/browser/search_engines/normal_window_search_engine_provider_service.h",
+    "//express/browser/search_engines/pref_names.h",
+    "//express/browser/search_engines/private_window_search_engine_provider_service.cc",
+    "//express/browser/search_engines/private_window_search_engine_provider_service.h",
+    "//express/browser/search_engines/private_window_search_engine_provider_service_base.cc",
+    "//express/browser/search_engines/private_window_search_engine_provider_service_base.h",
+    "//express/browser/search_engines/search_engine_provider_util.cc",
+    "//express/browser/search_engines/search_engine_provider_util.h",
+    "//express/browser/search_engines/tor_window_search_engine_provider_service.cc",
+    "//express/browser/search_engines/tor_window_search_engine_provider_service.h",
   ]
 
   brave_browser_search_engines_deps += [
-    "//brave/browser/profiles:util",
-    "//brave/components/search_engines",
-    "//brave/components/time_period_storage",
+    "//express/browser/profiles:util",
+    "//express/components/search_engines",
+    "//express/components/time_period_storage",
     "//chrome/browser/profiles:profile",
     "//components/keyed_service/content",
     "//components/pref_registry",

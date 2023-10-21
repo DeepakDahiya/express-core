@@ -28,7 +28,7 @@ constexpr char kJson[] =
           "creative_set_id": "c2ba3e7d-f688-4bc4-a053-cbe7ac1e6123",
           "description": "Test Ad Description",
           "segment": "untargeted",
-          "target_url": "https://brave.com/",
+          "target_url": "https://express.com/",
           "title": "Test Ad Title",
           "type": "promoted_content_ad",
           "uuid": "9bac9ae4-693c-4569-9b3e-300e357780cf"

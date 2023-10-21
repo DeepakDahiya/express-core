@@ -6,7 +6,7 @@ index 81e01c4d71515468d10a5f2e5e5a4b8cecca2279..236c147b87dd8495cb7282b9aec40a59
        "--output_dir",
        rebase_path(invoker.output, root_build_dir),
      ]
-+    import("//brave/third_party/blink/renderer/core/probe/sources.gni") deps = brave_third_party_blink_renderer_core_probe_instrumentation_probes_deps
++    import("//express/third_party/blink/renderer/core/probe/sources.gni") deps = brave_third_party_blink_renderer_core_probe_instrumentation_probes_deps
    }
  }
  

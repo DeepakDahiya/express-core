@@ -6,4 +6,4 @@ index 13edaddd17cd780ee4e3a854e3007576ae4527a6..ca8ac5a8938aee605b3b27a16e542bc4
    "wifi_configuration_specifics.proto",
    "workspace_desk_specifics.proto",
  ]
-+import("//brave/components/sync/protocol/protocol_sources.gni") sync_protocol_sources += brave_sync_protocol_sources
++import("//express/components/sync/protocol/protocol_sources.gni") sync_protocol_sources += brave_sync_protocol_sources

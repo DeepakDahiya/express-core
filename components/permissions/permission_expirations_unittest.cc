@@ -148,20 +148,20 @@ class PermissionExpirationsTest : public testing::Test {
 
  protected:
   const GURL kOrigin{"https://example.com"};
-  const GURL kOrigin2{"https://brave1.com"};
-  const GURL kOrigin3{"https://brave2.com"};
+  const GURL kOrigin2{"https://express1.com"};
+  const GURL kOrigin3{"https://express2.com"};
   const GURL kOriginWithETHAccount{
       "https://example.com0x6bd1dbc7f4779d02a64053ca1b908767268c7164"};
   const GURL kOrigin2WithETHAccount{
-      "https://brave1.com0x6bd1dbc7f4779d02a64053ca1b908767268c7164"};
+      "https://express1.com0x6bd1dbc7f4779d02a64053ca1b908767268c7164"};
   const GURL kOrigin3WithETHAccount{
-      "https://brave2.com0x6bd1dbc7f4779d02a64053ca1b908767268c7164"};
+      "https://express2.com0x6bd1dbc7f4779d02a64053ca1b908767268c7164"};
   const GURL kOriginWithSOLAccount{
       "https://example.com__3zuhutvg3ax8vd1r9j5klr41raa1fxxqtuqyksz6kkot"};
   const GURL kOrigin2WithSOLAccount{
-      "https://brave1.com__3zuhutvg3ax8vd1r9j5klr41raa1fxxqtuqyksz6kkot"};
+      "https://express1.com__3zuhutvg3ax8vd1r9j5klr41raa1fxxqtuqyksz6kkot"};
   const GURL kOrigin3WithSOLAccount{
-      "https://brave2.com__3zuhutvg3ax8vd1r9j5klr41raa1fxxqtuqyksz6kkot"};
+      "https://express2.com__3zuhutvg3ax8vd1r9j5klr41raa1fxxqtuqyksz6kkot"};
   const base::TimeDelta kLifetime{base::Seconds(5)};
   const base::TimeDelta kOneSecond{base::Seconds(1)};
 

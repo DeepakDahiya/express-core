@@ -4,15 +4,15 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_browser_skus_sources = [
-  "//brave/browser/skus/skus_service_factory.cc",
-  "//brave/browser/skus/skus_service_factory.h",
+  "//express/browser/skus/skus_service_factory.cc",
+  "//express/browser/skus/skus_service_factory.h",
 ]
 brave_browser_skus_deps = [
   "//base",
-  "//brave/browser/profiles:util",
-  "//brave/components/skus/browser",
-  "//brave/components/skus/common",
-  "//brave/components/skus/common:mojom",
+  "//express/browser/profiles:util",
+  "//express/components/skus/browser",
+  "//express/components/skus/common",
+  "//express/components/skus/common:mojom",
   "//components/keyed_service/content",
   "//components/pref_registry",
   "//content/public/browser",

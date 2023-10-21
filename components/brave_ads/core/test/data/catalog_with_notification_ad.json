@@ -17,7 +17,7 @@
               "payload": {
                 "body": "Test Body",
                 "title": "Test Title",
-                "targetUrl": "https://brave.com"
+                "targetUrl": "https://express.com"
               }
             }
           ],

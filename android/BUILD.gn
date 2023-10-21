@@ -3,10 +3,10 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/ai_chat/common/buildflags/buildflags.gni")
-import("//brave/components/ipfs/buildflags/buildflags.gni")
-import("//brave/components/p3a/buildflags.gni")
-import("//brave/components/webcompat_reporter/buildflags/buildflags.gni")
+import("//express/components/ai_chat/common/buildflags/buildflags.gni")
+import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//express/components/p3a/buildflags.gni")
+import("//express/components/webcompat_reporter/buildflags/buildflags.gni")
 import("//build/config/android/rules.gni")
 
 declare_args() {
@@ -15,14 +15,14 @@ declare_args() {
 
 java_cpp_enum("brave_android_java_enums_srcjar") {
   sources = [
-    "//brave/chromium_src/chrome/browser/notifications/notification_handler_impl.h",
-    "//brave/components/decentralized_dns/core/constants.h",
-    "//brave/components/ipfs/ipfs_constants.h",
+    "//express/chromium_src/chrome/browser/notifications/notification_handler_impl.h",
+    "//express/components/decentralized_dns/core/constants.h",
+    "//express/components/ipfs/ipfs_constants.h",
   ]
 }
 
 java_cpp_template("brave_config_java") {
-  sources = [ "//brave/build/android/java/templates/BraveConfig.template" ]
+  sources = [ "//express/build/android/java/templates/BraveConfig.template" ]
   defines = [
     "BRAVE_ANDROID_DEVELOPER_OPTIONS_CODE=\"$brave_android_developer_options_code\"",
     "BRAVE_ANDROID_P3A_ENABLED=$brave_p3a_enabled",

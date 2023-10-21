@@ -11,19 +11,19 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/hkdf.rs"
   sources = [
-    "//brave/third_party/rust/hkdf/v0_11/crate/benches/hkdf.rs",
-    "//brave/third_party/rust/hkdf/v0_11/crate/examples/extract.rs",
-    "//brave/third_party/rust/hkdf/v0_11/crate/examples/from_prk.rs",
-    "//brave/third_party/rust/hkdf/v0_11/crate/examples/main.rs",
-    "//brave/third_party/rust/hkdf/v0_11/crate/src/hkdf.rs",
-    "//brave/third_party/rust/hkdf/v0_11/crate/tests/tests.rs",
+    "//express/third_party/rust/hkdf/v0_11/crate/benches/hkdf.rs",
+    "//express/third_party/rust/hkdf/v0_11/crate/examples/extract.rs",
+    "//express/third_party/rust/hkdf/v0_11/crate/examples/from_prk.rs",
+    "//express/third_party/rust/hkdf/v0_11/crate/examples/main.rs",
+    "//express/third_party/rust/hkdf/v0_11/crate/src/hkdf.rs",
+    "//express/third_party/rust/hkdf/v0_11/crate/tests/tests.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/hkdf/v0_11/crate/CHANGELOG.md",
-    "//brave/third_party/rust/hkdf/v0_11/crate/README.md",
+    "//express/third_party/rust/hkdf/v0_11/crate/CHANGELOG.md",
+    "//express/third_party/rust/hkdf/v0_11/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -39,7 +39,7 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/digest/v0_9:lib",
-    "//brave/third_party/rust/hmac/v0_11:lib",
+    "//express/third_party/rust/digest/v0_9:lib",
+    "//express/third_party/rust/hmac/v0_11:lib",
   ]
 }

@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
+import("//express/build/config.gni")
 
 static_library("browser") {
   sources = [
@@ -36,13 +36,13 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//brave/components/brave_adaptive_captcha",
-    "//brave/components/brave_ads/core",
-    "//brave/components/brave_ads/resources",
-    "//brave/components/brave_component_updater/browser",
-    "//brave/components/l10n/common",
-    "//brave/components/p3a_utils",
-    "//brave/components/time_period_storage",
+    "//express/components/brave_adaptive_captcha",
+    "//express/components/brave_ads/core",
+    "//express/components/brave_ads/resources",
+    "//express/components/brave_component_updater/browser",
+    "//express/components/l10n/common",
+    "//express/components/p3a_utils",
+    "//express/components/time_period_storage",
     "//components/keyed_service/core",
     "//components/pref_registry",
     "//components/prefs",
@@ -52,7 +52,7 @@ static_library("browser") {
     "//url",
   ]
 
-  public_deps = [ "//brave/components/brave_ads/core/mojom" ]
+  public_deps = [ "//express/components/brave_ads/core/mojom" ]
 
   # TODO(https://github.com/brave/brave-browser/issues/24163)
   check_includes = false
@@ -67,13 +67,13 @@ static_library("browser") {
   ]
 
   deps += [
-    "//brave/app:brave_generated_resources_grit",
-    "//brave/browser/profiles:util",
-    "//brave/common",
-    "//brave/components/brave_federated",
-    "//brave/components/brave_news/common",
-    "//brave/components/brave_rewards/browser",
-    "//brave/components/brave_rewards/common",
+    "//express/app:brave_generated_resources_grit",
+    "//express/browser/profiles:util",
+    "//express/common",
+    "//express/components/brave_federated",
+    "//express/components/brave_news/common",
+    "//express/components/brave_rewards/browser",
+    "//express/components/brave_rewards/common",
     "//chrome/browser/notifications",
     "//chrome/browser/profiles:profile",
     "//components/history/core/browser",
@@ -87,7 +87,7 @@ static_library("browser") {
   ]
 
   public_deps += [
-    "//brave/components/services/bat_ads/public/interfaces",
+    "//express/components/services/bat_ads/public/interfaces",
     "//services/network/public/mojom",
   ]
 }

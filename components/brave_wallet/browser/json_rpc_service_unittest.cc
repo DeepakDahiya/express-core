@@ -2060,7 +2060,7 @@ TEST_F(JsonRpcServiceUnitTest, AddEthereumChainApprovedForOrigin) {
   SetEthChainIdInterceptor(GetActiveEndpointUrl(chain), "0x111");
   EXPECT_EQ("",
             json_rpc_service_->AddEthereumChainForOrigin(
-                chain.Clone(), url::Origin::Create(GURL("https://brave.com"))));
+                chain.Clone(), url::Origin::Create(GURL("https://express.com"))));
   json_rpc_service_->AddEthereumChainRequestCompleted("0x111", true);
   loop.Run();
 
@@ -2111,7 +2111,7 @@ TEST_F(JsonRpcServiceUnitTest, AddEthereumChainForOriginRejected) {
   SetEthChainIdInterceptor(GetActiveEndpointUrl(chain), "0x111");
   EXPECT_EQ("",
             json_rpc_service_->AddEthereumChainForOrigin(
-                chain.Clone(), url::Origin::Create(GURL("https://brave.com"))));
+                chain.Clone(), url::Origin::Create(GURL("https://express.com"))));
   json_rpc_service_->AddEthereumChainRequestCompleted("0x111", false);
   loop.Run();
   ASSERT_FALSE(
@@ -2294,7 +2294,7 @@ TEST_F(JsonRpcServiceUnitTest, AddEthereumChainError) {
 
 TEST_F(JsonRpcServiceUnitTest, AddEthereumChainForOriginError) {
   mojom::NetworkInfo chain = GetTestNetworkInfo1("0x1");
-  auto origin = url::Origin::Create(GURL("https://brave.com"));
+  auto origin = url::Origin::Create(GURL("https://express.com"));
 
   // Known eth chain should be rejected.
   ASSERT_TRUE(
@@ -3039,12 +3039,12 @@ class UnstoppableDomainsUnitTest : public JsonRpcServiceUnitTest {
 
   std::string DnsIpfsResponse() const {
     return MakeJsonRpcStringArrayResponse(
-        {"ipfs_hash", "", "", "", "", "https://brave.com"});
+        {"ipfs_hash", "", "", "", "", "https://express.com"});
   }
 
   std::string DnsBraveResponse() const {
     return MakeJsonRpcStringArrayResponse(
-        {"", "", "", "", "", "https://brave.com"});
+        {"", "", "", "", "", "https://express.com"});
   }
 
   std::string DnsEmptyResponse() const {
@@ -3323,7 +3323,7 @@ TEST_F(UnstoppableDomainsUnitTest, ResolveDns_PolygonNetworkError) {
 
 TEST_F(UnstoppableDomainsUnitTest, ResolveDns_PolygonResult) {
   base::MockCallback<ResolveDnsCallback> callback;
-  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://brave.com"),
+  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://express.com"),
                             mojom::ProviderError::kSuccess, ""));
   SetEthTimeoutResponse();
   SetPolygonRawResponse(DnsBraveResponse());
@@ -3332,7 +3332,7 @@ TEST_F(UnstoppableDomainsUnitTest, ResolveDns_PolygonResult) {
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&callback);
 
-  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://brave.com"),
+  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://express.com"),
                             mojom::ProviderError::kSuccess, ""));
   SetEthRawResponse(DnsIpfsResponse());
   SetPolygonRawResponse(DnsBraveResponse());
@@ -3341,7 +3341,7 @@ TEST_F(UnstoppableDomainsUnitTest, ResolveDns_PolygonResult) {
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&callback);
 
-  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://brave.com"),
+  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://express.com"),
                             mojom::ProviderError::kSuccess, ""));
   SetEthRawResponse(DnsEmptyResponse());
   SetPolygonRawResponse(DnsBraveResponse());
@@ -3361,7 +3361,7 @@ TEST_F(UnstoppableDomainsUnitTest, ResolveDns_FallbackToEthMainnet) {
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&callback);
 
-  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://brave.com"),
+  EXPECT_CALL(callback, Run(absl::optional<GURL>("https://express.com"),
                             mojom::ProviderError::kSuccess, ""));
   SetEthRawResponse(DnsBraveResponse());
   SetPolygonRawResponse(
@@ -3407,10 +3407,10 @@ TEST_F(UnstoppableDomainsUnitTest, ResolveDns_InvalidDomain) {
 
 TEST_F(UnstoppableDomainsUnitTest, ResolveDns_ManyCalls) {
   base::MockCallback<ResolveDnsCallback> callback1;
-  EXPECT_CALL(callback1, Run(absl::optional<GURL>("https://brave.com"),
+  EXPECT_CALL(callback1, Run(absl::optional<GURL>("https://express.com"),
                              mojom::ProviderError::kSuccess, ""));
   base::MockCallback<ResolveDnsCallback> callback2;
-  EXPECT_CALL(callback2, Run(absl::optional<GURL>("https://brave.com"),
+  EXPECT_CALL(callback2, Run(absl::optional<GURL>("https://express.com"),
                              mojom::ProviderError::kSuccess, ""));
   base::MockCallback<ResolveDnsCallback> callback3;
   EXPECT_CALL(callback3, Run(absl::optional<GURL>("ipfs://ipfs_hash"),
@@ -3422,16 +3422,16 @@ TEST_F(UnstoppableDomainsUnitTest, ResolveDns_ManyCalls) {
   eth_mainnet_getmany_call_handler_->AddItem("brave.crypto", keys[0],
                                              "ipfs_hash");
   eth_mainnet_getmany_call_handler_->AddItem("brave.crypto", keys[5],
-                                             "https://brave.com");
+                                             "https://express.com");
   polygon_getmany_call_handler_->AddItem("brave.crypto", keys[5],
-                                         "https://brave.com");
+                                         "https://express.com");
 
   // This will resolve brave.x requests.
   polygon_getmany_call_handler_->AddItem("brave.x", keys[0], "ipfs_hash");
   polygon_getmany_call_handler_->AddItem("brave.x", keys[5],
-                                         "https://brave.com");
+                                         "https://express.com");
   eth_mainnet_getmany_call_handler_->AddItem("brave.x", keys[5],
-                                             "https://brave.com");
+                                             "https://express.com");
 
   EXPECT_EQ(0, eth_mainnet_getmany_call_handler_->calls_number());
   EXPECT_EQ(0, polygon_getmany_call_handler_->calls_number());
@@ -4122,7 +4122,7 @@ TEST_F(JsonRpcServiceUnitTest, Reset) {
   EXPECT_EQ(GetCurrentChainId(prefs(), mojom::CoinType::ETH, absl::nullopt),
             mojom::kLocalhostChainId);
 
-  auto origin = url::Origin::Create(GURL("https://brave.com"));
+  auto origin = url::Origin::Create(GURL("https://express.com"));
   json_rpc_service_->AddEthereumChainForOrigin(
       GetTestNetworkInfo1("0x123").Clone(), origin);
   json_rpc_service_->AddSwitchEthereumChainRequest(
@@ -6069,7 +6069,7 @@ class SnsJsonRpcServiceUnitTest : public JsonRpcServiceUnitTest {
         "RecPwner11111111111111111111111111111111111");
   }
 
-  GURL url_value() const { return GURL("https://brave.com"); }
+  GURL url_value() const { return GURL("https://express.com"); }
   GURL ipfs_value() const {
     return GURL(
         "ipfs://bafybeibd4ala53bs26dvygofvr6ahpa7gbw4eyaibvrbivf4l5rr44yqu4");

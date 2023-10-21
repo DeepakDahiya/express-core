@@ -34,7 +34,7 @@ RegisterPolymerTemplateModifications({
       wrapper.setAttribute('id', 'release-notes')
       wrapper.setAttribute('target', '_blank')
       wrapper.setAttribute('rel', 'noopener noreferrer')
-      wrapper.setAttribute('href', 'https://brave.com/latest/')
+      wrapper.setAttribute('href', 'https://express.com/latest/')
       parent.replaceChild(wrapper, version)
       wrapper.appendChild(version)
     }

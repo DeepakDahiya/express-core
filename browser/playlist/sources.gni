@@ -3,24 +3,24 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import("//brave/components/playlist/common/buildflags/buildflags.gni")
+import("//express/components/playlist/common/buildflags/buildflags.gni")
 
 brave_browser_playlist_sources = []
 brave_browser_playlist_deps = []
 
 if (enable_playlist) {
   brave_browser_playlist_sources += [
-    "//brave/browser/playlist/playlist_service_factory.cc",
-    "//brave/browser/playlist/playlist_service_factory.h",
-    "//brave/browser/playlist/playlist_tab_helper.cc",
-    "//brave/browser/playlist/playlist_tab_helper.h",
-    "//brave/browser/playlist/playlist_tab_helper_observer.h",
+    "//express/browser/playlist/playlist_service_factory.cc",
+    "//express/browser/playlist/playlist_service_factory.h",
+    "//express/browser/playlist/playlist_tab_helper.cc",
+    "//express/browser/playlist/playlist_tab_helper.h",
+    "//express/browser/playlist/playlist_tab_helper_observer.h",
   ]
 
   brave_browser_playlist_deps += [
     "//base",
-    "//brave/browser/profiles:util",
-    "//brave/components/playlist/browser",
+    "//express/browser/profiles:util",
+    "//express/components/playlist/browser",
     "//chrome/browser:browser_process",
     "//chrome/common",
     "//components/keyed_service/content",
@@ -29,17 +29,17 @@ if (enable_playlist) {
 
   if (is_android) {
     brave_browser_playlist_sources += [
-      "//brave/browser/playlist/android/playlist_service_factory_android.cc",
+      "//express/browser/playlist/android/playlist_service_factory_android.cc",
     ]
 
     brave_browser_playlist_deps += [
-      "//brave/build/android:jni_headers",
+      "//express/build/android:jni_headers",
       "//mojo/public/cpp/bindings",
     ]
   } else {
     brave_browser_playlist_sources += [
-      "//brave/browser/playlist/playlist_data_source.cc",
-      "//brave/browser/playlist/playlist_data_source.h",
+      "//express/browser/playlist/playlist_data_source.cc",
+      "//express/browser/playlist/playlist_data_source.h",
     ]
   }
 }

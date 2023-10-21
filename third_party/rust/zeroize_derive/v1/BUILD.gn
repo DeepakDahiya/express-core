@@ -11,12 +11,12 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
-  sources = [ "//brave/third_party/rust/zeroize_derive/v1/crate/src/lib.rs" ]
+  sources = [ "//express/third_party/rust/zeroize_derive/v1/crate/src/lib.rs" ]
   inputs = [
-    "//brave/third_party/rust/zeroize_derive/v1/crate/CHANGELOG.md",
-    "//brave/third_party/rust/zeroize_derive/v1/crate/README.md",
+    "//express/third_party/rust/zeroize_derive/v1/crate/CHANGELOG.md",
+    "//express/third_party/rust/zeroize_derive/v1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -31,7 +31,7 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/synstructure/v0_12:lib",
+    "//express/third_party/rust/synstructure/v0_12:lib",
     "//third_party/rust/proc_macro2/v1:lib",
     "//third_party/rust/quote/v1:lib",
     "//third_party/rust/syn/v1:lib",

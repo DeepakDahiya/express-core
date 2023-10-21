@@ -30,7 +30,7 @@ template("brave_tweak_info_plist") {
                              "args",
                              "testonly",
                            ])
-    script = "//brave/build/mac/tweak_info_plist.py"
+    script = "//express/build/mac/tweak_info_plist.py"
     sources = [
       _source_name,
     ]

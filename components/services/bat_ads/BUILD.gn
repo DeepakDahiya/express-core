@@ -5,8 +5,8 @@
 
 static_library("lib") {
   visibility = [
-    "//brave/browser/brave_ads/services",
-    "//brave/test:*",
+    "//express/browser/brave_ads/services",
+    "//express/test:*",
     "//chrome/utility:*",
   ]
 
@@ -23,12 +23,12 @@ static_library("lib") {
 
   public_deps = [
     "public/interfaces",
-    "//brave/components/brave_ads/core/mojom",
+    "//express/components/brave_ads/core/mojom",
   ]
 
   deps = [
-    "//brave/app:brave_generated_resources_grit",
-    "//brave/components/brave_ads/core",
+    "//express/app:brave_generated_resources_grit",
+    "//express/components/brave_ads/core",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",
   ]

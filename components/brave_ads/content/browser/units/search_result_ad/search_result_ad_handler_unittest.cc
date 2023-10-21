@@ -28,7 +28,7 @@ using OnRetrieveSearchResultAdCallback =
     base::OnceCallback<void(std::vector<std::string> placement_ids)>;
 
 constexpr char kAllowedDomain[] = "https://search.brave.com";
-constexpr char kNotAllowedDomain[] = "https://brave.com";
+constexpr char kNotAllowedDomain[] = "https://express.com";
 constexpr char kSearchResultAdClickUrl[] =
     "https://search.brave.com/a/redirect?";
 constexpr char kPlacementId[] = "placement_id";

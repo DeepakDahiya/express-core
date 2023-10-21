@@ -24,11 +24,11 @@ source_set("browser_tests") {
     ]
 
     deps += [
-      "//brave/browser",
-      "//brave/components/brave_component_updater/browser",
-      "//brave/components/brave_shields/browser",
-      "//brave/components/brave_shields/common",
-      "//brave/components/ephemeral_storage",
+      "//express/browser",
+      "//express/components/brave_component_updater/browser",
+      "//express/components/brave_shields/browser",
+      "//express/components/brave_shields/common",
+      "//express/components/ephemeral_storage",
       "//chrome/browser",
       "//chrome/browser/ui",
       "//chrome/test:test_support",
@@ -45,7 +45,7 @@ source_set("unit_tests") {
 
   deps = [
     "//base/test:test_support",
-    "//brave/components/ephemeral_storage",
+    "//express/components/ephemeral_storage",
     "//chrome/browser",
     "//chrome/test:test_support",
     "//components/content_settings/core/browser",

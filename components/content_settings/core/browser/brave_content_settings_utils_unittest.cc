@@ -56,37 +56,37 @@ TEST_F(BraveContentSettingsUtilsTest,
   // Wildcard scheme, no port.
   EXPECT_EQ(absl::nullopt,
             ConvertPatternToWildcardSchemeAndPort(
-                ContentSettingsPattern::FromString("*://brave.com/*")));
+                ContentSettingsPattern::FromString("*://express.com/*")));
   EXPECT_EQ(absl::nullopt,
             ConvertPatternToWildcardSchemeAndPort(
-                ContentSettingsPattern::FromString("*://brave.com:*/")));
+                ContentSettingsPattern::FromString("*://express.com:*/")));
 
   // Wildcard scheme, has port.
   auto pattern = ConvertPatternToWildcardSchemeAndPort(
-      ContentSettingsPattern::FromString("*://brave.com:8080/*"));
+      ContentSettingsPattern::FromString("*://express.com:8080/*"));
   EXPECT_NE(absl::nullopt, pattern);
   EXPECT_EQ(pattern->ToString(), "brave.com");
-  EXPECT_TRUE(pattern->Matches(GURL("http://brave.com:80/path1")));
-  EXPECT_TRUE(pattern->Matches(GURL("https://brave.com/path2")));
-  EXPECT_FALSE(pattern->Matches(GURL("http://brave2.com:8080")));
+  EXPECT_TRUE(pattern->Matches(GURL("http://express.com:80/path1")));
+  EXPECT_TRUE(pattern->Matches(GURL("https://express.com/path2")));
+  EXPECT_FALSE(pattern->Matches(GURL("http://express2.com:8080")));
   pattern.reset();
 
   // Scheme, no port.
   pattern = ConvertPatternToWildcardSchemeAndPort(
-      ContentSettingsPattern::FromString("http://brave.com/"));
+      ContentSettingsPattern::FromString("http://express.com/"));
   EXPECT_NE(absl::nullopt, pattern);
   EXPECT_EQ(pattern->ToString(), "brave.com");
-  EXPECT_TRUE(pattern->Matches(GURL("ftp://brave.com:80/path1")));
-  EXPECT_TRUE(pattern->Matches(GURL("https://brave.com/path2")));
-  EXPECT_FALSE(pattern->Matches(GURL("http://brave2.com:8080")));
+  EXPECT_TRUE(pattern->Matches(GURL("ftp://express.com:80/path1")));
+  EXPECT_TRUE(pattern->Matches(GURL("https://express.com/path2")));
+  EXPECT_FALSE(pattern->Matches(GURL("http://express2.com:8080")));
   pattern.reset();
 
   // Scheme and port.
   pattern = ConvertPatternToWildcardSchemeAndPort(
-      ContentSettingsPattern::FromString("https://brave.com:56558/"));
+      ContentSettingsPattern::FromString("https://express.com:56558/"));
   EXPECT_NE(absl::nullopt, pattern);
   EXPECT_EQ(pattern->ToString(), "brave.com");
-  EXPECT_TRUE(pattern->Matches(GURL("wss://brave.com:80/path1")));
-  EXPECT_TRUE(pattern->Matches(GURL("https://brave.com/path2")));
-  EXPECT_FALSE(pattern->Matches(GURL("http://brave2.com:8080")));
+  EXPECT_TRUE(pattern->Matches(GURL("wss://express.com:80/path1")));
+  EXPECT_TRUE(pattern->Matches(GURL("https://express.com/path2")));
+  EXPECT_FALSE(pattern->Matches(GURL("http://express2.com:8080")));
 }

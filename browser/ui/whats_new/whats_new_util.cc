@@ -193,7 +193,7 @@ void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {
 }
 
 void StartBraveWhatsNew(Browser* browser) {
-  constexpr char kBraveWhatsNewURL[] = "https://brave.com/whats-new/";
+  constexpr char kBraveWhatsNewURL[] = "https://express.com/whats-new/";
   // Load whats-new url in the first foreground tab.
   chrome::AddTabAt(browser, GURL(kBraveWhatsNewURL), 0, true);
   browser->tab_strip_model()->ActivateTabAt(

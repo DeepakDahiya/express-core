@@ -48,7 +48,7 @@ constexpr const char* kAllowedUrlPrefixes[] = {
     "https://variations.brave.com/seed",
 
     // Brave News (production)
-    "https://brave-today-cdn.brave.com/",
+    "https://express-today-cdn.brave.com/",
 
     // Brave's Privacy-focused CDN
     "https://pcdn.brave.com/",
@@ -64,7 +64,7 @@ constexpr const char* kAllowedUrlPrefixes[] = {
     "https://grant.rewards.bravesoftware.com/v1/promotions",
 
     // Other
-    "https://brave-core-ext.s3.brave.com/",
+    "https://express-core-ext.s3.brave.com/",
     "https://dict.brave.com/",
     "https://go-updater.brave.com/",
     "https://p3a.brave.com/",

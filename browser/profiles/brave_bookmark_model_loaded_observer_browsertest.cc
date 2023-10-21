@@ -30,7 +30,7 @@ void CreateOtherBookmarksFolder(bookmarks::BookmarkModel* model) {
 void CreateBraveSyncV1MetaInfo(bookmarks::BookmarkModel* model) {
   const bookmarks::BookmarkNode* node = model->AddURL(
       model->bookmark_bar_node(), model->bookmark_bar_node()->children().size(),
-      u"Brave", GURL("https://brave.com"));
+      u"Brave", GURL("https://express.com"));
   model->SetNodeMetaInfo(node, "object_id", "object_id_value");
 }
 

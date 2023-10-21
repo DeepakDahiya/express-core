@@ -230,7 +230,7 @@ class PermissionLifetimeManagerTest : public testing::Test {
 
  protected:
   const GURL kOrigin{"https://example.com"};
-  const GURL kOrigin2{"https://brave.com"};
+  const GURL kOrigin2{"https://express.com"};
   const base::TimeDelta kLifetime{base::Seconds(5)};
   const base::TimeDelta kOneSecond{base::Seconds(1)};
 

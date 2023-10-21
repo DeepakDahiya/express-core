@@ -11,33 +11,33 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/num_traits/v0_2/crate/build.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/bounds.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/cast.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/float.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/identities.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/int.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/lib.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/macros.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/checked.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/euclid.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/inv.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/mod.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/mul_add.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/overflowing.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/saturating.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/ops/wrapping.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/pow.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/real.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/src/sign.rs",
-    "//brave/third_party/rust/num_traits/v0_2/crate/tests/cast.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/build.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/bounds.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/cast.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/float.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/identities.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/int.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/lib.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/macros.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/checked.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/euclid.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/inv.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/mod.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/mul_add.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/overflowing.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/saturating.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/ops/wrapping.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/pow.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/real.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/src/sign.rs",
+    "//express/third_party/rust/num_traits/v0_2/crate/tests/cast.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/num_traits/v0_2/crate/README.md",
-    "//brave/third_party/rust/num_traits/v0_2/crate/RELEASES.md",
+    "//express/third_party/rust/num_traits/v0_2/crate/README.md",
+    "//express/third_party/rust/num_traits/v0_2/crate/RELEASES.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

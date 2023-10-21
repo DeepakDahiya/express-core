@@ -1,4 +1,4 @@
-import("//brave/build/config.gni")
+import("//express/build/config.gni")
 
 source_set("browser") {
   sources = [
@@ -14,10 +14,10 @@ source_set("browser") {
 
   deps = [
     "//base",
-    "//brave/components/brave_component_updater/browser",
-    "//brave/components/brave_shields/browser",
-    "//brave/components/debounce/common:common",
-    "//brave/extensions:common",
+    "//express/components/brave_component_updater/browser",
+    "//express/components/brave_shields/browser",
+    "//express/components/debounce/common:common",
+    "//express/extensions:common",
     "//components/prefs",
     "//components/prefs:prefs",
     "//components/user_prefs",

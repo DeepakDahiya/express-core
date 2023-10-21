@@ -6,7 +6,7 @@ index 47b02706c77ba04fa994dd922e125a2e9bcd6119..020f099e7b07a563c7f0553fa774834a
      "//components/webdata/common",
      "//ui/base",
    ]
-+  import("//brave/components/browsing_data/core/sources.gni") deps += brave_components_browsing_data_core_deps
++  import("//express/components/browsing_data/core/sources.gni") deps += brave_components_browsing_data_core_deps
  }
  
  if (is_android) {

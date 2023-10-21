@@ -11,27 +11,27 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/condvar.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/deadlock.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/elision.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/fair_mutex.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/lib.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/mutex.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/once.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/raw_fair_mutex.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/raw_mutex.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/raw_rwlock.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/remutex.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/rwlock.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/src/util.rs",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/tests/issue_203.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/condvar.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/deadlock.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/elision.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/fair_mutex.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/lib.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/mutex.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/once.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/raw_fair_mutex.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/raw_mutex.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/raw_rwlock.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/remutex.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/rwlock.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/src/util.rs",
+    "//express/third_party/rust/parking_lot/v0_12/crate/tests/issue_203.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/parking_lot/v0_12/crate/CHANGELOG.md",
-    "//brave/third_party/rust/parking_lot/v0_12/crate/README.md",
+    "//express/third_party/rust/parking_lot/v0_12/crate/CHANGELOG.md",
+    "//express/third_party/rust/parking_lot/v0_12/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -46,7 +46,7 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/lock_api/v0_4:lib",
-    "//brave/third_party/rust/parking_lot_core/v0_9:lib",
+    "//express/third_party/rust/lock_api/v0_4:lib",
+    "//express/third_party/rust/parking_lot_core/v0_9:lib",
   ]
 }

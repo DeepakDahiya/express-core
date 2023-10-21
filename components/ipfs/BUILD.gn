@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/ipfs/buildflags/buildflags.gni")
+import("//express/components/ipfs/buildflags/buildflags.gni")
 
 static_library("ipfs") {
   sources = [
@@ -41,13 +41,13 @@ static_library("ipfs") {
   deps = [
     "buildflags",
     "//base",
-    "//brave/base",
-    "//brave/components/api_request_helper",
-    "//brave/components/brave_component_updater/browser/",
-    "//brave/components/filecoin/rs:rust_lib",
-    "//brave/components/resources:static_resources",
-    "//brave/components/resources:strings",
-    "//brave/components/services/ipfs/public/mojom",
+    "//express/base",
+    "//express/components/api_request_helper",
+    "//express/components/brave_component_updater/browser/",
+    "//express/components/filecoin/rs:rust_lib",
+    "//express/components/resources:static_resources",
+    "//express/components/resources:strings",
+    "//express/components/services/ipfs/public/mojom",
     "//components/base32",
     "//components/component_updater:component_updater",
     "//components/infobars/core",
@@ -88,7 +88,7 @@ static_library("ipfs") {
       "pin/ipfs_pin_rpc_types.h",
     ]
     deps += [
-      "//brave/components/l10n/common",
+      "//express/components/l10n/common",
       "//components/security_interstitials/content:security_interstitial_page",
       "//content/public/browser",
       "//content/public/common",

@@ -8,21 +8,21 @@ brave_browser_ui_color_mixers_deps = []
 
 if (!is_android) {
   brave_browser_ui_color_mixers_sources += [
-    "//brave/browser/ui/color/brave_color_id.h",
-    "//brave/browser/ui/color/brave_color_mixer.cc",
-    "//brave/browser/ui/color/brave_color_mixer.h",
-    "//brave/browser/ui/color/color_palette.h",
-    "//brave/browser/ui/color/playlist/playlist_color_mixer.cc",
-    "//brave/browser/ui/color/playlist/playlist_color_mixer.h",
+    "//express/browser/ui/color/brave_color_id.h",
+    "//express/browser/ui/color/brave_color_mixer.cc",
+    "//express/browser/ui/color/brave_color_mixer.h",
+    "//express/browser/ui/color/color_palette.h",
+    "//express/browser/ui/color/playlist/playlist_color_mixer.cc",
+    "//express/browser/ui/color/playlist/playlist_color_mixer.h",
   ]
 
   brave_browser_ui_color_mixers_deps += [
-    "//brave/browser/themes",
-    "//brave/browser/ui/color:leo_colors",
-    "//brave/browser/ui/tabs",
-    "//brave/components/brave_vpn/common/buildflags",
-    "//brave/components/playlist/common",
-    "//brave/components/speedreader/common/buildflags",
+    "//express/browser/themes",
+    "//express/browser/ui/color:leo_colors",
+    "//express/browser/ui/tabs",
+    "//express/components/brave_vpn/common/buildflags",
+    "//express/components/playlist/common",
+    "//express/components/speedreader/common/buildflags",
     "//skia",
     "//ui/color",
     "//ui/gfx",

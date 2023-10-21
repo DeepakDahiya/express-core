@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # you can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/components/common/typescript.gni")
+import("//express/components/common/typescript.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
 transpile_web_ui("cookie_list_opt_in_ui") {
@@ -12,7 +12,7 @@ transpile_web_ui("cookie_list_opt_in_ui") {
         rebase_path("cookie_list_opt_in.tsx"),
       ] ]
   resource_name = "cookie_list_opt_in"
-  deps = [ "//brave/components/brave_shields/common:mojom_js" ]
+  deps = [ "//express/components/brave_shields/common:mojom_js" ]
 }
 
 pack_web_resources("cookie_list_opt_in_generated") {

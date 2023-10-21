@@ -18,8 +18,8 @@ source_set("browser_tests") {
 
   deps = [
     "//base",
-    "//brave/browser",
-    "//brave/common",
+    "//express/browser",
+    "//express/common",
     "//chrome/browser",
     "//chrome/browser/ui",
     "//chrome/common",

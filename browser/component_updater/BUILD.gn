@@ -11,7 +11,7 @@ source_set("component_updater") {
 
   deps = [
     "//base",
-    "//brave/components/constants",
+    "//express/components/constants",
     "//chrome/common",
     "//components/component_updater",
     "//components/prefs",
@@ -35,7 +35,7 @@ source_set("component_updater") {
       "brave_component_updater_android.h",
     ]
     deps += [
-      "//brave/build/android:jni_headers",
+      "//express/build/android:jni_headers",
       "//chrome/browser:browser_process",
     ]
   }

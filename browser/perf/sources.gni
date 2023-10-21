@@ -3,24 +3,24 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/speedreader/common/buildflags/buildflags.gni")
+import("//express/components/speedreader/common/buildflags/buildflags.gni")
 
 brave_browser_perf_sources = [
-  "//brave/browser/perf/brave_perf_features_processor.cc",
-  "//brave/browser/perf/brave_perf_features_processor.h",
-  "//brave/browser/perf/brave_perf_switches.cc",
-  "//brave/browser/perf/brave_perf_switches.h",
+  "//express/browser/perf/brave_perf_features_processor.cc",
+  "//express/browser/perf/brave_perf_features_processor.h",
+  "//express/browser/perf/brave_perf_switches.cc",
+  "//express/browser/perf/brave_perf_switches.h",
 ]
 
 brave_browser_perf_deps = [
   "//base",
-  "//brave/components/brave_ads/core",
-  "//brave/components/brave_rewards/browser",
-  "//brave/components/brave_shields/browser",
-  "//brave/components/brave_shields/common/",
+  "//express/components/brave_ads/core",
+  "//express/components/brave_rewards/browser",
+  "//express/components/brave_shields/browser",
+  "//express/components/brave_shields/common/",
   "//components/prefs",
 ]
 
 if (enable_speedreader) {
-  brave_browser_perf_deps += [ "//brave/components/speedreader" ]
+  brave_browser_perf_deps += [ "//express/components/speedreader" ]
 }

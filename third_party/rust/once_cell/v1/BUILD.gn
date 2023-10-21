@@ -14,26 +14,26 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/once_cell/v1/crate/examples/bench.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/examples/bench_acquire.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/examples/bench_vs_lazy_static.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/examples/lazy_static.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/examples/reentrant_init_deadlocks.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/examples/regex.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/examples/test_synchronization.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/src/imp_cs.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/src/imp_pl.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/src/imp_std.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/src/lib.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/src/race.rs",
-    "//brave/third_party/rust/once_cell/v1/crate/tests/it.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/bench.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/bench_acquire.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/bench_vs_lazy_static.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/lazy_static.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/reentrant_init_deadlocks.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/regex.rs",
+    "//express/third_party/rust/once_cell/v1/crate/examples/test_synchronization.rs",
+    "//express/third_party/rust/once_cell/v1/crate/src/imp_cs.rs",
+    "//express/third_party/rust/once_cell/v1/crate/src/imp_pl.rs",
+    "//express/third_party/rust/once_cell/v1/crate/src/imp_std.rs",
+    "//express/third_party/rust/once_cell/v1/crate/src/lib.rs",
+    "//express/third_party/rust/once_cell/v1/crate/src/race.rs",
+    "//express/third_party/rust/once_cell/v1/crate/tests/it.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/once_cell/v1/crate/CHANGELOG.md",
-    "//brave/third_party/rust/once_cell/v1/crate/README.md",
+    "//express/third_party/rust/once_cell/v1/crate/CHANGELOG.md",
+    "//express/third_party/rust/once_cell/v1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

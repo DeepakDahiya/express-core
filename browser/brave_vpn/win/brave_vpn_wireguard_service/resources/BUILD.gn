@@ -28,7 +28,7 @@ source_set("unit_tests") {
   deps = [
     ":resources",
     "//base",
-    "//brave/components/constants",
+    "//express/components/constants",
     "//testing/gtest",
   ]
 }

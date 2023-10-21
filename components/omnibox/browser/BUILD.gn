@@ -3,22 +3,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/components/commander/common/buildflags/buildflags.gni")
+import("//express/components/commander/common/buildflags/buildflags.gni")
 
 source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "//brave/components/omnibox/browser/brave_bookmark_provider_unittest.cc",
-    "//brave/components/omnibox/browser/brave_fake_autocomplete_provider_client.cc",
-    "//brave/components/omnibox/browser/brave_fake_autocomplete_provider_client.h",
-    "//brave/components/omnibox/browser/brave_history_quick_provider_unittest.cc",
-    "//brave/components/omnibox/browser/brave_history_url_provider_unittest.cc",
-    "//brave/components/omnibox/browser/brave_local_history_zero_suggest_provider_unittest.cc",
-    "//brave/components/omnibox/browser/brave_search_provider_unittest.cc",
-    "//brave/components/omnibox/browser/brave_shortcuts_provider_unittest.cc",
-    "//brave/components/omnibox/browser/omnibox_autocomplete_unittest.cc",
-    "//brave/components/omnibox/browser/topsites_provider_unittest.cc",
+    "//express/components/omnibox/browser/brave_bookmark_provider_unittest.cc",
+    "//express/components/omnibox/browser/brave_fake_autocomplete_provider_client.cc",
+    "//express/components/omnibox/browser/brave_fake_autocomplete_provider_client.h",
+    "//express/components/omnibox/browser/brave_history_quick_provider_unittest.cc",
+    "//express/components/omnibox/browser/brave_history_url_provider_unittest.cc",
+    "//express/components/omnibox/browser/brave_local_history_zero_suggest_provider_unittest.cc",
+    "//express/components/omnibox/browser/brave_search_provider_unittest.cc",
+    "//express/components/omnibox/browser/brave_shortcuts_provider_unittest.cc",
+    "//express/components/omnibox/browser/omnibox_autocomplete_unittest.cc",
+    "//express/components/omnibox/browser/topsites_provider_unittest.cc",
     "brave_autocomplete_result_unittest.cc",
     "promotion_unittest.cc",
   ]
@@ -26,10 +26,10 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//brave/components/brave_search_conversion",
-    "//brave/components/constants",
-    "//brave/components/l10n/common:test_support",
-    "//brave/components/search_engines",
+    "//express/components/brave_search_conversion",
+    "//express/components/constants",
+    "//express/components/l10n/common:test_support",
+    "//express/components/search_engines",
     "//chrome/test:test_support",
     "//components/bookmarks/browser",
     "//components/omnibox/browser",
@@ -47,11 +47,11 @@ source_set("unit_tests") {
 
   if (enable_commander) {
     sources +=
-        [ "//brave/components/omnibox/browser/commander_provider_unittest.cc" ]
+        [ "//express/components/omnibox/browser/commander_provider_unittest.cc" ]
 
     deps += [
-      "//brave/components/commander/browser",
-      "//brave/components/vector_icons",
+      "//express/components/commander/browser",
+      "//express/components/vector_icons",
     ]
   }
 }

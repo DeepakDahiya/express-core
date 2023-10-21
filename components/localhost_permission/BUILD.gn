@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
+import("//express/build/config.gni")
 
 static_library("localhost_permission") {
   sources = [
@@ -13,7 +13,7 @@ static_library("localhost_permission") {
 
   deps = [
     "//base",
-    "//brave/components/brave_component_updater/browser",
+    "//express/components/brave_component_updater/browser",
     "//net",
   ]
 }

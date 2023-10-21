@@ -11,20 +11,20 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/benches/benches.rs",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/examples/basic.rs",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/src/basic_tests.rs",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/src/kat_tests.rs",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/src/keccak.rs",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/src/lib.rs",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/src/strobe.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/benches/benches.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/examples/basic.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/src/basic_tests.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/src/kat_tests.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/src/keccak.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/src/lib.rs",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/src/strobe.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/CHANGELOG.md",
-    "//brave/third_party/rust/strobe_rs/v0_8/crate/README.md",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/CHANGELOG.md",
+    "//express/third_party/rust/strobe_rs/v0_8/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -40,10 +40,10 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/byteorder/v1:lib",
-    "//brave/third_party/rust/keccak/v0_1:lib",
-    "//brave/third_party/rust/subtle/v2:lib",
-    "//brave/third_party/rust/zeroize/v1:lib",
+    "//express/third_party/rust/byteorder/v1:lib",
+    "//express/third_party/rust/keccak/v0_1:lib",
+    "//express/third_party/rust/subtle/v2:lib",
+    "//express/third_party/rust/zeroize/v1:lib",
     "//third_party/rust/bitflags/v1:lib",
   ]
 }

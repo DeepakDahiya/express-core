@@ -154,7 +154,7 @@ TEST(SimulationRequestHelperUnitTest,
   std::string expected_params(R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "txObject":{
         "data":"0x",
@@ -175,7 +175,7 @@ TEST(SimulationRequestHelperUnitTest,
   expected_params = R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "txObject":{
         "data":"0x0a",
@@ -198,7 +198,7 @@ TEST(SimulationRequestHelperUnitTest,
   std::string expected_params(R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "txObject":{
         "data":"0x",
@@ -219,7 +219,7 @@ TEST(SimulationRequestHelperUnitTest,
   expected_params = R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "txObject":{
         "data":"0x0a",
@@ -352,7 +352,7 @@ TEST(SimulationRequestHelperUnitTest,
   std::string expected_params(R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "transactions":[
         "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDoTNZW3PS2dRMn6vIKJadRsVHGCzRbI8EOvvXPsmsn8X/4OT1Xu4XhM4oUvnby2eebttd+Y+Gz6yzTEMGqaSVJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg79TyWzB3v+wQ4jR2yoGqfCJjrmpBhFXewYqN6JAeFsBAgIAAQwCAAAAgJaYAAAAAAA="
@@ -403,7 +403,7 @@ TEST(SimulationRequestHelperUnitTest,
   std::string expected_params(R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "transactions":[
         "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDoTNZW3PS2dRMn6vIKJadRsVHGCzRbI8EOvvXPsmsn8X/4OT1Xu4XhM4oUvnby2eebttd+Y+Gz6yzTEMGqaSVJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg79TyWzB3v+wQ4jR2yoGqfCJjrmpBhFXewYqN6JAeFsBAgIAAQwCAAAAgJaYAAAAAAA="
@@ -457,7 +457,7 @@ TEST(SimulationRequestHelperUnitTest,
   std::string expected_params(R"(
     {
       "metadata":{
-        "origin":"https://brave.com"
+        "origin":"https://express.com"
       },
       "transactions":[
         "AQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABAAEDoTNZW3PS2dRMn6vIKJadRsVHGCzRbI8EOvvXPsmsn8X/4OT1Xu4XhM4oUvnby2eebttd+Y+Gz6yzTEMGqaSVJgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAg79TyWzB3v+wQ4jR2yoGqfCJjrmpBhFXewYqN6JAeFsBAgIAAQwCAAAAgJaYAAAAAAA="

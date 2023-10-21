@@ -93,7 +93,7 @@ TEST(CommonUtils, GetActiveEndpointUrl) {
   EXPECT_EQ(GURL(), GetActiveEndpointUrl(chain));
 
   chain.active_rpc_endpoint_index = 2;
-  chain.rpc_endpoints.emplace_back("https://brave.com");
+  chain.rpc_endpoints.emplace_back("https://express.com");
   chain.rpc_endpoints.emplace_back("https://test.com");
   EXPECT_EQ(GURL("https://test.com"), GetActiveEndpointUrl(chain));
 

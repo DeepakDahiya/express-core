@@ -10,6 +10,6 @@ source_set("version_info") {
   ]
   deps = [
     "//base",
-    "//brave/components/version_info",
+    "//express/components/version_info",
   ]
 }

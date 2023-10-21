@@ -18,8 +18,8 @@ static_library("brave_search_conversion") {
 
   deps = [
     "//base",
-    "//brave/components/p3a_utils",
-    "//brave/components/search_engines",
+    "//express/components/p3a_utils",
+    "//express/components/search_engines",
     "//components/prefs",
     "//components/search_engines",
     "//url",
@@ -43,7 +43,7 @@ if (!is_ios) {
       ":brave_search_conversion",
       "//base",
       "//base/test:test_support",
-      "//brave/components/search_engines",
+      "//express/components/search_engines",
       "//components/prefs",
       "//components/prefs:test_support",
       "//components/search_engines",

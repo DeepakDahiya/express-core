@@ -4,6 +4,6 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_p3a_public_headers = [
-  "//brave/ios/browser/api/p3a/brave_histograms_controller.h",
-  "//brave/ios/browser/api/p3a/brave_p3a_utils.h",
+  "//express/ios/browser/api/p3a/brave_histograms_controller.h",
+  "//express/ios/browser/api/p3a/brave_p3a_utils.h",
 ]

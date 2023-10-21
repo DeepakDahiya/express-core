@@ -9,12 +9,12 @@ source_set("common_handler") {
     "wallet_handler.h",
   ]
   deps = [
-    "//brave/browser/brave_wallet",
-    "//brave/components/brave_wallet/browser",
-    "//brave/components/brave_wallet/browser:constants",
-    "//brave/components/brave_wallet/browser:hd_keyring",
-    "//brave/components/brave_wallet/browser:utils",
-    "//brave/components/brave_wallet/common:mojom",
+    "//express/browser/brave_wallet",
+    "//express/components/brave_wallet/browser",
+    "//express/components/brave_wallet/browser:constants",
+    "//express/components/brave_wallet/browser:hd_keyring",
+    "//express/components/brave_wallet/browser:utils",
+    "//express/components/brave_wallet/common:mojom",
     "//chrome/browser/profiles:profile",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",

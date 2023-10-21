@@ -10,7 +10,7 @@ source_set("unit_tests") {
 
   deps = [
     "//base",
-    "//brave/components/commands/browser",
+    "//express/components/commands/browser",
     "//chrome/app:command_ids",
     "//chrome/browser/ui",
     "//chrome/test:test_support",

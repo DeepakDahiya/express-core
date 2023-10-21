@@ -1,4 +1,4 @@
-import("//brave/build/linux/channels.gni")
+import("//express/build/linux/channels.gni")
 
 assert(is_linux)
 

@@ -11,24 +11,24 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/arrayvec/v0_7/crate/benches/arraystring.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/benches/extend.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/array_string.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/arrayvec.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/arrayvec_impl.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/char.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/errors.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/lib.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/src/utils.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/tests/serde.rs",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/tests/tests.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/benches/arraystring.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/benches/extend.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/array_string.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/arrayvec.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/arrayvec_impl.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/char.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/errors.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/lib.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/src/utils.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/tests/serde.rs",
+    "//express/third_party/rust/arrayvec/v0_7/crate/tests/tests.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/arrayvec/v0_7/crate/CHANGELOG.md",
-    "//brave/third_party/rust/arrayvec/v0_7/crate/README.md",
+    "//express/third_party/rust/arrayvec/v0_7/crate/CHANGELOG.md",
+    "//express/third_party/rust/arrayvec/v0_7/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

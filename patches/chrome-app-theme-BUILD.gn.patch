@@ -6,7 +6,7 @@ index 05627a44d0fec2963be170297cd7371ead146bbd..7554295a457bf68792493496f57124f0
      ":chrome_unscaled_resources",
      "//ui/resources",
    ]
-+  if (!is_android) { deps += ["//brave/app/theme:brave_theme_resources"] }
++  if (!is_android) { deps += ["//express/app/theme:brave_theme_resources"] }
  
    output_dir = "$root_gen_dir/chrome"
  }
@@ -14,7 +14,7 @@ index 05627a44d0fec2963be170297cd7371ead146bbd..7554295a457bf68792493496f57124f0
      "grit/chrome_unscaled_resources.h",
      "chrome_unscaled_resources.pak",
    ]
-+  deps = [] if (!is_android) { deps += ["//brave/app/theme:brave_unscaled_resources"] }
++  deps = [] if (!is_android) { deps += ["//express/app/theme:brave_unscaled_resources"] }
  
    output_dir = "$root_gen_dir/chrome"
  }

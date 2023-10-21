@@ -6,7 +6,7 @@ index 9c9f6d58a8e5c1ed14eb60c722667d1a24d2c6fa..3470d80982a94b943f611c37ad5fe6ce
    visibility = [
      "//content/*",
      "//tools/ipc_fuzzer/message_replay:ipc_fuzzer_replay",
-+    "//brave/content/*",
++    "//express/content/*",
    ]
  
    sources = [

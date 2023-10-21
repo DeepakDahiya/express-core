@@ -11,12 +11,12 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/phf/v0_8/crate/src/lib.rs",
-    "//brave/third_party/rust/phf/v0_8/crate/src/map.rs",
-    "//brave/third_party/rust/phf/v0_8/crate/src/set.rs",
+    "//express/third_party/rust/phf/v0_8/crate/src/lib.rs",
+    "//express/third_party/rust/phf/v0_8/crate/src/map.rs",
+    "//express/third_party/rust/phf/v0_8/crate/src/set.rs",
   ]
   inputs = []
 
@@ -33,9 +33,9 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/phf_macros/v0_8:lib",
-    "//brave/third_party/rust/phf_shared/v0_8:lib",
-    "//brave/third_party/rust/proc_macro_hack/v0_5:lib",
+    "//express/third_party/rust/phf_macros/v0_8:lib",
+    "//express/third_party/rust/phf_shared/v0_8:lib",
+    "//express/third_party/rust/proc_macro_hack/v0_5:lib",
   ]
   features = [
     "macros",

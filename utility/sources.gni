@@ -3,13 +3,13 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/ipfs/buildflags/buildflags.gni")
-import("//brave/components/tor/buildflags/buildflags.gni")
-import("//brave/utility/importer/sources.gni")
+import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//express/components/tor/buildflags/buildflags.gni")
+import("//express/utility/importer/sources.gni")
 
 brave_utility_sources = [
-  "//brave/utility/brave_content_utility_client.cc",
-  "//brave/utility/brave_content_utility_client.h",
+  "//express/utility/brave_content_utility_client.cc",
+  "//express/utility/brave_content_utility_client.h",
 ]
 
 if (is_android) {
@@ -22,12 +22,12 @@ if (is_android) {
 brave_utility_sources += brave_utility_importer_sources
 
 brave_utility_deps = [
-  "//brave/components/ipfs/buildflags",
-  "//brave/components/services/bat_ads:lib",
-  "//brave/components/services/bat_ads/public/interfaces",
-  "//brave/components/services/bat_rewards:lib",
-  "//brave/components/services/bat_rewards/public/interfaces",
-  "//brave/components/tor/buildflags",
+  "//express/components/ipfs/buildflags",
+  "//express/components/services/bat_ads:lib",
+  "//express/components/services/bat_ads/public/interfaces",
+  "//express/components/services/bat_rewards:lib",
+  "//express/components/services/bat_rewards/public/interfaces",
+  "//express/components/tor/buildflags",
   "//mojo/public/cpp/bindings",
 ]
 
@@ -35,15 +35,15 @@ brave_utility_deps += brave_utility_importer_deps
 
 if (enable_ipfs) {
   brave_utility_deps += [
-    "//brave/components/services/ipfs",
-    "//brave/components/services/ipfs/public/mojom",
+    "//express/components/services/ipfs",
+    "//express/components/services/ipfs/public/mojom",
   ]
 }
 
 if (enable_tor) {
   brave_utility_deps += [
-    "//brave/components/services/tor",
-    "//brave/components/services/tor/public/interfaces",
+    "//express/components/services/tor",
+    "//express/components/services/tor/public/interfaces",
   ]
 }
 

@@ -11,14 +11,14 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/lock_api/v0_4/crate/build.rs",
-    "//brave/third_party/rust/lock_api/v0_4/crate/src/lib.rs",
-    "//brave/third_party/rust/lock_api/v0_4/crate/src/mutex.rs",
-    "//brave/third_party/rust/lock_api/v0_4/crate/src/remutex.rs",
-    "//brave/third_party/rust/lock_api/v0_4/crate/src/rwlock.rs",
+    "//express/third_party/rust/lock_api/v0_4/crate/build.rs",
+    "//express/third_party/rust/lock_api/v0_4/crate/src/lib.rs",
+    "//express/third_party/rust/lock_api/v0_4/crate/src/mutex.rs",
+    "//express/third_party/rust/lock_api/v0_4/crate/src/remutex.rs",
+    "//express/third_party/rust/lock_api/v0_4/crate/src/rwlock.rs",
   ]
   inputs = []
 
@@ -33,7 +33,7 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//brave/third_party/rust/scopeguard/v1:lib" ]
+  deps = [ "//express/third_party/rust/scopeguard/v1:lib" ]
   build_deps = [ "//third_party/rust/autocfg/v1:buildrs_support" ]
   build_root = "crate/build.rs"
   build_sources = [ "crate/build.rs" ]

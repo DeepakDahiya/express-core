@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/common/typescript.gni")
-import("//brave/components/playlist/common/buildflags/buildflags.gni")
+import("//express/components/common/typescript.gni")
+import("//express/components/playlist/common/buildflags/buildflags.gni")
 
 assert(enable_playlist_webui)
 
@@ -21,7 +21,7 @@ transpile_web_ui("playlist_ui") {
   ]
 
   public_deps = [
-    "//brave/components/playlist/common/mojom:mojom_js",
+    "//express/components/playlist/common/mojom:mojom_js",
     "//mojo/public/mojom/base",
   ]
 

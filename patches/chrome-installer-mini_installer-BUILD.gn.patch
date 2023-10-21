@@ -7,7 +7,7 @@ index 71803adcfbe02b8c76b58ddb6f657008c2d2ba88..41f0144d5669bc33ba9c6d0e53eceb8a
  packed_files_rc_file = "$target_gen_dir/mini_installer/packed_files.rc"
  
 -action("mini_installer_archive") {
-+import("//brave/chromium_src/chrome/installer/mini_installer/build.gni") brave_mini_installer_archive_action("mini_installer_archive") {
++import("//express/chromium_src/chrome/installer/mini_installer/build.gni") brave_mini_installer_archive_action("mini_installer_archive") {
    script = "//chrome/tools/build/win/create_installer_archive.py"
  
    release_file = "chrome.release"
@@ -25,7 +25,7 @@ index 71803adcfbe02b8c76b58ddb6f657008c2d2ba88..41f0144d5669bc33ba9c6d0e53eceb8a
      ldflags += [ "/ENTRY:MainEntryPoint" ]
    }
 -}
-+sources -= [packed_files_rc_file] sources += [invoker.packed_files_rc_file] if (defined(invoker.extra_deps)) { deps += invoker.extra_deps } }} mini_installer("mini_installer") { packed_files_rc_file = packed_files_rc_file } mini_installer("delta_installer_unsigned") { packed_files_rc_file = "$target_gen_dir/packed_delta_files.rc" extra_deps = [ "//brave:delta_installer_archive" ] }
++sources -= [packed_files_rc_file] sources += [invoker.packed_files_rc_file] if (defined(invoker.extra_deps)) { deps += invoker.extra_deps } }} mini_installer("mini_installer") { packed_files_rc_file = packed_files_rc_file } mini_installer("delta_installer_unsigned") { packed_files_rc_file = "$target_gen_dir/packed_delta_files.rc" extra_deps = [ "//express:delta_installer_archive" ] }
  
  # previous_version_mini_installer.exe can't be generated in an x86 Debug
  # component build because it requires too much memory.

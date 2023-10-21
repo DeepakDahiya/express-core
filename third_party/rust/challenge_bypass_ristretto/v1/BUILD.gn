@@ -10,19 +10,19 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/benches/benchmarks.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/dleq.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/dleq_merlin.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/errors.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/lib.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/macros.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/oprf.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/src/voprf.rs",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/tests/e2e.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/benches/benchmarks.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/dleq.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/dleq_merlin.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/errors.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/lib.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/macros.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/oprf.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/src/voprf.rs",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/tests/e2e.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/README.md",
-    "//brave/third_party/rust/challenge_bypass_ristretto/v1/crate/docs/PROTOCOL.md",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/README.md",
+    "//express/third_party/rust/challenge_bypass_ristretto/v1/crate/docs/PROTOCOL.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -37,15 +37,15 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/crypto_mac/v0_10:lib",
-    "//brave/third_party/rust/curve25519_dalek/v3:lib",
-    "//brave/third_party/rust/digest/v0_9:lib",
-    "//brave/third_party/rust/hmac/v0_10:lib",
-    "//brave/third_party/rust/rand/v0_7:lib",
-    "//brave/third_party/rust/rand_chacha/v0_2:lib",
-    "//brave/third_party/rust/rand_core/v0_5:lib",
-    "//brave/third_party/rust/subtle/v2:lib",
-    "//brave/third_party/rust/zeroize/v1:lib",
+    "//express/third_party/rust/crypto_mac/v0_10:lib",
+    "//express/third_party/rust/curve25519_dalek/v3:lib",
+    "//express/third_party/rust/digest/v0_9:lib",
+    "//express/third_party/rust/hmac/v0_10:lib",
+    "//express/third_party/rust/rand/v0_7:lib",
+    "//express/third_party/rust/rand_chacha/v0_2:lib",
+    "//express/third_party/rust/rand_core/v0_5:lib",
+    "//express/third_party/rust/subtle/v2:lib",
+    "//express/third_party/rust/zeroize/v1:lib",
     "//third_party/rust/base64/v0_13:lib",
     "//third_party/rust/serde/v1:lib",
   ]

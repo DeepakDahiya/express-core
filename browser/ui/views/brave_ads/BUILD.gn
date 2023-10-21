@@ -40,12 +40,12 @@ source_set("brave_ads") {
 
   deps = [
     "//base",
-    "//brave/app:brave_generated_resources_grit",
-    "//brave/app/vector_icons",
-    "//brave/browser/ui/brave_ads",
-    "//brave/components/brave_ads/browser",
-    "//brave/components/brave_ads/core",
-    "//brave/components/l10n/common",
+    "//express/app:brave_generated_resources_grit",
+    "//express/app/vector_icons",
+    "//express/browser/ui/brave_ads",
+    "//express/components/brave_ads/browser",
+    "//express/components/brave_ads/core",
+    "//express/components/l10n/common",
     "//chrome/browser/profiles:profile",
     "//components/prefs",
     "//skia",

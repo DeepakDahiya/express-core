@@ -3,7 +3,7 @@ source_set("themes") {
 
   deps = [
     "//base",
-    "//brave/components/constants",
+    "//express/components/constants",
   ]
 
   if (is_android) {

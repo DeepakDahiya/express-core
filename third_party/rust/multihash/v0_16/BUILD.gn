@@ -10,19 +10,19 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/multihash/v0_16/crate/benches/multihash.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/examples/custom_table.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/examples/manual_mh.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/arb.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/error.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/hasher.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/hasher_impl.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/lib.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/multihash.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/src/multihash_impl.rs",
-    "//brave/third_party/rust/multihash/v0_16/crate/tests/lib.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/benches/multihash.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/examples/custom_table.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/examples/manual_mh.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/arb.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/error.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/hasher.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/hasher_impl.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/lib.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/multihash.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/src/multihash_impl.rs",
+    "//express/third_party/rust/multihash/v0_16/crate/tests/lib.rs",
   ]
-  inputs = [ "//brave/third_party/rust/multihash/v0_16/crate/README.md" ]
+  inputs = [ "//express/third_party/rust/multihash/v0_16/crate/README.md" ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
@@ -36,17 +36,17 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/blake2b_simd/v1:lib",
-    "//brave/third_party/rust/core2/v0_4:lib",
-    "//brave/third_party/rust/multihash_derive/v0_8:lib",
-    "//brave/third_party/rust/serde_big_array/v0_3:lib",
-    "//brave/third_party/rust/unsigned_varint/v0_7:lib",
+    "//express/third_party/rust/blake2b_simd/v1:lib",
+    "//express/third_party/rust/core2/v0_4:lib",
+    "//express/third_party/rust/multihash_derive/v0_8:lib",
+    "//express/third_party/rust/serde_big_array/v0_3:lib",
+    "//express/third_party/rust/unsigned_varint/v0_7:lib",
     "//third_party/rust/serde/v1:lib",
   ]
   aliased_deps = {
-    ripemd_rs = "//brave/third_party/rust/ripemd/v0_1:lib__rlib"
-    sha_2 = "//brave/third_party/rust/sha2/v0_10:lib__rlib"
-    sha_3 = "//brave/third_party/rust/sha3/v0_10:lib__rlib"
+    ripemd_rs = "//express/third_party/rust/ripemd/v0_1:lib__rlib"
+    sha_2 = "//express/third_party/rust/sha2/v0_10:lib__rlib"
+    sha_3 = "//express/third_party/rust/sha3/v0_10:lib__rlib"
   }
   features = [
     "alloc",
@@ -68,12 +68,12 @@ cargo_crate("lib") {
     "std",
   ]
   deps += [
-    "//brave/third_party/rust/digest/v0_10:lib",
-    "//brave/third_party/rust/ripemd/v0_1:lib",
-    "//brave/third_party/rust/sha2/v0_10:lib",
-    "//brave/third_party/rust/sha3/v0_10:lib",
+    "//express/third_party/rust/digest/v0_10:lib",
+    "//express/third_party/rust/ripemd/v0_1:lib",
+    "//express/third_party/rust/sha2/v0_10:lib",
+    "//express/third_party/rust/sha3/v0_10:lib",
   ]
   cargo_manifest_dir =
-      rebase_path("//brave/third_party/rust/multihash/v0_16/crate")
+      rebase_path("//express/third_party/rust/multihash/v0_16/crate")
   rustenv = [ "CARGO_MANIFEST_DIR=$cargo_manifest_dir" ]
 }

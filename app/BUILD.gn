@@ -3,18 +3,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/browser/shell_integrations/buildflags/buildflags.gni")
-import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
-import("//brave/components/playlist/common/buildflags/buildflags.gni")
-import("//brave/components/request_otr/common/buildflags/buildflags.gni")
-import("//brave/components/speedreader/common/buildflags/buildflags.gni")
-import("//brave/components/text_recognition/common/buildflags/buildflags.gni")
-import("//brave/resources/brave_grit.gni")
+import("//express/browser/shell_integrations/buildflags/buildflags.gni")
+import("//express/components/brave_vpn/common/buildflags/buildflags.gni")
+import("//express/components/playlist/common/buildflags/buildflags.gni")
+import("//express/components/request_otr/common/buildflags/buildflags.gni")
+import("//express/components/speedreader/common/buildflags/buildflags.gni")
+import("//express/components/text_recognition/common/buildflags/buildflags.gni")
+import("//express/resources/brave_grit.gni")
 import("//build/config/features.gni")
 import("//build/config/locales.gni")
 
 action("generate_command_metadata") {
-  command_files = [ "//brave/app/brave_command_ids.h" ]
+  command_files = [ "//express/app/brave_command_ids.h" ]
   cc_template = "command_utils.cc.template"
 
   sources = command_files + [ cc_template ]
@@ -37,7 +37,7 @@ source_set("command_ids") {
 
   deps = [
     "//base",
-    "//brave/components/resources:strings",
+    "//express/components/resources:strings",
     "//chrome/app:command_ids",
     "//chrome/app:generated_resources",
     "//components/services/screen_ai/buildflags",
@@ -90,7 +90,7 @@ source_set("browser_tests") {
     deps = [
       ":command_ids",
       "//base",
-      "//brave/components/commands/common",
+      "//express/components/commands/common",
       "//chrome/app:command_ids",
       "//chrome/browser",
       "//chrome/browser/companion/core",
@@ -149,7 +149,7 @@ source_set("unit_tests") {
       ":command_ids",
       "//base",
       "//base/test:test_support",
-      "//brave/components/commands/common",
+      "//express/components/commands/common",
       "//chrome/app:command_ids",
       "//chrome/browser/ui",
       "//testing/gtest",

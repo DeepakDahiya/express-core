@@ -11,13 +11,13 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/lib.rs"
   sources = [
-    "//brave/third_party/rust/fxhash/v0_2/crate/bench.rs",
-    "//brave/third_party/rust/fxhash/v0_2/crate/lib.rs",
+    "//express/third_party/rust/fxhash/v0_2/crate/bench.rs",
+    "//express/third_party/rust/fxhash/v0_2/crate/lib.rs",
   ]
-  inputs = [ "//brave/third_party/rust/fxhash/v0_2/crate/README.md" ]
+  inputs = [ "//express/third_party/rust/fxhash/v0_2/crate/README.md" ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
@@ -30,5 +30,5 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//brave/third_party/rust/byteorder/v1:lib" ]
+  deps = [ "//express/third_party/rust/byteorder/v1:lib" ]
 }

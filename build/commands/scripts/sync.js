@@ -27,7 +27,7 @@ program
   .option('--nohooks', 'Do not run hooks after updating')
 
 function maybeInstallDepotTools(options = config.defaultOptions) {
-  options.cwd = config.braveCoreDir
+  options.cwd = config.expressCodeDir
 
   if (!fs.existsSync(config.depotToolsDir)) {
     Log.progressScope('install depot_tools', () => {
@@ -211,8 +211,8 @@ function syncBrave(program) {
   }
 
   util.runGClient(
-      args, {cwd: config.braveCoreDir},
-      path.join(config.braveCoreDir, '.brave_gclient'))
+      args, {cwd: config.expressCodeDir},
+      path.join(config.expressCodeDir, '.brave_gclient'))
 }
 
 async function RunCommand() {

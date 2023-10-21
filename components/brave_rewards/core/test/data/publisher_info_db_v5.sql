@@ -61,7 +61,7 @@ INSERT INTO "meta" VALUES ('mmap_status','-1');
 INSERT INTO "meta" VALUES ('last_compatible_version','1');
 INSERT INTO "meta" VALUES ('version','5');
 INSERT INTO "publisher_info" VALUES ('slo-tech.com',0,0,'slo-tech.com','','https://slo-tech.com/','');
-INSERT INTO "publisher_info" VALUES ('brave.com',0,0,'brave.com','','https://brave.com/','');
+INSERT INTO "publisher_info" VALUES ('brave.com',0,0,'brave.com','','https://express.com/','');
 INSERT INTO "publisher_info" VALUES ('basicattentiontoken.org',0,0,'basicattentiontoken.org','','https://basicattentiontoken.org/','');
 INSERT INTO "activity_info" VALUES ('slo-tech.com',18,1,1.06291900190826,24,24.254880708636,2,2019,1553423066);
 INSERT INTO "activity_info" VALUES ('brave.com',20,2,1.07471534438942,25,24.5240629127033,1,2019,1553423066);

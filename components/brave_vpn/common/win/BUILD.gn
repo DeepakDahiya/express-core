@@ -14,8 +14,8 @@ source_set("win") {
     "utils.h",
   ]
   visibility = [
-    "//brave/browser/*",
-    "//brave/components/brave_vpn/*",
+    "//express/browser/*",
+    "//express/components/brave_vpn/*",
     "//chrome/browser/*",
   ]
   deps = [ "//base" ]

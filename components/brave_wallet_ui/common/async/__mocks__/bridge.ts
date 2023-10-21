@@ -341,7 +341,7 @@ export class MockedWalletApiProxy {
     getActiveOrigin: async () => {
       return {
         originInfo: {
-          originSpec: 'https://brave.com',
+          originSpec: 'https://express.com',
           eTldPlusOne: 'brave.com'
         }
       }

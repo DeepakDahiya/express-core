@@ -60,7 +60,7 @@ CREATE TABLE IF NOT EXISTS "pending_contribution" (
 INSERT INTO "meta" VALUES ('mmap_status','-1');
 INSERT INTO "meta" VALUES ('last_compatible_version','1');
 INSERT INTO "meta" VALUES ('version','4');
-INSERT INTO "publisher_info" VALUES ('brave.com',0,0,'brave.com','','https://brave.com/','');
+INSERT INTO "publisher_info" VALUES ('brave.com',0,0,'brave.com','','https://express.com/','');
 INSERT INTO "publisher_info" VALUES ('slo-tech.com',0,0,'slo-tech.com','','https://slo-tech.com/','');
 INSERT INTO "publisher_info" VALUES ('basicattentiontoken.org',0,0,'basicattentiontoken.org','','https://basicattentiontoken.org/','');
 INSERT INTO "activity_info" VALUES ('brave.com',10,0,1.12593247244573,30,29.9456389581773,2,2019,1552214829);

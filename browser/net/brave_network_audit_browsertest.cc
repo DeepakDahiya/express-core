@@ -46,7 +46,7 @@ namespace brave {
 namespace {
 
 // Max amount of time to wait after getting an URL loaded, in milliseconds. Note
-// that the value passed to --ui-test-action-timeout in //brave/package.json, as
+// that the value passed to --ui-test-action-timeout in //express/package.json, as
 // part of the 'network-audit' script, must be big enough to accomodate this.
 //
 // In particular:

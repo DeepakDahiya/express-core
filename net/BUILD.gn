@@ -1,4 +1,4 @@
-import("//brave/components/tor/buildflags/buildflags.gni")
+import("//express/components/tor/buildflags/buildflags.gni")
 
 source_set("unit_tests") {
   testonly = true

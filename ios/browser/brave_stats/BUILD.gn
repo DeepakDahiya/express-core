@@ -10,7 +10,7 @@ source_set("brave_stats") {
   ]
   deps = [
     "//base",
-    "//brave/components/brave_wallet/browser:pref_names",
+    "//express/components/brave_wallet/browser:pref_names",
     "//components/prefs",
   ]
 }

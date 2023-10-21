@@ -6,7 +6,7 @@ const l10nUtil = require('./l10nUtil')
 const pushL10n = (options) => {
   const runOptions = { cwd: config.srcDir }
   const cmdOptions = config.defaultOptions
-  cmdOptions.cwd = config.braveCoreDir
+  cmdOptions.cwd = config.expressCodeDir
   const extraScriptOptions =
     options.with_translations ? '--with_translations' :
       options.with_missing_translations ? '--with_missing_translations' : ''

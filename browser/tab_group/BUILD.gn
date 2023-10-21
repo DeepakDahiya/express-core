@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/android/features/tab_ui/brave_tab_management_java_sources.gni")
+import("//express/android/features/tab_ui/brave_tab_management_java_sources.gni")
 import("//build/config/android/config.gni")
 import("//build/config/android/rules.gni")
 import("//chrome/browser/buildflags.gni")

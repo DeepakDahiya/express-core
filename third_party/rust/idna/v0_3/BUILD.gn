@@ -11,18 +11,18 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/idna/v0_3/crate/benches/all.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/src/lib.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/src/punycode.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/src/uts46.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/src/uts46_mapping_table.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/tests/punycode.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/tests/tests.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/tests/unit.rs",
-    "//brave/third_party/rust/idna/v0_3/crate/tests/uts46.rs",
+    "//express/third_party/rust/idna/v0_3/crate/benches/all.rs",
+    "//express/third_party/rust/idna/v0_3/crate/src/lib.rs",
+    "//express/third_party/rust/idna/v0_3/crate/src/punycode.rs",
+    "//express/third_party/rust/idna/v0_3/crate/src/uts46.rs",
+    "//express/third_party/rust/idna/v0_3/crate/src/uts46_mapping_table.rs",
+    "//express/third_party/rust/idna/v0_3/crate/tests/punycode.rs",
+    "//express/third_party/rust/idna/v0_3/crate/tests/tests.rs",
+    "//express/third_party/rust/idna/v0_3/crate/tests/unit.rs",
+    "//express/third_party/rust/idna/v0_3/crate/tests/uts46.rs",
   ]
   inputs = []
 
@@ -39,7 +39,7 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//brave/third_party/rust/unicode_bidi/v0_3:lib",
-    "//brave/third_party/rust/unicode_normalization/v0_1:lib",
+    "//express/third_party/rust/unicode_bidi/v0_3:lib",
+    "//express/third_party/rust/unicode_normalization/v0_1:lib",
   ]
 }

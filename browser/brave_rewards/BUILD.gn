@@ -12,8 +12,8 @@ source_set("util") {
   ]
 
   deps = [
-    "//brave/browser/profiles:util",
-    "//brave/components/brave_rewards/common",
+    "//express/browser/profiles:util",
+    "//express/components/brave_rewards/common",
     "//components/prefs",
   ]
 }

@@ -11,13 +11,13 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/proc_macro_error_attr/v1/crate/build.rs",
-    "//brave/third_party/rust/proc_macro_error_attr/v1/crate/src/lib.rs",
-    "//brave/third_party/rust/proc_macro_error_attr/v1/crate/src/parse.rs",
-    "//brave/third_party/rust/proc_macro_error_attr/v1/crate/src/settings.rs",
+    "//express/third_party/rust/proc_macro_error_attr/v1/crate/build.rs",
+    "//express/third_party/rust/proc_macro_error_attr/v1/crate/src/lib.rs",
+    "//express/third_party/rust/proc_macro_error_attr/v1/crate/src/parse.rs",
+    "//express/third_party/rust/proc_macro_error_attr/v1/crate/src/settings.rs",
   ]
   inputs = []
 
@@ -36,7 +36,7 @@ cargo_crate("lib") {
     "//third_party/rust/proc_macro2/v1:lib",
     "//third_party/rust/quote/v1:lib",
   ]
-  build_deps = [ "//brave/third_party/rust/version_check/v0_9:buildrs_support" ]
+  build_deps = [ "//express/third_party/rust/version_check/v0_9:buildrs_support" ]
   build_root = "crate/build.rs"
   build_sources = [ "crate/build.rs" ]
 }

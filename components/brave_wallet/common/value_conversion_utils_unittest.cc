@@ -380,7 +380,7 @@ TEST(ValueConversionUtilsUnitTest, ValueToBlockchainToken) {
 }
 
 TEST(ValueConversionUtilsUnitTest, PermissionRequestResponseToValue) {
-  url::Origin origin = url::Origin::Create(GURL("https://brave.com"));
+  url::Origin origin = url::Origin::Create(GURL("https://express.com"));
   std::vector<std::string> accounts{
       "0xA99D71De40D67394eBe68e4D0265cA6C9D421029"};
   base::Value::List value = PermissionRequestResponseToValue(origin, accounts);
@@ -402,7 +402,7 @@ TEST(ValueConversionUtilsUnitTest, PermissionRequestResponseToValue) {
   //   ],
   //   "date":1.637594791027276e+12,
   //   "id":"2485c0da-2131-4801-9918-26e8de929a29",
-  //   "invoker":"https://brave.com",
+  //   "invoker":"https://express.com",
   //   "parentCapability":"eth_accounts"
   // }]"
 
@@ -450,7 +450,7 @@ TEST(ValueConversionUtilsUnitTest, PermissionRequestResponseToValue) {
 
   std::string* invoker = param0.FindString("invoker");
   ASSERT_NE(invoker, nullptr);
-  EXPECT_EQ(*invoker, "https://brave.com");
+  EXPECT_EQ(*invoker, "https://express.com");
 
   std::string* parent_capability = param0.FindString("parentCapability");
   ASSERT_NE(parent_capability, nullptr);

@@ -5,13 +5,13 @@
 
 source_set("brave_federated") {
   sources = [
-    "//brave/browser/brave_federated/brave_federated_service_factory.cc",
-    "//brave/browser/brave_federated/brave_federated_service_factory.h",
+    "//express/browser/brave_federated/brave_federated_service_factory.cc",
+    "//express/browser/brave_federated/brave_federated_service_factory.h",
   ]
 
   deps = [
     "//base",
-    "//brave/components/brave_federated",
+    "//express/components/brave_federated",
     "//chrome/browser:browser_process",
     "//components/keyed_service/content:content",
     "//components/pref_registry:pref_registry",

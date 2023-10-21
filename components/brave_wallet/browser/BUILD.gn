@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
-import("//brave/components/ipfs/buildflags/buildflags.gni")
+import("//express/build/config.gni")
+import("//express/components/ipfs/buildflags/buildflags.gni")
 import("//build/config/features.gni")
 import("//third_party/protobuf/proto_library.gni")
 import("//tools/json_schema_compiler/json_schema_api.gni")
@@ -231,21 +231,21 @@ static_library("browser") {
     ":utils",
     ":zcash_proto",
     "//base",
-    "//brave/components/brave_component_updater/browser",
-    "//brave/components/brave_stats/browser",
-    "//brave/components/brave_wallet/api",
-    "//brave/components/brave_wallet/common",
-    "//brave/components/brave_wallet/common:buildflags",
-    "//brave/components/brave_wallet/common:common_constants",
-    "//brave/components/brave_wallet/common:mojom",
-    "//brave/components/brave_wallet/common:pref_names",
-    "//brave/components/constants",
-    "//brave/components/decentralized_dns/core",
-    "//brave/components/filecoin/rs:rust_lib",
-    "//brave/components/ipfs/buildflags",
-    "//brave/components/json/rs:rust_lib",
-    "//brave/components/p3a_utils",
-    "//brave/components/resources:strings_grit",
+    "//express/components/brave_component_updater/browser",
+    "//express/components/brave_stats/browser",
+    "//express/components/brave_wallet/api",
+    "//express/components/brave_wallet/common",
+    "//express/components/brave_wallet/common:buildflags",
+    "//express/components/brave_wallet/common:common_constants",
+    "//express/components/brave_wallet/common:mojom",
+    "//express/components/brave_wallet/common:pref_names",
+    "//express/components/constants",
+    "//express/components/decentralized_dns/core",
+    "//express/components/filecoin/rs:rust_lib",
+    "//express/components/ipfs/buildflags",
+    "//express/components/json/rs:rust_lib",
+    "//express/components/p3a_utils",
+    "//express/components/resources:strings_grit",
     "//components/component_updater",
     "//components/content_settings/core/browser",
     "//components/keyed_service/core",
@@ -263,10 +263,10 @@ static_library("browser") {
     "//url",
   ]
 
-  public_deps = [ "//brave/components/api_request_helper" ]
+  public_deps = [ "//express/components/api_request_helper" ]
 
   if (enable_ipfs) {
-    deps += [ "//brave/components/ipfs" ]
+    deps += [ "//express/components/ipfs" ]
   }
 
   configs += [ ":sardine_config" ]
@@ -276,7 +276,7 @@ static_library("browser") {
       "wallet_data_files_installer_android_util.cc",
       "wallet_data_files_installer_android_util.h",
     ]
-    deps += [ "//brave/build/android:jni_headers" ]
+    deps += [ "//express/build/android:jni_headers" ]
   }
 }
 
@@ -290,7 +290,7 @@ if (!is_ios) {
     deps = [
       ":utils",
       "//base",
-      "//brave/components/brave_wallet/common:mojom",
+      "//express/components/brave_wallet/common:mojom",
       "//components/permissions:permissions_common",
       "//third_party/blink/public/common",
       "//third_party/re2",
@@ -307,12 +307,12 @@ source_set("constants") {
 
   deps = [
     "//base",
-    "//brave/components/brave_wallet/common:mojom",
-    "//brave/components/resources:strings_grit",
+    "//express/components/brave_wallet/common:mojom",
+    "//express/components/resources:strings_grit",
     "//ui/base:base",
   ]
 
-  public_deps = [ "//brave/components/brave_wallet/common" ]
+  public_deps = [ "//express/components/brave_wallet/common" ]
 }
 
 source_set("pref_names") {
@@ -332,11 +332,11 @@ source_set("utils") {
     ":constants",
     ":pref_names",
     "//base",
-    "//brave/components/brave_wallet/common",
-    "//brave/components/brave_wallet/common:buildflags",
-    "//brave/components/brave_wallet/common:mojom",
-    "//brave/components/version_info",
-    "//brave/third_party/bip39wally-core-native:bip39wally-core",
+    "//express/components/brave_wallet/common",
+    "//express/components/brave_wallet/common:buildflags",
+    "//express/components/brave_wallet/common:mojom",
+    "//express/components/version_info",
+    "//express/third_party/bip39wally-core-native:bip39wally-core",
     "//components/content_settings/core/common",
     "//components/prefs",
     "//crypto",
@@ -347,7 +347,7 @@ source_set("utils") {
     "//url",
   ]
 
-  public_deps = [ "//brave/components/brave_wallet/common" ]
+  public_deps = [ "//express/components/brave_wallet/common" ]
 }
 
 source_set("hd_keyring") {
@@ -370,14 +370,14 @@ source_set("hd_keyring") {
     ":transaction",
     "internal:hd_key",
     "//base",
-    "//brave/components/brave_wallet/common",
-    "//brave/components/brave_wallet/common:common_constants",
-    "//brave/components/brave_wallet/common:mojom",
-    "//brave/components/filecoin/rs:rust_lib",
+    "//express/components/brave_wallet/common",
+    "//express/components/brave_wallet/common:common_constants",
+    "//express/components/brave_wallet/common:mojom",
+    "//express/components/filecoin/rs:rust_lib",
     "//crypto",
   ]
 
-  public_deps = [ "//brave/components/brave_wallet/rust:rust_lib" ]
+  public_deps = [ "//express/components/brave_wallet/rust:rust_lib" ]
 }
 
 source_set("transaction") {
@@ -398,10 +398,10 @@ source_set("transaction") {
 
   deps = [
     "//base",
-    "//brave/components/brave_wallet/common",
-    "//brave/components/brave_wallet/common:mojom",
-    "//brave/components/filecoin/rs:rust_lib",
-    "//brave/components/json/rs:rust_lib",
+    "//express/components/brave_wallet/common",
+    "//express/components/brave_wallet/common:mojom",
+    "//express/components/filecoin/rs:rust_lib",
+    "//express/components/json/rs:rust_lib",
   ]
 }
 
@@ -414,14 +414,14 @@ source_set("test_support") {
 
   deps = [
     ":browser",
-    "//brave/components/brave_wallet/common",
+    "//express/components/brave_wallet/common",
     "//testing/gmock",
     "//testing/gtest",
   ]
 
   public_deps = [
     "//base",
-    "//brave/components/brave_wallet/common:mojom",
+    "//express/components/brave_wallet/common:mojom",
     "//components/value_store",
     "//components/value_store:test_support",
   ]
@@ -444,7 +444,7 @@ generated_types("generated_bitcoin_rpc_responses") {
   visibility = [
     ":browser",
     "test:brave_wallet_unit_tests",
-    "//brave/components/brave_wallet/browser/test:test_support",
+    "//express/components/brave_wallet/browser/test:test_support",
   ]
 }
 

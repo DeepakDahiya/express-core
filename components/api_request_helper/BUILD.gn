@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
+import("//express/build/config.gni")
 import("//testing/test.gni")
 
 static_library("api_request_helper") {
@@ -24,7 +24,7 @@ static_library("api_request_helper") {
 source_set("api_request_helper_unit_tests") {
   testonly = true
   sources =
-      [ "//brave/components/api_request_helper/api_request_helper_unittest.cc" ]
+      [ "//express/components/api_request_helper/api_request_helper_unittest.cc" ]
   deps = [
     ":api_request_helper",
     "//base/test:test_support",

@@ -6,7 +6,7 @@ index 98ab27b33cd85fa68432b9d0aa5489447f1a6ec2..a61d36f2e6453fe11f3bef2fa4384cfb
      args += invoker.targets
  
      deps = [ ":web_idl_database" ]
-+    import("//brave/third_party/blink/renderer/bindings/sources.gni") deps += brave_third_party_blink_renderer_bindings_generate_bindings_deps
++    import("//express/third_party/blink/renderer/bindings/sources.gni") deps += brave_third_party_blink_renderer_bindings_generate_bindings_deps
    }
  }
  

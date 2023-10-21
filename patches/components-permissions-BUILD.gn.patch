@@ -6,7 +6,7 @@ index 8de1e9259054621c85f296a5dc4b083857f9217d..7b949087a775a22248533334b0e30432
    if (!is_android && !is_ios) {
      deps += [ "//components/guest_view/browser" ]
    }
-+  import("//brave/components/permissions/sources.gni") sources += brave_components_permissions_sources deps += brave_components_permissions_deps
++  import("//express/components/permissions/sources.gni") sources += brave_components_permissions_sources deps += brave_components_permissions_deps
    if (is_android) {
      sources += [
        "android/android_permission_util.cc",

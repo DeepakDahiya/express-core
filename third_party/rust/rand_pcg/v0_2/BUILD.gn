@@ -11,19 +11,19 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//brave/third_party/rust/*" ]
+  visibility = [ "//express/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/src/lib.rs",
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/src/pcg128.rs",
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/src/pcg64.rs",
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/tests/lcg128xsl64.rs",
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/tests/lcg64xsh32.rs",
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/tests/mcg128xsl64.rs",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/src/lib.rs",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/src/pcg128.rs",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/src/pcg64.rs",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/tests/lcg128xsl64.rs",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/tests/lcg64xsh32.rs",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/tests/mcg128xsl64.rs",
   ]
   inputs = [
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/CHANGELOG.md",
-    "//brave/third_party/rust/rand_pcg/v0_2/crate/README.md",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/CHANGELOG.md",
+    "//express/third_party/rust/rand_pcg/v0_2/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -37,5 +37,5 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//brave/third_party/rust/rand_core/v0_5:lib" ]
+  deps = [ "//express/third_party/rust/rand_core/v0_5:lib" ]
 }

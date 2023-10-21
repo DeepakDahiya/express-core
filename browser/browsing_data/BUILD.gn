@@ -8,7 +8,7 @@ source_set("browser_tests") {
 
   if (!is_android) {
     sources = [
-      "//brave/browser/browsing_data/brave_clear_browsing_data_browsertest.cc",
+      "//express/browser/browsing_data/brave_clear_browsing_data_browsertest.cc",
     ]
 
     defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -16,7 +16,7 @@ source_set("browser_tests") {
     deps = [
       "//base",
       "//base/test:test_support",
-      "//brave/components/ai_chat/common/buildflags:buildflags",
+      "//express/components/ai_chat/common/buildflags:buildflags",
       "//chrome/app:command_ids",
       "//chrome/browser",
       "//chrome/browser/browsing_data:constants",

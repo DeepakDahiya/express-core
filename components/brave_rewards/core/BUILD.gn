@@ -5,7 +5,7 @@
 
 import("//third_party/protobuf/proto_library.gni")
 
-import("//brave/components/brave_rewards/core/config.gni")
+import("//express/components/brave_rewards/core/config.gni")
 import("//build/buildflag_header.gni")
 
 if (is_android) {
@@ -65,11 +65,11 @@ group("core") {
 source_set("headers") {
   visibility = [
     ":*",
-    "//brave/browser/extensions:extensions",
-    "//brave/browser/ui:ui",
-    "//brave/components/brave_rewards/browser:browser",
-    "//brave/components/brave_rewards/browser:testutil",
-    "//brave/vendor/brave-ios:rewards_db",
+    "//express/browser/extensions:extensions",
+    "//express/browser/ui:ui",
+    "//express/components/brave_rewards/browser:browser",
+    "//express/components/brave_rewards/browser:testutil",
+    "//express/vendor/brave-ios:rewards_db",
     "//chrome/browser:browser",
   ]
 
@@ -85,9 +85,9 @@ source_set("headers") {
 
   public_deps = [
     ":buildflags",
-    "//brave/components/brave_rewards/common/mojom:interfaces",
-    "//brave/components/brave_rewards/common/mojom:rewards_interfaces",
-    "//brave/components/brave_rewards/common/mojom:rewards_types",
+    "//express/components/brave_rewards/common/mojom:interfaces",
+    "//express/components/brave_rewards/common/mojom:rewards_interfaces",
+    "//express/components/brave_rewards/common/mojom:rewards_types",
   ]
 }
 
@@ -560,12 +560,12 @@ static_library("engine") {
   deps = [
     ":publishers_proto",
     "//base",
-    "//brave/components/brave_private_cdn",
-    "//brave/third_party/bip39wally-core-native:bip39wally-core",
-    "//brave/third_party/challenge_bypass_ristretto_ffi:rust_lib",
-    "//brave/third_party/rapidjson",
-    "//brave/vendor/bat-native-tweetnacl:tweetnacl",
-    "//brave/vendor/brave_base",
+    "//express/components/brave_private_cdn",
+    "//express/third_party/bip39wally-core-native:bip39wally-core",
+    "//express/third_party/challenge_bypass_ristretto_ffi:rust_lib",
+    "//express/third_party/rapidjson",
+    "//express/vendor/bat-native-tweetnacl:tweetnacl",
+    "//express/vendor/brave_base",
     "//crypto",
     "//net:net",
     "//sql:sql",

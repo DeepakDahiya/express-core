@@ -4,6 +4,6 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 // Sync this with kBraveMaxTopSitesNumber
-// in //brave/browser/ui/webui/new_tab_page/brave_new_tab_ui_unittest.cc
+// in //express/browser/ui/webui/new_tab_page/brave_new_tab_ui_unittest.cc
 export const MAX_GRID_SIZE = 12
 export const braveTalkWidgetUrl = 'https://talk.brave.com/widget'
