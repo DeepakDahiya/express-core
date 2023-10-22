@@ -8,7 +8,7 @@
 
 ### _Putting you back in control of your browsing experience._
 
-`adblock-rust` is the engine powering [Brave](https://express.com)'s native adblocker, available as a library for anyone to use. It features:
+`adblock-rust` is the engine powering [Brave](https://brave.com)'s native adblocker, available as a library for anyone to use. It features:
 
 - Network blocking
 - Cosmetic filtering

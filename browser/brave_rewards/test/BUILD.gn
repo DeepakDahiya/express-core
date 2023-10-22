@@ -15,12 +15,12 @@ source_set("browser_tests") {
 
     deps = [
       "//base/test:test_support",
-      "//express/app:command_ids",
-      "//express/browser",
-      "//express/browser/brave_rewards:util",
-      "//express/components/brave_rewards/browser",
-      "//express/components/brave_rewards/common",
-      "//express/components/l10n/common:test_support",
+      "//brave/app:command_ids",
+      "//brave/browser",
+      "//brave/browser/brave_rewards:util",
+      "//brave/components/brave_rewards/browser",
+      "//brave/components/brave_rewards/common",
+      "//brave/components/l10n/common:test_support",
       "//chrome/browser/ui",
       "//chrome/test:test_support",
       "//chrome/test:test_support_ui",

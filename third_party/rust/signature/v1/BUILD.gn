@@ -11,21 +11,21 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/signature/v1/crate/src/error.rs",
-    "//express/third_party/rust/signature/v1/crate/src/hazmat.rs",
-    "//express/third_party/rust/signature/v1/crate/src/keypair.rs",
-    "//express/third_party/rust/signature/v1/crate/src/lib.rs",
-    "//express/third_party/rust/signature/v1/crate/src/signature.rs",
-    "//express/third_party/rust/signature/v1/crate/src/signer.rs",
-    "//express/third_party/rust/signature/v1/crate/src/verifier.rs",
-    "//express/third_party/rust/signature/v1/crate/tests/derive.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/error.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/hazmat.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/keypair.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/signature.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/signer.rs",
+    "//brave/third_party/rust/signature/v1/crate/src/verifier.rs",
+    "//brave/third_party/rust/signature/v1/crate/tests/derive.rs",
   ]
   inputs = [
-    "//express/third_party/rust/signature/v1/crate/CHANGELOG.md",
-    "//express/third_party/rust/signature/v1/crate/README.md",
+    "//brave/third_party/rust/signature/v1/crate/CHANGELOG.md",
+    "//brave/third_party/rust/signature/v1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

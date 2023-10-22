@@ -4,8 +4,8 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_components_sync_device_info_sources = [
-  "//express/components/sync_device_info/brave_device_info.cc",
-  "//express/components/sync_device_info/brave_device_info.h",
+  "//brave/components/sync_device_info/brave_device_info.cc",
+  "//brave/components/sync_device_info/brave_device_info.h",
 ]
 brave_components_sync_device_info_deps = [
 ]

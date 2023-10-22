@@ -10,8 +10,8 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//express/components/body_sniffer",
-    "//express/components/de_amp/common",
+    "//brave/components/body_sniffer",
+    "//brave/components/de_amp/common",
     "//components/prefs",
     "//components/user_prefs",
     "//content/public/browser",

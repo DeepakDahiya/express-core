@@ -3,30 +3,30 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//express/components/ntp_background_images/buildflags/buildflags.gni")
+import("//brave/components/ntp_background_images/buildflags/buildflags.gni")
 
 brave_browser_ntp_background_sources = [
-  "//express/browser/ntp_background/ntp_p3a_helper_impl.cc",
-  "//express/browser/ntp_background/ntp_p3a_helper_impl.h",
-  "//express/browser/ntp_background/ntp_tab_helper.cc",
-  "//express/browser/ntp_background/ntp_tab_helper.h",
-  "//express/browser/ntp_background/view_counter_service_factory.cc",
-  "//express/browser/ntp_background/view_counter_service_factory.h",
+  "//brave/browser/ntp_background/ntp_p3a_helper_impl.cc",
+  "//brave/browser/ntp_background/ntp_p3a_helper_impl.h",
+  "//brave/browser/ntp_background/ntp_tab_helper.cc",
+  "//brave/browser/ntp_background/ntp_tab_helper.h",
+  "//brave/browser/ntp_background/view_counter_service_factory.cc",
+  "//brave/browser/ntp_background/view_counter_service_factory.h",
 ]
 
 brave_browser_ntp_background_deps = [
   "//base",
-  "//express/browser:browser_process",
-  "//express/browser/profiles:util",
-  "//express/components/brave_ads/browser",
-  "//express/components/brave_ads/core",
-  "//express/components/brave_stats/browser",
-  "//express/components/constants",
-  "//express/components/ntp_background_images/browser",
-  "//express/components/ntp_background_images/buildflags",
-  "//express/components/ntp_background_images/common",
-  "//express/components/p3a",
-  "//express/components/p3a_utils",
+  "//brave/browser:browser_process",
+  "//brave/browser/profiles:util",
+  "//brave/components/brave_ads/browser",
+  "//brave/components/brave_ads/core",
+  "//brave/components/brave_stats/browser",
+  "//brave/components/constants",
+  "//brave/components/ntp_background_images/browser",
+  "//brave/components/ntp_background_images/buildflags",
+  "//brave/components/ntp_background_images/common",
+  "//brave/components/p3a",
+  "//brave/components/p3a_utils",
   "//chrome/browser:browser_process",
   "//chrome/browser/profiles:profile",
   "//chrome/common",
@@ -38,15 +38,15 @@ brave_browser_ntp_background_deps = [
 
 if (enable_custom_background) {
   brave_browser_ntp_background_sources += [
-    "//express/browser/ntp_background/brave_ntp_custom_background_service_delegate.cc",
-    "//express/browser/ntp_background/brave_ntp_custom_background_service_delegate.h",
-    "//express/browser/ntp_background/brave_ntp_custom_background_service_factory.cc",
-    "//express/browser/ntp_background/brave_ntp_custom_background_service_factory.h",
-    "//express/browser/ntp_background/constants.h",
-    "//express/browser/ntp_background/custom_background_file_manager.cc",
-    "//express/browser/ntp_background/custom_background_file_manager.h",
-    "//express/browser/ntp_background/ntp_background_prefs.cc",
-    "//express/browser/ntp_background/ntp_background_prefs.h",
+    "//brave/browser/ntp_background/brave_ntp_custom_background_service_delegate.cc",
+    "//brave/browser/ntp_background/brave_ntp_custom_background_service_delegate.h",
+    "//brave/browser/ntp_background/brave_ntp_custom_background_service_factory.cc",
+    "//brave/browser/ntp_background/brave_ntp_custom_background_service_factory.h",
+    "//brave/browser/ntp_background/constants.h",
+    "//brave/browser/ntp_background/custom_background_file_manager.cc",
+    "//brave/browser/ntp_background/custom_background_file_manager.h",
+    "//brave/browser/ntp_background/ntp_background_prefs.cc",
+    "//brave/browser/ntp_background/ntp_background_prefs.h",
   ]
 
   brave_browser_ntp_background_deps += [
@@ -60,12 +60,12 @@ if (enable_custom_background) {
 
 if (is_android) {
   brave_browser_ntp_background_sources += [
-    "//express/browser/ntp_background/android/ntp_background_images_bridge.cc",
-    "//express/browser/ntp_background/android/ntp_background_images_bridge.h",
+    "//brave/browser/ntp_background/android/ntp_background_images_bridge.cc",
+    "//brave/browser/ntp_background/android/ntp_background_images_bridge.h",
   ]
 
   brave_browser_ntp_background_deps += [
-    "//express/build/android:jni_headers",
+    "//brave/build/android:jni_headers",
     "//components/keyed_service/content",
     "//components/keyed_service/core",
   ]

@@ -6,7 +6,7 @@ index 9da0c57372d3de3d47cc745602eb6f11a394ce5e..d4578bc33983b55af222e90f890c4401
      "//chrome/browser/profiling_host",
      "//chrome/browser/ui/webui:configs",
    ]
-+  public_deps += [ "//express/browser/ui" ] allow_circular_includes_from += [ "//express/browser/ui" ]
++  public_deps += [ "//brave/browser/ui" ] allow_circular_includes_from += [ "//brave/browser/ui" ]
  
    if (enable_vr && is_win) {
      deps += [ "//chrome/browser/vr:vr_base" ]
@@ -19,7 +19,7 @@ index 9da0c57372d3de3d47cc745602eb6f11a394ce5e..d4578bc33983b55af222e90f890c4401
 -        "webui/help/version_updater_basic.h",
 -      ]
 +      if (!is_official_build) {
-+        # In official build, //express/browser/ui handles.
++        # In official build, //brave/browser/ui handles.
 +        sources += [
 +          "webui/help/version_updater_basic.cc",
 +          "webui/help/version_updater_basic.h",

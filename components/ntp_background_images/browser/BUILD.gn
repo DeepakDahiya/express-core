@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//express/components/ntp_background_images/buildflags/buildflags.gni")
+import("//brave/components/ntp_background_images/buildflags/buildflags.gni")
 
 static_library("browser") {
   sources = [
@@ -40,15 +40,15 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//express/components/brave_ads/core",
-    "//express/components/brave_ads/core",
-    "//express/components/brave_component_updater/browser",
-    "//express/components/brave_rewards/common",
-    "//express/components/l10n/common",
-    "//express/components/ntp_background_images/buildflags",
-    "//express/components/ntp_background_images/common",
-    "//express/components/p3a_utils",
-    "//express/components/time_period_storage",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/components/brave_rewards/common",
+    "//brave/components/l10n/common",
+    "//brave/components/ntp_background_images/buildflags",
+    "//brave/components/ntp_background_images/common",
+    "//brave/components/p3a_utils",
+    "//brave/components/time_period_storage",
     "//components/component_updater",
     "//components/keyed_service/core",
     "//components/pref_registry:pref_registry",
@@ -61,11 +61,11 @@ static_library("browser") {
   ]
 
   if (is_ios) {
-    deps += [ "//express/extensions:common" ]
+    deps += [ "//brave/extensions:common" ]
   } else {
     deps += [
-      "//express/components/brave_ads/browser",
-      "//express/components/brave_referrals/browser",
+      "//brave/components/brave_ads/browser",
+      "//brave/components/brave_referrals/browser",
       "//content/public/browser",
       "//content/public/common",
     ]

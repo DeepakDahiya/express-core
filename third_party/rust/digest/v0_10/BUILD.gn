@@ -11,27 +11,27 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/digest/v0_10/crate/src/core_api.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/core_api/ct_variable.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/core_api/rt_variable.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/core_api/wrapper.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/core_api/xof_reader.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/dev.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/dev/fixed.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/dev/mac.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/dev/rng.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/dev/variable.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/dev/xof.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/digest.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/lib.rs",
-    "//express/third_party/rust/digest/v0_10/crate/src/mac.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/core_api.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/core_api/ct_variable.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/core_api/rt_variable.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/core_api/wrapper.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/core_api/xof_reader.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/dev.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/dev/fixed.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/dev/mac.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/dev/rng.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/dev/variable.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/dev/xof.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/digest.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/lib.rs",
+    "//brave/third_party/rust/digest/v0_10/crate/src/mac.rs",
   ]
   inputs = [
-    "//express/third_party/rust/digest/v0_10/crate/CHANGELOG.md",
-    "//express/third_party/rust/digest/v0_10/crate/README.md",
+    "//brave/third_party/rust/digest/v0_10/crate/CHANGELOG.md",
+    "//brave/third_party/rust/digest/v0_10/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -47,9 +47,9 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/block_buffer/v0_10:lib",
-    "//express/third_party/rust/crypto_common/v0_1:lib",
-    "//express/third_party/rust/subtle/v2:lib",
+    "//brave/third_party/rust/block_buffer/v0_10:lib",
+    "//brave/third_party/rust/crypto_common/v0_1:lib",
+    "//brave/third_party/rust/subtle/v2:lib",
   ]
   features = [
     "alloc",

@@ -3,9 +3,9 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/brave_webtorrent/browser/buildflags/buildflags.gni")
-import("//express/components/ipfs/buildflags/buildflags.gni")
-import("//express/components/tor/buildflags/buildflags.gni")
+import("//brave/components/brave_webtorrent/browser/buildflags/buildflags.gni")
+import("//brave/components/ipfs/buildflags/buildflags.gni")
+import("//brave/components/tor/buildflags/buildflags.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 
@@ -73,24 +73,24 @@ source_set("net") {
   deps = [
     ":geolocation",
     "//base",
-    "//express/app:brave_generated_resources_grit",
-    "//express/browser/safebrowsing",
-    "//express/common",
-    "//express/components/brave_ads/browser",
-    "//express/components/brave_component_updater/browser",
-    "//express/components/brave_referrals/browser",
-    "//express/components/brave_shields/browser",
-    "//express/components/brave_shields/common",
-    "//express/components/brave_wallet/browser",
-    "//express/components/brave_wallet/common",
-    "//express/components/brave_webtorrent/browser/buildflags",
-    "//express/components/constants",
-    "//express/components/constants:brave_service_key_helper",
-    "//express/components/decentralized_dns/content",
-    "//express/components/ipfs/buildflags",
-    "//express/components/update_client:buildflags",
-    "//express/components/widevine:static_buildflags",
-    "//express/extensions:common",
+    "//brave/app:brave_generated_resources_grit",
+    "//brave/browser/safebrowsing",
+    "//brave/common",
+    "//brave/components/brave_ads/browser",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/components/brave_referrals/browser",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/brave_shields/common",
+    "//brave/components/brave_wallet/browser",
+    "//brave/components/brave_wallet/common",
+    "//brave/components/brave_webtorrent/browser/buildflags",
+    "//brave/components/constants",
+    "//brave/components/constants:brave_service_key_helper",
+    "//brave/components/decentralized_dns/content",
+    "//brave/components/ipfs/buildflags",
+    "//brave/components/update_client:buildflags",
+    "//brave/components/widevine:static_buildflags",
+    "//brave/extensions:common",
     "//components/content_settings/core/browser",
     "//components/prefs",
     "//components/proxy_config",
@@ -119,7 +119,7 @@ source_set("net") {
       "ipfs_redirect_network_delegate_helper.h",
     ]
     deps += [
-      "//express/components/ipfs",
+      "//brave/components/ipfs",
       "//chrome/common:channel_info",
     ]
   }
@@ -131,7 +131,7 @@ source_set("net") {
     ]
 
     deps += [
-      "//express/components/brave_webtorrent/browser/",
+      "//brave/components/brave_webtorrent/browser/",
       "//extensions/browser",
     ]
   }
@@ -150,11 +150,11 @@ source_set("browser_tests") {
     "global_privacy_control_network_delegate_helper_browsertest.cc",
   ]
   deps = [
-    "//express/browser/net",
-    "//express/components/brave_shields/browser",
-    "//express/components/brave_shields/common",
-    "//express/components/query_filter",
-    "//express/components/tor/buildflags",
+    "//brave/browser/net",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/brave_shields/common",
+    "//brave/components/query_filter",
+    "//brave/components/tor/buildflags",
     "//chrome/browser",
     "//chrome/browser:browser_process",
     "//chrome/browser/profiles:profile",
@@ -175,8 +175,8 @@ source_set("browser_tests") {
   }
   if (enable_tor) {
     deps += [
-      "//express/browser/tor",
-      "//express/components/tor",
+      "//brave/browser/tor",
+      "//brave/components/tor",
     ]
   }
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
@@ -198,16 +198,16 @@ source_set("unit_tests") {
   ]
 
   deps = [
-    "//express/browser/net",
-    "//express/browser/net:geolocation",
-    "//express/components/brave_ads/browser",
-    "//express/components/brave_ads/browser:test_support",
-    "//express/components/brave_component_updater/browser",
-    "//express/components/brave_rewards/browser",
-    "//express/components/brave_rewards/common",
-    "//express/components/brave_rewards/common:features",
-    "//express/components/brave_shields/browser",
-    "//express/components/l10n/common:test_support",
+    "//brave/browser/net",
+    "//brave/browser/net:geolocation",
+    "//brave/components/brave_ads/browser",
+    "//brave/components/brave_ads/browser:test_support",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/components/brave_rewards/browser",
+    "//brave/components/brave_rewards/common",
+    "//brave/components/brave_rewards/common:features",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/l10n/common:test_support",
     "//chrome/test:test_support",
     "//content/test:test_support",
     "//net",
@@ -220,13 +220,13 @@ source_set("unit_tests") {
 
   if (enable_brave_webtorrent) {
     sources += [
-      "//express/browser/extensions/brave_webtorrent_navigation_throttle_unittest.cc",
-      "//express/browser/net/brave_torrent_redirect_network_delegate_helper_unittest.cc",
+      "//brave/browser/extensions/brave_webtorrent_navigation_throttle_unittest.cc",
+      "//brave/browser/net/brave_torrent_redirect_network_delegate_helper_unittest.cc",
     ]
 
     deps += [
-      "//express/browser/extensions",
-      "//express/components/brave_referrals/browser",
+      "//brave/browser/extensions",
+      "//brave/components/brave_referrals/browser",
     ]
   }
 
@@ -235,6 +235,6 @@ source_set("unit_tests") {
       # TODO(samartnik): this should work on Android, we will review it once unit tests are set up on CI
       "brave_referrals_network_delegate_helper_unittest.cc",
     ]
-    deps += [ "//express/components/brave_referrals/browser" ]
+    deps += [ "//brave/components/brave_referrals/browser" ]
   }
 }

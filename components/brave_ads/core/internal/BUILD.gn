@@ -6,8 +6,8 @@
 config("internal_config") {
   visibility = [
     ":*",
-    "//express/components/brave_ads/core",
-    "//express/components/brave_ads/core/test:brave_ads_unit_tests",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_ads/core/test:brave_ads_unit_tests",
   ]
 }
 
@@ -1307,17 +1307,17 @@ static_library("internal") {
 
   deps = [
     "//base",
-    "//express/components/brave_news/common",
-    "//express/components/brave_rewards/common",
-    "//express/components/brave_rewards/core",
-    "//express/components/constants",
-    "//express/components/l10n/common",
-    "//express/components/ntp_background_images/common",
-    "//express/components/version_info",
-    "//express/third_party/challenge_bypass_ristretto_ffi:rust_lib",
-    "//express/third_party/rapidjson",
-    "//express/vendor/bat-native-tweetnacl:tweetnacl",
-    "//express/vendor/brave_base",
+    "//brave/components/brave_news/common",
+    "//brave/components/brave_rewards/common",
+    "//brave/components/brave_rewards/core",
+    "//brave/components/constants",
+    "//brave/components/l10n/common",
+    "//brave/components/ntp_background_images/common",
+    "//brave/components/version_info",
+    "//brave/third_party/challenge_bypass_ristretto_ffi:rust_lib",
+    "//brave/third_party/rapidjson",
+    "//brave/vendor/bat-native-tweetnacl:tweetnacl",
+    "//brave/vendor/brave_base",
     "//components/variations:variations",
     "//crypto",
     "//net",
@@ -1330,8 +1330,8 @@ static_library("internal") {
   ]
 
   public_deps = [
-    "//express/components/brave_ads/core/mojom",
-    "//express/components/brave_ads/core/public:headers",
-    "//express/components/brave_federated/public/interfaces",
+    "//brave/components/brave_ads/core/mojom",
+    "//brave/components/brave_ads/core/public:headers",
+    "//brave/components/brave_federated/public/interfaces",
   ]
 }

@@ -6,7 +6,7 @@ index d8d9a6b8de8788c4dad03b6bdb0ca33c8348fd02..686d5361d3b63ea7034c1d16b60c0e96
  # toolchain, this GNI file may be read and processed from within Chrome OS
  # toolchains. Checking |is_android| here would therefore be too restrictive.
  if (is_android || is_chromeos) {
-+  import("//express/build/android/config.gni")
++  import("//brave/build/android/config.gni")
    import("//build/config/android/channel.gni")
    import("//build/config/chromecast_build.gni")
    import("//build/config/clang/clang.gni")

@@ -16,11 +16,11 @@ source_set("brave_shields") {
   ]
   deps = [
     "//base",
-    "//express/base/mac",
-    "//express/components/brave_component_updater/browser",
-    "//express/components/brave_shields/adblock:rust_lib",
-    "//express/components/brave_shields/browser:component_installer",
-    "//express/components/brave_shields/common",
+    "//brave/base/mac",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/components/brave_shields/adblock:rust_lib",
+    "//brave/components/brave_shields/browser:component_installer",
+    "//brave/components/brave_shields/common",
     "//components/component_updater",
   ]
 }

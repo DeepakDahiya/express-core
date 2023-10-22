@@ -10,15 +10,15 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/lib.rs"
   sources = [
-    "//express/third_party/rust/markup5ever/v0_10/crate/build.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/data/mod.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/entities.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/interface/mod.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/interface/tree_builder.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/lib.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/serialize.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/util/buffer_queue.rs",
-    "//express/third_party/rust/markup5ever/v0_10/crate/util/smallcharset.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/build.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/data/mod.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/entities.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/interface/mod.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/interface/tree_builder.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/lib.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/serialize.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/util/buffer_queue.rs",
+    "//brave/third_party/rust/markup5ever/v0_10/crate/util/smallcharset.rs",
   ]
   inputs = []
 
@@ -34,14 +34,14 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/phf/v0_8:lib",
-    "//express/third_party/rust/string_cache/v0_8:lib",
-    "//express/third_party/rust/tendril/v0_4:lib",
+    "//brave/third_party/rust/phf/v0_8:lib",
+    "//brave/third_party/rust/string_cache/v0_8:lib",
+    "//brave/third_party/rust/tendril/v0_4:lib",
     "//third_party/rust/log/v0_4:lib",
   ]
   build_deps = [
-    "//express/third_party/rust/phf_codegen/v0_8:buildrs_support",
-    "//express/third_party/rust/string_cache_codegen/v0_5:buildrs_support",
+    "//brave/third_party/rust/phf_codegen/v0_8:buildrs_support",
+    "//brave/third_party/rust/string_cache_codegen/v0_5:buildrs_support",
   ]
   build_root = "crate/build.rs"
   build_sources = [
@@ -53,6 +53,6 @@ cargo_crate("lib") {
     "named_entities.rs",
   ]
   cargo_manifest_dir =
-      rebase_path("//express/third_party/rust/markup5ever/v0_10/crate")
+      rebase_path("//brave/third_party/rust/markup5ever/v0_10/crate")
   rustenv = [ "CARGO_MANIFEST_DIR=$cargo_manifest_dir" ]
 }

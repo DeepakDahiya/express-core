@@ -6,5 +6,5 @@ index ab7574451171a5a4fb496946b2656df8f49e4081..5cb0e36745263ca043020a7093c9c1d1
  # Chrome and Chromium share the same endpoints for now.
  update_check_url = "https://update.googleapis.com/service/update2/json"
  device_management_server_url = "https://m.google.com/devicemanagement/data/api"
-+import("//express/chromium_src/chrome/updater/branding.gni") forward_variables_from(brave_updater_branding, "*")
++import("//brave/chromium_src/chrome/updater/branding.gni") forward_variables_from(brave_updater_branding, "*")
 \ No newline at end of file

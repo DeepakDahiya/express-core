@@ -33,7 +33,7 @@ constexpr char kJson[] =
           "brand": "title",
           "brandDisplayUrl": "brave.com",
           "brandInfo": "description",
-          "brandUrl": "https://express.com/",
+          "brandUrl": "https://brave.com/",
           "campaignId": "84197fc8-830a-4a8e-8339-7a70c2bfa104",
           "creativeInstanceId": "546fe7b0-5047-4f28-a11c-81f14edcf0f6",
           "creativeSetId": "c2ba3e7d-f688-4bc4-a053-cbe7ac1e6123",

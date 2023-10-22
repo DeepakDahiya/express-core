@@ -18,13 +18,13 @@ source_set("preferences") {
 
   deps = [
     "//base",
-    "//express/common",
-    "//express/components/brave_referrals/common",
-    "//express/components/brave_rewards/common",
-    "//express/components/brave_shields/browser",
-    "//express/components/brave_shields/common",
-    "//express/components/brave_sync",
-    "//express/components/p3a",
+    "//brave/common",
+    "//brave/components/brave_referrals/common",
+    "//brave/components/brave_rewards/common",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/brave_shields/common",
+    "//brave/components/brave_sync",
+    "//brave/components/p3a",
     "//components/content_settings/core/browser",
     "//components/prefs",
     "//content/public/browser",
@@ -35,24 +35,24 @@ source_set("preferences") {
 
 java_cpp_strings("java_pref_names_srcjar") {
   sources = [
-    "//express/components/ai_chat/common/pref_names.h",
-    "//express/components/brave_adaptive_captcha/pref_names.cc",
-    "//express/components/brave_rewards/common/pref_names.cc",
-    "//express/components/brave_shields/common/pref_names.cc",
-    "//express/components/brave_vpn/common/pref_names.cc",
-    "//express/components/constants/pref_names.cc",
-    "//express/components/de_amp/common/pref_names.cc",
-    "//express/components/debounce/common/pref_names.cc",
-    "//express/components/decentralized_dns/core/pref_names.cc",
-    "//express/components/ipfs/pref_names.cc",
-    "//express/components/ntp_background_images/common/pref_names.cc",
-    "//express/components/omnibox/browser/brave_omnibox_prefs.cc",
-    "//express/components/p3a/pref_names.cc",
-    "//express/components/request_otr/common/pref_names.cc",
-    "//express/components/speedreader/speedreader_pref_names.h",
+    "//brave/components/ai_chat/common/pref_names.h",
+    "//brave/components/brave_adaptive_captcha/pref_names.cc",
+    "//brave/components/brave_rewards/common/pref_names.cc",
+    "//brave/components/brave_shields/common/pref_names.cc",
+    "//brave/components/brave_vpn/common/pref_names.cc",
+    "//brave/components/constants/pref_names.cc",
+    "//brave/components/de_amp/common/pref_names.cc",
+    "//brave/components/debounce/common/pref_names.cc",
+    "//brave/components/decentralized_dns/core/pref_names.cc",
+    "//brave/components/ipfs/pref_names.cc",
+    "//brave/components/ntp_background_images/common/pref_names.cc",
+    "//brave/components/omnibox/browser/brave_omnibox_prefs.cc",
+    "//brave/components/p3a/pref_names.cc",
+    "//brave/components/request_otr/common/pref_names.cc",
+    "//brave/components/speedreader/speedreader_pref_names.h",
     "//components/translate/core/browser/translate_pref_names.cc",
   ]
 
   template =
-      "//express/browser/preferences/android/java_templates/BravePref.java.tmpl"
+      "//brave/browser/preferences/android/java_templates/BravePref.java.tmpl"
 }

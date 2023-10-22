@@ -3,20 +3,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import("//express/build/config.gni")
-import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//brave/build/config.gni")
+import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//testing/test.gni")
 
 source_set("ipfs_service_unit_tests") {
   testonly = true
   if (enable_ipfs) {
     sources =
-        [ "//express/components/services/ipfs/ipfs_service_utils_unittest.cc" ]
+        [ "//brave/components/services/ipfs/ipfs_service_utils_unittest.cc" ]
 
     deps = [
       "//base/test:test_support",
-      "//express/components/services/ipfs",
-      "//express/components/services/ipfs/public/mojom",
+      "//brave/components/services/ipfs",
+      "//brave/components/services/ipfs/public/mojom",
       "//testing/gtest",
     ]
   }  # if (enable_ipfs)

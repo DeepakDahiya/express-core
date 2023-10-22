@@ -21,8 +21,8 @@ using brave::ResponseCallback;
 
 TEST(BraveSiteHacksNetworkDelegateHelperTest, UANotAllowedTest) {
   const std::vector<const GURL> urls(
-      {GURL("https://brianbondy.com"), GURL("https://expresscombo.com"),
-       GURL("https://express.example.com"),
+      {GURL("https://brianbondy.com"), GURL("https://bravecombo.com"),
+       GURL("https://brave.example.com"),
        GURL("https://a.netflix.com/something"),
        GURL("https://a.duckduckgo.com/something")});
   for (const auto& url : urls) {
@@ -106,7 +106,7 @@ TEST(BraveSiteHacksNetworkDelegateHelperTest, OnionReferrerStripped) {
   const GURL original_referrer(
       "https://"
       "brave4u7jddbv7cyviptqjc7jusxh72uik7zt6adtckl5f4nwy2v72qd.onion/");
-  const GURL destination("https://express.com");
+  const GURL destination("https://brave.com");
 
   // Cross-origin request from a .onion gets empty referrer.
   auto url1 = net::URLRequestJob::ComputeReferrerForPolicy(

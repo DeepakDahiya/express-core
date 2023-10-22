@@ -17,7 +17,7 @@ constexpr char kManageUrlDev[] = "https://account.brave.software/account/";
 
 // TODO(simonhong): Update when vpn feedback url is ready.
 constexpr char kFeedbackUrl[] = "https://support.brave.com/";
-constexpr char kAboutUrl[] = "https://express.com/firewall-vpn/";
+constexpr char kAboutUrl[] = "https://brave.com/firewall-vpn/";
 
 constexpr char kRegionContinentKey[] = "continent";
 constexpr char kRegionNameKey[] = "name";

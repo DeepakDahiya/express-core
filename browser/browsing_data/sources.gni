@@ -3,19 +3,19 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 brave_browser_browsing_data_sources = [
-  "//express/browser/browsing_data/brave_browsing_data_remover_delegate.cc",
-  "//express/browser/browsing_data/brave_browsing_data_remover_delegate.h",
-  "//express/browser/browsing_data/brave_clear_browsing_data.cc",
-  "//express/browser/browsing_data/brave_clear_browsing_data.h",
+  "//brave/browser/browsing_data/brave_browsing_data_remover_delegate.cc",
+  "//brave/browser/browsing_data/brave_browsing_data_remover_delegate.h",
+  "//brave/browser/browsing_data/brave_clear_browsing_data.cc",
+  "//brave/browser/browsing_data/brave_clear_browsing_data.h",
 ]
 
 brave_browser_browsing_data_deps = [
   "//base",
-  "//express/components/ipfs/buildflags",
+  "//brave/components/ipfs/buildflags",
   "//chrome/browser:browser_process",
   "//chrome/browser/browsing_data:constants",
   "//chrome/browser/profiles:profile",
@@ -29,11 +29,11 @@ brave_browser_browsing_data_deps = [
 
 if (enable_extensions) {
   brave_browser_browsing_data_deps += [
-    "//express/common/extensions/api",
+    "//brave/common/extensions/api",
     "//extensions/browser",
   ]
 }
 
 if (enable_ipfs) {
-  brave_browser_browsing_data_deps += [ "//express/components/ipfs" ]
+  brave_browser_browsing_data_deps += [ "//brave/components/ipfs" ]
 }

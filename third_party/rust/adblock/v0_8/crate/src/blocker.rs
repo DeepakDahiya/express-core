@@ -1879,7 +1879,7 @@ fn test_removeparam_same_tokens() {
             ("http://example.com/advert.html", true),
             ("http://example.com/somelongpath/test/2.html", true),
             ("https://brianbondy.com/about", false),
-            ("https://express.com/about", false),
+            ("https://brave.com/about", false),
         ];
 
         let request_expectations: Vec<_> = url_results
@@ -1923,7 +1923,7 @@ fn test_removeparam_same_tokens() {
             ("http://example.com/advert.html", true),
             ("http://example.com/somelongpath/test/2.html", true),
             ("https://brianbondy.com/about", true),
-            ("https://express.com/about", true),
+            ("https://brave.com/about", true),
         ];
 
         let request_expectations: Vec<_> = url_results
@@ -1968,7 +1968,7 @@ fn test_removeparam_same_tokens() {
             ("http://example.com/advert.html", false),
             ("http://example.com/somelongpath/test/2.html", false),
             ("https://brianbondy.com/about", true),
-            ("https://express.com/about", true),
+            ("https://brave.com/about", true),
         ];
 
         let request_expectations: Vec<_> = url_results
@@ -2070,7 +2070,7 @@ fn test_removeparam_same_tokens() {
             ("http://example.com/advert.html", false),
             ("http://example.com/somelongpath/test/2.html", false),
             ("https://brianbondy.com/about", true),
-            ("https://express.com/about", true),
+            ("https://brave.com/about", true),
         ];
 
         let request_expectations: Vec<_> = url_results

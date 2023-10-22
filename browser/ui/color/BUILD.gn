@@ -16,7 +16,7 @@ source_set("unit_tests") {
 }
 
 copy("copy_leo_colors") {
-  sources = [ "//express/node_modules/@brave/leo/tokens/skia/colors.h" ]
+  sources = [ "//brave/node_modules/@brave/leo/tokens/skia/colors.h" ]
 
   outputs = [ "$root_out_dir/gen/brave/browser/ui/color/leo/colors.h" ]
 }

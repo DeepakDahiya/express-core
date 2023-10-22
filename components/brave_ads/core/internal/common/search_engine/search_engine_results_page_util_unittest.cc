@@ -22,7 +22,7 @@ TEST(BraveAdsSearchEngineResultsPageUtilTest, IsSearchEngineResultsPage) {
 
 TEST(BraveAdsSearchEngineResultsPageUtilTest, IsNotSearchEngineResultsPage) {
   // Act & Assert
-  EXPECT_FALSE(IsSearchEngineResultsPage(GURL("https://express.com/")));
+  EXPECT_FALSE(IsSearchEngineResultsPage(GURL("https://brave.com/")));
 }
 
 TEST(BraveAdsSearchEngineResultsPageUtilTest,

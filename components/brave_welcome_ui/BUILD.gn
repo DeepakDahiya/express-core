@@ -1,4 +1,4 @@
-import("//express/components/common/typescript.gni")
+import("//brave/components/common/typescript.gni")
 
 transpile_web_ui("brave_welcome_ui") {
   entry_points = [

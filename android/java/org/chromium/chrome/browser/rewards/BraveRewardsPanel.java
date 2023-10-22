@@ -101,7 +101,7 @@ public class BraveRewardsPanel
     public static final String PREF_WAS_BRAVE_REWARDS_TURNED_ON = "brave_rewards_turned_on";
     public static final String PREF_GRANTS_NOTIFICATION_RECEIVED = "grants_notification_received";
     public static final String PREF_ON_BOARDING_COMPLETED = "on_boarding_completed";
-    public static final String REWARDS_TOUR_URL = "http://express.com/rewards-tour";
+    public static final String REWARDS_TOUR_URL = "http://brave.com/rewards-tour";
     public static final String PREF_WAS_TOOLBAR_BAT_LOGO_BUTTON_PRESSED =
             "was_toolbar_bat_logo_button_pressed";
     private static final String UNVERIFIED_USER_UNSUPPORTED_REGION_PAGE =
@@ -111,8 +111,8 @@ public class BraveRewardsPanel
     private static final String ADS_PAYOUT_STATUS_URL =
             "https://community.brave.com/t/ads-payout-status-update/287895";
     private static final String SUPPORT_URL = "https://support.brave.com";
-    private static final String BRAVE_REWARDS_PAGE = "https://express.com/rewards";
-    private static final String BRAVE_REWARDS_CHANGES_PAGE = "https://express.com/rewards-changes";
+    private static final String BRAVE_REWARDS_PAGE = "https://brave.com/rewards";
+    private static final String BRAVE_REWARDS_CHANGES_PAGE = "https://brave.com/rewards-changes";
 
     private static final String TAG = "BraveRewards";
     private static final int UPDATE_BALANCE_INTERVAL = 60000; // In milliseconds

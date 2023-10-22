@@ -4,12 +4,12 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_components_content_settings_renderer_sources = [
-  "//express/components/content_settings/renderer/brave_content_settings_agent_impl.cc",
-  "//express/components/content_settings/renderer/brave_content_settings_agent_impl.h",
+  "//brave/components/content_settings/renderer/brave_content_settings_agent_impl.cc",
+  "//brave/components/content_settings/renderer/brave_content_settings_agent_impl.h",
 ]
 
 brave_components_content_settings_renderer_deps = [
-  "//express/components/brave_shields/common",
-  "//express/components/brave_shields/common:mojom",
-  "//express/third_party/blink/renderer",
+  "//brave/components/brave_shields/common",
+  "//brave/components/brave_shields/common:mojom",
+  "//brave/third_party/blink/renderer",
 ]

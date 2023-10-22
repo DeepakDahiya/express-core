@@ -76,7 +76,7 @@ IN_PROC_BROWSER_TEST_F(BraveWhatsNewBrowserTest,
                        WhatsNewPageLaunchTestWithUpdatedUser) {
   // Two tabs - first one is whats-new and another one is welcome
   EXPECT_EQ(2, tab_model()->count());
-  EXPECT_EQ(GURL("https://express.com/whats-new/"),
+  EXPECT_EQ(GURL("https://brave.com/whats-new/"),
             tab_model()->GetActiveWebContents()->GetVisibleURL());
   EXPECT_EQ(1.52, local_state()->GetDouble(prefs::kWhatsNewLastVersion));
 }
@@ -100,7 +100,7 @@ IN_PROC_BROWSER_TEST_F(BraveWhatsNewBrowserTest,
   // One tabs - it's is welcome page. whats-new tab is only added to updated
   // user.
   EXPECT_EQ(1, tab_model()->count());
-  EXPECT_NE(GURL("https://express.com/whats-new/"),
+  EXPECT_NE(GURL("https://brave.com/whats-new/"),
             tab_model()->GetActiveWebContents()->GetVisibleURL());
 }
 

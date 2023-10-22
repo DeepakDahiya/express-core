@@ -1,5 +1,5 @@
 import("//build/buildflag_header.gni")
-import("//express/components/greaselion/browser/buildflags/buildflags.gni")
+import("//brave/components/greaselion/browser/buildflags/buildflags.gni")
 
 buildflag_header("buildflags") {
   header = "buildflags.h"

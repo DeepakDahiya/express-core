@@ -11,9 +11,9 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/lib.rs"
-  sources = [ "//express/third_party/rust/cssparser_macros/v0_6/crate/lib.rs" ]
+  sources = [ "//brave/third_party/rust/cssparser_macros/v0_6/crate/lib.rs" ]
   inputs = []
 
   # Unit tests skipped. Generate with --with-tests to include them.

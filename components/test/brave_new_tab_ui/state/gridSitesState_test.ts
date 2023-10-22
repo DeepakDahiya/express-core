@@ -10,7 +10,7 @@ import * as gridSitesState from '../../../brave_new_tab_ui/state/gridSitesState'
 import * as storage from '../../../brave_new_tab_ui/storage/grid_sites_storage'
 
 const newTopSite1: chrome.topSites.MostVisitedURL = {
-  url: 'https://express.com',
+  url: 'https://brave.com',
   title: 'brave!'
 }
 

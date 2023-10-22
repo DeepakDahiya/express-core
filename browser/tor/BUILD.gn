@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/tor/buildflags/buildflags.gni")
+import("//brave/components/tor/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 assert(enable_tor)
@@ -13,13 +13,13 @@ source_set("tor") {
   check_includes = false
   visibility = [
     ":*",
-    "//express/browser",
-    "//express/browser/decentralized_dns/test:unit_tests",
-    "//express/browser/ipfs/test:*",
-    "//express/browser/net:browser_tests",
-    "//express/browser/profiles",
-    "//express/browser/ui",
-    "//express/test:*",
+    "//brave/browser",
+    "//brave/browser/decentralized_dns/test:unit_tests",
+    "//brave/browser/ipfs/test:*",
+    "//brave/browser/net:browser_tests",
+    "//brave/browser/profiles",
+    "//brave/browser/ui",
+    "//brave/test:*",
     "//chrome/browser",
   ]
 
@@ -34,10 +34,10 @@ source_set("tor") {
 
   deps = [
     "//base",
-    "//express/components/brave_webtorrent/browser/buildflags",
-    "//express/components/constants",
-    "//express/components/tor",
-    "//express/components/tor:pref_names",
+    "//brave/components/brave_webtorrent/browser/buildflags",
+    "//brave/components/constants",
+    "//brave/components/tor",
+    "//brave/components/tor:pref_names",
     "//chrome/common",
     "//components/autofill/content/browser",
     "//components/autofill/core/browser",
@@ -56,8 +56,8 @@ source_set("tor") {
   # headers. That header includes some buildflags but sometimes they are
   # not generated before evaluating tor target.
   deps += [
-    "//express/components/greaselion/browser/buildflags",
-    "//express/components/speedreader/common/buildflags",
+    "//brave/components/greaselion/browser/buildflags",
+    "//brave/components/speedreader/common/buildflags",
   ]
 }
 
@@ -72,11 +72,11 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//express/browser/tor",
-    "//express/components/brave_webtorrent/browser/buildflags",
-    "//express/components/constants",
-    "//express/components/tor",
-    "//express/components/tor:test_support",
+    "//brave/browser/tor",
+    "//brave/components/brave_webtorrent/browser/buildflags",
+    "//brave/components/constants",
+    "//brave/components/tor",
+    "//brave/components/tor:test_support",
     "//chrome/browser/devtools",
     "//chrome/common",
     "//chrome/test:test_support",
@@ -105,19 +105,19 @@ source_set("browser_tests") {
 
   deps = [
     "//base",
-    "//express/app:brave_generated_resources_grit",
-    "//express/browser",
-    "//express/browser/tor",
-    "//express/common",
-    "//express/components/brave_ads/browser",
-    "//express/components/brave_component_updater/browser",
-    "//express/components/brave_shields/browser",
-    "//express/components/constants",
-    "//express/components/ipfs/buildflags",
-    "//express/components/l10n/common",
-    "//express/components/tor",
-    "//express/components/tor:pref_names",
-    "//express/components/tor:test_support",
+    "//brave/app:brave_generated_resources_grit",
+    "//brave/browser",
+    "//brave/browser/tor",
+    "//brave/common",
+    "//brave/components/brave_ads/browser",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/constants",
+    "//brave/components/ipfs/buildflags",
+    "//brave/components/l10n/common",
+    "//brave/components/tor",
+    "//brave/components/tor:pref_names",
+    "//brave/components/tor:test_support",
     "//chrome/browser",
     "//chrome/browser:browser_process",
     "//chrome/browser/ui",

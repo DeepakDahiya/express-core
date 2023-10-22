@@ -156,7 +156,7 @@ IN_PROC_BROWSER_TEST_F(IpfsTabHelperBrowserTest, ResolvedIPFSLinkLocal) {
   ASSERT_TRUE(WaitForLoadStop(active_contents()));
   ASSERT_TRUE(resolver_raw->resolve_called());
   resolved_url = helper->GetIPFSResolvedURL();
-  EXPECT_EQ(resolved_url, GURL("ipns://express.eth/empty.html?query#ref"));
+  EXPECT_EQ(resolved_url, GURL("ipns://brave.eth/empty.html?query#ref"));
 
   resolver_raw->ResetResolveCalled();
   SetXIpfsPathHeader("/ipfs/bafy");

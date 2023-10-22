@@ -269,7 +269,7 @@ mod tests {
             ("http://example.com/advert.html", true),
             ("http://example.com/somelongpath/test/2.html", true),
             ("https://brianbondy.com/about", true),
-            ("https://express.com/about", true),
+            ("https://brave.com/about", true),
         ];
 
         let mut engine = Engine::from_rules(&filters, Default::default());
@@ -299,7 +299,7 @@ mod tests {
             ("http://example.com/advert.html", false),
             ("http://example.com/somelongpath/test/2.html", false),
             ("https://brianbondy.com/about", true),
-            ("https://express.com/about", true),
+            ("https://brave.com/about", true),
         ];
 
         let mut engine = Engine::from_rules(&filters, Default::default());
@@ -382,7 +382,7 @@ mod tests {
             ("http://example.com/advert.html", true),
             ("http://example.com/somelongpath/test/2.html", true),
             ("https://brianbondy.com/about", false),
-            ("https://express.com/about", false),
+            ("https://brave.com/about", false),
         ];
 
         let mut engine = Engine::from_rules(&filters, Default::default());

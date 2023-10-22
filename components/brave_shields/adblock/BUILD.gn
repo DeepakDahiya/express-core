@@ -5,10 +5,10 @@
 
 group("rust_lib") {
   visibility = [
-    "//express/components/brave_shields/browser:*",
-    "//express/components/brave_shields/common:*",
-    "//express/fuzzers:*",
-    "//express/ios/browser/api/brave_shields:*",
+    "//brave/components/brave_shields/browser:*",
+    "//brave/components/brave_shields/common:*",
+    "//brave/fuzzers:*",
+    "//brave/ios/browser/api/brave_shields:*",
   ]
   deps = [ "resolver" ]
 

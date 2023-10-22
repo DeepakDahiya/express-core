@@ -1,4 +1,4 @@
-import("//express/components/tor/buildflags/buildflags.gni")
+import("//brave/components/tor/buildflags/buildflags.gni")
 import("//chrome/common/features.gni")
 
 assert(enable_tor)
@@ -6,7 +6,7 @@ assert(enable_tor)
 static_library("tor") {
   public_deps = [
     ":common",
-    "//express/components/tor/buildflags",
+    "//brave/components/tor/buildflags",
   ]
 
   sources = [ "tor_launcher_observer.h" ]
@@ -45,9 +45,9 @@ static_library("tor") {
   ]
 
   deps += [
-    "//express/components/brave_component_updater/browser",
-    "//express/components/resources:strings",
-    "//express/components/services/tor/public/interfaces",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/components/resources:strings",
+    "//brave/components/services/tor/public/interfaces",
     "//components/pref_registry",
     "//components/prefs",
     "//components/user_prefs",
@@ -96,7 +96,7 @@ source_set("tor_unit_tests") {
 
   deps = [
     "//base/test:test_support",
-    "//express/components/tor",
+    "//brave/components/tor",
     "//content/public/browser",
     "//content/test:test_support",
     "//testing/gtest",

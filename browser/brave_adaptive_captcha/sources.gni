@@ -4,15 +4,15 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 brave_browser_brave_adaptive_captcha_sources = [
-  "//express/browser/brave_adaptive_captcha/brave_adaptive_captcha_service_factory.cc",
-  "//express/browser/brave_adaptive_captcha/brave_adaptive_captcha_service_factory.h",
+  "//brave/browser/brave_adaptive_captcha/brave_adaptive_captcha_service_factory.cc",
+  "//brave/browser/brave_adaptive_captcha/brave_adaptive_captcha_service_factory.h",
 ]
 
 brave_browser_brave_adaptive_captcha_deps = [
   "//base",
-  "//express/browser/profiles:util",
-  "//express/components/brave_adaptive_captcha",
-  "//express/components/brave_rewards/browser",
+  "//brave/browser/profiles:util",
+  "//brave/components/brave_adaptive_captcha",
+  "//brave/components/brave_rewards/browser",
   "//chrome/browser/profiles:profile",
   "//components/keyed_service/content:content",
   "//components/user_prefs:user_prefs",

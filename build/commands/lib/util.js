@@ -564,7 +564,7 @@ const util = {
 
     Log.progressStart('build redirect_cc')
     gnArgs = {
-      'import("//express/tools/redirect_cc/args.gni")': null,
+      'import("//brave/tools/redirect_cc/args.gni")': null,
       use_goma: config.use_goma,
       goma_dir: config.realGomaDir,
       real_gomacc: path.join(config.realGomaDir, 'gomacc'),

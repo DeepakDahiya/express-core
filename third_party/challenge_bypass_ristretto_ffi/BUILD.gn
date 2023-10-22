@@ -26,10 +26,10 @@ rust_static_library("rust_lib") {
   sources = [ "src/lib.rs" ]
 
   deps = [
-    "//express/third_party/rust/challenge_bypass_ristretto/v1:lib",
-    "//express/third_party/rust/hmac/v0_10:lib",
-    "//express/third_party/rust/rand/v0_7:lib",
-    "//express/third_party/rust/sha2/v0_9:lib",
+    "//brave/third_party/rust/challenge_bypass_ristretto/v1:lib",
+    "//brave/third_party/rust/hmac/v0_10:lib",
+    "//brave/third_party/rust/rand/v0_7:lib",
+    "//brave/third_party/rust/sha2/v0_9:lib",
     "//third_party/rust/base64/v0_13:lib",
   ]
 

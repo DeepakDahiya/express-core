@@ -1,4 +1,4 @@
-import("//express/components/common/typescript.gni")
+import("//brave/components/common/typescript.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 

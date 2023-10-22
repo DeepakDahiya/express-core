@@ -29,12 +29,12 @@ if (!is_android) {
 
     deps = [
       "//base",
-      "//express/browser",
-      "//express/common:common",
-      "//express/components/brave_component_updater/browser:browser",
-      "//express/components/brave_shields/browser:browser",
-      "//express/components/brave_shields/common:common",
-      "//express/components/constants",
+      "//brave/browser",
+      "//brave/common:common",
+      "//brave/components/brave_component_updater/browser:browser",
+      "//brave/components/brave_shields/browser:browser",
+      "//brave/components/brave_shields/common:common",
+      "//brave/components/constants",
       "//chrome/browser",
       "//chrome/browser/ui",
       "//chrome/common",

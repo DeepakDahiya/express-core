@@ -4,14 +4,14 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_browser_brave_wallet_deps =
-    [ "//express/components/brave_wallet/browser:pref_names" ]
+    [ "//brave/components/brave_wallet/browser:pref_names" ]
 
 brave_browser_brave_wallet_sources = []
 if (!is_android) {
   brave_browser_brave_wallet_sources += [
-    "//express/browser/brave_wallet/notifications/wallet_notification_service.cc",
-    "//express/browser/brave_wallet/notifications/wallet_notification_service.h",
-    "//express/browser/brave_wallet/notifications/wallet_notification_service_factory.cc",
-    "//express/browser/brave_wallet/notifications/wallet_notification_service_factory.h",
+    "//brave/browser/brave_wallet/notifications/wallet_notification_service.cc",
+    "//brave/browser/brave_wallet/notifications/wallet_notification_service.h",
+    "//brave/browser/brave_wallet/notifications/wallet_notification_service_factory.cc",
+    "//brave/browser/brave_wallet/notifications/wallet_notification_service_factory.h",
   ]
 }

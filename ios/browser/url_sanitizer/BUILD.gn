@@ -11,10 +11,10 @@ source_set("url_sanitizer") {
   ]
   deps = [
     "//base",
-    "//express/components/url_sanitizer/browser",
-    "//express/ios/browser/api/url_sanitizer",
-    "//express/ios/browser/application_context",
-    "//express/ios/browser/keyed_service",
+    "//brave/components/url_sanitizer/browser",
+    "//brave/ios/browser/api/url_sanitizer",
+    "//brave/ios/browser/application_context",
+    "//brave/ios/browser/keyed_service",
     "//components/keyed_service/core",
     "//components/keyed_service/ios:ios",
     "//ios/chrome/browser/shared/model/application_context",

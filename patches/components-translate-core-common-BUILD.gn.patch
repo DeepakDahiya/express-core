@@ -7,7 +7,7 @@ index fca423135b3037a09498be00981fcaa6e6803157..3c9591c2cb5974801bfeb69c73369c57
      "//url",
    ]
 +
-+  import("//express/components/translate/core/common/sources.gni") sources += brave_components_translate_core_common_sources public_deps = brave_components_translate_core_common_public_deps
++  import("//brave/components/translate/core/common/sources.gni") sources += brave_components_translate_core_common_sources public_deps = brave_components_translate_core_common_public_deps
  }
  
  source_set("unit_tests") {

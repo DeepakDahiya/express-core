@@ -17,33 +17,33 @@ cargo_crate("lib") {
   visibility = [ "//third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/indexmap/v1/crate/benches/bench.rs",
-    "//express/third_party/rust/indexmap/v1/crate/benches/faststring.rs",
-    "//express/third_party/rust/indexmap/v1/crate/build.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/arbitrary.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/equivalent.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/lib.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/macros.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/map.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/map/core.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/map/core/raw.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/mutable_keys.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/rayon/map.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/rayon/mod.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/rayon/set.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/rustc.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/serde.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/serde_seq.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/set.rs",
-    "//express/third_party/rust/indexmap/v1/crate/src/util.rs",
-    "//express/third_party/rust/indexmap/v1/crate/tests/equivalent_trait.rs",
-    "//express/third_party/rust/indexmap/v1/crate/tests/macros_full_path.rs",
-    "//express/third_party/rust/indexmap/v1/crate/tests/quick.rs",
-    "//express/third_party/rust/indexmap/v1/crate/tests/tests.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/benches/bench.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/benches/faststring.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/build.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/arbitrary.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/equivalent.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/macros.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/map.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/map/core.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/map/core/raw.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/mutable_keys.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/rayon/map.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/rayon/mod.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/rayon/set.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/rustc.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/serde.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/serde_seq.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/set.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/src/util.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/tests/equivalent_trait.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/tests/macros_full_path.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/tests/quick.rs",
+    "//brave/third_party/rust/indexmap/v1/crate/tests/tests.rs",
   ]
   inputs = [
-    "//express/third_party/rust/indexmap/v1/crate/README.md",
-    "//express/third_party/rust/indexmap/v1/crate/RELEASES.md",
+    "//brave/third_party/rust/indexmap/v1/crate/README.md",
+    "//brave/third_party/rust/indexmap/v1/crate/RELEASES.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -57,7 +57,7 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//express/third_party/rust/hashbrown/v0_12:lib" ]
+  deps = [ "//brave/third_party/rust/hashbrown/v0_12:lib" ]
   build_deps = [ "//third_party/rust/autocfg/v1:buildrs_support" ]
   build_root = "crate/build.rs"
   build_sources = [ "crate/build.rs" ]

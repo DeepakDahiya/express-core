@@ -28,7 +28,7 @@ TEST_F(BraveAdsCreativeSetConversionBuilderTest, BuildCreativeSetConversion) {
   // Act & Assert
   CreativeSetConversionInfo expected_creative_set_conversion;
   expected_creative_set_conversion.id = kCreativeSetId;
-  expected_creative_set_conversion.url_pattern = "https://express.com/*";
+  expected_creative_set_conversion.url_pattern = "https://brave.com/*";
   expected_creative_set_conversion.verifiable_advertiser_public_key_base64 =
       kVerifiableConversionAdvertiserPublicKey;
   expected_creative_set_conversion.observation_window = base::Days(3);

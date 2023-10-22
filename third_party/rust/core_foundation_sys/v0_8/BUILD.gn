@@ -11,31 +11,31 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/build.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/array.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/attributed_string.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/base.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/bundle.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/characterset.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/data.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/date.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/dictionary.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/error.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/filedescriptor.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/lib.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/mach_port.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/messageport.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/number.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/propertylist.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/runloop.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/set.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/string.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/timezone.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/url.rs",
-    "//express/third_party/rust/core_foundation_sys/v0_8/crate/src/uuid.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/build.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/array.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/attributed_string.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/base.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/bundle.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/characterset.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/data.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/date.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/dictionary.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/error.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/filedescriptor.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/lib.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/mach_port.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/messageport.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/number.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/propertylist.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/runloop.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/set.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/string.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/timezone.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/url.rs",
+    "//brave/third_party/rust/core_foundation_sys/v0_8/crate/src/uuid.rs",
   ]
   inputs = []
 

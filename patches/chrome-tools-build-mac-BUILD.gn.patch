@@ -6,7 +6,7 @@ index 5f663d27fc5bdc2d54d9b5ec79fec0810ef5349f..172b719e5f34fad84b5c76e629e1dea0
  
  executable("infoplist_strings_util") {
    configs += [ "//build/config/compiler:wexit_time_destructors" ]
-+  configs += [ "//express/common:constants_configs($default_toolchain)" ]
++  configs += [ "//brave/common:constants_configs($default_toolchain)" ]
  
    sources = [ "infoplist_strings_util.cc" ]
  

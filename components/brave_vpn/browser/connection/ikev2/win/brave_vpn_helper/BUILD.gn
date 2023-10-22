@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 import("//build/toolchain/win/midl.gni")
 import("//build/util/process_version.gni")
 import("//chrome/process_version_rc_template.gni")
@@ -26,9 +26,9 @@ source_set("common") {
 
   deps = [
     "//base",
-    "//express/components/brave_vpn/common",
-    "//express/components/brave_vpn/common/buildflags",
-    "//express/components/brave_vpn/common/win",
+    "//brave/components/brave_vpn/common",
+    "//brave/components/brave_vpn/common/buildflags",
+    "//brave/components/brave_vpn/common/win",
     "//chrome/install_static:install_static_util",
   ]
 }
@@ -49,10 +49,10 @@ source_set("lib") {
   deps = [
     ":common",
     "//base",
-    "//express/components/brave_vpn/browser/connection/ikev2/win:ras_utils",
-    "//express/components/brave_vpn/common",
-    "//express/components/brave_vpn/common/win",
-    "//express/components/brave_vpn/common/wireguard/win",
+    "//brave/components/brave_vpn/browser/connection/ikev2/win:ras_utils",
+    "//brave/components/brave_vpn/common",
+    "//brave/components/brave_vpn/common/win",
+    "//brave/components/brave_vpn/common/wireguard/win",
     "//third_party/abseil-cpp:absl",
   ]
 
@@ -77,8 +77,8 @@ executable("brave_vpn_helper") {
     ":version_resources",
     "//base",
     "//base:base_static",
-    "//express/components/brave_vpn/browser/connection/ikev2/win/brave_vpn_helper:common",
-    "//express/components/brave_vpn/common",
+    "//brave/components/brave_vpn/browser/connection/ikev2/win/brave_vpn_helper:common",
+    "//brave/components/brave_vpn/common",
     "//build/win:default_exe_manifest",
     "//chrome/install_static:install_static_util",
     "//components/crash/core/app",
@@ -106,8 +106,8 @@ source_set("unit_tests") {
     ":lib",
     "//base",
     "//base/test:test_support",
-    "//express/components/brave_vpn/browser/connection/ikev2/win:ras_utils",
-    "//express/components/brave_vpn/common",
+    "//brave/components/brave_vpn/browser/connection/ikev2/win:ras_utils",
+    "//brave/components/brave_vpn/common",
     "//testing/gtest",
     "//third_party/abseil-cpp:absl",
   ]

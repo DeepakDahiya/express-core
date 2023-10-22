@@ -19,15 +19,15 @@ static_library("misc_metrics") {
 
   deps = [
     "//base",
-    "//express/components/p3a_utils",
-    "//express/components/time_period_storage",
+    "//brave/components/p3a_utils",
+    "//brave/components/time_period_storage",
     "//components/history/core/browser",
     "//components/keyed_service/core",
     "//components/prefs",
     "//url",
   ]
 
-  public_deps = [ "//express/components/misc_metrics/common:mojom" ]
+  public_deps = [ "//brave/components/misc_metrics/common:mojom" ]
 }
 
 source_set("unit_tests") {
@@ -42,7 +42,7 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//express/components/misc_metrics",
+    "//brave/components/misc_metrics",
     "//components/prefs:test_support",
     "//content/test:test_support",
     "//testing/gtest",

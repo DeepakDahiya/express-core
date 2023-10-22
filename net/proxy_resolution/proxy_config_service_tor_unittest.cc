@@ -129,7 +129,7 @@ TEST_F(ProxyConfigServiceTorTest, SetNewTorCircuit) {
 TEST_F(ProxyConfigServiceTorTest, SetProxyAuthorization) {
   const std::string proxy_uri("socks5://127.0.0.1:5566");
   const GURL site_url("https://check.torproject.org/");
-  const GURL site_url2("https://express.com/");
+  const GURL site_url2("https://brave.com/");
   const std::string anonymization_key =
       ProxyConfigServiceTor::CircuitAnonymizationKey(site_url);
   const std::string anonymization_key2 =

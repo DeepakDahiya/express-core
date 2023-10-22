@@ -14,8 +14,8 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//express/browser",
-    "//express/components/misc_metrics",
+    "//brave/browser",
+    "//brave/components/misc_metrics",
     "//chrome/browser",
     "//chrome/common",
     "//chrome/test:test_support",
@@ -36,7 +36,7 @@ source_set("browser_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//express/browser/ui/tabs",
+    "//brave/browser/ui/tabs",
     "//chrome/browser/profiles:profile",
     "//chrome/test:test_support",
     "//components/prefs:test_support",

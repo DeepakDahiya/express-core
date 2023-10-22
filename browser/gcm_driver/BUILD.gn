@@ -14,7 +14,7 @@ source_set("gcm_driver") {
 
     deps = [
       "//base",
-      "//express/components/constants",
+      "//brave/components/constants",
       "//components/pref_registry",
       "//components/prefs",
 

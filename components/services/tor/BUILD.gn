@@ -1,6 +1,6 @@
 static_library("tor") {
   visibility = [
-    "//express/test:*",
+    "//brave/test:*",
     "//chrome/utility:*",
   ]
 
@@ -12,7 +12,7 @@ static_library("tor") {
   deps = [
     "public/interfaces",
     "//base",
-    "//express/components/child_process_monitor",
+    "//brave/components/child_process_monitor",
     "//mojo/public/cpp/bindings",
   ]
 }

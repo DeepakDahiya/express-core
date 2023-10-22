@@ -6,7 +6,7 @@ index 236a8e980e828b17d9cc0366b6952ed70ac1400d..15c060765c6ae7fed8fe83298a6810b5
      ":channel",
      ":generate_version_info",
    ]
-+  configs += [ "//express/build:version" ] deps += [ "//express/components/version_info" ]
++  configs += [ "//brave/build:version" ] deps += [ "//brave/components/version_info" ]
  }
  
  # Isolate the //ui/base dependency in this target.

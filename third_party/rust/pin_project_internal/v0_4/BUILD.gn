@@ -11,17 +11,17 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/build.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/lib.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/pin_project/attribute.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/pin_project/derive.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/pin_project/mod.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/pinned_drop.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/project.rs",
-    "//express/third_party/rust/pin_project_internal/v0_4/crate/src/utils.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/build.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/lib.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/pin_project/attribute.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/pin_project/derive.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/pin_project/mod.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/pinned_drop.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/project.rs",
+    "//brave/third_party/rust/pin_project_internal/v0_4/crate/src/utils.rs",
   ]
   inputs = []
 

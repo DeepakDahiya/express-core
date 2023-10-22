@@ -19,7 +19,7 @@ import { RefreshStatusIcon } from './icons/refresh_status_icon'
 
 import * as style from './publisher_card.style'
 
-const unverifiedLearnMoreURL = 'https://express.com/faq/#unclaimed-funds'
+const unverifiedLearnMoreURL = 'https://brave.com/faq/#unclaimed-funds'
 
 export function PublisherCard () {
   const { getString } = React.useContext(LocaleContext)

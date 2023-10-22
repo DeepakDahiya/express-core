@@ -175,7 +175,7 @@ TEST_F(NTPBackgroundImagesSourceTest, BasicSuperReferralDataTest) {
         "topSites": [
           {
             "name": "Brave",
-            "destinationUrl": "https://express.com/",
+            "destinationUrl": "https://brave.com/",
             "iconUrl": "brave.png"
           },
           {

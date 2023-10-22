@@ -7,7 +7,7 @@ index 7f2c5f15be222f2976955cf3c1ebfa26b7c480d8..057a5173ff6b3dc41ada7a7e001191d1
  from core.services import request
  
 -SERVICE_URL = 'https://chromeperf.appspot.com'
-+SERVICE_URL = 'https://express-perf-dashboard.appspot.com'
++SERVICE_URL = 'https://brave-perf-dashboard.appspot.com'
  
  
  def Request(endpoint, **kwargs):

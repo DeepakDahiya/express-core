@@ -2,11 +2,11 @@ import("//testing/test.gni")
 
 source_set("p3a_utils_unit_tests") {
   testonly = true
-  sources = [ "//express/components/p3a_utils/feature_usage_unittest.cc" ]
+  sources = [ "//brave/components/p3a_utils/feature_usage_unittest.cc" ]
 
   deps = [
     "//base/test:test_support",
-    "//express/components/p3a_utils",
+    "//brave/components/p3a_utils",
     "//components/prefs",
     "//components/prefs:test_support",
     "//content/test:test_support",

@@ -11,16 +11,16 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/block_buffer/v0_10/crate/src/lib.rs",
-    "//express/third_party/rust/block_buffer/v0_10/crate/src/sealed.rs",
-    "//express/third_party/rust/block_buffer/v0_10/crate/tests/mod.rs",
+    "//brave/third_party/rust/block_buffer/v0_10/crate/src/lib.rs",
+    "//brave/third_party/rust/block_buffer/v0_10/crate/src/sealed.rs",
+    "//brave/third_party/rust/block_buffer/v0_10/crate/tests/mod.rs",
   ]
   inputs = [
-    "//express/third_party/rust/block_buffer/v0_10/crate/CHANGELOG.md",
-    "//express/third_party/rust/block_buffer/v0_10/crate/README.md",
+    "//brave/third_party/rust/block_buffer/v0_10/crate/CHANGELOG.md",
+    "//brave/third_party/rust/block_buffer/v0_10/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -34,5 +34,5 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//express/third_party/rust/generic_array/v0_14:lib" ]
+  deps = [ "//brave/third_party/rust/generic_array/v0_14:lib" ]
 }

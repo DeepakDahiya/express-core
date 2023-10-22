@@ -14,7 +14,7 @@ const dummyWallpaper: NewTab.BrandedWallpaper = {
     image: brandingImageUrl,
     companyName: 'Technikke',
     alt: 'Technikke: For music lovers.',
-    destinationUrl: 'https://express.com'
+    destinationUrl: 'https://brave.com'
   }
 }
 

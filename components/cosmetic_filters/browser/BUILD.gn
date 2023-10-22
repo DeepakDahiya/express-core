@@ -8,8 +8,8 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//express/components/brave_shields/browser",
-    "//express/components/cosmetic_filters/common:mojom",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/cosmetic_filters/common:mojom",
     "//components/content_settings/core/browser",
   ]
 }

@@ -11,17 +11,17 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/ast.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/attr.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/expand.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/fmt.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/generics.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/lib.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/prop.rs",
-    "//express/third_party/rust/thiserror_impl/v1/crate/src/valid.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/ast.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/attr.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/expand.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/fmt.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/generics.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/prop.rs",
+    "//brave/third_party/rust/thiserror_impl/v1/crate/src/valid.rs",
   ]
   inputs = []
 

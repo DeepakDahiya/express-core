@@ -10,11 +10,11 @@ source_set("browser") {
     "url_sanitizer_service.cc",
     "url_sanitizer_service.h",
   ]
-  public_deps = [ "//express/components/url_sanitizer/common/mojom" ]
+  public_deps = [ "//brave/components/url_sanitizer/common/mojom" ]
   deps = [
     "//base",
-    "//express/components/brave_component_updater/browser",
-    "//express/extensions:common",
+    "//brave/components/brave_component_updater/browser",
+    "//brave/extensions:common",
     "//components/keyed_service/core",
     "//net",
     "//url",

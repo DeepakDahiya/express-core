@@ -42,7 +42,7 @@ AdInfo BuildAdForTesting(const AdType& ad_type,
 
   ad.segment = kSegment;
 
-  ad.target_url = GURL("https://express.com");
+  ad.target_url = GURL("https://brave.com");
 
   return ad;
 }

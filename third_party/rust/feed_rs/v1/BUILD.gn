@@ -10,29 +10,29 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/feed_rs/v1/crate/src/lib.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/model.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/atom/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/atom/tests.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/fuzz.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/itunes.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/json/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/json/tests.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/mediarss.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/rss0/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/rss0/tests.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/rss1/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/rss1/tests.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/rss2/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/rss2/tests.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/parser/util.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/util/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/util/test.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/xml/mod.rs",
-    "//express/third_party/rust/feed_rs/v1/crate/src/xml/tests.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/model.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/atom/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/atom/tests.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/fuzz.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/itunes.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/json/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/json/tests.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/mediarss.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/rss0/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/rss0/tests.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/rss1/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/rss1/tests.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/rss2/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/rss2/tests.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/parser/util.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/util/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/util/test.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/xml/mod.rs",
+    "//brave/third_party/rust/feed_rs/v1/crate/src/xml/tests.rs",
   ]
-  inputs = [ "//express/third_party/rust/feed_rs/v1/crate/README.md" ]
+  inputs = [ "//brave/third_party/rust/feed_rs/v1/crate/README.md" ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
@@ -47,12 +47,12 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/chrono/v0_4:lib",
-    "//express/third_party/rust/mime/v0_3:lib",
-    "//express/third_party/rust/quick_xml/v0_27:lib",
-    "//express/third_party/rust/siphasher/v0_3:lib",
-    "//express/third_party/rust/url/v2:lib",
-    "//express/third_party/rust/uuid/v1:lib",
+    "//brave/third_party/rust/chrono/v0_4:lib",
+    "//brave/third_party/rust/mime/v0_3:lib",
+    "//brave/third_party/rust/quick_xml/v0_27:lib",
+    "//brave/third_party/rust/siphasher/v0_3:lib",
+    "//brave/third_party/rust/url/v2:lib",
+    "//brave/third_party/rust/uuid/v1:lib",
     "//third_party/rust/lazy_static/v1:lib",
     "//third_party/rust/regex/v1:lib",
     "//third_party/rust/serde/v1:lib",

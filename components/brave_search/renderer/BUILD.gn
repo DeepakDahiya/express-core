@@ -12,8 +12,8 @@ source_set("renderer") {
 
   deps = [
     "//base",
-    "//express/components/brave_search/common",
-    "//express/components/brave_search/common:mojom",
+    "//brave/components/brave_search/common",
+    "//brave/components/brave_search/common:mojom",
     "//content/public/renderer",
     "//gin",
     "//mojo/public/cpp/bindings",

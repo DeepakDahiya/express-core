@@ -792,7 +792,7 @@ IN_PROC_BROWSER_TEST_F(VerticalTabStripDragAndDropBrowserTest, MAYBE_DragURL) {
   };
 
   ASSERT_TRUE(
-      ui_test_utils::NavigateToURL(browser(), GURL("https://express.com/")));
+      ui_test_utils::NavigateToURL(browser(), GURL("https://brave.com/")));
 
   // Test if dragging a URL on browser cause a crash. When this happens, the
   // browser root view could try inserting a new tab with the given URL.

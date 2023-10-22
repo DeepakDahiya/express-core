@@ -125,7 +125,7 @@ TEST_F(BraveRenderViewContextMenuTest, MenuForSelectedUrl) {
 
 TEST_F(BraveRenderViewContextMenuTest, MenuForLink) {
   content::ContextMenuParams params =
-      CreateLinkParams(GURL("https://express.com"));
+      CreateLinkParams(GURL("https://brave.com"));
   auto context_menu = CreateContextMenu(GetWebContents(), params);
   EXPECT_TRUE(context_menu);
   absl::optional<size_t> clean_link_index =

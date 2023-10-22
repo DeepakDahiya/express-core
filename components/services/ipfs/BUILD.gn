@@ -12,8 +12,8 @@ static_library("ipfs") {
 
   deps = [
     "//base",
-    "//express/components/child_process_monitor",
-    "//express/components/services/ipfs/public/mojom",
+    "//brave/components/child_process_monitor",
+    "//brave/components/services/ipfs/public/mojom",
     "//mojo/public/cpp/bindings",
     "//third_party/re2",
   ]

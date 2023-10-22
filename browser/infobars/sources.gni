@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/brave_wayback_machine/buildflags/buildflags.gni")
-import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//brave/components/brave_wayback_machine/buildflags/buildflags.gni")
+import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//build/config/features.gni")
 
 brave_browser_infobar_sources = []
@@ -12,28 +12,28 @@ brave_browser_infobar_deps = []
 
 if (!is_android) {
   brave_browser_infobar_sources += [
-    "//express/browser/infobars/brave_confirm_infobar_creator.h",
-    "//express/browser/infobars/brave_confirm_p3a_infobar_delegate.cc",
-    "//express/browser/infobars/brave_confirm_p3a_infobar_delegate.h",
-    "//express/browser/infobars/brave_sync_account_deleted_infobar_delegate.cc",
-    "//express/browser/infobars/brave_sync_account_deleted_infobar_delegate.h",
-    "//express/browser/infobars/request_otr_infobar_delegate.cc",
-    "//express/browser/infobars/request_otr_infobar_delegate.h",
-    "//express/browser/infobars/sync_cannot_run_infobar_delegate.cc",
-    "//express/browser/infobars/sync_cannot_run_infobar_delegate.h",
-    "//express/browser/infobars/sync_v2_migrate_infobar_delegate.cc",
-    "//express/browser/infobars/sync_v2_migrate_infobar_delegate.h",
+    "//brave/browser/infobars/brave_confirm_infobar_creator.h",
+    "//brave/browser/infobars/brave_confirm_p3a_infobar_delegate.cc",
+    "//brave/browser/infobars/brave_confirm_p3a_infobar_delegate.h",
+    "//brave/browser/infobars/brave_sync_account_deleted_infobar_delegate.cc",
+    "//brave/browser/infobars/brave_sync_account_deleted_infobar_delegate.h",
+    "//brave/browser/infobars/request_otr_infobar_delegate.cc",
+    "//brave/browser/infobars/request_otr_infobar_delegate.h",
+    "//brave/browser/infobars/sync_cannot_run_infobar_delegate.cc",
+    "//brave/browser/infobars/sync_cannot_run_infobar_delegate.h",
+    "//brave/browser/infobars/sync_v2_migrate_infobar_delegate.cc",
+    "//brave/browser/infobars/sync_v2_migrate_infobar_delegate.h",
   ]
 
   brave_browser_infobar_deps += [
     "//base",
-    "//express/app:brave_generated_resources_grit",
-    "//express/browser/ui/views/infobars:brave_sync_account_deleted_infobar",
-    "//express/common:common",
-    "//express/components/brave_sync:features",
-    "//express/components/brave_sync:prefs",
-    "//express/components/constants",
-    "//express/components/p3a",
+    "//brave/app:brave_generated_resources_grit",
+    "//brave/browser/ui/views/infobars:brave_sync_account_deleted_infobar",
+    "//brave/common:common",
+    "//brave/components/brave_sync:features",
+    "//brave/components/brave_sync:prefs",
+    "//brave/components/constants",
+    "//brave/components/p3a",
     "//chrome/app:chromium_strings",
     "//components/infobars/content",
     "//components/infobars/core",
@@ -46,27 +46,27 @@ if (!is_android) {
 
   if (enable_ipfs) {
     brave_browser_infobar_deps += [
-      "//express/components/ipfs",
+      "//brave/components/ipfs",
       "//components/user_prefs",
     ]
     if (!is_android) {
       brave_browser_infobar_sources += [
-        "//express/browser/infobars/brave_ipfs_infobar_delegate.cc",
-        "//express/browser/infobars/brave_ipfs_infobar_delegate.h",
+        "//brave/browser/infobars/brave_ipfs_infobar_delegate.cc",
+        "//brave/browser/infobars/brave_ipfs_infobar_delegate.h",
       ]
       brave_browser_infobar_deps += [
-        "//express/browser/ui/views/infobars:infobars",
-        "//express/components/infobars/core:core",
+        "//brave/browser/ui/views/infobars:infobars",
+        "//brave/components/infobars/core:core",
       ]
     }
   }
 
   if (enable_brave_wayback_machine) {
     brave_browser_infobar_sources += [
-      "//express/browser/infobars/brave_wayback_machine_delegate_impl.cc",
-      "//express/browser/infobars/brave_wayback_machine_delegate_impl.h",
+      "//brave/browser/infobars/brave_wayback_machine_delegate_impl.cc",
+      "//brave/browser/infobars/brave_wayback_machine_delegate_impl.h",
     ]
 
-    brave_browser_infobar_deps += [ "//express/components/brave_wayback_machine" ]
+    brave_browser_infobar_deps += [ "//brave/components/brave_wayback_machine" ]
   }
 }

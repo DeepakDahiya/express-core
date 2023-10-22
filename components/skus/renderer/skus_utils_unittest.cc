@@ -28,9 +28,9 @@ TEST(SkusUtilsUnitTest, IsSafeOrigin) {
   EXPECT_FALSE(skus::IsSafeOrigin(
       blink::WebSecurityOrigin::Create(GURL("http://account.brave.com"))));
   EXPECT_FALSE(skus::IsSafeOrigin(
-      blink::WebSecurityOrigin::Create(GURL("https://express.com"))));
+      blink::WebSecurityOrigin::Create(GURL("https://brave.com"))));
   EXPECT_FALSE(skus::IsSafeOrigin(
-      blink::WebSecurityOrigin::Create(GURL("file://express.com"))));
+      blink::WebSecurityOrigin::Create(GURL("file://brave.com"))));
 }
 
 }  // namespace skus

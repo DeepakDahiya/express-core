@@ -9,7 +9,7 @@ static_library("common") {
 
   deps = [
     "//base",
-    "//express/components/resources:strings",
+    "//brave/components/resources:strings",
     "//components/prefs:prefs",
     "//ui/base",
   ]

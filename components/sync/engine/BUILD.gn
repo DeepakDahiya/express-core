@@ -7,8 +7,8 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "//express/components/sync/engine/brave_model_type_worker_unittest.cc",
-    "//express/components/sync/engine/brave_syncer_device_poll_unittest.cc",
+    "//brave/components/sync/engine/brave_model_type_worker_unittest.cc",
+    "//brave/components/sync/engine/brave_syncer_device_poll_unittest.cc",
   ]
 
   deps = [

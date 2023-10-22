@@ -15,7 +15,7 @@ static_library("google_sign_in_permission") {
 
   deps = [
     "//base",
-    "//express/components/constants",
+    "//brave/components/constants",
     "//components/content_settings/core/common",
     "//components/prefs",
     "//components/user_prefs",

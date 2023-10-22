@@ -11,35 +11,35 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/ascii.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/big5.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/data.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/euc_jp.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/euc_kr.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/gb18030.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/handles.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/iso_2022_jp.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/lib.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/macros.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/mem.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/replacement.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/shift_jis.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/simd_funcs.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/single_byte.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/test_labels_names.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/testing.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/utf_16.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/utf_8.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/variant.rs",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/src/x_user_defined.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/ascii.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/big5.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/data.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/euc_jp.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/euc_kr.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/gb18030.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/handles.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/iso_2022_jp.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/lib.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/macros.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/mem.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/replacement.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/shift_jis.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/simd_funcs.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/single_byte.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/test_labels_names.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/testing.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/utf_16.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/utf_8.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/variant.rs",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/src/x_user_defined.rs",
   ]
   inputs = [
-    "//express/third_party/rust/encoding_rs/v0_8/crate/CONTRIBUTING.md",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/Ideas.md",
-    "//express/third_party/rust/encoding_rs/v0_8/crate/README.md",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/CONTRIBUTING.md",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/Ideas.md",
+    "//brave/third_party/rust/encoding_rs/v0_8/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

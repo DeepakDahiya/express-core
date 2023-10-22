@@ -158,7 +158,7 @@ INSERT INTO "server_publisher_amounts" VALUES ('laurenwags.github.io',5.0);
 INSERT INTO "server_publisher_amounts" VALUES ('laurenwags.github.io',10.0);
 INSERT INTO "server_publisher_amounts" VALUES ('laurenwags.github.io',20.0);
 INSERT INTO "publisher_info" VALUES ('slo-tech.com',0,'slo-tech.com','','https://slo-tech.com/','');
-INSERT INTO "publisher_info" VALUES ('brave.com',0,'brave.com','','https://express.com/','');
+INSERT INTO "publisher_info" VALUES ('brave.com',0,'brave.com','','https://brave.com/','');
 INSERT INTO "publisher_info" VALUES ('basicattentiontoken.org',0,'basicattentiontoken.org','','https://basicattentiontoken.org/','');
 INSERT INTO "publisher_info" VALUES ('reddit.com',0,'reddit.com','','https://www.reddit.com/','');
 INSERT INTO "publisher_info" VALUES ('bumpsmack.com',0,'bumpsmack.com','','https://bumpsmack.com/','');

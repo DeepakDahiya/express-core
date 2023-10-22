@@ -15,13 +15,13 @@ static_library("browser") {
     "brave_referrals_service.h",
   ]
 
-  public_deps = [ "//express/components/brave_referrals/common" ]
+  public_deps = [ "//brave/components/brave_referrals/common" ]
 
   deps = [
     "//base",
-    "//express/components/brave_stats/browser",
-    "//express/components/constants",
-    "//express/vendor/brave_base",
+    "//brave/components/brave_stats/browser",
+    "//brave/components/constants",
+    "//brave/vendor/brave_base",
     "//components/prefs",
     "//components/url_matcher",
     "//content/public/browser",
@@ -44,14 +44,14 @@ static_library("browser") {
 
     deps += [
       ":jni_headers",
-      "//express/components/safetynet:android",
+      "//brave/components/safetynet:android",
     ]
   }
 }
 
 if (is_android) {
   generate_jni("jni_headers") {
-    sources = [ "//express/android/java/org/chromium/chrome/browser/util/BraveReferrer.java" ]
+    sources = [ "//brave/android/java/org/chromium/chrome/browser/util/BraveReferrer.java" ]
   }
 }
 

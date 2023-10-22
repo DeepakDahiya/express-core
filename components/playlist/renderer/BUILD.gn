@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/playlist/common/buildflags/buildflags.gni")
+import("//brave/components/playlist/common/buildflags/buildflags.gni")
 
 assert(enable_playlist)
 
@@ -17,7 +17,7 @@ static_library("renderer") {
     "playlist_render_frame_observer.h",
   ]
 
-  public_deps = [ "//express/components/playlist/common" ]
+  public_deps = [ "//brave/components/playlist/common" ]
 
   deps = [
     "//content/public/renderer",

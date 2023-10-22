@@ -11,27 +11,27 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/typenum/v1/crate/build/generic_const_mappings.rs",
-    "//express/third_party/rust/typenum/v1/crate/build/main.rs",
-    "//express/third_party/rust/typenum/v1/crate/build/op.rs",
-    "//express/third_party/rust/typenum/v1/crate/build/tests.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/array.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/bit.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/int.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/lib.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/marker_traits.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/operator_aliases.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/private.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/type_operators.rs",
-    "//express/third_party/rust/typenum/v1/crate/src/uint.rs",
-    "//express/third_party/rust/typenum/v1/crate/tests/test.rs",
+    "//brave/third_party/rust/typenum/v1/crate/build/generic_const_mappings.rs",
+    "//brave/third_party/rust/typenum/v1/crate/build/main.rs",
+    "//brave/third_party/rust/typenum/v1/crate/build/op.rs",
+    "//brave/third_party/rust/typenum/v1/crate/build/tests.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/array.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/bit.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/int.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/marker_traits.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/operator_aliases.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/private.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/type_operators.rs",
+    "//brave/third_party/rust/typenum/v1/crate/src/uint.rs",
+    "//brave/third_party/rust/typenum/v1/crate/tests/test.rs",
   ]
   inputs = [
-    "//express/third_party/rust/typenum/v1/crate/CHANGELOG.md",
-    "//express/third_party/rust/typenum/v1/crate/README.md",
+    "//brave/third_party/rust/typenum/v1/crate/CHANGELOG.md",
+    "//brave/third_party/rust/typenum/v1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

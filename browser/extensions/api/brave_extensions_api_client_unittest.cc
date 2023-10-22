@@ -52,7 +52,7 @@ TEST_F(BraveExtensionsAPIClientTests, IsBraveProtectedUrlUphold) {
 
   WebRequestInfo allowed1(create_request_params("https://uphold.com/"));
   WebRequestInfo allowed2(create_request_params("https://www.uphold.com/"));
-  WebRequestInfo allowed3(create_request_params("https://express.com/"));
+  WebRequestInfo allowed3(create_request_params("https://brave.com/"));
   ASSERT_FALSE(ShouldHideBrowserNetworkRequest(allowed1));
   ASSERT_FALSE(ShouldHideBrowserNetworkRequest(allowed2));
   ASSERT_FALSE(ShouldHideBrowserNetworkRequest(allowed3));

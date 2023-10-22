@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//express/components/ai_chat/common/buildflags/buildflags.gni")
-import("//express/components/playlist/common/buildflags/buildflags.gni")
+import("//brave/components/ai_chat/common/buildflags/buildflags.gni")
+import("//brave/components/playlist/common/buildflags/buildflags.gni")
 import("//build/config/ui.gni")
 
 assert(toolkit_views)
@@ -23,11 +23,11 @@ static_library("sidebar") {
 
   deps = [
     "//base",
-    "//express/components/ai_chat/common/buildflags",
-    "//express/components/brave_wallet/common",
-    "//express/components/constants:constants",
-    "//express/components/l10n/common",
-    "//express/components/resources:strings",
+    "//brave/components/ai_chat/common/buildflags",
+    "//brave/components/brave_wallet/common",
+    "//brave/components/constants:constants",
+    "//brave/components/l10n/common",
+    "//brave/components/resources:strings",
     "//components/keyed_service/core",
     "//components/prefs",
     "//components/version_info",
@@ -36,11 +36,11 @@ static_library("sidebar") {
   ]
 
   if (enable_ai_chat) {
-    deps += [ "//express/components/ai_chat/common" ]
+    deps += [ "//brave/components/ai_chat/common" ]
   }
 
   if (enable_playlist) {
-    deps += [ "//express/components/playlist/common" ]
+    deps += [ "//brave/components/playlist/common" ]
   }
 }
 
@@ -51,9 +51,9 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//express/browser/ui/sidebar",
-    "//express/components/ai_chat/common/buildflags",
-    "//express/components/sidebar",
+    "//brave/browser/ui/sidebar",
+    "//brave/components/ai_chat/common/buildflags",
+    "//brave/components/sidebar",
     "//chrome/browser:browser",
     "//chrome/test:test_support",
     "//components/prefs",
@@ -67,10 +67,10 @@ source_set("unit_tests") {
   ]
 
   if (enable_ai_chat) {
-    deps += [ "//express/components/ai_chat/common" ]
+    deps += [ "//brave/components/ai_chat/common" ]
   }
 
   if (enable_playlist) {
-    deps += [ "//express/components/playlist/common" ]
+    deps += [ "//brave/components/playlist/common" ]
   }
 }

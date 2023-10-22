@@ -23,10 +23,10 @@ source_set("brave_tooltips") {
 
   deps = [
     "//base",
-    "//express/app:brave_generated_resources_grit",
-    "//express/app/vector_icons",
-    "//express/browser/profiles:util",
-    "//express/browser/ui/brave_tooltips",
+    "//brave/app:brave_generated_resources_grit",
+    "//brave/app/vector_icons",
+    "//brave/browser/profiles:util",
+    "//brave/browser/ui/brave_tooltips",
     "//components/prefs",
     "//skia",
     "//ui/accessibility",

@@ -6,7 +6,7 @@ index c4bca6fca7c990222b0bf65087d14b21b01c1b5f..979307d85621264c7ede4c8e74007e1a
        defines += [ "USE_KWALLET" ]
      }
    }
-+  import("//express/components/os_crypt/sources.gni") deps += brave_components_os_crypt_deps
++  import("//brave/components/os_crypt/sources.gni") deps += brave_components_os_crypt_deps
  }
  
  static_library("test_support") {

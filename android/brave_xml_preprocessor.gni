@@ -15,7 +15,7 @@ template("brave_xml_preprocessor") {
   _xml_output_zip = "${target_out_dir}/${target_name}.resources.zip"
 
   action_with_pydeps(_preprocess_target_name) {
-    script = "//express/android/xml_processor.py"
+    script = "//brave/android/xml_processor.py"
 
     # Input files
     sources = invoker.sources

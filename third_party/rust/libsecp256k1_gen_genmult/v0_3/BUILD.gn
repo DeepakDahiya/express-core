@@ -11,10 +11,10 @@ cargo_crate("buildrs_support") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/libsecp256k1_gen_genmult/v0_3/crate/src/lib.rs",
+    "//brave/third_party/rust/libsecp256k1_gen_genmult/v0_3/crate/src/lib.rs",
   ]
   inputs = []
 
@@ -29,5 +29,5 @@ cargo_crate("buildrs_support") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//express/third_party/rust/libsecp256k1_core/v0_3:lib" ]
+  deps = [ "//brave/third_party/rust/libsecp256k1_core/v0_3:lib" ]
 }

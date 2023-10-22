@@ -677,7 +677,7 @@ TEST_F(IpfsUtilsUnitTest, IsAPIGatewayTest) {
   auto port = ipfs::GetAPIPort(channel);
   ASSERT_TRUE(ipfs::IsAPIGateway(GURL("https://127.0.0.1:" + port), channel));
   ASSERT_TRUE(ipfs::IsAPIGateway(GURL("https://localhost:" + port), channel));
-  ASSERT_FALSE(ipfs::IsAPIGateway(GURL("https://express.com"), channel));
+  ASSERT_FALSE(ipfs::IsAPIGateway(GURL("https://brave.com"), channel));
   ASSERT_FALSE(ipfs::IsAPIGateway(GURL(), channel));
 }
 

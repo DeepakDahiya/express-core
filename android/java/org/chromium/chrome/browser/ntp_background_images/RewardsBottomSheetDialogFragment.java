@@ -48,7 +48,7 @@ public class RewardsBottomSheetDialogFragment extends BottomSheetDialogFragment 
     private static final String TAG = "RewardsBottomSheet";
 
     private static final String BRAVE_TERMS_PAGE = "https://basicattentiontoken.org/user-terms-of-service/";
-    private static final String BRAVE_REWARDS_LEARN_MORE = "https://express.com/faq-rewards";
+    private static final String BRAVE_REWARDS_LEARN_MORE = "https://brave.com/faq-rewards";
 
     private int ntpType;
     private NewTabPageListener newTabPageListener;

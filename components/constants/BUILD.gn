@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 import("//build/buildflag_header.gni")
 import("//build/util/branding.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
@@ -17,7 +17,7 @@ if (is_official_build) {
 }
 
 buildflag_header("brave_services_key") {
-  # Please use //express/components/constants instead.
+  # Please use //brave/components/constants instead.
   visibility = [ ":*" ]
 
   header = "brave_services_key.h"
@@ -45,8 +45,8 @@ source_set("constants") {
   public_deps = [ ":brave_services_key" ]
   deps = [
     "//base",
-    "//express/components/ipfs/buildflags",
-    "//express/components/widevine:static_buildflags",
+    "//brave/components/ipfs/buildflags",
+    "//brave/components/widevine:static_buildflags",
   ]
 }
 
@@ -58,7 +58,7 @@ source_set("brave_service_key_helper") {
 
   deps = [
     ":constants",
-    "//express/extensions:common",  # instead of //extensions/common, for iOS
+    "//brave/extensions:common",  # instead of //extensions/common, for iOS
     "//url",
   ]
 }

@@ -6,32 +6,32 @@
 # common includes which can help minimize patches for
 # src/third_party/blink/renderer/core/BUILD.gn
 
-import("//express/third_party/blink/renderer/core/brave_page_graph/sources.gni")
+import("//brave/third_party/blink/renderer/core/brave_page_graph/sources.gni")
 
 brave_blink_renderer_platform_visibility = []
 
 brave_blink_renderer_platform_public_deps = []
 
 brave_blink_renderer_platform_sources = [
-  "//express/third_party/blink/renderer/platform/brave_audio_farbling_helper.cc",
-  "//express/third_party/blink/renderer/platform/brave_audio_farbling_helper.h",
+  "//brave/third_party/blink/renderer/platform/brave_audio_farbling_helper.cc",
+  "//brave/third_party/blink/renderer/platform/brave_audio_farbling_helper.h",
 ]
 
 brave_blink_renderer_platform_deps = []
 
 brave_blink_renderer_core_visibility =
-    [ "//express/third_party/blink/renderer/*" ]
+    [ "//brave/third_party/blink/renderer/*" ]
 
 brave_blink_renderer_core_public_deps = [
-  "//express/components/brave_page_graph/common:buildflags",
-  "//express/third_party/blink/renderer",
+  "//brave/components/brave_page_graph/common:buildflags",
+  "//brave/third_party/blink/renderer",
 ]
 
 brave_blink_renderer_core_sources = [
-  "//express/third_party/blink/renderer/core/farbling/brave_session_cache.cc",
-  "//express/third_party/blink/renderer/core/farbling/brave_session_cache.h",
-  "//express/third_party/blink/renderer/core/resource_pool_limiter/resource_pool_limiter.cc",
-  "//express/third_party/blink/renderer/core/resource_pool_limiter/resource_pool_limiter.h",
+  "//brave/third_party/blink/renderer/core/farbling/brave_session_cache.cc",
+  "//brave/third_party/blink/renderer/core/farbling/brave_session_cache.h",
+  "//brave/third_party/blink/renderer/core/resource_pool_limiter/resource_pool_limiter.cc",
+  "//brave/third_party/blink/renderer/core/resource_pool_limiter/resource_pool_limiter.h",
 ]
 
 brave_blink_renderer_core_deps = []
@@ -43,21 +43,21 @@ brave_blink_renderer_core_deps += brave_page_graph_core_deps
 # common includes which can help minimize patches for
 # src/third_party/blink/renderer/modules/BUILD.gn
 brave_blink_renderer_modules_visibility =
-    [ "//express/third_party/blink/renderer/*" ]
+    [ "//brave/third_party/blink/renderer/*" ]
 
 brave_blink_sub_modules = [
-  "//express/third_party/blink/renderer/modules/brave",
-  "//express/third_party/blink/renderer/modules/global_privacy_control",
+  "//brave/third_party/blink/renderer/modules/brave",
+  "//brave/third_party/blink/renderer/modules/global_privacy_control",
 ]
 
 # common includes which can help minimize patches for
 # third_party/blink/renderer/bindings/idl_in_modules.gni
 brave_static_idl_files_in_modules = [
-  "//express/third_party/blink/renderer/modules/brave/brave.idl",
-  "//express/third_party/blink/renderer/modules/brave/navigator_brave.idl",
-  "//express/third_party/blink/renderer/modules/brave/worker_navigator_brave.idl",
-  "//express/third_party/blink/renderer/modules/global_privacy_control/navigator_global_privacy_control.idl",
-  "//express/third_party/blink/renderer/modules/global_privacy_control/worker_navigator_global_privacy_control.idl",
+  "//brave/third_party/blink/renderer/modules/brave/brave.idl",
+  "//brave/third_party/blink/renderer/modules/brave/navigator_brave.idl",
+  "//brave/third_party/blink/renderer/modules/brave/worker_navigator_brave.idl",
+  "//brave/third_party/blink/renderer/modules/global_privacy_control/navigator_global_privacy_control.idl",
+  "//brave/third_party/blink/renderer/modules/global_privacy_control/worker_navigator_global_privacy_control.idl",
 ]
 
 # common includes which can help minimize patches for

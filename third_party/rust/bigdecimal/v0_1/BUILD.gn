@@ -10,10 +10,10 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/bigdecimal/v0_1/crate/examples/floating-precision.rs",
-    "//express/third_party/rust/bigdecimal/v0_1/crate/examples/repeated_squares.rs",
-    "//express/third_party/rust/bigdecimal/v0_1/crate/src/lib.rs",
-    "//express/third_party/rust/bigdecimal/v0_1/crate/src/macros.rs",
+    "//brave/third_party/rust/bigdecimal/v0_1/crate/examples/floating-precision.rs",
+    "//brave/third_party/rust/bigdecimal/v0_1/crate/examples/repeated_squares.rs",
+    "//brave/third_party/rust/bigdecimal/v0_1/crate/src/lib.rs",
+    "//brave/third_party/rust/bigdecimal/v0_1/crate/src/macros.rs",
   ]
   inputs = []
 
@@ -29,9 +29,9 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/num_bigint/v0_2:lib",
-    "//express/third_party/rust/num_integer/v0_1:lib",
-    "//express/third_party/rust/num_traits/v0_2:lib",
+    "//brave/third_party/rust/num_bigint/v0_2:lib",
+    "//brave/third_party/rust/num_integer/v0_1:lib",
+    "//brave/third_party/rust/num_traits/v0_2:lib",
     "//third_party/rust/serde/v1:lib",
   ]
   features = [ "serde" ]

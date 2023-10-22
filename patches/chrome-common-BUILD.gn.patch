@@ -6,7 +6,7 @@ index e75d7bc0b01870f71f7a698c9620c24e66f8897c..4e7354c60e1d4948a564fdb62eb6402c
    } else if (is_fuchsia) {
      sources += [ "channel_info_fuchsia.cc" ]
    }
-+  public_deps += [ "//express/common:channel_info" ]
++  public_deps += [ "//brave/common:channel_info" ]
  }
  
  source_set("ini_parser") {
@@ -14,7 +14,7 @@ index e75d7bc0b01870f71f7a698c9620c24e66f8897c..4e7354c60e1d4948a564fdb62eb6402c
    if (enable_ppapi) {
      public_deps += [ "//ppapi/shared_impl" ]
    }
-+  import("//express/common/sources.gni") sources += brave_chrome_common_sources deps += brave_chrome_common_deps public_deps += brave_chrome_common_public_deps
++  import("//brave/common/sources.gni") sources += brave_chrome_common_sources deps += brave_chrome_common_deps public_deps += brave_chrome_common_public_deps
  
    if (enable_extensions) {
      sources += [
@@ -22,7 +22,7 @@ index e75d7bc0b01870f71f7a698c9620c24e66f8897c..4e7354c60e1d4948a564fdb62eb6402c
      "//printing/buildflags",
      "//ui/base:buildflags",
    ]
-+  configs += [ "//express/common:constants_configs" ]
++  configs += [ "//brave/common:constants_configs" ]
  }
  
  component("chrome_features") {

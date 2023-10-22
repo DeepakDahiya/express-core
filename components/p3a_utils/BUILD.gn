@@ -7,7 +7,7 @@ static_library("p3a_utils") {
 
   deps = [
     "//base",
-    "//express/components/time_period_storage",
+    "//brave/components/time_period_storage",
     "//components/prefs",
   ]
 }

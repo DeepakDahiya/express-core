@@ -4,9 +4,9 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_components_update_client_deps = [
-  "//express/components/constants",
-  "//express/components/widevine:constants",
+  "//brave/components/constants",
+  "//brave/components/widevine:constants",
 ]
 
 brave_components_update_client_public_deps =
-    [ "//express/components/update_client:buildflags" ]
+    [ "//brave/components/update_client:buildflags" ]

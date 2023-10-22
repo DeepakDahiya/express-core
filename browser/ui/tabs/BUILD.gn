@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 import("//build/buildflag_header.gni")
 
 source_set("tabs") {
@@ -31,7 +31,7 @@ source_set("tabs") {
     ]
 
     deps = [
-      "//express/common/",
+      "//brave/common/",
       "//chrome/app:generated_resources",
       "//components/prefs",
       "//components/sessions",

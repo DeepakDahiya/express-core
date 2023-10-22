@@ -1,5 +1,5 @@
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 
 group("brave") {
-  deps = [ "//express/ios:brave_ios" ]
+  deps = [ "//brave/ios:brave_ios" ]
 }

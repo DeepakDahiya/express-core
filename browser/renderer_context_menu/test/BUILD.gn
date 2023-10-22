@@ -9,7 +9,7 @@ source_set("unit_tests") {
   sources = [ "render_view_context_menu_unittest.cc" ]
   deps = [
     "//base",
-    "//express/app:command_ids",
+    "//brave/app:command_ids",
     "//chrome/browser",
     "//chrome/test:test_support",
     "//components/custom_handlers",

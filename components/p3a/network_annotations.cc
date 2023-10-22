@@ -71,7 +71,7 @@ net::NetworkTrafficAnnotationTag GetP3AUploadAnnotation(
             sender: "Brave Privacy-Preserving Product Analytics Uploader"
             description:
               "Report of anonymized usage statistics. For more info, see "
-              "https://express.com/P3A"
+              "https://brave.com/P3A"
             trigger:
               "Reports are automatically generated on startup and at intervals "
               "while Brave is running."
@@ -122,7 +122,7 @@ net::NetworkTrafficAnnotationTag GetP3AUploadAnnotation(
             sender: "Brave Privacy-Preserving Product Analytics Uploader"
             description:
               "Report of anonymized usage statistics. For more info, see "
-              "https://express.com/P3A"
+              "https://brave.com/P3A"
             trigger:
               "Reports are automatically generated on startup and at intervals "
               "while Brave is running."

@@ -1,2 +1,2 @@
 browser_api_qr_code_public_headers =
-    [ "//express/ios/browser/api/qr_code/qr_code_generator.h" ]
+    [ "//brave/ios/browser/api/qr_code/qr_code_generator.h" ]

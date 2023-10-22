@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/brave_webtorrent/browser/buildflags/buildflags.gni")
-import("//express/components/tor/buildflags/buildflags.gni")
+import("//brave/components/brave_webtorrent/browser/buildflags/buildflags.gni")
+import("//brave/components/tor/buildflags/buildflags.gni")
 import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -34,7 +34,7 @@ template("brave_repack_percent") {
     sources =
         [ "$root_gen_dir/brave/brave_theme_resources_${percent}_percent.pak" ]
 
-    deps = [ "//express/app/theme:brave_theme_resources" ]
+    deps = [ "//brave/app/theme:brave_theme_resources" ]
 
     if (defined(invoker.deps)) {
       deps += invoker.deps
@@ -68,17 +68,17 @@ template("brave_extra_paks") {
     }
 
     deps = [
-      "//express/components/brave_ads/resources",
-      "//express/components/brave_rewards/resources",
-      "//express/components/resources",
+      "//brave/components/brave_ads/resources",
+      "//brave/components/brave_rewards/resources",
+      "//brave/components/resources",
     ]
 
     if (!is_android) {
       deps += [
-        "//express/app:brave_generated_resources_grit",
-        "//express/app/theme:brave_unscaled_resources",
-        "//express/browser/resources/settings:resources",
-        "//express/components/resources:strings",
+        "//brave/app:brave_generated_resources_grit",
+        "//brave/app/theme:brave_unscaled_resources",
+        "//brave/browser/resources/settings:resources",
+        "//brave/components/resources:strings",
       ]
     }
 
@@ -86,21 +86,21 @@ template("brave_extra_paks") {
       sources +=
           [ "$root_gen_dir/brave/components/tor/resources/tor_resources.pak" ]
 
-      deps += [ "//express/components/tor/resources" ]
+      deps += [ "//brave/components/tor/resources" ]
     }
 
     if (enable_brave_webtorrent) {
       sources += [ "$root_gen_dir/brave/components/brave_webtorrent/brave_webtorrent_resources.pak" ]
 
-      deps += [ "//express/components/brave_webtorrent:resources" ]
+      deps += [ "//brave/components/brave_webtorrent:resources" ]
     }
 
     if (enable_extensions) {
       sources += [ "$root_gen_dir/brave/components/brave_extension/brave_extension_resources.pak" ]
 
       deps += [
-        "//express/common/extensions/api",
-        "//express/components/brave_extension:resources",
+        "//brave/common/extensions/api",
+        "//brave/components/brave_extension:resources",
       ]
     }
 

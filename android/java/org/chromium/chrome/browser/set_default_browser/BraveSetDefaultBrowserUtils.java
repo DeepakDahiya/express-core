@@ -36,7 +36,7 @@ public class BraveSetDefaultBrowserUtils {
     private static final String TAG = "BSDBrowserUtils";
     public static final String ANDROID_SETUPWIZARD_PACKAGE_NAME = "com.google.android.setupwizard";
     public static final String ANDROID_PACKAGE_NAME = "android";
-    public static final String BRAVE_BLOG_URL = "https://express.com/privacy-features/";
+    public static final String BRAVE_BLOG_URL = "https://brave.com/privacy-features/";
 
     public static boolean isBottomSheetVisible;
 

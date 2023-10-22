@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/resources/brave_grit.gni")
+import("//brave/resources/brave_grit.gni")
 
 # JS / TS imports via `require` or `import` will be added to a list and
 # provided to GN so it knows which projects to re-build when you modify a file
@@ -36,12 +36,12 @@ brave_common_web_compile_inputs = [
   rebase_path("../webpack/webpack-plugin-depfile.js"),
 
   # typescript config changes warrant a re-build of all typescript builds
-  "//express/tsconfig.json",
-  "//express/tsconfig-webpack.json",
+  "//brave/tsconfig.json",
+  "//brave/tsconfig-webpack.json",
 
   # modifying npm dependencies or scripts warrants a re-build of all webpack
   # and typescript builds
-  "//express/package.json",
+  "//brave/package.json",
 ]
 
 # Runs a frontend compiler for the specified entry point(s) and outputs a GRD file
@@ -82,7 +82,7 @@ brave_common_web_compile_inputs = [
 #     Support for web pack aliases that directly passed to webpack config.
 template("transpile_web_ui") {
   action(target_name) {
-    script = "//express/script/transpile-web-ui.py"
+    script = "//brave/script/transpile-web-ui.py"
 
     # make sure rebuilds when common files change
     inputs = brave_common_web_compile_inputs
@@ -94,7 +94,7 @@ template("transpile_web_ui") {
     deps = [
       # Ensure chrome://resources/js file and typescript definitions are
       # generated
-      "//express/components/webpack:generate_tsconfig",
+      "//brave/components/webpack:generate_tsconfig",
     ]
     if (defined(invoker.deps)) {
       deps += invoker.deps

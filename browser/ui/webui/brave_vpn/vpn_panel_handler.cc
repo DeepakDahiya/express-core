@@ -28,7 +28,7 @@ GURL GetURLForUIType(const std::string& type, GURL manage_url) {
     replacements.SetQueryStr(query);
     return manage_url.ReplaceComponents(replacements);
   } else if (type == "privacy") {
-    return GURL("https://express.com/privacy/browser/#vpn");
+    return GURL("https://brave.com/privacy/browser/#vpn");
   } else if (type == "about") {
     return GURL(brave_vpn::kAboutUrl);
   }

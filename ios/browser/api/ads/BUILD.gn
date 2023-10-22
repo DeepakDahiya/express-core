@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//express/build/ios/mojom/mojom_wrappers.gni")
+import("//brave/build/ios/mojom/mojom_wrappers.gni")
 import("//build/config/ios/rules.gni")
 
 config("external_config") {
@@ -30,13 +30,13 @@ source_set("ads") {
     ":ads_resources",
     ":brave_ads_mojom_wrappers",
     "//base",
-    "//express/components/brave_ads/core",
-    "//express/components/brave_federated/public/interfaces",
-    "//express/components/brave_news/common",
-    "//express/components/brave_rewards/common",
-    "//express/components/l10n/common",
-    "//express/components/ntp_background_images/common",
-    "//express/ios/browser/api/common",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_federated/public/interfaces",
+    "//brave/components/brave_news/common",
+    "//brave/components/brave_rewards/common",
+    "//brave/components/l10n/common",
+    "//brave/components/ntp_background_images/common",
+    "//brave/ios/browser/api/common",
   ]
 
   frameworks = [
@@ -47,8 +47,8 @@ source_set("ads") {
 }
 
 ios_objc_mojom_wrappers("brave_ads_mojom_wrappers") {
-  mojom_target = "//express/components/brave_ads/core/mojom"
-  sources = [ "//express/components/brave_ads/core/mojom/brave_ads.mojom" ]
+  mojom_target = "//brave/components/brave_ads/core/mojom"
+  sources = [ "//brave/components/brave_ads/core/mojom/brave_ads.mojom" ]
   exclude_types = [
     "DBCommandInfo",
     "DBCommandBindingInfo",
@@ -64,6 +64,6 @@ ios_objc_mojom_wrappers("brave_ads_mojom_wrappers") {
 }
 
 bundle_data("ads_resources") {
-  sources = [ "//express/components/brave_ads/resources/catalog-schema.json" ]
+  sources = [ "//brave/components/brave_ads/resources/catalog-schema.json" ]
   outputs = [ "{{bundle_resources_dir}}/{{source_file_part}}" ]
 }

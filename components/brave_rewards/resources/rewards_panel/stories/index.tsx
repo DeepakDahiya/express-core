@@ -91,7 +91,7 @@ function createHost (): Host {
       id: 'brave.com',
       name: 'brave.com',
       verified: true,
-      icon: 'https://express.com/static-assets/images/brave-favicon.png',
+      icon: 'https://brave.com/static-assets/images/brave-favicon.png',
       platform: null,
       attentionScore: 0.17,
       autoContributeEnabled: true,

@@ -5,7 +5,7 @@
 
 group("app") {
   deps = [
-    "//express/components/update_client:buildflags",
+    "//brave/components/update_client:buildflags",
     "//components/dom_distiller/content/browser",
     "//google_apis",
     "//media",

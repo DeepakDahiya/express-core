@@ -31,7 +31,7 @@ void CheckUrl(const std::string& test_url,
 
 TEST(BraveBlockReportingUrlsHelperTest, PreserveNormalUrls) {
   const std::vector<const std::string> normalUrls({
-      "https://express.com/",
+      "https://brave.com/",
       "https://safebrowsing.google.com/safebrowsing",
       "https://safebrowsing.google.com/safebrowsing/clientreport/crx-list-info",
       "https://safebrowsing.googleapis.com/v4",

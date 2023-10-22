@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
-import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 brave_browser_ipfs_sources = []
@@ -11,32 +11,32 @@ brave_browser_ipfs_deps = []
 
 if (enable_ipfs) {
   brave_browser_ipfs_sources += [
-    "//express/browser/ipfs/content_browser_client_helper.cc",
-    "//express/browser/ipfs/content_browser_client_helper.h",
-    "//express/browser/ipfs/import/ipfs_import_controller.cc",
-    "//express/browser/ipfs/import/ipfs_import_controller.h",
-    "//express/browser/ipfs/import/save_package_observer.cc",
-    "//express/browser/ipfs/import/save_package_observer.h",
-    "//express/browser/ipfs/ipfs_blob_context_getter_factory.cc",
-    "//express/browser/ipfs/ipfs_blob_context_getter_factory.h",
-    "//express/browser/ipfs/ipfs_dns_resolver_impl.cc",
-    "//express/browser/ipfs/ipfs_dns_resolver_impl.h",
-    "//express/browser/ipfs/ipfs_host_resolver.cc",
-    "//express/browser/ipfs/ipfs_host_resolver.h",
-    "//express/browser/ipfs/ipfs_service_factory.cc",
-    "//express/browser/ipfs/ipfs_service_factory.h",
-    "//express/browser/ipfs/ipfs_subframe_navigation_throttle.cc",
-    "//express/browser/ipfs/ipfs_subframe_navigation_throttle.h",
-    "//express/browser/ipfs/ipfs_tab_helper.cc",
-    "//express/browser/ipfs/ipfs_tab_helper.h",
+    "//brave/browser/ipfs/content_browser_client_helper.cc",
+    "//brave/browser/ipfs/content_browser_client_helper.h",
+    "//brave/browser/ipfs/import/ipfs_import_controller.cc",
+    "//brave/browser/ipfs/import/ipfs_import_controller.h",
+    "//brave/browser/ipfs/import/save_package_observer.cc",
+    "//brave/browser/ipfs/import/save_package_observer.h",
+    "//brave/browser/ipfs/ipfs_blob_context_getter_factory.cc",
+    "//brave/browser/ipfs/ipfs_blob_context_getter_factory.h",
+    "//brave/browser/ipfs/ipfs_dns_resolver_impl.cc",
+    "//brave/browser/ipfs/ipfs_dns_resolver_impl.h",
+    "//brave/browser/ipfs/ipfs_host_resolver.cc",
+    "//brave/browser/ipfs/ipfs_host_resolver.h",
+    "//brave/browser/ipfs/ipfs_service_factory.cc",
+    "//brave/browser/ipfs/ipfs_service_factory.h",
+    "//brave/browser/ipfs/ipfs_subframe_navigation_throttle.cc",
+    "//brave/browser/ipfs/ipfs_subframe_navigation_throttle.h",
+    "//brave/browser/ipfs/ipfs_tab_helper.cc",
+    "//brave/browser/ipfs/ipfs_tab_helper.h",
   ]
 
   brave_browser_ipfs_deps += [
     "//base",
-    "//express/browser/profiles:util",
-    "//express/common",
-    "//express/components/ipfs",
-    "//express/components/services/ipfs/public/mojom",
+    "//brave/browser/profiles:util",
+    "//brave/common",
+    "//brave/components/ipfs",
+    "//brave/components/services/ipfs/public/mojom",
     "//chrome/browser:browser_process",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
@@ -55,8 +55,8 @@ if (enable_ipfs) {
 
   if (enable_ipfs_local_node) {
     brave_browser_ipfs_sources += [
-      "//express/browser/ipfs/ipfs_local_pin_service_factory.cc",
-      "//express/browser/ipfs/ipfs_local_pin_service_factory.h",
+      "//brave/browser/ipfs/ipfs_local_pin_service_factory.cc",
+      "//brave/browser/ipfs/ipfs_local_pin_service_factory.h",
     ]
   }
 

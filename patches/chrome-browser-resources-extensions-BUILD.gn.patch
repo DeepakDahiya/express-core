@@ -6,5 +6,5 @@ index 7904d4b86e98477d63dfd88eb1be96ba92c4defc..f1dcb85f09132e2aab3aae8c8a69875c
      optimize_webui_host = "extensions"
      optimize_webui_in_files = [ "extensions.js" ]
    }
-+  import("//express/browser/resources/extensions/sources.gni") web_component_files += brave_extensions_web_component_files non_web_component_files += brave_extensions_non_web_component_files exclude_ts_preprocess_files = brave_extensions_local_ts_files exclude_html_css_preprocess_files = brave_extensions_local_html_files preprocess_deps = brave_extensions_preprocess_extra_deps
++  import("//brave/browser/resources/extensions/sources.gni") web_component_files += brave_extensions_web_component_files non_web_component_files += brave_extensions_non_web_component_files exclude_ts_preprocess_files = brave_extensions_local_ts_files exclude_html_css_preprocess_files = brave_extensions_local_html_files preprocess_deps = brave_extensions_preprocess_extra_deps
  }

@@ -10,24 +10,24 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/sha2/v0_9/crate/benches/sha256.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/benches/sha512.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/examples/sha256sum.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/examples/sha512sum.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/consts.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/lib.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha256.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha256/aarch64.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha256/soft.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha256/x86.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha512.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha512/soft.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/src/sha512/x86.rs",
-    "//express/third_party/rust/sha2/v0_9/crate/tests/lib.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/benches/sha256.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/benches/sha512.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/examples/sha256sum.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/examples/sha512sum.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/consts.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/lib.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha256.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha256/aarch64.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha256/soft.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha256/x86.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha512.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha512/soft.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/src/sha512/x86.rs",
+    "//brave/third_party/rust/sha2/v0_9/crate/tests/lib.rs",
   ]
   inputs = [
-    "//express/third_party/rust/sha2/v0_9/crate/CHANGELOG.md",
-    "//express/third_party/rust/sha2/v0_9/crate/README.md",
+    "//brave/third_party/rust/sha2/v0_9/crate/CHANGELOG.md",
+    "//brave/third_party/rust/sha2/v0_9/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -42,15 +42,15 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/block_buffer/v0_9:lib",
-    "//express/third_party/rust/digest/v0_9:lib",
-    "//express/third_party/rust/opaque_debug/v0_3:lib",
+    "//brave/third_party/rust/block_buffer/v0_9:lib",
+    "//brave/third_party/rust/digest/v0_9:lib",
+    "//brave/third_party/rust/opaque_debug/v0_3:lib",
     "//third_party/rust/cfg_if/v1:lib",
   ]
   features = [ "std" ]
   if ((target_cpu == "arm64" &&
        (target_os == "mac" || target_os == "linux" || target_os == "ios")) ||
       target_cpu == "x64" || target_cpu == "x86") {
-    deps += [ "//express/third_party/rust/cpufeatures/v0_2:lib" ]
+    deps += [ "//brave/third_party/rust/cpufeatures/v0_2:lib" ]
   }
 }

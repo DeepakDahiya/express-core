@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/ai_chat/common/buildflags/buildflags.gni")
+import("//brave/components/ai_chat/common/buildflags/buildflags.gni")
 
 assert(enable_ai_chat)
 
@@ -19,16 +19,16 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//express/brave_domains",
-    "//express/components/ai_chat/common",
-    "//express/components/ai_chat/common/buildflags",
-    "//express/components/ai_chat/common/mojom",
-    "//express/components/ai_chat/core",
-    "//express/components/api_request_helper",
-    "//express/components/brave_stats/browser",
-    "//express/components/constants",
-    "//express/components/l10n/common",
-    "//express/components/resources:strings_grit",
+    "//brave/brave_domains",
+    "//brave/components/ai_chat/common",
+    "//brave/components/ai_chat/common/buildflags",
+    "//brave/components/ai_chat/common/mojom",
+    "//brave/components/ai_chat/core",
+    "//brave/components/api_request_helper",
+    "//brave/components/brave_stats/browser",
+    "//brave/components/constants",
+    "//brave/components/l10n/common",
+    "//brave/components/resources:strings_grit",
     "//components/favicon/content",
     "//components/favicon/core",
     "//components/prefs",

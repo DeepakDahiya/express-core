@@ -2,8 +2,8 @@ static_library("child_process_monitor") {
   # child_process_monitor can only be used once per utility process
   visibility = [
     ":unittests",
-    "//express/components/services/ipfs",
-    "//express/components/services/tor",
+    "//brave/components/services/ipfs",
+    "//brave/components/services/tor",
   ]
 
   sources = [

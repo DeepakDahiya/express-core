@@ -97,7 +97,7 @@ export const getMockedTransactionInfo =
       submittedTime: { microseconds: 0 },
       confirmedTime: { microseconds: 0 },
       originInfo: {
-        originSpec: 'https://express.com',
+        originSpec: 'https://brave.com',
         eTldPlusOne: 'brave.com'
       },
       effectiveRecipient: '0x8b52c24d6e2600bdb8dbb6e8da849ed38ab7e81f'

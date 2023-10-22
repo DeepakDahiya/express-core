@@ -21,11 +21,11 @@ rust_static_library("rust_lib") {
   public_deps = [ ":shim" ]
 
   deps = [
-    "//express/components/skus/browser/rs/lib:rust_lib",
-    "//express/third_party/rust/async_trait/v0_1:lib",
-    "//express/third_party/rust/futures/v0_3:lib",
-    "//express/third_party/rust/tracing/v0_1:lib",
-    "//express/third_party/rust/tracing_subscriber/v0_2:lib",
+    "//brave/components/skus/browser/rs/lib:rust_lib",
+    "//brave/third_party/rust/async_trait/v0_1:lib",
+    "//brave/third_party/rust/futures/v0_3:lib",
+    "//brave/third_party/rust/tracing/v0_1:lib",
+    "//brave/third_party/rust/tracing_subscriber/v0_2:lib",
     "//third_party/rust/libc/v0_2:lib",
     "//third_party/rust/serde_json/v1:lib",
   ]

@@ -111,7 +111,7 @@ def AddBravePolicies(template_file_contents):
                 'can_be_recommended': False,
                 'can_be_mandatory': True
             },
-            'example_value': ['https://express.com'],
+            'example_value': ['https://brave.com'],
             'id': 4,
             'caption': '''Disables Brave Shields for urls.''',
             'tags': [],
@@ -134,7 +134,7 @@ def AddBravePolicies(template_file_contents):
                 'can_be_recommended': False,
                 'can_be_mandatory': True
             },
-            'example_value': ['https://express.com'],
+            'example_value': ['https://brave.com'],
             'id': 5,
             'caption': '''Enables Brave Shields for urls.''',
             'tags': [],

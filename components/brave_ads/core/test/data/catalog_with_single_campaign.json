@@ -17,7 +17,7 @@
               "payload": {
                 "body": "Test Notification Ad Campaign 1 Body",
                 "title": "Test Notification Ad Campaign 1 Title",
-                "targetUrl": "https://express.com/1/notification_ad"
+                "targetUrl": "https://brave.com/1/notification_ad"
               }
             },
             {
@@ -31,9 +31,9 @@
               "payload": {
                 "logo": {
                   "alt": "Test New Tab Page Ad Campaign 1",
-                  "imageUrl": "https://express.com/1/test.jpg",
+                  "imageUrl": "https://brave.com/1/test.jpg",
                   "companyName": "New Tab Page 1",
-                  "destinationUrl": "https://express.com/1/new_tab_page_ad"
+                  "destinationUrl": "https://brave.com/1/new_tab_page_ad"
                 },
                 "wallpapers": [
                   {
@@ -41,14 +41,14 @@
                       "x": 1200,
                       "y": 1400
                     },
-                    "imageUrl": "https://express.com/1/test2.jpg"
+                    "imageUrl": "https://brave.com/1/test2.jpg"
                   },
                   {
                     "focalPoint": {
                       "x": 1200,
                       "y": 1400
                     },
-                    "imageUrl": "https://express.com/1/test3.jpg"
+                    "imageUrl": "https://brave.com/1/test3.jpg"
                   }
                 ]
               }
@@ -62,7 +62,7 @@
                 "version": 1
               },
               "payload": {
-                "feed": "https://express.com/1/promoted_content_ad",
+                "feed": "https://brave.com/1/promoted_content_ad",
                 "title": "Promoted Content 1",
                 "domain": "Domain 1",
                 "category": "Category 1",
@@ -85,7 +85,7 @@
                 "imageUrl": "https://www.brave.com/1/image.png",
                 "dimensions": "200x100",
                 "ctaText": "Call to Action Text 1",
-                "targetUrl": "https://express.com/1/inline_content_ad"
+                "targetUrl": "https://brave.com/1/inline_content_ad"
               }
             }
           ],

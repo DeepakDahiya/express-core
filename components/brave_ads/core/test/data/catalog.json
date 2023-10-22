@@ -17,7 +17,7 @@
               "payload": {
                 "body": "Test Ad 1 Campaign 1 Body",
                 "title": "Test Ad 1 Campaign 1 Title",
-                "targetUrl": "https://express.com/1"
+                "targetUrl": "https://brave.com/1"
               }
             },
             {
@@ -31,7 +31,7 @@
               "payload": {
                 "body": "Test Ad 2 Campaign 1 Body",
                 "title": "Test Ad 2 Campaign 1 Title",
-                "targetUrl": "https://express.com/2"
+                "targetUrl": "https://brave.com/2"
               }
             },
             {
@@ -43,7 +43,7 @@
                 "version": 1
               },
               "payload": {
-                "feed": "https://express.com/3",
+                "feed": "https://brave.com/3",
                 "title": "Test Ad 3 Campaign 1 Title",
                 "domain": "Domain",
                 "category": "Category",
@@ -66,7 +66,7 @@
                 "imageUrl": "https://www.brave.com/1/image.png",
                 "dimensions": "200x100",
                 "ctaText": "Call to Action Text 1",
-                "targetUrl": "https://express.com/1/inline_content_ad"
+                "targetUrl": "https://brave.com/1/inline_content_ad"
               }
             }
           ],
@@ -123,9 +123,9 @@
               "payload": {
                 "logo": {
                   "alt": "This is a test NTP creative",
-                  "imageUrl": "https://express.com/test.jpg",
+                  "imageUrl": "https://brave.com/test.jpg",
                   "companyName": "Brave",
-                  "destinationUrl": "https://express.com"
+                  "destinationUrl": "https://brave.com"
                 },
                 "wallpapers": [
                   {
@@ -133,14 +133,14 @@
                       "x": 1200,
                       "y": 1400
                     },
-                    "imageUrl": "https://express.com/test2.jpg"
+                    "imageUrl": "https://brave.com/test2.jpg"
                   },
                   {
                     "focalPoint": {
                       "x": 1200,
                       "y": 1400
                     },
-                    "imageUrl": "https://express.com/test3.jpg"
+                    "imageUrl": "https://brave.com/test3.jpg"
                   }
                 ]
               }
@@ -193,7 +193,7 @@
               "payload": {
                 "body": "Test Ad 1 Campaign 2 Body",
                 "title": "Test Ad 1 Campaign 2 Title",
-                "targetUrl": "https://express.com/1"
+                "targetUrl": "https://brave.com/1"
               }
             }
           ],

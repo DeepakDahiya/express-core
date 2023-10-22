@@ -4,19 +4,19 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 brave_browser_ephemeral_storage_sources = [
-  "//express/browser/ephemeral_storage/brave_ephemeral_storage_service_delegate.cc",
-  "//express/browser/ephemeral_storage/brave_ephemeral_storage_service_delegate.h",
-  "//express/browser/ephemeral_storage/ephemeral_storage_service_factory.cc",
-  "//express/browser/ephemeral_storage/ephemeral_storage_service_factory.h",
-  "//express/browser/ephemeral_storage/ephemeral_storage_tab_helper.cc",
-  "//express/browser/ephemeral_storage/ephemeral_storage_tab_helper.h",
-  "//express/browser/ephemeral_storage/tld_ephemeral_lifetime.cc",
-  "//express/browser/ephemeral_storage/tld_ephemeral_lifetime.h",
+  "//brave/browser/ephemeral_storage/brave_ephemeral_storage_service_delegate.cc",
+  "//brave/browser/ephemeral_storage/brave_ephemeral_storage_service_delegate.h",
+  "//brave/browser/ephemeral_storage/ephemeral_storage_service_factory.cc",
+  "//brave/browser/ephemeral_storage/ephemeral_storage_service_factory.h",
+  "//brave/browser/ephemeral_storage/ephemeral_storage_tab_helper.cc",
+  "//brave/browser/ephemeral_storage/ephemeral_storage_tab_helper.h",
+  "//brave/browser/ephemeral_storage/tld_ephemeral_lifetime.cc",
+  "//brave/browser/ephemeral_storage/tld_ephemeral_lifetime.h",
 ]
 
 brave_browser_ephemeral_storage_deps = [
   "//base",
-  "//express/components/ephemeral_storage",
+  "//brave/components/ephemeral_storage",
   "//chrome/browser/profiles",
   "//chrome/browser/ui",
   "//components/content_settings/core/browser",

@@ -110,7 +110,7 @@ function HelpImprove () {
             {changeSettingsNote.afterTag}
             <span>
               {readPrivacyPolicy.beforeTag}
-              <a href="https://express.com/privacy/browser" target="_blank">
+              <a href="https://brave.com/privacy/browser" target="_blank">
                 {readPrivacyPolicy.duringTag}
               </a>
               {readPrivacyPolicy.afterTag}

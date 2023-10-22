@@ -11,29 +11,29 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/tinyvec/v1/crate/benches/macros.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/benches/smallvec.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src-backup/arrayset.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/array.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/array/const_generic_impl.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/array/generated_impl.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/arrayvec.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/arrayvec_drain.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/lib.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/slicevec.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/src/tinyvec.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/tests/arrayvec.rs",
-    "//express/third_party/rust/tinyvec/v1/crate/tests/tinyvec.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/benches/macros.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/benches/smallvec.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src-backup/arrayset.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/array.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/array/const_generic_impl.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/array/generated_impl.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/arrayvec.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/arrayvec_drain.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/slicevec.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/src/tinyvec.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/tests/arrayvec.rs",
+    "//brave/third_party/rust/tinyvec/v1/crate/tests/tinyvec.rs",
   ]
   inputs = [
-    "//express/third_party/rust/tinyvec/v1/crate/CHANGELOG.md",
-    "//express/third_party/rust/tinyvec/v1/crate/LICENSE-APACHE.md",
-    "//express/third_party/rust/tinyvec/v1/crate/LICENSE-MIT.md",
-    "//express/third_party/rust/tinyvec/v1/crate/LICENSE-ZLIB.md",
-    "//express/third_party/rust/tinyvec/v1/crate/README.md",
+    "//brave/third_party/rust/tinyvec/v1/crate/CHANGELOG.md",
+    "//brave/third_party/rust/tinyvec/v1/crate/LICENSE-APACHE.md",
+    "//brave/third_party/rust/tinyvec/v1/crate/LICENSE-MIT.md",
+    "//brave/third_party/rust/tinyvec/v1/crate/LICENSE-ZLIB.md",
+    "//brave/third_party/rust/tinyvec/v1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -48,7 +48,7 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//express/third_party/rust/tinyvec_macros/v0_1:lib" ]
+  deps = [ "//brave/third_party/rust/tinyvec_macros/v0_1:lib" ]
   features = [
     "alloc",
     "tinyvec_macros",

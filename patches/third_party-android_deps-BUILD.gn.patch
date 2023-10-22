@@ -6,7 +6,7 @@ index a3c3f30248b91a035e5bc0ad9d32fe5a3b94326a..0a9116e7478c59e2ba45ca1347e10fdc
      ":*",
      "//third_party/androidx:*",
    ]
-+  visibility += [ "//express/third_party/android_deps:com_google_android_datatransport_transport_runtime_java__classes" ] supports_android = true
++  visibility += [ "//brave/third_party/android_deps:com_google_android_datatransport_transport_runtime_java__classes" ] supports_android = true
  }
  
  # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

@@ -3,35 +3,35 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/brave_vpn/common/buildflags/buildflags.gni")
-import("//express/components/speedreader/common/buildflags/buildflags.gni")
+import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
+import("//brave/components/speedreader/common/buildflags/buildflags.gni")
 import("//build/config/features.gni")
 
 source_set("renderer") {
   visibility = [
-    "//express:child_dependencies",
-    "//express/renderer/*",
-    "//express/test:*",
+    "//brave:child_dependencies",
+    "//brave/renderer/*",
+    "//brave/test:*",
     "//chrome/renderer/*",
   ]
 
   public_deps = [ "//chrome/renderer" ]
 
   deps = [
-    "//express/components/brave_search/common",
-    "//express/components/brave_search/renderer",
-    "//express/components/brave_shields/common",
-    "//express/components/brave_wallet/renderer",
-    "//express/components/cosmetic_filters/renderer",
-    "//express/renderer/brave_wallet/",
+    "//brave/components/brave_search/common",
+    "//brave/components/brave_search/renderer",
+    "//brave/components/brave_shields/common",
+    "//brave/components/brave_wallet/renderer",
+    "//brave/components/cosmetic_filters/renderer",
+    "//brave/renderer/brave_wallet/",
     "//v8",
   ]
 
   if (enable_speedreader) {
-    deps += [ "//express/components/speedreader/renderer" ]
+    deps += [ "//brave/components/speedreader/renderer" ]
   }
 
   if (enable_brave_vpn && is_android) {
-    deps += [ "//express/components/brave_vpn/renderer/android" ]
+    deps += [ "//brave/components/brave_vpn/renderer/android" ]
   }
 }

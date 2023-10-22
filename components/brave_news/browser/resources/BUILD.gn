@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/common/typescript.gni")
+import("//brave/components/common/typescript.gni")
 
 transpile_web_ui("brave_news_internals") {
   entry_points = [ [
@@ -12,9 +12,9 @@ transpile_web_ui("brave_news_internals") {
       ] ]
 
   deps = [
-    "//express/components/brave_news/common",
-    "//express/components/brave_news/common:mojom",
-    "//express/components/brave_news/common:mojom_js",
+    "//brave/components/brave_news/common",
+    "//brave/components/brave_news/common:mojom",
+    "//brave/components/brave_news/common:mojom_js",
   ]
 
   resource_name = "brave_news_internals"

@@ -12,7 +12,7 @@ fuzzer_test("brave_news_parse_feed_bytes_fuzzer") {
   sources = [ "brave_news/parse_feed_bytes_fuzzer.cc" ]
   deps = [
     "//base",
-    "//express/components/brave_news/rust:rust_lib",
+    "//brave/components/brave_news/rust:rust_lib",
   ]
 
   seed_corpus = "brave_news/corpus/parse_feed_bytes_fuzzer/"
@@ -23,7 +23,7 @@ fuzzer_test("brave_wallet_utils_fuzzer") {
   sources = [ "brave_wallet/brave_wallet_utils_fuzzer.cc" ]
   deps = [
     "//base",
-    "//express/components/brave_wallet/browser:utils",
+    "//brave/components/brave_wallet/browser:utils",
   ]
 }
 
@@ -43,8 +43,8 @@ fuzzer_test("adblock_engine_matches_fuzzer") {
     ":adblock_fuzzer_proto",
     "//base",
     "//base:i18n",
-    "//express/components/brave_component_updater/browser:browser",
-    "//express/components/brave_shields/adblock:rust_lib",
+    "//brave/components/brave_component_updater/browser:browser",
+    "//brave/components/brave_shields/adblock:rust_lib",
     "//testing/libfuzzer/proto:url_proto",
     "//testing/libfuzzer/proto:url_proto_converter",
     "//third_party/libprotobuf-mutator",
@@ -55,7 +55,7 @@ fuzzer_test("adblock_engine_useresources_fuzzer") {
   sources = [ "adblock/adblock_engine_useresources_fuzzer.cc" ]
   deps = [
     "//base",
-    "//express/components/brave_shields/adblock:rust_lib",
+    "//brave/components/brave_shields/adblock:rust_lib",
   ]
 
   dict = "//testing/libfuzzer/fuzzers/dicts/json.dict"
@@ -65,7 +65,7 @@ fuzzer_test("speedreader_rewriter_fuzzer") {
   sources = [ "speedreader/rewriter_fuzzer.cc" ]
   deps = [
     "//base",
-    "//express/components/speedreader/rust/ffi",
+    "//brave/components/speedreader/rust/ffi",
   ]
 
   seed_corpus = "speedreader/corpus/rewriter_fuzzer"

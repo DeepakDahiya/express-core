@@ -18,7 +18,7 @@ rust_static_library("lib") {
   ]
 
   deps = [
-    "//express/components/speedreader/rust/lib",
+    "//brave/components/speedreader/rust/lib",
     "//third_party/rust/libc/v0_2:lib",
   ]
 }

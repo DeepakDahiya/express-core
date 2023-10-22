@@ -241,7 +241,7 @@ class SolanaTxManagerUnitTest : public testing::Test {
   PrefService* prefs() { return &prefs_; }
 
   url::Origin GetOrigin() const {
-    return url::Origin::Create(GURL("https://express.com"));
+    return url::Origin::Create(GURL("https://brave.com"));
   }
 
   void AddUnapprovedTransaction(const std::string& chain_id,

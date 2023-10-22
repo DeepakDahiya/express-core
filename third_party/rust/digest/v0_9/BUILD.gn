@@ -11,21 +11,21 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/digest/v0_9/crate/src/dev.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/digest.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/dyn_digest.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/errors.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/fixed.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/lib.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/variable.rs",
-    "//express/third_party/rust/digest/v0_9/crate/src/xof.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/dev.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/digest.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/dyn_digest.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/errors.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/fixed.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/lib.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/variable.rs",
+    "//brave/third_party/rust/digest/v0_9/crate/src/xof.rs",
   ]
   inputs = [
-    "//express/third_party/rust/digest/v0_9/crate/CHANGELOG.md",
-    "//express/third_party/rust/digest/v0_9/crate/README.md",
+    "//brave/third_party/rust/digest/v0_9/crate/CHANGELOG.md",
+    "//brave/third_party/rust/digest/v0_9/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -39,7 +39,7 @@ cargo_crate("lib") {
   library_configs += [ "//build/config/compiler:no_chromium_code" ]
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
-  deps = [ "//express/third_party/rust/generic_array/v0_14:lib" ]
+  deps = [ "//brave/third_party/rust/generic_array/v0_14:lib" ]
   features = [
     "alloc",
     "std",

@@ -7,5 +7,5 @@ index 970510fd7c69833934b2eac157200f0265c91547..a874eaff3be772e1e07bf1740bc8b1a9
  
  midl("google_update") {
 -  sources = [ "google_update_idl.idl" ]
-+  sources = [ "//express/chromium_src/google_update/google_update_idl.idl" ]
++  sources = [ "//brave/chromium_src/google_update/google_update_idl.idl" ]
  }

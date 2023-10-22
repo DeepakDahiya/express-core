@@ -7,7 +7,7 @@ brave_entitlements_templates = []
 
 if (is_official_build) {
   brave_entitlements_templates += [
-    "//express/app/app-entitlements-brave.plist",
+    "//brave/app/app-entitlements-brave.plist",
     "//chrome/app/app-entitlements-chrome.plist",
   ]
 }

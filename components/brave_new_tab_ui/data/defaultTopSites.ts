@@ -18,7 +18,7 @@ export const defaultTopSitesData = [
   },
   {
     name: 'Brave Software',
-    url: 'https://express.com',
+    url: 'https://brave.com',
     favicon: BraveFavicon,
     background: 'rgba(255,255,255,0.8)'
   },

@@ -17,7 +17,7 @@
               "payload": {
                 "body": "Test Notification Ad Campaign 1 Body",
                 "title": "Test Notification Ad Campaign 1 Title",
-                "targetUrl": "https://express.com/1/notification_ad"
+                "targetUrl": "https://brave.com/1/notification_ad"
               }
             },
             {
@@ -31,9 +31,9 @@
               "payload": {
                 "logo": {
                   "alt": "Test New Tab Page Ad Campaign 1",
-                  "imageUrl": "https://express.com/1/test.jpg",
+                  "imageUrl": "https://brave.com/1/test.jpg",
                   "companyName": "New Tab Page 1",
-                  "destinationUrl": "https://express.com/1/new_tab_page_ad"
+                  "destinationUrl": "https://brave.com/1/new_tab_page_ad"
                 },
                 "wallpapers": [
                   {
@@ -41,14 +41,14 @@
                       "x": 1200,
                       "y": 1400
                     },
-                    "imageUrl": "https://express.com/1/test2.jpg"
+                    "imageUrl": "https://brave.com/1/test2.jpg"
                   },
                   {
                     "focalPoint": {
                       "x": 1200,
                       "y": 1400
                     },
-                    "imageUrl": "https://express.com/1/test3.jpg"
+                    "imageUrl": "https://brave.com/1/test3.jpg"
                   }
                 ]
               }
@@ -62,7 +62,7 @@
                 "version": 1
               },
               "payload": {
-                "feed": "https://express.com/1/promoted_content_ad",
+                "feed": "https://brave.com/1/promoted_content_ad",
                 "title": "Promoted Content 1",
                 "domain": "Domain 1",
                 "category": "Category 1",
@@ -85,7 +85,7 @@
                 "imageUrl": "https://www.brave.com/1/image.png",
                 "dimensions": "200x100",
                 "ctaText": "Call to Action Text 1",
-                "targetUrl": "https://express.com/1/inline_content_ad"
+                "targetUrl": "https://brave.com/1/inline_content_ad"
               }
             }
           ],
@@ -167,7 +167,7 @@
               "payload": {
                 "body": "Test Notification Ad Campaign 2 Body",
                 "title": "Test Notification Ad Campaign 2 Title",
-                "targetUrl": "https://express.com/2/notification_ad"
+                "targetUrl": "https://brave.com/2/notification_ad"
               }
             },
             {
@@ -181,9 +181,9 @@
               "payload": {
                 "logo": {
                   "alt": "Test New Tab Page Ad Campaign 2",
-                  "imageUrl": "https://express.com/2/test.jpg",
+                  "imageUrl": "https://brave.com/2/test.jpg",
                   "companyName": "New Tab Page 2",
-                  "destinationUrl": "https://express.com/2/new_tab_page_ad"
+                  "destinationUrl": "https://brave.com/2/new_tab_page_ad"
                 },
                 "wallpapers": [
                   {
@@ -191,14 +191,14 @@
                       "x": 1000,
                       "y": 1200
                     },
-                    "imageUrl": "https://express.com/2/test2.jpg"
+                    "imageUrl": "https://brave.com/2/test2.jpg"
                   },
                   {
                     "focalPoint": {
                       "x": 500,
                       "y": 600
                     },
-                    "imageUrl": "https://express.com/2/test3.jpg"
+                    "imageUrl": "https://brave.com/2/test3.jpg"
                   }
                 ]
               }
@@ -212,7 +212,7 @@
                 "version": 1
               },
               "payload": {
-                "feed": "https://express.com/2/promoted_content_ad",
+                "feed": "https://brave.com/2/promoted_content_ad",
                 "title": "Promoted Content 2",
                 "domain": "Domain 2",
                 "category": "Category 2",
@@ -235,7 +235,7 @@
                 "imageUrl": "https://www.brave.com/2/image.png",
                 "dimensions": "100x200",
                 "ctaText": "Call to Action Text 2",
-                "targetUrl": "https://express.com/2/inline_content_ad"
+                "targetUrl": "https://brave.com/2/inline_content_ad"
               }
             }
           ],

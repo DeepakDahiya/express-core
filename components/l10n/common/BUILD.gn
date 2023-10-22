@@ -44,7 +44,7 @@ static_library("common") {
 
   deps = [
     "//base",
-    "//express/components/l10n/browser",
+    "//brave/components/l10n/browser",
     "//components/prefs",
     "//ui/base",
   ]
@@ -60,7 +60,7 @@ static_library("test_support") {
 
   deps = [
     "//base",
-    "//express/components/l10n/common",
+    "//brave/components/l10n/common",
   ]
 }
 
@@ -79,9 +79,9 @@ source_set("unit_tests") {
   deps = [
     "//base",
     "//base/test:test_support",
-    "//express/components/l10n/common",
-    "//express/components/l10n/common:test_support",
-    "//express/components/resources:strings_grit",
+    "//brave/components/l10n/common",
+    "//brave/components/l10n/common:test_support",
+    "//brave/components/resources:strings_grit",
     "//components/prefs:test_support",
     "//testing/gmock",
     "//testing/gtest",

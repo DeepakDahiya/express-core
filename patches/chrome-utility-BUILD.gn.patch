@@ -6,7 +6,7 @@ index bf29364c22715208cf40701e3ec7102d7d120cde..e0521460a6c6fba865c3d443f9b183e3
      "//ui/base:buildflags",
    ]
  
-+  import("//express/utility/sources.gni") sources += brave_utility_sources deps += brave_utility_deps public_deps += brave_utility_public_deps
++  import("//brave/utility/sources.gni") sources += brave_utility_sources deps += brave_utility_deps public_deps += brave_utility_public_deps
 +
    if (is_win) {
      deps += [

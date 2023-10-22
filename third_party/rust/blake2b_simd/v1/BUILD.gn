@@ -10,16 +10,16 @@ cargo_crate("lib") {
   crate_type = "rlib"
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/avx2.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/blake2bp.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/guts.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/lib.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/many.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/portable.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/sse41.rs",
-    "//express/third_party/rust/blake2b_simd/v1/crate/src/test.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/avx2.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/blake2bp.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/guts.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/lib.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/many.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/portable.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/sse41.rs",
+    "//brave/third_party/rust/blake2b_simd/v1/crate/src/test.rs",
   ]
-  inputs = [ "//express/third_party/rust/blake2b_simd/v1/crate/README.md" ]
+  inputs = [ "//brave/third_party/rust/blake2b_simd/v1/crate/README.md" ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
@@ -33,9 +33,9 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/arrayref/v0_3:lib",
-    "//express/third_party/rust/arrayvec/v0_7:lib",
-    "//express/third_party/rust/constant_time_eq/v0_2:lib",
+    "//brave/third_party/rust/arrayref/v0_3:lib",
+    "//brave/third_party/rust/arrayvec/v0_7:lib",
+    "//brave/third_party/rust/constant_time_eq/v0_2:lib",
   ]
   features = [ "std" ]
 }

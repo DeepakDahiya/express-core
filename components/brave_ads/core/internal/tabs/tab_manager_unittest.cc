@@ -50,7 +50,7 @@ class BraveAdsTabManagerTest : public UnitTestBase {
 
 TEST_F(BraveAdsTabManagerTest, IsVisible) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -59,7 +59,7 @@ TEST_F(BraveAdsTabManagerTest, IsVisible) {
 
 TEST_F(BraveAdsTabManagerTest, IsOccluded) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/false);
 
   // Act & Assert
@@ -68,7 +68,7 @@ TEST_F(BraveAdsTabManagerTest, IsOccluded) {
 
 TEST_F(BraveAdsTabManagerTest, IsPlayingMedia) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   PlayMedia(/*tab_id=*/1);
@@ -79,7 +79,7 @@ TEST_F(BraveAdsTabManagerTest, IsPlayingMedia) {
 
 TEST_F(BraveAdsTabManagerTest, IsNotPlayingMedia) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -91,16 +91,16 @@ TEST_F(BraveAdsTabManagerTest, OpenNewTab) {
   EXPECT_CALL(
       observer_mock_,
       OnDidOpenNewTab(TabInfo{/*id=*/1,
-                              /*redirect_chain=*/{GURL("https://express.com")},
+                              /*redirect_chain=*/{GURL("https://brave.com")},
                               /*is_playing_media=*/false}));
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
       /*is_visible=*/true);
 }
 
 TEST_F(BraveAdsTabManagerTest, ChangeTab) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -117,7 +117,7 @@ TEST_F(BraveAdsTabManagerTest, ChangeTab) {
 
 TEST_F(BraveAdsTabManagerTest, ChangeTabFocus) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/false);
 
   // Act & Assert
@@ -130,18 +130,18 @@ TEST_F(BraveAdsTabManagerTest, ChangeTabFocus) {
 
 TEST_F(BraveAdsTabManagerTest, DoNotUpdateExistingOccludedTabIfSameUrl) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/false);
 
   // Act & Assert
   NotifyTabDidChange(
-      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+      /*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
       /*is_visible=*/false);
 }
 
 TEST_F(BraveAdsTabManagerTest, UpdateExistingOccludedTabIfDifferentUrl) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/false);
 
   // Act & Assert
@@ -158,22 +158,22 @@ TEST_F(BraveAdsTabManagerTest, UpdateExistingOccludedTabIfDifferentUrl) {
 
 TEST_F(BraveAdsTabManagerTest, UpdateExistingVisibleTabIfSameUrl) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
   EXPECT_CALL(observer_mock_,
               OnTabDidChange(TabInfo(
-                  /*id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+                  /*id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
                   /*is_playing_media=*/false)));
 
   NotifyTabDidChange(/*tab_id=*/1,
-                     /*redirect_chain=*/{GURL("https://express.com")},
+                     /*redirect_chain=*/{GURL("https://brave.com")},
                      /*is_visible=*/true);
 }
 
 TEST_F(BraveAdsTabManagerTest, DoNotUpdateExistingVisibleTabIfDifferentUrl) {
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -191,7 +191,7 @@ TEST_F(BraveAdsTabManagerTest, DoNotUpdateExistingVisibleTabIfDifferentUrl) {
 
 TEST_F(BraveAdsTabManagerTest, UpdatedExistingVisibleTabIfDifferentUrl) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -208,7 +208,7 @@ TEST_F(BraveAdsTabManagerTest, UpdatedExistingVisibleTabIfDifferentUrl) {
 
 TEST_F(BraveAdsTabManagerTest, CloseTab) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -218,7 +218,7 @@ TEST_F(BraveAdsTabManagerTest, CloseTab) {
 
 TEST_F(BraveAdsTabManagerTest, PlayMedia) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert
@@ -228,7 +228,7 @@ TEST_F(BraveAdsTabManagerTest, PlayMedia) {
 
 TEST_F(BraveAdsTabManagerTest, AlreadyPlayingMedia) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   PlayMedia(/*tab_id=*/1);
@@ -239,7 +239,7 @@ TEST_F(BraveAdsTabManagerTest, AlreadyPlayingMedia) {
 
 TEST_F(BraveAdsTabManagerTest, StopPlayingMedia) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   PlayMedia(/*tab_id=*/1);
@@ -251,7 +251,7 @@ TEST_F(BraveAdsTabManagerTest, StopPlayingMedia) {
 
 TEST_F(BraveAdsTabManagerTest, GetVisible) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   OpenTab(/*tab_id=*/2,
@@ -268,7 +268,7 @@ TEST_F(BraveAdsTabManagerTest, GetVisible) {
 
 TEST_F(BraveAdsTabManagerTest, GetLastVisible) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   OpenTab(/*tab_id=*/2,
@@ -278,14 +278,14 @@ TEST_F(BraveAdsTabManagerTest, GetLastVisible) {
   // Act & Assert
   EXPECT_EQ(TabInfo(
                 /*id=*/1,
-                /*redirect_chain=*/{GURL("https://express.com")},
+                /*redirect_chain=*/{GURL("https://brave.com")},
                 /*is_playing_media=*/false),
             TabManager::GetInstance().GetLastVisible());
 }
 
 TEST_F(BraveAdsTabManagerTest, GetForId) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   OpenTab(/*tab_id=*/2,
@@ -302,7 +302,7 @@ TEST_F(BraveAdsTabManagerTest, GetForId) {
 
 TEST_F(BraveAdsTabManagerTest, DoNotGetForMissingId) {
   // Arrange
-  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://express.com")},
+  OpenTab(/*tab_id=*/1, /*redirect_chain=*/{GURL("https://brave.com")},
           /*is_visible=*/true);
 
   // Act & Assert

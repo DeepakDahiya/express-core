@@ -1050,4 +1050,4 @@ brave_android_features_java_resources = [
 brave_java_preprocess_xml_sources =
     [ "//chrome/android/java/res/menu/main_menu.xml" ]
 brave_java_preprocess_module_sources =
-    [ "//express/android/preprocess/xml/menu_main_menu_xml.py" ]
+    [ "//brave/android/preprocess/xml/menu_main_menu_xml.py" ]

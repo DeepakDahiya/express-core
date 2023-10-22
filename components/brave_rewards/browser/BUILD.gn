@@ -3,8 +3,8 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/components/brave_rewards/core/config.gni")
-import("//express/components/ipfs/buildflags/buildflags.gni")
+import("//brave/components/brave_rewards/core/config.gni")
+import("//brave/components/ipfs/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 
 static_library("browser") {
@@ -39,13 +39,13 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//express/app:brave_generated_resources_grit",
-    "//express/components/brave_ads/core",
-    "//express/components/brave_ads/core",
-    "//express/components/brave_rewards/common",
-    "//express/components/brave_rewards/common/buildflags",
-    "//express/components/resources",
-    "//express/components/services/bat_rewards/public/interfaces",
+    "//brave/app:brave_generated_resources_grit",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_rewards/common",
+    "//brave/components/brave_rewards/common/buildflags",
+    "//brave/components/resources",
+    "//brave/components/services/bat_rewards/public/interfaces",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/data_decoder/public/cpp",
@@ -72,13 +72,13 @@ static_library("browser") {
   }
 
   if (enable_ipfs) {
-    deps += [ "//express/components/ipfs" ]
+    deps += [ "//brave/components/ipfs" ]
   }
 
-  public_deps += [ "//express/components/brave_rewards/core:headers" ]
+  public_deps += [ "//brave/components/brave_rewards/core:headers" ]
 
   if (is_android) {
-    deps += [ "//express/components/safetynet:android" ]
+    deps += [ "//brave/components/safetynet:android" ]
   }
 }
 
@@ -87,8 +87,8 @@ source_set("testutil") {
   deps = [
     ":browser",
     "//base",
-    "//express/browser",
-    "//express/components/brave_rewards/core:headers",
+    "//brave/browser",
+    "//brave/components/brave_rewards/core:headers",
     "//chrome/browser/bitmap_fetcher:bitmap_fetcher",
     "//chrome/test:test_support",
     "//content/public/browser",

@@ -11,7 +11,7 @@ source_set("browser_tests") {
 
   deps = [
     "//base",
-    "//express/components/commander/browser",
+    "//brave/components/commander/browser",
     "//chrome/browser/profiles",
     "//chrome/browser/profiles:profile",
     "//chrome/browser/ui",
@@ -29,7 +29,7 @@ source_set("unit_tests") {
   sources = [ "ranker_unittest.cc" ]
   deps = [
     "//base",
-    "//express/components/commander/browser",
+    "//brave/components/commander/browser",
     "//chrome/browser/ui",
     "//components/prefs:test_support",
     "//components/sync_preferences:test_support",

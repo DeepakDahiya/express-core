@@ -4,9 +4,9 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import(
-    "//express/browser/brave_vpn/win/brave_vpn_wireguard_service/allowlist.gni")
-import("//express/build/config.gni")
-import("//express/components/brave_vpn/common/buildflags/buildflags.gni")
+    "//brave/browser/brave_vpn/win/brave_vpn_wireguard_service/allowlist.gni")
+import("//brave/build/config.gni")
+import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
 import("//build/config/locales.gni")
 import("//build/config/zip.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -22,20 +22,20 @@ if (enable_library_cdms) {
 }
 
 if (!is_ios) {
-  import("//express/brave_paks.gni")
+  import("//brave/brave_paks.gni")
 }
 
 if (is_mac) {
-  import("//express/build/mac/tweak_info_plist.gni")
+  import("//brave/build/mac/tweak_info_plist.gni")
   import("//build/config/mac/rules.gni")
 }
 
 if (is_win) {
-  import("//express/build/win/sign.gni")
+  import("//brave/build/win/sign.gni")
 }
 
 if (is_linux) {
-  import("//express/build/linux/channels.gni")
+  import("//brave/build/linux/channels.gni")
 }
 
 declare_args() {
@@ -46,8 +46,8 @@ if (!is_ios) {
   group("child_dependencies") {
     deps = [
       "common",
-      "//express/renderer",
-      "//express/utility",
+      "//brave/renderer",
+      "//brave/utility",
     ]
   }
 
@@ -68,7 +68,7 @@ if (!is_ios) {
   }
 
   group("storybook") {
-    deps = [ "//express/.storybook:storybook" ]
+    deps = [ "//brave/.storybook:storybook" ]
   }
 }
 
@@ -76,7 +76,7 @@ if (is_win) {
   packed_files_rc_file =
       "$root_out_dir/gen/chrome/installer/mini_installer/packed_delta_files.rc"
   action("delta_installer_archive") {
-    script = "//express/tools/win/create_delta_archive.py"
+    script = "//brave/tools/win/create_delta_archive.py"
     if (skip_signing) {
       setup_exe = "setup.exe"
     } else {
@@ -132,7 +132,7 @@ if (is_win) {
     sign("signed_brave_exe") {
       sources = [ "$root_out_dir/brave.exe" ]
       outputs = [ "$root_out_dir/presigned_binaries/brave.exe" ]
-      deps = [ "//express/build/win:copy_exe" ]
+      deps = [ "//brave/build/win:copy_exe" ]
     }
     sign("signed_chrome_dll") {
       sources = [ "$root_out_dir/chrome.dll" ]
@@ -151,8 +151,8 @@ if (is_win) {
       ]
       if (enable_widevine && enable_cdm_host_verification) {
         deps += [
-          "//express/browser/widevine:brave_exe_sig",
-          "//express/browser/widevine:chrome_dll_sig",
+          "//brave/browser/widevine:brave_exe_sig",
+          "//brave/browser/widevine:chrome_dll_sig",
         ]
       }
     }
@@ -163,7 +163,7 @@ group("brave") {
   deps = [ "build/$target_os:brave" ]
   if (!is_android && !is_ios) {
     deps += [
-      "//express/components/version_info:generate_version",
+      "//brave/components/version_info:generate_version",
       "//chrome",
     ]
   }
@@ -172,28 +172,28 @@ group("brave") {
 group("resources") {
   public_deps = [
     # TODO(bridiver)
-    # "//express/browser:resources",
-    # "//express/common:resources",
-    # "//express/renderer:resources",
-    "//express/components/resources",
+    # "//brave/browser:resources",
+    # "//brave/common:resources",
+    # "//brave/renderer:resources",
+    "//brave/components/resources",
   ]
 
-  data_deps = [ "//express/components/resources:about_credits" ]
+  data_deps = [ "//brave/components/resources:about_credits" ]
 }
 
 if (is_android) {
   android_assets("brave_file_assets") {
     sources = [
-      "//express/LICENSE.html",
-      "//express/android/java/org/chromium/chrome/browser/ntp/ntp_news_optin_icon_animation.json",
-      "//express/android/java/org/chromium/chrome/browser/onboarding/animations/onboarding_ads.json",
-      "//express/android/java/org/chromium/chrome/browser/onboarding/animations/onboarding_ads_notification.json",
-      "//express/android/java/org/chromium/chrome/browser/onboarding/animations/onboarding_rewards.json",
-      "//express/android/java/org/chromium/chrome/browser/onboarding/animations/privacy_protection.json",
-      "//express/android/java/org/chromium/chrome/browser/onboarding/animations/save_data_and_battery.json",
-      "//express/android/java/org/chromium/chrome/browser/onboarding/animations/website_loads_faster.json",
-      "//express/android/java/org/chromium/chrome/browser/shields/disconnect_entitylist.json",
-      "//express/android/java/org/chromium/chrome/browser/vpn/brave_vpn_confirm.json",
+      "//brave/LICENSE.html",
+      "//brave/android/java/org/chromium/chrome/browser/ntp/ntp_news_optin_icon_animation.json",
+      "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/onboarding_ads.json",
+      "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/onboarding_ads_notification.json",
+      "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/onboarding_rewards.json",
+      "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/privacy_protection.json",
+      "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/save_data_and_battery.json",
+      "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/website_loads_faster.json",
+      "//brave/android/java/org/chromium/chrome/browser/shields/disconnect_entitylist.json",
+      "//brave/android/java/org/chromium/chrome/browser/vpn/brave_vpn_confirm.json",
     ]
     disable_compression = false
   }
@@ -202,8 +202,8 @@ if (is_android) {
     sources = [ "$root_out_dir/brave_resources.pak" ]
 
     deps = [
-      "//express:brave_file_assets",
-      "//express:packed_resources_extra",
+      "//brave:brave_file_assets",
+      "//brave:packed_resources_extra",
     ]
     disable_compression = true
   }
@@ -213,7 +213,7 @@ if (is_mac) {
   group("framework_bundle_data") {
     deps = [
       "components/brave_extension/extension/brave_extension:brave_extension_framework_bundle_data",
-      "//express/build/rust:framework_exports",
+      "//brave/build/rust:framework_exports",
     ]
   }
 }
@@ -223,7 +223,7 @@ group("unpacked_resources") {
     deps = []
     if (enable_extensions) {
       deps = [
-        "//express/components/brave_extension/extension/brave_extension:locales",
+        "//brave/components/brave_extension/extension/brave_extension:locales",
       ]
     }
   }
@@ -243,7 +243,7 @@ if (!is_ios) {
       ]
     }
     if (use_libfuzzer) {
-      deps += [ "//express/fuzzers:brave_fuzzers" ]
+      deps += [ "//brave/fuzzers:brave_fuzzers" ]
     }
   }
 }
@@ -299,16 +299,16 @@ group("create_dist") {
 
   if (is_win) {
     deps += [
-      "//express/build/win:create_signed_installer",
-      "//express/components/policy:pack_policy_templates",
+      "//brave/build/win:create_signed_installer",
+      "//brave/components/policy:pack_policy_templates",
     ]
 
     if (build_omaha) {
-      deps += [ "//express/vendor/omaha" ]
+      deps += [ "//brave/vendor/omaha" ]
     }
 
     if (build_delta_installer) {
-      deps += [ "//express/build/win:signed_delta_installer" ]
+      deps += [ "//brave/build/win:signed_delta_installer" ]
     }
   }
   if (is_mac) {
@@ -321,7 +321,7 @@ group("create_dist") {
   if (is_linux) {
     deps += [
       ":theme_files",
-      "//express/app/linux:dist_resources",
+      "//brave/app/linux:dist_resources",
       "//chrome/installer/linux:$linux_channel",
     ]
   }
@@ -341,7 +341,7 @@ if (!is_mac && !is_android && !is_ios) {
   if (enable_extensions) {
     group("brave_extensions_locale_dist_resources") {
       deps = [
-        "//express/components/brave_extension/extension/brave_extension:locales",
+        "//brave/components/brave_extension/extension/brave_extension:locales",
       ]
 
       public_deps = []
@@ -354,7 +354,7 @@ if (!is_mac && !is_android && !is_ios) {
 
     foreach(locale, platform_pak_locales) {
       copy("brave_shields_locales_${locale}") {
-        deps = [ "//express/components/brave_extension/extension/brave_extension:locales_$locale" ]
+        deps = [ "//brave/components/brave_extension/extension/brave_extension:locales_$locale" ]
 
         locale = string_replace(locale, "-", "_")
         sources = [ "$root_out_dir/resources/brave_extension/_locales/$locale/messages.json" ]
@@ -365,7 +365,7 @@ if (!is_mac && !is_android && !is_ios) {
 }
 
 copy("brave_license_dist_resources") {
-  sources = [ "//express/LICENSE" ]
+  sources = [ "//brave/LICENSE" ]
 
   outputs = [ "$brave_dist_dir/{{source_file_part}}" ]
 }
@@ -379,7 +379,7 @@ if (!is_android && !is_ios) {
       ":brave_license_dist_resources",
       ":packed_resources",
       "build/$target_os:brave",
-      "//express/components/version_info:generate_version",
+      "//brave/components/version_info:generate_version",
       "//chrome:packed_resources",
       "//third_party/icu:icudata",
     ]
@@ -434,7 +434,7 @@ template("create_dist_template") {
 
     dir_inputs = invoker.dir_inputs
 
-    script = "//express/script/create-dist.py"
+    script = "//brave/script/create-dist.py"
 
     deps = [ ":brave_license_dist_resources" ]
     if (defined(invoker.deps)) {
@@ -458,7 +458,7 @@ if (should_generate_symbols) {
       output = "$brave_dist_dir/$brave_product_name-v$brave_version-$brave_platform-$target_arch-symbols.zip"
     }
 
-    deps = [ "//express/app/$current_os:symbol_dist_resources" ]
+    deps = [ "//brave/app/$current_os:symbol_dist_resources" ]
 
     if (is_win) {
       dir_inputs = [ "$brave_product_name.syms" ]
@@ -472,7 +472,7 @@ if (should_generate_symbols) {
       output = "$brave_dist_dir/$brave_product_name-v$brave_version-$brave_platform-$target_arch-native-symbols.7z"
       dir_inputs = [ "$brave_product_name.pdb.syms" ]
 
-      deps = [ "//express/app/win:generate_symbols" ]
+      deps = [ "//brave/app/win:generate_symbols" ]
     }
   } else if (is_mac) {
     copy("create_native_symbols_dist") {
@@ -490,7 +490,7 @@ if (should_generate_symbols) {
 group("create_symbols_dist") {
   # Currently on some platforms (Android, Linux) this target generate more
   # than just symbols, so always depend on it.
-  public_deps = [ "//express/app/$current_os:symbol_dist_resources" ]
+  public_deps = [ "//brave/app/$current_os:symbol_dist_resources" ]
 
   if (should_generate_symbols) {
     public_deps += [
@@ -509,7 +509,7 @@ action("create_dist_zips") {
     # Besides changing from 7z to zip, the directory structure is a bit different.
     # TODO(atuchin): support other platforms.
 
-    script = "//express/script/repack-archive.py"
+    script = "//brave/script/repack-archive.py"
     deps = [ "//chrome/installer/mini_installer:mini_installer_archive" ]
 
     input = "$root_out_dir/chrome.7z"
@@ -521,7 +521,7 @@ action("create_dist_zips") {
       "--target_dir=Chrome-bin",
     ]
   } else {  # !is_win
-    script = "//express/script/create-dist.py"
+    script = "//brave/script/create-dist.py"
 
     inputs = get_target_outputs(":brave_license_dist_resources")
 
@@ -613,7 +613,7 @@ if (is_mac) {
 
 cargo_audit_target_dir = "$root_build_dir/cargo_audit"
 cargo_audit_exe = "$cargo_audit_target_dir/release/cargo-audit"
-cargo_audit_src = "//express/tools/crates/cargo_audit/v0_18/crate"
+cargo_audit_src = "//brave/tools/crates/cargo_audit/v0_18/crate"
 if (host_os == "win") {
   cargo_audit_exe += ".exe"
 }
@@ -643,12 +643,12 @@ action("build_cargo_audit") {
 }
 
 action("audit_deps") {
-  script = "//express/script/audit_deps.py"
+  script = "//brave/script/audit_deps.py"
 
   outputs = [ "$root_gen_dir/non-existent-audit_deps" ]
 
   args = [
-    "--source_root=" + rebase_path("//express"),
+    "--source_root=" + rebase_path("//brave"),
     "--cargo_audit_exe=" + rebase_path(cargo_audit_exe),
   ]
 
@@ -661,7 +661,7 @@ action("audit_deps") {
 
 if (is_redirect_cc_build) {
   group("redirect_cc") {
-    deps = [ "//express/tools/redirect_cc" ]
+    deps = [ "//brave/tools/redirect_cc" ]
   }
 }
 if (is_win && enable_resource_allowlist_generation) {
@@ -669,11 +669,11 @@ if (is_win && enable_resource_allowlist_generation) {
   # wireguard resources in pak files.
   action("merge_allowlists") {
     deps = [
-      "//express/browser/brave_vpn/win/brave_vpn_wireguard_service:wireguard_resource_allowlist",
+      "//brave/browser/brave_vpn/win/brave_vpn_wireguard_service:wireguard_resource_allowlist",
       "//chrome:resource_allowlist",
     ]
 
-    script = "//express//resources/brave_allowlist.py"
+    script = "//brave//resources/brave_allowlist.py"
     source_allowlist = "$root_gen_dir/chrome/chrome_resource_allowlist.txt"
     args = [
       "--repack_allowlist",

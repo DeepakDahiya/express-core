@@ -11,17 +11,17 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/keccak/v0_1/crate/benches/mod.rs",
-    "//express/third_party/rust/keccak/v0_1/crate/src/armv8.rs",
-    "//express/third_party/rust/keccak/v0_1/crate/src/lib.rs",
-    "//express/third_party/rust/keccak/v0_1/crate/src/unroll.rs",
+    "//brave/third_party/rust/keccak/v0_1/crate/benches/mod.rs",
+    "//brave/third_party/rust/keccak/v0_1/crate/src/armv8.rs",
+    "//brave/third_party/rust/keccak/v0_1/crate/src/lib.rs",
+    "//brave/third_party/rust/keccak/v0_1/crate/src/unroll.rs",
   ]
   inputs = [
-    "//express/third_party/rust/keccak/v0_1/crate/CHANGELOG.md",
-    "//express/third_party/rust/keccak/v0_1/crate/README.md",
+    "//brave/third_party/rust/keccak/v0_1/crate/CHANGELOG.md",
+    "//brave/third_party/rust/keccak/v0_1/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.
@@ -37,6 +37,6 @@ cargo_crate("lib") {
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   if (target_cpu == "arm64" &&
       (target_os == "mac" || target_os == "linux" || target_os == "ios")) {
-    deps = [ "//express/third_party/rust/cpufeatures/v0_2:lib" ]
+    deps = [ "//brave/third_party/rust/cpufeatures/v0_2:lib" ]
   }
 }

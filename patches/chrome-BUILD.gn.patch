@@ -6,7 +6,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
            "common/crash_keys.cc",
            "common/crash_keys.h",
          ]
-+      sources -= [ "app/chrome_exe.rc", ] sources += [ "//express/app/brave_exe.rc", ]
++      sources -= [ "app/chrome_exe.rc", ] sources += [ "//brave/app/brave_exe.rc", ]
  
          deps += [
            ":chrome_dll",
@@ -14,7 +14,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
        args += [ "--keystone=0" ]
      }
    }
-+  copy("brave_app_plist") { deps = [ "//express:brave_app_plist" ] sources = [ "$root_gen_dir/brave/brave_app_plist_tweaked.plist" ] outputs = [ "$root_gen_dir/chrome/{{source_file_part}}" ] }
++  copy("brave_app_plist") { deps = [ "//brave:brave_app_plist" ] sources = [ "$root_gen_dir/brave/brave_app_plist_tweaked.plist" ] outputs = [ "$root_gen_dir/chrome/{{source_file_part}}" ] }
  
    mac_app_bundle("chrome_app") {
      output_name = chrome_product_full_name
@@ -28,7 +28,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
        "//chrome/common:buildflags",
        "//chrome/common:version_header",
      ]
-+    deps += [ "//express:brave_app" ]
++    deps += [ "//brave:brave_app" ]
  
      if (enable_updater) {
        deps += [ ":chromium_updater_privileged_helper" ]
@@ -53,7 +53,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
        "--scm=0",
      ]
    }
-+  copy("brave_helper_plist") { deps = [ "//express:brave_helper_plist" ] sources = [ "$root_gen_dir/brave/brave_helper_plist_tweaked.plist" ] outputs = [ "$root_gen_dir/chrome/{{source_file_part}}" ] }
++  copy("brave_helper_plist") { deps = [ "//brave:brave_helper_plist" ] sources = [ "$root_gen_dir/brave/brave_helper_plist_tweaked.plist" ] outputs = [ "$root_gen_dir/chrome/{{source_file_part}}" ] }
  
    compile_entitlements("entitlements") {
      entitlements_templates = [ "app/app-entitlements.plist" ]
@@ -81,7 +81,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
        "-current_version",
        chrome_dylib_version,
      ]
-+    import("//express/browser/sources.gni") public_deps += brave_chrome_framework_public_deps bundle_deps += brave_chrome_framework_bundle_deps framework_contents += brave_chrome_framework_contents configs += brave_chrome_framework_configs
++    import("//brave/browser/sources.gni") public_deps += brave_chrome_framework_public_deps bundle_deps += brave_chrome_framework_bundle_deps framework_contents += brave_chrome_framework_contents configs += brave_chrome_framework_configs
  
      if (!is_component_build) {
        # Specify a sensible install_name for static builds. The library is
@@ -89,7 +89,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
  
  group("dependencies") {
    public_deps = [
-+    "//express:browser_dependencies",
++    "//brave:browser_dependencies",
      "//build:branding_buildflags",
      "//build:chromeos_buildflags",
      "//chrome/browser",
@@ -98,7 +98,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
  if (is_win) {
    process_version_rc_template("chrome_exe_version") {
 -    sources = [ "app/chrome_exe.ver" ]
-+    sources = [ "//express/app/brave_exe.ver" ]
++    sources = [ "//brave/app/brave_exe.ver" ]
      output = "$target_gen_dir/chrome_exe_version.rc"
    }
  
@@ -106,7 +106,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
      "//chrome/browser:resources",
      "//chrome/common:resources",
      "//chrome/renderer:resources",
-+    "//express:resources",
++    "//brave:resources",
    ]
  }
  
@@ -114,7 +114,7 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
      if (enable_resource_allowlist_generation) {
        repack_allowlist = _chrome_resource_allowlist
        deps = [ ":resource_allowlist" ]
-+      repack_allowlist = brave_allowlist_file deps += [ "//express:merge_allowlists" ]
++      repack_allowlist = brave_allowlist_file deps += [ "//brave:merge_allowlists" ]
      }
  
      if (is_chrome_branded && !is_mac) {

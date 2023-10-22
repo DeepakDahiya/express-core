@@ -13,10 +13,10 @@ static_library("browser") {
 
   deps = [
     "//base",
-    "//express/components/brave_search/common",
-    "//express/components/brave_search/common:mojom",
-    "//express/components/brave_search_conversion",
-    "//express/components/time_period_storage",
+    "//brave/components/brave_search/common",
+    "//brave/components/brave_search/common:mojom",
+    "//brave/components/brave_search_conversion",
+    "//brave/components/time_period_storage",
     "//components/prefs",
     "//components/search_engines",
     "//net",

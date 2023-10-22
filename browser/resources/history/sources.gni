@@ -21,4 +21,4 @@ foreach(component_file, brave_history_web_component_files) {
 }
 
 brave_history_preprocess_extra_deps =
-    [ "//express/browser/resources/history:preprocess" ]
+    [ "//brave/browser/resources/history:preprocess" ]

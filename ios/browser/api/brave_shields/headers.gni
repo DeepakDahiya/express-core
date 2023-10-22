@@ -4,7 +4,7 @@
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_shields_public_headers = [
-  "//express/ios/browser/api/brave_shields/adblock_engine.h",
-  "//express/ios/browser/api/brave_shields/adblock_filter_list_catalog_entry.h",
-  "//express/ios/browser/api/brave_shields/adblock_service.h",
+  "//brave/ios/browser/api/brave_shields/adblock_engine.h",
+  "//brave/ios/browser/api/brave_shields/adblock_filter_list_catalog_entry.h",
+  "//brave/ios/browser/api/brave_shields/adblock_service.h",
 ]

@@ -3,14 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 import("//build/config/android/rules.gni")
 
 source_set("android_browser_process") {
   check_includes = false
 
   sources = [
-    "//express/browser/brave_ads/android/brave_ads_native_helper.cc",
+    "//brave/browser/brave_ads/android/brave_ads_native_helper.cc",
     "brave_feature_util.cc",
     "brave_local_state_android.cc",
     "brave_relaunch_utils.cc",
@@ -22,17 +22,17 @@ source_set("android_browser_process") {
 
   deps = [
     "//base",
-    "//express/browser/android/preferences",
-    "//express/browser/android/safe_browsing",
-    "//express/browser/brave_ads/android:jni_headers",
-    "//express/build/android:jni_headers",
-    "//express/components/brave_ads/browser",
-    "//express/components/brave_shields/browser",
-    "//express/components/brave_sync",
-    "//express/components/brave_sync:crypto",
-    "//express/components/brave_sync:prefs",
-    "//express/components/brave_sync:sync_service_impl_helper",
-    "//express/components/l10n/common",
+    "//brave/browser/android/preferences",
+    "//brave/browser/android/safe_browsing",
+    "//brave/browser/brave_ads/android:jni_headers",
+    "//brave/build/android:jni_headers",
+    "//brave/components/brave_ads/browser",
+    "//brave/components/brave_shields/browser",
+    "//brave/components/brave_sync",
+    "//brave/components/brave_sync:crypto",
+    "//brave/components/brave_sync:prefs",
+    "//brave/components/brave_sync:sync_service_impl_helper",
+    "//brave/components/l10n/common",
     "//chrome/android:jni_headers",
     "//chrome/common",
     "//components/content_settings/core/browser",

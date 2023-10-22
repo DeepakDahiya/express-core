@@ -10,18 +10,18 @@ brave_browser_web_discovery_deps = []
 
 if (enable_extensions) {
   brave_browser_web_discovery_sources += [
-    "//express/browser/web_discovery/web_discovery_cta_util.cc",
-    "//express/browser/web_discovery/web_discovery_cta_util.h",
-    "//express/browser/web_discovery/web_discovery_infobar_delegate.cc",
-    "//express/browser/web_discovery/web_discovery_infobar_delegate.h",
-    "//express/browser/web_discovery/web_discovery_tab_helper.cc",
-    "//express/browser/web_discovery/web_discovery_tab_helper.h",
+    "//brave/browser/web_discovery/web_discovery_cta_util.cc",
+    "//brave/browser/web_discovery/web_discovery_cta_util.h",
+    "//brave/browser/web_discovery/web_discovery_infobar_delegate.cc",
+    "//brave/browser/web_discovery/web_discovery_infobar_delegate.h",
+    "//brave/browser/web_discovery/web_discovery_tab_helper.cc",
+    "//brave/browser/web_discovery/web_discovery_tab_helper.h",
   ]
 
   brave_browser_web_discovery_deps += [
-    "//express/common",
-    "//express/components/constants",
-    "//express/components/search_engines",
+    "//brave/common",
+    "//brave/components/constants",
+    "//brave/components/search_engines",
     "//chrome/browser/profiles",
     "//chrome/browser/ui",
     "//components/infobars/content",

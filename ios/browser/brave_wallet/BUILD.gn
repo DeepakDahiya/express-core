@@ -25,12 +25,12 @@ source_set("brave_wallet") {
     "zcash_wallet_service_factory.mm",
   ]
   deps = [
-    "//express/components/brave_wallet/browser",
-    "//express/components/brave_wallet/browser:pref_names",
-    "//express/components/brave_wallet/common",
-    "//express/components/brave_wallet/common:mojom",
-    "//express/ios/browser/api/brave_wallet:wallet_mojom_wrappers",
-    "//express/ios/browser/keyed_service",
+    "//brave/components/brave_wallet/browser",
+    "//brave/components/brave_wallet/browser:pref_names",
+    "//brave/components/brave_wallet/common",
+    "//brave/components/brave_wallet/common:mojom",
+    "//brave/ios/browser/api/brave_wallet:wallet_mojom_wrappers",
+    "//brave/ios/browser/keyed_service",
     "//components/keyed_service/core",
     "//components/keyed_service/ios:ios",
     "//ios/chrome/browser/shared/model/application_context",

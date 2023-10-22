@@ -19,11 +19,11 @@ static_library("content") {
 
   deps = [
     "//base",
-    "//express/components/brave_wallet/common",
-    "//express/components/decentralized_dns/core",
-    "//express/components/l10n/common",
-    "//express/components/resources:static_resources",
-    "//express/components/resources:strings",
+    "//brave/components/brave_wallet/common",
+    "//brave/components/decentralized_dns/core",
+    "//brave/components/l10n/common",
+    "//brave/components/resources:static_resources",
+    "//brave/components/resources:strings",
     "//components/prefs",
     "//components/security_interstitials/content:security_interstitial_page",
     "//components/security_interstitials/core",

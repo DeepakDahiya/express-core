@@ -11,11 +11,11 @@ source_set("skus") {
     "skus_service_factory.h",
   ]
   deps = [
-    "//express/components/skus/browser",
-    "//express/components/skus/common",
-    "//express/components/skus/common:mojom",
-    "//express/ios/browser/api/skus:skus_mojom_wrappers",
-    "//express/ios/browser/keyed_service",
+    "//brave/components/skus/browser",
+    "//brave/components/skus/common",
+    "//brave/components/skus/common:mojom",
+    "//brave/ios/browser/api/skus:skus_mojom_wrappers",
+    "//brave/ios/browser/keyed_service",
     "//components/keyed_service/core",
     "//components/keyed_service/ios:ios",
     "//components/pref_registry",

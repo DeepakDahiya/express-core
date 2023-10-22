@@ -21,7 +21,7 @@ const CATEGORY_OPTIONS = new Map([
   ['other', getLocale('optionOther')]
 ])
 
-const ABOUT_LEO_PREMIUM_URL = 'https://express.com/leo-roadmap/'
+const ABOUT_LEO_PREMIUM_URL = 'https://brave.com/leo-roadmap/'
 
 interface FeedbackFormProps {
   onCancel?: () => void

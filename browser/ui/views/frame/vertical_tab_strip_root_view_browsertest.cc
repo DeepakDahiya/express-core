@@ -81,7 +81,7 @@ IN_PROC_BROWSER_TEST_F(VerticalTabStripRootViewBrowserTest,
   EXPECT_EQ(tab_strip_model->count(), 1);
 
   ui::OSExchangeData data;
-  GURL url("https://express.com/");
+  GURL url("https://brave.com/");
   data.SetURL(url, std::u16string());
 
   Tab* current_tab = GetTabAt(0);
@@ -127,7 +127,7 @@ IN_PROC_BROWSER_TEST_F(VerticalTabStripRootViewBrowserTest,
   EXPECT_EQ(tab_strip_model->count(), 1);
 
   ui::OSExchangeData data;
-  GURL url("https://express.com/");
+  GURL url("https://brave.com/");
   data.SetURL(url, std::u16string());
 
   Tab* current_tab = GetTabAt(0);

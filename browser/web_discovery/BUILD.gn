@@ -11,9 +11,9 @@ source_set("unit_tests") {
 
     sources = [ "web_discovery_unittest.cc" ]
     deps = [
-      "//express/browser/profiles",
-      "//express/components/constants",
-      "//express/components/search_engines",
+      "//brave/browser/profiles",
+      "//brave/components/constants",
+      "//brave/components/search_engines",
       "//chrome/browser",
       "//chrome/test:test_support",
       "//components/prefs",
@@ -33,7 +33,7 @@ source_set("browser_tests") {
 
     sources = [ "web_discovery_browsertest.cc" ]
     deps = [
-      "//express/components/search_engines",
+      "//brave/components/search_engines",
       "//chrome/browser",
       "//chrome/browser/profiles:profile",
       "//chrome/browser/ui",

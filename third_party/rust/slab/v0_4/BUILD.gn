@@ -11,19 +11,19 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/slab/v0_4/crate/build.rs",
-    "//express/third_party/rust/slab/v0_4/crate/src/builder.rs",
-    "//express/third_party/rust/slab/v0_4/crate/src/lib.rs",
-    "//express/third_party/rust/slab/v0_4/crate/src/serde.rs",
-    "//express/third_party/rust/slab/v0_4/crate/tests/serde.rs",
-    "//express/third_party/rust/slab/v0_4/crate/tests/slab.rs",
+    "//brave/third_party/rust/slab/v0_4/crate/build.rs",
+    "//brave/third_party/rust/slab/v0_4/crate/src/builder.rs",
+    "//brave/third_party/rust/slab/v0_4/crate/src/lib.rs",
+    "//brave/third_party/rust/slab/v0_4/crate/src/serde.rs",
+    "//brave/third_party/rust/slab/v0_4/crate/tests/serde.rs",
+    "//brave/third_party/rust/slab/v0_4/crate/tests/slab.rs",
   ]
   inputs = [
-    "//express/third_party/rust/slab/v0_4/crate/CHANGELOG.md",
-    "//express/third_party/rust/slab/v0_4/crate/README.md",
+    "//brave/third_party/rust/slab/v0_4/crate/CHANGELOG.md",
+    "//brave/third_party/rust/slab/v0_4/crate/README.md",
   ]
 
   # Unit tests skipped. Generate with --with-tests to include them.

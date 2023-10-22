@@ -6,5 +6,5 @@ index c450791517869cd1475cb3732195f72698b4eb99..8ca92d5777988202468d3e68975eed30
        deps += [ "//ash/webui/sample_system_web_app_ui" ]
      }
    }
-+  import("//express/browser/ui/webui/sources.gni") deps += brave_browser_ui_webui_configs_deps
++  import("//brave/browser/ui/webui/sources.gni") deps += brave_browser_ui_webui_configs_deps
  }

@@ -40,7 +40,7 @@ addTrezorCommandHandler(TrezorCommand.Unlock, (command: UnlockCommand): Promise<
       lazyLoad: false,
       manifest: {
         email: 'support@brave.com',
-        appUrl: 'https://express.com'
+        appUrl: 'https://brave.com'
       }
     }).then(() => {
       resolve(createUnlockResponse(command, true))

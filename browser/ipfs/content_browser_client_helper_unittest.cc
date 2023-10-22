@@ -39,7 +39,7 @@ namespace {
 
 constexpr char kTestProfileName[] = "TestProfile";
 const GURL& GetDecentralizedTLDURL() {
-  static const GURL url("https://express.crypto/");
+  static const GURL url("https://brave.crypto/");
   return url;
 }
 const GURL& GetIPFSURI() {
@@ -196,7 +196,7 @@ TEST_F(ContentBrowserClientHelperUnitTest, HandleIPFSURLRewriteDDns) {
       kIPFSResolveMethod, static_cast<int>(IPFSResolveMethodTypes::IPFS_LOCAL));
 
   EXPECT_FALSE(decentralized_dns::IsENSResolveMethodEnabled(local_state()));
-  GURL ens_uri("https://express.eth");
+  GURL ens_uri("https://brave.eth");
   ASSERT_FALSE(HandleIPFSURLRewrite(&ens_uri, browser_context()));
   local_state()->SetInteger(
       decentralized_dns::kENSResolveMethod,
@@ -205,7 +205,7 @@ TEST_F(ContentBrowserClientHelperUnitTest, HandleIPFSURLRewriteDDns) {
   ASSERT_TRUE(HandleIPFSURLRewrite(&ens_uri, browser_context()));
 
   EXPECT_FALSE(decentralized_dns::IsSnsResolveMethodEnabled(local_state()));
-  GURL sns_uri("https://express.sol");
+  GURL sns_uri("https://brave.sol");
   ASSERT_FALSE(HandleIPFSURLRewrite(&sns_uri, browser_context()));
   local_state()->SetInteger(
       decentralized_dns::kSnsResolveMethod,
@@ -215,7 +215,7 @@ TEST_F(ContentBrowserClientHelperUnitTest, HandleIPFSURLRewriteDDns) {
 
   EXPECT_FALSE(decentralized_dns::IsUnstoppableDomainsResolveMethodEnabled(
       local_state()));
-  GURL ud_uri("https://express.crypto");
+  GURL ud_uri("https://brave.crypto");
   ASSERT_FALSE(HandleIPFSURLRewrite(&ud_uri, browser_context()));
   local_state()->SetInteger(
       decentralized_dns::kUnstoppableDomainsResolveMethod,

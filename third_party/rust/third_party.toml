@@ -158,13 +158,13 @@ default-features = false
 features = [ "multihash-impl", "blake2b" ]
 gn-variables-lib = '''
   deps += [
-    "//express/third_party/rust/digest/v0_10:lib",
-    "//express/third_party/rust/ripemd/v0_1:lib",
-    "//express/third_party/rust/sha2/v0_10:lib",
-    "//express/third_party/rust/sha3/v0_10:lib",
+    "//brave/third_party/rust/digest/v0_10:lib",
+    "//brave/third_party/rust/ripemd/v0_1:lib",
+    "//brave/third_party/rust/sha2/v0_10:lib",
+    "//brave/third_party/rust/sha3/v0_10:lib",
   ]
   cargo_manifest_dir =
-      rebase_path("//express/third_party/rust/multihash/v0_16/crate")
+      rebase_path("//brave/third_party/rust/multihash/v0_16/crate")
   rustenv = [ "CARGO_MANIFEST_DIR=$cargo_manifest_dir" ]
 '''
 
@@ -182,7 +182,7 @@ gn-variables-lib = '''
 if ((target_cpu == "arm64" &&
     (target_os == "mac" || target_os == "linux" || target_os == "ios")) ||
       target_cpu == "x64" || target_cpu == "x86") {
-  deps += [ "//express/third_party/rust/cpufeatures/v0_2:lib" ]
+  deps += [ "//brave/third_party/rust/cpufeatures/v0_2:lib" ]
 }
 '''
 
@@ -196,7 +196,7 @@ allow-first-party-usage = false
 gn-variables-lib = '''
 if (target_cpu == "arm64" &&
     (target_os == "mac" || target_os == "linux" || target_os == "ios")) {
-  deps = [ "//express/third_party/rust/cpufeatures/v0_2:lib" ]
+  deps = [ "//brave/third_party/rust/cpufeatures/v0_2:lib" ]
 }
 '''
 
@@ -244,7 +244,7 @@ if (is_ios) {
       "lifeguard",
       "unsync-regex-caching",
     ]
-    deps += [ "//express/third_party/rust/lifeguard/v0_6:lib" ]
+    deps += [ "//brave/third_party/rust/lifeguard/v0_6:lib" ]
   }
 '''
 
@@ -258,7 +258,7 @@ version = "0.10"
 build-script-outputs = [ "generated.rs", "named_entities.rs" ]
 gn-variables-lib = '''
 cargo_manifest_dir =
-    rebase_path("//express/third_party/rust/markup5ever/v0_10/crate")
+    rebase_path("//brave/third_party/rust/markup5ever/v0_10/crate")
 rustenv = [ "CARGO_MANIFEST_DIR=$cargo_manifest_dir" ]
 '''
 
@@ -267,7 +267,7 @@ version = "0.25.1"
 build-script-outputs = [ "rules.rs" ]
 gn-variables-lib = '''
 cargo_manifest_dir =
-    rebase_path("//express/third_party/rust/html5ever/v0_25/crate")
+    rebase_path("//brave/third_party/rust/html5ever/v0_25/crate")
 rustenv = [ "CARGO_MANIFEST_DIR=$cargo_manifest_dir" ]
 '''
 

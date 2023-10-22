@@ -4,6 +4,6 @@
 # you can obtain one at http://mozilla.org/MPL/2.0/.
 
 brave_extensions_resources = [
-  "//express/browser/extensions:resources",
-  "//express/components/brave_webtorrent/browser/buildflags",
+  "//brave/browser/extensions:resources",
+  "//brave/components/brave_webtorrent/browser/buildflags",
 ]

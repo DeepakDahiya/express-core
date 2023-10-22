@@ -66,7 +66,7 @@ const char16_t kBraveSyncGuideUrl[] =
 const char16_t kDeAmpLearnMoreUrl[] =
     u"https://support.brave.com/hc/en-us/articles/8611298579981";
 const char16_t kDebounceLearnMoreUrl[] =
-    u"https://express.com/privacy-updates/11-debouncing/";
+    u"https://brave.com/privacy-updates/11-debouncing/";
 const char16_t kEnableNftDiscoveryLearnMoreUrl[] =
     u"https://github.com/brave/brave-browser/wiki/"
     u"NFT-Discovery";

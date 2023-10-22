@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 import("//build/buildflag_header.gni")
 import("//build/util/branding.gni")
 import("//extensions/buildflags/buildflags.gni")
@@ -11,13 +11,13 @@ import("//mojo/public/tools/bindings/mojom.gni")
 
 brave_common_visibility_targets = [
   ":*",
-  "//express:browser_dependencies",
-  "//express:child_dependencies",
-  "//express/browser/*",
-  "//express/ios/browser/*",
-  "//express/renderer/*",
-  "//express/test/*",
-  "//express/utility/*",
+  "//brave:browser_dependencies",
+  "//brave:child_dependencies",
+  "//brave/browser/*",
+  "//brave/ios/browser/*",
+  "//brave/renderer/*",
+  "//brave/test/*",
+  "//brave/utility/*",
   "//chrome/common/*",
   "//chrome/browser/*",
   "//chrome/renderer/*",
@@ -39,7 +39,7 @@ source_set("channel_info") {
       "//components/version_info:version_info",
     ]
 
-    configs += [ "//express/build/linux:linux_channel_names" ]
+    configs += [ "//brave/build/linux:linux_channel_names" ]
   }
 }
 

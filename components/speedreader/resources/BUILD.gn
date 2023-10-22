@@ -1,4 +1,4 @@
-import("//express/resources/brave_grit.gni")
+import("//brave/resources/brave_grit.gni")
 import("//tools/grit/repack.gni")
 
 brave_grit("static_resources") {

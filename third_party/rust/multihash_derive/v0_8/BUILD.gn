@@ -11,12 +11,12 @@ cargo_crate("lib") {
 
   # Only for usage from third-party crates. Add the crate to
   # third_party.toml to use it from first-party code.
-  visibility = [ "//express/third_party/rust/*" ]
+  visibility = [ "//brave/third_party/rust/*" ]
   crate_root = "crate/src/lib.rs"
   sources = [
-    "//express/third_party/rust/multihash_derive/v0_8/crate/src/lib.rs",
-    "//express/third_party/rust/multihash_derive/v0_8/crate/src/multihash.rs",
-    "//express/third_party/rust/multihash_derive/v0_8/crate/src/utils.rs",
+    "//brave/third_party/rust/multihash_derive/v0_8/crate/src/lib.rs",
+    "//brave/third_party/rust/multihash_derive/v0_8/crate/src/multihash.rs",
+    "//brave/third_party/rust/multihash_derive/v0_8/crate/src/utils.rs",
   ]
   inputs = []
 
@@ -32,9 +32,9 @@ cargo_crate("lib") {
   executable_configs -= [ "//build/config/compiler:chromium_code" ]
   executable_configs += [ "//build/config/compiler:no_chromium_code" ]
   deps = [
-    "//express/third_party/rust/proc_macro_crate/v1:lib",
-    "//express/third_party/rust/proc_macro_error/v1:lib",
-    "//express/third_party/rust/synstructure/v0_12:lib",
+    "//brave/third_party/rust/proc_macro_crate/v1:lib",
+    "//brave/third_party/rust/proc_macro_error/v1:lib",
+    "//brave/third_party/rust/synstructure/v0_12:lib",
     "//third_party/rust/proc_macro2/v1:lib",
     "//third_party/rust/quote/v1:lib",
     "//third_party/rust/syn/v1:lib",

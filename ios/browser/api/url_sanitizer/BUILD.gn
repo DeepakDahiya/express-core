@@ -11,7 +11,7 @@ source_set("url_sanitizer") {
   ]
   deps = [
     "//base",
-    "//express/components/url_sanitizer/browser",
+    "//brave/components/url_sanitizer/browser",
     "//net",
     "//url",
   ]

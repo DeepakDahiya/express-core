@@ -1,4 +1,4 @@
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 
 assert(is_linux)
 

@@ -3,7 +3,7 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//express/build/config.gni")
+import("//brave/build/config.gni")
 import("//build/buildflag_header.gni")
 import("//build/config/features.gni")
 import("//chrome/common/features.gni")
@@ -22,20 +22,20 @@ if (enable_sparkle && !build_sparkle) {
 
 source_set("browser_process") {
   visibility = [
-    "//express/browser/*",
+    "//brave/browser/*",
     "//chrome/browser/*",
   ]
 
   sources = [ "brave_browser_process.h" ]
 
   deps = [
-    "//express/browser/ethereum_remote_client/buildflags",
-    "//express/components/brave_vpn/common/buildflags",
-    "//express/components/greaselion/browser/buildflags",
-    "//express/components/ipfs/buildflags",
-    "//express/components/request_otr/common/buildflags",
-    "//express/components/speedreader/common/buildflags",
-    "//express/components/tor/buildflags",
+    "//brave/browser/ethereum_remote_client/buildflags",
+    "//brave/components/brave_vpn/common/buildflags",
+    "//brave/components/greaselion/browser/buildflags",
+    "//brave/components/ipfs/buildflags",
+    "//brave/components/request_otr/common/buildflags",
+    "//brave/components/speedreader/common/buildflags",
+    "//brave/components/tor/buildflags",
     "//chrome/browser:browser_process",
     "//extensions/buildflags",
   ]
@@ -43,20 +43,20 @@ source_set("browser_process") {
 
 group("browser") {
   visibility = [
-    "//express:browser_dependencies",
-    "//express/browser/*",
-    "//express/components/brave_rewards/core:headers",
-    "//express/test:*",
+    "//brave:browser_dependencies",
+    "//brave/browser/*",
+    "//brave/components/brave_rewards/core:headers",
+    "//brave/test:*",
 
     # these are layering violation and need to be fixed
-    "//express/components/brave_rewards/browser:testutil",
-    "//express/components/brave_rewards/test:brave_rewards_unit_tests",
-    "//express/components/ipfs/test:*",
+    "//brave/components/brave_rewards/browser:testutil",
+    "//brave/components/brave_rewards/test:brave_rewards_unit_tests",
+    "//brave/components/ipfs/test:*",
   ]
 
   if (enable_sparkle) {
     if (build_sparkle) {
-      deps = [ "//express/vendor/sparkle:sparkle_framework_bundle_data" ]
+      deps = [ "//brave/vendor/sparkle:sparkle_framework_bundle_data" ]
     } else {
       deps = [ ":prebuilt_sparkle_framework_bundle_data" ]
     }
@@ -64,7 +64,7 @@ group("browser") {
 
   # Group depending on upstream's counterpart to make it easier to manage
   # dependencies in brave/ (//chrome/browser does not depend on this target
-  # so //express/browser becomes essentially an alias for //chrome/browser now).
+  # so //brave/browser becomes essentially an alias for //chrome/browser now).
   public_deps = [ "//chrome/browser" ]
 }
 
@@ -79,7 +79,7 @@ source_set("unit_tests") {
 
     deps += [
       "//base",
-      "//express/browser",
+      "//brave/browser",
       "//testing/gtest",
     ]
   }

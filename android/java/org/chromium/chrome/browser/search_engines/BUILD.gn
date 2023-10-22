@@ -35,7 +35,7 @@ generate_jni("jni_headers") {
 
 android_resources("java_resources") {
   deps = [
-    "//express/build/android:android_brave_strings_grd",
+    "//brave/build/android:android_brave_strings_grd",
     "//chrome/browser/search_engines/android:java_resources",
   ]
 }

@@ -6,7 +6,7 @@ index 7b5a8e56879b7aab545da6ca847d809020e11e96..49dd37f2d9fa3acf45a1d890b9a565c9
    if (is_android) {
      outputs += android_generated_java_resources
    }
-+  deps = [ "//express/app:brave_generated_resources_grit" ]
++  deps = [ "//brave/app:brave_generated_resources_grit" ]
  }
  
  if (is_android) {

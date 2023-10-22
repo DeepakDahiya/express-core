@@ -54,7 +54,7 @@ TEST(SearchResultAdUtilTest, CheckGetPlacementIdFromSearchResultAdClickedUrl) {
   EXPECT_FALSE(GetPlacementIdFromSearchResultAdClickedUrl(url).has_value());
 
   url = GURL(
-      "https://express.software/a/"
+      "https://brave.software/a/"
       "redirect?click_url=https:%3A%2F%2Fexample.com&placement_id=placement-id&"
       "creative_instance_id=creative");
   EXPECT_FALSE(GetPlacementIdFromSearchResultAdClickedUrl(url).has_value());

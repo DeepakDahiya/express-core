@@ -18,15 +18,15 @@ rust_static_library("rust_lib") {
   ]
 
   visibility = [
-    "//express/components/brave_shields/adblock:*",
-    "//express/components/brave_shields/adblock/resolver",
+    "//brave/components/brave_shields/adblock:*",
+    "//brave/components/brave_shields/adblock/resolver",
   ]
 
   cxx_bindings = [ "src/lib.rs" ]
 
   deps = [
-    "//express/third_party/rust/adblock/v0_8:lib",
-    "//express/third_party/rust/thiserror/v1:lib",
+    "//brave/third_party/rust/adblock/v0_8:lib",
+    "//brave/third_party/rust/thiserror/v1:lib",
     "//third_party/rust/serde_json/v1:lib",
   ]
 

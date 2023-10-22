@@ -6,7 +6,7 @@ index fcd97b996f10aca76a8406fc4058ce69355ca87e..5e64c0d27c4f9473eed3b077685b907d
        "android/visit_sql_handler.h",
      ]
    }
-+  import("//express/components/history/core/browser/sources.gni") sources += brave_components_history_core_browser_sources deps += brave_components_history_core_browser_deps
++  import("//brave/components/history/core/browser/sources.gni") sources += brave_components_history_core_browser_sources deps += brave_components_history_core_browser_deps
  }
  
  source_set("unit_tests") {

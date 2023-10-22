@@ -4,7 +4,7 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 action("generate_tsconfig") {
-  script = "//express/script/generate-tsconfig.py"
+  script = "//brave/script/generate-tsconfig.py"
   deps = [
     # Ensure chrome://resources/js file and typescript definitions are
     # generated
