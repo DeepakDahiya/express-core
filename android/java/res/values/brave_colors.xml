@@ -123,8 +123,10 @@
     <color name="news_settings_unfollow_color">#4C54D2</color>
 
     <!-- Incognito mode colors -->
-    <color name="ntp_bg_incognito">@color/incognito_modern_primary_color</color>
+    <!-- Back to chromium color -->
+    <color name="ntp_bg_incognito">@color/default_bg_color_dark</color>
 
+    <!-- remove this -->
     <!-- Incognito background and branding colors -->
     <color name="incognito_modern_primary_color">#210950</color>
 
