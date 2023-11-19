@@ -79,12 +79,12 @@
                 android:visibility="gone" />
 
             <!-- remove this -->
-            <!-- <TextView
+            <TextView
                 android:id="@+id/learn_more"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="@string/learn_more"
-                android:visibility = "gone" /> -->
+                android:visibility = "gone" />
 
         </LinearLayout>
 
