@@ -201,7 +201,7 @@ Private state tokens improve privacy on the web and can’t be used to find out 
         Help make Brave better for profiles who use it the way you do
       </message>
       <message name="IDS_NEW_INCOGNITO_TAB_TITLE" desc="Title in tab strip when opening a new Private tab.">
-        New Private tab
+        New Incognito tab
       </message>
       <message name="IDS_FEATURE_NOTIFICATION_GUIDE_NOTIFICATION_MESSAGE_INCOGNITO_TAB" desc="Notification body text educating user about private tab in chrome.">
         To browse privately on this device, try out Private
@@ -210,10 +210,10 @@ Private state tokens improve privacy on the web and can’t be used to find out 
         To open a new Private tab, open the menu
       </message>
       <message name="IDS_BUTTON_NEW_INCOGNITO_TAB" desc="Tooltip for the button to open a new Private browser tab.">
-        New Private tab
+        New Incognito tab
       </message>
       <message name="IDS_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new Private tab that facilitates pseudononymous browsing. [CHAR_LIMIT=27]" meaning="Android menu">
-        New Private tab
+        New Incognito tab
       </message>
       <message name="IDS_MENU_CLOSE_ALL_INCOGNITO_TABS" desc="Menu item for closing all open Private tabs. [CHAR_LIMIT=27]">
         Close Private tabs
@@ -222,10 +222,10 @@ Private state tokens improve privacy on the web and can’t be used to find out 
         Open in Private Brave
       </message>
       <message name="IDS_ACCESSIBILITY_NEW_INCOGNITO_TAB_PAGE" desc="Accessibility text to read aloud when the user focuses the new Private tab view.">
-        New Private tab
+        New Incognito tab
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_NEW_INCOGNITO_TAB" desc="Content description for the new Private tab button.">
-        New Private tab
+        New Incognito tab
       </message>
       <message name="IDS_ACCESSIBILITY_INCOGNITO_BADGE" desc="Content description for the badge indicating that the user is in Private mode.">
         Private mode
