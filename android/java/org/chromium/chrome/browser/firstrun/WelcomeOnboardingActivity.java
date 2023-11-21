@@ -93,21 +93,24 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
 
     private void initializeViews() {
         // TRYING TO BYPASS ONBOARDING
-        finish();
-        // assert !mInitializeViewsDone;
-        // setContentView(R.layout.activity_welcome_onboarding);
+        if(false){
+            assert !mInitializeViewsDone;
+            setContentView(R.layout.activity_welcome_onboarding);
 
-        // mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
+            mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
 
-        // initViews();
-        // onClickViews();
+            initViews();
+            onClickViews();
 
-        // mInitializeViewsDone = true;
-        // if (mInvokePostWorkAtInitializeViews) {
-        //     finishNativeInitializationPostWork();
-        // }
+            mInitializeViewsDone = true;
+            if (mInvokePostWorkAtInitializeViews) {
+                finishNativeInitializationPostWork();
+            }
 
-        // checkReferral();
+            checkReferral();
+        }else{
+            finish();
+        }
     }
 
     private void checkReferral() {
