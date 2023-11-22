@@ -3367,7 +3367,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         New tab
       </message>
       <message name="IDS_NEW_INCOGNITO_TAB_TITLE" desc="Title in tab strip when opening a new Private tab.">
-        New Incognito tab
+        New Private tab
       </message>
       <message name="IDS_RECENT_TABS" desc="Text for button to show 'Recent tabs', i.e. recently closed tabs and tabs that are open on other devices [CHAR_LIMIT=20]">
         Recent tabs
@@ -3625,7 +3625,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         New tab
       </message>
       <message name="IDS_BUTTON_NEW_INCOGNITO_TAB" desc="Tooltip for the button to open a new Private browser tab.">
-        New Incognito tab
+        New Private tab
       </message>
       <message name="IDS_CUSTOM_TAB_AMP_PUBLISHER_URL" desc="Text shown in a Custom Tab toolbar for a web page that is hosted by the Brave content delivery network but was originally published by someone else.">
         From <ph name="PUBLISHER_ORIGIN">&lt;pub&gt;%1$s&lt;/pub&gt;<ex>example.com</ex></ph> – <ph name="BEGIN_DEEMPHASIZED">&lt;bg&gt;</ph>delivered by Brave<ph name="END_DEEMPHASIZED">&lt;/bg&gt;</ph>
@@ -3747,7 +3747,7 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         New tab
       </message>
       <message name="IDS_MENU_NEW_INCOGNITO_TAB" desc="Menu item for opening a new Private tab that facilitates pseudononymous browsing. [CHAR_LIMIT=27]" meaning="Android menu">
-        New Incognito tab
+        New Private tab
       </message>
       <message name="IDS_MENU_BOOKMARKS" desc="Menu item for opening the bookmarks page that contains all the user's bookmarks. [CHAR_LIMIT=27]">
         Bookmarks
@@ -4205,13 +4205,13 @@ To change this setting, <ph name="BEGIN_LINK">&lt;resetlink&gt;</ph>reset sync<p
         Search with your camera using Google Lens
       </message>
       <message name="IDS_ACCESSIBILITY_NEW_INCOGNITO_TAB_PAGE" desc="Accessibility text to read aloud when the user focuses the new Private tab view.">
-        New Incognito tab
+        New Private tab
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_NEW_TAB" desc="Content description for the new tab button.">
         New tab
       </message>
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_NEW_INCOGNITO_TAB" desc="Content description for the new Private tab button.">
-        New Incognito tab
+        New Private tab
       </message>
       <message name="IDS_ACCESSIBILITY_INCOGNITO_BADGE" desc="Content description for the badge indicating that the user is in Private mode.">
         Private mode
