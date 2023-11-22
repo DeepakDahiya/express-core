@@ -92,20 +92,25 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
     private CheckBox mCheckboxP3a;
 
     private void initializeViews() {
-        assert !mInitializeViewsDone;
-        setContentView(R.layout.activity_welcome_onboarding);
+        if(false){
 
-        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
+            assert !mInitializeViewsDone;
+            setContentView(R.layout.activity_welcome_onboarding);
 
-        initViews();
-        onClickViews();
+            mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
 
-        mInitializeViewsDone = true;
-        if (mInvokePostWorkAtInitializeViews) {
-            finishNativeInitializationPostWork();
+            initViews();
+            onClickViews();
+
+            mInitializeViewsDone = true;
+            if (mInvokePostWorkAtInitializeViews) {
+                finishNativeInitializationPostWork();
+            }
+
+            checkReferral();
+        }else{
+            finish()
         }
-
-        checkReferral();
     }
 
     private void checkReferral() {
