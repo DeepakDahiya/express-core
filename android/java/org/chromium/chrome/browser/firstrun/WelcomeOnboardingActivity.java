@@ -109,7 +109,7 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
 
             checkReferral();
         }else{
-            finish()
+            finish();
         }
     }
 
