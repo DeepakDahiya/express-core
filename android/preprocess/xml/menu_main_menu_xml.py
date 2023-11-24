@@ -76,11 +76,11 @@ def _ProcessXML(root):
                 '<item android:id="@+id/request_brave_vpn_id" '\
                   'android:title="@string/brave_vpn" '\
                   'android:icon="@drawable/ic_vpn" '\
-                  'android:visibility="gone" />'
+                  'android:visibility="gone" />' \
                 '<item android:id="@+id/request_brave_vpn_check_id" '\
                   'android:title="@null" '\
                   'android:checkable="true" '\
-                  'android:visibility="gone" />'
+                  'android:visibility="gone" />' \
             '</menu> '\
             '</item>'
     vpn_node = ET.fromstring(vpn_node_str,
