@@ -92,20 +92,32 @@ public class WelcomeOnboardingActivity extends FirstRunActivityBase {
     private CheckBox mCheckboxP3a;
 
     private void initializeViews() {
-        assert !mInitializeViewsDone;
-        setContentView(R.layout.activity_welcome_onboarding);
+        if (false){
+            assert !mInitializeViewsDone;
+            setContentView(R.layout.activity_welcome_onboarding);
 
-        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
+            mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(this);
 
-        initViews();
-        onClickViews();
+            initViews();
+            onClickViews();
 
-        mInitializeViewsDone = true;
-        if (mInvokePostWorkAtInitializeViews) {
-            finishNativeInitializationPostWork();
+            mInitializeViewsDone = true;
+            if (mInvokePostWorkAtInitializeViews) {
+                finishNativeInitializationPostWork();
+            }
+
+            checkReferral();
+        }else{
+            OnboardingPrefManager.getInstance().setP3aOnboardingShown(true);
+            OnboardingPrefManager.getInstance().setOnboardingSearchBoxTooltip(true);
+            FirstRunStatus.setFirstRunFlowComplete(true);
+            SharedPreferencesManager.getInstance().writeBoolean(
+                    ChromePreferenceKeys.FIRST_RUN_CACHED_TOS_ACCEPTED, true);
+            FirstRunUtils.setEulaAccepted();
+            finish();
+            sendFirstRunCompletePendingIntent();
         }
-
-        checkReferral();
+        
     }
 
     private void checkReferral() {
