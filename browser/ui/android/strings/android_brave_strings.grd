@@ -1386,9 +1386,9 @@ Are you sure you want to do this?
       <message name="IDS_NOTIFICATION_CATEGORY_BRAVE_ADS_BACKGROUND" desc="Label for Brave Ads in background.">
         Brave Ads sent when browser is in the background
       </message>
-      <!-- <message name="IDS_CLEAR_DOWNLOADS_TITLE" desc="Title for Clear download in Clear Browsing Data dialog">
+      <message name="IDS_CLEAR_DOWNLOADS_TITLE" desc="Title for Clear download in Clear Browsing Data dialog">
         Download history
-      </message> -->
+      </message>
       <message name="IDS_BRAVE_UI_CONTRIBUTION_TIPS" desc="Title for monthly tips processed notification">
         Contributions
       </message>
@@ -2124,9 +2124,9 @@ Are you sure you want to do this?
     <message name="IDS_USE_FINGERPRINT_TEXT" desc="Brave Wallet fingerprint unlock">
       Use biometrics to quickly unlock your wallet without entering your password.
     </message>
-    <!-- <message name="IDS_MENU_BRAVE_WALLET" desc="Brave Wallet menu item text">
+    <message name="IDS_MENU_BRAVE_WALLET" desc="Brave Wallet menu item text">
       Wallet
-    </message> -->
+    </message>
     <message name="IDS_RESTORE_CRYPTO_TEXT" desc="Brave Wallet onboarding text">
       Enter your recovery phrase to restore your Brave Wallet crypto account.
     </message>
@@ -2637,9 +2637,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_MARKET_CAP" desc="Brave crypto wallet market cap label">
       Market Cap
     </message>
-    <!-- <message name="IDS_APPS" desc="Brave crypto wallet section Apps">
+    <message name="IDS_APPS" desc="Brave crypto wallet section Apps">
       Apps
-    </message> -->
+    </message>
     <message name="IDS_CRYPTO_WALLET_FROM_TO" desc="From address -> to address" translateable="false">
       <ph name="FROM_NAME">%1$s<ex>Account1</ex></ph>\n <ph name="FROM_ADDRESS">%2$s<ex>0xabcd...</ex></ph> <ph name="SEPARATOR">%3$s<ex>-></ex></ph>\n<ph name="TO">%4$s<ex>0xabcd...</ex></ph>
     </message>
@@ -3756,9 +3756,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_ENABLE_SPEEDREADER_SUMMARY" desc="Summary for preference that enables or disables Speedreader">
       Automatically loads eligible articles in reader mode
     </message>
-    <!-- <message name="IDS_BRAVE_SPEEDREADER_TITLE" desc="Title for on demand speedreader menu item">
+    <message name="IDS_BRAVE_SPEEDREADER_TITLE" desc="Title for on demand speedreader menu item">
       View in reader mode
-    </message> -->
+    </message>
     <message name="IDS_BRAVE_WALLET_PORTFOLIO_ASSET_NETWORK_DESCRIPTION" desc="Portfolio asset item network description">
       <ph name="SYMBOL"><ex>BAT</ex>%1$s</ph> on <ph name="NETWORK"><ex>Ethereum Mainnet</ex>%2$s</ph>
     </message>
