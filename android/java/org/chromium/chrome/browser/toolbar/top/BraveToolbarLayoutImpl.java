@@ -368,8 +368,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         (ViewGroup.MarginLayoutParams) mBraveShieldsButton.getLayoutParams();
                 ViewGroup.MarginLayoutParams actionButtonsLayout =
                         (ViewGroup.MarginLayoutParams) customActionButtons.getLayoutParams();
+                ViewGroup.MarginLayoutParams profileButtonLayout =
+                        (ViewGroup.MarginLayoutParams) mProfileButton.getLayoutParams();
                 actionButtonsLayout.setMarginEnd(actionButtonsLayout.getMarginEnd()
-                        + braveShieldsButtonLayout.getMarginEnd());
+                        + braveShieldsButtonLayout.getMarginEnd() + profileButtonLayout.getMarginEnd());
                 customActionButtons.setLayoutParams(actionButtonsLayout);
             }
         }
@@ -419,6 +421,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     !(mRewardsLayout != null && mRewardsLayout.getVisibility() == View.VISIBLE));
             mShieldsLayout.setVisibility(View.VISIBLE);
         }
+
+        if (mProfileLayout != null) {
+            updateProfileLayoutBackground(true);
+            mProfileLayout.setVisibility(View.VISIBLE);
+        }
+
         if (mBraveRewardsNativeWorker != null) {
             mBraveRewardsNativeWorker.AddObserver(this);
             mBraveRewardsNativeWorker.AddPublisherObserver(this);
@@ -472,6 +480,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             @Override
             public void onPageLoadFinished(final Tab tab, GURL url) {
                 if (getToolbarDataProvider().getTab() == tab) {
+
+                    // FIX HERE
                     mBraveShieldsHandler.updateUrlSpec(url.getSpec());
                     updateBraveShieldsButtonState(tab);
 
@@ -1307,6 +1317,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         if (mShieldsLayout != null) {
             mShieldsLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
+        if (mProfileLayout != null) {
+            mProfileLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
         if (mRewardsLayout != null) {
             mRewardsLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
@@ -1570,6 +1583,19 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         updateModernLocationBarColorImpl(mCurrentToolbarColor);
     }
 
+    private void updateProfileLayoutBackground(boolean rounded) {
+        if (mProfileLayout == null) {
+            return;
+        }
+
+        mProfileLayout.setBackgroundDrawable(
+                ApiCompatibilityUtils.getDrawable(getContext().getResources(),
+                        rounded ? R.drawable.modern_toolbar_background_grey_end_segment
+                                : R.drawable.modern_toolbar_background_grey_middle_segment));
+
+        updateModernLocationBarColorImpl(mCurrentToolbarColor);
+    }
+
     private boolean isTabSwitcherOnBottom() {
         return mIsBottomToolbarVisible && BottomToolbarVariationManager.isTabSwitcherOnBottom();
     }
@@ -1629,6 +1655,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             canvas.save();
             ViewUtils.translateCanvasToView(toolbarButtonsContainer, mShieldsLayout, canvas);
             mShieldsLayout.draw(canvas);
+            canvas.restore();
+        }
+        if (mProfileLayout != null && mProfileLayout.getVisibility() != View.GONE) {
+            canvas.save();
+            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mProfileLayout, canvas);
+            mProfileLayout.draw(canvas);
             canvas.restore();
         }
         if (mRewardsLayout != null && mRewardsLayout.getVisibility() != View.GONE) {
