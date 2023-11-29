@@ -54,7 +54,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
-    private LinearLayout mOptinLayout;
     private SwitchCompat mSwitchShowNews;
     private TextView mTvSearch;
     private TextView mTvFollowingCount;
@@ -94,7 +93,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
-            mOptinLayout = (LinearLayout) view.findViewById(R.id.layout_optin_card);
             mSwitchShowNews = (SwitchCompat) view.findViewById(R.id.switch_show_news);
             mDivider = view.findViewById(R.id.divider);
             mLayoutSwitch = view.findViewById(R.id.layout_switch);
@@ -206,7 +204,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         if (isEnable) {
             parentLayoutParams.gravity = Gravity.NO_GRAVITY;
             mParentLayout.setLayoutParams(parentLayoutParams);
-            mOptinLayout.setVisibility(View.GONE);
             mLayoutSwitch.setVisibility(View.VISIBLE);
             mDivider.setVisibility(View.VISIBLE);
             if (BraveNewsUtils.getChannelIcons().size() == 0) {
@@ -235,7 +232,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         } else {
             parentLayoutParams.gravity = Gravity.CENTER_VERTICAL;
             mParentLayout.setLayoutParams(parentLayoutParams);
-            mOptinLayout.setVisibility(View.VISIBLE);
             mLayoutSwitch.setVisibility(View.GONE);
             mDivider.setVisibility(View.GONE);
             mTvSearch.setVisibility(View.GONE);

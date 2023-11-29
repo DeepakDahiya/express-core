@@ -14,76 +14,68 @@
           android:id="@+id/layout_parent"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:orientation="vertical">
+          android:orientation="vertical"
+          android:visibility="visible">
 
-          <LinearLayout
-               android:id="@+id/layout_optin_card"
+          <com.airbnb.lottie.LottieAnimationView
+               android:id="@+id/animation_view"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:gravity="center"
+               android:contentDescription="@null"
+               android:layout_gravity="center_horizontal"
+               app:lottie_loop="true"
+               app:lottie_fileName="ntp_news_optin_icon_animation.json"
+               app:lottie_autoPlay="true" />
+
+          <TextView
                android:layout_width="match_parent"
                android:layout_height="wrap_content"
-               android:layout_marginHorizontal="20dp"
-               android:orientation="vertical"
-               android:visibility="visible">
+               android:layout_marginTop="20dp"
+               android:paddingHorizontal="20dp"
+               android:text="@string/brave_news_settings_optin_title"
+               android:gravity="center"
+               android:textColor="@color/news_settings_title_color"
+               android:textSize="18sp"
+               android:textStyle="bold" />
 
-               <com.airbnb.lottie.LottieAnimationView
-                    android:id="@+id/animation_view"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:contentDescription="@null"
-                    android:layout_gravity="center_horizontal"
-                    app:lottie_loop="true"
-                    app:lottie_fileName="ntp_news_optin_icon_animation.json"
-                    app:lottie_autoPlay="true" />
+          <TextView
+               android:layout_width="match_parent"
+               android:layout_height="wrap_content"
+               android:layout_marginTop="10dp"
+               android:text="@string/brave_news_settings_optin_subtitle"
+               android:gravity="center"
+               android:textColor="@color/news_settings_subtitle_color"
+               android:textSize="15sp" />
 
-               <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="20dp"
-                    android:paddingHorizontal="20dp"
-                    android:text="@string/brave_news_settings_optin_title"
-                    android:gravity="center"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-               <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="10dp"
-                    android:text="@string/brave_news_settings_optin_subtitle"
-                    android:gravity="center"
-                    android:textColor="@color/news_settings_subtitle_color"
-                    android:textSize="15sp" />
+          <Button
+               android:id="@+id/btn_turn_on_news"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_gravity="center_horizontal"
+               android:layout_marginTop="30dp"
+               android:background="@drawable/blue_48_rounded_bg"
+               app:backgroundTint="@null"
+               android:text="@string/turn_on_brave_news"
+               android:textAllCaps="false"
+               android:textColor="@android:color/white"
+               android:textSize="16sp"
+               android:paddingVertical="4dp"
+               android:paddingHorizontal="20dp"
+               android:minHeight="0dp"
+               style="?android:attr/borderlessButtonStyle"/>
 
                <Button
-                    android:id="@+id/btn_turn_on_news"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="30dp"
-                    android:background="@drawable/blue_48_rounded_bg"
-                    app:backgroundTint="@null"
-                    android:text="@string/turn_on_brave_news"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:textSize="16sp"
-                    android:paddingVertical="4dp"
-                    android:paddingHorizontal="20dp"
-                    android:minHeight="0dp"
-                    style="?android:attr/borderlessButtonStyle"/>
+               android:id="@+id/btn_learn_more"
+               android:layout_width="wrap_content"
+               android:layout_height="wrap_content"
+               android:layout_gravity="center_horizontal"
+               android:background="@android:color/transparent"
+               android:text="@string/brave_news_optin_learn_more"
+               android:textAllCaps="false"
+               android:textColor="@color/onboarding_negative_button_color"
+               android:textSize="14sp"
+               style="?android:attr/borderlessButtonStyle"/>
 
-                <Button
-                    android:id="@+id/btn_learn_more"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal"
-                    android:background="@android:color/transparent"
-                    android:text="@string/brave_news_optin_learn_more"
-                    android:textAllCaps="false"
-                    android:textColor="@color/onboarding_negative_button_color"
-                    android:textSize="14sp"
-                    style="?android:attr/borderlessButtonStyle"/>
-
-          </LinearLayout>
      </LinearLayout>
 </ScrollView>
