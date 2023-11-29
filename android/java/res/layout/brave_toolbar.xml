@@ -25,8 +25,7 @@
           android:layout_marginBottom="8dp"
           android:src="@drawable/ic_crypto_wallets"
           android:layout_gravity="center"
-          android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-          android:visibility="gone" />
+          android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
       <View
           android:id="@+id/wallet_notfication_badge"
@@ -52,7 +51,6 @@
           android:layout_marginBottom="8dp"
           android:src="@drawable/btn_brave"
           android:layout_gravity="center"
-          android:visibility="gone"
           android:contentDescription="@string/accessibility_toolbar_btn_brave_shields" />
 
       <org.chromium.chrome.browser.BraveBadge
@@ -98,8 +96,7 @@
           android:layout_marginBottom="8dp"
           android:src="@drawable/btn_bat"
           android:layout_gravity="center"
-          android:contentDescription="@string/accessibility_toolbar_btn_brave_rewards" 
-          android:visibility="gone" />
+          android:contentDescription="@string/accessibility_toolbar_btn_brave_rewards" />
 
       <ImageView 
           android:id="@+id/br_rewards_onboarding_icon"

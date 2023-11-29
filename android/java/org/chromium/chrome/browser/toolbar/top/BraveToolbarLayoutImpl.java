@@ -185,6 +185,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private BraveShieldsContentSettings mBraveShieldsContentSettings;
     private BraveShieldsContentSettingsObserver mBraveShieldsContentSettingsObserver;
     private TextView mBraveRewardsNotificationsCount;
+    private ImageView mBraveRewardsOnboardingIcon;
     private View mBraveWalletBadge;
     private ImageView mWalletIcon;
     private int mCurrentToolbarColor;
@@ -250,6 +251,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         mShieldsLayout = (FrameLayout) findViewById(R.id.brave_shields_button_layout);
         mRewardsLayout = (FrameLayout) findViewById(R.id.brave_rewards_button_layout);
         mBraveRewardsNotificationsCount = (TextView) findViewById(R.id.br_notifications_count);
+        mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
         mBraveWalletButton = (ImageButton) findViewById(R.id.brave_wallet_button);
         mBraveShieldsButton = (ImageButton) findViewById(R.id.brave_shields_button);
         mBraveRewardsButton = (ImageButton) findViewById(R.id.brave_rewards_button);
@@ -1086,6 +1088,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     public void hideRewardsOnboardingIcon() {
+        if (mBraveRewardsOnboardingIcon != null) {
+            mBraveRewardsOnboardingIcon.setVisibility(View.GONE);
+        }
         if (mBraveRewardsNotificationsCount != null) {
             mBraveRewardsNotificationsCount.setVisibility(View.GONE);
         }
@@ -1459,6 +1464,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
 
         if (checkForRewardsOnboarding()) {
+            if (mBraveRewardsOnboardingIcon != null) {
+                mBraveRewardsOnboardingIcon.setVisibility(View.VISIBLE);
+            }
             if (mBraveRewardsNotificationsCount != null) {
                 mBraveRewardsNotificationsCount.setVisibility(View.GONE);
             }
