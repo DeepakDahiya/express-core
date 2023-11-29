@@ -1117,6 +1117,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             assert false;
             return;
         }
+        if (mProfileButton == v && mProfileButton != null){
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            activity.openBrowserExpressProfileSettings();
+        }
         if (mBraveShieldsButton == v && mBraveShieldsButton != null) {
             showShieldsMenu(mBraveShieldsButton);
         } else if (mBraveRewardsButton == v && mBraveRewardsButton != null) {
