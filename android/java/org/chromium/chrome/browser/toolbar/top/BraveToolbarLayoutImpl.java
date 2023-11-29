@@ -170,9 +170,11 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private DatabaseHelper mDatabaseHelper = DatabaseHelper.getInstance();
 
     private ImageButton mBraveWalletButton;
+    private ImageButton mProfileButton;
     private ImageButton mBraveShieldsButton;
     private ImageButton mBraveRewardsButton;
     private HomeButton mHomeButton;
+    private FrameLayout mProfileLayout;
     private FrameLayout mWalletLayout;
     private FrameLayout mShieldsLayout;
     private FrameLayout mRewardsLayout;
@@ -248,11 +250,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
 
         mWalletLayout = (FrameLayout) findViewById(R.id.brave_wallet_button_layout);
+        mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
         mShieldsLayout = (FrameLayout) findViewById(R.id.brave_shields_button_layout);
         mRewardsLayout = (FrameLayout) findViewById(R.id.brave_rewards_button_layout);
         mBraveRewardsNotificationsCount = (TextView) findViewById(R.id.br_notifications_count);
         mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
         mBraveWalletButton = (ImageButton) findViewById(R.id.brave_wallet_button);
+        mProfileButton = (ImageButton) findViewById(R.id.profile_button);
         mBraveShieldsButton = (ImageButton) findViewById(R.id.brave_shields_button);
         mBraveRewardsButton = (ImageButton) findViewById(R.id.brave_rewards_button);
         mHomeButton = (HomeButton) findViewById(R.id.home_button);
@@ -288,6 +292,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mBraveWalletButton.setOnClickListener(this);
             mBraveWalletButton.setOnLongClickListener(this);
             BraveTouchUtils.ensureMinTouchTarget(mBraveWalletButton);
+        }
+
+        if (mProfileButton != null) {
+            mProfileButton.setClickable(true);
+            mProfileButton.setOnClickListener(this);
+            mProfileButton.setOnLongClickListener(this);
+            BraveTouchUtils.ensureMinTouchTarget(mProfileButton);
         }
 
         mBraveShieldsHandler = new BraveShieldsHandler(getContext());
@@ -1299,6 +1310,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
         if (mWalletLayout != null) {
             mWalletLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+        }
+        if (mProfileLayout != null) {
+            mProfileLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
     }
 
