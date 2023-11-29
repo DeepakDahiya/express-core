@@ -837,6 +837,7 @@ brave_java_resources = [
   "java/res/layout/brave_sync_done.xml",
   "java/res/layout/brave_sync_layout.xml",
   "java/res/layout/brave_toolbar.xml",
+  "java/res/layout/profile_toolbar.xml",
   "java/res/layout/brave_vpn_server_selection_item_layout.xml",
   "java/res/layout/brave_vpn_server_selection_layout.xml",
   "java/res/layout/brave_wallet_accounts_list_item.xml",

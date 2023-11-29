@@ -464,6 +464,9 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BRAVE_REWARDS" desc="Content description for the button that is enable, disable Brave Rewards.">
         Manage Brave Rewards
       </message>
+      <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_PROFILE" desc="Content description for the button that is for profile page.">
+        Profile
+      </message>
       <message name="IDS_PREFS_SECTION_ONLINE_CHECKOUT" desc="Title for online checkout section">
         Online checkout
       </message>

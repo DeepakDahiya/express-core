@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2019 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      xmlns:tools="http://schemas.android.com/tools"
+      android:orientation="horizontal"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content" >
+
+    <ImageButton android:id="@+id/profile_button"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        style="@style/ToolbarHoverableButton"
+        android:src="@drawable/btn_toolbar_profile"
+        android:contentDescription="@string/accessibility_toolbar_btn_profile"
+        android:visibility="visible" />
+    
+</LinearLayout>
