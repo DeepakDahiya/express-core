@@ -1118,8 +1118,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             return;
         }
         if (mProfileButton == v && mProfileButton != null){
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            activity.openBrowserExpressProfileSettings();
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                activity.openBrowserExpressProfileSettings();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e(TAG, "maybeShowWalletPanel " + e);
+            }
         }
         if (mBraveShieldsButton == v && mBraveShieldsButton != null) {
             showShieldsMenu(mBraveShieldsButton);
