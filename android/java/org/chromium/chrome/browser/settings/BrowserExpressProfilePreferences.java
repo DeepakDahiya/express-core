@@ -121,11 +121,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         onShowNewsToggle(isNewsEnable);
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-    }
-
     private void onClickViews() {
         mBtnLearnMore.setOnClickListener(view -> {
             CustomTabActivity.showInfoPage(getActivity(), BraveConstants.BRAVE_NEWS_LEARN_MORE_URL);
