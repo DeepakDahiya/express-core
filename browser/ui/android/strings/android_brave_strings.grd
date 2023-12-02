@@ -4095,6 +4095,12 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_DESC" desc="Sign in with Brave Wallet Request ID label">
       Sign in to start exploring the world Anonymously
     </message>
+    <message name="IDS_BROWSER_EXPRESS_SIGNUP_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      Register Now!
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_SIGNUP_DESC" desc="Sign in with Brave Wallet Request ID label">
+      Sign in to start exploring the world Anonymously
+    </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Sign In
     </message>
@@ -4104,8 +4110,23 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_NO_ACCOUNT" desc="Sign in with Brave Wallet Request ID label">
       Don't have an account?
     </message>
+    <message name="IDS_BROWSER_EXPRESS_SIGNUP_ACCOUNT" desc="Sign in with Brave Wallet Request ID label">
+      Already have an account?
+    </message>
     <message name="IDS_BROWSER_EXPRESS_SIGNUP_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Sign up
+    </message>
+    <message name="IDS_ENTER_YOUR_NAME" desc="Brave wallet password hint text">
+      Enter your name
+    </message>
+    <message name="IDS_ENTER_YOUR_EMAIL" desc="Brave wallet password hint text">
+      Enter your email
+    </message>
+    <message name="IDS_ENTER_YOUR_PASSWORD" desc="Brave wallet password hint text">
+      Enter your password
+    </message>
+    <message name="IDS_CONFIRM_PASSWORD" desc="Brave wallet password hint text">
+      Confirm password
     </message>
   </messages>
   </release>
