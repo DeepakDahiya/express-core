@@ -17,36 +17,48 @@
           android:orientation="vertical"
           android:visibility="visible">
 
-          <com.airbnb.lottie.LottieAnimationView
-               android:id="@+id/animation_view"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:gravity="center"
-               android:contentDescription="@null"
-               android:layout_gravity="center_horizontal"
-               app:lottie_loop="true"
-               app:lottie_fileName="ntp_news_optin_icon_animation.json"
-               app:lottie_autoPlay="true" />
+         <TextView
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_marginTop="20dp"
+             android:paddingHorizontal="20dp"
+             android:text="@string/browser_express_login_title"
+             android:gravity="start"
+             android:textColor="@color/news_settings_title_color"
+             android:textSize="32sp"
+             android:textStyle="bold" />
 
-          <TextView
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_marginTop="20dp"
-               android:paddingHorizontal="20dp"
-               android:text="@string/brave_news_settings_optin_title"
-               android:gravity="center"
-               android:textColor="@color/news_settings_title_color"
-               android:textSize="18sp"
-               android:textStyle="bold" />
+         <TextView
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_marginTop="20dp"
+             android:paddingHorizontal="20dp"
+             android:text="@string/browser_express_login_desc"
+             android:gravity="start"
+             android:textColor="@color/news_settings_title_color"
+             android:textSize="18sp"
+             android:textStyle="normal" />
 
-          <TextView
-               android:layout_width="match_parent"
-               android:layout_height="wrap_content"
-               android:layout_marginTop="10dp"
-               android:text="@string/brave_news_settings_optin_subtitle"
-               android:gravity="center"
-               android:textColor="@color/news_settings_subtitle_color"
-               android:textSize="15sp" />
+         <EditText
+             android:id="@+id/secure_crypto_password"
+             android:layout_width="match_parent"
+             android:layout_height="40dp"
+             android:layout_marginTop="20dp"
+             android:layout_marginStart="20dp"
+             android:layout_marginEnd="20dp"
+             android:drawableLeft="@drawable/lock"
+             android:background="@drawable/rounded_wallet_edittext"
+             android:hint="@string/enter_password"
+             android:importantForAutofill="no"
+             android:inputType="textPassword"
+             android:paddingEnd="18dp"
+             android:paddingStart="18dp"
+             android:paddingTop="10dp"
+             android:paddingBottom="10dp"
+             android:textCursorDrawable="@null"
+             android:textSize="14sp"
+             android:textColor="@color/wallet_text_color"
+             android:textColorHint="@color/brave_theme_hint_text" />
 
           <Button
                android:id="@+id/btn_turn_on_news"

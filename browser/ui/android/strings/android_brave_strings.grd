@@ -4089,6 +4089,12 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_ELLIPSIS_TEXT" desc="Generic ellipsis text" translateable="false">
       ...
     </message>
+    <message name="IDS_BROWSER_EXPRESS_LOGIN_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      Welcome Back!
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_LOGIN_DESC" desc="Sign in with Brave Wallet Request ID label">
+      Sign in to start exploring the world Anonymously
+    </message>
   </messages>
   </release>
 </grit>
