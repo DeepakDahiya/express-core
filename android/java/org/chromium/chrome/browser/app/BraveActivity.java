@@ -147,6 +147,8 @@ import org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUti
 import org.chromium.chrome.browser.set_default_browser.OnBraveSetDefaultBrowserListener;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
+import org.chromium.chrome.browser.settings.BrowserExpressLoginPreferences;
+import org.chromium.chrome.browser.settings.BrowserExpressSignupPreferences;
 import org.chromium.chrome.browser.settings.BraveSearchEngineUtils;
 import org.chromium.chrome.browser.settings.BraveWalletPreferences;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -1344,6 +1346,16 @@ public abstract class BraveActivity extends ChromeActivity
     public void openBrowserExpressProfileSettings() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(this, BrowserExpressProfilePreferences.class);
+    }
+
+    public void openBrowserExpressLoginSettings() {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(this, BrowserExpressLoginPreferences.class);
+    }
+
+    public void openBrowserExpressSignupSettings() {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(this, BrowserExpressSignupPreferences.class);
     }
 
     // TODO: Once we have a ready for https://github.com/brave/brave-browser/issues/33015, We'll use

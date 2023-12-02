@@ -48,7 +48,7 @@ import org.chromium.mojo.system.MojoException;
 
 import java.util.List;
 
-public class BrowserExpressProfilePreferences extends BravePreferenceFragment
+public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
     public static final String PREF_SHOW_OPTIN = "show_optin";
@@ -68,13 +68,13 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.browser_express_profile_settings, container, false);
+        return inflater.inflate(R.layout.browser_express_signup_settings, container, false);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         if (getActivity() != null) {
-            getActivity().setTitle(R.string.browser_express_profile_title);
+            getActivity().setTitle("");
         }
 
         super.onActivityCreated(savedInstanceState);
@@ -151,7 +151,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             BravePrefServiceBridge.getInstance().setNewsOptIn(true);
             SharedPreferences.Editor sharedPreferencesEditor =
                     ContextUtils.getAppSharedPreferences().edit();
-            sharedPreferencesEditor.putBoolean(BrowserExpressProfilePreferences.PREF_SHOW_OPTIN, false);
+            sharedPreferencesEditor.putBoolean(BrowserExpressSignupreferences.PREF_SHOW_OPTIN, false);
             sharedPreferencesEditor.apply();
 
             if (mIsSuggestionAvailable) {
