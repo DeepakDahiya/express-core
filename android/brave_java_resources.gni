@@ -751,8 +751,6 @@ brave_java_resources = [
   "java/res/drawable/person.xml",
   "java/res/drawable/mail.xml",
   "java/res/drawable/lock.xml",
-  "java/res/drawable/visibility.xml",
-  "java/res/drawable/visibility_off.xml",
   "java/res/layout-land/brave_shields_stats_row.xml",
   "java/res/layout-land/verify_wallet_activity.xml",
   "java/res/layout-sw600dp-land/brave_shields_stats_row.xml",
