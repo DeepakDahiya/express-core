@@ -1120,7 +1120,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         if (mProfileButton == v && mProfileButton != null){
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
-                activity.openBrowserExpressProfileSettings();
+                activity.openBrowserExpressLoginSettings();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e(TAG, "maybeShowWalletPanel " + e);
             }
