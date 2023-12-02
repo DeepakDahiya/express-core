@@ -54,8 +54,6 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
-    private Button mBtnTurnOnNews;
-    private Button mBtnLearnMore;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -84,10 +82,6 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
-            mBtnTurnOnNews = (Button) view.findViewById(R.id.btn_turn_on_news);
-            mBtnLearnMore = (Button) view.findViewById(R.id.btn_learn_more);
-
-            BraveTouchUtils.ensureMinTouchTarget(mBtnTurnOnNews);
 
             setData();
             onClickViews();
@@ -122,9 +116,6 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     }
 
     private void onClickViews() {
-        mBtnLearnMore.setOnClickListener(view -> {
-            CustomTabActivity.showInfoPage(getActivity(), BraveConstants.BRAVE_NEWS_LEARN_MORE_URL);
-        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
@@ -136,31 +127,8 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         FrameLayout.LayoutParams parentLayoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
-        if (isEnable) {
-            parentLayoutParams.gravity = Gravity.NO_GRAVITY;
-            mParentLayout.setLayoutParams(parentLayoutParams);
-            if (BraveNewsUtils.getChannelIcons().size() == 0) {
-                BraveNewsUtils.setChannelIcons();
-            }
-            if (BraveNewsUtils.getLocale() == null && mBraveNewsController != null) {
-                BraveNewsUtils.getBraveNewsSettingsData(mBraveNewsController, this);
-            } else {
-                updateFollowerCount();
-            }
-
-            BravePrefServiceBridge.getInstance().setNewsOptIn(true);
-            SharedPreferences.Editor sharedPreferencesEditor =
-                    ContextUtils.getAppSharedPreferences().edit();
-            sharedPreferencesEditor.putBoolean(BrowserExpressLoginPreferences.PREF_SHOW_OPTIN, false);
-            sharedPreferencesEditor.apply();
-
-            if (mIsSuggestionAvailable) {
-            }
-
-        } else {
-            parentLayoutParams.gravity = Gravity.CENTER_VERTICAL;
-            mParentLayout.setLayoutParams(parentLayoutParams);
-        }
+        parentLayoutParams.gravity = Gravity.NO_GRAVITY;
+        mParentLayout.setLayoutParams(parentLayoutParams);
     }
 
     private void openBraveNewsPreferencesDetails(
