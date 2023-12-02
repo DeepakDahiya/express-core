@@ -151,7 +151,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
             BravePrefServiceBridge.getInstance().setNewsOptIn(true);
             SharedPreferences.Editor sharedPreferencesEditor =
                     ContextUtils.getAppSharedPreferences().edit();
-            sharedPreferencesEditor.putBoolean(BrowserExpressSignupreferences.PREF_SHOW_OPTIN, false);
+            sharedPreferencesEditor.putBoolean(BrowserExpressSignupPreferences.PREF_SHOW_OPTIN, false);
             sharedPreferencesEditor.apply();
 
             if (mIsSuggestionAvailable) {
