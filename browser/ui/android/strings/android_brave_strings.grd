@@ -4095,6 +4095,18 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_DESC" desc="Sign in with Brave Wallet Request ID label">
       Sign in to start exploring the world Anonymously
     </message>
+    <message name="IDS_BROWSER_EXPRESS_LOGIN_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      Sign In
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_LOGIN_FORGOT_PASSWORD" desc="Sign in with Brave Wallet Request ID label">
+      Forgot Password?
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_LOGIN_NO_ACCOUNT" desc="Sign in with Brave Wallet Request ID label">
+      Don't have an account?
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_SIGNUP_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      Sign up
+    </message>
   </messages>
   </release>
 </grit>

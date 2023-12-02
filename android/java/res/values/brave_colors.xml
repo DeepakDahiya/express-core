@@ -366,4 +366,6 @@
     <color name="rewards_tipping_progress_bar">@android:color/black</color>
 
     <color name="leo_reset_text_color">#FF4B6A</color>
+
+    <color name="browser_express_orange_color">#FF4B6A</color>
 </resources>
