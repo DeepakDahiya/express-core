@@ -55,6 +55,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
+    private Button mBtnSignUp;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
