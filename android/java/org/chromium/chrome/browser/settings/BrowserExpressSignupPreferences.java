@@ -130,7 +130,6 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         });
 
         mBtnSignUp.setOnClickListener(view -> {
-            openBrowserExpressVerify
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 activity.openBrowserExpressVerify();
