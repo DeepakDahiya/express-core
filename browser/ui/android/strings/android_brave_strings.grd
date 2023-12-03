@@ -4092,8 +4092,14 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Welcome Back!
     </message>
+    <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      Verify Email
+    </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_DESC" desc="Sign in with Brave Wallet Request ID label">
       Sign in to start exploring the world Anonymously
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_DESC" desc="Sign in with Brave Wallet Request ID label">
+      Enter the OTP code sent to your email
     </message>
     <message name="IDS_BROWSER_EXPRESS_SIGNUP_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Register Now!
@@ -4107,6 +4113,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_FORGOT_PASSWORD" desc="Sign in with Brave Wallet Request ID label">
       Forgot Password?
     </message>
+    <message name="IDS_BROWSER_EXPRESS_RESEND_OTP" desc="Sign in with Brave Wallet Request ID label">
+      Resend OTP
+    </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_NO_ACCOUNT" desc="Sign in with Brave Wallet Request ID label">
       Don't have an account?
     </message>
@@ -4116,11 +4125,17 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_SIGNUP_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Sign up
     </message>
+    <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_BUTTON_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      Continue
+    </message>
     <message name="IDS_ENTER_YOUR_NAME" desc="Brave wallet password hint text">
       Enter your name
     </message>
     <message name="IDS_ENTER_YOUR_EMAIL" desc="Brave wallet password hint text">
       Enter your email
+    </message>
+    <message name="IDS_ENTER_OTP" desc="Brave wallet password hint text">
+      Enter OTP
     </message>
     <message name="IDS_ENTER_YOUR_PASSWORD" desc="Brave wallet password hint text">
       Enter your password

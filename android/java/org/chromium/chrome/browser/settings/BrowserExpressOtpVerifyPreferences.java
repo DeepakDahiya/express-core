@@ -40,8 +40,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.BrowserExpressOtpVerifyPreferences;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.util.BraveConstants;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
@@ -51,14 +49,13 @@ import org.chromium.mojo.system.MojoException;
 
 import java.util.List;
 
-public class BrowserExpressSignupPreferences extends BravePreferenceFragment
+public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
     private Button mBtnSignIn;
-    private Button mBtnSignUp;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -71,7 +68,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.browser_express_signup_settings, container, false);
+        return inflater.inflate(R.layout.browser_express_login_settings, container, false);
     }
 
     @Override
@@ -88,7 +85,6 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
-            mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
 
             setData();
             onClickViews();
@@ -129,11 +125,6 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
                 activity.openBrowserExpressLoginSettings();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
-        });
-
-        mBtnSignUp.setOnClickListener(view -> {
-            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-            settingsLauncher.launchSettingsActivity(this, BrowserExpressOtpVerifyPreferences.class);
         });
     }
 
