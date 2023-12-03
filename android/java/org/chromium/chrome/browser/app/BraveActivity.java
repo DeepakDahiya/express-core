@@ -149,6 +149,7 @@ import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressLoginPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressSignupPreferences;
+import org.chromium.chrome.browser.settings.BrowserExpressOtpVerifyPreferences;
 import org.chromium.chrome.browser.settings.BraveSearchEngineUtils;
 import org.chromium.chrome.browser.settings.BraveWalletPreferences;
 import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
@@ -1357,6 +1358,11 @@ public abstract class BraveActivity extends ChromeActivity
     public void openBrowserExpressSignupSettings() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(this, BrowserExpressSignupPreferences.class);
+    }
+
+    public void openBrowserExpressVerify() {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(this, BrowserExpressOtpVerifyPreferences.class);
     }
 
     // TODO: Once we have a ready for https://github.com/brave/brave-browser/issues/33015, We'll use

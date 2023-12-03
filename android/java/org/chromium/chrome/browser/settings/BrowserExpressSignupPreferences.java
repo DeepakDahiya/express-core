@@ -40,8 +40,6 @@ import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import org.chromium.chrome.browser.settings.BrowserExpressOtpVerifyPreferences;
-import org.chromium.chrome.browser.settings.SettingsLauncherImpl;
 import org.chromium.chrome.browser.util.BraveConstants;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
@@ -132,8 +130,12 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         });
 
         mBtnSignUp.setOnClickListener(view -> {
-            SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-            settingsLauncher.launchSettingsActivity(this, BrowserExpressOtpVerifyPreferences.class);
+            openBrowserExpressVerify
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                activity.openBrowserExpressVerify();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
         });
     }
 
