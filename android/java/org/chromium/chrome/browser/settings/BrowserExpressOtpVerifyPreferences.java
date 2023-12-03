@@ -68,7 +68,7 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.browser_express_login_settings, container, false);
+        return inflater.inflate(R.layout.browser_express_otp_verify_settings, container, false);
     }
 
     @Override
