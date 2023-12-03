@@ -1899,7 +1899,7 @@ public abstract class BraveActivity extends ChromeActivity
         editor.apply();
     }
 
-    private void getAccessToken(String accessToken) {
+    public void setAccessToken(String accessToken) {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         SharedPreferences.Editor editor = sharedPref.edit();
@@ -1907,7 +1907,7 @@ public abstract class BraveActivity extends ChromeActivity
         editor.apply();
     }
 
-    private String getAccessToken() {
+    public String getAccessToken() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         String accessToken = sharedPref.getString(ACCESS_TOKEN_KEY, null);
