@@ -33,6 +33,7 @@ import org.chromium.brave_news.mojom.BraveNewsController;
 import org.chromium.brave_news.mojom.Channel;
 import org.chromium.brave_news.mojom.Publisher;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -82,6 +83,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
+            mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
 
             setData();
             onClickViews();
@@ -116,6 +118,10 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     }
 
     private void onClickViews() {
+        mBtnSignUp.setOnClickListener(view -> {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            activity.openBrowserExpressSignupSettings();
+        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
