@@ -120,8 +120,12 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
     private void onClickViews() {
         mBtnSignUp.setOnClickListener(view -> {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            activity.openBrowserExpressSignupSettings();
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                activity.openBrowserExpressSignupSettings();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e(TAG, "maybeShowWalletPanel " + e);
+            }
         });
     }
 
