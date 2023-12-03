@@ -229,6 +229,7 @@ public abstract class BraveActivity extends ChromeActivity
     private static final String PREF_CLOSE_TABS_ON_EXIT = "close_tabs_on_exit";
     private static final String PREF_CLEAR_ON_EXIT = "clear_on_exit";
     public static final String OPEN_URL = "open_url";
+    public static final String ACCESS_TOKEN_KEY = "AccessToken";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -1896,6 +1897,21 @@ public abstract class BraveActivity extends ChromeActivity
 
         editor.putLong(BravePreferenceKeys.BRAVE_MILLISECONDS_NAME, milliSeconds);
         editor.apply();
+    }
+
+    private void getAccessToken(String accessToken) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(ACCESS_TOKEN_KEY, accessToken);
+        editor.apply();
+    }
+
+    private String getAccessToken() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+        String accessToken = sharedPref.getString(ACCESS_TOKEN_KEY, null);
+        return accessToken;
     }
 
     public ObservableSupplier<BrowserControlsManager> getBrowserControlsManagerSupplier() {

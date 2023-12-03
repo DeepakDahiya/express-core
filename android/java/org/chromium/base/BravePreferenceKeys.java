@@ -56,4 +56,8 @@ public final class BravePreferenceKeys {
     public static final String BRAVE_DEFERRED_DEEPLINK_PLAYLIST =
             "brave_deferred_deeplink_playlist";
     public static final String BRAVE_DEFERRED_DEEPLINK_VPN = "brave_deferred_deeplink_vpn";
+    public static final String BROWSER_EXPRESS_ACCESS_TOKEN =
+            "org.chromium.chrome.browser.Browser_Express_Access_Token";
+    public static final String BROWSER_EXPRESS_REFRESH_TOKEN =
+            "org.chromium.chrome.browser.Browser_Express_Refresh_Token";
 }
