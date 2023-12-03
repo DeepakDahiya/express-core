@@ -33,6 +33,7 @@ import org.chromium.brave_news.mojom.BraveNewsController;
 import org.chromium.brave_news.mojom.Channel;
 import org.chromium.brave_news.mojom.Publisher;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -54,6 +55,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
+    private Button mBtnSignIn;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -82,6 +84,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
+            mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
 
             setData();
             onClickViews();
@@ -116,6 +119,13 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
     }
 
     private void onClickViews() {
+        mBtnSignIn.setOnClickListener(view -> {
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                activity.openBrowserExpressLoginSettings();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
+        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
