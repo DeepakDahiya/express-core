@@ -124,7 +124,6 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 activity.openBrowserExpressSignupSettings();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
-                Log.e(TAG, "maybeShowWalletPanel " + e);
             }
         });
     }
