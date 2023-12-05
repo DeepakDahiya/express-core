@@ -47,7 +47,7 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
-import com.google.android.material.textfield.TextInputEditText;
+import android.widget.EditText;
 
 import java.util.List;
 
@@ -59,7 +59,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     private LinearLayout mParentLayout;
     private Button mBtnSignUp;
     private Button mBtnSignIn;
-    private TextInputEditText mEmailEditText;
+    private EditText mEmailEditText;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -90,7 +90,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
-            mEmailEditText = (TextInputEditText) view.findViewById(R.id.browser_express_email);
+            mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
 
             setData();
             onClickViews();
@@ -135,7 +135,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
         mBtnSignIn.setOnClickListener(view -> {
             String email = mEmailEditText.getText().toString();
-            TextInputEditText passwordEditText = (TextInputEditText) view.findViewById(R.id.browser_express_password);
+            EditText passwordEditText = (EditText) view.findViewById(R.id.browser_express_password);
             String password = passwordEditText.getText().toString();
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
