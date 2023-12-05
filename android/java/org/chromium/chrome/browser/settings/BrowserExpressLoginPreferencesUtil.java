@@ -45,7 +45,7 @@ public class BrowserExpressLoginPreferencesUtil {
         private String mPassword;
         private LoginCallback mCallback;
 
-        public RateFeedbackWorkerTask(
+        public LoginWorkerTask(
                 String email, String password, LoginCallback callback) {
             mEmail = email;
             mPassword = password;
