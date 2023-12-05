@@ -27,6 +27,7 @@ import com.airbnb.lottie.model.KeyPath;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_news.mojom.BraveNewsController;
@@ -137,7 +138,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             String password = passwordEditText.getText().toString();
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
-                            email, password, rateFeedbackCallback);
+                            email, password, loginCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
     }
@@ -217,7 +218,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             new BrowserExpressLoginPreferencesUtil.LoginCallback() {
                 @Override
                 public void loginSuccessful() {
-                    dismiss();
+                    // dismiss();
                 }
             };
 }
