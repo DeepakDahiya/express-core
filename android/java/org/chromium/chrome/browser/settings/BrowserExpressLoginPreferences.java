@@ -17,6 +17,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.EditText;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -47,7 +48,6 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
-import android.widget.EditText;
 
 import java.util.List;
 
@@ -90,7 +90,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
-            mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
+            mEmailEditText = (EditText) findViewById(R.id.browser_express_email);
 
             setData();
             onClickViews();
