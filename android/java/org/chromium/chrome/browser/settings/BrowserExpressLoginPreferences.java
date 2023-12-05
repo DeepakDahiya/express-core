@@ -60,6 +60,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     private Button mBtnSignUp;
     private Button mBtnSignIn;
     private EditText mEmailEditText;
+    private EditText mPasswordEditText;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -90,7 +91,8 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
-            mEmailEditText = (EditText) findViewById(R.id.browser_express_email);
+            mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
+            mPasswordEditText = (EditText) view.findViewById(R.id.browser_express_password);
 
             setData();
             onClickViews();
@@ -135,8 +137,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
         mBtnSignIn.setOnClickListener(view -> {
             String email = mEmailEditText.getText().toString();
-            EditText passwordEditText = (EditText) view.findViewById(R.id.browser_express_password);
-            String password = passwordEditText.getText().toString();
+            String password = mPasswordEditText.getText().toString();
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
                             email, password, loginCallback);
