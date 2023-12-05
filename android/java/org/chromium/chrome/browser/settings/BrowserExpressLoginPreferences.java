@@ -46,6 +46,7 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.List;
 
@@ -56,6 +57,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
     private LinearLayout mParentLayout;
     private Button mBtnSignUp;
+    private Button mBtnSignIn;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -85,6 +87,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
+            mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
 
             setData();
             onClickViews();
@@ -125,6 +128,17 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
                 activity.openBrowserExpressSignupSettings();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
+        });
+
+        mBtnSignIn.setOnClickListener(view -> {
+            TextInputEditText emailEditText = view.findViewById(R.id.browser_express_email);
+            String email = emailEditText.getText().toString();
+            TextInputEditText passwordEditText = view.findViewById(R.id.browser_express_password);
+            String password = passwordEditText.getText().toString();
+            BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
+                    new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
+                            email, password, rateFeedbackCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
     }
 
@@ -198,4 +212,12 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             mBraveNewsController.close();
         }
     }
+
+    private BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
+            new BrowserExpressLoginPreferencesUtil.LoginCallback() {
+                @Override
+                public void loginSuccessful() {
+                    dismiss();
+                }
+            };
 }
