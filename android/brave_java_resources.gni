@@ -386,7 +386,6 @@ brave_java_resources = [
   "java/res/drawable/brave_rewards_onboarding_selected.xml",
   "java/res/drawable/brave_rewards_onboarding_selector.xml",
   "java/res/drawable/brave_rewards_private_ads_icon.xml",
-  "java/res/drawable/brave_rewards_rectangle.xml",
   "java/res/drawable/brave_rewards_use_web3_background.xml",
   "java/res/drawable/brave_shields_tooltip_text_bg.xml",
   "java/res/drawable/brave_stats_radio_button_normal.xml",
