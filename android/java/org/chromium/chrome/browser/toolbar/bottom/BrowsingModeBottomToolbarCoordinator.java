@@ -119,7 +119,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mBookmarkButton = mToolbarRoot.findViewById(R.id.bottom_bookmark_button);
         if (BottomToolbarVariationManager.isBookmarkButtonOnBottom()) {
-            mBookmarkButton.setVisibility(View.VISIBLE);
+            // mBookmarkButton.setVisibility(View.VISIBLE);
             getNewTabButtonParent().setVisibility(View.GONE);
             OnClickListener bookmarkClickHandler = v -> {
                 TabImpl tab = (TabImpl) mTabProvider.get();
