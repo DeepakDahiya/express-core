@@ -37,7 +37,25 @@
         style="@style/SplitToolbarButton" />
 -->
 
-    <include layout="@layout/toolbar_space" />
+    <!-- <include layout="@layout/toolbar_space" /> -->
+    <FrameLayout android:id="@+id/profile_button_layout"
+        android:layout_width="45dp"
+        android:orientation="vertical"
+        android:background="@drawable/modern_toolbar_background_grey_middle_segment"
+        android:layout_marginTop="8dp"
+        android:layout_height="40dp"
+        android:visibility="visible" >
+
+        <ImageButton android:id="@+id/profile_button"
+            style="@style/ToolbarButton"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:src="@drawable/btn_toolbar_profile"
+            android:layout_gravity="center"
+            android:visibility="visible"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+    </FrameLayout>
     <include layout="@layout/brave_bookmark_toolbar" />
     <include layout="@layout/toolbar_space" />
 

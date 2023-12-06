@@ -798,6 +798,7 @@ brave_java_resources = [
   "java/res/layout/brave_news_settings.xml",
   "java/res/layout/browser_express_profile_settings.xml",
   "java/res/layout/browser_express_login_settings.xml",
+  "java/res/layout/browser_express_comments_settings.xml",
   "java/res/layout/browser_express_otp_verify_settings.xml",
   "java/res/layout/browser_express_signup_settings.xml",
   "java/res/layout/brave_news_settings_details.xml",

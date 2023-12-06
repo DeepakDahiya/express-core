@@ -148,6 +148,7 @@ import org.chromium.chrome.browser.set_default_browser.OnBraveSetDefaultBrowserL
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressLoginPreferences;
+import org.chromium.chrome.browser.settings.BrowserExpressCommentsPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressSignupPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressOtpVerifyPreferences;
 import org.chromium.chrome.browser.settings.BraveSearchEngineUtils;
@@ -1353,6 +1354,11 @@ public abstract class BraveActivity extends ChromeActivity
     public void openBrowserExpressLoginSettings() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(this, BrowserExpressLoginPreferences.class);
+    }
+
+    public void openBrowserExpressCommentsSettings() {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(this, BrowserExpressCommentsPreferences.class);
     }
 
     public void openBrowserExpressSignupSettings() {
