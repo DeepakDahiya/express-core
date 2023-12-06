@@ -133,7 +133,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         }
 
         if (BottomToolbarVariationManager.isTabSwitcherOnBottom()) {
-            mTabSwitcherButtonView.setVisibility(View.VISIBLE);
+            // mTabSwitcherButtonView.setVisibility(View.VISIBLE);
         }
 
         mBookmarkButton = mToolbarRoot.findViewById(R.id.bottom_bookmark_button);

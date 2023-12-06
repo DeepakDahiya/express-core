@@ -49,7 +49,7 @@
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
     <include layout="@layout/brave_bookmark_toolbar" />
-    <include layout="@layout/toolbar_space" />
+    <!-- <include layout="@layout/toolbar_space" /> -->
 
     <org.chromium.chrome.browser.toolbar.bottom.SearchAccelerator
         android:id="@+id/search_accelerator"
