@@ -4092,11 +4092,17 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Welcome Back!
     </message>
+    <message name="IDS_BROWSER_EXPRESS_NO_COMMENTS_TITLE" desc="Sign in with Brave Wallet Request ID label">
+      No Comments!
+    </message>
     <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Verify Email
     </message>
     <message name="IDS_BROWSER_EXPRESS_LOGIN_DESC" desc="Sign in with Brave Wallet Request ID label">
       Sign in to start exploring the world Anonymously
+    </message>
+    <message name="IDS_BROWSER_EXPRESS_NO_COMMENTS_DESC" desc="Sign in with Brave Wallet Request ID label">
+      No comments found for this page. Be the first one to start the conversation!!
     </message>
     <message name="IDS_BROWSER_EXPRESS_OTP_VERIFY_DESC" desc="Sign in with Brave Wallet Request ID label">
       Enter the OTP code sent to your email

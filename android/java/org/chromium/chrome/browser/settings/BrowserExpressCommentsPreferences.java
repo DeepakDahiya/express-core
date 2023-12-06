@@ -57,10 +57,6 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
-    private Button mBtnSignUp;
-    private Button mBtnSignIn;
-    private EditText mEmailEditText;
-    private EditText mPasswordEditText;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -79,7 +75,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         if (getActivity() != null) {
-            getActivity().setTitle("");
+            getActivity().setTitle("Comments");
         }
 
         super.onActivityCreated(savedInstanceState);
@@ -89,10 +85,6 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
-            mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
-            mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
-            mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
-            mPasswordEditText = (EditText) view.findViewById(R.id.browser_express_password);
 
             setData();
             onClickViews();
@@ -127,22 +119,22 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
     }
 
     private void onClickViews() {
-        mBtnSignUp.setOnClickListener(view -> {
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                activity.openBrowserExpressSignupSettings();
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }
-        });
+        // mBtnSignUp.setOnClickListener(view -> {
+        //     try {
+        //         BraveActivity activity = BraveActivity.getBraveActivity();
+        //         activity.openBrowserExpressSignupSettings();
+        //     } catch (BraveActivity.BraveActivityNotFoundException e) {
+        //     }
+        // });
 
-        mBtnSignIn.setOnClickListener(view -> {
-            String email = mEmailEditText.getText().toString();
-            String password = mPasswordEditText.getText().toString();
-            BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
-                    new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
-                            email, password, loginCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        });
+        // mBtnSignIn.setOnClickListener(view -> {
+        //     String email = mEmailEditText.getText().toString();
+        //     String password = mPasswordEditText.getText().toString();
+        //     BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
+        //             new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
+        //                     email, password, loginCallback);
+        //     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        // });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
@@ -154,7 +146,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
         FrameLayout.LayoutParams parentLayoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
-        parentLayoutParams.gravity = Gravity.NO_GRAVITY;
+        parentLayoutParams.gravity = Gravity.CENTER_VERTICAL;
         mParentLayout.setLayoutParams(parentLayoutParams);
     }
 
