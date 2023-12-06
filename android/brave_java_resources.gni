@@ -373,6 +373,7 @@ brave_java_resources = [
   "java/res/drawable/brave_menu_settings.xml",
   "java/res/drawable/brave_modern_toolbar_text_box_background.xml",
   "java/res/drawable/brave_new_group_tab.xml",
+  "java/res/drawable/comments.xml",
   "java/res/drawable/brave_news_settings_list_divider.xml",
   "java/res/drawable/brave_news_settings_publisher_bg.xml",
   "java/res/drawable/brave_news_settings_search_bg.xml",

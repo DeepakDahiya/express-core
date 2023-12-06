@@ -43,7 +43,7 @@
             style="@style/ToolbarButton"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:src="@drawable/btn_toolbar_profile"
+            android:src="@drawable/comments"
             android:layout_gravity="center"
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />

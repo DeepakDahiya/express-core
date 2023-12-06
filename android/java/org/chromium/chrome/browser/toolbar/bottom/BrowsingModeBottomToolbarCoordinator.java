@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonState;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
+import android.widget.ImageButton;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
@@ -40,6 +41,8 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
  */
 public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
+
+    private ImageButton mCommentsButton;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
@@ -93,7 +96,23 @@ public class BrowsingModeBottomToolbarCoordinator {
         mMediator = new BrowsingModeBottomToolbarMediator(mModel);
 
         mBraveHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
+        mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
+
+        if (mCommentsButton != null) {
+            mCommentsButton.setClickable(true);
+            OnClickListener commentsClickHandler = v -> {
+                TabImpl tab = (TabImpl) mTabProvider.get();
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    activity.openBrowserExpressCommentsSettings();
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "BookmarkButton click " + e);
+                }
+            };
+            mCommentsButton.setOnClickListener(commentsClickHandler);
+            BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
+        }
 
         mNewTabButton = mToolbarRoot.findViewById(R.id.bottom_new_tab_button);
 
