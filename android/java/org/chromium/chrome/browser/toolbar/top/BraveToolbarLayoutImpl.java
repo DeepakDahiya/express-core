@@ -1274,7 +1274,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         SharedPreferences sharedPref = ContextUtils.getAppSharedPreferences();
         boolean shownBefore = sharedPref.getBoolean(
                 BraveRewardsPanel.PREF_WAS_TOOLBAR_BAT_LOGO_BUTTON_PRESSED, false);
-        boolean shouldShow = false
+        boolean shouldShow = false;
         mIsInitialNotificationPosted = shouldShow; // initial notification
 
         if (!shouldShow) return;
