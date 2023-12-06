@@ -44,7 +44,8 @@
           android:layout_marginBottom="8dp"
           android:src="@drawable/ic_crypto_wallets"
           android:layout_gravity="center"
-          android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+          android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+          android:visibility="gone" />
 
       <View
           android:id="@+id/wallet_notfication_badge"
@@ -62,7 +63,8 @@
       android:orientation="vertical"
       android:background="@drawable/modern_toolbar_background_grey_middle_segment"
       android:layout_marginTop="8dp"
-      android:layout_height="40dp" >
+      android:layout_height="40dp"
+      android:visibility="gone" >
 
       <ImageButton android:id="@+id/brave_shields_button"
           style="@style/ToolbarButton"
@@ -70,7 +72,8 @@
           android:layout_marginBottom="8dp"
           android:src="@drawable/btn_brave"
           android:layout_gravity="center"
-          android:contentDescription="@string/accessibility_toolbar_btn_brave_shields" />
+          android:contentDescription="@string/accessibility_toolbar_btn_brave_shields" 
+          android:visibility="gone" />
 
       <org.chromium.chrome.browser.BraveBadge
             android:id="@+id/brave_shields_badge_small"
@@ -79,7 +82,7 @@
             android:layout_marginStart="28dp"
             android:layout_marginTop="6dp"
             android:gravity="center"
-            android:visibility="invisible"
+            android:visibility="gone"
             android:background="@drawable/brave_badge_shields_background_small"
             android:textColor="@android:color/white"
             android:translationZ="1dp"
@@ -93,7 +96,7 @@
             android:layout_marginStart="28dp"
             android:layout_marginTop="6dp"
             android:gravity="center"
-            android:visibility="invisible"
+            android:visibility="gone"
             android:background="@drawable/brave_badge_shields_background_large"
             android:textColor="@android:color/white"
             android:translationZ="1dp"
@@ -115,7 +118,8 @@
           android:layout_marginBottom="8dp"
           android:src="@drawable/btn_bat"
           android:layout_gravity="center"
-          android:contentDescription="@string/accessibility_toolbar_btn_brave_rewards" />
+          android:contentDescription="@string/accessibility_toolbar_btn_brave_rewards"
+          android:visibility="gone" />
 
       <ImageView 
           android:id="@+id/br_rewards_onboarding_icon"
@@ -151,7 +155,7 @@
           android:layout_marginStart="26dp"
           android:layout_marginTop="6dp"
           android:gravity="center"
-          android:visibility="invisible"
+          android:visibility="gone"
           android:background="@drawable/brave_badge_rewards_background_small"
           android:textColor="@android:color/white"
           android:fontFamily="sans-serif-bold"
@@ -165,7 +169,7 @@
           android:layout_marginStart="26dp"
           android:layout_marginTop="6dp"
           android:gravity="center"
-          android:visibility="invisible"
+          android:visibility="gone"
           android:background="@drawable/brave_badge_rewards_background_large"
           android:textColor="@android:color/white"
           android:fontFamily="sans-serif-bold"
