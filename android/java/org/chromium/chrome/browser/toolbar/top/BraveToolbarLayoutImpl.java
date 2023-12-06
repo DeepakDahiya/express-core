@@ -1188,7 +1188,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
      */
     private void updateBraveShieldsButtonState(Tab tab) {
         if (tab == null) {
-            mBraveShieldsButton.setImageResource(R.drawable.btn_brave_off);
             return;
         }
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
