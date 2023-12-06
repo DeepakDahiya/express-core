@@ -15,6 +15,7 @@
         style="@style/SplitToolbarButton"
         android:layout_gravity="center"
         android:contentDescription="@string/accessibility_menu_bookmark"
-        android:background="?attr/selectableItemBackgroundBorderless" />
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:visibility="gone" />
 
 </LinearLayout>
