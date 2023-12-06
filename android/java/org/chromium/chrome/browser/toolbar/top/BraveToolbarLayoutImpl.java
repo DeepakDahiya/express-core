@@ -361,8 +361,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         if (mBraveRewardsNativeWorker != null && mBraveRewardsNativeWorker.IsSupported()
                 && !BravePrefServiceBridge.getInstance().getSafetynetCheckFailed()
                 && sharedPreferences.getBoolean(
-                        AppearancePreferences.PREF_SHOW_BRAVE_REWARDS_ICON, true)
-                && mRewardsLayout != null) {
+                        AppearancePreferences.PREF_SHOW_BRAVE_REWARDS_ICON, true)) {
         }
         if (mBraveRewardsNativeWorker != null) {
             mBraveRewardsNativeWorker.AddObserver(this);
