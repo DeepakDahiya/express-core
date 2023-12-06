@@ -169,14 +169,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     private DatabaseHelper mDatabaseHelper = DatabaseHelper.getInstance();
 
-    private ImageButton mBraveWalletButton;
     private ImageButton mProfileButton;
-    private ImageButton mBraveShieldsButton;
     private ImageButton mBraveRewardsButton;
     private HomeButton mHomeButton;
     private FrameLayout mProfileLayout;
-    private FrameLayout mWalletLayout;
-    private FrameLayout mShieldsLayout;
     private FrameLayout mRewardsLayout;
     private BraveShieldsHandler mBraveShieldsHandler;
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
@@ -188,7 +184,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private BraveShieldsContentSettingsObserver mBraveShieldsContentSettingsObserver;
     private TextView mBraveRewardsNotificationsCount;
     private ImageView mBraveRewardsOnboardingIcon;
-    private View mBraveWalletBadge;
     private ImageView mWalletIcon;
     private int mCurrentToolbarColor;
 
@@ -249,21 +244,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             }
         }
 
-        mWalletLayout = (FrameLayout) findViewById(R.id.brave_wallet_button_layout);
         mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
-        mShieldsLayout = (FrameLayout) findViewById(R.id.brave_shields_button_layout);
         mRewardsLayout = (FrameLayout) findViewById(R.id.brave_rewards_button_layout);
         mBraveRewardsNotificationsCount = (TextView) findViewById(R.id.br_notifications_count);
         mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
-        mBraveWalletButton = (ImageButton) findViewById(R.id.brave_wallet_button);
         mProfileButton = (ImageButton) findViewById(R.id.profile_button);
-        mBraveShieldsButton = (ImageButton) findViewById(R.id.brave_shields_button);
         mBraveRewardsButton = (ImageButton) findViewById(R.id.brave_rewards_button);
         mHomeButton = (HomeButton) findViewById(R.id.home_button);
-        mBraveWalletBadge = findViewById(R.id.wallet_notfication_badge);
-        if (mWalletLayout != null) {
-            mWalletIcon = mWalletLayout.findViewById(R.id.brave_wallet_button);
-        }
 
         mDarkModeTint = ThemeUtils.getThemedToolbarIconTint(getContext(), false);
         mLightModeTint =
@@ -273,13 +260,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mHomeButton.setOnLongClickListener(this);
         }
 
-        if (mBraveShieldsButton != null) {
-            mBraveShieldsButton.setClickable(true);
-            mBraveShieldsButton.setOnClickListener(this);
-            mBraveShieldsButton.setOnLongClickListener(this);
-            BraveTouchUtils.ensureMinTouchTarget(mBraveShieldsButton);
-        }
-
         if (mBraveRewardsButton != null) {
             mBraveRewardsButton.setClickable(true);
             mBraveRewardsButton.setOnClickListener(this);
@@ -287,12 +267,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             BraveTouchUtils.ensureMinTouchTarget(mBraveRewardsButton);
         }
 
-        if (mBraveWalletButton != null) {
-            mBraveWalletButton.setClickable(true);
-            mBraveWalletButton.setOnClickListener(this);
-            mBraveWalletButton.setOnLongClickListener(this);
-            BraveTouchUtils.ensureMinTouchTarget(mBraveWalletButton);
-        }
 
         if (mProfileButton != null) {
             mProfileButton.setClickable(true);
@@ -363,15 +337,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         if (BraveReflectionUtil.EqualTypes(this.getClass(), CustomTabToolbar.class)) {
             LinearLayout customActionButtons = findViewById(R.id.action_buttons);
             assert customActionButtons != null : "Something has changed in the upstream!";
-            if (customActionButtons != null && mBraveShieldsButton != null) {
-                ViewGroup.MarginLayoutParams braveShieldsButtonLayout =
-                        (ViewGroup.MarginLayoutParams) mBraveShieldsButton.getLayoutParams();
-                ViewGroup.MarginLayoutParams actionButtonsLayout =
-                        (ViewGroup.MarginLayoutParams) customActionButtons.getLayoutParams();
-                actionButtonsLayout.setMarginEnd(actionButtonsLayout.getMarginEnd()
-                        + braveShieldsButtonLayout.getMarginEnd());
-                customActionButtons.setLayoutParams(actionButtonsLayout);
-            }
         }
         updateShieldsLayoutBackground(isIncognito()
                 || !ContextUtils.getAppSharedPreferences().getBoolean(
@@ -413,11 +378,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         AppearancePreferences.PREF_SHOW_BRAVE_REWARDS_ICON, true)
                 && mRewardsLayout != null) {
             mRewardsLayout.setVisibility(View.VISIBLE);
-        }
-        if (mShieldsLayout != null) {
-            updateShieldsLayoutBackground(
-                    !(mRewardsLayout != null && mRewardsLayout.getVisibility() == View.VISIBLE));
-            mShieldsLayout.setVisibility(View.VISIBLE);
         }
         if (mBraveRewardsNativeWorker != null) {
             mBraveRewardsNativeWorker.AddObserver(this);
@@ -475,19 +435,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     mBraveShieldsHandler.updateUrlSpec(url.getSpec());
                     updateBraveShieldsButtonState(tab);
 
-                    if (mBraveShieldsButton != null && mBraveShieldsButton.isShown()
-                            && mBraveShieldsHandler != null && !mBraveShieldsHandler.isShowing()) {
-                        checkForTooltip(tab);
-                    }
-                }
-
-                if (mBraveShieldsButton != null && mBraveShieldsButton.isShown()
-                        && mBraveShieldsHandler != null && !mBraveShieldsHandler.isShowing()
-                        && url.getSpec().contains("rewards")
-                        && ((!BravePermissionUtils.hasNotificationPermission(getContext()))
-                                || BraveNotificationWarningDialog.shouldShowRewardWarningDialog(
-                                        getContext()))) {
-                    showNotificationNotEarningDialog();
                 }
 
                 String countryCode = Locale.getDefault().getCountry();
@@ -557,10 +504,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     Tab providerTab = getToolbarDataProvider().getTab();
                     if (providerTab != null && providerTab.getId() == tab.getId()) {
                         showWalletIcon(mTabsWithWalletIcon.contains(tab.getId()));
-                    } else if (mWalletLayout != null) {
-                        mWalletLayout.setVisibility(mTabsWithWalletIcon.contains(tab.getId())
-                                        ? View.VISIBLE
-                                        : View.GONE);
                     }
                 }
             }
@@ -806,7 +749,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             float padding = (float) dpToPx(getContext(), 20);
             mShieldsPopupWindowTooltip =
                     new PopupWindowTooltip.Builder(getContext())
-                            .anchorView(mBraveShieldsButton)
                             .arrowColor(ContextCompat.getColor(
                                     getContext(), R.color.onboarding_arrow_color))
                             .gravity(Gravity.BOTTOM)
@@ -861,36 +803,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             TextView tvBlocked = mShieldsPopupWindowTooltip.findViewById(R.id.tv_blocked);
             tvBlocked.setText(trackerText);
 
-            if (mBraveShieldsButton != null && mBraveShieldsButton.isShown()) {
-                viewGroup.addView(highlightView);
-                HighlightItem item = new HighlightItem(mBraveShieldsButton);
-
-                ImageButton braveShieldButton =
-                        new ImageButton(getContext(), null, R.style.ToolbarButton);
-                braveShieldButton.setImageResource(R.drawable.btn_brave);
-                FrameLayout.LayoutParams braveShieldParams =
-                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
-                                FrameLayout.LayoutParams.WRAP_CONTENT);
-
-                int[] location = new int[2];
-                highlightView.getLocationOnScreen(location);
-                braveShieldParams.leftMargin = item.getScreenLeft() + dpToPx(getContext(), 10);
-                braveShieldParams.topMargin = item.getScreenTop()
-                        + ((item.getScreenBottom() - item.getScreenTop()) / 4) - location[1];
-                braveShieldButton.setLayoutParams(braveShieldParams);
-                highlightView.addView(braveShieldButton);
-
-                highlightView.setShouldShowHighlight(true);
-                highlightView.setHighlightTransparent(true);
-                highlightView.setHighlightItem(item);
-                highlightView.initializeAnimators();
-                highlightView.startAnimation();
-
-                mShieldsPopupWindowTooltip.show();
-                BraveShieldsUtils.setShieldsTooltipShown(tooltipPref, true);
-                BraveShieldsUtils.isTooltipShown = true;
-            }
-
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "showTooltip " + e);
         }
@@ -906,7 +818,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     public void reopenShieldsPanel() {
         if (mBraveShieldsHandler != null && mBraveShieldsHandler.isShowing()) {
             mBraveShieldsHandler.hideBraveShieldsMenu();
-            showShieldsMenu(mBraveShieldsButton);
         }
     }
 
@@ -1067,30 +978,17 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     public boolean isWalletIconVisible() {
-        if (mWalletLayout == null) {
-            return false;
-        }
-        return mWalletLayout.getVisibility() == View.VISIBLE;
+        return false;
     }
 
     public void showWalletIcon(boolean show, Tab tab) {
         // The layout could be null in Custom Tabs layout
-        if (mWalletLayout == null) {
-            return;
-        }
         Tab currentTab = tab;
         if (currentTab == null) {
             currentTab = getToolbarDataProvider().getTab();
             if (currentTab == null) {
                 return;
             }
-        }
-        if (show) {
-            mWalletLayout.setVisibility(View.VISIBLE);
-            mTabsWithWalletIcon.add(currentTab.getId());
-        } else {
-            mWalletLayout.setVisibility(View.GONE);
-            mTabsWithWalletIcon.remove(currentTab.getId());
         }
     }
 
@@ -1130,9 +1028,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 Log.e(TAG, "maybeShowWalletPanel " + e);
             }
         }
-        if (mBraveShieldsButton == v && mBraveShieldsButton != null) {
-            showShieldsMenu(mBraveShieldsButton);
-        } else if (mBraveRewardsButton == v && mBraveRewardsButton != null) {
+        if (mBraveRewardsButton == v && mBraveRewardsButton != null) {
             if (null != mRewardsPopup) {
                 return;
             }
@@ -1155,8 +1051,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e(TAG, "HomeButton click " + e);
             }
-        } else if (mBraveWalletButton == v && mBraveWalletButton != null) {
-            maybeShowWalletPanel(v);
         }
     }
 
@@ -1219,14 +1113,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         Context context = getContext();
         Resources resources = context.getResources();
 
-        if (v == mBraveShieldsButton) {
-            description = resources.getString(R.string.accessibility_toolbar_btn_brave_shields);
-        } else if (v == mBraveRewardsButton) {
+        if (v == mBraveRewardsButton) {
             description = resources.getString(R.string.accessibility_toolbar_btn_brave_rewards);
         } else if (v == mHomeButton) {
             description = resources.getString(R.string.accessibility_toolbar_btn_home);
-        } else if (v == mBraveWalletButton) {
-            description = resources.getString(R.string.accessibility_toolbar_btn_brave_wallet);
         }
 
         return Toast.showAnchoredToast(context, v, description);
@@ -1278,51 +1168,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     public void populateUrlAnimatorSetImpl(boolean showExpandedState,
             int urlFocusToolbarButtonsDuration, int urlClearFocusTabStackDelayMs,
             List<Animator> animators) {
-        if (mBraveShieldsButton != null) {
-            Animator animator;
-            if (showExpandedState) {
-                float density = getContext().getResources().getDisplayMetrics().density;
-                boolean isRtl = getLayoutDirection() == LAYOUT_DIRECTION_RTL;
-                float toolbarButtonTranslationX =
-                        MathUtils.flipSignIf(URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP, isRtl)
-                        * density;
-                animator = ObjectAnimator.ofFloat(
-                        mBraveShieldsButton, TRANSLATION_X, toolbarButtonTranslationX);
-                animator.setDuration(urlFocusToolbarButtonsDuration);
-                animator.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
-                animators.add(animator);
-
-                animator = ObjectAnimator.ofFloat(mBraveShieldsButton, ALPHA, 0);
-                animator.setDuration(urlFocusToolbarButtonsDuration);
-                animator.setInterpolator(Interpolators.FAST_OUT_LINEAR_IN_INTERPOLATOR);
-                animators.add(animator);
-            } else {
-                animator = ObjectAnimator.ofFloat(mBraveShieldsButton, TRANSLATION_X, 0);
-                animator.setDuration(urlFocusToolbarButtonsDuration);
-                animator.setStartDelay(urlClearFocusTabStackDelayMs);
-                animator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-                animators.add(animator);
-
-                animator = ObjectAnimator.ofFloat(mBraveShieldsButton, ALPHA, 1);
-                animator.setDuration(urlFocusToolbarButtonsDuration);
-                animator.setStartDelay(urlClearFocusTabStackDelayMs);
-                animator.setInterpolator(Interpolators.FAST_OUT_SLOW_IN_INTERPOLATOR);
-                animators.add(animator);
-            }
-        }
     }
 
     @Override
     public void updateModernLocationBarColorImpl(int color) {
         mCurrentToolbarColor = color;
-        if (mShieldsLayout != null) {
-            mShieldsLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-        }
         if (mRewardsLayout != null) {
             mRewardsLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
-        }
-        if (mWalletLayout != null) {
-            mWalletLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
         if (mProfileLayout != null) {
             mProfileLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
@@ -1335,18 +1187,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
      * If |urlString| is null, url is fetched from |tab|.
      */
     private void updateBraveShieldsButtonState(Tab tab) {
-        if (mBraveShieldsButton == null) {
-            assert false;
-            return;
-        }
-
         if (tab == null) {
-            mBraveShieldsButton.setImageResource(R.drawable.btn_brave_off);
             return;
         }
-        mBraveShieldsButton.setImageResource(
-                isShieldsOnForTab(tab) ? R.drawable.btn_brave : R.drawable.btn_brave_off);
-
         SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
 
         if (mRewardsLayout == null) return;
@@ -1572,16 +1415,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     private void updateShieldsLayoutBackground(boolean rounded) {
-        if (mShieldsLayout == null) {
-            return;
-        }
-
-        mShieldsLayout.setBackgroundDrawable(
-                ApiCompatibilityUtils.getDrawable(getContext().getResources(),
-                        rounded ? R.drawable.modern_toolbar_background_grey_end_segment
-                                : R.drawable.modern_toolbar_background_grey_middle_segment));
-
-        updateModernLocationBarColorImpl(mCurrentToolbarColor);
     }
 
     private boolean isTabSwitcherOnBottom() {
@@ -1604,8 +1437,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     public void updateWalletBadgeVisibility(boolean visible) {
-        assert mBraveWalletBadge != null;
-        mBraveWalletBadge.setVisibility(visible ? View.VISIBLE : View.GONE);
     }
 
     public void updateMenuButtonState() {
@@ -1633,18 +1464,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     @Override
     public void drawAnimationOverlay(ViewGroup toolbarButtonsContainer, Canvas canvas) {
-        if (mWalletLayout != null && mWalletLayout.getVisibility() != View.GONE) {
-            canvas.save();
-            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mWalletLayout, canvas);
-            mWalletLayout.draw(canvas);
-            canvas.restore();
-        }
-        if (mShieldsLayout != null && mShieldsLayout.getVisibility() != View.GONE) {
-            canvas.save();
-            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mShieldsLayout, canvas);
-            mShieldsLayout.draw(canvas);
-            canvas.restore();
-        }
         if (mRewardsLayout != null && mRewardsLayout.getVisibility() != View.GONE) {
             canvas.save();
             ViewUtils.translateCanvasToView(toolbarButtonsContainer, mRewardsLayout, canvas);
