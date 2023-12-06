@@ -38,6 +38,7 @@
 -->
 
     <!-- <include layout="@layout/toolbar_space" /> -->
+    <include layout="@layout/toolbar_space" />
         <ImageButton android:id="@+id/profile_button"
             style="@style/ToolbarButton"
             android:layout_marginTop="8dp"
