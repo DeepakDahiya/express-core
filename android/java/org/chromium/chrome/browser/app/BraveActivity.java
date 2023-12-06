@@ -1112,7 +1112,7 @@ public abstract class BraveActivity extends ChromeActivity
                 && OnboardingPrefManager.getInstance().isOnboardingSearchBoxTooltip()
                 && getActivityTab() != null && getActivityTab().getUrl().getSpec() != null
                 && UrlUtilities.isNTPUrl(getActivityTab().getUrl().getSpec())) {
-            showSearchBoxTooltip();
+            // showSearchBoxTooltip();
         }
 
         // Added to reset app links settings for upgrade case
