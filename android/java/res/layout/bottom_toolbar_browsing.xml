@@ -39,7 +39,7 @@
 
     <!-- <include layout="@layout/toolbar_space" /> -->
     <include layout="@layout/toolbar_space" />
-        <ImageButton android:id="@+id/profile_button"
+        <ImageButton android:id="@+id/comments_button"
             style="@style/ToolbarButton"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
