@@ -51,7 +51,8 @@
         android:paddingTop="@dimen/search_accelerator_height_padding"
         android:paddingBottom="@dimen/search_accelerator_height_padding"
         android:contentDescription="@string/accessibility_toolbar_btn_search_accelerator"
-        app:srcCompat="@drawable/ic_search_21dp"/>
+        app:srcCompat="@drawable/ic_search_21dp"
+        android:visibility="gone"/>
     <include layout="@layout/brave_bottom_new_tab_button" />
 
     <!-- <include layout="@layout/toolbar_space" /> -->
