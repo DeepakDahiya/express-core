@@ -18,6 +18,7 @@ group("android_deps") {
     ":com_google_android_play_integrity_java",
     ":com_wireguard_android_java",
     ":google_play_services_safetynet_java",
+    ":com_android_volley",
   ]
 }
 
