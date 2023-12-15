@@ -67,15 +67,7 @@ public class BrowserExpressLoginPreferencesUtil {
     }
 
     private static void sendLoginRequest(String email, String password) {
-        Context context = ContextUtils.getApplicationContext();
-        String appVersion = AboutChromeSettings.getApplicationVersion(
-                context, AboutSettingsBridge.getApplicationVersion());
         StringBuilder sb = new StringBuilder();
-
-        Profile mProfile = Profile.getLastUsedRegularProfile();
-        NTPBackgroundImagesBridge mNTPBackgroundImagesBridge =
-                NTPBackgroundImagesBridge.getInstance(mProfile);
-
         HttpURLConnection urlConnection = null;
         // try {
         //     URL url = new URL(LOGIN_URL);
