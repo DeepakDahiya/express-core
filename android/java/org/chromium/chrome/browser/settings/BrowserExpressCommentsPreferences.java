@@ -214,5 +214,10 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
                 public void loginSuccessful() {
                     // dismiss();
                 }
+
+                @Override
+                public void loginFailed(String error) {
+                    // dismiss();
+                }
             };
 }

@@ -28,6 +28,7 @@ import com.airbnb.lottie.model.KeyPath;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
@@ -61,6 +62,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     private Button mBtnSignIn;
     private EditText mEmailEditText;
     private EditText mPasswordEditText;
+    private TextView mErrorTextView;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -93,6 +95,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
             mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
             mPasswordEditText = (EditText) view.findViewById(R.id.browser_express_password);
+            mErrorTextView = (TextView) view.findViewById(R.id.login_error_message);
 
             setData();
             onClickViews();
@@ -138,6 +141,14 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         mBtnSignIn.setOnClickListener(view -> {
             String email = mEmailEditText.getText().toString();
             String password = mPasswordEditText.getText().toString();
+
+            mBtnSignIn.setClickable(false);
+            mBtnSignIn.setText(R.string.browser_express_loading_title);
+
+            mErrorTextView.setText(R.string.browser_express_empty_text);
+            mErrorTextView.setVisibility(View.INVISIBLE);
+
+
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
                             email, password, loginCallback);
@@ -220,7 +231,22 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             new BrowserExpressLoginPreferencesUtil.LoginCallback() {
                 @Override
                 public void loginSuccessful() {
-                    // dismiss();
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN SUCCESSFUL");
+                    mErrorTextView.setText(R.string.browser_express_login_button_title);
+                    mErrorTextView.setVisibility(View.VISIBLE);
+
+                    mBtnSignIn.setClickable(true);
+                    mBtnSignIn.setText(R.string.browser_express_login_button_title);
+                }
+
+                @Override
+                public void loginFailed(String error) {
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    mErrorTextView.setText(error);
+                    mErrorTextView.setVisibility(View.VISIBLE);
+
+                    mBtnSignIn.setClickable(true);
+                    mBtnSignIn.setText(R.string.browser_express_login_button_title);
                 }
             };
 }

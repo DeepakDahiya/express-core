@@ -34,27 +34,40 @@ import java.nio.charset.StandardCharsets;
 
 public class BrowserExpressLoginPreferencesUtil {
     private static final String TAG = "Login_Browser_Express";
-    private static final String LOGIN_URL = "https://be.bargnbay.com/v1/auth/login";
+    private static final String LOGIN_URL = "https://api.browser.express/v1/auth/login";
 
     public interface LoginCallback {
         void loginSuccessful();
+        void loginFailed(String error);
     }
 
     public static class LoginWorkerTask extends AsyncTask<Void> {
         private String mEmail;
         private String mPassword;
         private LoginCallback mCallback;
+        private static Boolean loginStatus;
+        private static String mErrorMessage;
 
         public LoginWorkerTask(
                 String email, String password, LoginCallback callback) {
             mEmail = email;
             mPassword = password;
             mCallback = callback;
+            loginStatus = false;
+            mErrorMessage = "";
+        }
+
+        public static void setLoginSuccessStatus(Boolean status){
+            loginStatus = status;
+        }
+
+        public static void setErrorMessage(String error){
+            mErrorMessage = error;
         }
 
         @Override
         protected Void doInBackground() {
-            sendLoginRequest(mEmail, mPassword);
+            sendLoginRequest(mEmail, mPassword, mCallback);
             return null;
         }
 
@@ -62,60 +75,72 @@ public class BrowserExpressLoginPreferencesUtil {
         protected void onPostExecute(Void result) {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
-            mCallback.loginSuccessful();
+            if(loginStatus){
+                mCallback.loginSuccessful();
+            }else{
+                Log.e(TAG, "FAILURE ERROR MESSAGE: " + mErrorMessage);
+                mCallback.loginFailed(mErrorMessage);
+            }
         }
     }
 
-    private static void sendLoginRequest(String email, String password) {
+    private static void sendLoginRequest(String email, String password, LoginCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
-        // try {
-        //     URL url = new URL(LOGIN_URL);
-        //     urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
-        //             url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
-        //     urlConnection.setDoOutput(true);
-        //     urlConnection.setRequestMethod("POST");
-        //     urlConnection.setUseCaches(false);
-        //     urlConnection.setRequestProperty("Content-Type", "application/json");
-        //     urlConnection.connect();
+        try {
+            URL url = new URL(LOGIN_URL);
+            urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
+                    url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+            urlConnection.setDoOutput(true);
+            urlConnection.setRequestMethod("POST");
+            urlConnection.setUseCaches(false);
+            urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.connect();
 
-        //     JSONObject jsonParam = new JSONObject();
-        //     jsonParam.put("email", email);
-        //     jsonParam.put("platform", "Android");
-        //     jsonParam.put("os_version", String.valueOf(Build.VERSION.SDK_INT));
-        //     jsonParam.put("phone_make", Build.MANUFACTURER);
-        //     jsonParam.put("phone_model", Build.MODEL);
-        //     jsonParam.put("phone_arch", Build.CPU_ABI);
-        //     jsonParam.put("password", password);
-        //     jsonParam.put("app_version", appVersion);
-        //     jsonParam.put("api_key", mNTPBackgroundImagesBridge.getReferralApiKey());
+            JSONObject jsonParam = new JSONObject();
+            jsonParam.put("email", email);
+            jsonParam.put("platform", "Android");
+            jsonParam.put("password", password);
 
-        //     OutputStream outputStream = urlConnection.getOutputStream();
-        //     byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
-        //     outputStream.write(input, 0, input.length);
-        //     outputStream.flush();
-        //     outputStream.close();
+            OutputStream outputStream = urlConnection.getOutputStream();
+            byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
+            outputStream.write(input, 0, input.length);
+            outputStream.flush();
+            outputStream.close();
 
-        //     int HttpResult = urlConnection.getResponseCode();
-        //     if (HttpResult == HttpURLConnection.HTTP_OK) {
-        //         BufferedReader br = new BufferedReader(new InputStreamReader(
-        //                 urlConnection.getInputStream(), StandardCharsets.UTF_8.name()));
-        //         String line = null;
-        //         while ((line = br.readLine()) != null) {
-        //             sb.append(line + "\n");
-        //         }
-        //         br.close();
-        //     } else {
-        //         Log.e(TAG, urlConnection.getResponseMessage());
-        //     }
-        // } catch (MalformedURLException e) {
-        //     Log.e(TAG, e.getMessage());
-        // } catch (IOException e) {
-        //     Log.e(TAG, e.getMessage());
-        // } catch (JSONException e) {
-        //     Log.e(TAG, e.getMessage());
-        // } finally {
-        //     if (urlConnection != null) urlConnection.disconnect();
-        // }
+            int HttpResult = urlConnection.getResponseCode();
+            if (HttpResult == HttpURLConnection.HTTP_OK) {
+                BufferedReader br = new BufferedReader(new InputStreamReader(
+                        urlConnection.getInputStream(), StandardCharsets.UTF_8.name()));
+                String line = null;
+                while ((line = br.readLine()) != null) {
+                    sb.append(line + "\n");
+                }
+                JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e(TAG, sb.toString());
+                Log.e(TAG, responseObject.getString("error"));
+                if(responseObject.getBoolean("success")){
+                    LoginWorkerTask.setLoginSuccessStatus(true);
+                    Log.e(TAG, "INSIDE SUCCESS TRUE");
+                }else{
+                    LoginWorkerTask.setLoginSuccessStatus(false);
+                    LoginWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    Log.e(TAG, "INSIDE FAILURE");
+                }
+                br.close();
+            } else {
+                Log.e(TAG, urlConnection.getResponseMessage());
+            }
+        } catch (MalformedURLException e) {
+            Log.e(TAG, e.getMessage());
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage());
+        } catch (JSONException e) {
+            Log.e(TAG, e.getMessage());
+        } catch (Exception e) {
+            Log.e(TAG, e.getMessage());
+        } finally {
+            if (urlConnection != null) urlConnection.disconnect();
+        }
     }
 }
