@@ -60,4 +60,6 @@ public final class BravePreferenceKeys {
             "org.chromium.chrome.browser.Browser_Express_Access_Token";
     public static final String BROWSER_EXPRESS_REFRESH_TOKEN =
             "org.chromium.chrome.browser.Browser_Express_Refresh_Token";
+    public static final String BROWSER_EXPRESS_EMAIL =
+            "org.chromium.chrome.browser.Browser_Express_Email";
 }

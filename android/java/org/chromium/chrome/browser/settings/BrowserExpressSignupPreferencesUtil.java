@@ -6,7 +6,6 @@
 
 package org.chromium.chrome.browser.settings;
 
-import android.content.Context;
 import android.os.Build;
 
 import org.json.JSONException;
@@ -32,33 +31,35 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class BrowserExpressLoginPreferencesUtil {
-    private static final String TAG = "Login_Browser_Express";
-    private static final String LOGIN_URL = "https://api.browser.express/v1/auth/login";
+public class BrowserExpressSignupPreferencesUtil {
+    private static final String TAG = "Signup_Browser_Express";
+    private static final String SIGNUP_URL = "https://api.browser.express/v1/auth/register";
 
-    public interface LoginCallback {
-        void loginSuccessful();
-        void loginFailed(String error);
+    public interface SignupCallback {
+        void signupSuccessful(String Email);
+        void signupFailed(String error);
     }
 
-    public static class LoginWorkerTask extends AsyncTask<Void> {
+    public static class SignupWorkerTask extends AsyncTask<Void> {
         private String mEmail;
         private String mPassword;
-        private LoginCallback mCallback;
-        private static Boolean loginStatus;
+        private String mName;
+        private SignupCallback mCallback;
+        private static Boolean signupStatus;
         private static String mErrorMessage;
 
-        public LoginWorkerTask(
-                String email, String password, LoginCallback callback) {
+        public SignupWorkerTask(
+                String email, String password, String name, SignupCallback callback) {
             mEmail = email;
             mPassword = password;
+            mName = name;
             mCallback = callback;
-            loginStatus = false;
+            signupStatus = false;
             mErrorMessage = "";
         }
 
-        public static void setLoginSuccessStatus(Boolean status){
-            loginStatus = status;
+        public static void setSignupSuccessStatus(Boolean status){
+            signupStatus = status;
         }
 
         public static void setErrorMessage(String error){
@@ -67,7 +68,7 @@ public class BrowserExpressLoginPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendLoginRequest(mEmail, mPassword, mCallback);
+            sendSignupRequest(mEmail, mPassword, mName, mCallback);
             return null;
         }
 
@@ -75,19 +76,20 @@ public class BrowserExpressLoginPreferencesUtil {
         protected void onPostExecute(Void result) {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
-            if(loginStatus){
-                mCallback.loginSuccessful();
+            if(signupStatus){
+                mCallback.signupSuccessful(mEmail);
             }else{
-                mCallback.loginFailed(mErrorMessage);
+                Log.e(TAG, "FAILURE ERROR MESSAGE: " + mErrorMessage);
+                mCallback.signupFailed(mErrorMessage);
             }
         }
     }
 
-    private static void sendLoginRequest(String email, String password, LoginCallback callback) {
+    private static void sendSignupRequest(String email, String password, String name, SignupCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(LOGIN_URL);
+            URL url = new URL(SIGNUP_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setDoOutput(true);
@@ -100,6 +102,7 @@ public class BrowserExpressLoginPreferencesUtil {
             jsonParam.put("email", email);
             jsonParam.put("platform", "Android");
             jsonParam.put("password", password);
+            jsonParam.put("name", name);
 
             OutputStream outputStream = urlConnection.getOutputStream();
             byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
@@ -116,11 +119,15 @@ public class BrowserExpressLoginPreferencesUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e(TAG, sb.toString());
+                Log.e(TAG, "Success: "+ responseObject.getBoolean("success"));
                 if(responseObject.getBoolean("success")){
-                    LoginWorkerTask.setLoginSuccessStatus(true);
+                    SignupWorkerTask.setSignupSuccessStatus(true);
+                    Log.e(TAG, "INSIDE SUCCESS TRUE");
                 }else{
-                    LoginWorkerTask.setLoginSuccessStatus(false);
-                    LoginWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    SignupWorkerTask.setSignupSuccessStatus(false);
+                    SignupWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    Log.e(TAG, "INSIDE FAILURE");
                 }
                 br.close();
             } else {

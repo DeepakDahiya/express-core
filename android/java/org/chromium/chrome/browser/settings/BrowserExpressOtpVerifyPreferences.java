@@ -159,12 +159,6 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
                 BraveNewsControllerFactory.getInstance().getBraveNewsController(this);
     }
 
-    private void updateFollowerCount() {
-        List<Publisher> followingPublisherList = BraveNewsUtils.getFollowingPublisherList();
-        List<Channel> followingChannelList = BraveNewsUtils.getFollowingChannelList();
-        int followingCount = followingChannelList.size() + followingPublisherList.size();
-    }
-
     @Override
     public void onChannelReceived() {
     }

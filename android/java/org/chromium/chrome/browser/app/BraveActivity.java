@@ -232,6 +232,7 @@ public abstract class BraveActivity extends ChromeActivity
     private static final String PREF_CLEAR_ON_EXIT = "clear_on_exit";
     public static final String OPEN_URL = "open_url";
     public static final String ACCESS_TOKEN_KEY = "AccessToken";
+    public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -1924,6 +1925,21 @@ public abstract class BraveActivity extends ChromeActivity
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         String accessToken = sharedPref.getString(ACCESS_TOKEN_KEY, null);
         return accessToken;
+    }
+
+    public void setBrowserExpressEmail(String email) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_EMAIL, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_EMAIL, email);
+        editor.apply();
+    }
+
+    public String getBrowserExpressEmail() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_EMAIL, 0);
+        String browserExpressEmail = sharedPref.getString(BROWSER_EXPRESS_EMAIL, null);
+        return browserExpressEmail;
     }
 
     public ObservableSupplier<BrowserControlsManager> getBrowserControlsManagerSupplier() {

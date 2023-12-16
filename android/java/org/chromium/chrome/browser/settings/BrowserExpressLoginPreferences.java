@@ -39,6 +39,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
+import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
@@ -142,12 +143,21 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             String email = mEmailEditText.getText().toString();
             String password = mPasswordEditText.getText().toString();
 
-            mBtnSignIn.setClickable(false);
-            mBtnSignIn.setText(R.string.browser_express_loading_title);
-
             mErrorTextView.setText(R.string.browser_express_empty_text);
             mErrorTextView.setVisibility(View.INVISIBLE);
 
+            String emptyString = "";
+
+            if(password.equals(emptyString) || email.equals(emptyString)){
+                mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
+                mErrorTextView.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            mBtnSignIn.setClickable(false);
+            mBtnSignIn.setText(R.string.browser_express_loading_title);
+
+            Utils.hideKeyboard(getActivity());
 
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
@@ -185,12 +195,6 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
         mBraveNewsController =
                 BraveNewsControllerFactory.getInstance().getBraveNewsController(this);
-    }
-
-    private void updateFollowerCount() {
-        List<Publisher> followingPublisherList = BraveNewsUtils.getFollowingPublisherList();
-        List<Channel> followingChannelList = BraveNewsUtils.getFollowingChannelList();
-        int followingCount = followingChannelList.size() + followingPublisherList.size();
     }
 
     @Override

@@ -368,6 +368,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressLoginPreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressOtpVerifyPreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressSignupPreferences.java",
+  "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressSignupPreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BraveNewsSettingsDividerItemDecoration.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BravePreferenceDialogFragment.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BravePreferenceFragment.java",

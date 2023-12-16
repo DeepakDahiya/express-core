@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.settings;
 
+import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -17,6 +18,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.EditText;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -27,6 +29,8 @@ import com.airbnb.lottie.model.KeyPath;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_news.mojom.BraveNewsController;
@@ -36,6 +40,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
+import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
@@ -57,6 +62,11 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
     private LinearLayout mParentLayout;
     private Button mBtnSignIn;
     private Button mBtnSignUp;
+    private EditText mEmailEditText;
+    private EditText mPasswordEditText;
+    private EditText mConfirmPasswordEditText;
+    private EditText mNameEditText;
+    private TextView mErrorTextView;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -87,6 +97,11 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
+            mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);
+            mNameEditText = (EditText) view.findViewById(R.id.browser_express_name);
+            mPasswordEditText = (EditText) view.findViewById(R.id.browser_express_password);
+            mConfirmPasswordEditText = (EditText) view.findViewById(R.id.browser_express_confirm_password);
+            mErrorTextView = (TextView) view.findViewById(R.id.login_error_message);
 
             setData();
             onClickViews();
@@ -130,11 +145,37 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         });
 
         mBtnSignUp.setOnClickListener(view -> {
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                activity.openBrowserExpressVerify();
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            String email = mEmailEditText.getText().toString();
+            String name = mNameEditText.getText().toString();
+            String password = mPasswordEditText.getText().toString();
+            String confirmPassword = mConfirmPasswordEditText.getText().toString();
+
+            mErrorTextView.setText(R.string.browser_express_empty_text);
+            mErrorTextView.setVisibility(View.INVISIBLE);
+
+            String emptyString = "";
+
+            if(password.equals(emptyString) || email.equals(emptyString) || name.equals(emptyString)){
+                mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
+                mErrorTextView.setVisibility(View.VISIBLE);
+                return;
             }
+
+            if (!password.equals(confirmPassword)){
+                mErrorTextView.setText(R.string.browser_express_password_not_match_text);
+                mErrorTextView.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            mBtnSignUp.setClickable(false);
+            mBtnSignUp.setText(R.string.browser_express_loading_title);
+
+            Utils.hideKeyboard(getActivity());
+
+            BrowserExpressSignupPreferencesUtil.SignupWorkerTask workerTask =
+                    new BrowserExpressSignupPreferencesUtil.SignupWorkerTask(
+                            email, password, name, signupCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         });
     }
 
@@ -167,12 +208,6 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
 
         mBraveNewsController =
                 BraveNewsControllerFactory.getInstance().getBraveNewsController(this);
-    }
-
-    private void updateFollowerCount() {
-        List<Publisher> followingPublisherList = BraveNewsUtils.getFollowingPublisherList();
-        List<Channel> followingChannelList = BraveNewsUtils.getFollowingChannelList();
-        int followingCount = followingChannelList.size() + followingPublisherList.size();
     }
 
     @Override
@@ -208,4 +243,31 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
             mBraveNewsController.close();
         }
     }
+
+    private BrowserExpressSignupPreferencesUtil.SignupCallback signupCallback =
+            new BrowserExpressSignupPreferencesUtil.SignupCallback() {
+                @Override
+                public void signupSuccessful(String email) {
+                    Log.e("BROWSER EXPRESS SIGNUP", "INSIDE SINGUP SUCCESSFUL");
+                    mBtnSignUp.setClickable(true);
+                    mBtnSignUp.setText(R.string.browser_express_signup_button_title);
+
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setBrowserExpressEmail(email);
+                        activity.openBrowserExpressVerify();
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
+                }
+
+                @Override
+                public void signupFailed(String error) {
+                    Log.e("BROWSER EXPRESS SINGUP", "INSIDE SINGUP FAILED");
+                    mErrorTextView.setText(error);
+                    mErrorTextView.setVisibility(View.VISIBLE);
+
+                    mBtnSignUp.setClickable(true);
+                    mBtnSignUp.setText(R.string.browser_express_signup_button_title);
+                }
+            };
 }
