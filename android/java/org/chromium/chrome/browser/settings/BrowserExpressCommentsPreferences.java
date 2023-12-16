@@ -205,7 +205,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
     private BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
             new BrowserExpressLoginPreferencesUtil.LoginCallback() {
                 @Override
-                public void loginSuccessful() {
+                public void loginSuccessful(String accessToken, String refreshToken) {
                     // dismiss();
                 }
 

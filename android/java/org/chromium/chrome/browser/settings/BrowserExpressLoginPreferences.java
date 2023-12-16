@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.settings;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -39,6 +40,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
@@ -234,13 +236,22 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
     private BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
             new BrowserExpressLoginPreferencesUtil.LoginCallback() {
                 @Override
-                public void loginSuccessful() {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN SUCCESSFUL");
-                    mErrorTextView.setText(R.string.browser_express_login_button_title);
-                    mErrorTextView.setVisibility(View.VISIBLE);
-
+                public void loginSuccessful(String accessToken, String refreshToken) {
                     mBtnSignIn.setClickable(true);
                     mBtnSignIn.setText(R.string.browser_express_login_button_title);
+
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setAccessToken(accessToken);
+                        Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        intent.setAction(Intent.ACTION_VIEW);
+                        startActivity(intent);
+                        // if (getFragmentManager() != null) {
+                        //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        // }
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
                 }
 
                 @Override

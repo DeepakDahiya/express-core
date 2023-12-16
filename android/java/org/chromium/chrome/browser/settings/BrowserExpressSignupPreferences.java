@@ -6,6 +6,7 @@
 package org.chromium.chrome.browser.settings;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -19,6 +20,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.EditText;
+
+import androidx.fragment.app.FragmentManager;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -40,6 +43,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
@@ -137,11 +141,18 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
 
     private void onClickViews() {
         mBtnSignIn.setOnClickListener(view -> {
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                activity.openBrowserExpressLoginSettings();
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }
+            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+            intent.setAction(Intent.ACTION_VIEW);
+            startActivity(intent);
+            // if (getFragmentManager() != null) {
+            //     getFragmentManager().popBackStackImmediate();
+            // }
+            // try {
+            //     BraveActivity activity = BraveActivity.getBraveActivity();
+            //     activity.openBrowserExpressLoginSettings();
+            // } catch (BraveActivity.BraveActivityNotFoundException e) {
+            // }
         });
 
         mBtnSignUp.setOnClickListener(view -> {

@@ -6,7 +6,6 @@
 
 package org.chromium.chrome.browser.settings;
 
-import android.content.Context;
 import android.os.Build;
 
 import org.json.JSONException;
@@ -32,30 +31,30 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class BrowserExpressLoginPreferencesUtil {
-    private static final String TAG = "Login_Browser_Express";
-    private static final String LOGIN_URL = "https://api.browser.express/v1/auth/login";
+public class BrowserExpressOtpVerifyPreferencesUtil {
+    private static final String TAG = "OtpVerify_Browser_Express";
+    private static final String VERIFY_URL = "https://api.browser.express/v1/auth/verify-email";
 
-    public interface LoginCallback {
-        void loginSuccessful(String accessToken, String refreshToken);
-        void loginFailed(String error);
+    public interface OtpVerifyCallback {
+        void otpVerifySuccessful(String accessToken, String refreshToken);
+        void otpVerifyFailed(String error);
     }
 
-    public static class LoginWorkerTask extends AsyncTask<Void> {
+    public static class OtpVerifyWorkerTask extends AsyncTask<Void> {
         private String mEmail;
-        private String mPassword;
-        private LoginCallback mCallback;
-        private static Boolean loginStatus;
+        private String mOtp;
+        private OtpVerifyCallback mCallback;
+        private static Boolean otpVerifyStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
         private static String mRefreshToken;
 
-        public LoginWorkerTask(
-                String email, String password, LoginCallback callback) {
+        public OtpVerifyWorkerTask(
+                String email, String otp, OtpVerifyCallback callback) {
             mEmail = email;
-            mPassword = password;
+            mOtp = otp;
             mCallback = callback;
-            loginStatus = false;
+            otpVerifyStatus = false;
             mErrorMessage = "";
             mAccessToken = null;
             mRefreshToken = null;
@@ -66,8 +65,8 @@ public class BrowserExpressLoginPreferencesUtil {
             mRefreshToken = refreshToken;
         }
 
-        public static void setLoginSuccessStatus(Boolean status){
-            loginStatus = status;
+        public static void setOtpVerifySuccessStatus(Boolean status){
+            otpVerifyStatus = status;
         }
 
         public static void setErrorMessage(String error){
@@ -76,7 +75,7 @@ public class BrowserExpressLoginPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendLoginRequest(mEmail, mPassword, mCallback);
+            sendOtpVerifyRequest(mEmail, mOtp, mCallback);
             return null;
         }
 
@@ -84,19 +83,20 @@ public class BrowserExpressLoginPreferencesUtil {
         protected void onPostExecute(Void result) {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
-            if(loginStatus){
-                mCallback.loginSuccessful(mAccessToken, mRefreshToken);
+            if(otpVerifyStatus){
+                mCallback.otpVerifySuccessful(mAccessToken, mRefreshToken);
             }else{
-                mCallback.loginFailed(mErrorMessage);
+                Log.e(TAG, "FAILURE ERROR MESSAGE: " + mErrorMessage);
+                mCallback.otpVerifyFailed(mErrorMessage);
             }
         }
     }
 
-    private static void sendLoginRequest(String email, String password, LoginCallback callback) {
+    private static void sendOtpVerifyRequest(String email, String otp, OtpVerifyCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(LOGIN_URL);
+            URL url = new URL(VERIFY_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setDoOutput(true);
@@ -108,7 +108,7 @@ public class BrowserExpressLoginPreferencesUtil {
             JSONObject jsonParam = new JSONObject();
             jsonParam.put("email", email);
             jsonParam.put("platform", "Android");
-            jsonParam.put("password", password);
+            jsonParam.put("otp", otp);
 
             OutputStream outputStream = urlConnection.getOutputStream();
             byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
@@ -125,14 +125,18 @@ public class BrowserExpressLoginPreferencesUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e(TAG, sb.toString());
+                Log.e(TAG, "Success: "+ responseObject.getBoolean("success"));
                 if(responseObject.getBoolean("success")){
-                    LoginWorkerTask.setLoginSuccessStatus(true);
+                    OtpVerifyWorkerTask.setOtpVerifySuccessStatus(true);
                     String accessToken = responseObject.getString("accessToken");
                     String refreshToken = responseObject.getString("refreshToken");
-                    LoginWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    OtpVerifyWorkerTask.setAuthTokens(accessToken, refreshToken);
+                    Log.e(TAG, "INSIDE SUCCESS TRUE");
                 }else{
-                    LoginWorkerTask.setLoginSuccessStatus(false);
-                    LoginWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    OtpVerifyWorkerTask.setOtpVerifySuccessStatus(false);
+                    OtpVerifyWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    Log.e(TAG, "INSIDE FAILURE");
                 }
                 br.close();
             } else {
