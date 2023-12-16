@@ -27,6 +27,7 @@ import com.airbnb.lottie.LottieAnimationView;
 import com.airbnb.lottie.LottieProperty;
 import com.airbnb.lottie.model.KeyPath;
 
+import org.chromium.ui.widget.Toast;
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -246,6 +247,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
                         Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         intent.setAction(Intent.ACTION_VIEW);
+                        Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
                         startActivity(intent);
                         // if (getFragmentManager() != null) {
                         //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);

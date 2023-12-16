@@ -141,18 +141,11 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
 
     private void onClickViews() {
         mBtnSignIn.setOnClickListener(view -> {
-            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-            intent.setAction(Intent.ACTION_VIEW);
-            startActivity(intent);
-            // if (getFragmentManager() != null) {
-            //     getFragmentManager().popBackStackImmediate();
-            // }
-            // try {
-            //     BraveActivity activity = BraveActivity.getBraveActivity();
-            //     activity.openBrowserExpressLoginSettings();
-            // } catch (BraveActivity.BraveActivityNotFoundException e) {
-            // }
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                activity.openBrowserExpressLoginSettings();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
         });
 
         mBtnSignUp.setOnClickListener(view -> {

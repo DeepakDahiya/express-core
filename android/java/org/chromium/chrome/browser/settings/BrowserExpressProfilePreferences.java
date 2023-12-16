@@ -5,10 +5,16 @@
 
 package org.chromium.chrome.browser.settings;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.UnsupportedEncodingException;
+
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
+import android.util.Base64;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -27,12 +33,14 @@ import com.airbnb.lottie.model.KeyPath;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.Log;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_news.mojom.BraveNewsController;
 import org.chromium.brave_news.mojom.Channel;
 import org.chromium.brave_news.mojom.Publisher;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -54,8 +62,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
-    private Button mBtnTurnOnNews;
-    private Button mBtnLearnMore;
+    private TextView mUsernameText;
+    private TextView mFullNameText;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -84,14 +92,57 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
-            mBtnTurnOnNews = (Button) view.findViewById(R.id.btn_turn_on_news);
-            mBtnLearnMore = (Button) view.findViewById(R.id.btn_learn_more);
+            mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
+            mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
 
-            BraveTouchUtils.ensureMinTouchTarget(mBtnTurnOnNews);
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                String accessToken = activity.getAccessToken();
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                mUsernameText.setText(decodedAccessTokenObj.getString("username"));
+                Object ln = decodedAccessTokenObj.get("lastName");
+                String lnString = "";
+                if(ln != null){
+                    lnString = ln.toString();
+                }
+                Object fn = decodedAccessTokenObj.get("firstName");
+                String fnString = "";
+                if(fn != null){
+                    fnString = fn.toString();
+                }
+                String fulln = fnString + " " + lnString;
+                mFullNameText.setText(fulln);
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }catch (JSONException e) {
+                Log.e("Browser Express Access Token", e.getMessage());
+            }catch(Exception ex){
+                Log.e("Browser Express Access Token", ex.getMessage());
+            }
 
             setData();
             onClickViews();
         }
+    }
+
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Browser Express Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Browser Express Access Token", e.getMessage());
+            return null;
+        }
+        
     }
 
     private void setData() {
@@ -122,9 +173,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     }
 
     private void onClickViews() {
-        mBtnLearnMore.setOnClickListener(view -> {
-            CustomTabActivity.showInfoPage(getActivity(), BraveConstants.BRAVE_NEWS_LEARN_MORE_URL);
-        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
@@ -136,30 +184,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         FrameLayout.LayoutParams parentLayoutParams = new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
-        if (isEnable) {
-            parentLayoutParams.gravity = Gravity.NO_GRAVITY;
-            mParentLayout.setLayoutParams(parentLayoutParams);
-            if (BraveNewsUtils.getChannelIcons().size() == 0) {
-                BraveNewsUtils.setChannelIcons();
-            }
-            if (BraveNewsUtils.getLocale() == null && mBraveNewsController != null) {
-                BraveNewsUtils.getBraveNewsSettingsData(mBraveNewsController, this);
-            } else {
-            }
-
-            BravePrefServiceBridge.getInstance().setNewsOptIn(true);
-            SharedPreferences.Editor sharedPreferencesEditor =
-                    ContextUtils.getAppSharedPreferences().edit();
-            sharedPreferencesEditor.putBoolean(BrowserExpressProfilePreferences.PREF_SHOW_OPTIN, false);
-            sharedPreferencesEditor.apply();
-
-            if (mIsSuggestionAvailable) {
-            }
-
-        } else {
-            parentLayoutParams.gravity = Gravity.CENTER_VERTICAL;
-            mParentLayout.setLayoutParams(parentLayoutParams);
-        }
+        parentLayoutParams.gravity = Gravity.NO_GRAVITY;
+        mParentLayout.setLayoutParams(parentLayoutParams);
     }
 
     private void openBraveNewsPreferencesDetails(
