@@ -885,6 +885,7 @@ brave_java_resources = [
   "java/res/layout/fragment_brave_vpn_confirm_dialog.xml",
   "java/res/layout/fragment_brave_vpn_plan.xml",
   "java/res/layout/fragment_connect_account.xml",
+  "java/res/layout/fragment_browser_express_generate_username_bottom_sheet.xml",
   "java/res/layout/fragment_content_filtering.xml",
   "java/res/layout/fragment_create_account.xml",
   "java/res/layout/fragment_create_account.xml",

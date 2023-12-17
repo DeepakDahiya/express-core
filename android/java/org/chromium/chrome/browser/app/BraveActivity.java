@@ -1479,6 +1479,18 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
+    public void showGenerateUsernameBottomSheet(){
+        try {
+            BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
+                    BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
+
+            bottomSheetDialog.show(getActivity().getSupportFragmentManager(),
+                    "BrowserExpressGenerateUsernameBottomSheetFragment");
+        } catch (IllegalStateException e) {
+            Log.e("BROWSER_EXPRESS_GENERATE_USERNAME", "showGenerateUsernameBottomSheet error: " + e.getMessage());
+        }
+    }
+
     public void checkForBraveStats() {
         if (OnboardingPrefManager.getInstance().isBraveStatsEnabled()) {
             BraveStatsUtil.showBraveStats();
