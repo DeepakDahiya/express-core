@@ -286,6 +286,8 @@ public abstract class BraveActivity extends ChromeActivity
     private BraveNewsConnectionErrorHandler mBraveNewsConnectionErrorHandler;
     private MiscAndroidMetricsConnectionErrorHandler mMiscAndroidMetricsConnectionErrorHandler;
 
+    private static BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
+
     /**
      * Serves as a general exception for failed attempts to get BraveActivity.
      */
@@ -1494,6 +1496,27 @@ public abstract class BraveActivity extends ChromeActivity
             } else {
                 showOnboardingV2(false);
             }
+        }
+    }
+
+    public static void showGenerateUsernameBottomSheet() {
+        try {
+            if(mBottomSheetDialog == null){
+                BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
+                        BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
+                
+                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+                mBottomSheetDialog = bottomSheetDialog;
+            }else{
+                mBottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        }
+    }
+
+    public static void dismissGenerateUsernameBottomSheet() {
+        if (mBottomSheetDialog != null) {
+            mBottomSheetDialog.dismiss();
         }
     }
 
