@@ -1485,7 +1485,7 @@ public abstract class BraveActivity extends ChromeActivity
             BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                     BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
 
-            bottomSheetDialog.show(getActivity().getSupportFragmentManager(),
+            bottomSheetDialog.show(getSupportFragmentManager(),
                     "BrowserExpressGenerateUsernameBottomSheetFragment");
         } catch (IllegalStateException e) {
             Log.e("BROWSER_EXPRESS_GENERATE_USERNAME", "showGenerateUsernameBottomSheet error: " + e.getMessage());
