@@ -120,7 +120,6 @@ public class BrowserExpressClaimUsernameUtil {
             URL url = new URL(CLAIM_USERNAME_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
-            urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
