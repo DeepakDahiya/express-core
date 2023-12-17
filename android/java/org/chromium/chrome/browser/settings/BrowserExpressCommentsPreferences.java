@@ -57,6 +57,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
+    private Button mGenerateUsername;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -85,6 +86,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
+            mGenerateUsername = (Button) view.findViewById(R.id.btn_generate_username);
 
             setData();
             onClickViews();
@@ -127,14 +129,15 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
         //     }
         // });
 
-        // mBtnSignIn.setOnClickListener(view -> {
-        //     String email = mEmailEditText.getText().toString();
-        //     String password = mPasswordEditText.getText().toString();
-        //     BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
-        //             new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(
-        //                     email, password, loginCallback);
-        //     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        // });
+        mGenerateUsername.setOnClickListener(view -> {
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                String accessToken = activity.getAccessToken();
+                activity.showGenerateUsernameBottomSheet();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e(TAG, "maybeShowWalletPanel " + e);
+            }
+        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {

@@ -999,13 +999,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 String accessToken = activity.getAccessToken();
-                activity.showGenerateUsernameBottomSheet();
                 // activity.showGenerateUsernameBottomSheet();
-                // if (accessToken == null) {
-                //     activity.openBrowserExpressLoginSettings();
-                // } else {
-                //     activity.openBrowserExpressProfileSettings();
-                // }
+                // activity.showGenerateUsernameBottomSheet();
+                if (accessToken == null) {
+                    activity.openBrowserExpressLoginSettings();
+                } else {
+                    activity.openBrowserExpressProfileSettings();
+                }
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e(TAG, "maybeShowWalletPanel " + e);
             }
