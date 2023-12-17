@@ -24,6 +24,7 @@ import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressGenerateUsernameBottomSheetFragment;
 
 import java.io.BufferedReader;
 import java.io.IOException;
