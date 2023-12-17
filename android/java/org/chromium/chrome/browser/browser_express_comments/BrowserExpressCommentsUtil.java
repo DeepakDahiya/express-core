@@ -4,7 +4,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-package org.chromium.chrome.browser.browser_express_generate_username;
+package org.chromium.chrome.browser.browser_express_comments;
 
 import android.content.Context;
 import android.os.Build;
