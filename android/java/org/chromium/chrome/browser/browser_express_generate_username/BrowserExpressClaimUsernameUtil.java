@@ -98,9 +98,10 @@ public class BrowserExpressClaimUsernameUtil {
                 BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                         BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
                 
-                    sBottomSheetDialog = bottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+                bottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+                sBottomSheetDialog = bottomSheetDialog;
             }else{
-                sBottomSheetDialog.show(getActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+                sBottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
