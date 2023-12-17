@@ -145,6 +145,7 @@ import org.chromium.chrome.browser.safe_browsing.SafeBrowsingBridge;
 import org.chromium.chrome.browser.safe_browsing.SafeBrowsingState;
 import org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUtils;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressGenerateUsernameBottomSheetFragment;
+import org.chromium.chrome.browser.browser_express_comments.BrowserExpressCommentsBottomSheetFragment;
 import org.chromium.chrome.browser.set_default_browser.OnBraveSetDefaultBrowserListener;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
@@ -287,6 +288,7 @@ public abstract class BraveActivity extends ChromeActivity
     private MiscAndroidMetricsConnectionErrorHandler mMiscAndroidMetricsConnectionErrorHandler;
 
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
+    private BrowserExpressCommentsBottomSheetFragment mBottomSheetCommentsDialog;
 
     /**
      * Serves as a general exception for failed attempts to get BraveActivity.
@@ -1795,6 +1797,27 @@ public abstract class BraveActivity extends ChromeActivity
     public void dismissGenerateUsernameBottomSheet() {
         if (mBottomSheetDialog != null) {
             mBottomSheetDialog.dismiss();
+        }
+    }
+
+    public void showCommentsBottomSheet() {
+        try {
+            if(mBottomSheetCommentsDialog == null){
+                BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
+                        BrowserExpressCommentsBottomSheetFragment.newInstance(true);
+                
+                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+                mBottomSheetCommentsDialog = bottomSheetDialog;
+            }else{
+                mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        }
+    }
+
+    public void dismissGenerateUsernameBottomSheet() {
+        if (mBottomSheetCommentsDialog != null) {
+            mBottomSheetCommentsDialog.dismiss();
         }
     }
 

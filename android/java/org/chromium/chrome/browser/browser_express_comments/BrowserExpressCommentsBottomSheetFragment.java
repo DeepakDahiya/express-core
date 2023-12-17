@@ -32,15 +32,15 @@ import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
-public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomSheetDialogFragment {
+public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
 
     private boolean isFromMenu;
     private Button nextButton;
 
-    public static BrowserExpressGenerateUsernameBottomSheetFragment newInstance(boolean isFromMenu) {
-        final BrowserExpressGenerateUsernameBottomSheetFragment fragment =
-                new BrowserExpressGenerateUsernameBottomSheetFragment();
+    public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
+        final BrowserExpressCommentsBottomSheetFragment fragment =
+                new BrowserExpressCommentsBottomSheetFragment();
         final Bundle args = new Bundle();
         args.putBoolean(IS_FROM_MENU, isFromMenu);
         fragment.setArguments(args);
@@ -61,7 +61,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(
-                R.layout.fragment_browser_express_generate_username_bottom_sheet, container, false);
+                R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
     }
 
     @Override
@@ -77,8 +77,8 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                     nextButton.setClickable(false);
                     nextButton.setText(R.string.browser_express_loading_title);
 
-                    BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
-                            new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
+                    BrowserExpressCommentsUtil.ClaimUsernameWorkerTask workerTask =
+                            new BrowserExpressCommentsUtil.ClaimUsernameWorkerTask(
                                     claimUsernameCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
@@ -108,8 +108,8 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 
-    private BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
-            new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
+    private BrowserExpressCommentsUtil.ClaimUsernameCallback claimUsernameCallback=
+            new BrowserExpressCommentsUtil.ClaimUsernameCallback() {
                 @Override
                 public void claimUsernameSuccessful(String accessToken, String refreshToken) {
                     nextButton.setClickable(true);
