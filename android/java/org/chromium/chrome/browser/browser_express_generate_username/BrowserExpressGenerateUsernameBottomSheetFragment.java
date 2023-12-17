@@ -19,6 +19,10 @@ import org.chromium.ui.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import org.chromium.base.Log;
+import org.chromium.chrome.R;
+import org.chromium.chrome.browser.app.BraveActivity;
+
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
