@@ -23,6 +23,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 
+import org.chromium.chrome.browser.app.BraveActivity;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -91,12 +93,16 @@ public class BrowserExpressClaimUsernameUtil {
 
 
     public static void showGenerateUsernameBottomSheet() {
-        if(sBottomSheetDialog == null){
-            BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
-                    BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
-            sBottomSheetDialog = bottomSheetDialog.show(getActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
-        }else{
-            bottomSheetDialog.show(getActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+        try {
+            if(sBottomSheetDialog == null){
+                BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
+                        BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
+                
+                    sBottomSheetDialog = bottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+            }else{
+                sBottomSheetDialog.show(getActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
     }
 

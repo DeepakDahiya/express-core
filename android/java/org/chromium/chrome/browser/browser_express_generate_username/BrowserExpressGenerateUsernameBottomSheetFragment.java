@@ -130,7 +130,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                 @Override
                 public void claimUsernameSuccessful(String accessToken, String refreshToken) {
                     nextButton.setClickable(true);
-                    nextButton.setText(R.string.btn_next);
+                    nextButton.setText(R.string.brave_next);
 
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
