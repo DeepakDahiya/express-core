@@ -1777,7 +1777,7 @@ public abstract class BraveActivity extends ChromeActivity
         return null;
     }
 
-    public static void showGenerateUsernameBottomSheet() {
+    public void showGenerateUsernameBottomSheet() {
         try {
             if(mBottomSheetDialog == null){
                 BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
@@ -1792,7 +1792,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    public static void dismissGenerateUsernameBottomSheet() {
+    public void dismissGenerateUsernameBottomSheet() {
         if (mBottomSheetDialog != null) {
             mBottomSheetDialog.dismiss();
         }

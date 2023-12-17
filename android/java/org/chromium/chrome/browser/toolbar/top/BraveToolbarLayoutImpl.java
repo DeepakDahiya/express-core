@@ -999,7 +999,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 String accessToken = activity.getAccessToken();
-                BraveActivity.showGenerateUsernameBottomSheet();
+                activity.showGenerateUsernameBottomSheet();
                 // activity.showGenerateUsernameBottomSheet();
                 // if (accessToken == null) {
                 //     activity.openBrowserExpressLoginSettings();

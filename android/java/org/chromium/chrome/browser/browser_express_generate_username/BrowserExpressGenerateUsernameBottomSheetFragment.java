@@ -139,7 +139,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                         // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                         // intent.setAction(Intent.ACTION_VIEW);
                         Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-                        BraveActivity.dismissGenerateUsernameBottomSheet();
+                        activity.dismissGenerateUsernameBottomSheet();
                         // startActivity(intent);
                         // if (getFragmentManager() != null) {
                         //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
