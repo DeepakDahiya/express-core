@@ -1815,7 +1815,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    public void dismissGenerateUsernameBottomSheet() {
+    public void dismissCommentsBottomSheet() {
         if (mBottomSheetCommentsDialog != null) {
             mBottomSheetCommentsDialog.dismiss();
         }
