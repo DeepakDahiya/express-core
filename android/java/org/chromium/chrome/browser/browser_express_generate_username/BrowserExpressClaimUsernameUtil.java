@@ -90,7 +90,7 @@ public class BrowserExpressClaimUsernameUtil {
     }
 
 
-    public static void showGenerateUsernameBottomSheet(Activity activity, String message) {
+    public static void showGenerateUsernameBottomSheet() {
         if(sBottomSheetDialog == null){
             BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                     BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
