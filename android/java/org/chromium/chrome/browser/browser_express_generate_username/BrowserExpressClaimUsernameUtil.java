@@ -1,10 +1,10 @@
-
+   
 /* Copyright (c) 2020 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-package org.chromium.chrome.browser.settings;
+package org.chromium.chrome.browser.browser_express_generate_username;
 
 import android.content.Context;
 import android.os.Build;
@@ -32,9 +32,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class BrowserExpressClaimUsernamePreferencesUtil {
+public class BrowserExpressClaimUsernameUtil {
     private static final String TAG = "Claim_Username_Browser_Express";
     private static final String CLAIM_USERNAME_URL = "https://api.browser.express/v1/auth/generate-username";
+
+    private static BrowserExpressGenerateUsernameBottomSheetFragment sBottomSheetDialog;
 
     public interface ClaimUsernameCallback {
         void claimUsernameSuccessful(String accessToken, String refreshToken);
@@ -84,6 +86,23 @@ public class BrowserExpressClaimUsernamePreferencesUtil {
             }else{
                 mCallback.claimUsernameFailed(mErrorMessage);
             }
+        }
+    }
+
+
+    public static void showGenerateUsernameBottomSheet(Activity activity, String message) {
+        if(sBottomSheetDialog == null){
+            BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
+                    BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
+            sBottomSheetDialog = bottomSheetDialog.show(getActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+        }else{
+            bottomSheetDialog.show(getActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+        }
+    }
+
+    public static void dismissGenerateUsernameBottomSheet() {
+        if (sBottomSheetDialog != null) {
+            sBottomSheetDialog.dismiss();
         }
     }
 

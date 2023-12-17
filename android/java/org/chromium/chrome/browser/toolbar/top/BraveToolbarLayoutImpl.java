@@ -53,6 +53,7 @@ import com.brave.playlist.util.ConstantUtils;
 import com.brave.playlist.util.PlaylistPreferenceUtils;
 import com.brave.playlist.util.PlaylistViewUtils;
 import com.brave.playlist.view.PlaylistOnboardingPanel;
+import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BraveFeatureList;
@@ -998,7 +999,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 String accessToken = activity.getAccessToken();
-                activity.showGenerateUsernameBottomSheet();
+                BrowserExpressClaimUsernameUtil.showGenerateUsernameBottomSheet();
+                // activity.showGenerateUsernameBottomSheet();
                 // if (accessToken == null) {
                 //     activity.openBrowserExpressLoginSettings();
                 // } else {

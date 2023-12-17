@@ -67,7 +67,13 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
-                    // BraveSetDefaultBrowserUtils.setDefaultBrowser(getActivity());
+                    nextButton.setClickable(false);
+                    nextButton.setText(R.string.browser_express_loading_title);
+
+                    BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
+                            new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
+                                    claimUsernameCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
                 dismiss();
             }
@@ -111,4 +117,34 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         super.onDismiss(dialog);
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
+
+    private BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
+            new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
+                @Override
+                public void claimUsernameSuccessful(String accessToken, String refreshToken) {
+                    nextButton.setClickable(true);
+                    nextButton.setText(R.string.btn_next);
+
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setAccessToken(accessToken);
+                        Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        intent.setAction(Intent.ACTION_VIEW);
+                        Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+                        startActivity(intent);
+                        // if (getFragmentManager() != null) {
+                        //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        // }
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
+                }
+
+                @Override
+                public void claimUsernameFailed(String error) {
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    nextButton.setClickable(true);
+                    nextButton.setText(R.string.browser_express_login_button_title);
+                }
+            };
 }
