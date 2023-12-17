@@ -67,7 +67,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
-                    BraveSetDefaultBrowserUtils.setDefaultBrowser(getActivity());
+                    // BraveSetDefaultBrowserUtils.setDefaultBrowser(getActivity());
                 }
                 dismiss();
             }
@@ -99,7 +99,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
             @Override
             public void onClick(View v) {
                 if (dontAskCheckBox.isChecked()) {
-                    BraveSetDefaultBrowserUtils.setBraveDefaultDontAsk();
+                    // BraveSetDefaultBrowserUtils.setBraveDefaultDontAsk();
                 }
                 dismiss();
             }
@@ -109,6 +109,6 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
+        // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 }
