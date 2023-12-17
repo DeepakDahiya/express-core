@@ -21,8 +21,8 @@
         android:layout_height="wrap_content"
         android:gravity="center_vertical"
         android:drawablePadding="15dp"
-        app:drawableStartCompat="@drawable/ic_brave_36"
-        android:text="@string/brave_privacy_set_default_browser"
+        app:drawableStartCompat="@drawable/be_logo"
+        android:text="@string/browser_express_generate_username_title"
         android:textSize="20sp"
         android:textColor="@color/set_default_text_color"
         android:textStyle="bold"/>
@@ -33,7 +33,7 @@
         android:layout_marginTop="15dp"
         android:layout_marginStart="54dp"
         android:textSize="14sp"
-        android:text="@string/brave_choose"
+        android:text="@string/browser_express_generate_username_desc"
         android:textColor="@color/set_default_text_color"/>
 
     <LinearLayout
