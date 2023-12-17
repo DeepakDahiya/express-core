@@ -54,7 +54,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(
-                R.layout.fragment_set_default_browser_bottom_sheet, container, false);
+                R.layout.fragment_browser_express_generate_username_bottom_sheet, container, false);
     }
 
     @Override
