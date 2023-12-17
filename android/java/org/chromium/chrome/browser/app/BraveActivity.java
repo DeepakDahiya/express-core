@@ -286,7 +286,7 @@ public abstract class BraveActivity extends ChromeActivity
     private BraveNewsConnectionErrorHandler mBraveNewsConnectionErrorHandler;
     private MiscAndroidMetricsConnectionErrorHandler mMiscAndroidMetricsConnectionErrorHandler;
 
-    private static BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
+    private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
 
     /**
      * Serves as a general exception for failed attempts to get BraveActivity.
