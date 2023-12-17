@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
+import org.chromium.ui.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +31,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
     private static final String IS_FROM_MENU = "is_from_menu";
 
     private boolean isFromMenu;
+    private Button nextButton;
 
     public static BrowserExpressGenerateUsernameBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressGenerateUsernameBottomSheetFragment fragment =
@@ -62,7 +64,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         ((BottomSheetDialog) getDialog())
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
-        Button nextButton = view.findViewById(R.id.btn_next);
+        nextButton = view.findViewById(R.id.btn_next);
         nextButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -128,11 +130,11 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setAccessToken(accessToken);
-                        Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        intent.setAction(Intent.ACTION_VIEW);
+                        // Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                        // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        // intent.setAction(Intent.ACTION_VIEW);
                         Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-                        startActivity(intent);
+                        // startActivity(intent);
                         // if (getFragmentManager() != null) {
                         //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                         // }
