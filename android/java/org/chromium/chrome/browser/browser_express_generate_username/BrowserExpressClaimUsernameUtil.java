@@ -38,7 +38,7 @@ public class BrowserExpressClaimUsernameUtil {
     private static final String TAG = "Claim_Username_Browser_Express";
     private static final String CLAIM_USERNAME_URL = "https://api.browser.express/v1/auth/generate-username";
 
-    private BrowserExpressGenerateUsernameBottomSheetFragment sBottomSheetDialog;
+    private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
 
     public interface ClaimUsernameCallback {
         void claimUsernameSuccessful(String accessToken, String refreshToken);
@@ -94,22 +94,22 @@ public class BrowserExpressClaimUsernameUtil {
 
     public static void showGenerateUsernameBottomSheet() {
         try {
-            if(sBottomSheetDialog == null){
+            if(mBottomSheetDialog == null){
                 BrowserExpressGenerateUsernameBottomSheetFragment bottomSheetDialog =
                         BrowserExpressGenerateUsernameBottomSheetFragment.newInstance(true);
                 
                 bottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
-                sBottomSheetDialog = bottomSheetDialog;
+                mBottomSheetDialog = bottomSheetDialog;
             }else{
-                sBottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
+                mBottomSheetDialog.show(BraveActivity.getBraveActivity().getSupportFragmentManager(), "BrowserExpressGenerateUsernameBottomSheetFragment");
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
     }
 
     public static void dismissGenerateUsernameBottomSheet() {
-        if (sBottomSheetDialog != null) {
-            sBottomSheetDialog.dismiss();
+        if (mBottomSheetDialog != null) {
+            mBottomSheetDialog.dismiss();
         }
     }
 
