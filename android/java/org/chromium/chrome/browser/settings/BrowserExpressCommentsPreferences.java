@@ -136,7 +136,7 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
                 String accessToken = activity.getAccessToken();
                 activity.showGenerateUsernameBottomSheet();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
-                Log.e(TAG, "maybeShowWalletPanel " + e);
+                Log.e("comments", "maybeShowWalletPanel " + e);
             }
         });
     }
