@@ -79,4 +79,24 @@
             style="?android:attr/borderlessButtonStyle"/>
 
     </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="54dp"
+        android:textSize="14sp"
+        android:text="@string/browser_express_generate_username_desc"
+        android:textColor="@color/set_default_text_color"/>
+
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="15dp"
+        android:layout_marginStart="54dp"
+        android:textSize="14sp"
+        android:text="@string/browser_express_generate_username_desc"
+        android:textColor="@color/set_default_text_color"/>
+        
 </LinearLayout>
