@@ -9,7 +9,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingTop="31dp"
     android:paddingStart="22dp"
     android:paddingEnd="22dp"
     android:paddingBottom="31dp"
@@ -19,7 +18,6 @@
 
     <ImageButton android:id="@+id/btn_maximize"
         style="@style/ToolbarButton"
-        android:layout_marginTop="8dp"
         android:src="@drawable/maximize"
         android:layout_gravity="center"
         android:visibility="visible"
