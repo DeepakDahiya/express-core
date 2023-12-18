@@ -98,7 +98,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         // activity.showGenerateUsernameBottomSheet();
                         // activity.showGenerateUsernameBottomSheet();
                         if (accessToken == null) {
-                             activity.showGenerateUsernameBottomSheet()
+                             activity.showGenerateUsernameBottomSheet();
                         } else {
                             
                         }
