@@ -45,15 +45,26 @@
         android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent">
+
+        <ImageView android:id="@+id/profile_button"
+            style="@style/ToolbarButton"
+            android:src="@drawable/btn_toolbar_profile"
+            android:layout_gravity="center"
+            android:visibility="visible"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
         <EditText
             android:layout_marginStart="16dp"
             android:id="@+id/edit_gchat_message"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="48dp"
             android:layout_centerVertical="true"
             android:layout_toStartOf="@+id/button_gchat_send"
             android:inputType="text"
             android:maxLines="6"
+            android:textSize="14sp"
+            android:textColor="@color/wallet_text_color"
+            android:textColorHint="@color/brave_theme_hint_text"
             android:hint="@string/enter_your_password"
             android:background="@drawable/rounded_wallet_edittext"
             tools:ignore="Autofill" />
