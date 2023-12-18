@@ -3027,6 +3027,12 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_ACCESSIBILITY_TOOLBAR_BTN_BRAVE_WALLET" desc="Content description for the button that allows an access to Brave Wallet.">
       Access Brave Wallet
     </message>
+    <message name="IDS_SEND_COMMENT" desc="Content description for the button that allows an access to Brave Wallet.">
+      Send Comment
+    </message>
+     <message name="IDS_PROFILE_IMAGE" desc="Content description for the button that allows an access to Brave Wallet.">
+      Profile Image
+    </message>
     <message name="IDS_DAPP_WALLET_PANEL_CONNECTIVITY_STATUS" desc="Brave wallet Dapp wallet connectivity status">
       Connect
     </message>
@@ -4165,6 +4171,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     </message>
     <message name="IDS_ENTER_YOUR_PASSWORD" desc="Brave wallet password hint text">
       Enter your password
+    </message>
+    <message name="IDS_TYPE_YOUR_COMMENT" desc="Brave wallet password hint text">
+      Type your comment...
     </message>
     <message name="IDS_CONFIRM_PASSWORD" desc="Brave wallet password hint text">
       Confirm password

@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.ImageButton;
 import android.widget.CheckBox;
 import org.chromium.ui.widget.Toast;
 
@@ -37,7 +38,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private boolean isFromMenu;
     // private Button nextButton;
-    private Button sendButton;
+    private ImageButton sendButton;
 
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =

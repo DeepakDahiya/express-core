@@ -52,7 +52,7 @@
             android:src="@drawable/btn_toolbar_profile"
             android:layout_gravity="center"
             android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            android:contentDescription="@string/profile_image" />
 
         <EditText
             android:layout_marginStart="54dp"
@@ -70,17 +70,15 @@
             android:textSize="14sp"
             android:textColor="@color/wallet_text_color"
             android:textColorHint="@color/brave_theme_hint_text"
-            android:hint="@string/enter_your_password"
+            android:hint="@string/type_your_comment"
             android:background="@drawable/rounded_wallet_edittext"
             tools:ignore="Autofill" />
-        <Button
-            android:id="@+id/button_gchat_send"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:layout_alignParentEnd="true"
-            android:background="?attr/selectableItemBackground"
-            android:text="@string/brave_next"
-            android:textSize="11sp"
-            android:textColor="@color/brave_action_color" />
+
+        <ImageButton android:id="@+id/button_gchat_send"
+            style="@style/ToolbarButton"
+            android:src="@drawable/send"
+            android:layout_gravity="center"
+            android:visibility="visible"
+            android:contentDescription="@string/send_comment" />
     </RelativeLayout>
 </LinearLayout>
