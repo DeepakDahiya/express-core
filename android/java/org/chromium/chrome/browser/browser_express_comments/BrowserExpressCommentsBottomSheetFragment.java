@@ -36,7 +36,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private static final String IS_FROM_MENU = "is_from_menu";
 
     private boolean isFromMenu;
-    private Button nextButton;
+    // private Button nextButton;
+    private Button sendButton;
 
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =
@@ -69,20 +70,43 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         ((BottomSheetDialog) getDialog())
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
-        nextButton = view.findViewById(R.id.btn_next);
-        nextButton.setOnClickListener((new View.OnClickListener() {
+        // nextButton = view.findViewById(R.id.btn_next);
+        // nextButton.setOnClickListener((new View.OnClickListener() {
+        //     @Override
+        //     public void onClick(View v) {
+        //         if (getActivity() != null) {
+        //             nextButton.setClickable(false);
+        //             nextButton.setText(R.string.browser_express_loading_title);
+
+        //             BrowserExpressCommentsUtil.ClaimUsernameWorkerTask workerTask =
+        //                     new BrowserExpressCommentsUtil.ClaimUsernameWorkerTask(
+        //                             claimUsernameCallback);
+        //             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        //         }
+        //         // dismiss();
+        //     }
+        // }));
+
+        sendButton = view.findViewById(R.id.button_gchat_send);
+        sendButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
-                    nextButton.setClickable(false);
-                    nextButton.setText(R.string.browser_express_loading_title);
-
-                    BrowserExpressCommentsUtil.ClaimUsernameWorkerTask workerTask =
-                            new BrowserExpressCommentsUtil.ClaimUsernameWorkerTask(
-                                    claimUsernameCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        String accessToken = activity.getAccessToken();
+                        // activity.showGenerateUsernameBottomSheet();
+                        // activity.showGenerateUsernameBottomSheet();
+                        if (accessToken == null) {
+                             activity.showGenerateUsernameBottomSheet()
+                        } else {
+                            
+                        }
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Browser Express Access Token", e.getMessage());
+                    }
                 }
-                // dismiss();
+                dismiss();
             }
         }));
 
@@ -108,34 +132,34 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 
-    private BrowserExpressCommentsUtil.ClaimUsernameCallback claimUsernameCallback=
-            new BrowserExpressCommentsUtil.ClaimUsernameCallback() {
-                @Override
-                public void claimUsernameSuccessful(String accessToken, String refreshToken) {
-                    nextButton.setClickable(true);
-                    nextButton.setText(R.string.brave_next);
+    // private BrowserExpressCommentsUtil.ClaimUsernameCallback claimUsernameCallback=
+    //         new BrowserExpressCommentsUtil.ClaimUsernameCallback() {
+    //             @Override
+    //             public void claimUsernameSuccessful(String accessToken, String refreshToken) {
+    //                 nextButton.setClickable(true);
+    //                 nextButton.setText(R.string.brave_next);
 
-                    try {
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        activity.setAccessToken(accessToken);
-                        // Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                        // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                        // intent.setAction(Intent.ACTION_VIEW);
-                        Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-                        activity.dismissGenerateUsernameBottomSheet();
-                        // startActivity(intent);
-                        // if (getFragmentManager() != null) {
-                        //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                        // }
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    }
-                }
+    //                 try {
+    //                     BraveActivity activity = BraveActivity.getBraveActivity();
+    //                     activity.setAccessToken(accessToken);
+    //                     // Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+    //                     // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+    //                     // intent.setAction(Intent.ACTION_VIEW);
+    //                     Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+    //                     activity.dismissGenerateUsernameBottomSheet();
+    //                     // startActivity(intent);
+    //                     // if (getFragmentManager() != null) {
+    //                     //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+    //                     // }
+    //                 } catch (BraveActivity.BraveActivityNotFoundException e) {
+    //                 }
+    //             }
 
-                @Override
-                public void claimUsernameFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
-                    nextButton.setClickable(true);
-                    nextButton.setText(R.string.brave_next);
-                }
-            };
+    //             @Override
+    //             public void claimUsernameFailed(String error) {
+    //                 Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+    //                 nextButton.setClickable(true);
+    //                 nextButton.setText(R.string.brave_next);
+    //             }
+    //         };
 }
