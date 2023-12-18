@@ -31,20 +31,12 @@
         android:textSize="20sp"
         android:textColor="@color/set_default_text_color"
         android:textStyle="bold"/>
-
-    <ScrollView
-        android:id="@+id/comment_section"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
             android:layout_marginTop="28dp"
             android:orientation="horizontal">
-
             <android.widget.Button
                 android:id="@+id/btn_cancel"
                 android:layout_width="wrap_content"
@@ -59,9 +51,8 @@
                 android:paddingEnd="35dp"
                 android:textSize="14sp"
                 android:text="@string/brave_cancel"
-                android:textColor="@color/onboarding_gray" 
+                android:textColor="@color/onboarding_gray"
                 style="?android:attr/borderlessButtonStyle"/>
-
             <android.widget.Button
                 android:id="@+id/btn_next"
                 android:layout_width="wrap_content"
@@ -78,28 +69,40 @@
                 android:paddingEnd="35dp"
                 android:textSize="16sp"
                 style="?android:attr/borderlessButtonStyle"/>
-
         </LinearLayout>
-
-    </ScrollView>
-
-    <TextView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_gchat"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginBottom="16dp"
+        app:layout_constrainedHeight="true"
+        app:layout_constraintBottom_toTopOf="@+id/text_gchat_indicator"
+        app:layout_constraintTop_toBottomOf="@+id/layout_group_chat" />
+    <RelativeLayout
+        android:id="@+id/layout_gchat_chatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="54dp"
-        android:textSize="14sp"
-        android:text="@string/browser_express_generate_username_desc"
-        android:textColor="@color/set_default_text_color"/>
-
-
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="15dp"
-        android:layout_marginStart="54dp"
-        android:textSize="14sp"
-        android:text="@string/browser_express_generate_username_desc"
-        android:textColor="@color/set_default_text_color"/>
-
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+        <EditText
+            android:layout_marginStart="16dp"
+            android:id="@+id/edit_gchat_message"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_centerVertical="true"
+            android:layout_toStartOf="@+id/button_gchat_send"
+            android:inputType="text"
+            android:maxLines="6"
+            android:hint="@string/enter_your_password"
+            android:background="@drawable/rounded_wallet_edittext"
+            tools:ignore="Autofill" />
+        <Button
+            android:id="@+id/button_gchat_send"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:background="?attr/selectableItemBackground"
+            android:text="@string/brave_next"
+            android:textColor="@color/brave_action_color" />
+    </RelativeLayout>
 </LinearLayout>
