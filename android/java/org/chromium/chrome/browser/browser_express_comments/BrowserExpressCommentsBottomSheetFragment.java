@@ -116,14 +116,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         if (braveDefaultModalCount > 2 && !isFromMenu) {
         } else {
         }
-
-        Button cancelButton = view.findViewById(R.id.btn_cancel);
-        cancelButton.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                dismiss();
-            }
-        }));
     }
 
     @Override
