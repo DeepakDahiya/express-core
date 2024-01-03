@@ -107,6 +107,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         messageList.add(new Comment(10));
         messageList.add(new Comment(11));
         messageList.add(new Comment(12));
+        messageList.add(new Comment(13));
+        messageList.add(new Comment(14));
+        messageList.add(new Comment(15));
+        messageList.add(new Comment(16));
+        messageList.add(new Comment(17));
 
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
