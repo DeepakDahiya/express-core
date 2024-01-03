@@ -65,6 +65,10 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     private TextView mUsernameText;
     private TextView mFullNameText;
 
+    private TextView mViewsText;
+    private TextView mLikesReceivedText;
+    private TextView mLikesGivenText;
+
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
     private boolean mIsPublisherAvailable;
@@ -94,6 +98,14 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
             mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
+
+            mViewsText = (TextView) view.findViewById(R.id.be_views);
+            mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);
+            mLikesGivenText = (TextView) view.findViewById(R.id.be_likes_given);
+
+            mViewsText.setText("8.4K");
+            mLikesReceivedText.setText("3.6K");
+            mLikesGivenText.setText("6.4K");
 
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();

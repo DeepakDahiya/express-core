@@ -72,23 +72,21 @@
                 android:layout_margin="10sp">
 
                 <TextView
-                    android:id="@+id/browser_express_username"
+                    android:id="@+id/be_views"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="8.5K"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/browser_express_full_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:gravity="center"
-                    android:text="Views"
+                    android:text="@string/views"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp" />
 
@@ -104,23 +102,21 @@
                 android:layout_margin="10sp">
 
                 <TextView
-                    android:id="@+id/browser_express_username"
+                    android:id="@+id/be_likes_received"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="6.4K"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/browser_express_full_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:gravity="center"
-                    android:text="Likes Given"
+                    android:text="@string/likes_received"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp" />
 
@@ -136,23 +132,21 @@
                 android:layout_margin="10sp">
 
                 <TextView
-                    android:id="@+id/browser_express_username"
+                    android:id="@+id/be_likes_given"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
                     android:gravity="center"
-                    android:text="3.6K"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/browser_express_full_name"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="5dp"
                     android:gravity="center"
-                    android:text="Likes Received"
+                    android:text="@string/likes_given"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp" />
 
