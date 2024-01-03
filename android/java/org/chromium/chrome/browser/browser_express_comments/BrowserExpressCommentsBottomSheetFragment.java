@@ -98,8 +98,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         User u2 = new User("u2", "pratyaksh");
 
         List<Comment> messageList = new ArrayList<Comment>();
-        messageList.add(new Comment("1", "This is an example of a placeholder comment with a few replies covering more than 2 lines."), 15, 5, 3, u1);
-        messageList.add(new Comment("2", "This is an example of a placeholder comment with a few replies covering more than 2 lines."), 17, 10, 1, u2);
+        messageList.add(new Comment("1", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("2", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
 
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
