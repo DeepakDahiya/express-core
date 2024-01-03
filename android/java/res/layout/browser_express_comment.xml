@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:text="@string/browser_express_login_title"
         android:textColor="#C0C0C0"
-        android:textSize="11sp">
+        android:textSize="11sp"/>
 
     <TextView
         android:id="@+id/text_gchat_timestamp_me"
