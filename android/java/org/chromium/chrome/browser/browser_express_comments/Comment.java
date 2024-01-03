@@ -7,7 +7,7 @@ public class Comment{
         this.id = id;  
     }  
 
-    public String getId() {  
+    public int getId() {  
         return id;  
     }  
 
