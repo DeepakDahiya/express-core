@@ -3,7 +3,8 @@ package org.chromium.chrome.browser.browser_express_comments;
 import java.util.UUID;
 import java.util.List;
 import android.widget.TextView;
-import android.widget.View;
+import android.view.View;
+import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 
