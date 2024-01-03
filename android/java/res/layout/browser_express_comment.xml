@@ -7,12 +7,20 @@
     android:layout_marginTop="16dp">
 
     <TextView
+        android:id="@+id/title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/browser_express_login_title"
+        android:textColor="#C0C0C0"
+        android:textSize="11sp"/>
+
+    <TextView
         android:id="@+id/text_gchat_timestamp_me"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="10:00"
         android:textColor="#C0C0C0"
-        android:textSize="10sp"/>
+        android:textSize="11sp"
+        app:layout_constraintBottom_toBottomOf="@+id/title" />
 
 
 </androidx.constraintlayout.widget.ConstraintLayout>
