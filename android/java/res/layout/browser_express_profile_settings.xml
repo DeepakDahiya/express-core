@@ -166,7 +166,7 @@
              android:background="@android:color/transparent"
              android:gravity="left|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/edit_profile" />
+             android:text="@string/be_edit_profile" />
 
          <Button
              android:layout_width="match_parent"
@@ -177,7 +177,7 @@
              android:background="@android:color/transparent"
              android:gravity="left|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/activity_feed" />
+             android:text="@string/be_activity_feed" />
 
          <Button
              android:layout_width="match_parent"
@@ -188,7 +188,7 @@
              android:background="@android:color/transparent"
              android:gravity="left|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/notifications" />
+             android:text="@string/be_notifications" />
 
          <Button
              android:layout_width="match_parent"
@@ -199,7 +199,7 @@
              android:background="@android:color/transparent"
              android:gravity="left|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/settings" />
+             android:text="@string/be_settings" />
 
      </LinearLayout>
 </ScrollView>
