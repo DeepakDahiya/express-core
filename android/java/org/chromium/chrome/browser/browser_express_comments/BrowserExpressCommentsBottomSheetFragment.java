@@ -17,6 +17,8 @@ import android.widget.ImageButton;
 import android.widget.CheckBox;
 import org.chromium.ui.widget.Toast;
 
+import androidx.recyclerview.widget.RecyclerView;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -35,6 +37,8 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
+    private RecyclerView mCommentRecycler;
+    private CommentListAdapter mCommentAdapter;
 
     private boolean isFromMenu;
     // private Button nextButton;
@@ -87,6 +91,16 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         //         // dismiss();
         //     }
         // }));
+
+        Comment[] messageList = new Comment[] {  
+            new Comment(1),
+            new Comment(2),  
+        };
+
+        mCommentRecycler = (RecyclerView) findViewById(R.id.recycler_gchat);
+        mCommentAdapter = new CommentListAdapter(this, messageList);
+        mCommentRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mCommentRecycler.setAdapter(mCommentAdapter);
 
         sendButton = view.findViewById(R.id.button_gchat_send);
         sendButton.setOnClickListener((new View.OnClickListener() {
