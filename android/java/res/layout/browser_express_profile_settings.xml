@@ -157,18 +157,49 @@
 
     </LinearLayout>
 
+         <Button
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:drawableStart="@drawable/edit_profile"
+             android:drawablePadding="8dp"
+             android:textAllCaps="false"
+             android:background="@android:color/transparent"
+             android:gravity="left|center_vertical"
+             android:drawableTint="@color/news_settings_title_color"
+             android:text="Edit Profile" />
 
-               <Button
-               android:id="@+id/btn_learn_more"
-               android:layout_width="wrap_content"
-               android:layout_height="wrap_content"
-               android:layout_gravity="center_horizontal"
-               android:background="@android:color/transparent"
-               android:text="@string/brave_news_optin_learn_more"
-               android:textAllCaps="false"
-               android:textColor="@color/onboarding_negative_button_color"
-               android:textSize="14sp"
-               style="?android:attr/borderlessButtonStyle"/>
+         <Button
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:drawableStart="@drawable/activity_feed"
+             android:drawablePadding="8dp"
+             android:textAllCaps="false"
+             android:background="@android:color/transparent"
+             android:gravity="left|center_vertical"
+             android:drawableTint="@color/news_settings_title_color"
+             android:text="Activity Feed" />
+
+         <Button
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:drawableStart="@drawable/notifications"
+             android:drawablePadding="8dp"
+             android:textAllCaps="false"
+             android:background="@android:color/transparent"
+             android:gravity="left|center_vertical"
+             android:drawableTint="@color/news_settings_title_color"
+             android:text="Notifications" />
+
+         <Button
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:drawableStart="@drawable/settings"
+             android:drawablePadding="8dp"
+             android:textAllCaps="false"
+             android:background="@android:color/transparent"
+             android:gravity="left|center_vertical"
+             android:drawableTint="@color/news_settings_title_color"
+             android:text="Settings" />
 
      </LinearLayout>
 </ScrollView>
