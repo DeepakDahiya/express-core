@@ -189,7 +189,7 @@ const Config = function () {
   this.sparkleEdDSAPublicKey = getNPMConfig(['sparkle_eddsa_public_key']) || ''
   this.notary_user = getNPMConfig(['notary_user']) || ''
   this.notary_password = getNPMConfig(['notary_password']) || ''
-  this.channel = 'stable'
+  this.channel = 'development'
   this.git_cache_path = getNPMConfig(['git_cache_path'])
   this.sccache = getNPMConfig(['sccache'])
   this.gomaServerHost = getNPMConfig(['goma_server_host'])
@@ -234,8 +234,7 @@ const Config = function () {
 }
 
 Config.prototype.isReleaseBuild = function () {
-  return true
-  // return this.buildConfig === 'Release'
+  return this.buildConfig === 'Release'
 }
 
 Config.prototype.isBraveReleaseBuild = function () {
@@ -556,7 +555,7 @@ Config.prototype.buildArgs = function () {
 
     args.target_android_base = this.targetAndroidBase
     args.target_android_output_format =
-      this.targetAndroidOutputFormat || (this.buildConfig === 'Release' ? 'apk' : 'apk')
+      this.targetAndroidOutputFormat || (this.buildConfig === 'Release' ? 'aab' : 'apk')
     args.android_override_version_name = this.androidOverrideVersionName
 
     args.brave_android_developer_options_code = this.braveAndroidDeveloperOptionsCode
