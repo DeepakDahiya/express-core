@@ -46,16 +46,18 @@
             android:orientation="vertical">
 
             <ImageButton
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:id="@+id/btn_upvote"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:src="@drawable/btn_upvote"
                 android:background="@android:color/transparent" 
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
                 android:scaleType="centerCrop" />
 
             <ImageButton
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:id="@+id/btn_downvote"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
                 android:background="@android:color/transparent"
                 android:src="@drawable/btn_downvote"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
@@ -64,8 +66,8 @@
         </LinearLayout>
 
         <ImageView
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:src="@drawable/btn_toolbar_profile"
             android:scaleType="centerCrop"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
@@ -82,7 +84,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textStyle="bold"
-                android:textSize="18sp"/>
+                android:textSize="16sp"/>
 
             <TextView
                 android:id="@+id/comment_content"
