@@ -51,6 +51,7 @@
                 android:tint="@color/onboarding_gray"
                 android:src="@drawable/btn_upvote"
                 android:background="android/transparent"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
                 android:scaleType="centerCrop" />
 
             <ImageButton
@@ -59,6 +60,7 @@
                 android:tint="@color/onboarding_gray"
                 android:background="android/transparent"
                 android:src="@drawable/btn_downvote"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
                 android:scaleType="centerCrop">
 
         </LinearLayout>
