@@ -9,7 +9,7 @@ public class Comment{
     private User user;
 
     public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, User user) {  
-        this._id = id;  
+        this._id = _id;  
         this.content = content;
         this.upvoteCount = upvoteCount;
         this.downvoteCount = downvoteCount;

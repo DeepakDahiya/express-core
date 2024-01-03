@@ -56,8 +56,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             // messageText.setText(message.getMessage());
 
             // Format the stored timestamp into a readable String using method.
-            usernameText.setText(message.user.username.toString());
-            contentText.setText(message.content.toString());
+            usernameText.setText(message.getUser().getUsername().toString());
+            contentText.setText(message.getContent().toString());
         }
     }
 }
