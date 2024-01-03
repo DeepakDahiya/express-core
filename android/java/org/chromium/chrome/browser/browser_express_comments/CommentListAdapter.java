@@ -49,7 +49,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             super(itemView);
 
             usernameText = (TextView) itemView.findViewById(R.id.username);
-            contentText = (TextView) itemView.findViewById(R.id.content);
+            contentText = (TextView) itemView.findViewById(R.id.comment_content);
         }
 
         void bind(Comment message) {
