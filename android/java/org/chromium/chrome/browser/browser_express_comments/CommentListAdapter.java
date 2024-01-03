@@ -42,19 +42,22 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     }
 
     private class CommentHolder extends RecyclerView.ViewHolder {
-        TextView timeText;
+        TextView usernameText;
+        TextView contentText;
 
         CommentHolder(View itemView) {
             super(itemView);
 
-            timeText = (TextView) itemView.findViewById(R.id.text_gchat_timestamp_me);
+            usernameText = (TextView) itemView.findViewById(R.id.username);
+            contentText = (TextView) itemView.findViewById(R.id.content);
         }
 
         void bind(Comment message) {
             // messageText.setText(message.getMessage());
 
             // Format the stored timestamp into a readable String using method.
-            timeText.setText(UUID.randomUUID().toString());
+            usernameText.setText(message.user.username.toString());
+            contentText.setText(message.content.toString());
         }
     }
 }

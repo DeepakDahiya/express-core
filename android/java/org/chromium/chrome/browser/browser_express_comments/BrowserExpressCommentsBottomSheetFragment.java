@@ -94,24 +94,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         //     }
         // }));
 
+        User u1 = new User("u1", "ddahiya21");
+        User u2 = new User("u2", "pratyaksh");
+
         List<Comment> messageList = new ArrayList<Comment>();
-        messageList.add(new Comment(1));
-        messageList.add(new Comment(2));
-        messageList.add(new Comment(3));
-        messageList.add(new Comment(4));
-        messageList.add(new Comment(5));
-        messageList.add(new Comment(6));
-        messageList.add(new Comment(7));
-        messageList.add(new Comment(8));
-        messageList.add(new Comment(9));
-        messageList.add(new Comment(10));
-        messageList.add(new Comment(11));
-        messageList.add(new Comment(12));
-        messageList.add(new Comment(13));
-        messageList.add(new Comment(14));
-        messageList.add(new Comment(15));
-        messageList.add(new Comment(16));
-        messageList.add(new Comment(17));
+        messageList.add(new Comment("1", "This is an example of a placeholder comment with a few replies covering more than 2 lines."), 15, 5, 3, u1);
+        messageList.add(new Comment("2", "This is an example of a placeholder comment with a few replies covering more than 2 lines."), 17, 10, 1, u2);
 
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);

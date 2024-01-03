@@ -354,6 +354,8 @@ brave_java_resources = [
   "java/res/drawable/bat_ads_logo_button.xml",
   "java/res/drawable/bat_logo.xml",
   "java/res/drawable/send.xml",
+  "java/res/drawable/btn_upvote.xml",
+  "java/res/drawable/btn_downvote.xml",
   "java/res/drawable/maximize.xml",
   "java/res/drawable/bat_panel_gradient.xml",
   "java/res/drawable/blue_48_rounded_bg.xml",
