@@ -1,6 +1,11 @@
 package org.chromium.chrome.browser.browser_express_comments;
 
 import java.util.UUID;
+import java.util.List;
+import android.widget.TextView;
+import android.widget.View;
+import androidx.recyclerview.widget.RecyclerView;
+import android.content.Context;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -28,7 +33,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     // Passes the message object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        UserMessage message = (UserMessage) mMessageList.get(position);
+        Comment message = (Comment) mMessageList.get(position);
 
         ((CommentHolder) holder).bind(message);
     }
@@ -42,7 +47,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             timeText = (TextView) itemView.findViewById(R.id.text_gchat_timestamp_me);
         }
 
-        void bind(UserMessage message) {
+        void bind(Comment message) {
             // messageText.setText(message.getMessage());
 
             // Format the stored timestamp into a readable String using method.
