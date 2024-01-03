@@ -37,7 +37,7 @@ public class Comment{
         return this.content;  
     }  
 
-    public void setId(String content) {  
+    public void setContent(String content) {  
         this.content = content;  
     }  
 
