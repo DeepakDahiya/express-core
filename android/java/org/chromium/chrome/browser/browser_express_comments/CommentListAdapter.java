@@ -7,6 +7,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
+import org.chromium.chrome.R;
+import android.view.LayoutInflater;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;

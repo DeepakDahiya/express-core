@@ -17,6 +17,7 @@ import android.widget.ImageButton;
 import android.widget.CheckBox;
 import org.chromium.ui.widget.Toast;
 
+import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import androidx.annotation.NonNull;
@@ -32,7 +33,6 @@ import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.base.BravePreferenceKeys;
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
@@ -98,8 +98,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         };
 
         mCommentRecycler = (RecyclerView) findViewById(R.id.recycler_gchat);
-        mCommentAdapter = new CommentListAdapter(this, messageList);
-        mCommentRecycler.setLayoutManager(new LinearLayoutManager(this));
+        mCommentAdapter = new CommentListAdapter(requireContext(), messageList);
+        mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         sendButton = view.findViewById(R.id.button_gchat_send);
