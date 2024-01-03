@@ -48,7 +48,6 @@
             <ImageButton
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:tint="@color/onboarding_gray"
                 android:src="@drawable/btn_upvote"
                 android:background="@android:color/transparent" 
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
@@ -57,8 +56,7 @@
             <ImageButton
                 android:layout_width="40dp"
                 android:layout_height="40dp"
-                android:tint="@color/onboarding_gray"
-                android:background="@android:color/transparent" 
+                android:background="@android:color/transparent"
                 android:src="@drawable/btn_downvote"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
                 android:scaleType="centerCrop"/>
@@ -70,6 +68,7 @@
             android:layout_height="60dp"
             android:src="@drawable/btn_toolbar_profile"
             android:scaleType="centerCrop"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
             android:layout_marginEnd="8dp"/>
 
         <LinearLayout
@@ -86,10 +85,16 @@
                 android:textSize="16sp"/>
 
             <TextView
-                android:id="@+id/content"
+                android:id="@+id/comment_content"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="11dp"/>
         </LinearLayout>
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_below="@id/imageview"
+        android:layout_marginTop="10dp"
+        android:background="#DAD8D8"/>
 </LinearLayout>
