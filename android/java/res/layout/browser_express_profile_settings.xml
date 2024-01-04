@@ -164,7 +164,7 @@
              android:drawablePadding="8dp"
              android:textAllCaps="false"
              android:background="@android:color/transparent"
-             android:gravity="left|center_vertical"
+             android:gravity="start|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_edit_profile" />
 
@@ -175,7 +175,7 @@
              android:drawablePadding="8dp"
              android:textAllCaps="false"
              android:background="@android:color/transparent"
-             android:gravity="left|center_vertical"
+             android:gravity="start|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_activity_feed" />
 
@@ -186,7 +186,7 @@
              android:drawablePadding="8dp"
              android:textAllCaps="false"
              android:background="@android:color/transparent"
-             android:gravity="left|center_vertical"
+             android:gravity="start|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_notifications" />
 
@@ -197,7 +197,7 @@
              android:drawablePadding="8dp"
              android:textAllCaps="false"
              android:background="@android:color/transparent"
-             android:gravity="left|center_vertical"
+             android:gravity="start|center_vertical"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_settings" />
 
