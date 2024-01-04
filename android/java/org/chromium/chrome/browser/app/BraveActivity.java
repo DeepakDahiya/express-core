@@ -27,6 +27,7 @@ import android.widget.TextView;
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -204,6 +205,8 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
+import android.util.Rational;
+import android.app.PictureInPictureParams;
 
 /**
  * Brave's extension for ChromeActivity
@@ -505,6 +508,15 @@ public abstract class BraveActivity extends ChromeActivity
             }
             maybeShowSignMessageErrorsLayout();
         });
+    }
+
+    public void enterPip(){
+        Rational ASPECT_RATIO = new Rational(16, 9);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+            boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
+        }
     }
 
     private void maybeShowSignMessageErrorsLayout() {
