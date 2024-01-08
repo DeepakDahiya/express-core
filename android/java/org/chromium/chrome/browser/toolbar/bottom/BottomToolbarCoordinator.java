@@ -207,7 +207,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
 
                     BrowsingModeBottomToolbarCoordinator browsingModeCoordinator =
                             (BrowsingModeBottomToolbarCoordinator) mBrowsingModeCoordinator;
-                    browsingModeCoordinator.getSearchAccelerator().setVisibility(View.VISIBLE);
+                    browsingModeCoordinator.getSearchAccelerator().setVisibility(View.GONE);
                     if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
                         browsingModeCoordinator.getHomeButton().setVisibility(View.VISIBLE);
                     }

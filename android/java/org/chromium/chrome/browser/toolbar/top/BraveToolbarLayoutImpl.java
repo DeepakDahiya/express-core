@@ -1323,7 +1323,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             getMenuButtonCoordinator().setVisibility(!isVisible);
             ToggleTabStackButton toggleTabStackButton = findViewById(R.id.tab_switcher_button);
             if (toggleTabStackButton != null) {
-                toggleTabStackButton.setVisibility(isTabSwitcherOnBottom() ? GONE : VISIBLE);
+                toggleTabStackButton.setVisibility(VISIBLE);
+                // toggleTabStackButton.setVisibility(isTabSwitcherOnBottom() ? GONE : VISIBLE);
             }
         }
     }

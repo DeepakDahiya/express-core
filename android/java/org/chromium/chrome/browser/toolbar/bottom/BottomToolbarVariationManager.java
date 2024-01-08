@@ -18,7 +18,8 @@ public class BottomToolbarVariationManager {
      *         in portrait mode in the current variation.
      */
     public static boolean isNewTabButtonOnBottom() {
-        return BottomToolbarConfiguration.isBottomToolbarEnabled();
+        return false;
+        // return BottomToolbarConfiguration.isBottomToolbarEnabled();
     }
 
     /**
@@ -26,7 +27,8 @@ public class BottomToolbarVariationManager {
      *         in portrait mode in the current variation.
      */
     public static boolean isMenuButtonOnBottom() {
-        return BottomToolbarConfiguration.isBottomToolbarEnabled();
+        return false;
+        // return BottomToolbarConfiguration.isBottomToolbarEnabled();
     }
 
     /**
@@ -50,7 +52,8 @@ public class BottomToolbarVariationManager {
      *         of portrait mode in current variation.
      */
     public static boolean isTabSwitcherOnBottom() {
-        return BottomToolbarConfiguration.isBottomToolbarEnabled();
+        return false;
+        // return BottomToolbarConfiguration.isBottomToolbarEnabled();
     }
 
     /**
@@ -58,6 +61,7 @@ public class BottomToolbarVariationManager {
      *         of portrait mode in current variation.
      */
     public static boolean isBookmarkButtonOnBottom() {
-        return BottomToolbarConfiguration.isBottomToolbarEnabled();
+        return false;
+        // return BottomToolbarConfiguration.isBottomToolbarEnabled();
     }
 }
