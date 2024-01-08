@@ -117,7 +117,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 
-        int a =  (displaymetrics.heightPixels*90)/100;
+        int a =  (displaymetrics.heightPixels*70)/100;
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
         mCommentAdapter = new CommentListAdapter(requireContext(), messageList);
