@@ -80,8 +80,9 @@
             android:layout_gravity="center"
             android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
-            android:layout_height="32sp"
-            android:layout_width="32sp"
+            android:layout_marginStart="8sp"
+            android:layout_height="18sp"
+            android:layout_width="18sp"
             android:visibility="visible"
             android:contentDescription="@string/send_comment" />
 

@@ -16,7 +16,6 @@
         android:orientation="vertical"
         android:background="@drawable/modern_toolbar_background_grey_middle_segment"
         android:layout_marginTop="8dp"
-        android:layout_marginStart="8dp"
         android:layout_height="40dp"
         android:visibility="visible" >
 
