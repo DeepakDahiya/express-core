@@ -124,9 +124,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mCommentRecycler.setAdapter(mCommentAdapter);
 
-        ViewGroup.LayoutParams params=recyclerview.getLayoutParams();
+        ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
         params.height=a;
-        recyclerview.setLayoutParams(params);
+        mCommentRecycler.setLayoutParams(params);
 
         sendButton = view.findViewById(R.id.button_gchat_send);
         sendButton.setOnClickListener((new View.OnClickListener() {
