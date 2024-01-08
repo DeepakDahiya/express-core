@@ -115,7 +115,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         messageList.add(new Comment("14", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 
         int a =  (displaymetrics.heightPixels*90)/100;
 
