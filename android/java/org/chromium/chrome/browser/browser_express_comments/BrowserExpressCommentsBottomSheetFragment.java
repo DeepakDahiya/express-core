@@ -18,6 +18,7 @@ import android.widget.CheckBox;
 import org.chromium.ui.widget.Toast;
 import java.util.List;
 import java.util.ArrayList;
+import android.util.DisplayMetrics;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -100,12 +101,29 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         List<Comment> messageList = new ArrayList<Comment>();
         messageList.add(new Comment("1", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
         messageList.add(new Comment("2", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        messageList.add(new Comment("3", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("4", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        messageList.add(new Comment("5", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("6", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        messageList.add(new Comment("7", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("8", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        messageList.add(new Comment("9", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("10", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        messageList.add(new Comment("11", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("12", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        messageList.add(new Comment("13", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
+        messageList.add(new Comment("14", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
 
+        DisplayMetrics displaymetrics = new DisplayMetrics();
+        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+
+        int a =  (displaymetrics.heightPixels*90)/100;
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
         mCommentAdapter = new CommentListAdapter(requireContext(), messageList);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mCommentRecycler.setAdapter(mCommentAdapter);
+        mCommentRecycler.getLayoutParams().height = a;
 
         sendButton = view.findViewById(R.id.button_gchat_send);
         sendButton.setOnClickListener((new View.OnClickListener() {
