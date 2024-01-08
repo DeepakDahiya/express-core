@@ -78,8 +78,12 @@
             style="@style/ToolbarButton"
             android:src="@drawable/send"
             android:layout_gravity="center"
+            android:layout_centerVertical="true"
             android:layout_alignParentEnd="true"
+            android:layout_height="32sp"
+            android:layout_width="32sp"
             android:visibility="visible"
             android:contentDescription="@string/send_comment" />
+
     </RelativeLayout>
 </LinearLayout>
