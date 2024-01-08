@@ -52,6 +52,8 @@
             android:src="@drawable/btn_toolbar_profile"
             android:layout_gravity="center"
             android:visibility="visible"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
             android:contentDescription="@string/profile_image" />
 
         <EditText
