@@ -351,6 +351,12 @@ public abstract class BraveActivity extends ChromeActivity
             // because currently set DSE is used by outside of brave(ex, brave search widget).
             BraveSearchEngineUtils.updateActiveDSE(profile);
         }
+
+        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+            enterPip();
+            return;
+        }
+
         super.onPauseWithNative();
     }
 
@@ -517,6 +523,15 @@ public abstract class BraveActivity extends ChromeActivity
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
             boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
         }
+    }
+
+    public boolean isInPip(){
+        Rational ASPECT_RATIO = new Rational(16, 9);
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+            return mActivity.isInPictureInPictureMode();
+        }
+        return false;
     }
 
     private void maybeShowSignMessageErrorsLayout() {

@@ -430,6 +430,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     SharedPreferencesManager.getInstance().writeBoolean(
                             BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                 }
+
+                if (url.domainIs(YOUTUBE_DOMAIN)) {
+                    SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
+                }else{
+                    SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
+                }
             }
 
             private void showNotificationNotEarningDialog() {
@@ -999,8 +1005,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 String accessToken = activity.getAccessToken();
-                // activity.showGenerateUsernameBottomSheet();
-                // activity.showGenerateUsernameBottomSheet();
                 if (accessToken == null) {
                     activity.openBrowserExpressLoginSettings();
                 } else {
