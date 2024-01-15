@@ -10,6 +10,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import org.chromium.chrome.R;
 import android.view.LayoutInflater;
+import org.chromium.chrome.browser.app.BraveActivity;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -66,14 +67,24 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mUpvoteButton.setBackgroundColor(R.color.browser_express_orange_color);
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        mUpvoteButton.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_orange_color));
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Browser Express Access Token", e.getMessage());
+                    }
                 }
             });
 
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mDownvoteButton.setBackgroundColor(R.color.browser_express_orange_color);
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        mDownvoteButton.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_orange_color));
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Browser Express Access Token", e.getMessage());
+                    }
                 }
             });
         }
