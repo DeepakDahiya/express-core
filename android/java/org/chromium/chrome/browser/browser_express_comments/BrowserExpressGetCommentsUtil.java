@@ -103,7 +103,7 @@ public class BrowserExpressGetCommentsUtil {
         try {
             URL url = new URL(GET_COMMENTS_URL + "?url=" + pageUrl + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage));
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
-                    url.toURL(), NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+                    url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -120,7 +120,7 @@ public class BrowserExpressGetCommentsUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
-                    List<Comment> comments = responseObject.getObject("comments");
+                    List<Comment> comments = responseObject.getJSONObject("comments");
                     GetCommentsWorkerTask.setComments(comments);
                 }else{
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(false);
