@@ -52,7 +52,7 @@ public class BrowserExpressAddCommentUtil {
         private static String mParentType;
         private static String mParentId;
         private static String mUrl;
-        private static string mAccessToken;
+        private static String mAccessToken;
         private static Comment mComment;
 
         public AddCommentWorkerTask(String content, String parentType, String url, String parentId, String accessToken, AddCommentCallback callback) {
