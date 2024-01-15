@@ -42,6 +42,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private static final String IS_FROM_MENU = "is_from_menu";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
+    private List<Comment> mComments;
+    private int mPage = 1;
+    private int mPerPage = 30;
+    private String mUrl;
 
     private boolean isFromMenu;
     // private Button nextButton;
@@ -78,29 +82,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         ((BottomSheetDialog) getDialog())
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
-        // nextButton = view.findViewById(R.id.btn_next);
-        // nextButton.setOnClickListener((new View.OnClickListener() {
-        //     @Override
-        //     public void onClick(View v) {
-        //         if (getActivity() != null) {
-        //             nextButton.setClickable(false);
-        //             nextButton.setText(R.string.browser_express_loading_title);
-
-        //             BrowserExpressCommentsUtil.ClaimUsernameWorkerTask workerTask =
-        //                     new BrowserExpressCommentsUtil.ClaimUsernameWorkerTask(
-        //                             claimUsernameCallback);
-        //             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        //         }
-        //         // dismiss();
-        //     }
-        // }));
 
         User u1 = new User("u1", "ddahiya21");
         User u2 = new User("u2", "pratyaksh");
 
-        List<Comment> messageList = new ArrayList<Comment>();
-        messageList.add(new Comment("1", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 15, 5, 3, u1));
-        messageList.add(new Comment("2", "This is an example of a placeholder comment with a few replies covering more than 2 lines.", 17, 10, 1, u2));
+        mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -108,13 +94,21 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int a =  (displaymetrics.heightPixels*80)/100;
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
-        mCommentAdapter = new CommentListAdapter(requireContext(), messageList);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
         params.height=a;
         mCommentRecycler.setLayoutParams(params);
+
+        mUrl = getActivityTab().getUrl().getSpec();
+
+        BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                        mUrl, mPage, mPerPage, getCommentsCallback);
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
         sendButton = view.findViewById(R.id.button_gchat_send);
         sendButton.setOnClickListener((new View.OnClickListener() {
@@ -124,8 +118,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
-                        // activity.showGenerateUsernameBottomSheet();
-                        // activity.showGenerateUsernameBottomSheet();
                         if (accessToken == null) {
                              activity.showGenerateUsernameBottomSheet();
                         } else {
@@ -153,34 +145,18 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 
-    // private BrowserExpressCommentsUtil.ClaimUsernameCallback claimUsernameCallback=
-    //         new BrowserExpressCommentsUtil.ClaimUsernameCallback() {
-    //             @Override
-    //             public void claimUsernameSuccessful(String accessToken, String refreshToken) {
-    //                 nextButton.setClickable(true);
-    //                 nextButton.setText(R.string.brave_next);
+    private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
+            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                @Override
+                public void getCommentsSuccessful(List<Comment> comments) {
+                    mComments.clear();
+                    mComments.addAll(comments);
+                    mCommentAdapter.notifyDataSetChanged();
+                }
 
-    //                 try {
-    //                     BraveActivity activity = BraveActivity.getBraveActivity();
-    //                     activity.setAccessToken(accessToken);
-    //                     // Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-    //                     // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-    //                     // intent.setAction(Intent.ACTION_VIEW);
-    //                     Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-    //                     activity.dismissGenerateUsernameBottomSheet();
-    //                     // startActivity(intent);
-    //                     // if (getFragmentManager() != null) {
-    //                     //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-    //                     // }
-    //                 } catch (BraveActivity.BraveActivityNotFoundException e) {
-    //                 }
-    //             }
-
-    //             @Override
-    //             public void claimUsernameFailed(String error) {
-    //                 Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
-    //                 nextButton.setClickable(true);
-    //                 nextButton.setText(R.string.brave_next);
-    //             }
-    //         };
+                @Override
+                public void getCommentsFailed(String error) {
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                }
+            };
 }

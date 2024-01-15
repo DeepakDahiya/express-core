@@ -9,11 +9,11 @@ public class User{
         this.username = username;
     }  
 
-    public String getUsername() {  
-        return this.username;  
+    public String getId() {  
+        return this._id;  
     }  
 
-    public void setUsername(String username) {  
-        this.username = username;  
+    public String getUsername() {  
+        return this.username;  
     }  
 }  
