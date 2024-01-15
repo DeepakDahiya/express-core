@@ -35,12 +35,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class BrowserExpresAddCommentUtil {
+public class BrowserExpressAddCommentUtil {
     private static final String TAG = "Add_Comment_Browser_Express";
     private static final String ADD_COMMENT_URL = "https://api.browser.express/v1/comment";
 
     public interface AddCommentCallback {
-        void addCommentSuccessful();
+        void addCommentSuccessful(Comment comment);
         void addCommentFailed(String error);
     }
 
@@ -52,8 +52,10 @@ public class BrowserExpresAddCommentUtil {
         private static String mParentType;
         private static String mParentId;
         private static String mUrl;
+        private static string mAccessToken;
+        private static Comment mComment;
 
-        public AddCommentWorkerTask(String content, String parentType, String url, String parentId, AddCommentCallback callback) {
+        public AddCommentWorkerTask(String content, String parentType, String url, String parentId, String accessToken, AddCommentCallback callback) {
             mCallback = callback;
             addCommentStatus = false;
             mErrorMessage = "";
@@ -61,6 +63,11 @@ public class BrowserExpresAddCommentUtil {
             mParentType = parentType;
             mParentId = parentId;
             mUrl = url;
+            mAccessToken = accessToken;
+        }
+
+        public static void setComment(Comment comment){
+            mComment = comment;
         }
 
         public static void setAddCommentSuccessStatus(Boolean status){
@@ -73,7 +80,7 @@ public class BrowserExpresAddCommentUtil {
 
         @Override
         protected Void doInBackground() {
-            sendAddCommentRequest(mContent, mParentType, mParentId, mUrl, mCallback);
+            sendAddCommentRequest(mContent, mParentType, mParentId, mUrl, mAccessToken, mCallback);
             return null;
         }
 
@@ -82,14 +89,14 @@ public class BrowserExpresAddCommentUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(addCommentStatus){
-                mCallback.addCommentSuccessful();
+                mCallback.addCommentSuccessful(mComment);
             }else{
                 mCallback.addCommentFailed(mErrorMessage);
             }
         }
     }
 
-    private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl, AddCommentCallback callback) {
+    private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl, String accessToken, AddCommentCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -99,7 +106,7 @@ public class BrowserExpresAddCommentUtil {
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setUseCaches(false);
-            // urlConnection.setRequestProperty ("Authorization", accessToken);
+            urlConnection.setRequestProperty ("Authorization", accessToken);
             // urlConnection.setRequestProperty ("x-refresh", refreshToken);
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.connect();
@@ -128,9 +135,17 @@ public class BrowserExpresAddCommentUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     AddCommentWorkerTask.setAddCommentSuccessStatus(true);
-                    // String accessToken = responseObject.getString("accessToken");
-                    // String refreshToken = responseObject.getString("refreshToken");
-                    // AddCommentWorkerTask.setAuthTokens(accessToken, refreshToken);
+
+                    JSONObject comment = responseObject.getJSONObject("comment");
+                    JSONObject user = comment.getJSONObject("user");
+                    User u = new User(user.getString("_id"), user.getString("username"));
+                    AddCommentWorkerTask.setComment(new Comment(
+                        comment.getString("_id"), 
+                        comment.getString("content"),
+                        comment.getInt("upvoteCount"),
+                        comment.getInt("downvoteCount"),
+                        comment.getInt("commentCount"),
+                        u));
                 }else{
                     AddCommentWorkerTask.setAddCommentSuccessStatus(false);
                     AddCommentWorkerTask.setErrorMessage(responseObject.getString("error"));

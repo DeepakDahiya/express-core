@@ -349,7 +349,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_generate_username/BrowserExpressClaimUsernameUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_generate_username/BrowserExpressGenerateUsernameBottomSheetFragment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressCommentsUtil.java",
-  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpresAddCommentUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressAddCommentUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressGetCommentsUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/Comment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/User.java",

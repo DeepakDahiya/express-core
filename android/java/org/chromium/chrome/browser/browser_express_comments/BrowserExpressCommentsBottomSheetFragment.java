@@ -49,7 +49,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private boolean isFromMenu;
     // private Button nextButton;
-    private ImageButton sendButton;
+    private ImageButton mSendButton;
+    private EditText mMessageEditText;
 
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =
@@ -88,7 +89,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 
-        int a =  (displaymetrics.heightPixels*80)/100;
+        int a =  (displaymetrics.heightPixels*70)/100;
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
@@ -112,8 +113,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             Log.e("Browser Express Access Token", e.getMessage());
         }
 
-        sendButton = view.findViewById(R.id.button_gchat_send);
-        sendButton.setOnClickListener((new View.OnClickListener() {
+        mSendButton = view.findViewById(R.id.button_gchat_send);
+        mMessageEditText = view.findViewById(R.id.button_gchat_send);
+        mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
@@ -121,15 +123,21 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
                         if (accessToken == null) {
-                             activity.showGenerateUsernameBottomSheet();
+                            activity.showGenerateUsernameBottomSheet();
+                            dismiss();
                         } else {
-                            
+                            String content = mMessageEditText.getText().toString().trim();
+                            if(content.length() > 0){
+                                BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                    new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                            content, "page", mUrl, null, addCommentCallback);
+                                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            }
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("Browser Express Access Token", e.getMessage());
                     }
                 }
-                dismiss();
             }
         }));
 
@@ -160,6 +168,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 @Override
                 public void getCommentsFailed(String error) {
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                }
+            };
+
+    private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
+            new BrowserExpressAddCommentUtil.AddCommentCallback() {
+                @Override
+                public void addCommentSuccessful(Comment comment) {
+                    mComments.add(0, comment);
+                    mCommentAdapter.notifyItemInserted(0);
+                }
+
+                @Override
+                public void addCommentFailed(String error) {
                     Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
