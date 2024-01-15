@@ -101,13 +101,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(didVoteType.equals("up")){
+                    if(didVoteType != null && didVoteType.equals("up")){
                         return;
                     }
 
                     String accessToken = activity.getAccessToken();
                     if (accessToken == null) {
-                        activity.showGenerateUsernameBottomSheet();
+                        // activity.showGenerateUsernameBottomSheet();
                     } else {
                         int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
                         int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
@@ -127,7 +127,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
 
-                        if(didVoteType.equals("down")){
+                        if(didVoteType != null && didVoteType.equals("down")){
                             finalVote = finalVote + 2;
                         }else{
                             finalVote = finalVote + 1;
@@ -147,13 +147,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(didVoteType.equals("down")){
+                    if(didVoteType != null && didVoteType.equals("down")){
                         return;
                     }
 
                     String accessToken = activity.getAccessToken();
                     if (accessToken == null) {
-                        activity.showGenerateUsernameBottomSheet();
+                        // activity.showGenerateUsernameBottomSheet();
                     } else {
                         int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
                         int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
@@ -173,7 +173,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
 
-                        if(didVoteType.equals("up")){
+                        if(didVoteType != null && didVoteType.equals("up")){
                             finalVote = finalVote - 2;
                         }else{
                             finalVote = finalVote - 1;
