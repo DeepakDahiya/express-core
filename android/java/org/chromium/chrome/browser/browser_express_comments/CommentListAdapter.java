@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.List;
 import android.widget.TextView;
 import android.view.View;
+import android.widget.ImageButton;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
@@ -44,12 +45,16 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
         TextView contentText;
+        private ImageButton mUpvoteButton;
+        private ImageButton mDownvoteButton;
 
         CommentHolder(View itemView) {
             super(itemView);
 
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
+            mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
+            mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
         }
 
         void bind(Comment message) {
@@ -58,6 +63,19 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             // Format the stored timestamp into a readable String using method.
             usernameText.setText(message.getUser().getUsername().toString());
             contentText.setText(message.getContent().toString());
+            mUpvoteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mUpvoteButton.setBackgroundColor(R.color.browser_express_orange_color);
+                }
+            });
+
+            mDownvoteButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDownvoteButton.setBackgroundColor(R.color.browser_express_orange_color);
+                }
+            });
         }
     }
 }
