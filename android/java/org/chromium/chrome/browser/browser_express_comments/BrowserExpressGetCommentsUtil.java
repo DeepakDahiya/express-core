@@ -120,8 +120,6 @@ public class BrowserExpressGetCommentsUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
-                    List<Comment> comments = responseObject.getJSONObject("comments");
-
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
                     List<Comment> comments = new ArrayList<Comment>();
                     for (int i = 0; i < commentsArray.length(); i++) {
