@@ -115,7 +115,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
 
         mSendButton = view.findViewById(R.id.button_gchat_send);
-        mMessageEditText = view.findViewById(R.id.button_gchat_send);
+        mMessageEditText = view.findViewById(R.id.edit_gchat_message);
         mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -131,7 +131,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             if(content.length() > 0){
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                            content, "page", mUrl, null, addCommentCallback);
+                                            content, "page", mUrl, null, accessToken, addCommentCallback);
                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                             }
                         }
@@ -179,6 +179,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 public void addCommentSuccessful(Comment comment) {
                     mComments.add(0, comment);
                     mCommentAdapter.notifyItemInserted(0);
+                    mMessageEditText.setText(R.string.browser_express_empty_text);
                 }
 
                 @Override
