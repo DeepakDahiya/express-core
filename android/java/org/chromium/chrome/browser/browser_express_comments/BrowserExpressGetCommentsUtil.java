@@ -101,13 +101,7 @@ public class BrowserExpressGetCommentsUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URI url = new URI(GET_COMMENTS_URL);
-            Uri.Builder builder = url.buildUpon();
-            builder.appendQueryParameter("url", pageUrl);
-            builder.appendQueryParameter("page", Integer.toString(page));
-            builder.appendQueryParameter("per_page", Integer.toString(perPage));
-            url =  builder.build();
-
+            URL url = new URL(GET_COMMENTS_URL + "?url=" + pageUrl + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage));
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url.toURL(), NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");
