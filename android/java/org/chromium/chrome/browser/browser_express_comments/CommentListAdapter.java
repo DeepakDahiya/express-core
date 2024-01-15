@@ -4,6 +4,7 @@ import java.util.UUID;
 import java.util.List;
 import android.widget.TextView;
 import android.view.View;
+import org.chromium.base.Log;
 import android.widget.ImageButton;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
