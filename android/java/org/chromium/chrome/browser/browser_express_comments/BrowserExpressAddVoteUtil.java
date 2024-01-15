@@ -40,7 +40,7 @@ public class BrowserExpressAddVoteUtil {
     private static final String ADD_COMMENT_BASE_URL = "https://api.browser.express/v1/comment";
 
     public interface AddVoteCallback {
-        void addVoteSuccessful(Comment comment);
+        void addVoteSuccessful();
         void addVoteFailed(String error);
     }
 
