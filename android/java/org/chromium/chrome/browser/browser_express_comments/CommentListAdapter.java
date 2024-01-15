@@ -88,7 +88,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    int tintColor = ContextCompat.getColor(this, R.color.browser_express_orange_color);
+                    int tintColor = ContextCompat.getColor(getActivity(), R.color.browser_express_orange_color);
 
                     // Get the drawable from the ImageButton
                     Drawable drawable = mDownvoteButton.getDrawable();
