@@ -100,12 +100,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         params.height=a;
         mCommentRecycler.setLayoutParams(params);
 
-        mUrl = getActivityTab().getUrl().getSpec();
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            mUrl = activity.getActivityTab().getUrl().getSpec();
 
-        BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+            BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                 new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                         mUrl, mPage, mPerPage, getCommentsCallback);
-        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e("Browser Express Access Token", e.getMessage());
+        }
 
         sendButton = view.findViewById(R.id.button_gchat_send);
         sendButton.setOnClickListener((new View.OnClickListener() {

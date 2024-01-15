@@ -36,6 +36,7 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 public class BrowserExpressGetCommentsUtil {
@@ -96,19 +97,19 @@ public class BrowserExpressGetCommentsUtil {
         }
     }
 
-    private static void sendGetCommentsRequest(String url, int page, int perPage, GetCommentsCallback callback) {
+    private static void sendGetCommentsRequest(String pageUrl, int page, int perPage, GetCommentsCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
             URI url = new URI(GET_COMMENTS_URL);
             Uri.Builder builder = url.buildUpon();
-            builder.appendQueryParameter("url", url);
-            builder.appendQueryParameter("page", page);
-            builder.appendQueryParameter("per_page", perPage);
+            builder.appendQueryParameter("url", pageUrl);
+            builder.appendQueryParameter("page", Integer.toString(page));
+            builder.appendQueryParameter("per_page", Integer.toString(perPage));
             url =  builder.build();
 
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
-                    url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
+                    url.toURL(), NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
@@ -125,7 +126,7 @@ public class BrowserExpressGetCommentsUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
-                    List<Comment> comments = responseObject.getString("comments");
+                    List<Comment> comments = responseObject.getObject("comments");
                     GetCommentsWorkerTask.setComments(comments);
                 }else{
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(false);

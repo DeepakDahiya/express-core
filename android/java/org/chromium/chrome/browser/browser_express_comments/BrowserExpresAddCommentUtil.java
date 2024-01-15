@@ -40,7 +40,7 @@ public class BrowserExpresAddCommentUtil {
     private static final String ADD_COMMENT_URL = "https://api.browser.express/v1/comment";
 
     public interface AddCommentCallback {
-        void addCommentSuccessful(String accessToken, String refreshToken);
+        void addCommentSuccessful();
         void addCommentFailed(String error);
     }
 
@@ -82,14 +82,14 @@ public class BrowserExpresAddCommentUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(addCommentStatus){
-                mCallback.addCommentSuccessful(mAccessToken, mRefreshToken);
+                mCallback.addCommentSuccessful();
             }else{
                 mCallback.addCommentFailed(mErrorMessage);
             }
         }
     }
 
-    private static void sendAddCommentRequest(String content, String parentType, String parentId, String url, AddCommentCallback callback) {
+    private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl, AddCommentCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -99,8 +99,8 @@ public class BrowserExpresAddCommentUtil {
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setUseCaches(false);
-            urlConnection.setRequestProperty ("Authorization", accessToken);
-            urlConnection.setRequestProperty ("x-refresh", refreshToken);
+            // urlConnection.setRequestProperty ("Authorization", accessToken);
+            // urlConnection.setRequestProperty ("x-refresh", refreshToken);
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.connect();
 
@@ -109,7 +109,7 @@ public class BrowserExpresAddCommentUtil {
             jsonParam.put("platform", "Android");
             jsonParam.put("parentType", parentType);
             jsonParam.put("parentId", parentId);
-            jsonParam.put("url", url);
+            jsonParam.put("url", pageUrl);
 
             OutputStream outputStream = urlConnection.getOutputStream();
             byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
