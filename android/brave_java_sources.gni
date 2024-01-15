@@ -351,6 +351,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressCommentsUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressAddCommentUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressGetCommentsUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressAddVoteUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/Comment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/User.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/CommentListAdapter.java",
