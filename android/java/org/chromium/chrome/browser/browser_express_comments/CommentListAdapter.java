@@ -16,6 +16,7 @@ import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.graphics.drawable.Drawable;
 import org.chromium.base.task.AsyncTask;
+import java.util.Locale;
 import androidx.core.content.ContextCompat;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
@@ -73,7 +74,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             usernameText.setText(comment.getUser().getUsername().toString());
             contentText.setText(comment.getContent().toString());
             int count = comment.getUpvoteCount() - comment.getDownvoteCount();
-            voteCountText.setText(Integer.toString(count));
+            voteCountText.setText(String.format(Locale.getDefault(), "%d", count));
 
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
