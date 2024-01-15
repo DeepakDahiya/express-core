@@ -72,7 +72,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             // Format the stored timestamp into a readable String using method.
             usernameText.setText(comment.getUser().getUsername().toString());
             contentText.setText(comment.getContent().toString());
-            voteCountText.setText(Integer.toString(comment.getUpvoteCount() - comment.getDownvoteCount()));
+            int count = comment.getUpvoteCount() - comment.getDownvoteCount();
+            voteCountText.setText(Integer.toString(count));
 
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
