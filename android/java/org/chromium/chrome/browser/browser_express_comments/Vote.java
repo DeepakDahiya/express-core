@@ -4,7 +4,7 @@ public class Vote{
     private String _id;  
     private String type;  
 
-    public User(String _id, String type) {  
+    public Vote(String _id, String type) {  
         this._id = _id;  
         this.type = type;
     }  
