@@ -85,12 +85,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             if(didVote != null){
                 String type = didVote.getType();
                 didVoteType = type;
-                if(type == "up"){
+                if(type.equals("up")){
                     int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
                     Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
                     mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
                     mUpvoteButton.setImageDrawable(mUpvoteDrawable);
-                }else if(type == "down"){
+                }else if(type.equals("down")){
                     int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
                     Drawable mDownvoteDrawable = mUpvoteButton.getDrawable();
                     mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
