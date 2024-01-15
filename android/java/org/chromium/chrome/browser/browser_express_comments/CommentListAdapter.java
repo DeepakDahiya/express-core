@@ -12,6 +12,10 @@ import android.content.Context;
 import org.chromium.chrome.R;
 import android.view.LayoutInflater;
 import org.chromium.chrome.browser.app.BraveActivity;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
+import android.graphics.drawable.Drawable;
+import androidx.core.content.ContextCompat;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -68,24 +72,32 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    try {
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        mUpvoteButton.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_orange_color));
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Browser Express Access Token", e.getMessage());
-                    }
+                    int tintColor = ContextCompat.getColor(this, R.color.browser_express_orange_color);
+
+                    // Get the drawable from the ImageButton
+                    Drawable drawable = mUpvoteButton.getDrawable();
+
+                    // Apply the tint color using setColorFilter
+                    drawable.setColorFilter(new PorterDuffColorFilter(tintColor, PorterDuff.Mode.SRC_IN));
+
+                    // Update the ImageButton with the modified drawable
+                    mUpvoteButton.setImageDrawable(drawable);
                 }
             });
 
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    try {
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        mDownvoteButton.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_orange_color));
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Browser Express Access Token", e.getMessage());
-                    }
+                    int tintColor = ContextCompat.getColor(this, R.color.browser_express_orange_color);
+
+                    // Get the drawable from the ImageButton
+                    Drawable drawable = mDownvoteButton.getDrawable();
+
+                    // Apply the tint color using setColorFilter
+                    drawable.setColorFilter(new PorterDuffColorFilter(tintColor, PorterDuff.Mode.SRC_IN));
+
+                    // Update the ImageButton with the modified drawable
+                    mDownvoteButton.setImageDrawable(drawable);
                 }
             });
         }
