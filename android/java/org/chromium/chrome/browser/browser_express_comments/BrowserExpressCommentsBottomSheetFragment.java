@@ -83,9 +83,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
 
-        User u1 = new User("u1", "ddahiya21");
-        User u2 = new User("u2", "pratyaksh");
-
         mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();

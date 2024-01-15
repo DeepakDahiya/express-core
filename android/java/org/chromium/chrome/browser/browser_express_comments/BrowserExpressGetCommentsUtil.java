@@ -12,6 +12,8 @@ import android.os.Build;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.net.Uri;
+import java.util.List;
+import java.util.ArrayList;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
