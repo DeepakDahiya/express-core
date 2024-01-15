@@ -126,6 +126,11 @@ public class BrowserExpressGetCommentsUtil {
                     for (int i = 0; i < commentsArray.length(); i++) {
                         JSONObject comment = commentsArray.getJSONObject(i);
                         JSONObject user = comment.getJSONObject("user");
+                        JSONObject didVote = comment.optJSONObject("didVote");
+                        Vote v = null;
+                        if(didVote != null){
+                            v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                        }
                         User u = new User(user.getString("_id"), user.getString("username"));
                         comments.add(new Comment(
                             comment.getString("_id"), 
@@ -133,7 +138,8 @@ public class BrowserExpressGetCommentsUtil {
                             comment.getInt("upvoteCount"),
                             comment.getInt("downvoteCount"),
                             comment.getInt("commentCount"),
-                            u));
+                            u, 
+                            v));
                     }
 
                     GetCommentsWorkerTask.setComments(comments);

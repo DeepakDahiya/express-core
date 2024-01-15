@@ -56,6 +56,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         TextView voteCountText;
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
+        private String didVoteType;
+        private int finalVote;
 
         CommentHolder(View itemView) {
             super(itemView);
@@ -73,37 +75,72 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             // Format the stored timestamp into a readable String using method.
             usernameText.setText(comment.getUser().getUsername().toString());
             contentText.setText(comment.getContent().toString());
-            int count = comment.getUpvoteCount() - comment.getDownvoteCount();
-            voteCountText.setText(String.format(Locale.getDefault(), "%d", count));
+            finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
+            voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+            Vote didVote = comment.getDidVote();
+            if(didVote != null){
+                String type = didVote.getType();
+                didVoteType = type;
+                if(type == "up"){
+                    int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                    Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
+                    mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                    mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                }else if(type == "down"){
+                    int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                    Drawable mDownvoteDrawable = mUpvoteButton.getDrawable();
+                    mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                    mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+                }
+            }
 
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(didVoteType == "up"){
+                        return;
+                    }
+
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
-                        int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
-                        int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
+                        if (accessToken == null) {
+                            activity.showGenerateUsernameBottomSheet();
+                            dismiss();
+                        } else {
+                            int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                            int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
 
-                        // Get the drawable from the ImageButton
-                        Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
-                        Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
+                            // Get the drawable from the ImageButton
+                            Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
+                            Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
 
-                        // Apply the tint color using setColorFilter
-                        mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
-                        mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
+                            // Apply the tint color using setColorFilter
+                            mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                            mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
 
-                        // Update the ImageButton with the modified drawable
-                        mUpvoteButton.setImageDrawable(mUpvoteDrawable);
-                        mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+                            // Update the ImageButton with the modified drawable
+                            mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                            mDownvoteButton.setImageDrawable(mDownvoteDrawable);
 
-                        mDownvoteButton.setClickable(false);
-                        mUpvoteButton.setClickable(false);
+                            mDownvoteButton.setClickable(false);
+                            mUpvoteButton.setClickable(false);
 
-                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                    comment.getId(), "up", accessToken, addVoteCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            if(didVoteType == "down"){
+                                finalVote = finalVote + 2;
+                            }else{
+                                finalVote = finalVote + 1;
+                            }
+                            voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+                            didVoteType = "up";
+
+                            BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                                new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                        comment.getId(), "up", accessToken, addVoteCallback);
+                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
@@ -112,31 +149,49 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    if(didVoteType == "down"){
+                        return;
+                    }
+
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
-                        int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
-                        int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
+                        if (accessToken == null) {
+                            activity.showGenerateUsernameBottomSheet();
+                            dismiss();
+                        } else {
+                            int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                            int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
 
-                        // Get the drawable from the ImageButton
-                        Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
-                        Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
+                            // Get the drawable from the ImageButton
+                            Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
+                            Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
 
-                        // Apply the tint color using setColorFilter
-                        mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
-                        mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
+                            // Apply the tint color using setColorFilter
+                            mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                            mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
 
-                        // Update the ImageButton with the modified drawable
-                        mDownvoteButton.setImageDrawable(mDownvoteDrawable);
-                        mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                            // Update the ImageButton with the modified drawable
+                            mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+                            mUpvoteButton.setImageDrawable(mUpvoteDrawable);
 
-                        mDownvoteButton.setClickable(false);
-                        mUpvoteButton.setClickable(false);
+                            mDownvoteButton.setClickable(false);
+                            mUpvoteButton.setClickable(false);
 
-                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                    comment.getId(), "down", accessToken, addVoteCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            if(didVoteType == "up"){
+                                finalVote = finalVote - 2;
+                            }else{
+                                finalVote = finalVote - 1;
+                            }
+                            voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+                            didVoteType = "down";
+
+                            BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                                new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                        comment.getId(), "down", accessToken, addVoteCallback);
+                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
