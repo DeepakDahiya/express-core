@@ -101,7 +101,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(didVoteType == "up"){
+                    if(didVoteType.equals("up")){
                         return;
                     }
 
@@ -127,7 +127,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
 
-                        if(didVoteType == "down"){
+                        if(didVoteType.equals("down")){
                             finalVote = finalVote + 2;
                         }else{
                             finalVote = finalVote + 1;
@@ -147,7 +147,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(didVoteType == "down"){
+                    if(didVoteType.equals("down")){
                         return;
                     }
 
@@ -173,7 +173,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
 
-                        if(didVoteType == "up"){
+                        if(didVoteType.equals("up")){
                             finalVote = finalVote - 2;
                         }else{
                             finalVote = finalVote - 1;
