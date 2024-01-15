@@ -151,9 +151,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
+                    int len = mComments.length();
                     mComments.clear();
+                    adapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
-                    mCommentAdapter.notifyDataSetChanged();
+                    mCommentAdapter.notifyItemRangeInserted(0, comments.length());
                 }
 
                 @Override
