@@ -139,13 +139,15 @@ public class BrowserExpressAddCommentUtil {
                     JSONObject comment = responseObject.getJSONObject("comment");
                     JSONObject user = comment.getJSONObject("user");
                     User u = new User(user.getString("_id"), user.getString("username"));
+                    Vote v = null;
                     AddCommentWorkerTask.setComment(new Comment(
                         comment.getString("_id"), 
                         comment.getString("content"),
                         comment.getInt("upvoteCount"),
                         comment.getInt("downvoteCount"),
                         comment.getInt("commentCount"),
-                        u));
+                        u,
+                        v));
                 }else{
                     AddCommentWorkerTask.setAddCommentSuccessStatus(false);
                     AddCommentWorkerTask.setErrorMessage(responseObject.getString("error"));

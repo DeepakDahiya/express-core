@@ -35,7 +35,7 @@ public class Comment{
         this.user = user;  
     }  
 
-    public User getDidVote() {  
+    public Vote getDidVote() {  
         return this.didVote;  
     }  
 
