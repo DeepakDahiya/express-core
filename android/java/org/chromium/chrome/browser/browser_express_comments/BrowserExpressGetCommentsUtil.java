@@ -121,6 +121,22 @@ public class BrowserExpressGetCommentsUtil {
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
                     List<Comment> comments = responseObject.getJSONObject("comments");
+
+                    JSONArray commentsArray = responseObject.getJSONArray("comments");
+                    List<Comment> comments = new ArrayList<Comment>();
+                    for (int i = 0; i < commentsArray.length(); i++) {
+                        JSONObject comment = commentsArray.getJSONObject(i);
+                        JSONObject user = comment.getJSONObject("user");
+                        User u = new User(user.getString("_id"), user.getString("username"));
+                        comments.add(new Comment(
+                            comment.getString("_id"), 
+                            comment.getString("content"),
+                            comment.getInt("upvoteCount"),
+                            comment.getInt("downvoteCount"),
+                            comment.getInt("commentCount"),
+                            u));
+                    }
+
                     GetCommentsWorkerTask.setComments(comments);
                 }else{
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(false);
