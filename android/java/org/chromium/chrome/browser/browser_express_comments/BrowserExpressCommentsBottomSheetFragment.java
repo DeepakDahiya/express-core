@@ -98,9 +98,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
-        ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
-        params.height=a;
-        mCommentRecycler.setLayoutParams(params);
+        // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
+        // params.height=a;
+        // mCommentRecycler.setLayoutParams(params);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -165,6 +165,22 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(0, comments.size());
+
+                    // DisplayMetrics displaymetrics = new DisplayMetrics();
+                    // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+
+                    // int a =  (displaymetrics.heightPixels*70)/100;
+
+                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
+                    // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                    // mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
+                    // mCommentRecycler.setAdapter(mCommentAdapter);
+
+                    // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
+                    // params.height=a;
+                    // mCommentRecycler.setLayoutParams(params);
+
                 }
 
                 @Override

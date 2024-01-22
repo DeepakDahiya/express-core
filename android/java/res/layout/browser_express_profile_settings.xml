@@ -32,7 +32,7 @@
             style="@style/ToolbarButton"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
-            android:background="@drawable/btn_toolbar_profile"
+            android:src="@drawable/btn_toolbar_profile"
             android:layout_gravity="center"
             android:layout_width="100sp"
             android:layout_height="100sp"
