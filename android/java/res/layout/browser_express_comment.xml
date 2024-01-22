@@ -47,6 +47,7 @@
 
             <ImageButton
                 android:id="@+id/btn_upvote"
+                style="@style/ToolbarButton"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:src="@drawable/btn_upvote"
@@ -64,6 +65,7 @@
 
             <ImageButton
                 android:id="@+id/btn_downvote"
+                style="@style/ToolbarButton"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:background="@android:color/transparent"
@@ -73,7 +75,7 @@
 
         </LinearLayout>
 
-        <ImageView
+        <ImageButton
             style="@style/ToolbarButton"
             android:layout_width="32dp"
             android:layout_height="32dp"

@@ -49,7 +49,7 @@
         android:paddingBottom="4dp"
         app:layout_constraintStart_toStartOf="parent">
 
-        <ImageView android:id="@+id/profile_button"
+        <ImageButton android:id="@+id/profile_button"
             style="@style/ToolbarButton"
             android:src="@drawable/btn_toolbar_profile"
             android:layout_gravity="center"
