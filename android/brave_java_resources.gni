@@ -350,6 +350,7 @@ brave_java_resources = [
   "java/res/drawable/bat_logo.xml",
   "java/res/drawable/send.xml",
   "java/res/drawable/btn_toolbar_profile.xml",
+  "java/res/drawable-night/btn_toolbar_profile.xml",
   "java/res/drawable/edit_profile.xml",
   "java/res/drawable/settings.xml",
   "java/res/drawable/activity_feed.xml",
