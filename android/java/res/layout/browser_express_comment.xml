@@ -74,6 +74,7 @@
         </LinearLayout>
 
         <ImageView
+            style="@style/ToolbarButton"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/btn_toolbar_profile"
@@ -98,6 +99,7 @@
             <TextView
                 android:id="@+id/comment_content"
                 android:layout_width="wrap_content"
+                android:textColor="@color/news_settings_title_color"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="11dp"/>
         </LinearLayout>
