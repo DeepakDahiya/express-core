@@ -105,7 +105,8 @@ public class BrowsingModeBottomToolbarCoordinator {
                 TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    activity.showCommentsBottomSheet();
+                    // activity.showCommentsBottomSheet();
+                    activity.openBrowserExpressCommentsSettings();
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
                 }
