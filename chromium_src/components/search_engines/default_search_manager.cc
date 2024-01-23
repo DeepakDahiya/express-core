@@ -9,14 +9,14 @@
 
 namespace {
 
-bool IsDefaultSearchProviderByExtension(PrefService* pref_service) {
-  // |kDefaultSearchProviderByExtension| is only used by desktop.
-#if BUILDFLAG(IS_ANDROID)
-  return false;
-#else
-  return pref_service->GetBoolean(prefs::kDefaultSearchProviderByExtension);
-#endif
-}
+// bool IsDefaultSearchProviderByExtension(PrefService* pref_service) {
+//   // |kDefaultSearchProviderByExtension| is only used by desktop.
+// #if BUILDFLAG(IS_ANDROID)
+//   return false;
+// #else
+//   return pref_service->GetBoolean(prefs::kDefaultSearchProviderByExtension);
+// #endif
+// }
 
 }  // namespace
 
@@ -48,7 +48,7 @@ bool IsDefaultSearchProviderByExtension(PrefService* pref_service) {
 
 // clang-format off
 #define LOADDEFAULTSEARCHENGINEFROMPREFS_BRAVE                      \
-  } else if (IsDefaultSearchProviderByExtension(pref_service_))  {  \
+  } else if (false)  {  \
     extension_default_search_ = std::move(turl_data);
 // clang-format on
 

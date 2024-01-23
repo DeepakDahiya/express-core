@@ -32,10 +32,10 @@
             style="@style/ToolbarButton"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
-            android:src="@drawable/btn_toolbar_profile"
+            android:background="@drawable/btn_toolbar_profile"
             android:layout_gravity="center"
-            android:layout_width="100sp"
-            android:layout_height="100sp"
+            android:layout_width="80sp"
+            android:layout_height="80sp"
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
@@ -68,9 +68,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="visible"
-                android:padding="10sp"
+                android:padding="5sp"
                 android:layout_weight="1"
-                android:layout_margin="10sp">
+                android:layout_margin="5sp">
 
                 <TextView
                     android:id="@+id/be_views"
@@ -98,9 +98,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="visible"
-                android:padding="10sp"
+                android:padding="5sp"
                 android:layout_weight="1"
-                android:layout_margin="10sp">
+                android:layout_margin="5sp">
 
                 <TextView
                     android:id="@+id/be_likes_received"
@@ -128,9 +128,9 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:visibility="visible"
-                android:padding="10sp"
+                android:padding="5sp"
                 android:layout_weight="1"
-                android:layout_margin="10sp">
+                android:layout_margin="5sp">
 
                 <TextView
                     android:id="@+id/be_likes_given"
@@ -166,6 +166,7 @@
              android:textAllCaps="false"
              android:background="@android:color/transparent"
              android:gravity="start|center_vertical"
+             android:textColor="@color/news_settings_title_color"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_edit_profile" />
 
@@ -177,6 +178,7 @@
              android:textAllCaps="false"
              android:background="@android:color/transparent"
              android:gravity="start|center_vertical"
+             android:textColor="@color/news_settings_title_color"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_activity_feed" />
 
@@ -188,6 +190,7 @@
              android:textAllCaps="false"
              android:background="@android:color/transparent"
              android:gravity="start|center_vertical"
+             android:textColor="@color/news_settings_title_color"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_notifications" />
 
@@ -199,6 +202,7 @@
              android:textAllCaps="false"
              android:background="@android:color/transparent"
              android:gravity="start|center_vertical"
+             android:textColor="@color/news_settings_title_color"
              android:drawableTint="@color/news_settings_title_color"
              android:text="@string/be_settings" />
 

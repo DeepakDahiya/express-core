@@ -32,7 +32,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonState;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
-import android.widget.ImageButton;
+import android.widget.Button;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
@@ -42,7 +42,7 @@ import android.widget.ImageButton;
 public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
-    private ImageButton mCommentsButton;
+    private Button mCommentsButton;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;

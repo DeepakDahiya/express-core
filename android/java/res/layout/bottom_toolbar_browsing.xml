@@ -39,14 +39,29 @@
 
     <!-- <include layout="@layout/toolbar_space" /> -->
     <include layout="@layout/toolbar_space" />
-        <ImageButton android:id="@+id/comments_button"
+    <Button
+        android:id="@+id/comments_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:drawableTop="@drawable/comments"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="8dp"
+        android:textAllCaps="false"
+        android:layout_gravity="center"
+        android:background="@android:color/transparent"
+        android:gravity="start|center_vertical"
+        android:textColor="@color/news_settings_title_color"
+        android:text="@string/be_notifications"
+        android:textSize="12sp"
+        android:drawableTint="@color/news_settings_title_color"/>
+        <!-- <ImageButton android:id="@+id/comments_button"
             style="@style/ToolbarButton"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
             android:src="@drawable/comments"
             android:layout_gravity="center"
             android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
 
     <include layout="@layout/brave_bookmark_toolbar" />
     <!-- <include layout="@layout/toolbar_space" /> -->
