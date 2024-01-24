@@ -139,7 +139,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                     mPage = 2;
                 } catch (JSONException e) {
-                    Log.e(TAG, e.getMessage());
+                    Log.e("Comments_Bottom_Sheet", e.getMessage());
                 }
             }
         
