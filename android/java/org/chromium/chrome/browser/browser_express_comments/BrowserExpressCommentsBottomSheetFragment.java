@@ -19,6 +19,8 @@ import org.chromium.ui.widget.Toast;
 import java.util.List;
 import java.util.ArrayList;
 import android.util.DisplayMetrics;
+import org.json.JSONObject;
+import org.json.JSONArray;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -104,6 +106,39 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
+            String commentsString = activity.getFirstComments();
+            if(commentsString){
+                JSONArray commentsArray = new JSONArray(commentsString);
+                List<Comment> comments = new ArrayList<Comment>();
+                for (int i = 0; i < commentsArray.length(); i++) {
+                    JSONObject comment = commentsArray.getJSONObject(i);
+                    JSONObject user = comment.getJSONObject("user");
+                    JSONObject didVote = comment.optJSONObject("didVote");
+                    Vote v = null;
+                    if(didVote != null){
+                        v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                    }
+                    User u = new User(user.getString("_id"), user.getString("username"));
+                    comments.add(new Comment(
+                        comment.getString("_id"), 
+                        comment.getString("content"),
+                        comment.getInt("upvoteCount"),
+                        comment.getInt("downvoteCount"),
+                        comment.getInt("commentCount"),
+                        u, 
+                        v));
+                }
+
+                int len = mComments.size();
+                mComments.clear();
+                mCommentAdapter.notifyItemRangeRemoved(0, len);
+                mComments.addAll(comments);
+                mCommentAdapter.notifyItemRangeInserted(0, comments.size());
+                
+                mPage = 2;
+            }
+        
+
             mUrl = activity.getActivityTab().getUrl().getSpec();
 
             BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
@@ -161,10 +196,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
                     int len = mComments.size();
-                    mComments.clear();
-                    mCommentAdapter.notifyItemRangeRemoved(0, len);
+                    // mComments.clear();
+                    // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(0, comments.size());
+                    mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+
+                    // data.addAll(insertIndex, items);
+                    // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
 
                     // DisplayMetrics displaymetrics = new DisplayMetrics();
                     // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);

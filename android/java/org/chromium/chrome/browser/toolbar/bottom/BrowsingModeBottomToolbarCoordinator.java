@@ -8,6 +8,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
+import org.chromium.base.task.AsyncTask;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -98,6 +99,18 @@ public class BrowsingModeBottomToolbarCoordinator {
         mBraveHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
+
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            String mUrl = activity.getActivityTab().getUrl().getSpec();
+
+            BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                        mUrl, getCommentsCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e("Browser Express Access Token", e.getMessage());
+        }
 
         if (mCommentsButton != null) {
             mCommentsButton.setClickable(true);
@@ -292,4 +305,23 @@ public class BrowsingModeBottomToolbarCoordinator {
     BookmarksButton getBookmarkButton() {
         return mBookmarkButton;
     }
+
+    private BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
+            new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
+                @Override
+                public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
+                    mCommentsButton.setText(Integer.toString(commentCount) + " comments");
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setFirstComments(comments.toString());
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e(TAG, "BookmarkButton click " + e);
+                    }
+                }
+
+                @Override
+                public void getFirstCommentsFailed(String error) {
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                }
+            };
 }
