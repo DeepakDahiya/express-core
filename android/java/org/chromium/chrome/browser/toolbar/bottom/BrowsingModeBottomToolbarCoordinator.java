@@ -310,7 +310,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
                 @Override
                 public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
-                    mCommentsButton.setText(Integer.toString(commentCount) + " comments");
+                    mCommentsButton.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setFirstComments(comments.toString());
