@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import android.util.DisplayMetrics;
 import org.json.JSONObject;
 import org.json.JSONArray;
+import org.json.JSONException;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -108,34 +109,38 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             BraveActivity activity = BraveActivity.getBraveActivity();
             String commentsString = activity.getFirstComments();
             if(commentsString != null){
-                JSONArray commentsArray = new JSONArray(commentsString);
-                List<Comment> comments = new ArrayList<Comment>();
-                for (int i = 0; i < commentsArray.length(); i++) {
-                    JSONObject comment = commentsArray.getJSONObject(i);
-                    JSONObject user = comment.getJSONObject("user");
-                    JSONObject didVote = comment.optJSONObject("didVote");
-                    Vote v = null;
-                    if(didVote != null){
-                        v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                try{
+                    JSONArray commentsArray = new JSONArray(commentsString);
+                    List<Comment> comments = new ArrayList<Comment>();
+                    for (int i = 0; i < commentsArray.length(); i++) {
+                        JSONObject comment = commentsArray.getJSONObject(i);
+                        JSONObject user = comment.getJSONObject("user");
+                        JSONObject didVote = comment.optJSONObject("didVote");
+                        Vote v = null;
+                        if(didVote != null){
+                            v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                        }
+                        User u = new User(user.getString("_id"), user.getString("username"));
+                        comments.add(new Comment(
+                            comment.getString("_id"), 
+                            comment.getString("content"),
+                            comment.getInt("upvoteCount"),
+                            comment.getInt("downvoteCount"),
+                            comment.getInt("commentCount"),
+                            u, 
+                            v));
                     }
-                    User u = new User(user.getString("_id"), user.getString("username"));
-                    comments.add(new Comment(
-                        comment.getString("_id"), 
-                        comment.getString("content"),
-                        comment.getInt("upvoteCount"),
-                        comment.getInt("downvoteCount"),
-                        comment.getInt("commentCount"),
-                        u, 
-                        v));
+
+                    int len = mComments.size();
+                    mComments.clear();
+                    mCommentAdapter.notifyItemRangeRemoved(0, len);
+                    mComments.addAll(comments);
+                    mCommentAdapter.notifyItemRangeInserted(0, comments.size());
+
+                    mPage = 2;
+                } catch (JSONException e) {
+                    Log.e(TAG, e.getMessage());
                 }
-
-                int len = mComments.size();
-                mComments.clear();
-                mCommentAdapter.notifyItemRangeRemoved(0, len);
-                mComments.addAll(comments);
-                mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-
-                mPage = 2;
             }
         
 
