@@ -107,7 +107,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String commentsString = activity.getFirstComments();
-            if(commentsString){
+            if(commentsString != null){
                 JSONArray commentsArray = new JSONArray(commentsString);
                 List<Comment> comments = new ArrayList<Comment>();
                 for (int i = 0; i < commentsArray.length(); i++) {
@@ -134,7 +134,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 mCommentAdapter.notifyItemRangeRemoved(0, len);
                 mComments.addAll(comments);
                 mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-                
+
                 mPage = 2;
             }
         

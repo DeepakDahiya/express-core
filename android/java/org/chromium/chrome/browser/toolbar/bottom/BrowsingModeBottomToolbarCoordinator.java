@@ -9,6 +9,8 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import org.chromium.base.task.AsyncTask;
+import java.util.Locale;
+import org.json.JSONArray;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -106,7 +108,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
             BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
                 new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-                        mUrl, getCommentsCallback);
+                        mUrl, getFirstCommentsCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Browser Express Access Token", e.getMessage());
