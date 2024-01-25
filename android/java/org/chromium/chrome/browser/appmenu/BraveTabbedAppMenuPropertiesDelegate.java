@@ -141,45 +141,45 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
             }
         }
         MenuItem braveWallet = menu.findItem(R.id.brave_wallet_id);
-        if (braveWallet != null) {
-            if (ChromeFeatureList.isEnabled(BraveFeatureList.NATIVE_BRAVE_WALLET)) {
-                braveWallet.setVisible(true);
-                if (shouldShowIconBeforeItem()) {
-                    braveWallet.setIcon(
-                            AppCompatResources.getDrawable(mContext, R.drawable.ic_crypto_wallets));
-                }
-            } else {
-                braveWallet.setVisible(false);
-            }
-        }
+        // if (braveWallet != null) {
+        //     if (ChromeFeatureList.isEnabled(BraveFeatureList.NATIVE_BRAVE_WALLET)) {
+        //         braveWallet.setVisible(true);
+        //         if (shouldShowIconBeforeItem()) {
+        //             braveWallet.setIcon(
+        //                     AppCompatResources.getDrawable(mContext, R.drawable.ic_crypto_wallets));
+        //         }
+        //     } else {
+        //         braveWallet.setVisible(false);
+        //     }
+        // }
         MenuItem braveLeo = menu.findItem(R.id.brave_leo_id);
-        if (braveLeo != null) {
-            if (BraveConfig.AI_CHAT_ENABLED
-                    && ChromeFeatureList.isEnabled(BraveFeatureList.AI_CHAT)) {
-                braveLeo.setVisible(true);
-                if (shouldShowIconBeforeItem()) {
-                    braveLeo.setIcon(
-                            AppCompatResources.getDrawable(mContext, R.drawable.ic_brave_ai));
-                }
-            } else {
-                braveLeo.setVisible(false);
-            }
-        }
+        // if (braveLeo != null) {
+        //     if (BraveConfig.AI_CHAT_ENABLED
+        //             && ChromeFeatureList.isEnabled(BraveFeatureList.AI_CHAT)) {
+        //         braveLeo.setVisible(true);
+        //         if (shouldShowIconBeforeItem()) {
+        //             braveLeo.setIcon(
+        //                     AppCompatResources.getDrawable(mContext, R.drawable.ic_brave_ai));
+        //         }
+        //     } else {
+        //         braveLeo.setVisible(false);
+        //     }
+        // }
 
         MenuItem bravePlaylist = menu.findItem(R.id.brave_playlist_id);
-        if (bravePlaylist != null) {
-            if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_PLAYLIST)
-                    && SharedPreferencesManager.getInstance().readBoolean(
-                            BravePlaylistPreferences.PREF_ENABLE_PLAYLIST, true)) {
-                bravePlaylist.setVisible(true);
-                if (shouldShowIconBeforeItem()) {
-                    bravePlaylist.setIcon(
-                            AppCompatResources.getDrawable(mContext, R.drawable.ic_open_playlist));
-                }
-            } else {
-                bravePlaylist.setVisible(false);
-            }
-        }
+        // if (bravePlaylist != null) {
+        //     if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_PLAYLIST)
+        //             && SharedPreferencesManager.getInstance().readBoolean(
+        //                     BravePlaylistPreferences.PREF_ENABLE_PLAYLIST, true)) {
+        //         bravePlaylist.setVisible(true);
+        //         if (shouldShowIconBeforeItem()) {
+        //             bravePlaylist.setIcon(
+        //                     AppCompatResources.getDrawable(mContext, R.drawable.ic_open_playlist));
+        //         }
+        //     } else {
+        //         bravePlaylist.setVisible(false);
+        //     }
+        // }
 
         MenuItem braveNews = menu.add(Menu.NONE, R.id.brave_news_id, 0, R.string.brave_news_title);
         if (shouldShowIconBeforeItem()) {
@@ -188,18 +188,18 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
 
         MenuItem braveSpeedReader = menu.findItem(R.id.brave_speedreader_id);
         braveSpeedReader.setVisible(false);
-        if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_SPEEDREADER)
-                && UserPrefs.get(mTabModelSelector.getCurrentModel().getProfile())
-                           .getBoolean(BravePref.SPEEDREADER_PREF_ENABLED)) {
-            final Tab currentTab = mActivityTabProvider.get();
-            if (currentTab != null && BraveSpeedReaderUtils.tabSupportsDistillation(currentTab)) {
-                braveSpeedReader.setVisible(true);
-                if (shouldShowIconBeforeItem()) {
-                    braveSpeedReader.setIcon(
-                            AppCompatResources.getDrawable(mContext, R.drawable.ic_readermode));
-                }
-            }
-        }
+        // if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_SPEEDREADER)
+        //         && UserPrefs.get(mTabModelSelector.getCurrentModel().getProfile())
+        //                    .getBoolean(BravePref.SPEEDREADER_PREF_ENABLED)) {
+        //     final Tab currentTab = mActivityTabProvider.get();
+        //     if (currentTab != null && BraveSpeedReaderUtils.tabSupportsDistillation(currentTab)) {
+        //         braveSpeedReader.setVisible(true);
+        //         if (shouldShowIconBeforeItem()) {
+        //             braveSpeedReader.setIcon(
+        //                     AppCompatResources.getDrawable(mContext, R.drawable.ic_readermode));
+        //         }
+        //     }
+        // }
 
         MenuItem exit = menu.add(Menu.NONE, R.id.exit_id, 0, R.string.menu_exit);
         if (shouldShowIconBeforeItem()) {
