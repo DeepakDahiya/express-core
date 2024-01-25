@@ -267,11 +267,11 @@ public class BraveToolbarManager extends ToolbarManager {
 
     @Override
     public @Nullable View getMenuButtonView() {
-        // if (mMenuButtonCoordinator.getMenuButton() == null) {
-        //     // Return fake view instead of null to avoid NullPointerException as some code within
-        //     // Chromium doesn't check for null.
-        //     return new View(mActivity);
-        // }
+        if (mMenuButtonCoordinator.getMenuButton() == null) {
+            // Return fake view instead of null to avoid NullPointerException as some code within
+            // Chromium doesn't check for null.
+            return new View(mActivity);
+        }
         return super.getMenuButtonView();
     }
 
