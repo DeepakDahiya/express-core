@@ -252,6 +252,7 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
         mMenu.removeItem(R.id.exit_id);
         mMenu.removeItem(R.id.request_brave_vpn_row_menu_id);
         mMenu.removeItem(R.id.brave_leo_id);
+        mMenu.removeItem(R.id.brave_news_id);
     }
 
     @Override
