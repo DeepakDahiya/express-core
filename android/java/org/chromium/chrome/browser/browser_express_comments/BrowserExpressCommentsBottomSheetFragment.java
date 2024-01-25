@@ -242,6 +242,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     mComments.add(0, comment);
                     mCommentAdapter.notifyItemInserted(0);
                     mMessageEditText.setText(R.string.browser_express_empty_text);
+
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                    layoutManager.scrollToPositionWithOffset(0, 0);
                 }
 
                 @Override
