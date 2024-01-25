@@ -16,12 +16,12 @@
     android:orientation="vertical"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
-    <ImageButton android:id="@+id/btn_maximize"
+    <!-- <ImageButton android:id="@+id/btn_maximize"
         style="@style/ToolbarButton"
         android:src="@drawable/maximize"
         android:layout_gravity="center"
         android:visibility="visible"
-        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
 
     <TextView
         android:layout_width="wrap_content"
@@ -34,22 +34,23 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_gchat"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_marginBottom="16dp"
-        app:layout_constrainedHeight="true"/>
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:layout_marginBottom="16dp"/>
     <RelativeLayout
         android:id="@+id/layout_gchat_chatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:layout_gravity="bottom">
 
         <ImageButton android:id="@+id/profile_button"
-            style="@style/ToolbarButton"
-            android:src="@drawable/btn_toolbar_profile"
-            android:layout_gravity="center"
+            android:background="@drawable/btn_toolbar_profile"
+            android:layout_width="36sp"
+            android:layout_height="36sp"
             android:visibility="visible"
+            android:layout_gravity="center"
+            android:layout_centerVertical="true"
             android:contentDescription="@string/profile_image" />
 
         <EditText
