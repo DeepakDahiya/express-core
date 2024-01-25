@@ -177,7 +177,8 @@ public class BrowsingModeBottomToolbarCoordinator {
             Supplier<MenuButtonState> menuButtonStateSupplier =
                     () -> UpdateMenuItemHelper.getInstance().getUiState().buttonState;
             BraveMenuButtonCoordinator.setupPropertyModel(mMenuButton, menuButtonStateSupplier);
-            mMenuButton.setVisibility(View.VISIBLE);
+            // mMenuButton.setVisibility(View.VISIBLE);
+            mMenuButton.setVisibility(View.GONE);
             // if (!BottomToolbarVariationManager.isMenuButtonOnBottom()) {
             //     mMenuButton.setVisibility(View.GONE);
             // }
