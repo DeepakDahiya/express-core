@@ -1341,8 +1341,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     private boolean isMenuButtonOnBottom() {
-        return false;
-        // return mIsBottomToolbarVisible && BottomToolbarVariationManager.isMenuButtonOnBottom();
+        return mIsBottomToolbarVisible && BottomToolbarVariationManager.isMenuButtonOnBottom();
     }
 
     @Override
@@ -1360,8 +1359,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     public void updateMenuButtonState() {
-        BraveMenuButtonCoordinator.setMenuFromBottom(false);
-        // BraveMenuButtonCoordinator.setMenuFromBottom(mIsBottomToolbarVisible);
+        BraveMenuButtonCoordinator.setMenuFromBottom(mIsBottomToolbarVisible);
     }
 
     @Override

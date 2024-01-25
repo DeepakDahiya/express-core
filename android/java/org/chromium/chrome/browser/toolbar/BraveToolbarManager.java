@@ -325,7 +325,6 @@ public class BraveToolbarManager extends ToolbarManager {
         mIsBottomToolbarVisible = visible;
         boolean isMenuFromBottom =
                 mIsBottomToolbarVisible && BottomToolbarConfiguration.isBottomToolbarEnabled();
-        isMenuFromBottom = false;
         BraveMenuButtonCoordinator.setMenuFromBottom(isMenuFromBottom);
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomToolbarVisibilityChanged(visible);
