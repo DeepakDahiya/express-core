@@ -243,6 +243,14 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
                 hasItemBetweenDividers = true;
             }
         }
+
+        mMenu.removeItem(R.id.set_default_browser);
+        mMenu.removeItem(R.id.brave_rewards_id);
+        mMenu.removeItem(R.id.brave_wallet_id);
+        mMenu.removeItem(R.id.brave_playlist_id);
+        mMenu.removeItem(R.id.brave_speedreader_id);
+        mMenu.removeItem(R.id.exit_id);
+        mMenu.removeItem(R.id.request_brave_vpn_row_menu_id);
     }
 
     @Override
@@ -294,14 +302,16 @@ public class BraveTabbedAppMenuPropertiesDelegate extends TabbedAppMenuPropertie
 
     @Override
     public boolean shouldShowHeader(int maxMenuHeight) {
-        if (isMenuButtonInBottomToolbar()) return false;
         return super.shouldShowHeader(maxMenuHeight);
+        // if (isMenuButtonInBottomToolbar()) return false;
+        // return super.shouldShowHeader(maxMenuHeight);
     }
 
     @Override
     public boolean shouldShowFooter(int maxMenuHeight) {
-        if (isMenuButtonInBottomToolbar()) return true;
         return super.shouldShowFooter(maxMenuHeight);
+        // if (isMenuButtonInBottomToolbar()) return true;
+        // return super.shouldShowFooter(maxMenuHeight);
     }
 
     @Override
