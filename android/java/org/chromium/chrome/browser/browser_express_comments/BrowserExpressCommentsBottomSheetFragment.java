@@ -88,6 +88,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
 
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
         mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
