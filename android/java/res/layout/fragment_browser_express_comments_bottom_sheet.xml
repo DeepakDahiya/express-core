@@ -16,12 +16,12 @@
     android:orientation="vertical"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
-    <!-- <ImageButton android:id="@+id/btn_maximize"
+    <ImageButton android:id="@+id/btn_maximize"
         style="@style/ToolbarButton"
         android:src="@drawable/maximize"
         android:layout_gravity="center"
         android:visibility="visible"
-        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
+        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
     <TextView
         android:layout_width="wrap_content"
