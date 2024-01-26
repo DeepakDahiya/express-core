@@ -82,6 +82,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/be_reply"
                     android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
                 <Button
@@ -90,6 +91,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/be_share"
                     android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </LinearLayout>
         </LinearLayout>
