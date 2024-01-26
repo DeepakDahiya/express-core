@@ -14,7 +14,7 @@
     <FrameLayout android:id="@+id/profile_button_layout"
         android:layout_width="45dp"
         android:orientation="vertical"
-        android:background="@drawable/modern_toolbar_background_grey_middle_segment"
+        android:background="@android:color/transparent"
         android:layout_marginTop="8dp"
         android:layout_height="40dp"
         android:visibility="visible" >
@@ -23,7 +23,9 @@
             style="@style/ToolbarButton"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:src="@drawable/btn_toolbar_profile"
+            android:background="@drawable/btn_toolbar_profile"
+            android:layout_width="36sp"
+            android:layout_height="36sp"
             android:layout_gravity="center"
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
