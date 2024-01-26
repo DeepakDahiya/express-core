@@ -14,7 +14,7 @@
     <FrameLayout android:id="@+id/profile_button_layout"
         android:layout_width="45dp"
         android:orientation="vertical"
-        android:background="@android:color/transparent"
+        android:background="@drawable/modern_toolbar_background_grey_middle_segment"
         android:layout_marginTop="8dp"
         android:layout_height="40dp"
         android:visibility="visible" >
