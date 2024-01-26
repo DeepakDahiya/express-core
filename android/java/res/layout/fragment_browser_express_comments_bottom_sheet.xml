@@ -80,8 +80,8 @@
             android:layout_alignParentEnd="true"
             android:layout_marginStart="8sp"
             android:visibility="visible"
-            android:layout_width="32sp"
-            android:layout_height="32sp"
+            android:layout_width="28sp"
+            android:layout_height="28sp"
             android:contentDescription="@string/send_comment" />
 
     </RelativeLayout>

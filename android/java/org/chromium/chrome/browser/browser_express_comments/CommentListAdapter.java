@@ -86,15 +86,17 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 String type = didVote.getType();
                 didVoteType = type;
                 if(type.equals("up")){
-                    int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
-                    Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
-                    mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
-                    mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                    // int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                    // Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
+                    // mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                    // mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange)
                 }else if(type.equals("down")){
-                    int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
-                    Drawable mDownvoteDrawable = mUpvoteButton.getDrawable();
-                    mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
-                    mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+                    // int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                    // Drawable mDownvoteDrawable = mUpvoteButton.getDrawable();
+                    // mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                    // mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange)
                 }
             }
 
@@ -109,20 +111,23 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     if (accessToken == null) {
                         // activity.showGenerateUsernameBottomSheet();
                     } else {
-                        int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
-                        int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
+                        // int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                        // int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
 
-                        // Get the drawable from the ImageButton
-                        Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
-                        Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
+                        // // Get the drawable from the ImageButton
+                        // Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
+                        // Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
 
-                        // Apply the tint color using setColorFilter
-                        mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
-                        mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
+                        // // Apply the tint color using setColorFilter
+                        // mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                        // mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
 
-                        // Update the ImageButton with the modified drawable
-                        mUpvoteButton.setImageDrawable(mUpvoteDrawable);
-                        mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+                        // // Update the ImageButton with the modified drawable
+                        // mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                        // mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange)
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote)
 
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
@@ -155,20 +160,23 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     if (accessToken == null) {
                         // activity.showGenerateUsernameBottomSheet();
                     } else {
-                        int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
-                        int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
+                        // int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
+                        // int grayColor = ContextCompat.getColor(activity, R.color.onboarding_gray);
 
-                        // Get the drawable from the ImageButton
-                        Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
-                        Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
+                        // // Get the drawable from the ImageButton
+                        // Drawable mDownvoteDrawable = mDownvoteButton.getDrawable();
+                        // Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
 
-                        // Apply the tint color using setColorFilter
-                        mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
-                        mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
+                        // // Apply the tint color using setColorFilter
+                        // mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
+                        // mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(grayColor, PorterDuff.Mode.SRC_IN));
 
-                        // Update the ImageButton with the modified drawable
-                        mDownvoteButton.setImageDrawable(mDownvoteDrawable);
-                        mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                        // // Update the ImageButton with the modified drawable
+                        // mDownvoteButton.setImageDrawable(mDownvoteDrawable);
+
+                        // mUpvoteButton.setImageDrawable(mUpvoteDrawable);
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote)
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange)
 
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
