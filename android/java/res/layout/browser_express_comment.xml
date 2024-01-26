@@ -1,33 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="8dp"
-    android:layout_marginTop="16dp">
-
-    <TextView
-        android:id="@+id/title"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/browser_express_login_title"
-        android:textColor="#C0C0C0"
-        android:textSize="11sp"
-        app:layout_constraintEnd_toEndOf="parent"
-	    app:layout_constraintTop_toBottomOf="@id/text_gchat_timestamp_me"/>
-
-    <TextView
-        android:id="@+id/text_gchat_timestamp_me"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="#C0C0C0"
-        android:textSize="11sp"
-        app:layout_constraintBottom_toBottomOf="@+id/title" 
-        app:layout_constraintEnd_toStartOf="@+id/title"/>
-
-
-</androidx.constraintlayout.widget.ConstraintLayout> -->
-
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -47,12 +18,10 @@
 
             <ImageButton
                 android:id="@+id/btn_upvote"
-                style="@style/ToolbarButton"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:src="@drawable/btn_upvote"
-                android:background="@android:color/transparent" 
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
+                android:background="@drawable/btn_upvote"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                 android:scaleType="centerCrop" />
 
             <TextView
@@ -61,15 +30,14 @@
                 android:layout_height="wrap_content"
                 android:textColor="@color/news_settings_title_color"
                 android:layout_gravity="center"
-                android:textSize="14sp"/>
+                android:textSize="12sp"/>
 
             <ImageButton
                 android:id="@+id/btn_downvote"
                 style="@style/ToolbarButton"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:background="@android:color/transparent"
-                android:src="@drawable/btn_downvote"
+                android:background="@drawable/btn_downvote"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
                 android:scaleType="centerCrop"/>
 
@@ -77,12 +45,11 @@
 
         <ImageButton
             style="@style/ToolbarButton"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/btn_toolbar_profile"
+            android:layout_width="42sp"
+            android:layout_height="42sp"
+            android:background="@drawable/btn_toolbar_profile"
             android:scaleType="centerCrop"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-            android:layout_marginEnd="8dp"/>
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -104,11 +71,39 @@
                 android:textColor="@color/news_settings_title_color"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="11dp"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+                <Button
+                    android:id="@+id/btn_reply"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/be_reply"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
+                    android:id="@+id/btn_share"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/be_share"
+                    android:background="@android:color/transparent"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            </LinearLayout>
         </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btn_options"
+            android:layout_width="30dp"
+            android:layout_height="30dp"
+            android:background="@drawable/ic_more_vert_24dp"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="10dp"
         android:background="#DAD8D8"/>
 </LinearLayout>
