@@ -90,13 +90,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     // Drawable mUpvoteDrawable = mUpvoteButton.getDrawable();
                     // mUpvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
                     // mUpvoteButton.setImageDrawable(mUpvoteDrawable);
-                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange)
+                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
                 }else if(type.equals("down")){
                     // int orangeColor = ContextCompat.getColor(activity, R.color.browser_express_orange_color);
                     // Drawable mDownvoteDrawable = mUpvoteButton.getDrawable();
                     // mDownvoteDrawable.setColorFilter(new PorterDuffColorFilter(orangeColor, PorterDuff.Mode.SRC_IN));
                     // mDownvoteButton.setImageDrawable(mDownvoteDrawable);
-                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange)
+                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                 }
             }
 
@@ -126,8 +126,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         // mUpvoteButton.setImageDrawable(mUpvoteDrawable);
                         // mDownvoteButton.setImageDrawable(mDownvoteDrawable);
 
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange)
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote)
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
 
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
@@ -175,8 +175,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         // mDownvoteButton.setImageDrawable(mDownvoteDrawable);
 
                         // mUpvoteButton.setImageDrawable(mUpvoteDrawable);
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote)
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange)
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
 
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
