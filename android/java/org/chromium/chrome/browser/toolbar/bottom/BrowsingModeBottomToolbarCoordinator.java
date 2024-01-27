@@ -47,7 +47,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
     private ImageButton mCommentsButton;
-    private Button mCommentsButton1;
+    // private Button mCommentsButton1;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
@@ -102,7 +102,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mBraveHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
-        mCommentsButton1 = mToolbarRoot.findViewById(R.id.comments_button1);
+        // mCommentsButton1 = mToolbarRoot.findViewById(R.id.comments_button1);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
 
         try {
@@ -315,7 +315,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
                 @Override
                 public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
-                    mCommentsButton1.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    // mCommentsButton1.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setFirstComments(comments.toString());
