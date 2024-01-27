@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
+import android.widget.ImageButton;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
