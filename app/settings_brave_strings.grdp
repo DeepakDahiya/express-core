@@ -5,40 +5,40 @@
   <!-- Shared across multiple page -->
   <if expr="not chromeos_ash">
     <message name="IDS_RELAUNCH_CONFIRMATION_DIALOG_TITLE" desc="The title of the modal dialog that we show when users click on relaunch and they have open Private windows. The dialog serves to warn the users about losing their Private windows if they proceed with the relaunch.">
-      Relaunch Brave?
+      Relaunch Browser Express?
     </message>
   </if>
   <!-- About Page -->
   <if expr="_is_chrome_for_testing_branded">
     <then>
       <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Brave for Testing page.">
-        About Brave for Testing
+        About Browser Express for Testing
       </message>
       <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Brave for Testing help page.">
-        Get help with Brave for Testing
+        Get help with Browser Express for Testing
       </message>
     </then>
     <else>
       <message name="IDS_SETTINGS_ABOUT_PROGRAM" desc="Menu title for the About Brave page.">
-        About Brave
+        About Browser Express
       </message>
       <message name="IDS_SETTINGS_GET_HELP_USING_CHROME" desc="Text of the button which takes the user to the Brave help page.">
-        Get help with Brave
+        Get help with Browser Express
       </message>
     </else>
   </if>
   <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_UPGRADE_UPDATING" desc="Status label: Updating Brave">
-      Updating Brave
+      Updating Browser Express
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UPDATING_PERCENT" desc="Status label: Updating Brave (90%)">
-      Updating Brave (<ph name="PROGRESS_PERCENT">$1<ex>90%</ex></ph>)
+      Updating Browser Express (<ph name="PROGRESS_PERCENT">$1<ex>90%</ex></ph>)
     </message>
     <message name="IDS_SETTINGS_UPGRADE_SUCCESSFUL_RELAUNCH" desc="Status label: Successfully updated Brave">
-      Nearly up to date! Relaunch Brave to finish updating.
+      Nearly up to date! Relaunch Browser Express to finish updating.
     </message>
     <message name="IDS_SETTINGS_UPGRADE_UP_TO_DATE" desc="Status label: Already up to date (Brave)">
-      Brave is up to date
+      Browser Express is up to date
     </message>
   </if>
   <if expr="chromeos_ash">
@@ -55,61 +55,61 @@
 
   <!-- Autofill Page -->
   <message name="IDS_SETTINGS_GOOGLE_PAYMENTS_CACHED" desc="Label that will be used to show that a credit card comes from Google Pay and is saved locally. This should follow the casing of the 'Google Pay' and 'Brave' brands. 'Copied to Brave' is short for 'The credit card is copied to Brave'. 'Google Pay' should not be translated as it is the product name.">
-    Google Pay (copied to Brave)
+    Google Pay (copied to Browser Express)
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_OFFLINE" desc="Error message when the password check can't be completed because the user is offline.">
-    Brave can't check your passwords. Try checking your internet connection.
+    Browser Express can't check your passwords. Try checking your internet connection.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_SIGNED_OUT" desc="Error message when the password check can't be completed because the user is not signed in.">
-    Brave can check your passwords when you sign in with your Brave sync chain
+    Browser Express can check your passwords when you sign in with your Browser Express sync chain
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_NO_PASSWORDS" desc="Error message when the password check can't be completed since no passwords could be checked.">
-    No saved passwords. Brave can check your passwords when you save them.
+    No saved passwords. Browser Express can check your passwords when you save them.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT_GOOGLE_ACCOUNT" desc="Error message when the password check can't be completed since the user hit the quota limit, but the user is able to check their passwords in their Brave account.">
-    Brave can't check your passwords. Try again after 24 hours or <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>check passwords in your Brave sync chain<ph name="END_LINK">&lt;/a&gt;</ph>.
+    Browser Express can't check your passwords. Try again after 24 hours or <ph name="BEGIN_LINK">&lt;a href="$1" target="_blank"&gt;</ph>check passwords in your Brave sync chain<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_QUOTA_LIMIT" desc="Error message when the password check can't be completed since the user hit the quota limit.">
-    Brave can't check your passwords. Try again after 24 hours.
+    Browser Express can't check your passwords. Try again after 24 hours.
   </message>
   <message name="IDS_SETTINGS_CHECK_PASSWORDS_ERROR_GENERIC" desc="Error message when the password check can't be completed for an unspecified reason.">
-    Brave can't check your passwords. Try again later.
+    Browser Express can't check your passwords. Try again later.
   </message>
   <message name="IDS_SETTINGS_NO_COMPROMISED_CREDENTIALS_LABEL" desc="Label which is shown when there were no compromised passwords detected.">
-    Brave will notify you when you sign in with a compromised password
+    Browser Express will notify you when you sign in with a compromised password
   </message>
   <message name="IDS_SETTINGS_SIGNED_OUT_USER_LABEL" desc="Label which is shown at the top of the compromised password section if user is signed out.">
-    To check if your passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>sign in to Brave<ph name="END_LINK">&lt;/a&gt;</ph>.
+    To check if your passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>sign in to Browser Express<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_SETTINGS_SIGNED_OUT_USER_HAS_COMPROMISED_CREDENTIALS_LABEL" desc="Label which is shown at the bottom of the compromised password section if user is signed out and has compromised credentials.">
-    To check if your other passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>sign in to Brave<ph name="END_LINK">&lt;/a&gt;</ph>.
+    To check if your other passwords are safe from data breaches and other security issues, <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>sign in to Browser Express<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_SETTINGS_WEAK_PASSWORDS_DESCRIPTION_GENERATION" desc="Information about why weak passwords are a security issue and what syncing user should do to fix the problem. Has a link.">
-    Weak passwords are easy to guess. Let Brave <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>create and remember strong passwords for you<ph name="END_LINK">&lt;/a&gt;</ph>.
+    Weak passwords are easy to guess. Let Browser Express <ph name="BEGIN_LINK">&lt;a target='_blank' href='$1'&gt;</ph>create and remember strong passwords for you<ph name="END_LINK">&lt;/a&gt;</ph>.
   </message>
   <message name="IDS_SETTINGS_COMPROMISED_EDIT_DISCLAIMER_DESCRIPTION" desc="A description for the dialog which tells the user to edit password in Brave if it was changed already.">
-    If so, please edit your saved password in Brave so it matches your new password.
+    If so, please edit your saved password in Browser Express so it matches your new password.
   </message>
   <!-- Default Browser Page -->
   <if expr="not chromeos_ash">
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_DEFAULT" desc="The text displayed when Brave is the default browser">
-      Brave is your default browser
+      Browser Express is your default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_MAKE_DEFAULT" desc="Default browser checkbox label">
-      Make Brave the default browser
+      Make Browser Express the default browser
     </message>
     <message name="IDS_SETTINGS_DEFAULT_BROWSER_ERROR" desc="The text displayed when Brave cannot determine or set the default browser">
-      Brave cannot determine or set the default browser
+      Browser Express cannot determine or set the default browser
     </message>
     <if expr="_is_chrome_for_testing_branded">
       <then>
         <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Brave for Testing is installed in side-by-side mode, which does not support setting as the default browser.">
-          Brave for Testing cannot be made your default browser.
+          Browser Express for Testing cannot be made your default browser.
         </message>
       </then>
       <else>
         <message name="IDS_SETTINGS_DEFAULT_BROWSER_SECONDARY" desc="The text displayed when Brave is installed in side-by-side mode, which does not support setting as the default browser.">
-          This is a secondary installation of Brave, and cannot be made your default browser.
+          This is a secondary installation of Browser Express, and cannot be made your default browser.
         </message>
       </else>
     </if>
@@ -117,56 +117,56 @@
 
   <!-- Preloading Page-->
   <message name="IDS_SETTINGS_PRELOAD_PAGES_STANDARD_PRELOADING_WHEN_ON_BULLET_TWO" desc="Second bullet point in the standard preloading and when on column. Informs the user about what the standard preloading setting does.">
-    Brave preloads pages you're likely to visit, so that they load more quickly when you visit them
+    Browser Express preloads pages you're likely to visit, so that they load more quickly when you visit them
   </message>
   <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_WHEN_ON_BULLET_TWO" desc="Second bullet point in the extended preloading and when on column. Informs the user about what the extended preloading setting does.">
-    Brave preloads even more pages that you're likely to visit, so that they load more quickly when you visit them
+    Browser Express preloads even more pages that you're likely to visit, so that they load more quickly when you visit them
   </message>
   <message name="IDS_SETTINGS_PRELOAD_PAGES_EXTENDED_PRELOADING_THINGS_TO_CONSIDER_BULLET_TWO" desc="Second bullet point in the extended preloading and things to consider column. Informs the user about what the extended preloading setting does.">
-    When a site asks to privately preload links on their page, Brave uses Brave servers. This hides your identity from the preloaded site, but Brave learns what sites get preloaded.
+    When a site asks to privately preload links on their page, Browser Express uses Browser Express servers. This hides your identity from the preloaded site, but Browser Express learns what sites get preloaded.
   </message>
   <message name="IDS_SETTINGS_PRELOAD_PAGES_THINGS_TO_CONSIDER_BULLET_ONE" desc="First bullet point in the things to consider column. Informs the user about what the preloading setting does.">
-    If you allow cookies, Brave may use them when preloading
+    If you allow cookies, Browser Express may use them when preloading
   </message>
 
   <!-- Privacy Page -->
   <message name="IDS_SETTINGS_SPELLING_PREF_DESC" desc="Description of using a web serviced to help resolve spelling errors. It is important to convey that what the user types will be sent to Brave.">
-    To fix spelling errors, Brave sends the text you type in text fields to Brave
+    To fix spelling errors, Browser Express sends the text you type in text fields to Browser Express
   </message>
   <message name="IDS_SETTINGS_RESTART_TO_APPLY_CHANGES" desc="Description in the snackbar to restart Brave and apply changes.">
-    To apply your changes, relaunch Brave
+    To apply your changes, relaunch Browser Express
   </message>
 
   <if expr="not is_chromeos">
     <message name="IDS_SETTINGS_SIGNIN_ALLOWED" desc="The title of the preference to allow to sign-in to Brave">
-    Allow Brave sign-in
+    Allow Browser Express sign-in
     </message>
     <message name="IDS_SETTINGS_SIGNIN_ALLOWED_DESC" desc="The description of the preference to allow to sign-in to Brave">
-    By turning this off, you can sign in to Brave sites like Gmail without signing in to Brave
+    By turning this off, you can sign in to Browser Express sites like Gmail without signing in to Browser Express
     </message>
   </if>
 
   <!-- Site Settings -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_PDFS_BLOCKED" desc="Label for the disabled option of the pdfs content setting.">
-    Open PDFs in Brave
+    Open PDFs in Browser Express
   </message>
   <if expr="not is_chromeos">
     <message name="IDS_SETTINGS_COOKIES_CLEAR_ON_EXIT_DESC" desc="Secondary text for the toggle that allows the user to automatically delete their cookies and site data when they close all browser windows. This sublabel clarifies that when the toggle is enabled the user will be signed out of Brave each time they close all Brave windows.">
-      When on, you'll also be signed out of Brave
+      When on, you'll also be signed out of Browser Express
     </message>
   </if>
 
     <!-- Site Settings - Site Data Page-->
   <message name="IDS_SETTINGS_SITE_DATA_PAGE_CLEAR_ON_EXIT_RADIO_SUBLABEL" desc="A description of the benefit/cost of choosing 'Sites can save content on your device. In short, a site will remember your preferences, shopping cart content, etc. during this browser session. But once you close all open windows, and then visit the site again, it's as if you're coming to the site for the first time.">
-    Sites will probably work as you expect but won't remember you after you close all Brave windows
+    Sites will probably work as you expect but won't remember you after you close all Browser Express windows
   </message>
   <message name="IDS_SETTINGS_SITE_DATA_PAGE_DELETE_ON_EXIT_EXCEPTIONS_SUB_HEADING" desc="2 of 3. A label within 'Customized behaviors' that allows for exceptions to the 'On-device site data' setting. This label and the list of sites that can appear beneath it is only relevant if the user has chosen to allow 'on-device site data' as the default value above.">
-    Always delete site data from your device when you close Brave
+    Always delete site data from your device when you close Browser Express
   </message>
 
   <!-- Privacy Guide -->
   <message name="IDS_SETTINGS_PRIVACY_GUIDE_PROMO_BODY" desc="Body text of a card in the settings page that explains what the 'Privacy Guide' feature is.">
-    Review key privacy and security controls in Brave
+    Review key privacy and security controls in Browser Express
   </message>
   <message name="IDS_SETTINGS_PRIVACY_GUIDE_SAFE_BROWSING_CARD_STANDARD_PROTECTION_FEATURE_DESCRIPTION2" desc="A part of the feature description of the standard protection section of the safe browsing card in the 'Privacy Guide'.">
     Checks URLs with a list of unsafe sites stored in Brave

@@ -1070,16 +1070,16 @@ public abstract class BraveActivity extends ChromeActivity
 
         if (!OnboardingPrefManager.getInstance().isOneTimeNotificationStarted()
                 && PackageUtils.isFirstInstall(this)) {
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.HOUR_3);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.HOUR_24);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_6);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_10);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_30);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_35);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_1);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_2);
-            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_3);
-            OnboardingPrefManager.getInstance().setOneTimeNotificationStarted(true);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.HOUR_3);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.HOUR_24);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_6);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_10);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_30);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_35);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_1);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_2);
+            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_3);
+            // OnboardingPrefManager.getInstance().setOneTimeNotificationStarted(true);
         }
 
         if (PackageUtils.isFirstInstall(this)
@@ -1089,7 +1089,7 @@ public abstract class BraveActivity extends ChromeActivity
             Calendar calender = Calendar.getInstance();
             calender.setTime(new Date());
             calender.add(Calendar.DATE, DAYS_4);
-            BraveRewardsHelper.setNextRewardsOnboardingModalDate(calender.getTimeInMillis());
+            // BraveRewardsHelper.setNextRewardsOnboardingModalDate(calender.getTimeInMillis());
         }
 
         if (!mIsSetDefaultBrowserNotification) {
