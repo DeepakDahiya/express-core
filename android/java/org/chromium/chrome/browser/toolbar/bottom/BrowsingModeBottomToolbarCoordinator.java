@@ -45,7 +45,7 @@ import android.widget.Button;
 public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
-    private Button mCommentsButton;
+    private ImageButton mCommentsButton;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
