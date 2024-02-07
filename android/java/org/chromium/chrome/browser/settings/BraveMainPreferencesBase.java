@@ -106,10 +106,10 @@ public class BraveMainPreferencesBase
         // But, calling here has same effect because |onCreatePreferences()| is called by onCreate().
         SettingsUtils.addPreferencesFromResource(this, R.xml.brave_main_preferences);
 
-        overrideChromiumPreferences();
-        initRateBrave();
+        // overrideChromiumPreferences();
+        // initRateBrave();
         setPreferenceListeners();
-        notificationClick();
+        // notificationClick();
     }
 
     @Override
