@@ -2071,7 +2071,7 @@ Your Brave account may have other forms of browsing history like searches and ac
 
       <!-- About Brave preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Brave page. [CHAR_LIMIT=32]">
-        About Brave
+        About Browser Express
       </message>
       <message name="IDS_LEGAL_INFORMATION_SUMMARY" desc="Summary for legal information" meaning="Android">
         Copyright © <ph name="year">%1$d<ex>2014</ex></ph> The Brave Authors. All rights reserved.
