@@ -194,7 +194,7 @@ public class BraveMainPreferencesBase
         }
         updateSearchEnginePreference();
 
-        updateSummaries();
+        // updateSummaries();
 
         // updates the icons - normally the ones from Chromium
         updatePreferenceIcons();
