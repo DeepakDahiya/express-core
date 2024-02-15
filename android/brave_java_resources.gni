@@ -560,7 +560,6 @@ brave_java_resources = [
   "java/res/drawable/ic_menu_close.xml",
   "java/res/drawable/ic_new_tab_page.xml",
   "java/res/drawable/ic_news.xml",
-  "java/res/drawable/ic_news_settings.xml",
   "java/res/drawable/ic_notification.xml",
   "java/res/drawable/ic_notification_auto_contribute.xml",
   "java/res/drawable/ic_notification_claim.xml",
