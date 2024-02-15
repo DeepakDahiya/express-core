@@ -296,8 +296,8 @@ public class BraveNewTabPageLayout
             mBadgeAnimationView.setVisibility(View.INVISIBLE);
         }
 
-        mIsDisplayNewsOptin = BraveNewsUtils.shouldDisplayNewsOptin();
-        mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
+        mIsDisplayNewsOptin = false;
+        mIsDisplayNewsFeed = false;
 
         initPreferenceObserver();
         if (mPreferenceObserver != null) {
@@ -358,8 +358,9 @@ public class BraveNewTabPageLayout
     }
 
     private boolean shouldDisplayBraveStats() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, true);
+        return false;
+        // return ContextUtils.getAppSharedPreferences().getBoolean(
+        //         BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, true);
     }
 
     private void setNtpRecyclerView(LinearLayoutManager linearLayoutManager) {
@@ -754,7 +755,7 @@ public class BraveNewTabPageLayout
         BravePrefServiceBridge.getInstance().setShowNews(isOptin);
 
         mIsDisplayNewsOptin = false;
-        mIsDisplayNewsFeed = isOptin;
+        mIsDisplayNewsFeed = false;
         mNtpAdapter.removeNewsOptin();
         mNtpAdapter.setImageCreditAlpha(1f);
         mNtpAdapter.setDisplayNewsFeed(mIsDisplayNewsFeed);
@@ -981,7 +982,8 @@ public class BraveNewTabPageLayout
 
     private void refreshFeed() {
         boolean isShowNewsOn = BravePrefServiceBridge.getInstance().getShowNews();
-        mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
+        // mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
+        mIsDisplayNewsFeed = false;
         if (!isShowNewsOn) {
             mNtpAdapter.setDisplayNewsFeed(false);
 
