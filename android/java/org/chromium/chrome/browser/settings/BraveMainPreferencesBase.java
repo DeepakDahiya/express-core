@@ -321,7 +321,7 @@ public class BraveMainPreferencesBase
         findPreference(PREF_BRAVE_LANGUAGES).setOrder(++displaySectionOrder);
 
         int onlineCheckoutSectionOrder = displaySectionOrder;
-        findPreference(PREF_ONLINE_CHECKOUT_SECTION).setOrder(++onlineCheckoutSectionOrder);
+        // findPreference(PREF_ONLINE_CHECKOUT_SECTION).setOrder(++onlineCheckoutSectionOrder);
 
         findPreference(PREF_PAYMENT_METHODS).setOrder(++onlineCheckoutSectionOrder);
         findPreference(PREF_ADDRESSES).setOrder(++onlineCheckoutSectionOrder);
