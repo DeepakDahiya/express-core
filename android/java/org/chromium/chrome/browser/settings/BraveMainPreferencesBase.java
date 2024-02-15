@@ -350,6 +350,10 @@ public class BraveMainPreferencesBase
         if (!DeviceFormFactor.isTablet() && !BottomToolbarConfiguration.isBottomToolbarEnabled()) {
             removePreferenceIfPresent(MainSettings.PREF_HOMEPAGE);
         }
+
+        findPreference.removePreferenceIfPresent(PREF_NOTIFICATIONS);
+        findPreference.removePreferenceIfPresent(PREF_ABOUT_SECTION);
+        findPreference.removePreferenceIfPresent( MainSettings.PREF_DEVELOPER);
     }
 
     private void updatePreferenceIcon(String preferenceString, int drawable) {
