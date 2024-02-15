@@ -351,9 +351,9 @@ public class BraveMainPreferencesBase
             removePreferenceIfPresent(MainSettings.PREF_HOMEPAGE);
         }
 
-        findPreference.removePreferenceIfPresent(PREF_NOTIFICATIONS);
-        findPreference.removePreferenceIfPresent(PREF_ABOUT_SECTION);
-        findPreference.removePreferenceIfPresent( MainSettings.PREF_DEVELOPER);
+        removePreferenceIfPresent(PREF_NOTIFICATIONS);
+        removePreferenceIfPresent(PREF_ABOUT_SECTION);
+        removePreferenceIfPresent(MainSettings.PREF_DEVELOPER);
     }
 
     private void updatePreferenceIcon(String preferenceString, int drawable) {
