@@ -1443,9 +1443,9 @@ Are you sure you want to do this?
       <message name="IDS_SHOW_BRAVE_STATS" desc="New tab page settings title">
         Show Brave Stats
       </message>
-      <message name="IDS_PHOTO_BY" desc="Text for image credit for background images on NTP">
+      <!-- <message name="IDS_PHOTO_BY" desc="Text for image credit for background images on NTP">
         Photo by <ph name="PHOTO_BY">%1$s</ph>
-      </message>
+      </message> -->
       <message name="IDS_TURN_ON_EARN_AND_GIVE" desc="Text for turn on brave ads button">
         Start using Brave Rewards
       </message>
