@@ -36,53 +36,67 @@
         android:layout_weight="1"
         android:layout_height="0dp"
         android:layout_marginBottom="5sp"/>
-    <RelativeLayout
+    <LinearLayout
         android:id="@+id/layout_gchat_chatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5sp"
+        android:orientation="vertical"
         android:layout_gravity="bottom">
 
-        <ImageButton android:id="@+id/profile_button"
-            android:background="@drawable/btn_toolbar_profile"
-            android:layout_width="32sp"
-            android:layout_height="32sp"
-            android:visibility="visible"
-            android:layout_gravity="center"
-            android:layout_centerVertical="true"
-            android:contentDescription="@string/profile_image" />
-
-        <EditText
-            android:layout_marginStart="54dp"
-            android:id="@+id/edit_gchat_message"
+        <TextView
+            android:id="@+id/reply_to"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:textSize="12sp"
+            android:textColor="@color/set_default_text_color" />
+        <RelativeLayout
             android:layout_width="match_parent"
-            android:layout_height="42dp"
-            android:layout_centerVertical="true"
-            android:layout_toStartOf="@+id/button_gchat_send"
-            android:inputType="textMultiLine"
-            android:paddingEnd="18dp"
-            android:paddingStart="18dp"
-            android:paddingTop="10dp"
-            android:paddingBottom="10dp"
-            android:maxLines="6"
-            android:textSize="14sp"
-            android:textColor="@color/wallet_text_color"
-            android:textColorHint="@color/brave_theme_hint_text"
-            android:hint="@string/type_your_comment"
-            android:background="@drawable/rounded_wallet_edittext"
-            tools:ignore="Autofill" />
+            android:layout_height="wrap_content"
+            android:padding="5sp"
+            android:layout_gravity="bottom">
 
-        <ImageButton android:id="@+id/button_gchat_send"
-            style="@style/ToolbarButton"
-            android:background="@drawable/send"
-            android:layout_gravity="center"
-            android:layout_centerVertical="true"
-            android:layout_alignParentEnd="true"
-            android:layout_marginStart="8sp"
-            android:visibility="visible"
-            android:layout_width="28sp"
-            android:layout_height="28sp"
-            android:contentDescription="@string/send_comment" />
+            <ImageButton android:id="@+id/profile_button"
+                android:background="@drawable/btn_toolbar_profile"
+                android:layout_width="32sp"
+                android:layout_height="32sp"
+                android:visibility="visible"
+                android:layout_gravity="center"
+                android:layout_centerVertical="true"
+                android:contentDescription="@string/profile_image" />
 
-    </RelativeLayout>
+            <EditText
+                android:layout_marginStart="54dp"
+                android:id="@+id/edit_gchat_message"
+                android:layout_width="match_parent"
+                android:layout_height="42dp"
+                android:layout_centerVertical="true"
+                android:layout_toStartOf="@+id/button_gchat_send"
+                android:inputType="textMultiLine"
+                android:paddingEnd="18dp"
+                android:paddingStart="18dp"
+                android:paddingTop="10dp"
+                android:paddingBottom="10dp"
+                android:maxLines="6"
+                android:textSize="14sp"
+                android:textColor="@color/wallet_text_color"
+                android:textColorHint="@color/brave_theme_hint_text"
+                android:hint="@string/type_your_comment"
+                android:background="@drawable/rounded_wallet_edittext"
+                tools:ignore="Autofill" />
+
+            <ImageButton android:id="@+id/button_gchat_send"
+                style="@style/ToolbarButton"
+                android:background="@drawable/send"
+                android:layout_gravity="center"
+                android:layout_centerVertical="true"
+                android:layout_alignParentEnd="true"
+                android:layout_marginStart="8sp"
+                android:visibility="visible"
+                android:layout_width="28sp"
+                android:layout_height="28sp"
+                android:contentDescription="@string/send_comment" />
+        </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>

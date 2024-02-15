@@ -79,6 +79,20 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal">
                 <Button
+                    android:id="@+id/btn_more_comments"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/set_default_text_color"
+                    android:textSize="11sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="4sp"
+                    android:paddingHorizontal="8sp"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
                     android:id="@+id/btn_reply"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -86,7 +100,7 @@
                     android:background="@android:color/transparent"
                     style="?android:attr/borderlessButtonStyle"
                     android:textColor="@color/set_default_text_color"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
                     android:paddingVertical="4sp"
@@ -101,7 +115,7 @@
                     android:background="@android:color/transparent"
                     style="?android:attr/borderlessButtonStyle"
                     android:textColor="@color/set_default_text_color"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
                     android:paddingVertical="4sp"
