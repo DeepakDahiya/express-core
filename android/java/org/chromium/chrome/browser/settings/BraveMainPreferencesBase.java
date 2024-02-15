@@ -316,7 +316,7 @@ public class BraveMainPreferencesBase
 
         findPreference(PREF_MEDIA).setOrder(++displaySectionOrder);
         // findPreference(PREF_APPEARANCE).setOrder(++displaySectionOrder);
-        findPreference(PREF_NEW_TAB_PAGE).setOrder(++displaySectionOrder);
+        // findPreference(PREF_NEW_TAB_PAGE).setOrder(++displaySectionOrder);
         findPreference(PREF_ACCESSIBILITY).setOrder(++displaySectionOrder);
         findPreference(PREF_BRAVE_LANGUAGES).setOrder(++displaySectionOrder);
 
