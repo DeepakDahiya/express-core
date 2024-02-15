@@ -1377,9 +1377,9 @@ Are you sure you want to do this?
       <message name="IDS_DEVICE_REQUIRE_AUTH_TO_SYNC_PASSWORDS_SUMMARY" desc="Summary displayed on Sync passwords data preference turned off switch to inform user that in order to turn on Passwords sync, device should have enabled lockscreen biometrics/passcode authentication">
         To sync passwords, please enable biometrics/passcode authentication on your Android device. This extra security measure helps keep your passwords safe.
       </message>
-      <message name="IDS_BRAVE_PRIVACY_NOTICE_URL" desc="URL for the Brave privacy notice" translateable="false">
+      <!-- <message name="IDS_BRAVE_PRIVACY_NOTICE_URL" desc="URL for the Brave privacy notice" translateable="false">
         https://brave.com/privacy_android
-      </message>
+      </message> -->
       <message name="IDS_BRAVE_TERMS_OF_SERVICE_URL" desc="URL for Brave Terms of Service" translateable="false">
         https://brave.com/terms_of_use
       </message>
