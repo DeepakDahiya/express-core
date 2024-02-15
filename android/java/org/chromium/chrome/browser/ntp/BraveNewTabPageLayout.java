@@ -340,16 +340,16 @@ public class BraveNewTabPageLayout
         //     settingsLauncher.launchSettingsActivity(getContext(), BraveNewsPreferencesV2.class);
         // });
 
-        // mRecyclerView = findViewById(R.id.recyclerview);
-        // LinearLayoutManagerWrapper linearLayoutManager =
-        //         new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
-        // mRecyclerView.setLayoutManager(linearLayoutManager);
-        // mRecyclerView.post(new Runnable() {
-        //     @Override
-        //     public void run() {
-        //         setNtpRecyclerView(linearLayoutManager);
-        //     }
-        // });
+        mRecyclerView = findViewById(R.id.recyclerview);
+        LinearLayoutManagerWrapper linearLayoutManager =
+                new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
+        mRecyclerView.setLayoutManager(linearLayoutManager);
+        mRecyclerView.post(new Runnable() {
+            @Override
+            public void run() {
+                setNtpRecyclerView(linearLayoutManager);
+            }
+        });
     }
 
     private boolean shouldDisplayTopSites() {
