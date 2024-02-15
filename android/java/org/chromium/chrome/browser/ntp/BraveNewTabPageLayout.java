@@ -1122,21 +1122,21 @@ public class BraveNewTabPageLayout
     }
 
     private void setBackgroundImage(NTPImage ntpImage) {
-        mBgImageView = (ImageView) findViewById(R.id.bg_image_view);
-        mBgImageView.setScaleType(ImageView.ScaleType.MATRIX);
+        // mBgImageView = (ImageView) findViewById(R.id.bg_image_view);
+        // mBgImageView.setScaleType(ImageView.ScaleType.MATRIX);
 
-        ViewTreeObserver observer = mBgImageView.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                mWorkerTask =
-                        new FetchWallpaperWorkerTask(ntpImage, mBgImageView.getMeasuredWidth(),
-                                mBgImageView.getMeasuredHeight(), mWallpaperRetrievedCallback);
-                mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        // ViewTreeObserver observer = mBgImageView.getViewTreeObserver();
+        // observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+        //     @Override
+        //     public void onGlobalLayout() {
+        //         mWorkerTask =
+        //                 new FetchWallpaperWorkerTask(ntpImage, mBgImageView.getMeasuredWidth(),
+        //                         mBgImageView.getMeasuredHeight(), mWallpaperRetrievedCallback);
+        //         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-                mBgImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-            }
-        });
+        //         mBgImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+        //     }
+        // });
     }
 
     private void checkForNonDisruptiveBanner(NTPImage ntpImage) {
