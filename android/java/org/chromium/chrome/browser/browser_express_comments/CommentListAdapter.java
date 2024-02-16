@@ -6,6 +6,7 @@ import android.widget.TextView;
 import android.view.View;
 import org.chromium.base.Log;
 import android.widget.ImageButton;
+import android.widget.Button;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
