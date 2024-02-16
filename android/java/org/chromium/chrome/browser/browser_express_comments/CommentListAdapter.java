@@ -56,6 +56,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         TextView voteCountText;
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
+        private Button mReplyButton;
+        private Button mShareButton;
+        private Button mShowMoreButton;
         private String didVoteType;
         private int finalVote;
         private BraveActivity activity;
@@ -68,6 +71,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
+            mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
+            mShareButton = (Button) itemView.findViewById(R.id.btn_share);
+            mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
         }
 
         void bind(Comment comment) {
@@ -80,6 +86,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             contentText.setText(comment.getContent().toString());
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
 
             Vote didVote = comment.getDidVote();
             if(didVote != null){

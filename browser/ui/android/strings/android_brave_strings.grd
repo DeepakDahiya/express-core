@@ -4205,6 +4205,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BE_SHARE" desc="Brave wallet password hint text">
       Share
     </message>
+    <message name="IDS_BE_SHOW_MORE" desc="Brave wallet password hint text">
+      Show replies
+    </message>
   </messages>
   </release>
 </grit>
