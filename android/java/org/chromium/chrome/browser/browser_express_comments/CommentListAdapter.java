@@ -103,8 +103,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    activity.setReplyTo(comment.getId());
                     activity.setReplyToName(comment.getUser().getUsername());
+                    activity.setReplyTo(comment.getId());
                 }
             });
 
