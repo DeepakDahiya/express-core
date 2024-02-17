@@ -112,14 +112,14 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
 
-            //SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
+            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
                 }
             };
 
-            prefs.registerOnSharedPreferenceChangeListener(listener);
+            sharedPref.registerOnSharedPreferenceChangeListener(listener);
 
             String commentsString = activity.getFirstComments();
             if(commentsString != null){
