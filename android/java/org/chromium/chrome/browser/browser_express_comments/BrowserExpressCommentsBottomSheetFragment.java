@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.view.WindowManager;
+import android.content.SharedPreferences;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -110,6 +111,16 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
+
+            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
+            listener = sharedPref.OnSharedPreferenceChangeListener() {
+                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                    Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
+                }
+            };
+
+            prefs.registerOnSharedPreferenceChangeListener(listener);
+
             String commentsString = activity.getFirstComments();
             if(commentsString != null){
                 try{

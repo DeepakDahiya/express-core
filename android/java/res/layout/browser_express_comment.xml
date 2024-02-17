@@ -122,9 +122,10 @@
                 android:text="@string/be_show_more"
                 android:layout_gravity="center"
                 android:minHeight="0dp"
-                android:paddingVertical="8sp"
+                android:paddingVertical="4sp"
                 android:paddingHorizontal="8sp"
                 android:visibility="gone"
+                android:textAllCaps="false"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
 

@@ -100,6 +100,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }
 
+            mReplyButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activity.setReplyTo(comment.getId());
+                }
+            });
+
+
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {

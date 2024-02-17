@@ -239,6 +239,7 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String ACCESS_TOKEN_KEY = "AccessToken";
     public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
+    public static final String BROWSER_EXPRESS_REPLY_TO = "BrowserExpressReplyTo";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -2001,6 +2002,27 @@ public abstract class BraveActivity extends ChromeActivity
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
         String comments = sharedPref.getString(BROWSER_EXPRESS_FIRST_COMMENTS, null);
         return comments;
+    }
+
+    public void setReplyTo(String commentId) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_REPLY_TO, commentId);
+        editor.apply();
+    }
+
+    public String getReplyTo() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO, 0);
+        String commentId = sharedPref.getString(BROWSER_EXPRESS_REPLY_TO, null);
+        return commentId;
+    }
+
+    public SharedPreferences getSharedPreferencesForReplyTo() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO, 0);
+        return sharedPref;
     }
 
     public void setAccessToken(String accessToken) {
