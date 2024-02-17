@@ -25,6 +25,7 @@ import org.json.JSONException;
 import android.view.WindowManager;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
+import android.content.Context;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -119,7 +120,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
                     mMessageEditText.requestFocus();
-                    InputMethodManager imm = (InputMethodManager)activity.getSystemService(requireContext().INPUT_METHOD_SERVICE);
+                    InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                     imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
                 }
             };
