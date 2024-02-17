@@ -19,6 +19,7 @@ import android.graphics.drawable.Drawable;
 import org.chromium.base.task.AsyncTask;
 import java.util.Locale;
 import androidx.core.content.ContextCompat;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
@@ -104,10 +105,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    JSONObject json = new JSONObject();
-                    json.put("name", comment.getUser().getUsername());
-                    json.put("commentId", comment.getId());
-                    activity.setReplyTo(json.toString());
+                    try{
+                        JSONObject json = new JSONObject();
+                        json.put("name", comment.getUser().getUsername());
+                        json.put("commentId", comment.getId());
+                        activity.setReplyTo(json.toString());
+                    } catch (JSONException e) {
+                        Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
+                    }
                 }
             });
 
