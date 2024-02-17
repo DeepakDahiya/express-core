@@ -126,13 +126,15 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", activity.getReplyTo());
-                    // if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO_NAME) && !activity.getReplyToName().equals("") && activity.getReplyToName() != null){
-                    //     String replyToString = "replying to " + activity.getReplyToName();
-                    //     mReplyToText.setText(replyToString);
-                    //     mMessageEditText.requestFocus();
-                    //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    //     imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    // }
+                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO) && activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
+                        JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
+                        String username = jsonObj.getString("name");
+                        String replyToString = "replying to " + username;
+                        mReplyToText.setText(replyToString);
+                        mMessageEditText.requestFocus();
+                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
+                    }
                 }
             };
 
