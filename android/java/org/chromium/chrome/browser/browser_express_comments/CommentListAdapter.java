@@ -19,7 +19,7 @@ import android.graphics.drawable.Drawable;
 import org.chromium.base.task.AsyncTask;
 import java.util.Locale;
 import androidx.core.content.ContextCompat;
-import org.json.JSONArray;
+import org.json.JSONObject;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
