@@ -14,6 +14,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.widget.TextView;
 import android.widget.CheckBox;
 import org.chromium.ui.widget.Toast;
 import java.util.List;
@@ -59,6 +60,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     // private Button nextButton;
     private ImageButton mSendButton;
     private EditText mMessageEditText;
+    private TextView mReplyToText;
 
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =
@@ -111,6 +113,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // params.height=a;
         // mCommentRecycler.setLayoutParams(params);
 
+        mSendButton = view.findViewById(R.id.button_gchat_send);
+        mMessageEditText = view.findViewById(R.id.edit_gchat_message);
+        mReplyToText = view.findViewById(R.id.reply_to);
+
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
 
@@ -119,9 +125,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
-                    mMessageEditText.requestFocus();
-                    InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
+                    if(key == BraveActivity.BROWSER_EXPRESS_REPLY_TO_NAME && activity.getReplyToName() != "" && activity.getReplyToName() != null){
+                        mReplyToText.setText("replying to " + activity.getReplyToName());
+                        mMessageEditText.requestFocus();
+                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
+                    }
                 }
             };
 
@@ -174,8 +183,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             Log.e("Browser Express Access Token", e.getMessage());
         }
 
-        mSendButton = view.findViewById(R.id.button_gchat_send);
-        mMessageEditText = view.findViewById(R.id.edit_gchat_message);
         mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {

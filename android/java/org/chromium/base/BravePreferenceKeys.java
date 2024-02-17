@@ -66,4 +66,6 @@ public final class BravePreferenceKeys {
             "org.chromium.chrome.browser.Browser_Express_First_Comments";
     public static final String BROWSER_EXPRESS_REPLY_TO =
             "org.chromium.chrome.browser.Browser_Express_Reply_To";
+    public static final String BROWSER_EXPRESS_REPLY_TO_NAME =
+            "org.chromium.chrome.browser.Browser_Express_Reply_To_Name";
 }

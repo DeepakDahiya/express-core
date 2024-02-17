@@ -240,6 +240,7 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
     public static final String BROWSER_EXPRESS_REPLY_TO = "BrowserExpressReplyTo";
+    public static final String BROWSER_EXPRESS_REPLY_TO_NAME = "BrowserExpressReplyToName";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -1847,6 +1848,8 @@ public abstract class BraveActivity extends ChromeActivity
     public void dismissCommentsBottomSheet() {
         if (mBottomSheetCommentsDialog != null) {
             mBottomSheetCommentsDialog.dismiss();
+            setReplyTo("");
+            setReplyToName("");
         }
     }
 
@@ -2012,11 +2015,26 @@ public abstract class BraveActivity extends ChromeActivity
         editor.apply();
     }
 
+    public void setReplyToName(String name) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO_NAME, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_REPLY_TO_NAME, name);
+        editor.apply();
+    }
+
     public String getReplyTo() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO, 0);
         String commentId = sharedPref.getString(BROWSER_EXPRESS_REPLY_TO, null);
         return commentId;
+    }
+
+    public String getReplyToName() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO_NAME, 0);
+        String name = sharedPref.getString(BROWSER_EXPRESS_REPLY_TO_NAME, null);
+        return name;
     }
 
     public SharedPreferences getSharedPreferencesForReplyTo() {
