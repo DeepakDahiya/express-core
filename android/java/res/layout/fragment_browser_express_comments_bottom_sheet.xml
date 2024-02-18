@@ -64,7 +64,6 @@
                 android:layout_height="18sp"
                 android:visibility="visible"
                 android:layout_gravity="center"
-                android:layout_centerVertical="true"
                 android:contentDescription="@string/profile_image" />
         </LinearLayout>
 

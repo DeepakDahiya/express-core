@@ -142,7 +142,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                 Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
                             }
                         }else{
-                            mReplyToText.setText(R.id.empty_data_text);
+                            mReplyToText.setText(R.string.browser_express_empty_text);
                         }
                     }
                 }
