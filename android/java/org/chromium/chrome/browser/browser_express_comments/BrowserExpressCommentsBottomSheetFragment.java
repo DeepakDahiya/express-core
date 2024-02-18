@@ -200,8 +200,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (activity != null) {
-                    activity.setReplyTo(null);
+                if (getActivity() != null) {
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setReplyTo(null);
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Browser Express Access Token", e.getMessage());
+                    }
                 }
             }
         }));
