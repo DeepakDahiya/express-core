@@ -126,8 +126,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                    Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
-                    Log.e("BROWSER_EXPRESS_SHARED_PREF", activity.getReplyTo());
                     if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO)){
                         if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
                             try{
@@ -135,6 +133,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                 String username = jsonObj.getString("name");
                                 String replyToString = "replying to " + username;
                                 mReplyToText.setText(replyToString);
+                                mCanceReplyButton.setVisibility(View.VISIBLE);
                                 mMessageEditText.requestFocus();
                                 InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
@@ -143,6 +142,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             }
                         }else{
                             mReplyToText.setText(R.string.browser_express_empty_text);
+                            mCanceReplyButton.setVisibility(View.INVISIBLE);
                         }
                     }
                 }
