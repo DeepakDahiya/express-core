@@ -59,6 +59,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private boolean isFromMenu;
     // private Button nextButton;
     private ImageButton mSendButton;
+    private ImageButton mCanceReplyButton;
     private EditText mMessageEditText;
     private TextView mReplyToText;
 
@@ -116,6 +117,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mSendButton = view.findViewById(R.id.button_gchat_send);
         mMessageEditText = view.findViewById(R.id.edit_gchat_message);
         mReplyToText = view.findViewById(R.id.reply_to);
+        mCanceReplyButton = view.findViewById(R.id.cancel_btn);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -126,17 +128,21 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", activity.getReplyTo());
-                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO) && activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
-                        try{
-                            JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
-                            String username = jsonObj.getString("name");
-                            String replyToString = "replying to " + username;
-                            mReplyToText.setText(replyToString);
-                            mMessageEditText.requestFocus();
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
-                        } catch (JSONException e) {
-                            Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
+                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO) && ){
+                        if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
+                            try{
+                                JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
+                                String username = jsonObj.getString("name");
+                                String replyToString = "replying to " + username;
+                                mReplyToText.setText(replyToString);
+                                mMessageEditText.requestFocus();
+                                InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
+                            } catch (JSONException e) {
+                                Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
+                            }
+                        }else{
+                            mReplyToText.setText(R.id.empty_data_text);
                         }
                     }
                 }
@@ -190,6 +196,15 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Browser Express Access Token", e.getMessage());
         }
+
+        mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (activity != null) {
+                    activity.setReplyTo(null);
+                }
+            }
+        }));
 
         mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override
