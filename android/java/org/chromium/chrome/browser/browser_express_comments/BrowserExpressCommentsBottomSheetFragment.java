@@ -128,7 +128,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", key);
                     Log.e("BROWSER_EXPRESS_SHARED_PREF", activity.getReplyTo());
-                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO) && ){
+                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO)){
                         if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
                             try{
                                 JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
