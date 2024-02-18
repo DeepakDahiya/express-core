@@ -224,10 +224,23 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         } else {
                             String content = mMessageEditText.getText().toString().trim();
                             if(content.length() > 0){
-                                BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                    new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                            content, "page", mUrl, null, accessToken, addCommentCallback);
-                                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
+                                    try{
+                                        JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
+                                        String commentId = jsonObj.getString("commentId");
+                                        BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                            new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                                    content, "comment", mUrl, commentId, accessToken, addCommentCallback);
+                                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                    } catch (JSONException e) {
+                                        Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
+                                    }
+                                }else{
+                                    BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                        new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                                content, "page", mUrl, null, accessToken, addCommentCallback);
+                                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                }
                             }
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
