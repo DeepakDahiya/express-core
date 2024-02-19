@@ -131,21 +131,17 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    try{
-                        mComments = new ArrayList<Comment>();
-                        mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
+                    mComments = new ArrayList<Comment>();
+                    mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-                        mCommentAdapter = new CommentListAdapter(context, mComments);
-                        mCommentRecycler.setAdapter(mCommentAdapter);
+                    mCommentAdapter = new CommentListAdapter(context, mComments);
+                    mCommentRecycler.setAdapter(mCommentAdapter);
 
-                        String accessToken = activity.getAccessToken();
-                        BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                            new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                                    null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    } catch (JSONException e) {
-                        Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
-                    }
+                    String accessToken = activity.getAccessToken();
+                    BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                        new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                                null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
 
