@@ -53,7 +53,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
     private int mPage = 1;
-    private int mPerPage = 30;
+    private int mPerPage = 100;
     private String mUrl;
 
     private boolean isFromMenu;

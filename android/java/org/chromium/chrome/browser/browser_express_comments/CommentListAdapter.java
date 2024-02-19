@@ -73,7 +73,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private CommentListAdapter mCommentAdapter;
         private List<Comment> mComments;
         private int mPage = 1;
-        private int mPerPage = 30;
+        private int mPerPage = 100;
         private Context context;
         private LinearLayout mActionItemsLayout;
 
@@ -103,7 +103,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             contentText.setText(comment.getContent().toString());
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
+            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && mPage == 1 ? View.VISIBLE : View.GONE);
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
