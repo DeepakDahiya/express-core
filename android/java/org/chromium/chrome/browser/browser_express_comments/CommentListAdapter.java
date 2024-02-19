@@ -237,8 +237,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
                     Log.e("BROWSER EXPRESS SHOW MORE", "IN API RESPONSE");
-                    int len = mComments.size();
+                    int len = comments.size();
                     Log.e("BROWSER EXPRESS SHOW MORE", Integer.toString(len));
+                    Log.e("BROWSER EXPRESS SHOW MORE", comments.toString());
                     // mComments.clear();
                     // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
