@@ -138,6 +138,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     mCommentRecycler.setAdapter(mCommentAdapter);
 
                     String accessToken = activity.getAccessToken();
+                    Log.e("BROWSER EXPRESS SHOW MORE", "BEFORE API");
                     BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                         new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                                 null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
@@ -235,7 +236,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
+                    Log.e("BROWSER EXPRESS SHOW MORE", "IN API RESPONSE");
                     int len = mComments.size();
+                    Log.e("BROWSER EXPRESS SHOW MORE", Integer.toString(len));
                     // mComments.clear();
                     // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
@@ -243,6 +246,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     mPage = mPage + 1;
 
+                    Log.e("BROWSER EXPRESS SHOW MORE", "AFTER API RESPONSE");
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
 
