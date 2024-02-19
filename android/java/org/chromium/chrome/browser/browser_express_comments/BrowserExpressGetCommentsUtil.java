@@ -131,6 +131,7 @@ public class BrowserExpressGetCommentsUtil {
                 while ((line = br.readLine()) != null) {
                     sb.append(line + "\n");
                 }
+                Log.e("GET API RESPONSE", sb.toString());
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
