@@ -112,10 +112,9 @@
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_replies"
-                android:layout_width="0dp"
+                android:layout_width="match_parent"
                 android:layout_weight="1"
                 android:layout_height="0dp"
-                android:layout_constraintWidth_percent="0.7"
                 android:layout_marginBottom="5sp"/>
 
             <Button
