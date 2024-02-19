@@ -103,7 +103,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             contentText.setText(comment.getContent().toString());
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && mPage == 1 ? View.VISIBLE : View.GONE);
+            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
@@ -247,6 +247,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
 
                     mPage = mPage + 1;
+
+                    mShowMoreButton.setVisibility(View.GONE);
 
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
