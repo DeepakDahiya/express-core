@@ -54,11 +54,13 @@ public class BrowserExpressGetCommentsUtil {
         private static Boolean getCommentsStatus;
         private static String mErrorMessage;
         private static String mUrl;
+        private static String mCommentId;
         private static int mPage;
         private static int mPerPage;
         private static List<Comment> mComments;
+        private static String mAccessToken;
 
-        public GetCommentsWorkerTask(String url, int page, int perPage, GetCommentsCallback callback) {
+        public GetCommentsWorkerTask(String url, String commentId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
             mCallback = callback;
             getCommentsStatus = false;
             mErrorMessage = "";
@@ -66,6 +68,8 @@ public class BrowserExpressGetCommentsUtil {
             mComments = new ArrayList<Comment>();
             mPage = page;
             mPerPage = perPage;
+            mAccessToken = accessToken;
+            mCommentId = commentId;
         }
 
         public static void setComments(List<Comment> comments){
@@ -82,7 +86,7 @@ public class BrowserExpressGetCommentsUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetCommentsRequest(mUrl, mPage, mPerPage, mCallback);
+            sendGetCommentsRequest(mUrl, mCommentId, mPage, mPerPage, mAccessToken, mCallback);
             return null;
         }
 
@@ -98,15 +102,24 @@ public class BrowserExpressGetCommentsUtil {
         }
     }
 
-    private static void sendGetCommentsRequest(String pageUrl, int page, int perPage, GetCommentsCallback callback) {
+    private static void sendGetCommentsRequest(String pageUrl, String commentId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(GET_COMMENTS_URL + "?url=" + pageUrl + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage));
+            String searchQuery;
+            if(commentId != null && !commentId.equals("")){
+                searchQuery =  "?commentId=" + commentId + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+            }else{
+                searchQuery =  "?url=" + pageUrl + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+            }
+            URL url = new URL(GET_COMMENTS_URL + searchQuery);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
+            if(accessToken != null && !accessToken.equals("")){
+                urlConnection.setRequestProperty ("Authorization", accessToken);
+            }
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.connect();
 

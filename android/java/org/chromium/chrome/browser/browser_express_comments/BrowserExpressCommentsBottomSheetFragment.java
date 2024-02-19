@@ -104,7 +104,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         int a =  (displaymetrics.heightPixels*70)/100;
 
-        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
+        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
@@ -114,8 +114,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // params.height=a;
         // mCommentRecycler.setLayoutParams(params);
 
-        mSendButton = view.findViewById(R.id.button_gchat_send);
-        mMessageEditText = view.findViewById(R.id.edit_gchat_message);
+        mSendButton = view.findViewById(R.id.button_send);
+        mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
 
@@ -186,12 +186,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
             }
         
-
+            String accessToken = activity.getAccessToken();
             mUrl = activity.getActivityTab().getUrl().getSpec();
 
             BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                 new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                        mUrl, mPage, mPerPage, getCommentsCallback);
+                        mUrl, null, mPage, mPerPage, accessToken, getCommentsCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Browser Express Access Token", e.getMessage());
@@ -282,7 +282,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                     // int a =  (displaymetrics.heightPixels*70)/100;
 
-                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_gchat);
+                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
                     // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
                     // mCommentAdapter = new CommentListAdapter(requireContext(), mComments);

@@ -31,13 +31,12 @@
         android:textColor="@color/set_default_text_color"
         android:textStyle="bold"/>
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_gchat"
+        android:id="@+id/recycler_comments"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="0dp"
         android:layout_marginBottom="5sp"/>
     <LinearLayout
-        android:id="@+id/layout_gchat_chatbox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5sp"
@@ -85,11 +84,11 @@
 
             <EditText
                 android:layout_marginStart="54dp"
-                android:id="@+id/edit_gchat_message"
+                android:id="@+id/comment_content"
                 android:layout_width="match_parent"
                 android:layout_height="42dp"
                 android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/button_gchat_send"
+                android:layout_toStartOf="@+id/button_send"
                 android:inputType="textMultiLine"
                 android:paddingEnd="18dp"
                 android:paddingStart="18dp"
@@ -103,7 +102,7 @@
                 android:background="@drawable/rounded_wallet_edittext"
                 tools:ignore="Autofill" />
 
-            <ImageButton android:id="@+id/button_gchat_send"
+            <ImageButton android:id="@+id/button_send"
                 style="@style/ToolbarButton"
                 android:background="@drawable/send"
                 android:layout_gravity="center"

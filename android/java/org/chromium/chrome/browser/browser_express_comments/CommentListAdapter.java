@@ -2,6 +2,7 @@ package org.chromium.chrome.browser.browser_express_comments;
 
 import java.util.UUID;
 import java.util.List;
+import java.util.ArrayList;
 import android.widget.TextView;
 import android.view.View;
 import org.chromium.base.Log;
@@ -66,6 +67,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int finalVote;
         private BraveActivity activity;
 
+        private RecyclerView mCommentRecycler;
+        private CommentListAdapter mCommentAdapter;
+        private List<Comment> mComments;
+        private int mPage = 1;
+        private int mPerPage = 30;
+
         CommentHolder(View itemView) {
             super(itemView);
 
@@ -91,6 +98,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
             mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
 
+
             Vote didVote = comment.getDidVote();
             if(didVote != null){
                 String type = didVote.getType();
@@ -110,6 +118,28 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
+                    } catch (JSONException e) {
+                        Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
+                    }
+                }
+            });
+
+            mShowMoreButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try{
+                        mComments = new ArrayList<Comment>();
+                        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
+                        mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                        mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
+                        mCommentRecycler.setAdapter(mCommentAdapter);
+
+                        String accessToken = activity.getAccessToken();
+                        BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                            new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                                    null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
+                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     } catch (JSONException e) {
                         Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
                     }
@@ -199,6 +229,44 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
                     mDownvoteButton.setClickable(true);
                     mUpvoteButton.setClickable(true);
+                }
+            };
+
+        private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
+            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
+                @Override
+                public void getCommentsSuccessful(List<Comment> comments) {
+                    int len = mComments.size();
+                    // mComments.clear();
+                    // mCommentAdapter.notifyItemRangeRemoved(0, len);
+                    mComments.addAll(comments);
+                    mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+
+                    mPage = mPage + 1;
+
+                    // data.addAll(insertIndex, items);
+                    // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
+
+                    // DisplayMetrics displaymetrics = new DisplayMetrics();
+                    // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
+
+                    // int a =  (displaymetrics.heightPixels*70)/100;
+
+                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
+                    // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+                    // mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
+                    // mCommentRecycler.setAdapter(mCommentAdapter);
+
+                    // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
+                    // params.height=a;
+                    // mCommentRecycler.setLayoutParams(params);
+
+                }
+
+                @Override
+                public void getCommentsFailed(String error) {
+                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
     }
