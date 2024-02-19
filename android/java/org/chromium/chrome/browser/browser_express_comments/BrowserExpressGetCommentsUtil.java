@@ -134,9 +134,11 @@ public class BrowserExpressGetCommentsUtil {
                 Log.e("GET API RESPONSE", sb.toString());
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
+                    Log.e("GET API RESPONSE", "INSIDE SUCCESS");
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
                     List<Comment> comments = new ArrayList<Comment>();
+                    Log.e("GET API RESPONSE LENGTH", Integer.toString(commentsArray.length()));
                     for (int i = 0; i < commentsArray.length(); i++) {
                         JSONObject comment = commentsArray.getJSONObject(i);
                         JSONObject user = comment.getJSONObject("user");
@@ -146,6 +148,7 @@ public class BrowserExpressGetCommentsUtil {
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
                         }
                         User u = new User(user.getString("_id"), user.getString("username"));
+                        Log.e("GET API RESPONSE", "ADDING COMMENT");
                         comments.add(new Comment(
                             comment.getString("_id"), 
                             comment.getString("content"),
@@ -155,6 +158,8 @@ public class BrowserExpressGetCommentsUtil {
                             u, 
                             v));
                     }
+
+                    Log.e("GET API RESPONSE", comments.toString());
 
                     GetCommentsWorkerTask.setComments(comments);
                 }else{
