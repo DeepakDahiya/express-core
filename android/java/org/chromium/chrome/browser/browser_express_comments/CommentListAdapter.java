@@ -22,6 +22,7 @@ import java.util.Locale;
 import androidx.core.content.ContextCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -72,6 +73,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private List<Comment> mComments;
         private int mPage = 1;
         private int mPerPage = 30;
+        private Context context;
 
         CommentHolder(View itemView) {
             super(itemView);
@@ -84,6 +86,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
             mShareButton = (Button) itemView.findViewById(R.id.btn_share);
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
+            mCommentRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_replies);
+            context = itemView.getContext();
         }
 
         void bind(Comment comment) {
@@ -129,10 +133,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 public void onClick(View v) {
                     try{
                         mComments = new ArrayList<Comment>();
-                        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
-                        mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+                        mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-                        mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
+                        mCommentAdapter = new CommentListAdapter(context, mComments);
                         mCommentRecycler.setAdapter(mCommentAdapter);
 
                         String accessToken = activity.getAccessToken();
