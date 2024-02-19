@@ -147,6 +147,16 @@ public class BrowserExpressGetCommentsUtil {
                         if(didVote != null){
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
                         }
+                        String pageParent = null;
+                        String commentParent = null;
+                        if(comment.has("pageParent")){
+                            pageParent = comment.getString("pageParent");
+                        }
+
+                        if(comment.has("commentParent")){
+                            commentParent = comment.getString("commentParent");
+                        }
+
                         User u = new User(user.getString("_id"), user.getString("username"));
                         Log.e("GET API RESPONSE", "ADDING COMMENT");
                         comments.add(new Comment(
@@ -155,6 +165,8 @@ public class BrowserExpressGetCommentsUtil {
                             comment.getInt("upvoteCount"),
                             comment.getInt("downvoteCount"),
                             comment.getInt("commentCount"),
+                            pageParent,
+                            commentParent,
                             u, 
                             v));
                     }

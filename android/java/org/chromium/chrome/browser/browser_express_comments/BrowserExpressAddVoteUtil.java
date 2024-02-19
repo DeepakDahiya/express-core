@@ -123,17 +123,6 @@ public class BrowserExpressAddVoteUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     AddVoteWorkerTask.setAddVoteSuccessStatus(true);
-
-                    // JSONObject comment = responseObject.getJSONObject("comment");
-                    // JSONObject user = comment.getJSONObject("user");
-                    // User u = new User(user.getString("_id"), user.getString("username"));
-                    // AddVoteWorkerTask.setComment(new Comment(
-                    //     comment.getString("_id"), 
-                    //     comment.getString("content"),
-                    //     comment.getInt("upvoteCount"),
-                    //     comment.getInt("downvoteCount"),
-                    //     comment.getInt("commentCount"),
-                    //     u));
                 }else{
                     AddVoteWorkerTask.setAddVoteSuccessStatus(false);
                     AddVoteWorkerTask.setErrorMessage(responseObject.getString("error"));

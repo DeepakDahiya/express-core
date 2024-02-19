@@ -6,10 +6,12 @@ public class Comment{
     private int upvoteCount;  
     private int downvoteCount;  
     private int commentCount;  
+    private String commentParent;  
+    private String pageParent;  
     private User user;
     private Vote didVote;
 
-    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, User user, Vote vote) {  
+    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String commentParent, User user, Vote vote) {  
         this._id = _id;  
         this.content = content;
         this.upvoteCount = upvoteCount;
@@ -17,6 +19,8 @@ public class Comment{
         this.commentCount = commentCount;
         this.user = user;
         this.didVote = vote;
+        this.commentParent = commentParent;
+        this.pageParent = pageParent;
     }  
 
     public String getId() {  
@@ -26,6 +30,14 @@ public class Comment{
     public void setId(String _id) {  
         this._id = _id;  
     }  
+
+    public String getCommentParent() {  
+        return this.commentParent;  
+    }
+
+    public String getPageParent() {  
+        return this.pageParent;  
+    }
 
     public User getUser() {  
         return this.user;  

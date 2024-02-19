@@ -164,12 +164,23 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
                         }
                         User u = new User(user.getString("_id"), user.getString("username"));
+                        String pageParent = null;
+                        String commentParent = null;
+                        if(comment.has("pageParent")){
+                            pageParent = comment.getString("pageParent");
+                        }
+
+                        if(comment.has("commentParent")){
+                            commentParent = comment.getString("commentParent");
+                        }
                         comments.add(new Comment(
                             comment.getString("_id"), 
                             comment.getString("content"),
                             comment.getInt("upvoteCount"),
                             comment.getInt("downvoteCount"),
                             comment.getInt("commentCount"),
+                            pageParent,
+                            commentParent,
                             u, 
                             v));
                     }

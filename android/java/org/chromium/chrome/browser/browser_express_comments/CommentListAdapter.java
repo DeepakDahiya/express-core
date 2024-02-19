@@ -23,6 +23,7 @@ import androidx.core.content.ContextCompat;
 import org.json.JSONException;
 import org.json.JSONObject;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.LinearLayout;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -74,6 +75,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int mPage = 1;
         private int mPerPage = 30;
         private Context context;
+        private LinearLayout mActionItemsLayout;
 
         CommentHolder(View itemView) {
             super(itemView);
@@ -87,6 +89,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShareButton = (Button) itemView.findViewById(R.id.btn_share);
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mCommentRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_replies);
+            mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             context = itemView.getContext();
         }
 
@@ -101,8 +104,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
             mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
-
-
+            if(comment.getCommentParent() == null){
+                mActionItemsLayout.setVisibility(View.VISIBLE);
+            }
+            
             Vote didVote = comment.getDidVote();
             if(didVote != null){
                 String type = didVote.getType();
@@ -226,7 +231,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                 @Override
                 public void addVoteFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
                     mDownvoteButton.setClickable(true);
                     mUpvoteButton.setClickable(true);
                 }
@@ -236,10 +240,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
-                    Log.e("BROWSER EXPRESS SHOW MORE", "IN API RESPONSE");
                     int len = comments.size();
-                    Log.e("BROWSER EXPRESS SHOW MORE", Integer.toString(len));
-                    Log.e("BROWSER EXPRESS SHOW MORE", comments.toString());
                     // mComments.clear();
                     // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
@@ -247,7 +248,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     mPage = mPage + 1;
 
-                    Log.e("BROWSER EXPRESS SHOW MORE", "AFTER API RESPONSE");
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
 
