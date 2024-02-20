@@ -116,32 +116,35 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_COMMENT)){
                         if(activity.getReplyComment() != null && !activity.getReplyComment().equals("")){
                             try{
-                                JSONObject comment = new JSONObject(activity.getReplyComment().toString());
-                                JSONObject user = comment.getJSONObject("user");
+                                JSONObject commentObject = new JSONObject(activity.getReplyComment().toString());
+                                
+                                JSONObject user = commentObject.getJSONObject("user");
                                 User u = new User(user.getString("_id"), user.getString("username"));
                                 Vote v = null;
                                 String pageParent = null;
                                 String commentParent = null;
-                                if(comment.has("pageParent")){
+                                if(commentObject.has("pageParent")){
                                     pageParent = comment.getString("pageParent");
                                 }
 
-                                if(comment.has("commentParent")){
-                                    commentParent = comment.getString("commentParent");
+                                if(commentObject.has("commentParent")){
+                                    commentParent = commentObject.getString("commentParent");
                                 }
 
-                                Comment c = new Comment(
-                                    comment.getString("_id"), 
-                                    comment.getString("content"),
-                                    comment.getInt("upvoteCount"),
-                                    comment.getInt("downvoteCount"),
-                                    comment.getInt("commentCount"),
-                                    pageParent, 
-                                    commentParent,
-                                    u,
-                                    v);
-                                mComments.add(0, c);
-                                mCommentAdapter.notifyItemInserted(0);
+                                if(comment.getId().equals(commentParent)){
+                                    Comment c = new Comment(
+                                        commentObject.getString("_id"), 
+                                        commentObject.getString("content"),
+                                        commentObject.getInt("upvoteCount"),
+                                        commentObject.getInt("downvoteCount"),
+                                        commentObject.getInt("commentCount"),
+                                        pageParent, 
+                                        commentParent,
+                                        u,
+                                        v);
+                                    mComments.add(0, c);
+                                    mCommentAdapter.notifyItemInserted(0);
+                                }
                             } catch (JSONException e) {
                                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                             }
