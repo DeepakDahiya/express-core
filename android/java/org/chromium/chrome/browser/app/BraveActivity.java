@@ -1849,7 +1849,6 @@ public abstract class BraveActivity extends ChromeActivity
         if (mBottomSheetCommentsDialog != null) {
             mBottomSheetCommentsDialog.dismiss();
             setReplyTo("");
-            setReplyToName("");
         }
     }
 

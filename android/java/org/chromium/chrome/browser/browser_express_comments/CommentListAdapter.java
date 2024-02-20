@@ -124,7 +124,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                 String pageParent = null;
                                 String commentParent = null;
                                 if(commentObject.has("pageParent")){
-                                    pageParent = comment.getString("pageParent");
+                                    pageParent = commentObject.getString("pageParent");
                                 }
 
                                 if(commentObject.has("commentParent")){
