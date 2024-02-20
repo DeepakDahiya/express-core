@@ -338,8 +338,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             activity.setReplyComment(commentJson.toString());
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Browser Express Access Token", e.getMessage());
+                        } catch (JSONException e) {
+                            Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                         }
-
                     }else{
                         mComments.add(0, comment);
                         mCommentAdapter.notifyItemInserted(0);
