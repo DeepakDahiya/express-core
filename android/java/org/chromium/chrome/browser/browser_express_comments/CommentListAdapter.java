@@ -109,6 +109,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
 
+            mComments = new ArrayList<Comment>();
+            mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
+
+            mCommentAdapter = new CommentListAdapter(context, mComments);
+            mCommentRecycler.setAdapter(mCommentAdapter);
+
             SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
@@ -183,12 +189,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    mComments = new ArrayList<Comment>();
-                    mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
-
-                    mCommentAdapter = new CommentListAdapter(context, mComments);
-                    mCommentRecycler.setAdapter(mCommentAdapter);
-
                     String accessToken = activity.getAccessToken();
                     Log.e("BROWSER EXPRESS SHOW MORE", "BEFORE API");
                     BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
