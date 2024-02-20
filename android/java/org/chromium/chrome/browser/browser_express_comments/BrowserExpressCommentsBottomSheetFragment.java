@@ -315,7 +315,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment) {
-                    if(comment.getCommentParent() == null){
+                    if(comment.getPageParent() == null){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
 
