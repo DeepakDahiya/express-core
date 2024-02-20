@@ -230,6 +230,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
                         if (accessToken == null) {
+                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                             activity.showGenerateUsernameBottomSheet();
                             dismiss();
                         } else {
