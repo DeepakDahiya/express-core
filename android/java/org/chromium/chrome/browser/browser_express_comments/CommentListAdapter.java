@@ -24,6 +24,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import android.widget.LinearLayout;
+import android.content.SharedPreferences;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -107,6 +108,49 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
+
+            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
+            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_COMMENT)){
+                        if(activity.getReplyComment() != null && !activity.getReplyComment().equals("")){
+                            try{
+                                JSONObject comment = new JSONObject(activity.getReplyComment().toString());
+                                JSONObject user = comment.getJSONObject("user");
+                                User u = new User(user.getString("_id"), user.getString("username"));
+                                Vote v = null;
+                                String pageParent = null;
+                                String commentParent = null;
+                                if(comment.has("pageParent")){
+                                    pageParent = comment.getString("pageParent");
+                                }
+
+                                if(comment.has("commentParent")){
+                                    commentParent = comment.getString("commentParent");
+                                }
+
+                                Comment c = new Comment(
+                                    comment.getString("_id"), 
+                                    comment.getString("content"),
+                                    comment.getInt("upvoteCount"),
+                                    comment.getInt("downvoteCount"),
+                                    comment.getInt("commentCount"),
+                                    pageParent, 
+                                    commentParent,
+                                    u,
+                                    v);
+                                mComments.add(0, c);
+                                mCommentAdapter.notifyItemInserted(0);
+                            } catch (JSONException e) {
+                                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
+                            }
+                        }
+                    }
+                }
+            };
+
+            sharedPref.registerOnSharedPreferenceChangeListener(listener);
             
             Vote didVote = comment.getDidVote();
             if(didVote != null){

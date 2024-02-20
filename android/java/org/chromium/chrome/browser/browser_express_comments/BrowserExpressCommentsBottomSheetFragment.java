@@ -315,12 +315,39 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment) {
-                    mComments.add(0, comment);
-                    mCommentAdapter.notifyItemInserted(0);
-                    mMessageEditText.setText(R.string.browser_express_empty_text);
+                    if(comment.getCommentParent() == null){
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
 
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-                    layoutManager.scrollToPositionWithOffset(0, 0);
+                            JSONObject commentJson = new JSONObject();
+                            commentJson.put("_id", comment.getId());
+                            commentJson.put("content", comment.getContent());
+                            commentJson.put("upvoteCount", comment.getUpvoteCount());
+                            commentJson.put("downvoteCount", comment.getDownvoteCount());
+                            commentJson.put("commentCount", comment.getCommentCount());
+                            commentJson.put("commentParent", comment.getCommentParent());
+                            commentJson.put("pageParent", comment.getPageParent());
+                            commentJson.put("didVote", null);
+
+                            User u = comment.getUser();
+                            JSONObject userJson = new JSONObject();
+                            userJson.put("_id", u.getId());
+                            userJson.put("username", u.getUsername());
+                            commentJson.put("user", userJson);
+
+                            activity.setReplyComment(commentJson.toString());
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e("Browser Express Access Token", e.getMessage());
+                        }
+
+                    }else{
+                        mComments.add(0, comment);
+                        mCommentAdapter.notifyItemInserted(0);
+                        mMessageEditText.setText(R.string.browser_express_empty_text);
+
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(0, 0);
+                    }
                 }
 
                 @Override

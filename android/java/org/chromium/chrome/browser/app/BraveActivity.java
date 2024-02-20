@@ -240,7 +240,7 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
     public static final String BROWSER_EXPRESS_REPLY_TO = "BrowserExpressReplyTo";
-    public static final String BROWSER_EXPRESS_REPLY_TO_NAME = "BrowserExpressReplyToName";
+    public static final String BROWSER_EXPRESS_REPLY_COMMENT = "BrowserExpressReplyComment";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -2015,11 +2015,11 @@ public abstract class BraveActivity extends ChromeActivity
         editor.apply();
     }
 
-    public void setReplyToName(String name) {
+    public void setReplyComment(String comment) {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO_NAME, 0);
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_COMMENT, 0);
         SharedPreferences.Editor editor = sharedPref.edit();
-        editor.putString(BROWSER_EXPRESS_REPLY_TO_NAME, name);
+        editor.putString(BROWSER_EXPRESS_REPLY_COMMENT, comment);
         editor.apply();
     }
 
@@ -2030,16 +2030,22 @@ public abstract class BraveActivity extends ChromeActivity
         return commentId;
     }
 
-    public String getReplyToName() {
+    public String getReplyComment() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
-                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO_NAME, 0);
-        String name = sharedPref.getString(BROWSER_EXPRESS_REPLY_TO_NAME, null);
-        return name;
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_COMMENT, 0);
+        String comment = sharedPref.getString(BROWSER_EXPRESS_REPLY_COMMENT, null);
+        return comment;
     }
 
     public SharedPreferences getSharedPreferencesForReplyTo() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_REPLY_TO, 0);
+        return sharedPref;
+    }
+
+    public SharedPreferences getSharedPreferencesForReplyComment() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_REPLY_COMMENT, 0);
         return sharedPref;
     }
 
