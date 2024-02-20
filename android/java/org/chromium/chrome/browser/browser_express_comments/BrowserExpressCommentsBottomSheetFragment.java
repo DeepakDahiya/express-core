@@ -315,6 +315,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment) {
+                    mMessageEditText.setText(R.string.browser_express_empty_text);
                     if(comment.getPageParent() == null){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -336,6 +337,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             commentJson.put("user", userJson);
 
                             activity.setReplyComment(commentJson.toString());
+                            activity.setReplyTo(null);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Browser Express Access Token", e.getMessage());
                         } catch (JSONException e) {
@@ -344,7 +346,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     }else{
                         mComments.add(0, comment);
                         mCommentAdapter.notifyItemInserted(0);
-                        mMessageEditText.setText(R.string.browser_express_empty_text);
 
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(0, 0);
