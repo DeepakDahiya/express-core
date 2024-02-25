@@ -235,19 +235,19 @@ public class BraveMainPreferencesBase
     private void rearrangePreferenceOrders() {
         int firstSectionOrder = 0;
 
-        if (getActivity() != null && !getActivity().isFinishing()
-                && BraveVpnPrefUtils.shouldShowCallout()
-                && !BraveVpnPrefUtils.isSubscriptionPurchase()
-                && BraveVpnUtils.isVpnFeatureSupported(getActivity())) {
-            if (mVpnCalloutPreference == null) {
-                mVpnCalloutPreference = new VpnCalloutPreference(getActivity());
-            }
-            if (mVpnCalloutPreference != null) {
-                mVpnCalloutPreference.setKey(PREF_BRAVE_VPN_CALLOUT);
-                mVpnCalloutPreference.setOrder(firstSectionOrder);
-                getPreferenceScreen().addPreference(mVpnCalloutPreference);
-            }
-        }
+        // if (getActivity() != null && !getActivity().isFinishing()
+        //         && BraveVpnPrefUtils.shouldShowCallout()
+        //         && !BraveVpnPrefUtils.isSubscriptionPurchase()
+        //         && BraveVpnUtils.isVpnFeatureSupported(getActivity())) {
+        //     if (mVpnCalloutPreference == null) {
+        //         mVpnCalloutPreference = new VpnCalloutPreference(getActivity());
+        //     }
+        //     if (mVpnCalloutPreference != null) {
+        //         mVpnCalloutPreference.setKey(PREF_BRAVE_VPN_CALLOUT);
+        //         mVpnCalloutPreference.setOrder(firstSectionOrder);
+        //         getPreferenceScreen().addPreference(mVpnCalloutPreference);
+        //     }
+        // }
 
         // findPreference(PREF_FEATURES_SECTION).setOrder(++firstSectionOrder);
 
