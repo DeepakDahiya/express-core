@@ -23,6 +23,7 @@ import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import org.chromium.url.mojom.Url;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -2032,7 +2033,7 @@ public abstract class BraveActivity extends ChromeActivity
         editor.apply();
     }
 
-    public void getCustomListSet() {
+    public String getCustomListSet() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_CUSTOM_LIST_SET, 0);
         String boolInString = sharedPref.getString(BROWSER_EXPRESS_CUSTOM_LIST_SET, null);
@@ -2048,7 +2049,7 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/personal.txt");
             urlList.add("https://raw.githubusercontent.com/iam-py-test/uBlock-combo/main/list.txt");
 
-            for (String element : list) {
+            for (String element : urlList) {
                 Log.e("CUSTOM_FILTER", "SETTING LIST");
                 Url filterUrl = new Url();
                 filterUrl.url = element;
