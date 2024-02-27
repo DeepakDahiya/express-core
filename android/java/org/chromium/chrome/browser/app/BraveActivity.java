@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import org.chromium.url.mojom.Url;
+import org.chromium.chrome.browser.shields.FilterListServiceFactory;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -960,6 +961,9 @@ public abstract class BraveActivity extends ChromeActivity
         BraveVpnNativeWorker.getInstance().reloadPurchasedState();
 
         BraveHelper.maybeMigrateSettings();
+
+        mFilterListAndroidHandler =
+                FilterListServiceFactory.getInstance().getFilterListAndroidHandler(this);
 
         Log.e("CUSTOM_FILTER", "BEFORE setCustomFilterList");
         setCustomFilterList();
@@ -2051,6 +2055,7 @@ public abstract class BraveActivity extends ChromeActivity
 
             for (String element : urlList) {
                 Log.e("CUSTOM_FILTER", "SETTING LIST");
+                Log.e("CUSTOM_FILTER", element);
                 Url filterUrl = new Url();
                 filterUrl.url = element;
                 mFilterListAndroidHandler.createSubscription(filterUrl);
