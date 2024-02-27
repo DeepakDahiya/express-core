@@ -208,6 +208,9 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import android.util.Rational;
 import android.app.PictureInPictureParams;
 
+import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
+import java.util.ArrayList;
+
 /**
  * Brave's extension for ChromeActivity
  */
@@ -241,6 +244,7 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
     public static final String BROWSER_EXPRESS_REPLY_TO = "BrowserExpressReplyTo";
     public static final String BROWSER_EXPRESS_REPLY_COMMENT = "BrowserExpressReplyComment";
+    public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET = "BrowserExpressCustomListSet";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -295,6 +299,8 @@ public abstract class BraveActivity extends ChromeActivity
 
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
     private BrowserExpressCommentsBottomSheetFragment mBottomSheetCommentsDialog;
+
+    private FilterListAndroidHandler mFilterListAndroidHandler;
 
     /**
      * Serves as a general exception for failed attempts to get BraveActivity.
@@ -953,6 +959,10 @@ public abstract class BraveActivity extends ChromeActivity
         BraveVpnNativeWorker.getInstance().reloadPurchasedState();
 
         BraveHelper.maybeMigrateSettings();
+
+        Log.e("CUSTOM_FILTER", "BEFORE setCustomFilterList");
+        setCustomFilterList();
+        Log.e("CUSTOM_FILTER", "AFTER setCustomFilterList");
 
         PrefChangeRegistrar mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(BravePref.SCHEDULED_CAPTCHA_ID, this);
@@ -2012,6 +2022,44 @@ public abstract class BraveActivity extends ChromeActivity
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(BROWSER_EXPRESS_REPLY_TO, commentId);
         editor.apply();
+    }
+
+    public void setCustomListSet(String boolInString) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_CUSTOM_LIST_SET, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_CUSTOM_LIST_SET, boolInString);
+        editor.apply();
+    }
+
+    public void getCustomListSet() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_CUSTOM_LIST_SET, 0);
+        String boolInString = sharedPref.getString(BROWSER_EXPRESS_CUSTOM_LIST_SET, null);
+        return boolInString;
+    }
+
+    public void setCustomFilterList() {
+        Log.e("CUSTOM_FILTER", "INSIDE CUSTOM FILTER");
+        String boolInString = getCustomListSet();
+        if(boolInString == null || !boolInString.equals("true") ){
+            Log.e("CUSTOM_FILTER", "INSIDE IF");
+            List<String> urlList = new ArrayList<String>();
+            urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/personal.txt");
+            urlList.add("https://raw.githubusercontent.com/iam-py-test/uBlock-combo/main/list.txt");
+
+            for (String element : list) {
+                Log.e("CUSTOM_FILTER", "SETTING LIST");
+                Url filterUrl = new Url();
+                filterUrl.url = element;
+                mFilterListAndroidHandler.createSubscription(filterUrl);
+                Log.e("CUSTOM_FILTER", "SETTING LIST DONE");
+            }
+
+            Log.e("CUSTOM_FILTER", "SETTING setCustomListSet");
+            setCustomListSet("true");
+        }
+        Log.e("CUSTOM_FILTER", "FINISH");
     }
 
     public void setReplyComment(String comment) {
