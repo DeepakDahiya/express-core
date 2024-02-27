@@ -2050,8 +2050,11 @@ public abstract class BraveActivity extends ChromeActivity
         if(boolInString == null || !boolInString.equals("true") ){
             Log.e("CUSTOM_FILTER", "INSIDE IF");
             List<String> urlList = new ArrayList<String>();
-            urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/personal.txt");
+            // urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/personal.txt");
             urlList.add("https://raw.githubusercontent.com/iam-py-test/uBlock-combo/main/list.txt");
+            urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/ultimate.txt");
+            urlList.add("https://github.com/yokoffing/filterlists/blob/main/annoyance_list.txt");
+            urlList.add("https://github.com/yokoffing/filterlists/blob/main/youtube_clear_view.txt");
 
             for (String element : urlList) {
                 Log.e("CUSTOM_FILTER", "SETTING LIST");
