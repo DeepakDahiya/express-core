@@ -133,7 +133,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
 
                 @Override
                 public void claimUsernameFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                     nextButton.setClickable(true);
                     nextButton.setText(R.string.brave_next);
                 }

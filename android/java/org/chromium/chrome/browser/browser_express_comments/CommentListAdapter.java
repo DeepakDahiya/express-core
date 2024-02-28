@@ -190,7 +190,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     String accessToken = activity.getAccessToken();
-                    Log.e("BROWSER EXPRESS SHOW MORE", "BEFORE API");
+                    Log.e("Express Browser SHOW MORE", "BEFORE API");
                     BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                         new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                                 null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
@@ -319,7 +319,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                 @Override
                 public void getCommentsFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
     }

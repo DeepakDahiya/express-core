@@ -126,9 +126,9 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 mFullNameText.setText(fulln);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }catch (JSONException e) {
-                Log.e("Browser Express Access Token", e.getMessage());
+                Log.e("Express Browser Access Token", e.getMessage());
             }catch(Exception ex){
-                Log.e("Browser Express Access Token", ex.getMessage());
+                Log.e("Express Browser Access Token", ex.getMessage());
             }
 
             setData();
@@ -148,10 +148,10 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             JSONObject jsonObj = new JSONObject(decodedString.toString());
             return jsonObj;
         }catch(JSONException e){
-            Log.e("Browser Express Access Token", e.getMessage());
+            Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }catch(UnsupportedEncodingException e){
-            Log.e("Browser Express Access Token", e.getMessage());
+            Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }
         

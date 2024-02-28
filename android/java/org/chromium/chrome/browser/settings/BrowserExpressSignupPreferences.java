@@ -252,7 +252,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
             new BrowserExpressSignupPreferencesUtil.SignupCallback() {
                 @Override
                 public void signupSuccessful(String email) {
-                    Log.e("BROWSER EXPRESS SIGNUP", "INSIDE SINGUP SUCCESSFUL");
+                    Log.e("Express Browser SIGNUP", "INSIDE SINGUP SUCCESSFUL");
                     mBtnSignUp.setClickable(true);
                     mBtnSignUp.setText(R.string.browser_express_signup_button_title);
 
@@ -266,7 +266,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
 
                 @Override
                 public void signupFailed(String error) {
-                    Log.e("BROWSER EXPRESS SINGUP", "INSIDE SINGUP FAILED");
+                    Log.e("Express Browser SINGUP", "INSIDE SINGUP FAILED");
                     mErrorTextView.setText(error);
                     mErrorTextView.setVisibility(View.VISIBLE);
 

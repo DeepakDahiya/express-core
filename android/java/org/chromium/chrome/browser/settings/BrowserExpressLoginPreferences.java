@@ -258,7 +258,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
                 @Override
                 public void loginFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                     mErrorTextView.setText(error);
                     mErrorTextView.setVisibility(View.VISIBLE);
 

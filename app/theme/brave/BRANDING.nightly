@@ -1,10 +1,10 @@
-COMPANY_FULLNAME=Browser Express, Inc.
-COMPANY_SHORTNAME=Browser Express
-PRODUCT_FULLNAME=Browser Express Nightly
-PRODUCT_SHORTNAME=Browser Express Nightly
-PRODUCT_INSTALLER_FULLNAME=Browser Express Installer
-PRODUCT_INSTALLER_SHORTNAME=Browser Express Installer
-COPYRIGHT=Copyright 2023 The Browser Express Authors. All rights reserved.
+COMPANY_FULLNAME=Express Browser, Inc.
+COMPANY_SHORTNAME=Express Browser
+PRODUCT_FULLNAME=Express Browser Nightly
+PRODUCT_SHORTNAME=Express Browser Nightly
+PRODUCT_INSTALLER_FULLNAME=Express Browser Installer
+PRODUCT_INSTALLER_SHORTNAME=Express Browser Installer
+COPYRIGHT=Copyright 2023 The Express Browser Authors. All rights reserved.
 MAC_BUNDLE_ID=com.browser.express.nightly
 MAC_CREATOR_CODE=Cr24
 MAC_TEAM_ID=KL8N8XSYF4

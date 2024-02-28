@@ -205,7 +205,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         mUrl, null, mPage, mPerPage, accessToken, getCommentsCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e("Browser Express Access Token", e.getMessage());
+            Log.e("Express Browser Access Token", e.getMessage());
         }
 
         mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
@@ -216,7 +216,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setReplyTo(null);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Browser Express Access Token", e.getMessage());
+                        Log.e("Express Browser Access Token", e.getMessage());
                     }
                 }
             }
@@ -257,7 +257,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             }
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Browser Express Access Token", e.getMessage());
+                        Log.e("Express Browser Access Token", e.getMessage());
                     }
                 }
             }
@@ -309,7 +309,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 @Override
                 public void getCommentsFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
 
@@ -341,7 +341,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             activity.setReplyComment(commentJson.toString());
                             activity.setReplyTo(null);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
-                            Log.e("Browser Express Access Token", e.getMessage());
+                            Log.e("Express Browser Access Token", e.getMessage());
                         } catch (JSONException e) {
                             Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                         }
@@ -356,7 +356,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 @Override
                 public void addCommentFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
 }

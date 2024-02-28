@@ -1,7 +1,7 @@
 {
   "name": "express-core",
   "version": "1.0.0",
-  "description": "Express Core is a set of changes, APIs and scripts used for customizing Chromium to make Browser Express.",
+  "description": "Express Core is a set of changes, APIs and scripts used for customizing Chromium to make Express Browser.",
   "main": "index.js",
   "scripts": {
     "audit_deps": "node ./build/commands/scripts/audit.js -- --audit_dev_deps",
@@ -54,7 +54,7 @@
     "url": "git+https://github.com/DeepakDahiya/express-core.git"
   },
   "author": {
-    "name": "Browser Express <deepak@browser-express>"
+    "name": "Express Browser <deepak@browser-express>"
   },
   "contributors": [
     {

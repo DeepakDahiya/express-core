@@ -251,7 +251,7 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
             new BrowserExpressOtpVerifyPreferencesUtil.OtpVerifyCallback() {
                 @Override
                 public void otpVerifySuccessful(String accessToken, String refreshToken) {
-                    Log.e("BROWSER EXPRESS OTP", "INSIDE SINGUP SUCCESSFUL");
+                    Log.e("Express Browser OTP", "INSIDE SINGUP SUCCESSFUL");
                     mBtnVerify.setClickable(true);
                     mBtnVerify.setText(R.string.browser_express_otp_verify_button_title);
 
@@ -272,7 +272,7 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
 
                 @Override
                 public void otpVerifyFailed(String error) {
-                    Log.e("BROWSER EXPRESS OTP", "INSIDE SINGUP FAILED");
+                    Log.e("Express Browser OTP", "INSIDE SINGUP FAILED");
                     mErrorTextView.setText(error);
                     mErrorTextView.setVisibility(View.VISIBLE);
 

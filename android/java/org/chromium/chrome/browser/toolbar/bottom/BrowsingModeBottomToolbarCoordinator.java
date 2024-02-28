@@ -114,7 +114,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                         mUrl, getFirstCommentsCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e("Browser Express Access Token", e.getMessage());
+            Log.e("Express Browser Access Token", e.getMessage());
         }
 
         if (mCommentsButton != null) {
@@ -326,7 +326,7 @@ public class BrowsingModeBottomToolbarCoordinator {
 
                 @Override
                 public void getFirstCommentsFailed(String error) {
-                    Log.e("BROWSER EXPRESS LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
 }
