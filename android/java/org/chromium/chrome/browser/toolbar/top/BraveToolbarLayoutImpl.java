@@ -150,6 +150,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
+import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetFirstCommentsUtil;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
@@ -184,6 +185,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private ImageView mBraveRewardsOnboardingIcon;
     private ImageView mWalletIcon;
     private int mCurrentToolbarColor;
+
+    private TextView mCommentsText;
 
     private boolean mIsPublisherVerified;
     private boolean mIsNotificationPosted;
@@ -241,6 +244,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 forwardButton.setImageDrawable(forwardButtonDrawable);
             }
         }
+
+        mCommentsText = findViewById(R.id.comments_button1);
 
         mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
         mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
@@ -413,13 +418,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 mBraveShieldsHandler.clearBraveShieldsCount(tab.getId());
                 dismissShieldsTooltip();
                 hidePlaylistButton();
-                try {
-                    BraveActivity activity = BraveActivity.getBraveActivity();
-                    activity.setCurrentUrl(url.getSpec());
-                    Log.e("CURRENT URL", "SET CURRENT URL");
-                } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    Log.e(TAG, "RewardsOnboarding failed " + e);
-                }
+
+                String mUrl = url.getSpec();
+
+                BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                    new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                            mUrl, getFirstCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
             @Override
@@ -1410,4 +1415,23 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
         showPlaylistButton(items);
     }
+
+    private BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
+        new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
+            @Override
+            public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
+                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    activity.setFirstComments(comments.toString());
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "BookmarkButton click " + e);
+                }
+            }
+
+            @Override
+            public void getFirstCommentsFailed(String error) {
+                Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+            }
+        };
 }
