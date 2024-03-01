@@ -55,6 +55,8 @@ import com.brave.playlist.util.PlaylistViewUtils;
 import com.brave.playlist.view.PlaylistOnboardingPanel;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 
+import org.json.JSONArray;
+
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.BraveFeatureList;
 import org.chromium.base.BravePreferenceKeys;
