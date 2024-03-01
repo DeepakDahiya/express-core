@@ -11,13 +11,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
-import android.content.SharedPreferences;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import androidx.core.content.ContextCompat;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.url.GURL;
-import org.chromium.url.mojom.Url;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -47,13 +42,12 @@ import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.TabUtils;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
 
 /**
  * The root coordinator for the bottom toolbar. It has two sub-components: the browsing mode bottom
  * toolbar and the tab switcher mode bottom toolbar.
  */
-class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongClickListener  {
+class BottomToolbarCoordinator implements View.OnLongClickListener  {
     private static final String TAG = "BottomToolbar";
 
     /** The browsing mode bottom toolbar component */
@@ -90,8 +84,6 @@ class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongCl
     private boolean mBookmarkButtonFilled;
     private ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private LocationBarModel mLocationBarModel;
-
-    private SharedPreferences sharedPref;
 
     private final Context mContext = ContextUtils.getApplicationContext();
 
@@ -176,37 +168,6 @@ class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongCl
         ChromeActivity activity = null;
         try {
             activity = BraveActivity.getBraveActivity();
-
-            BraveActivity activity2 = BraveActivity.getBraveActivity();
-
-            Log.e("CURRENT URL 2", "BEFORE SETTING SHARED PREFERENCES");
-            sharedPref = activity2.getSharedPreferencesForCurrentUrl();
-            Log.e("CURRENT URL 2", "AFTER SETTING SHARED PREFERENCES");
-            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                    Log.e("CURRENT URL 2", key);
-                    if(key.equals(BraveActivity.BROWSER_EXPRESS_CURRENT_URL)){
-                        Log.e("CURRENT URL 2", activity2.getCurrentUrl());
-                        if(activity2.getCurrentUrl() != null && !activity2.getCurrentUrl().equals("")){
-                            String url = activity2.getCurrentUrl().toString();
-                            Log.e("CURRENT URL 2", url);
-                            // BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
-                            //     new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-                            //             url, getFirstCommentsCallback);
-                            // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }else{
-                            // int commentCount = 0;
-                            // mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                        }
-                    }
-                }
-            };
-
-            sharedPref.registerOnSharedPreferenceChangeListener(listener);
-            Log.e("CURRENT URL 2", "AFTER LISTENER ATTACHED");
-
-
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "initializeWithNative " + e);
         }
@@ -308,11 +269,6 @@ class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongCl
                 mScrollingBottomView.setSwipeDetector(layoutManager.getToolbarSwipeHandler());
             }
         }
-    }
-
-    @Override
-    public void onPageLoadFinished(final Tab tab, GURL url) {
-        Log.e("CURRENT URL 3", url.getSpec());
     }
 
     /**

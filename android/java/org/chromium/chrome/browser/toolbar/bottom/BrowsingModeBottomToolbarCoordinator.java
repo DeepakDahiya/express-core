@@ -14,8 +14,6 @@ import org.json.JSONArray;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
-import android.content.SharedPreferences;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -40,17 +38,13 @@ import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
 import android.widget.ImageButton;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.url.GURL;
-import org.chromium.url.mojom.Url;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
  * an Android view that handles user actions and a composited texture that draws when the controls
  * are being scrolled off-screen. The Android version does not draw unless the controls offset is 0.
  */
-public class BrowsingModeBottomToolbarCoordinator extends EmptyTabObserver {
+public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
     private ImageButton mCommentsButton;
@@ -95,17 +89,6 @@ public class BrowsingModeBottomToolbarCoordinator extends EmptyTabObserver {
     private final BookmarksButton mBookmarkButton;
     private final MenuButton mMenuButton;
     private ThemeColorProvider mThemeColorProvider;
-    private SharedPreferences sharedPref;
-    
-    @Override
-    public void onUrlUpdated(Tab tab) {
-        Log.e("CURRENT URL 3", "onUrlUpdated");
-    }
-
-    @Override
-    public void onPageLoadFinished(final Tab tab, GURL url) {
-        Log.e("CURRENT URL 3", "onPageLoadFinished");
-    }
 
     BrowsingModeBottomToolbarCoordinator(View root, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
@@ -129,34 +112,6 @@ public class BrowsingModeBottomToolbarCoordinator extends EmptyTabObserver {
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
-
-            Log.e("CURRENT URL", "BEFORE SETTING SHARED PREFERENCES");
-            sharedPref = activity.getSharedPreferencesForCurrentUrl();
-            Log.e("CURRENT URL", "AFTER SETTING SHARED PREFERENCES");
-            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                    Log.e("CURRENT URL", key);
-                    if(key.equals(BraveActivity.BROWSER_EXPRESS_CURRENT_URL)){
-                        Log.e("CURRENT URL", activity.getCurrentUrl());
-                        if(activity.getCurrentUrl() != null && !activity.getCurrentUrl().equals("")){
-                            String url = activity.getCurrentUrl().toString();
-                            Log.e("CURRENT URL", url);
-                            BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
-                                new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-                                        url, getFirstCommentsCallback);
-                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }else{
-                            int commentCount = 0;
-                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                        }
-                    }
-                }
-            };
-
-            sharedPref.registerOnSharedPreferenceChangeListener(listener);
-            Log.e("CURRENT URL", "AFTER LISTENER ATTACHED");
-
             String mUrl = activity.getActivityTab().getUrl().getSpec();
 
             BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
