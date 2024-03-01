@@ -49,6 +49,8 @@ public class BrowsingModeBottomToolbarCoordinator {
 
     private ImageButton mCommentsButton;
     private TextView mCommentsText;
+    private int w;
+    private int h;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
@@ -106,15 +108,6 @@ public class BrowsingModeBottomToolbarCoordinator {
         mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
 
-        // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
-        int w = mCommentsButton.getMeasuredWidthandState();
-        int h = mCommentsButton.getMeasuredHeightandState();
-
-        mHomeButton.getLayoutParams().height = h;
-        mHomeButton.getLayoutParams().width = w;
-        mHomeButton.requestLayout();
-
-
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String mUrl = activity.getActivityTab().getUrl().getSpec();
@@ -141,6 +134,12 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
             mCommentsButton.setOnClickListener(commentsClickHandler);
             BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
+             // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
+            w = mCommentsButton.getMeasuredWidthandState();
+            h = mCommentsButton.getMeasuredHeightandState();
+            mBraveHomeButton.getLayoutParams().height = h;
+            mBraveHomeButton.getLayoutParams().width = w;
+            mBraveHomeButton.requestLayout();
         }
 
         mNewTabButton = mToolbarRoot.findViewById(R.id.bottom_new_tab_button);
