@@ -140,8 +140,8 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCommentsButton.post(new Runnable() {
                 @Override
                 public void run() {
-                    w = mCommentsButton.getMeasuredWidthandState();
-                    h = mCommentsButton.getMeasuredHeightandState();
+                    w = mCommentsButton.getWidth();
+                    h = mCommentsButton.getHeight();
                     mBraveHomeButton.getLayoutParams().height = h;
                     mBraveHomeButton.getLayoutParams().width = w;
                     mBraveHomeButton.requestLayout();
