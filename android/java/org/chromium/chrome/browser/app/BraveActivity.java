@@ -2102,6 +2102,10 @@ public abstract class BraveActivity extends ChromeActivity
         return commentId;
     }
 
+    public TextView getCommentCountText() {
+        return findViewById(R.id.comments_button1);
+    }
+
     public String getReplyComment() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_REPLY_COMMENT, 0);

@@ -1422,10 +1422,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
             @Override
             public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
-                mCommentsText = findViewById(R.id.comments_button1);
-                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+               
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
+
+                    mCommentsText = activity.getCommentCountText();
+                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+
                     activity.setFirstComments(comments.toString());
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
