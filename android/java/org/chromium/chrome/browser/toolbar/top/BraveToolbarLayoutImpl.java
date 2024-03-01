@@ -1324,7 +1324,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         mIsBottomToolbarVisible = isVisible;
         if (BraveReflectionUtil.EqualTypes(this.getClass(), ToolbarPhone.class)
                 && getMenuButtonCoordinator() != null) {
-            getMenuButtonCoordinator().setVisibility(!isVisible);
+            getMenuButtonCoordinator().setVisibility(true);
             ToggleTabStackButton toggleTabStackButton = findViewById(R.id.tab_switcher_button);
             if (toggleTabStackButton != null) {
                 toggleTabStackButton.setVisibility(VISIBLE);
