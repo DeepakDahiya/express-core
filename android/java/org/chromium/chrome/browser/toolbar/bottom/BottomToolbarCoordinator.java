@@ -47,12 +47,13 @@ import org.chromium.chrome.browser.toolbar.LocationBarModel;
 import org.chromium.chrome.browser.toolbar.TabCountProvider;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.TabUtils;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
 
 /**
  * The root coordinator for the bottom toolbar. It has two sub-components: the browsing mode bottom
  * toolbar and the tab switcher mode bottom toolbar.
  */
-class BottomToolbarCoordinator implements View.OnLongClickListener {
+class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongClickListener  {
     private static final String TAG = "BottomToolbar";
 
     /** The browsing mode bottom toolbar component */
