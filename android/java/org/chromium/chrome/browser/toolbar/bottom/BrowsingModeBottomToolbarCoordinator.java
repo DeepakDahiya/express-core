@@ -95,7 +95,8 @@ public class BrowsingModeBottomToolbarCoordinator extends EmptyTabObserver {
     private final BookmarksButton mBookmarkButton;
     private final MenuButton mMenuButton;
     private ThemeColorProvider mThemeColorProvider;
-
+    private SharedPreferences sharedPref;
+    
     @Override
     public void onUrlUpdated(Tab tab) {
         Log.e("CURRENT URL 3", "onUrlUpdated");
@@ -130,7 +131,7 @@ public class BrowsingModeBottomToolbarCoordinator extends EmptyTabObserver {
             BraveActivity activity = BraveActivity.getBraveActivity();
 
             Log.e("CURRENT URL", "BEFORE SETTING SHARED PREFERENCES");
-            SharedPreferences sharedPref = activity.getSharedPreferencesForCurrentUrl();
+            sharedPref = activity.getSharedPreferencesForCurrentUrl();
             Log.e("CURRENT URL", "AFTER SETTING SHARED PREFERENCES");
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override

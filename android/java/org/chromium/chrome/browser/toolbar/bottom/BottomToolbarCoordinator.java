@@ -91,6 +91,8 @@ class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongCl
     private ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private LocationBarModel mLocationBarModel;
 
+    private SharedPreferences sharedPref;
+
     private final Context mContext = ContextUtils.getApplicationContext();
 
     BottomToolbarCoordinator(ScrollingBottomViewResourceFrameLayout scrollingBottomView, View root,
@@ -178,7 +180,7 @@ class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongCl
             BraveActivity activity2 = BraveActivity.getBraveActivity();
 
             Log.e("CURRENT URL 2", "BEFORE SETTING SHARED PREFERENCES");
-            SharedPreferences sharedPref = activity2.getSharedPreferencesForCurrentUrl();
+            sharedPref = activity2.getSharedPreferencesForCurrentUrl();
             Log.e("CURRENT URL 2", "AFTER SETTING SHARED PREFERENCES");
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
