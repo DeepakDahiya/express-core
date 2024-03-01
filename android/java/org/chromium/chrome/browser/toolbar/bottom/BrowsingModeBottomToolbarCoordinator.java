@@ -119,7 +119,6 @@ public class BrowsingModeBottomToolbarCoordinator {
             SharedPreferences sharedPref = activity.getSharedPreferencesForCurrentUrl();
             Log.e("CURRENT URL", "AFTER SETTING SHARED PREFERENCES");
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                Log.e("CURRENT URL", "INSIDE SHARED PREFERENCES LISTENER");
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("CURRENT URL", key);
