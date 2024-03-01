@@ -412,6 +412,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 mBraveShieldsHandler.clearBraveShieldsCount(tab.getId());
                 dismissShieldsTooltip();
                 hidePlaylistButton();
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    activity.setCurrentUrl(url.getSpec());
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "RewardsOnboarding failed " + e);
+                }
             }
 
             @Override

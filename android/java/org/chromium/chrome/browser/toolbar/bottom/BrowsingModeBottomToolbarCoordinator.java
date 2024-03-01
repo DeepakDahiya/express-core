@@ -14,6 +14,8 @@ import org.json.JSONArray;
 import android.widget.TextView;
 
 import org.chromium.base.Callback;
+import android.content.SharedPreferences;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
 import org.chromium.base.supplier.ObservableSupplier;
@@ -106,10 +108,34 @@ public class BrowsingModeBottomToolbarCoordinator {
         mBraveHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
         mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
+        int commentCount = 0;
+        mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
         mBraveHomeButton.setOnClickListener(homeButtonListener);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
+
+            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
+            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                    if(key.equals(BraveActivity.BROWSER_EXPRESS_CURRENT_URL)){
+                        if(activity.getCurrentUrl() != null && !activity.getCurrentUrl().equals("")){
+                            String url = activity.getCurrentUrl().toString();
+                            BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                                new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                                        url, getFirstCommentsCallback);
+                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }else{
+                            int commentCount = 0;
+                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                        }
+                    }
+                }
+            };
+
+            sharedPref.registerOnSharedPreferenceChangeListener(listener);
+
             String mUrl = activity.getActivityTab().getUrl().getSpec();
 
             BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =

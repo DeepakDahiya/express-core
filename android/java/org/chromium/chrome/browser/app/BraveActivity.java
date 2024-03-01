@@ -247,6 +247,7 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BROWSER_EXPRESS_REPLY_TO = "BrowserExpressReplyTo";
     public static final String BROWSER_EXPRESS_REPLY_COMMENT = "BrowserExpressReplyComment";
     public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET = "BrowserExpressCustomListSet";
+    public static final String BROWSER_EXPRESS_CURRENT_URL = "BrowserExpressCurrentUrl";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -2027,6 +2028,21 @@ public abstract class BraveActivity extends ChromeActivity
         SharedPreferences.Editor editor = sharedPref.edit();
         editor.putString(BROWSER_EXPRESS_REPLY_TO, commentId);
         editor.apply();
+    }
+
+    public void setCurrentUrl(String url) {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_CURRENT_URL, 0);
+        SharedPreferences.Editor editor = sharedPref.edit();
+        editor.putString(BROWSER_EXPRESS_CURRENT_URL, url);
+        editor.apply();
+    }
+
+    public String getCurrentUrl() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_CURRENT_URL, 0);
+        String url = sharedPref.getString(BROWSER_EXPRESS_CURRENT_URL, null);
+        return url;
     }
 
     public void setCustomListSet(String boolInString) {
