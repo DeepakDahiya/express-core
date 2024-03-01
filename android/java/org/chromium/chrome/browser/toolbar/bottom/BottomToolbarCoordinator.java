@@ -309,8 +309,8 @@ class BottomToolbarCoordinator extends EmptyTabObserver implements View.OnLongCl
     }
 
     @Override
-    public void onPageLoadStarted(Tab tab, GURL url) {
-        Log.v("CURRENT URL 3", "onPageLoadStarted");
+    public void onPageLoadFinished(final Tab tab, GURL url) {
+        Log.e("CURRENT URL 3", url.getSpec());
     }
 
     /**
