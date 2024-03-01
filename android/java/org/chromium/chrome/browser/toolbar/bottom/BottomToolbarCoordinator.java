@@ -11,6 +11,8 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.content.SharedPreferences;
+import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import androidx.core.content.ContextCompat;
 
@@ -168,6 +170,35 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
         ChromeActivity activity = null;
         try {
             activity = BraveActivity.getBraveActivity();
+
+            Log.e("CURRENT URL 2", "BEFORE SETTING SHARED PREFERENCES");
+            SharedPreferences sharedPref = activity.getSharedPreferencesForCurrentUrl();
+            Log.e("CURRENT URL 2", "AFTER SETTING SHARED PREFERENCES");
+            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+                @Override
+                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                    Log.e("CURRENT URL 2", key);
+                    if(key.equals(BraveActivity.BROWSER_EXPRESS_CURRENT_URL)){
+                        Log.e("CURRENT URL 2", activity.getCurrentUrl());
+                        if(activity.getCurrentUrl() != null && !activity.getCurrentUrl().equals("")){
+                            String url = activity.getCurrentUrl().toString();
+                            Log.e("CURRENT URL 2", url);
+                            // BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                            //     new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                            //             url, getFirstCommentsCallback);
+                            // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }else{
+                            // int commentCount = 0;
+                            // mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                        }
+                    }
+                }
+            };
+
+            sharedPref.registerOnSharedPreferenceChangeListener(listener);
+            Log.e("CURRENT URL 2", "AFTER LISTENER ATTACHED");
+
+
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e(TAG, "initializeWithNative " + e);
         }
