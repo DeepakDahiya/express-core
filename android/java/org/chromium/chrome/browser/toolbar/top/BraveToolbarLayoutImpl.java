@@ -1142,7 +1142,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     public void updateModernLocationBarColorImpl(int color) {
         mCurrentToolbarColor = color;
         if (mProfileLayout != null) {
-            mProfileLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
+            // mProfileLayout.getBackground().setColorFilter(color, PorterDuff.Mode.SRC_IN);
         }
     }
 
