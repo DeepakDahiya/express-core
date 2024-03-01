@@ -316,9 +316,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         // shown and loading state is changed.
         updateBraveShieldsButtonState(null);
         if (BraveReflectionUtil.EqualTypes(this.getClass(), ToolbarPhone.class)) {
-            if (getMenuButtonCoordinator() != null && false) {
-                getMenuButtonCoordinator().setVisibility(false);
-            }
+            // if (getMenuButtonCoordinator() != null && false) {
+            //     getMenuButtonCoordinator().setVisibility(false);
+            // }
         }
 
         if (BraveReflectionUtil.EqualTypes(this.getClass(), CustomTabToolbar.class)) {
