@@ -40,13 +40,17 @@ import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
 import android.widget.ImageButton;
+import org.chromium.chrome.browser.tab.EmptyTabObserver;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.url.GURL;
+import org.chromium.url.mojom.Url;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
  * an Android view that handles user actions and a composited texture that draws when the controls
  * are being scrolled off-screen. The Android version does not draw unless the controls offset is 0.
  */
-public class BrowsingModeBottomToolbarCoordinator {
+public class BrowsingModeBottomToolbarCoordinator extends EmptyTabObserver {
     private static final String TAG = "BrowsingMode";
 
     private ImageButton mCommentsButton;
@@ -91,6 +95,16 @@ public class BrowsingModeBottomToolbarCoordinator {
     private final BookmarksButton mBookmarkButton;
     private final MenuButton mMenuButton;
     private ThemeColorProvider mThemeColorProvider;
+
+    @Override
+    public void onUrlUpdated(Tab tab) {
+        Log.e("CURRENT URL 3", "onUrlUpdated");
+    }
+
+    @Override
+    public void onPageLoadFinished(final Tab tab, GURL url) {
+        Log.e("CURRENT URL 3", "onPageLoadFinished");
+    }
 
     BrowsingModeBottomToolbarCoordinator(View root, ActivityTabProvider tabProvider,
             OnClickListener homeButtonListener, OnClickListener searchAcceleratorListener,
