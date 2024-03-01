@@ -171,17 +171,19 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
         try {
             activity = BraveActivity.getBraveActivity();
 
+            BraveActivity activity2 = BraveActivity.getBraveActivity();
+
             Log.e("CURRENT URL 2", "BEFORE SETTING SHARED PREFERENCES");
-            SharedPreferences sharedPref = activity.getSharedPreferencesForCurrentUrl();
+            SharedPreferences sharedPref = activity2.getSharedPreferencesForCurrentUrl();
             Log.e("CURRENT URL 2", "AFTER SETTING SHARED PREFERENCES");
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("CURRENT URL 2", key);
                     if(key.equals(BraveActivity.BROWSER_EXPRESS_CURRENT_URL)){
-                        Log.e("CURRENT URL 2", activity.getCurrentUrl());
-                        if(activity.getCurrentUrl() != null && !activity.getCurrentUrl().equals("")){
-                            String url = activity.getCurrentUrl().toString();
+                        Log.e("CURRENT URL 2", activity2.getCurrentUrl());
+                        if(activity2.getCurrentUrl() != null && !activity2.getCurrentUrl().equals("")){
+                            String url = activity2.getCurrentUrl().toString();
                             Log.e("CURRENT URL 2", url);
                             // BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
                             //     new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
