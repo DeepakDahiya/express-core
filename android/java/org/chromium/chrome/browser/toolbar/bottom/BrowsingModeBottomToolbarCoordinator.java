@@ -115,13 +115,16 @@ public class BrowsingModeBottomToolbarCoordinator {
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
 
-            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
+            SharedPreferences sharedPref = activity.getSharedPreferencesForCurrentUrl();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
+                    Log.e("CURRENT URL", key);
                     if(key.equals(BraveActivity.BROWSER_EXPRESS_CURRENT_URL)){
+                        Log.e("CURRENT URL", activity.getCurrentUrl());
                         if(activity.getCurrentUrl() != null && !activity.getCurrentUrl().equals("")){
                             String url = activity.getCurrentUrl().toString();
+                            Log.e("CURRENT URL", url);
                             BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
                                 new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
                                         url, getFirstCommentsCallback);

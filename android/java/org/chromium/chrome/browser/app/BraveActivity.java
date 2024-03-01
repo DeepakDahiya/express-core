@@ -2115,6 +2115,12 @@ public abstract class BraveActivity extends ChromeActivity
         return sharedPref;
     }
 
+    public SharedPreferences getSharedPreferencesForCurrentUrl() {
+        SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+                BravePreferenceKeys.BROWSER_EXPRESS_CURRENT_URL, 0);
+        return sharedPref;
+    }
+
     public SharedPreferences getSharedPreferencesForReplyComment() {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_REPLY_COMMENT, 0);

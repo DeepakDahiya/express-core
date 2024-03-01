@@ -405,6 +405,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
+                Log.e("CURRENT URL", "INSIDE ON PAGE LOAD STARTED");
                 showWalletIcon(false, tab);
                 if (getToolbarDataProvider().getTab() == tab) {
                     updateBraveShieldsButtonState(tab);
@@ -415,6 +416,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
                     activity.setCurrentUrl(url.getSpec());
+                    Log.e("CURRENT URL", "SET CURRENT URL");
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "RewardsOnboarding failed " + e);
                 }
