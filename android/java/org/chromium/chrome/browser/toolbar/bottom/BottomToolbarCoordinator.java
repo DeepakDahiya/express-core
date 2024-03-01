@@ -15,6 +15,9 @@ import android.content.SharedPreferences;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 import androidx.core.content.ContextCompat;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.url.GURL;
+import org.chromium.url.mojom.Url;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -302,6 +305,11 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
                 mScrollingBottomView.setSwipeDetector(layoutManager.getToolbarSwipeHandler());
             }
         }
+    }
+
+    @Override
+    public void onPageLoadStarted(Tab tab, GURL url) {
+        Log.v("CURRENT URL 3", "onPageLoadStarted");
     }
 
     /**
