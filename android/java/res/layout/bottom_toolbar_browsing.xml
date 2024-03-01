@@ -75,9 +75,10 @@
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <TextView
+             android:id="@+id/comments_button1"
              android:layout_width="wrap_content"
              android:layout_height="wrap_content"
-             android:text="@string/browser_express_login_title"
+             android:text="@string/browser_express_empty_text"
              android:gravity="end"
              android:textColor="@color/news_settings_title_color"
              android:textSize="11sp" />

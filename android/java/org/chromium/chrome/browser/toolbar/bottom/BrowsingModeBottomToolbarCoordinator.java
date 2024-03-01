@@ -11,6 +11,7 @@ import android.view.View.OnLongClickListener;
 import org.chromium.base.task.AsyncTask;
 import java.util.Locale;
 import org.json.JSONArray;
+import android.widget.TextView;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -47,7 +48,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
     private ImageButton mCommentsButton;
-    // private Button mCommentsButton1;
+    private TextView mCommentsText;
 
     /** The mediator that handles events from outside the browsing mode bottom toolbar. */
     private final BrowsingModeBottomToolbarMediator mMediator;
@@ -102,8 +103,17 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mBraveHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
-        // mCommentsButton1 = mToolbarRoot.findViewById(R.id.comments_button1);
+        mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
+
+        // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
+        int w = mCommentsButton.getMeasuredWidthandState();
+        int h = mCommentsButton.getMeasuredHeightandState();
+
+        mHomeButton.getLayoutParams().height = h;
+        mHomeButton.getLayoutParams().width = w;
+        mHomeButton.requestLayout();
+
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -315,7 +325,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
                 @Override
                 public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
-                    // mCommentsButton1.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setFirstComments(comments.toString());

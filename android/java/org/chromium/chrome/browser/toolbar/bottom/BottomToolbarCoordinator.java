@@ -233,11 +233,6 @@ class BottomToolbarCoordinator implements View.OnLongClickListener {
 
         mHomeButton = bottomToolbarBrowsing.findViewById(R.id.bottom_home_button);
         if (mHomeButton != null) {
-            // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
-            mHomeButton.getLayoutParams().height = 18;
-            mHomeButton.getLayoutParams().width = 18;
-            mHomeButton.requestLayout();
-
             updateHomeButtonState();
             mHomeButton.setOnLongClickListener(this);
 
