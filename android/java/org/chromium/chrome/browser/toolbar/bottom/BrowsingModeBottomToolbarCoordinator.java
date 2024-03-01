@@ -135,11 +135,18 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCommentsButton.setOnClickListener(commentsClickHandler);
             BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
              // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
-            w = mCommentsButton.getMeasuredWidthandState();
-            h = mCommentsButton.getMeasuredHeightandState();
-            mBraveHomeButton.getLayoutParams().height = h;
-            mBraveHomeButton.getLayoutParams().width = w;
-            mBraveHomeButton.requestLayout();
+           
+
+            mCommentsButton.post(new Runnable() {
+                @Override
+                public void run() {
+                    w = mCommentsButton.getMeasuredWidthandState();
+                    h = mCommentsButton.getMeasuredHeightandState();
+                    mBraveHomeButton.getLayoutParams().height = h;
+                    mBraveHomeButton.getLayoutParams().width = w;
+                    mBraveHomeButton.requestLayout();
+                }
+            });
         }
 
         mNewTabButton = mToolbarRoot.findViewById(R.id.bottom_new_tab_button);
