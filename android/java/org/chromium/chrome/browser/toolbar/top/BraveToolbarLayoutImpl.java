@@ -439,6 +439,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                 }
 
+                SharedPreferencesManager.getInstance().writeString(BravePreferenceKeys.BROWSER_EXPRESS_CURRENT_URL, url.getSpec());
                 if (url.domainIs(YOUTUBE_DOMAIN)) {
                     SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                 }else{

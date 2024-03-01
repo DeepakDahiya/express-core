@@ -115,8 +115,11 @@ public class BrowsingModeBottomToolbarCoordinator {
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
 
+            Log.e("CURRENT URL", "BEFORE SETTING SHARED PREFERENCES");
             SharedPreferences sharedPref = activity.getSharedPreferencesForCurrentUrl();
+            Log.e("CURRENT URL", "AFTER SETTING SHARED PREFERENCES");
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
+                Log.e("CURRENT URL", "INSIDE SHARED PREFERENCES LISTENER");
                 @Override
                 public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
                     Log.e("CURRENT URL", key);
@@ -138,6 +141,7 @@ public class BrowsingModeBottomToolbarCoordinator {
             };
 
             sharedPref.registerOnSharedPreferenceChangeListener(listener);
+            Log.e("CURRENT URL", "AFTER LISTENER ATTACHED");
 
             String mUrl = activity.getActivityTab().getUrl().getSpec();
 
