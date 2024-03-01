@@ -316,7 +316,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         // shown and loading state is changed.
         updateBraveShieldsButtonState(null);
         if (BraveReflectionUtil.EqualTypes(this.getClass(), ToolbarPhone.class)) {
-            if (getMenuButtonCoordinator() != null && isMenuButtonOnBottom()) {
+            if (getMenuButtonCoordinator() != null && false) {
                 getMenuButtonCoordinator().setVisibility(false);
             }
         }
@@ -1352,7 +1352,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         super.initialize(toolbarDataProvider, tabController, menuButtonCoordinator, historyDelegate,
                 partnerHomepageEnabledSupplier, offlineDownloader);
 
-        BraveMenuButtonCoordinator.setMenuFromBottom(isMenuButtonOnBottom());
+        BraveMenuButtonCoordinator.setMenuFromBottom(false);
+        // BraveMenuButtonCoordinator.setMenuFromBottom(isMenuButtonOnBottom());
     }
 
     public void updateWalletBadgeVisibility(boolean visible) {

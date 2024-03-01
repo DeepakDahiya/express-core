@@ -21,11 +21,11 @@
 
         <ImageButton android:id="@+id/profile_button"
             style="@style/ToolbarButton"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="8dp"
+            android:layout_marginTop="7dp"
+            android:layout_marginEnd="6dp"
             android:background="@drawable/btn_toolbar_profile"
-            android:layout_width="36sp"
-            android:layout_height="36sp"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
             android:layout_gravity="center"
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
