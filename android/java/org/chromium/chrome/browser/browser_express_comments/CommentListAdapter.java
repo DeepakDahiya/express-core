@@ -223,6 +223,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                             if(didVoteType.equals("up")){
                                 finalVote = finalVote - 1;
+                                mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
                             }
                         }else{
                             finalVote = finalVote + 1;
@@ -259,6 +260,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                             if(didVoteType.equals("down")){
                                 finalVote = finalVote + 1;
+                                mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
                             }
                         }else{
                             finalVote = finalVote - 1;
