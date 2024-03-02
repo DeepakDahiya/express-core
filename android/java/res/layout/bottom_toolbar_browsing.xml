@@ -33,15 +33,18 @@
             android:contentDescription="@string/accessibility_toolbar_btn_home"
             android:visibility="gone"
             style="@style/SplitToolbarButton" />
-        
+
         <TextView
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:text="@string/browser_express_home_title"
-             android:gravity="end"
-             android:textColor="@color/news_settings_title_color"
-             android:textSize="11sp" />
-        
+            android:id="@+id/bottom_home_text"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/browser_express_home_title"
+            android:gravity="end"
+            android:textColor="@color/news_settings_title_color"
+            android:clickable="true"
+            android:onClick="onClick"
+            android:textSize="11sp" />
+
     </LinearLayout>
 
     <!--
@@ -75,25 +78,15 @@
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <TextView
-             android:id="@+id/comments_button1"
-             android:layout_width="wrap_content"
-             android:layout_height="wrap_content"
-             android:text="@string/browser_express_empty_text"
-             android:gravity="end"
-             android:textColor="@color/news_settings_title_color"
-             android:textSize="11sp" />
-        <!-- <Button
             android:id="@+id/comments_button1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            android:textAllCaps="false"
-            android:layout_gravity="center_vertical"
+            android:text="@string/browser_express_empty_text"
+            android:gravity="end"
             android:textColor="@color/news_settings_title_color"
-            android:text="@string/be_notifications"
-            android:textSize="11sp"
-            android:minWidth="0dp"
-            android:minHeight="0dp" /> -->
+            android:clickable="true"
+            android:onClick="onClick"
+            android:textSize="11sp" />
     </LinearLayout>
 
 

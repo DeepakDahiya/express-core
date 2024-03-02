@@ -422,6 +422,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
+                int commentCount = 0;
+                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+
                 BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
                     new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
                             mUrl, getFirstCommentsCallback);

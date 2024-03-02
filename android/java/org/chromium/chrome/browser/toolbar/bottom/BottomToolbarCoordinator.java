@@ -77,6 +77,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
     private Runnable mOriginalHomeButtonRunnable;
     private final BraveScrollingBottomViewResourceFrameLayout mScrollingBottomView;
     private HomeButton mHomeButton;
+    private TextView mHomeText;
     private BookmarksButton mBookmarksButton;
     private SearchAccelerator mSearchAccelerator;
     private BottomToolbarNewTabButton mNewTabButton;
@@ -232,9 +233,11 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
         View bottomToolbarButtons = root.findViewById(R.id.bottom_toolbar_buttons);
 
         mHomeButton = bottomToolbarBrowsing.findViewById(R.id.bottom_home_button);
+        mHomeText = bottomToolbarBrowsing.findViewById(R.id.bottom_home_text);
         if (mHomeButton != null) {
             updateHomeButtonState();
             mHomeButton.setOnLongClickListener(this);
+            mHomeText.setOnLongClickListener(this);
 
             final OnClickListener homeButtonListener = v -> {
                 if (HomepageManager.isHomepageEnabled()) {
@@ -250,6 +253,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
             };
 
             mHomeButton.setOnClickListener(homeButtonListener);
+            mHomeText.setOnClickListener(homeButtonListener);
         }
 
         mBookmarksButton = bottomToolbarBrowsing.findViewById(R.id.bottom_bookmark_button);
@@ -318,7 +322,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
 
     @Override
     public boolean onLongClick(View v) {
-        if (v == mHomeButton) {
+        if (v == mHomeButton || v == mHomeText) {
             // It is currently a new tab button when homepage is disabled.
             if (!HomepageManager.isHomepageEnabled()) {
                 TabUtils.showTabPopupMenu(mContext, v);

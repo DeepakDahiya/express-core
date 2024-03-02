@@ -48,6 +48,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
     private ImageButton mCommentsButton;
+    private TextView mBraveHomeText;
     private TextView mCommentsText;
     private int w;
     private int h;
@@ -104,11 +105,13 @@ public class BrowsingModeBottomToolbarCoordinator {
         mMediator = new BrowsingModeBottomToolbarMediator(mModel);
 
         mBraveHomeButton = mToolbarRoot.findViewById(R.id.bottom_home_button);
+        mBraveHomeText = mToolbarRoot.findViewById(R.id.bottom_home_text);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
         mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
         int commentCount = 0;
         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
         mBraveHomeButton.setOnClickListener(homeButtonListener);
+        mBraveHomeText.setOnClickListener(homeButtonListener);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -135,6 +138,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 }
             };
             mCommentsButton.setOnClickListener(commentsClickHandler);
+            mCommentsText.setOnClickListener(commentsClickHandler);
             BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
              // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
            
@@ -167,6 +171,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         }
         if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
             mBraveHomeButton.setVisibility(View.VISIBLE);
+            mBraveHomeText.setVisibility(View.VISIBLE);
         }
 
         if (BottomToolbarVariationManager.isTabSwitcherOnBottom()) {
