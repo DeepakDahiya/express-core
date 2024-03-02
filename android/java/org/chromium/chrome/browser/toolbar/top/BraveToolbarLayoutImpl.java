@@ -422,8 +422,15 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
-                int commentCount = 0;
-                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+
+                    int commentCount = 0;
+                    mCommentsText = activity.getCommentCountText();
+                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "BookmarkButton click " + e);
+                }
 
                 BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
                     new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(

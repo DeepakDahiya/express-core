@@ -75,8 +75,8 @@
 
                 <ImageButton
                     android:id="@+id/btn_options"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:background="@drawable/ic_more_vert_24dp"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
@@ -109,7 +109,9 @@
                     android:minWidth="0dp"
                     android:minHeight="0dp"
                     android:paddingVertical="4sp"
-                    android:paddingHorizontal="8sp"
+                    android:paddingEnd="8sp"
+                    android:layout_marginEnd="8sp"
+                    android:textAllCaps="false"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
                 <Button
@@ -125,6 +127,7 @@
                     android:minHeight="0dp"
                     android:paddingVertical="4sp"
                     android:paddingHorizontal="8sp"
+                    android:textAllCaps="false"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </LinearLayout>
 
