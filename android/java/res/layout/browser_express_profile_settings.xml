@@ -158,53 +158,125 @@
 
     </LinearLayout>
 
-         <Button
+        <LinearLayout
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             android:drawableStart="@drawable/edit_profile"
-             android:drawablePadding="8dp"
-             android:textAllCaps="false"
-             android:background="@android:color/transparent"
-             android:gravity="start|center_vertical"
-             android:textColor="@color/news_settings_title_color"
-             android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/be_edit_profile" />
+             android:layout_gravity="center_vertical"
+             android:orientation="horizontal"
+             android:layout_marginTop="4dp"
+             android:layout_marginBottom="4dp">
 
-         <Button
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:drawableStart="@drawable/activity_feed"
-             android:drawablePadding="8dp"
-             android:textAllCaps="false"
-             android:background="@android:color/transparent"
-             android:gravity="start|center_vertical"
-             android:textColor="@color/news_settings_title_color"
-             android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/be_activity_feed" />
+             <ImageView
+                 android:background="@drawable/edit_profile"
+                 android:layout_height="24sp"
+                 android:layout_width="24sp"
+                 android:layout_gravity="center"
+                 android:visibility="visible"
+                 android:layout_marginEnd="8sp"
+                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-         <Button
-             android:layout_width="match_parent"
-             android:layout_height="wrap_content"
-             android:drawableStart="@drawable/notifications"
-             android:drawablePadding="8dp"
-             android:textAllCaps="false"
-             android:background="@android:color/transparent"
-             android:gravity="start|center_vertical"
-             android:textColor="@color/news_settings_title_color"
-             android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/be_notifications" />
+             <Button
+                android:id="@+id/edit_profile_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@android:color/transparent"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/news_settings_title_color"
+                android:drawableTint="@color/news_settings_title_color"
+                android:text="@string/be_edit_profile" />
+             
+         </LinearLayout>
 
-         <Button
+         <LinearLayout
              android:layout_width="match_parent"
              android:layout_height="wrap_content"
-             android:drawableStart="@drawable/settings"
-             android:drawablePadding="8dp"
-             android:textAllCaps="false"
-             android:background="@android:color/transparent"
-             android:gravity="start|center_vertical"
-             android:textColor="@color/news_settings_title_color"
-             android:drawableTint="@color/news_settings_title_color"
-             android:text="@string/be_settings" />
+             android:layout_gravity="center_vertical"
+             android:orientation="horizontal"
+             android:layout_marginTop="4dp"
+             android:layout_marginBottom="4dp">
+
+             <ImageView
+                 android:background="@drawable/activity_feed"
+                 android:layout_height="24sp"
+                 android:layout_width="24sp"
+                 android:layout_gravity="center"
+                 android:visibility="visible"
+                 android:layout_marginEnd="8sp"
+                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+             <Button
+                android:id="@+id/activity_feed_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@android:color/transparent"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/news_settings_title_color"
+                android:drawableTint="@color/news_settings_title_color"
+                android:text="@string/be_activity_feed" />
+             
+         </LinearLayout>
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center_vertical"
+             android:orientation="horizontal"
+             android:layout_marginTop="4dp"
+             android:layout_marginBottom="4dp">
+
+             <ImageView
+                 android:background="@drawable/notifications"
+                 android:layout_height="24sp"
+                 android:layout_width="24sp"
+                 android:layout_gravity="center"
+                 android:visibility="visible"
+                 android:layout_marginEnd="8sp"
+                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+             <Button
+                android:id="@+id/notifications_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@android:color/transparent"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/news_settings_title_color"
+                android:drawableTint="@color/news_settings_title_color"
+                android:text="@string/be_notifications" />
+             
+         </LinearLayout>
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center_vertical"
+             android:orientation="horizontal"
+             android:layout_marginTop="4dp"
+             android:layout_marginBottom="4dp">
+
+             <ImageView
+                 android:background="@drawable/settings"
+                 android:layout_height="24sp"
+                 android:layout_width="24sp"
+                 android:layout_gravity="center"
+                 android:visibility="visible"
+                 android:layout_marginEnd="8sp"
+                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+             <Button
+                 android:id="@+id/settings_button"
+                 android:layout_width="match_parent"
+                 android:layout_height="wrap_content"
+                 android:textAllCaps="false"
+                 android:background="@android:color/transparent"
+                 android:gravity="start|center_vertical"
+                 android:textColor="@color/news_settings_title_color"
+                 android:drawableTint="@color/news_settings_title_color"
+                 android:text="@string/be_settings" />
+             
+         </LinearLayout>
 
      </LinearLayout>
 </ScrollView>
