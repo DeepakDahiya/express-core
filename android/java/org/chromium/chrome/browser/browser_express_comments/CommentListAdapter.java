@@ -210,7 +210,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     if (accessToken == null) {
                         // activity.showGenerateUsernameBottomSheet();
                     } else {
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
 
                         mDownvoteButton.setClickable(false);
@@ -219,18 +218,21 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         if(didVoteType != null){
                             if(didVoteType.equals("down")){
                                 finalVote = finalVote + 2;
+                                didVoteType = "up";
+                                mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
                             }
 
                             if(didVoteType.equals("up")){
                                 finalVote = finalVote - 1;
                                 mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+                                didVoteType = null;
                             }
                         }else{
                             finalVote = finalVote + 1;
+                            didVoteType = "up";
+                            mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
                         }
                         voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                        didVoteType = "up";
 
                         BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                             new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
@@ -248,7 +250,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         // activity.showGenerateUsernameBottomSheet();
                     } else {
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
 
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
@@ -256,18 +257,21 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         if(didVoteType != null){
                             if(didVoteType.equals("up")){
                                 finalVote = finalVote - 2;
+                                didVoteType = "down";
+                                mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                             }
 
                             if(didVoteType.equals("down")){
                                 finalVote = finalVote + 1;
                                 mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
+                                didVoteType = null;
                             }
                         }else{
                             finalVote = finalVote - 1;
+                            didVoteType = "down";
+                            mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                         }
                         voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                        didVoteType = "down";
 
                         BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                             new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
