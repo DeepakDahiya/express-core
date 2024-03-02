@@ -93,9 +93,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             context = itemView.getContext();
 
-            mReplyButton.setTextSize(8);
-            mShareButton.setTextSize(8);
-            mShowMoreButton.setTextSize(8);
+            mReplyButton.setTextSize(10);
+            mShareButton.setTextSize(10);
+            mShowMoreButton.setTextSize(10);
         }
 
         void bind(Comment comment) {
