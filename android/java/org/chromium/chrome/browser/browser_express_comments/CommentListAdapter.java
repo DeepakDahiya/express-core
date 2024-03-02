@@ -206,10 +206,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(didVoteType != null && didVoteType.equals("up")){
-                        return;
-                    }
-
                     String accessToken = activity.getAccessToken();
                     if (accessToken == null) {
                         // activity.showGenerateUsernameBottomSheet();
@@ -246,10 +242,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if(didVoteType != null && didVoteType.equals("down")){
-                        return;
-                    }
-
                     String accessToken = activity.getAccessToken();
                     if (accessToken == null) {
                         // activity.showGenerateUsernameBottomSheet();
