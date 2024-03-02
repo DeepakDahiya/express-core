@@ -220,8 +220,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
 
-                        if(didVoteType != null && didVoteType.equals("down")){
-                            finalVote = finalVote + 2;
+                        if(didVoteType != null){
+                            if(didVoteType.equals("down")){
+                                finalVote = finalVote + 2;
+                            }
+
+                            if(didVoteType.equals("up")){
+                                finalVote = finalVote - 1;
+                            }
                         }else{
                             finalVote = finalVote + 1;
                         }
@@ -254,8 +260,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mDownvoteButton.setClickable(false);
                         mUpvoteButton.setClickable(false);
 
-                        if(didVoteType != null && didVoteType.equals("up")){
-                            finalVote = finalVote - 2;
+                        if(didVoteType != null){
+                            if(didVoteType.equals("up")){
+                                finalVote = finalVote - 2;
+                            }
+
+                            if(didVoteType.equals("down")){
+                                finalVote = finalVote + 1;
+                            }
                         }else{
                             finalVote = finalVote - 1;
                         }
