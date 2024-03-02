@@ -7,7 +7,7 @@ package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.content.Context;
 import android.view.View;
-import android.view.TextView;
+import android.widget.TextView;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
