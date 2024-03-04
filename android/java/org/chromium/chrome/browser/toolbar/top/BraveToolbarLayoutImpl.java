@@ -1384,7 +1384,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     public void updateMenuButtonState() {
-        BraveMenuButtonCoordinator.setMenuFromBottom(mIsBottomToolbarVisible);
+        BraveMenuButtonCoordinator.setMenuFromBottom(false);
     }
 
     @Override

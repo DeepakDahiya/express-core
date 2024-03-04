@@ -118,7 +118,8 @@ public class BraveTopToolbarCoordinator extends TopToolbarCoordinator {
     @Override
     public MenuButton getMenuButtonWrapper() {
         // We consider that there is no top toolbar menu button, if bottom toolbar is visible.
-        return mIsBottomToolbarVisible ? null : mBraveMenuButtonCoordinator.getMenuButton();
+        return mBraveMenuButtonCoordinator.getMenuButton();
+        // return mIsBottomToolbarVisible ? null : mBraveMenuButtonCoordinator.getMenuButton();
     }
 
     public ObservableSupplier<Integer> getConstraintsProxy() {
