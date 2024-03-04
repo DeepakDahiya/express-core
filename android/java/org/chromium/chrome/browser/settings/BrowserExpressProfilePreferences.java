@@ -103,9 +103,12 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);
             mLikesGivenText = (TextView) view.findViewById(R.id.be_likes_given);
 
-            // mViewsText.setText("8.4K");
-            // mLikesReceivedText.setText("3.6K");
-            // mLikesGivenText.setText("6.4K");
+            String vc = "8.4K"
+            String lc = "3.6K"
+            String gc = "6.4K"
+            mViewsText.setText(vc);
+            mLikesReceivedText.setText(lc);
+            mLikesGivenText.setText(gc);
 
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();

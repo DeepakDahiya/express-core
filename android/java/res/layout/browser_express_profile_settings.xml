@@ -24,6 +24,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="visible"
+        android:elevation="2dp"
         android:padding="10sp"
         android:layout_margin="10sp"
         android:background="@drawable/browser_express_profile_layout_bg">
@@ -172,7 +173,7 @@
                  android:layout_width="24sp"
                  android:layout_gravity="center"
                  android:visibility="visible"
-                 android:layout_marginEnd="4sp"
+                 android:layout_marginEnd="2sp"
                  android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
              <Button
@@ -202,7 +203,7 @@
                  android:layout_width="24sp"
                  android:layout_gravity="center"
                  android:visibility="visible"
-                 android:layout_marginEnd="4sp"
+                 android:layout_marginEnd="2sp"
                  android:layout_marginStart="4sp"
                  android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
@@ -228,12 +229,43 @@
              android:layout_marginBottom="4dp">
 
              <ImageView
+                 android:background="@drawable/youtube"
+                 android:layout_height="24sp"
+                 android:layout_width="24sp"
+                 android:layout_gravity="center"
+                 android:visibility="visible"
+                 android:layout_marginEnd="2sp"
+                 android:layout_marginStart="4sp"
+                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+             <Button
+                android:id="@+id/youtube_premium_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@android:color/transparent"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/news_settings_title_color"
+                android:drawableTint="@color/news_settings_title_color"
+                android:text="@string/be_youtube" />
+             
+         </LinearLayout>
+
+         <LinearLayout
+             android:layout_width="match_parent"
+             android:layout_height="wrap_content"
+             android:layout_gravity="center_vertical"
+             android:orientation="horizontal"
+             android:layout_marginTop="4dp"
+             android:layout_marginBottom="4dp">
+
+             <ImageView
                  android:background="@drawable/notifications"
                  android:layout_height="24sp"
                  android:layout_width="24sp"
                  android:layout_gravity="center"
                  android:visibility="visible"
-                 android:layout_marginEnd="4sp"
+                 android:layout_marginEnd="2sp"
                  android:layout_marginStart="4sp"
                  android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
@@ -264,7 +296,7 @@
                  android:layout_width="24sp"
                  android:layout_gravity="center"
                  android:visibility="visible"
-                 android:layout_marginEnd="4sp"
+                 android:layout_marginEnd="2sp"
                  android:layout_marginStart="4sp"
                  android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
