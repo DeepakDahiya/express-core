@@ -43,6 +43,7 @@ import com.brave.playlist.util.PlaylistUtils;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.wireguard.android.backend.GoBackend;
 
+import org.chromium.chrome.browser.toolbar.menu_button.BraveMenuButtonCoordinator;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BraveFeatureList;
 import org.chromium.base.BravePreferenceKeys;
@@ -961,6 +962,8 @@ public abstract class BraveActivity extends ChromeActivity
         BraveVpnNativeWorker.getInstance().reloadPurchasedState();
 
         BraveHelper.maybeMigrateSettings();
+
+        BraveMenuButtonCoordinator.setMenuFromBottom(false);
 
         mFilterListAndroidHandler =
                 FilterListServiceFactory.getInstance().getFilterListAndroidHandler(this);
