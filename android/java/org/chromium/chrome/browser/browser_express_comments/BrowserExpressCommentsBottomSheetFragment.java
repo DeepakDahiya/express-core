@@ -112,7 +112,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();

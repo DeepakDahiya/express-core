@@ -34,12 +34,17 @@ import android.view.animation.AnimationUtils;
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Comment> mCommentList;
+    private ImageButton mCanceReplyButton;
     private TextView mReplyToText;
+    private EditText mMessageEditText;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText) {
+
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText) {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
+        mCanceReplyButton = canceReplyButton;
+        mMessageEditText = messageEditText;
     }
 
     @Override
@@ -53,7 +58,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText);
+        return new CommentHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -93,10 +98,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private Animation bounceDown;
 
 
-        CommentHolder(View itemView, TextView replyToText) {
+        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText) {
             super(itemView);
 
             mReplyToText = replyToText;
+            mCanceReplyButton = canceReplyButton;
+            mMessageEditText = messageEditText;
 
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
@@ -133,7 +140,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mComments = new ArrayList<Comment>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText);
+            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText);
             mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
@@ -208,9 +215,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
-                        mCanceReplyButton = activity.getReplyToCancelButton();
+                        // mCanceReplyButton = activity.getReplyToCancelButton();
                         // mReplyToText = activity.getReplyToText();
-                        mMessageEditText =  activity.getContentEditText();
+                        // mMessageEditText =  activity.getContentEditText();
                         if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
                             Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
                             String replyToString = "replying to " + comment.getUser().getUsername();
