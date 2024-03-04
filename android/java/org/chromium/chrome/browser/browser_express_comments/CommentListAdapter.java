@@ -194,7 +194,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mCanceReplyButton = activity.getReplyToCancelButton();
                         mReplyToText = activity.getReplyToText();
                         mMessageEditText =  activity.getContentEditText();
-                        if(mReplyToText != null){
+                        if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
+                            Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
                             String replyToString = "replying to " + comment.getUser().getUsername();
                             mReplyToText.setText(replyToString);
                             mCanceReplyButton.setVisibility(View.VISIBLE);
@@ -202,6 +203,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
                         }
+                        Log.e("REPLY TO", "OUTSIDE REPLY TO TEXT");
                     } catch (JSONException e) {
                         Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
                     }
