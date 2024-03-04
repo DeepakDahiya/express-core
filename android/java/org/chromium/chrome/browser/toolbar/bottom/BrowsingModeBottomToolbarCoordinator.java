@@ -110,6 +110,8 @@ public class BrowsingModeBottomToolbarCoordinator {
         mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
         int commentCount = 0;
         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+        mCommentsText.setTextSize(10);
+        mBraveHomeText.setTextSize(10);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
         mBraveHomeText.setOnClickListener(homeButtonListener);
 
