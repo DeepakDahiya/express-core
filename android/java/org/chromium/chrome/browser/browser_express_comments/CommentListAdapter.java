@@ -34,10 +34,12 @@ import android.view.animation.AnimationUtils;
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Comment> mCommentList;
+    private TextView mReplyToText;
 
-    public CommentListAdapter(Context context, List<Comment> commentList) {
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText) {
         mContext = context;
         mCommentList = commentList;
+        mReplyToText = replyToText;
     }
 
     @Override
@@ -51,7 +53,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view);
+        return new CommentHolder(view, mReplyToText);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -91,8 +93,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private Animation bounceDown;
 
 
-        CommentHolder(View itemView) {
+        CommentHolder(View itemView, TextView replyToText) {
             super(itemView);
+
+            mReplyToText = replyToText;
 
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
@@ -205,7 +209,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
                         mCanceReplyButton = activity.getReplyToCancelButton();
-                        mReplyToText = activity.getReplyToText();
+                        // mReplyToText = activity.getReplyToText();
                         mMessageEditText =  activity.getContentEditText();
                         if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
                             Log.e("REPLY TO", "INSIDE REPLY TO TEXT");

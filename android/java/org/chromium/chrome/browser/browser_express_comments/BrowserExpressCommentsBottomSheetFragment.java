@@ -97,6 +97,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
+        mSendButton = view.findViewById(R.id.button_send);
+        mMessageEditText = view.findViewById(R.id.comment_content);
+        mReplyToText = view.findViewById(R.id.reply_to);
+        mCanceReplyButton = view.findViewById(R.id.cancel_btn);
+
         mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
@@ -107,17 +112,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
         // params.height=a;
         // mCommentRecycler.setLayoutParams(params);
-
-        mSendButton = view.findViewById(R.id.button_send);
-        mMessageEditText = view.findViewById(R.id.comment_content);
-        mReplyToText = view.findViewById(R.id.reply_to);
-        mCanceReplyButton = view.findViewById(R.id.cancel_btn);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
