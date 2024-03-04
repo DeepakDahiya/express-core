@@ -18,8 +18,9 @@
 
             <ImageButton
                 android:id="@+id/btn_upvote"
-                android:layout_width="20sp"
-                android:layout_height="14sp"
+                android:layout_width="18sp"
+                android:layout_height="16sp"
+                android:layout_marginTop="5sp"
                 android:background="@drawable/btn_upvote"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                 android:scaleType="centerCrop" />
@@ -36,8 +37,9 @@
             <ImageButton
                 android:id="@+id/btn_downvote"
                 style="@style/ToolbarButton"
-                android:layout_width="20sp"
-                android:layout_height="14sp"
+                android:layout_width="18sp"
+                android:layout_height="16sp"
+                android:layout_marginBottom="5sp"
                 android:background="@drawable/btn_downvote"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" 
                 android:scaleType="centerCrop"/>
