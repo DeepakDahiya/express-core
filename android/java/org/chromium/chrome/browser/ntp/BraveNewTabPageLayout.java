@@ -766,26 +766,26 @@ public class BraveNewTabPageLayout
     }
 
     private void initPreferenceObserver() {
-        mPreferenceObserver = (key) -> {
-            if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
-                if (SharedPreferencesManager.getInstance().readBoolean(
-                            BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE, false)) {
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        mPrevVisibleNewsCardPosition = mPrevVisibleNewsCardPosition + 1;
-                        setNewContentChanges(true);
-                    }, 10);
-                }
+        // mPreferenceObserver = (key) -> {
+        //     if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
+        //         if (SharedPreferencesManager.getInstance().readBoolean(
+        //                     BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE, false)) {
+        //             new Handler(Looper.getMainLooper()).postDelayed(() -> {
+        //                 mPrevVisibleNewsCardPosition = mPrevVisibleNewsCardPosition + 1;
+        //                 setNewContentChanges(true);
+        //             }, 10);
+        //         }
 
-            } else if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS)) {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> { refreshFeed(); }, 10);
-            } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
-                mIsTopSitesEnabled = shouldDisplayTopSites();
-                mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
-            } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS)) {
-                mIsBraveStatsEnabled = shouldDisplayBraveStats();
-                mNtpAdapter.setBraveStatsEnabled(mIsBraveStatsEnabled);
-            }
-        };
+        //     } else if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS)) {
+        //         new Handler(Looper.getMainLooper()).postDelayed(() -> { refreshFeed(); }, 10);
+        //     } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
+        //         mIsTopSitesEnabled = shouldDisplayTopSites();
+        //         mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
+        //     } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS)) {
+        //         mIsBraveStatsEnabled = shouldDisplayBraveStats();
+        //         mNtpAdapter.setBraveStatsEnabled(mIsBraveStatsEnabled);
+        //     }
+        // };
     }
 
     @Override
