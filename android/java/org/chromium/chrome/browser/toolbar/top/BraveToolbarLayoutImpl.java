@@ -1365,7 +1365,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     private boolean isMenuButtonOnBottom() {
-        return mIsBottomToolbarVisible && BottomToolbarVariationManager.isMenuButtonOnBottom();
+        return BottomToolbarVariationManager.isMenuButtonOnBottom();
     }
 
     @Override
