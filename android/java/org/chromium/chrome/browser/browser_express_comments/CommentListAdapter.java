@@ -25,6 +25,8 @@ import org.json.JSONObject;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import android.widget.LinearLayout;
 import android.content.SharedPreferences;
+import android.widget.EditText;
+import android.view.inputmethod.InputMethodManager;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -77,6 +79,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int mPerPage = 100;
         private Context context;
         private LinearLayout mActionItemsLayout;
+
+        private ImageButton mCanceReplyButton;
+        private TextView mReplyToText;
+        private EditText mMessageEditText;
+
 
         CommentHolder(View itemView) {
             super(itemView);
@@ -184,6 +191,17 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
+                        mCanceReplyButton = activity.getReplyToCancelButton();
+                        mReplyToText = activity.getReplyToText();
+                        mMessageEditText =  activity.getContentEditText();
+                        if(mReplyToText != null){
+                            String replyToString = "replying to " + comment.getUser().getUsername();
+                            mReplyToText.setText(replyToString);
+                            mCanceReplyButton.setVisibility(View.VISIBLE);
+                            mMessageEditText.requestFocus();
+                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        }
                     } catch (JSONException e) {
                         Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
                     }
@@ -229,9 +247,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         }
                         voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
-                        mDownvoteButton.setClickable(false);
-                        mUpvoteButton.setClickable(false);
-
                         BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                             new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
                                     comment.getId(), "up", accessToken, addVoteCallback);
@@ -266,9 +281,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         }
                         voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
-                        mDownvoteButton.setClickable(false);
-                        mUpvoteButton.setClickable(false);
-
                         BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                             new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
                                     comment.getId(), "down", accessToken, addVoteCallback);
@@ -282,8 +294,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             new BrowserExpressAddVoteUtil.AddVoteCallback() {
                 @Override
                 public void addVoteSuccessful() {
-                    mDownvoteButton.setClickable(true);
-                    mUpvoteButton.setClickable(true);
+                    // mDownvoteButton.setClickable(true);
+                    // mUpvoteButton.setClickable(true);
                 }
 
                 @Override

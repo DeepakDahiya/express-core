@@ -214,6 +214,9 @@ import android.app.PictureInPictureParams;
 import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
 import java.util.ArrayList;
 
+import android.widget.EditText;
+import android.widget.ImageButton;
+
 /**
  * Brave's extension for ChromeActivity
  */
@@ -2091,6 +2094,18 @@ public abstract class BraveActivity extends ChromeActivity
 
     public TextView getCommentCountText() {
         return findViewById(R.id.comments_button1);
+    }
+
+    public TextView getReplyToText() {
+        return findViewById(R.id.reply_to);
+    }
+
+    public ImageButton getReplyToCancelButton() {
+        return findViewById(R.id.cancel_btn);
+    }
+
+    public EditText getContentEditText() {
+        return findViewById(R.id.comment_content);
     }
 
     public String getReplyComment() {
