@@ -27,6 +27,9 @@ import android.widget.LinearLayout;
 import android.content.SharedPreferences;
 import android.widget.EditText;
 import android.view.inputmethod.InputMethodManager;
+import android.view.HapticFeedbackConstants;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -84,6 +87,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private TextView mReplyToText;
         private EditText mMessageEditText;
 
+        private Animation bounceUp;
+        private Animation bounceDown;
+
 
         CommentHolder(View itemView) {
             super(itemView);
@@ -125,6 +131,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
             mCommentAdapter = new CommentListAdapter(context, mComments);
             mCommentRecycler.setAdapter(mCommentAdapter);
+
+            bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
+            bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
 
             SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -230,7 +239,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     if (accessToken == null) {
                         // activity.showGenerateUsernameBottomSheet();
                     } else {
+                        mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
+                        mUpvoteButton.startAnimation(bounceUp);
 
                         if(didVoteType != null){
                             if(didVoteType.equals("down")){
@@ -265,6 +276,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         // activity.showGenerateUsernameBottomSheet();
                     } else {
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+                        mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                        mDownvoteButton.startAnimation(bounceDown);
 
                         if(didVoteType != null){
                             if(didVoteType.equals("up")){
