@@ -174,7 +174,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                         commentObject.getString("content"),
                                         commentObject.getInt("upvoteCount"),
                                         commentObject.getInt("downvoteCount"),
-                                        commentObject.getInt("commentCount"),
+                                    commentObject.getInt("commentCount"),
                                         pageParent, 
                                         commentParent,
                                         u,
@@ -211,6 +211,16 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             activity = BraveActivity.getBraveActivity();
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
+
+                        String accessToken = activity.getAccessToken();
+                        if (accessToken == null) {
+                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                            activity.showGenerateUsernameBottomSheet();
+                            activity.dismissCommentsBottomSheet()
+                            return;
+                        }
+
                         JSONObject json = new JSONObject();
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
@@ -252,34 +262,38 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 public void onClick(View v) {
                     String accessToken = activity.getAccessToken();
                     if (accessToken == null) {
-                        // activity.showGenerateUsernameBottomSheet();
-                    } else {
-                        mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                        mUpvoteButton.startAnimation(bounceUp);
+                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                        activity.showGenerateUsernameBottomSheet();
+                        activity.dismissCommentsBottomSheet()
+                        return;
+                    }
 
-                        if(didVoteType != null){
-                            if(didVoteType.equals("down")){
-                                finalVote = finalVote + 2;
-                                didVoteType = "up";
-                                mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
-                            }else if(didVoteType.equals("up")){
-                                finalVote = finalVote - 1;
-                                mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                                didVoteType = null;
-                            }
-                        }else{
-                            finalVote = finalVote + 1;
+                    mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
+                    mUpvoteButton.startAnimation(bounceUp);
+
+                    if(didVoteType != null){
+                        if(didVoteType.equals("down")){
+                            finalVote = finalVote + 2;
                             didVoteType = "up";
                             mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                        }else if(didVoteType.equals("up")){
+                            finalVote = finalVote - 1;
+                            mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+                            didVoteType = null;
                         }
-                        voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                    comment.getId(), "up", accessToken, addVoteCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }else{
+                        finalVote = finalVote + 1;
+                        didVoteType = "up";
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
                     }
+                    voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                comment.getId(), "up", accessToken, addVoteCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
 
@@ -288,34 +302,38 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 public void onClick(View v) {
                     String accessToken = activity.getAccessToken();
                     if (accessToken == null) {
-                        // activity.showGenerateUsernameBottomSheet();
-                    } else {
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                        mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                        mDownvoteButton.startAnimation(bounceDown);
+                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                        activity.showGenerateUsernameBottomSheet();
+                        activity.dismissCommentsBottomSheet()
+                        return;
+                    }
 
-                        if(didVoteType != null){
-                            if(didVoteType.equals("up")){
-                                finalVote = finalVote - 2;
-                                didVoteType = "down";
-                                mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
-                            }else if(didVoteType.equals("down")){
-                                finalVote = finalVote + 1;
-                                mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                                didVoteType = null;
-                            }
-                        }else{
-                            finalVote = finalVote - 1;
+                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+                    mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                    mDownvoteButton.startAnimation(bounceDown);
+
+                    if(didVoteType != null){
+                        if(didVoteType.equals("up")){
+                            finalVote = finalVote - 2;
                             didVoteType = "down";
                             mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                        }else if(didVoteType.equals("down")){
+                            finalVote = finalVote + 1;
+                            mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
+                            didVoteType = null;
                         }
-                        voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                    comment.getId(), "down", accessToken, addVoteCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }else{
+                        finalVote = finalVote - 1;
+                        didVoteType = "down";
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                     }
+                    voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                comment.getId(), "down", accessToken, addVoteCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
         }
