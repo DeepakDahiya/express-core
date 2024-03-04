@@ -212,17 +212,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     } else {
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
 
-                        mDownvoteButton.setClickable(false);
-                        mUpvoteButton.setClickable(false);
-
                         if(didVoteType != null){
                             if(didVoteType.equals("down")){
                                 finalVote = finalVote + 2;
                                 didVoteType = "up";
                                 mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
-                            }
-
-                            if(didVoteType.equals("up")){
+                            }else if(didVoteType.equals("up")){
                                 finalVote = finalVote - 1;
                                 mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
                                 didVoteType = null;
@@ -233,6 +228,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
                         }
                         voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+                        mDownvoteButton.setClickable(false);
+                        mUpvoteButton.setClickable(false);
 
                         BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                             new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
@@ -251,17 +249,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     } else {
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
 
-                        mDownvoteButton.setClickable(false);
-                        mUpvoteButton.setClickable(false);
-
                         if(didVoteType != null){
                             if(didVoteType.equals("up")){
                                 finalVote = finalVote - 2;
                                 didVoteType = "down";
                                 mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
-                            }
-
-                            if(didVoteType.equals("down")){
+                            }else if(didVoteType.equals("down")){
                                 finalVote = finalVote + 1;
                                 mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
                                 didVoteType = null;
@@ -272,6 +265,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                         }
                         voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+                        mDownvoteButton.setClickable(false);
+                        mUpvoteButton.setClickable(false);
 
                         BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                             new BrowserExpressAddVoteUtil.AddVoteWorkerTask(

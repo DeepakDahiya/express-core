@@ -80,7 +80,7 @@
                     android:layout_marginTop="10dp"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -90,7 +90,7 @@
                     android:gravity="center"
                     android:text="@string/views"
                     android:textColor="@color/news_settings_title_color"
-                    android:textSize="14sp" />
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
@@ -110,7 +110,7 @@
                     android:layout_marginTop="10dp"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -120,7 +120,7 @@
                     android:gravity="center"
                     android:text="@string/likes_received"
                     android:textColor="@color/news_settings_title_color"
-                    android:textSize="14sp" />
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
@@ -140,7 +140,7 @@
                     android:layout_marginTop="10dp"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -150,7 +150,7 @@
                     android:gravity="center"
                     android:text="@string/likes_given"
                     android:textColor="@color/news_settings_title_color"
-                    android:textSize="14sp" />
+                    android:textSize="12sp" />
 
             </LinearLayout>
 
