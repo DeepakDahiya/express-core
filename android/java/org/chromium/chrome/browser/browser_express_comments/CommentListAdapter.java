@@ -196,6 +196,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     try{
+                        try {
+                            activity = BraveActivity.getBraveActivity();
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        }
                         JSONObject json = new JSONObject();
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
