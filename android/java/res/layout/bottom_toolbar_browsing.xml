@@ -123,5 +123,5 @@
 
     <include layout="@layout/toolbar_space" />
 
-    <include layout="@layout/bottom_toolbar_menu_button" style="@style/SplitToolbarButton" />
+    <!-- <include layout="@layout/bottom_toolbar_menu_button" style="@style/SplitToolbarButton" /> -->
 </org.chromium.chrome.browser.toolbar.bottom.BrowsingModeBottomToolbarLinearLayout>
