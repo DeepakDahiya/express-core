@@ -16,6 +16,7 @@ import android.view.LayoutInflater;
 import org.chromium.chrome.browser.app.BraveActivity;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
+import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import org.chromium.base.task.AsyncTask;
 import java.util.Locale;
@@ -136,10 +137,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
-            int white_color = activity.getResources().getColor(R.color.transparent_shadow_background_start_color);
+            int transparent_color = activity.getResources().getColor(R.color.browser_express_transparent_color);
             int grey_color = activity.getResources().getColor(R.color.browser_express_modern_gray);
 
-            Log.e("BROWSER EXPRESS COLOR", Integer.toString(white_color));
+            Log.e("BROWSER EXPRESS COLOR", Integer.toString(transparent_color));
             Log.e("BROWSER EXPRESS COLOR", Integer.toString(grey_color));
 
             myPosition = getBindingAdapterPosition();
@@ -231,7 +232,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mReplyToText.setText(R.string.browser_express_empty_text);
                         mCanceReplyButton.setVisibility(View.INVISIBLE);
                         Log.e("Express Browser CANCEL BUTTON", "BEFORE WHITE COLOR");
-                        mCommentLayout.setBackgroundColor(white_color);
+                        mCommentLayout.setBackgroundColor(Color.TRANSPARENT);
                         Log.e("Express Browser CANCEL BUTTON", "AFTER WHITE COLOR");
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("Express Browser Access Token", e.getMessage());
