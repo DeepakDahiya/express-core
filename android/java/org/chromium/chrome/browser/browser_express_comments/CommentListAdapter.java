@@ -37,13 +37,15 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private ImageButton mCanceReplyButton;
     private TextView mReplyToText;
     private EditText mMessageEditText;
+    private RecyclerView mTopCommentRecycler;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText) {
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
         mCanceReplyButton = canceReplyButton;
         mMessageEditText = messageEditText;
+        mTopCommentRecycler = topCommentRecycler;
     }
 
     @Override
@@ -57,7 +59,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText);
+        return new CommentHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText, mTopCommentRecycler);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -82,6 +84,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private BraveActivity activity;
 
         private RecyclerView mCommentRecycler;
+        private RecyclerView mTopCommentRecycler;
         private CommentListAdapter mCommentAdapter;
         private List<Comment> mComments;
         private int mPage = 1;
@@ -99,12 +102,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int myPosition;
 
 
-        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText) {
+        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
             super(itemView);
 
             mReplyToText = replyToText;
             mCanceReplyButton = canceReplyButton;
             mMessageEditText = messageEditText;
+
+            mTopCommentRecycler = topCommentRecycler;
 
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
@@ -143,7 +148,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mComments = new ArrayList<Comment>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText);
+            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText, null);
             mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
@@ -215,7 +220,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
 
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
 
                         String accessToken = activity.getAccessToken();
