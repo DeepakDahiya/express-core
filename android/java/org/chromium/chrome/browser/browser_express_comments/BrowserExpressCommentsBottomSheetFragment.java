@@ -102,6 +102,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mReplyToText = view.findViewById(R.id.reply_to);
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
 
+        mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getActivity() != null) {
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setReplyTo(null);
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Express Browser Access Token", e.getMessage());
+                    }
+                }
+            }
+        }));
+
         mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
@@ -207,20 +221,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }
-
-        mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (getActivity() != null) {
-                    try {
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        activity.setReplyTo(null);
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Express Browser Access Token", e.getMessage());
-                    }
-                }
-            }
-        }));
 
         mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override

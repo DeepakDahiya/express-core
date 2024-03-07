@@ -91,6 +91,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int mPerPage = 100;
         private Context context;
         private LinearLayout mActionItemsLayout;
+        private LinearLayout mCommentLayout;
 
         private ImageButton mCanceReplyButton;
         private TextView mReplyToText;
@@ -121,6 +122,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mCommentRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_replies);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
+            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             context = itemView.getContext();
 
             mReplyButton.setTextSize(10);
@@ -191,6 +193,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                     mCommentAdapter.notifyItemInserted(0);
                                 }
                             } catch (JSONException e) {
+                                mReplyToText.setText(R.string.browser_express_empty_text);
+                                mCanceReplyButton.setVisibility(View.INVISIBLE);
                                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                             }
                         }
@@ -211,6 +215,21 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }
 
+            mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (getActivity() != null) {
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            activity.setReplyTo(null);
+                            mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.brave_sync_bg_color));
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e("Express Browser Access Token", e.getMessage());
+                        }
+                    }
+                }
+            }));
+
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -219,6 +238,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             activity = BraveActivity.getBraveActivity();
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
+
+                        mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_modern_gray));
 
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
