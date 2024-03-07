@@ -129,7 +129,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
-            position = getBindingAdapterPosition();
+            myPosition = getBindingAdapterPosition();
 
             usernameText.setText(comment.getUser().getUsername().toString());
             contentText.setText(comment.getContent().toString());
