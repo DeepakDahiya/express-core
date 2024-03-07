@@ -13,7 +13,9 @@ import java.util.Locale;
 import org.json.JSONArray;
 import android.widget.TextView;
 import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.Intent;
+import android.net.Uri;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
@@ -367,12 +369,12 @@ public class BrowsingModeBottomToolbarCoordinator {
                 public void getLatestApkSuccessful(String version, String url) {
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
-                        PackageInfo pInfo = activity.getPackageManager().getPackageInfo(context.getPackageName(), 0);
+                        PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                         int currentVersion = Integer.parseInt(pInfo.versionName.replace(".",""));
                         int newVersion = Integer.parseInt(version.replace(".",""));
                         if(newVersion > currentVersion){
                             Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                            context.startActivity(webIntent);
+                            activity.startActivity(webIntent);
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e(TAG, "BookmarkButton click " + e);

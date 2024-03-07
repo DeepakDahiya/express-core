@@ -121,8 +121,8 @@ public class BrowserExpressGetLatestApkUtil {
                 if(responseObject.getBoolean("success")){
                     GetLatestApkWorkerTask.setGetLatestApkSuccessStatus(true);
                     String version = responseObject.getString("version");
-                    String url = responseObject.getString("url");
-                    GetLatestApkWorkerTask.setComments(comments, commentCount);
+                    String downloadUrl = responseObject.getString("url");
+                    GetLatestApkWorkerTask.setDetails(version, downloadUrl);
                 }else{
                     GetLatestApkWorkerTask.setGetLatestApkSuccessStatus(false);
                     GetLatestApkWorkerTask.setErrorMessage(responseObject.getString("error"));
