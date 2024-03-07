@@ -219,8 +219,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     try {
+                        Log.e("Express Browser CANCEL BUTTON", "INSIDE cancel button");
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setReplyTo(null);
+                        mReplyToText.setText(R.string.browser_express_empty_text);
+                        mCanceReplyButton.setVisibility(View.INVISIBLE);
                         mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.brave_sync_bg_color));
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("Express Browser Access Token", e.getMessage());
