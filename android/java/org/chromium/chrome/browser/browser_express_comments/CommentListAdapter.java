@@ -232,7 +232,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         mReplyToText.setText(R.string.browser_express_empty_text);
                         mCanceReplyButton.setVisibility(View.INVISIBLE);
                         Log.e("Express Browser CANCEL BUTTON", "BEFORE WHITE COLOR");
-                        mCommentLayout.setBackgroundColor(Color.TRANSPARENT);
+                        mCommentLayout.setBackgroundColor(transparent_color);
                         Log.e("Express Browser CANCEL BUTTON", "AFTER WHITE COLOR");
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("Express Browser Access Token", e.getMessage());
