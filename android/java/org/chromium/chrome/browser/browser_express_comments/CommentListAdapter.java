@@ -38,7 +38,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private TextView mReplyToText;
     private EditText mMessageEditText;
 
-
     public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText) {
         mContext = context;
         mCommentList = commentList;
@@ -97,6 +96,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private Animation bounceUp;
         private Animation bounceDown;
 
+        private int myPosition;
+
 
         CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText) {
             super(itemView);
@@ -127,6 +128,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 activity = BraveActivity.getBraveActivity();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
+
+            position = getBindingAdapterPosition();
 
             usernameText.setText(comment.getUser().getUsername().toString());
             contentText.setText(comment.getContent().toString());
@@ -211,6 +214,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             activity = BraveActivity.getBraveActivity();
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
+
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
 
                         String accessToken = activity.getAccessToken();
                         if (accessToken == null) {
