@@ -350,7 +350,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         mCommentAdapter.notifyItemInserted(0);
 
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(0, 0);
+                        layoutManager.scrollToPositionWithOffset(1, 0);
                     }
                 }
 
