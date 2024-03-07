@@ -218,14 +218,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    if (getActivity() != null) {
-                        try {
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-                            activity.setReplyTo(null);
-                            mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.brave_sync_bg_color));
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                            Log.e("Express Browser Access Token", e.getMessage());
-                        }
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setReplyTo(null);
+                        mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.brave_sync_bg_color));
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Express Browser Access Token", e.getMessage());
                     }
                 }
             }));
