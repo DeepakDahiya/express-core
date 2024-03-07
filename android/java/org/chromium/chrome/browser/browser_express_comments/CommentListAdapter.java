@@ -137,12 +137,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
-            int transparent_color = activity.getResources().getColor(R.color.browser_express_transparent_color);
-            int grey_color = activity.getResources().getColor(R.color.browser_express_modern_gray);
-
-            Log.e("BROWSER EXPRESS COLOR", Integer.toString(transparent_color));
-            Log.e("BROWSER EXPRESS COLOR", Integer.toString(grey_color));
-
             myPosition = getBindingAdapterPosition();
 
             usernameText.setText(comment.getUser().getUsername().toString());
@@ -226,14 +220,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     try {
-                        Log.e("Express Browser CANCEL BUTTON", "INSIDE cancel button");
                         activity = BraveActivity.getBraveActivity();
                         activity.setReplyTo(null);
                         mReplyToText.setText(R.string.browser_express_empty_text);
                         mCanceReplyButton.setVisibility(View.INVISIBLE);
-                        Log.e("Express Browser CANCEL BUTTON", "BEFORE WHITE COLOR");
-                        mCommentLayout.setBackgroundColor(transparent_color);
-                        Log.e("Express Browser CANCEL BUTTON", "AFTER WHITE COLOR");
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("Express Browser Access Token", e.getMessage());
                     }
@@ -248,8 +238,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             activity = BraveActivity.getBraveActivity();
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
-
-                        mCommentLayout.setBackgroundColor(grey_color);
 
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);

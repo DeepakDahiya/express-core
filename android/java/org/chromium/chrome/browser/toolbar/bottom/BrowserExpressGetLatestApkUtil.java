@@ -46,7 +46,7 @@ public class BrowserExpressGetLatestApkUtil {
     private static final String KEY = "fc91c3a9-1a2e-4555-aef2-a62d64397c88";
 
     public interface GetLatestApkCallback {
-        void getLatestApkSuccessful(JSONArray comments, int commentCount);
+        void getLatestApkSuccessful(String version, String url);
         void getLatestApkFailed(String error);
     }
 
@@ -57,7 +57,7 @@ public class BrowserExpressGetLatestApkUtil {
         private static String mVersion;
         private static String mUrl;
 
-        public GetLatestApkWorkerTask(String url, GetLatestApkCallback callback) {
+        public GetLatestApkWorkerTask(GetLatestApkCallback callback) {
             mCallback = callback;
             getLatestApkStatus = false;
             mErrorMessage = "";
