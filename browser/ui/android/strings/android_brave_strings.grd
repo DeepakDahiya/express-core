@@ -993,7 +993,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Next
       </message>
       <message name="IDS_BRAVE_PRIVACY_SET_DEFAULT_BROWSER" desc="Set default browser modal title">
-        To improve your privacy, set Brave as your default Browser
+        To improve your privacy, set Express Browser as your default Browser
       </message>
       <message name="IDS_BROWSER_EXPRESS_GENERATE_USERNAME_TITLE" desc="Set default browser modal title">
         Generate username and enjoy the app
@@ -1005,7 +1005,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         This will allow you to like and comment in thread.
       </message>
       <message name="IDS_BRAVE_CHOOSE" desc="Set default browser modal text">
-        Choose Brave on the next screen.
+        Choose Express Browser on the next screen.
       </message>
       <message name="IDS_BRAVE_DONT_ASK_AGAIN" desc="Set default browser modal text">
         Don't ask again
