@@ -369,6 +369,6 @@
 
     <color name="browser_express_orange_color">#FF9000</color>
     <color name="browser_express_error_color">#FF0000</color>
-    <color name="browser_express_white_color">@android:color/transparent</color>
+    <color name="browser_express_transparent_color">@android:color/transparent</color>
     <color name="browser_express_modern_gray">#FFE3E3E3</color>
 </resources>
