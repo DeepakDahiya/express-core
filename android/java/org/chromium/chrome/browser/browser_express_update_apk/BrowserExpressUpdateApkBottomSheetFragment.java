@@ -80,13 +80,17 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
                     nextButton.setText(R.string.browser_express_loading_title);
 
                     try {
+                        Log.e("UPDATE APK", "INSIDE")
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String url = "apk.browser.express";
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         activity.startActivity(webIntent);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("UPDATE APK", e.getMessage())
                     } catch (Exception ex) {
-
+                        Log.e("UPDATE APK", ex.getMessage())
+                    }finally{
+                        dismiss();
                     }
                 }
                 // dismiss();
