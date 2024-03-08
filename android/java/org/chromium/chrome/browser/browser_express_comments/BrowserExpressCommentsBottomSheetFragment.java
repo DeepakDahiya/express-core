@@ -227,6 +227,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             public void onClick(View v) {
                 if (getActivity() != null) {
                     try {
+                        mSendButton.setClickable(false);
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
                         if (accessToken == null) {
@@ -254,10 +255,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                 content, "page", mUrl, null, accessToken, addCommentCallback);
                                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 }
+                                mMessageEditText.setText(R.string.browser_express_empty_text);
                             }
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e("Express Browser Access Token", e.getMessage());
+                    }finally{
+                        mSendButton.setClickable(true);
                     }
                 }
             }
@@ -317,7 +321,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment) {
-                    mMessageEditText.setText(R.string.browser_express_empty_text);
                     if(comment.getPageParent() == null){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();

@@ -992,17 +992,26 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_BRAVE_NEXT" desc="Set default browser modal button text">
         Next
       </message>
+      <message name="IDS_BROWSER_EXPRESS_DOWNLOAD" desc="Set default browser modal button text">
+        Download
+      </message>
       <message name="IDS_BRAVE_PRIVACY_SET_DEFAULT_BROWSER" desc="Set default browser modal title">
         To improve your privacy, set Express Browser as your default Browser
       </message>
       <message name="IDS_BROWSER_EXPRESS_GENERATE_USERNAME_TITLE" desc="Set default browser modal title">
         Generate username and enjoy the app
       </message>
+      <message name="IDS_BROWSER_EXPRESS_UPDATE_APK_TITLE" desc="Set default browser modal title">
+        New update available
+      </message>
       <message name="IDS_COMMENTS" desc="Set default browser modal title">
         Comments
       </message>
       <message name="IDS_BROWSER_EXPRESS_GENERATE_USERNAME_DESC" desc="Set default browser modal title">
         This will allow you to like and comment in thread.
+      </message>
+      <message name="IDS_BROWSER_EXPRESS_UPDATE_APK_DESC" desc="Set default browser modal title">
+       Click on download and install the latest apk from google drive.
       </message>
       <message name="IDS_BRAVE_CHOOSE" desc="Set default browser modal text">
         Choose Express Browser on the next screen.

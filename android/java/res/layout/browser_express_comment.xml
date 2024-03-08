@@ -59,8 +59,8 @@
 
         <ImageButton
             style="@style/ToolbarButton"
-            android:layout_width="38sp"
-            android:layout_height="38sp"
+            android:layout_width="42sp"
+            android:layout_height="42sp"
             android:background="@drawable/btn_toolbar_profile"
             android:scaleType="centerCrop"
             android:layout_marginHorizontal="4sp"
@@ -71,7 +71,7 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="8sp"
+            android:padding="4sp"
             android:orientation="vertical">
 
             <LinearLayout
@@ -84,10 +84,9 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:textColor="@color/news_settings_title_color"
-                    android:layout_marginBottom="-5sp"
                     android:textStyle="bold"
                     android:layout_weight="1"
-                    android:textSize="14sp"/>
+                    android:textSize="13sp"/>
 
                 <ImageButton
                     android:id="@+id/btn_options"
@@ -104,13 +103,14 @@
                 android:layout_width="wrap_content"
                 android:textColor="@color/news_settings_title_color"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="11dp"/>
+                android:layout_marginVertical="4sp"
+                android:textSize="11sp" />
 
             <LinearLayout
                 android:id="@+id/action_items"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="gone"
+                android:visibility="visible"
                 android:orientation="horizontal">
 
                 <Button
@@ -125,6 +125,7 @@
                     android:minWidth="0dp"
                     android:minHeight="0dp"
                     android:paddingVertical="4sp"
+                    android:paddingHorizontal="0dp"
                     android:textAllCaps="false"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 

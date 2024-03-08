@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.util.BraveTouchUtils;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
 import android.widget.ImageButton;
+import android.view.HapticFeedbackConstants;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
@@ -138,6 +139,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         if (mCommentsButton != null) {
             mCommentsButton.setClickable(true);
             OnClickListener commentsClickHandler = v -> {
+                mCommentsButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                 TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
@@ -373,8 +375,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                         int currentVersion = Integer.parseInt(pInfo.versionName.replace(".",""));
                         int newVersion = Integer.parseInt(version.replace(".",""));
                         if(newVersion > currentVersion){
-                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                            activity.startActivity(webIntent);
+                            activity.showUpdateApkBottomSheet();
+                            // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                            // activity.startActivity(webIntent);
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e(TAG, "BookmarkButton click " + e);

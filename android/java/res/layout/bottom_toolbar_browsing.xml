@@ -23,8 +23,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:orientation="vertical"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="2dp">
+        android:padding="2dp">
 
         <org.chromium.chrome.browser.toolbar.BraveHomeButton
             android:id="@+id/bottom_home_button"
@@ -67,8 +66,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_vertical"
         android:orientation="vertical"
-        android:layout_marginTop="2dp"
-        android:layout_marginBottom="2dp">
+        android:padding="2dp">
 
         <ImageButton android:id="@+id/comments_button"
             android:background="@drawable/comments"

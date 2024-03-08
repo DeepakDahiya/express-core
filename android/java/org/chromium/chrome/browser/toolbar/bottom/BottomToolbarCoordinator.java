@@ -12,6 +12,7 @@ import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
 import android.view.ViewGroup;
 import android.view.ViewStub;
+import android.view.HapticFeedbackConstants;
 
 import androidx.core.content.ContextCompat;
 
@@ -241,6 +242,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
             mHomeText.setOnLongClickListener(this);
 
             final OnClickListener homeButtonListener = v -> {
+                mHomeButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                 if (HomepageManager.isHomepageEnabled()) {
                     try {
                         BraveActivity.getBraveActivity().setComesFromNewTab(true);
