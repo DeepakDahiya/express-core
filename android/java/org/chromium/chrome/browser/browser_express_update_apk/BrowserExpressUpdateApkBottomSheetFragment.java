@@ -32,6 +32,7 @@ import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import android.content.Intent;
+import android.net.Uri;
 
 public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
@@ -84,7 +85,6 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         activity.startActivity(webIntent);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e(TAG, "BookmarkButton click " + e);
                     } catch (Exception ex) {
 
                     }
