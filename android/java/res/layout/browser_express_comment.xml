@@ -66,7 +66,6 @@
             android:layout_marginHorizontal="4sp"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
     </LinearLayout>
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -110,7 +109,7 @@
                 android:id="@+id/action_items"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:visibility="visible"
+                android:visibility="gone"
                 android:orientation="horizontal">
 
                 <Button
@@ -146,11 +145,6 @@
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </LinearLayout>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/recycler_replies"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"/>
-
             <Button
                 android:id="@+id/btn_more_comments"
                 android:layout_width="wrap_content"
@@ -170,6 +164,11 @@
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
     </LinearLayout>
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_replies"
+        android:layout_width="match_parent"
+        android:layout_marginStart="40sp"
+        android:layout_height="wrap_content"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="1dp"
