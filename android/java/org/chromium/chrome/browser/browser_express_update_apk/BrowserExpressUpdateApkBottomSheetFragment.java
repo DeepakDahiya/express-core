@@ -40,7 +40,7 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
     private boolean isFromMenu;
     private Button nextButton;
 
-    private boolean isDownload = false;
+    private boolean isDownload;
 
     public static BrowserExpressUpdateApkBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressUpdateApkBottomSheetFragment fragment =
@@ -93,6 +93,7 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
         cancelButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                isDownload = false;
                 dismiss();
             }
         }));
