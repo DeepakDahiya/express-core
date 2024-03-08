@@ -40,8 +40,6 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
     private boolean isFromMenu;
     private Button nextButton;
 
-    private boolean isDownload;
-
     public static BrowserExpressUpdateApkBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressUpdateApkBottomSheetFragment fragment =
                 new BrowserExpressUpdateApkBottomSheetFragment();
@@ -77,8 +75,25 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
         nextButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isDownload = true;
-                dismiss();
+                if (getActivity() != null) {
+                    nextButton.setClickable(false);
+                    nextButton.setText(R.string.browser_express_loading_title);
+
+                    try {
+                        Log.e("UPDATE APK", "INSIDE");
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        String url = "apk.browser.express";
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                        activity.startActivity(webIntent);
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("UPDATE APK", e.getMessage());
+                    } catch (Exception ex) {
+                        Log.e("UPDATE APK", ex.getMessage());
+                    }finally {
+                        dismiss();
+                    }
+                }
+                // dismiss();
             }
         }));
 
@@ -93,7 +108,6 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
         cancelButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                isDownload = false;
                 dismiss();
             }
         }));
@@ -102,19 +116,6 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        if (isDownload) {
-            try {
-                Log.e("UPDATE APK", "INSIDE");
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                String url = "apk.browser.express";
-                Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                activity.startActivity(webIntent);
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-                Log.e("UPDATE APK", e.getMessage());
-            } catch (Exception ex) {
-                Log.e("UPDATE APK", ex.getMessage());
-            }
-        }
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 }
