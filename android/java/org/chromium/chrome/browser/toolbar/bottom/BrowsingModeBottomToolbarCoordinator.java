@@ -375,9 +375,9 @@ public class BrowsingModeBottomToolbarCoordinator {
                         int currentVersion = Integer.parseInt(pInfo.versionName.replace(".",""));
                         int newVersion = Integer.parseInt(version.replace(".",""));
                         if(newVersion > currentVersion){
-                            activity.showUpdateApkBottomSheet();
-                            // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                            // activity.startActivity(webIntent);
+                            // activity.showUpdateApkBottomSheet();
+                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+                            activity.startActivity(webIntent);
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e(TAG, "BookmarkButton click " + e);
