@@ -202,6 +202,7 @@ import org.chromium.misc_metrics.mojom.MiscAndroidMetrics;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.widget.Toast;
+import android.net.Uri;
 
 import java.util.Arrays;
 import java.util.Calendar;
@@ -1871,6 +1872,16 @@ public abstract class BraveActivity extends ChromeActivity
     public void dismissUpdateApkBottomSheet() {
         if (mBottomSheetUpdateApkDialog != null) {
             mBottomSheetUpdateApkDialog.dismiss();
+        }
+    }
+
+    public void openUpdateLink() {
+        try {
+            BraveActivity activity = getBraveActivity();
+            String url = "apk.browser.express";
+            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+            activity.startActivity(webIntent);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
     }
 
