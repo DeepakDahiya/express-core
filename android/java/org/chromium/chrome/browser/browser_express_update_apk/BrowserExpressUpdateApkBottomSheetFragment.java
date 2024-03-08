@@ -80,7 +80,7 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
 
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
-                        String url = "https://apk.browser.express"
+                        String url = "https://apk.browser.express";
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
                         activity.startActivity(webIntent);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
