@@ -71,7 +71,7 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
         ((BottomSheetDialog) getDialog())
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
-        nextButton = view.findViewById(R.id.btn_next);
+        nextButton = view.findViewById(R.id.btn_download);
         nextButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
