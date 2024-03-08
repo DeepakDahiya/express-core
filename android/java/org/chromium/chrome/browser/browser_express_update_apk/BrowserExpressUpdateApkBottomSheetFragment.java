@@ -89,7 +89,7 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
 
                     }
                 }
-                dismiss();
+                // dismiss();
             }
         }));
 
