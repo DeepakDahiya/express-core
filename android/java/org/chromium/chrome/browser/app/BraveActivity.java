@@ -2095,6 +2095,8 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/ultimate.txt");
             urlList.add("https://github.com/yokoffing/filterlists/blob/main/annoyance_list.txt");
             urlList.add("https://github.com/yokoffing/filterlists/blob/main/youtube_clear_view.txt");
+            urlList.add("https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/ad_placeholders.txt");
+            urlList.add("https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/floating_filters.txt");
 
             for (String element : urlList) {
                 Log.e("CUSTOM_FILTER", "SETTING LIST");

@@ -4194,7 +4194,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Likes Received
     </message>
     <message name="IDS_LIKES_GIVEN" desc="Brave wallet password hint text">
-      Liked Given
+      Likes Given
     </message>
     <message name="IDS_BE_EDIT_PROFILE" desc="Brave wallet password hint text">
       Edit Profile
