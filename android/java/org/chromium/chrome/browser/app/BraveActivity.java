@@ -2144,7 +2144,7 @@ public abstract class BraveActivity extends ChromeActivity
             }
 
             Log.e("CUSTOM_FILTER", "SETTING setCustomListSet");
-            setCustomListSet("true");
+            setCustomListSet("true1");
         }
         Log.e("CUSTOM_FILTER", "FINISH");
     }
