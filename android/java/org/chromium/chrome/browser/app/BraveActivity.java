@@ -1243,9 +1243,9 @@ public abstract class BraveActivity extends ChromeActivity
     private void migrateBgPlaybackToFeature() {
         // Enable background music, will use this for global pip for now.
         BraveFeatureUtil.enableFeature(
-                    BraveFeatureList.BRAVE_BACKGROUND_VIDEO_PLAYBACK_INTERNAL, true, true);
+                    BraveFeatureList.BRAVE_BACKGROUND_VIDEO_PLAYBACK_INTERNAL, true, false);
         SharedPreferencesManager.getInstance().writeBoolean(
-                BravePreferenceKeys.BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE, true);
+                BravePreferenceKeys.BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE, false);
         // if (SharedPreferencesManager.getInstance().readBoolean(
         //             BravePreferenceKeys.BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE,
         //             false)) {
