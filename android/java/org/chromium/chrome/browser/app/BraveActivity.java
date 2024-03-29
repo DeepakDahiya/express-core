@@ -976,7 +976,7 @@ public abstract class BraveActivity extends ChromeActivity
                 FilterListServiceFactory.getInstance().getFilterListAndroidHandler(this);
 
         Log.e("CUSTOM_FILTER", "BEFORE setCustomFilterList");
-        setCustomFilterList();
+        // setCustomFilterList();
         Log.e("CUSTOM_FILTER", "AFTER setCustomFilterList");
 
         PrefChangeRegistrar mPrefChangeRegistrar = new PrefChangeRegistrar();
