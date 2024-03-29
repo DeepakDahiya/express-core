@@ -377,6 +377,8 @@ public class BrowsingModeBottomToolbarCoordinator {
                         Log.e("Express Browser current TEST", pInfo.versionName.replace(".",""));
                         Log.e("Express Browser new TEST", version.replace(".",""));
                         Log.e("Express Browser URL", url);
+                        Log.e("Express Browser current TEST", Integer.parseInt(pInfo.versionName.replace(".","")).toString());
+                        Log.e("Express Browser new TEST", Integer.parseInt(version.replace(".","")).toString());
                         if(newVersion > currentVersion){
                             // activity.showUpdateApkBottomSheet();
                             Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
