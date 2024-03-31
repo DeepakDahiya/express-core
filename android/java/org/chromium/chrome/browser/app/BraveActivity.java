@@ -24,6 +24,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import org.chromium.url.mojom.Url;
+import org.chromium.brave_shields.mojom.SubscriptionInfo;
 import org.chromium.chrome.browser.shields.FilterListServiceFactory;
 
 import androidx.annotation.MainThread;
@@ -2091,10 +2092,8 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void setCustomFilterList() {
-        Log.e("CUSTOM_FILTER", "INSIDE CUSTOM FILTER");
         String boolInString = getCustomListSet();
-        if(boolInString == null || !boolInString.equals("true") ){
-            Log.e("CUSTOM_FILTER", "INSIDE IF");
+        if(boolInString == null || !boolInString.equals("true1") ){
             List<String> urlList = new ArrayList<String>();
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt");
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt");
@@ -2109,8 +2108,8 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt");
             urlList.add("https://easylist.to/easylist/easylist.txt");
             urlList.add("https://easylist.to/easylist/easyprivacy.txt");
-            urlList.add("https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt");
-            urlList.add("https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext");
+            // urlList.add("https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt");
+            // urlList.add("https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-unbreak.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-specific.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-social.txt");
@@ -2118,41 +2117,43 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-android-specific.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-sugarcoat.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt");
-            // urlList.add("https://secure.fanboy.co.nz/fanboy-cookiemonster_ubo.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-cookies.txt");
-            // urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-cookie-specific.txt");
-            // urlList.add("https://secure.fanboy.co.nz/fanboy-annoyance_ubo.txt");
-            // urlList.add("https://easylist-downloads.adblockplus.org/fanboy-social.txt");
-            // urlList.add("https://secure.fanboy.co.nz/fanboy-newsletter.txt");
             urlList.add("https://secure.fanboy.co.nz/fanboy-mobile-notifications.txt");
-            // urlList.add("https://raw.githubusercontent.com/easylist/easylist/master/fanboy-addon/fanboy_chatapps_third-party.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/annoyances-others.txt");
-            // urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/yt-distracting.txt");
-            // urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/yt-recommended.txt");
             urlList.add("https://gitlab.com/magnolia1234/bypass-paywalls-clean-filters/-/raw/main/bpc-paywall-filter.txt");
-            // urlList.add("https://raw.githubusercontent.com/blocklistproject/Lists/master/adguard/porn-ags.txt");
             urlList.add("https://easylist-downloads.adblockplus.org/indianlist.txt");
-            // urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/personal.txt");
-            // urlList.add("https://raw.githubusercontent.com/iam-py-test/uBlock-combo/main/list.txt");
-            // urlList.add("https://raw.githubusercontent.com/hagezi/dns-blocklists/main/adblock/ultimate.txt");
-            // urlList.add("https://github.com/yokoffing/filterlists/blob/main/annoyance_list.txt");
-            // urlList.add("https://github.com/yokoffing/filterlists/blob/main/youtube_clear_view.txt");
-            // urlList.add("https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/ad_placeholders.txt");
-            // urlList.add("https://raw.githubusercontent.com/yourduskquibbles/webannoyances/master/filters/floating_filters.txt");
+
+            // currentSubList = mFilterListAndroidHandler.getSubscriptions();
+
+            // // Create an array to store subscription URLs
+            // ArrayList<String> subscriptionUrls = new ArrayList<>();
+
+            // // Iterate over each SubscriptionInfo object and extract the subscription URL
+            // for (SubscriptionInfo subscriptionInfo : currentSubList) {
+            //     String subscriptionUrl = subscriptionInfo.subscriptionUrl.toString(); // Assuming subscription_url is a URL object
+            //     Log.e("CUSTOM_FILTER CURRENT", subscriptionUrl);
+            //     subscriptionUrls.add(subscriptionUrl);
+            // }
 
             for (String element : urlList) {
-                Log.e("CUSTOM_FILTER", "SETTING LIST");
-                Log.e("CUSTOM_FILTER", element);
+                // if(!subscriptionUrls.contains(element)){
+                //     Url filterUrl = new Url();
+                //     filterUrl.url = element;
+                //     mFilterListAndroidHandler.createSubscription(filterUrl);
+                // }
                 Url filterUrl = new Url();
                 filterUrl.url = element;
                 mFilterListAndroidHandler.createSubscription(filterUrl);
-                Log.e("CUSTOM_FILTER", "SETTING LIST DONE");
             }
 
-            Log.e("CUSTOM_FILTER", "SETTING setCustomListSet");
+            List<String> deleteUrlList = new ArrayList<String>();
+
+            for (String element : deleteUrlList) {
+                Url filterUrl = new Url();
+                filterUrl.url = element;
+                mFilterListAndroidHandler.deleteSubscription(filterUrl);
+            }
+
             setCustomListSet("true1");
         }
-        Log.e("CUSTOM_FILTER", "FINISH");
     }
 
     public void setReplyComment(String comment) {
