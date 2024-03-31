@@ -2117,8 +2117,8 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-android-specific.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-sugarcoat.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt");
-            urlList.add("https://secure.fanboy.co.nz/fanboy-mobile-notifications.txt");
-            urlList.add("https://gitlab.com/magnolia1234/bypass-paywalls-clean-filters/-/raw/main/bpc-paywall-filter.txt");
+            // urlList.add("https://secure.fanboy.co.nz/fanboy-mobile-notifications.txt");
+            // urlList.add("https://gitlab.com/magnolia1234/bypass-paywalls-clean-filters/-/raw/main/bpc-paywall-filter.txt");
             urlList.add("https://easylist-downloads.adblockplus.org/indianlist.txt");
 
             // currentSubList = mFilterListAndroidHandler.getSubscriptions();
