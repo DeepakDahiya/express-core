@@ -2106,8 +2106,8 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt");
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt");
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt");
-            urlList.add("https://easylist.to/easylist/easylist.txt");
-            urlList.add("https://easylist.to/easylist/easyprivacy.txt");
+            // urlList.add("https://easylist.to/easylist/easylist.txt");
+            // urlList.add("https://easylist.to/easylist/easyprivacy.txt");
             // urlList.add("https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt");
             // urlList.add("https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-unbreak.txt");
@@ -2117,8 +2117,8 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-android-specific.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-sugarcoat.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt");
-            // urlList.add("https://secure.fanboy.co.nz/fanboy-mobile-notifications.txt");
-            // urlList.add("https://gitlab.com/magnolia1234/bypass-paywalls-clean-filters/-/raw/main/bpc-paywall-filter.txt");
+            urlList.add("https://secure.fanboy.co.nz/fanboy-mobile-notifications.txt");
+            urlList.add("https://gitlab.com/magnolia1234/bypass-paywalls-clean-filters/-/raw/main/bpc-paywall-filter.txt");
             urlList.add("https://easylist-downloads.adblockplus.org/indianlist.txt");
 
             // currentSubList = mFilterListAndroidHandler.getSubscriptions();

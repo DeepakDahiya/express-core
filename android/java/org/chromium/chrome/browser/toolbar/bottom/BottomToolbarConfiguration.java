@@ -22,6 +22,7 @@ public class BottomToolbarConfiguration {
     private static final int SMALL_SCREEN_HEIGHT = 640;
 
     public static boolean isBottomToolbarEnabled() {
+        // return false;
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(
                     ContextUtils.getApplicationContext())) {
             return false;
