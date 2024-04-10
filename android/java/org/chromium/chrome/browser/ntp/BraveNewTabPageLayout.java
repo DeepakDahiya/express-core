@@ -340,7 +340,7 @@ public class BraveNewTabPageLayout
         //     settingsLauncher.launchSettingsActivity(getContext(), BraveNewsPreferencesV2.class);
         // });
 
-        mRecyclerView = findViewById(R.id.recyclerview);
+        mRecyclerView = findViewById(R.id.recycler_posts);
         LinearLayoutManagerWrapper linearLayoutManager =
                 new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
         mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -1111,34 +1111,6 @@ public class BraveNewTabPageLayout
         if (mNtpAdapter != null) {
             mNtpAdapter.setNtpImage(ntpImage);
         }
-        // if (ntpImage instanceof Wallpaper
-        //         && NTPUtil.isReferralEnabled()
-        //         && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-        //     setBackgroundImage(ntpImage);
-
-        // } else if (UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                    .getBoolean(BravePref.NEW_TAB_PAGE_SHOW_BACKGROUND_IMAGE)
-        //         && mSponsoredTab != null && NTPUtil.shouldEnableNTPFeature()) {
-        //     setBackgroundImage(ntpImage);
-        // }
-    }
-
-    private void setBackgroundImage(NTPImage ntpImage) {
-        // mBgImageView = (ImageView) findViewById(R.id.bg_image_view);
-        // mBgImageView.setScaleType(ImageView.ScaleType.MATRIX);
-
-        // ViewTreeObserver observer = mBgImageView.getViewTreeObserver();
-        // observer.addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-        //     @Override
-        //     public void onGlobalLayout() {
-        //         mWorkerTask =
-        //                 new FetchWallpaperWorkerTask(ntpImage, mBgImageView.getMeasuredWidth(),
-        //                         mBgImageView.getMeasuredHeight(), mWallpaperRetrievedCallback);
-        //         mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-        //         mBgImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-        //     }
-        // });
     }
 
     private void checkForNonDisruptiveBanner(NTPImage ntpImage) {
