@@ -13,13 +13,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:paddingTop="@dimen/toolbar_height_no_shadow"
-    android:visibility="gone" >
-
-    <!-- <ImageView
-        android:id="@+id/bg_image_view"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:contentDescription="@null"/> -->
+    android:visibility="visible" >
 
     <FrameLayout
         android:id="@+id/logo_holder"
@@ -45,56 +39,32 @@
 
     </FrameLayout>
 
+    <LinearLayout android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="12dp"
+            android:text="@string/browser_express_feed_title"
+            android:layout_weight="1"
+            android:textColor="@color/news_settings_title_color"
+            android:textSize="18sp"/>
+        <ImageButton
+            android:id="@+id/btn_menu"
+            android:layout_width="16sp"
+            android:layout_height="14sp"
+            android:layout_margin="12dp"
+            android:background="@drawable/btn_menu"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+            android:scaleType="centerCrop" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerview"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:overScrollMode="never" />
-
-    <!-- <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical">
-
-        <LinearLayout
-            android:id="@+id/news_settings_bar"
-            android:layout_width="match_parent"
-            android:layout_height="55dp"
-            android:background="@color/card_background_solid"
-            android:orientation="horizontal"
-            android:paddingHorizontal="20dp"
-            android:paddingVertical="10dp"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/news_settings_text"
-                android:layout_width="0dp"
-                android:layout_height="match_parent"
-                android:layout_weight="5"
-                android:textSize = "17sp"
-                android:gravity="center_vertical"
-                android:text="@string/brave_news_title"
-                android:textColor="@color/news_text_color" />
-
-            <ImageView
-                android:id="@+id/news_settings_button"
-                android:layout_width="36dp"
-                android:layout_height="36dp"
-                android:layout_gravity="center"
-                android:scaleType="fitCenter"
-                android:padding="8dp"
-                android:gravity="center"
-                tools:ignore="ContentDescription"
-                android:src="@drawable/ic_news_settings"/>
-
-        </LinearLayout> 
-
-        <include
-            android:id="@+id/news_load_new_content"
-            layout="@layout/brave_news_load_new_content"
-            android:visibility="gone"/>
-        
-    </LinearLayout> -->
 
     <LinearLayout
         android:id="@+id/ntp_main_layout"
