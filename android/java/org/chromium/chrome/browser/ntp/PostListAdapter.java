@@ -34,24 +34,16 @@ import android.view.animation.AnimationUtils;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
-    private List<Comment> mCommentList;
-    private ImageButton mCanceReplyButton;
-    private TextView mReplyToText;
-    private EditText mMessageEditText;
-    private RecyclerView mTopCommentRecycler;
+    private List<Post> mPostList;
 
-    public PostListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
+    public PostListAdapter(Context context, List<Post> postList) {
         mContext = context;
-        mCommentList = commentList;
-        mReplyToText = replyToText;
-        mCanceReplyButton = canceReplyButton;
-        mMessageEditText = messageEditText;
-        mTopCommentRecycler = topCommentRecycler;
+        mPostList = postList;
     }
 
     @Override
     public int getItemCount() {
-        return mCommentList.size();
+        return mPostList.size();
     }
 
     // Inflates the appropriate layout according to the ViewType.
@@ -60,13 +52,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
-        return new PostHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText, mTopCommentRecycler);
+        return new PostHolder(view);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Comment comment = (Comment) mCommentList.get(position);
+        Comment comment = (Comment) mPostList.get(position);
 
         ((PostHolder) holder).bind(comment);
     }
@@ -85,18 +77,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private BraveActivity activity;
 
         private RecyclerView mCommentRecycler;
-        private RecyclerView mTopCommentRecycler;
         private PostListAdapter mCommentAdapter;
-        private List<Comment> mComments;
+        private List<Post> mComments;
         private int mPage = 1;
         private int mPerPage = 100;
         private Context context;
         private LinearLayout mActionItemsLayout;
         private LinearLayout mCommentLayout;
-
-        private ImageButton mCanceReplyButton;
-        private TextView mReplyToText;
-        private EditText mMessageEditText;
 
         private Animation bounceUp;
         private Animation bounceDown;
@@ -104,14 +91,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private int myPosition;
 
 
-        PostHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
+        PostHolder(View itemView) {
             super(itemView);
-
-            mReplyToText = replyToText;
-            mCanceReplyButton = canceReplyButton;
-            mMessageEditText = messageEditText;
-
-            mTopCommentRecycler = topCommentRecycler;
 
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
@@ -148,10 +129,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
 
-            mComments = new ArrayList<Comment>();
+            mComments = new ArrayList<Post>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-            mCommentAdapter = new PostListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText, null);
+            mCommentAdapter = new PostListAdapter(context, mComments);
             mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
@@ -194,8 +175,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                                     mCommentAdapter.notifyItemInserted(0);
                                 }
                             } catch (JSONException e) {
-                                mReplyToText.setText(R.string.browser_express_empty_text);
-                                mCanceReplyButton.setVisibility(View.INVISIBLE);
                                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                             }
                         }
@@ -216,20 +195,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
             }
 
-            mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        activity = BraveActivity.getBraveActivity();
-                        activity.setReplyTo(null);
-                        mReplyToText.setText(R.string.browser_express_empty_text);
-                        mCanceReplyButton.setVisibility(View.INVISIBLE);
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Express Browser Access Token", e.getMessage());
-                    }
-                }
-            }));
-
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -238,9 +203,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             activity = BraveActivity.getBraveActivity();
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
-
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
 
                         String accessToken = activity.getAccessToken();
                         if (accessToken == null) {
@@ -255,19 +217,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
-                        // mCanceReplyButton = activity.getReplyToCancelButton();
-                        // mReplyToText = activity.getReplyToText();
-                        // mMessageEditText =  activity.getContentEditText();
-                        if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
-                            Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
-                            String replyToString = "replying to " + comment.getUser().getUsername();
-                            mReplyToText.setText(replyToString);
-                            mCanceReplyButton.setVisibility(View.VISIBLE);
-                            mMessageEditText.requestFocus();
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
-                        }
-                        Log.e("REPLY TO", "OUTSIDE REPLY TO TEXT");
                     } catch (JSONException e) {
                         Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
                     }
@@ -386,7 +335,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
-                public void getCommentsSuccessful(List<Comment> comments) {
+                public void getCommentsSuccessful(List<Post> comments) {
                     int len = comments.size();
                     // mComments.clear();
                     // mCommentAdapter.notifyItemRangeRemoved(0, len);

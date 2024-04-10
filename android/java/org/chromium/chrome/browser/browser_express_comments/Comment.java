@@ -27,10 +27,6 @@ public class Comment{
         return this._id;  
     }  
 
-    public void setId(String _id) {  
-        this._id = _id;  
-    }  
-
     public String getCommentParent() {  
         return this.commentParent;  
     }
@@ -43,10 +39,6 @@ public class Comment{
         return this.user;  
     }  
 
-    public void setUser(User user) {  
-        this.user = user;  
-    }  
-
     public Vote getDidVote() {  
         return this.didVote;  
     }  
@@ -55,31 +47,15 @@ public class Comment{
         return this.content;  
     }  
 
-    public void setContent(String content) {  
-        this.content = content;  
-    }  
-
     public int getUpvoteCount() {  
         return this.upvoteCount;  
     }  
-
-    public void setUpvoteCount(int upvoteCount) {  
-        this.upvoteCount = upvoteCount;  
-    } 
 
     public int getDownvoteCount() {  
         return this.downvoteCount;  
     }  
 
-    public void setDownvoteCount(int downvoteCount) {  
-        this.downvoteCount = downvoteCount;  
-    }  
-
     public int getCommentCount() {  
         return this.commentCount;  
-    }  
-
-    public void setCommentCount(int commentCount) {  
-        this.commentCount = commentCount;  
     }  
 }  
