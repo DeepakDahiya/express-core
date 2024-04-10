@@ -49,12 +49,12 @@
             android:text="@string/browser_express_feed_title"
             android:layout_weight="1"
             android:textColor="@color/news_settings_title_color"
-            android:textSize="18sp"/>
+            android:textSize="14sp"/>
         <ImageButton
             android:id="@+id/btn_menu"
             android:layout_width="16sp"
-            android:layout_height="14sp"
-            android:layout_margin="12dp"
+            android:layout_height="18sp"
+            android:layout_margin="18dp"
             android:background="@drawable/btn_menu"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
             android:scaleType="centerCrop" />
