@@ -44,11 +44,11 @@ public class Post{
         return this.redirect;  
     }
 
-    public User getPublisherImageUrl() {  
+    public String getPublisherImageUrl() {  
         return this.publisherImageUrl;  
     }  
 
-    public User getPublisherName() {  
+    public String getPublisherName() {  
         return this.publisherName;  
     }  
 

@@ -31,6 +31,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.HapticFeedbackConstants;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import org.chromium.chrome.browser.browser_express_comments.BrowserExpressGetCommentsUtil;
+import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
