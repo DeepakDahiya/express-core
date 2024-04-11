@@ -36,6 +36,7 @@ import org.chromium.chrome.browser.browser_express_comments.BrowserExpressGetCom
 import org.chromium.chrome.browser.browser_express_comments.Vote;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
 import com.bumptech.glide.Glide;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
