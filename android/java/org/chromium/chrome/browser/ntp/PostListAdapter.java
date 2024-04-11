@@ -35,6 +35,7 @@ import android.view.animation.AnimationUtils;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressGetCommentsUtil;
 import org.chromium.chrome.browser.browser_express_comments.Vote;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
+import com.bumptech.glide.Glide;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -118,6 +119,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
+
+            ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 0, postImage, null, null);
 
             Vote didVote = post.getDidVote();
             if(didVote != null){
