@@ -165,6 +165,8 @@ public class BraveNewTabPageLayout
     private LinearLayout mNewContentLayout;
     private TextView mNewContentText;
     private ProgressBar mNewContentProgressBar;
+    private PostListAdapter mPostAdapter;
+    private List<Post> mPosts;
 
     private NTPImage mNtpImageGlobal;
     private BraveNewsController mBraveNewsController;
@@ -341,15 +343,34 @@ public class BraveNewTabPageLayout
         // });
 
         mRecyclerView = findViewById(R.id.recycler_posts);
-        LinearLayoutManagerWrapper linearLayoutManager =
-                new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
-        mRecyclerView.setLayoutManager(linearLayoutManager);
-        mRecyclerView.post(new Runnable() {
-            @Override
-            public void run() {
-                setNtpRecyclerView(linearLayoutManager);
-            }
-        });
+        // LinearLayoutManagerWrapper linearLayoutManager =
+        //         new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
+        // mRecyclerView.setLayoutManager(linearLayoutManager);
+        // mRecyclerView.post(new Runnable() {
+        //     @Override
+        //     public void run() {
+        //         setNtpRecyclerView(linearLayoutManager);
+        //     }
+        // });
+
+        mPosts = new ArrayList<Post>();
+        mPosts.add(new Post(
+                "123", 
+                "",
+                "Test Title",
+                "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
+                "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
+                5,
+                2,
+                10,
+                "Test",
+                "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
+                true,
+                true,
+                null));
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
+        mPostAdapter = new PostListAdapter(requireContext(), mPosts);
+        mRecyclerView.setAdapter(mPostAdapter);
     }
 
     private boolean shouldDisplayTopSites() {
@@ -1362,4 +1383,19 @@ public class BraveNewTabPageLayout
     void setSearchProviderBottomMargin(int bottomMargin) {
         if (mLogoCoordinator != null) mLogoCoordinator.setBottomMargin(bottomMargin);
     }
+
+    private BrowserExpressGetPostsUtil.GetPostsCallback getPostsCallback=
+            new BrowserExpressGetPostsUtil.GetPostsCallback() {
+                @Override
+                public void getPostsSuccessful(List<Post> posts) {
+                    int len = mPosts.size();
+                    mPosts.addAll(posts);
+                    mPostAdapter.notifyItemRangeInserted(len-1, posts.size());
+                }
+
+                @Override
+                public void getPostsFailed(String error) {
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                }
+            };
 }
