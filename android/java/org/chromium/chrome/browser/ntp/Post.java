@@ -46,6 +46,10 @@ public class Post{
         return this.imageUrl;  
     }  
 
+    public String getUrl() {  
+        return this.url;  
+    }  
+
     public Boolean getShowFull() {  
         return this.showFull;  
     }
