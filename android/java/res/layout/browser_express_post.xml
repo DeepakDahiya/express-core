@@ -19,6 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scaleType="centerCrop"
+            android:maxHeight="250sp"
             android:adjustViewBounds="true"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
     </androidx.cardview.widget.CardView>
@@ -69,7 +70,7 @@
         android:orientation="horizontal">
         <LinearLayout
             android:layout_width="0sp"
-            android:layout_height="match_parent"
+            android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingVertical="12sp"
             android:orientation="horizontal">
@@ -105,8 +106,9 @@
         </LinearLayout>
         <ImageButton
             android:id="@+id/btn_options"
-            android:layout_width="18sp"
-            android:layout_height="18sp"
+            android:layout_width="24sp"
+            android:layout_height="24sp"
+            android:layout_gravity="center"
             android:paddingVertical="12sp"
             android:background="@drawable/ic_more_vert_24dp"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />

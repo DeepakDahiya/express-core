@@ -133,13 +133,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
 
-            if(post.getType().toString().equals(INSHORTS_TYPE)){
-                ViewGroup.LayoutParams params = postLayout.getLayoutParams();
-                ViewGroup.LayoutParams paramsForImage = postImage.getLayoutParams();
-                paramsForImage.height = (int)(params.width * 0.57);
-                paramsForImage.width = params.width;
-                postImage.setLayoutParams(paramsForImage);
-            }
+            // if(post.getType().toString().equals(INSHORTS_TYPE)){
+            //     ViewGroup.LayoutParams params = postLayout.getLayoutParams();
+            //     ViewGroup.LayoutParams paramsForImage = postImage.getLayoutParams();
+            //     paramsForImage.height = (int)(params.width * 0.57);
+            //     paramsForImage.width = params.width;
+            //     postImage.setLayoutParams(paramsForImage);
+            // }
 
             Vote didVote = post.getDidVote();
             if(didVote != null){
