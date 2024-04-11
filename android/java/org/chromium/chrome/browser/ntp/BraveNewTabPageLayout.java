@@ -386,9 +386,9 @@ public class BraveNewTabPageLayout
         mPostAdapter = new PostListAdapter(mActivity, mPosts);
         mRecyclerView.setAdapter(mPostAdapter);
 
-        String accessToken = mActivity.getAccessToken();
+        String accessToken = ((BraveActivity)mActivity).getAccessToken();
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(mPage, mPerPage, accessToken, getPostsCallback);
+            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 100, accessToken, getPostsCallback);
         workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
