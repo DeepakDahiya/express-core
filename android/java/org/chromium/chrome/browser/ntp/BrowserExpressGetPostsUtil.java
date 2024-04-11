@@ -34,6 +34,8 @@ import java.net.URL;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
+import org.chromium.chrome.browser.browser_express_comments.Vote;
+
 public class BrowserExpressGetPostsUtil {
     private static final String TAG = "Get_Posts_Browser_Express";
     private static final String GET_POSTS_URL = "https://api.browser.express/v1/feed";

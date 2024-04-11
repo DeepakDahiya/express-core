@@ -7,6 +7,7 @@ import android.widget.TextView;
 import android.view.View;
 import org.chromium.base.Log;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.Button;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
@@ -58,64 +59,51 @@ public class PostListAdapter extends RecyclerView.Adapter {
         return new PostHolder(view);
     }
 
-    // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
+    // Passes the post object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Comment comment = (Comment) mPostList.get(position);
+        Post post = (Post) mPostList.get(position);
 
-        ((PostHolder) holder).bind(comment);
+        ((PostHolder) holder).bind(post);
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
-        TextView usernameText;
+        ImageView postImage;
+        TextView publisherNameText;
+        TextView publishedTimeText;
+        TextView titleText;
         TextView contentText;
         TextView voteCountText;
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
-        private Button mReplyButton;
-        private Button mShareButton;
-        private Button mShowMoreButton;
         private String didVoteType;
         private int finalVote;
         private BraveActivity activity;
 
-        private RecyclerView mCommentRecycler;
-        private PostListAdapter mCommentAdapter;
-        private List<Post> mComments;
-        private int mPage = 1;
-        private int mPerPage = 100;
         private Context context;
-        private LinearLayout mActionItemsLayout;
-        private LinearLayout mCommentLayout;
 
         private Animation bounceUp;
         private Animation bounceDown;
 
         private int myPosition;
 
-
         PostHolder(View itemView) {
             super(itemView);
-
-            usernameText = (TextView) itemView.findViewById(R.id.username);
-            contentText = (TextView) itemView.findViewById(R.id.comment_content);
+            postImage = (ImageView) itemView.findViewById(R.id.post_image);
+            publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
+            publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
+            titleText = (TextView) itemView.findViewById(R.id.title);
+            contentText = (TextView) itemView.findViewById(R.id.content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
-            mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
-            mShareButton = (Button) itemView.findViewById(R.id.btn_share);
-            mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
-            mCommentRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_replies);
-            mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
-            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             context = itemView.getContext();
 
-            mReplyButton.setTextSize(10);
-            mShareButton.setTextSize(10);
-            mShowMoreButton.setTextSize(10);
+            publisherNameText.setTextSize(10);
+            publishedTimeText.setTextSize(10);
         }
 
-        void bind(Comment comment) {
+        void bind(Post post) {
             try {
                 activity = BraveActivity.getBraveActivity();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
@@ -123,71 +111,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             myPosition = getBindingAdapterPosition();
 
-            usernameText.setText(comment.getUser().getUsername().toString());
-            contentText.setText(comment.getContent().toString());
-            finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
+            titleText.setText(post.getTitle().toString());
+            contentText.setText(post.getContent().toString());
+            finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
-            if(comment.getCommentParent() == null){
-                mActionItemsLayout.setVisibility(View.VISIBLE);
-            }
-
-            mComments = new ArrayList<Post>();
-            mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
-
-            mCommentAdapter = new PostListAdapter(context, mComments);
-            mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
 
-            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
-            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_COMMENT)){
-                        if(activity.getReplyComment() != null && !activity.getReplyComment().equals("")){
-                            try{
-                                JSONObject commentObject = new JSONObject(activity.getReplyComment().toString());
-                                
-                                JSONObject user = commentObject.getJSONObject("user");
-                                User u = new User(user.getString("_id"), user.getString("username"));
-                                Vote v = null;
-                                String pageParent = null;
-                                String commentParent = null;
-                                if(commentObject.has("pageParent")){
-                                    pageParent = commentObject.getString("pageParent");
-                                }
-
-                                if(commentObject.has("commentParent")){
-                                    commentParent = commentObject.getString("commentParent");
-                                }
-
-                                if(comment.getId().equals(commentParent)){
-                                    Comment c = new Comment(
-                                        commentObject.getString("_id"), 
-                                        commentObject.getString("content"),
-                                        commentObject.getInt("upvoteCount"),
-                                        commentObject.getInt("downvoteCount"),
-                                    commentObject.getInt("commentCount"),
-                                        pageParent, 
-                                        commentParent,
-                                        u,
-                                        v);
-                                    mComments.add(0, c);
-                                    mCommentAdapter.notifyItemInserted(0);
-                                }
-                            } catch (JSONException e) {
-                                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
-                            }
-                        }
-                    }
-                }
-            };
-
-            sharedPref.registerOnSharedPreferenceChangeListener(listener);
-            
-            Vote didVote = comment.getDidVote();
+            Vote didVote = post.getDidVote();
             if(didVote != null){
                 String type = didVote.getType();
                 didVoteType = type;
@@ -197,47 +129,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                 }
             }
-
-            mReplyButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try{
-                        try {
-                            activity = BraveActivity.getBraveActivity();
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        }
-
-                        String accessToken = activity.getAccessToken();
-                        if (accessToken == null) {
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                            activity.showGenerateUsernameBottomSheet();
-                            activity.dismissCommentsBottomSheet();
-                            return;
-                        }
-
-                        JSONObject json = new JSONObject();
-                        json.put("name", comment.getUser().getUsername());
-                        json.put("commentId", comment.getId());
-                        activity.setReplyTo(json.toString());
-                    } catch (JSONException e) {
-                        Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
-                    }
-                }
-            });
-
-            mShowMoreButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String accessToken = activity.getAccessToken();
-                    Log.e("Express Browser SHOW MORE", "BEFORE API");
-                    BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                        new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                                null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-            });
-
 
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -272,10 +163,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
-                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                comment.getId(), "up", accessToken, addVoteCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    // BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                    //     new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                    //             post.getId(), "up", accessToken, addVoteCallback);
+                    // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
 
@@ -312,10 +203,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
-                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                comment.getId(), "down", accessToken, addVoteCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    // BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                    //     new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                    //             post.getId(), "down", accessToken, addVoteCallback);
+                    // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
         }
@@ -324,54 +215,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
             new BrowserExpressAddVoteUtil.AddVoteCallback() {
                 @Override
                 public void addVoteSuccessful() {
-                    // mDownvoteButton.setClickable(true);
-                    // mUpvoteButton.setClickable(true);
+                    mDownvoteButton.setClickable(true);
+                    mUpvoteButton.setClickable(true);
                 }
 
                 @Override
                 public void addVoteFailed(String error) {
                     mDownvoteButton.setClickable(true);
                     mUpvoteButton.setClickable(true);
-                }
-            };
-
-        private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
-            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
-                @Override
-                public void getCommentsSuccessful(List<Post> comments) {
-                    int len = comments.size();
-                    // mComments.clear();
-                    // mCommentAdapter.notifyItemRangeRemoved(0, len);
-                    mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-
-                    mPage = mPage + 1;
-
-                    mShowMoreButton.setVisibility(View.GONE);
-
-                    // data.addAll(insertIndex, items);
-                    // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
-
-                    // DisplayMetrics displaymetrics = new DisplayMetrics();
-                    // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-
-                    // int a =  (displaymetrics.heightPixels*70)/100;
-
-                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-                    // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-                    // mCommentAdapter = new PostListAdapter(requireContext(), mComments);
-                    // mCommentRecycler.setAdapter(mCommentAdapter);
-
-                    // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
-                    // params.height=a;
-                    // mCommentRecycler.setLayoutParams(params);
-
-                }
-
-                @Override
-                public void getCommentsFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
     }

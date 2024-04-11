@@ -36,11 +36,15 @@ public class Post{
         return this._id;  
     }  
 
-    public String getShowFull() {  
+    public Boolean getShowFull() {  
         return this.showFull;  
     }
 
-    public String getRedirect() {  
+    public String getTitle() {  
+        return this.title;  
+    }
+
+    public Boolean getRedirect() {  
         return this.redirect;  
     }
 
