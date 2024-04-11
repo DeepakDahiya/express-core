@@ -4,6 +4,7 @@ import org.chromium.chrome.browser.browser_express_comments.Vote;
 public class Post{  
     private String _id;  
     private String content;  
+    private String type;  
     private String title;  
     private String imageUrl;  
     private String url;  
@@ -16,9 +17,10 @@ public class Post{
     private Boolean showFull;
     private Vote didVote;
 
-    public Post(String _id, String content, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote) {  
+    public Post(String _id, String content, String type, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote) {  
         this._id = _id;  
         this.content = content;
+        this.type = type;
         this.title = title;
         this.imageUrl = imageUrl;
         this.url = url;
@@ -34,6 +36,10 @@ public class Post{
 
     public String getId() {  
         return this._id;  
+    }  
+
+    public String getType() {  
+        return this.type;  
     }  
 
     public String getImageUrl() {  

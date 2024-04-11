@@ -138,6 +138,7 @@ public class BrowserExpressGetPostsUtil {
                         posts.add(new Post(
                             post.getString("_id"), 
                             post.getString("content"),
+                            post.getString("type"),
                             post.getString("title"),
                             post.getString("imageUrl"),
                             post.getString("url"),

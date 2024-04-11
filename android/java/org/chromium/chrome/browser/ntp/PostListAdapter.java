@@ -41,6 +41,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Post> mPostList;
+    private String INSHORTS_TYPE = "Inshorts";
 
     public PostListAdapter(Context context, List<Post> postList) {
         mContext = context;
@@ -93,16 +94,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
             super(itemView);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
-            publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
+            // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             context = itemView.getContext();
-
-            publisherNameText.setTextSize(10);
-            publishedTimeText.setTextSize(10);
         }
 
         void bind(Post post) {
@@ -114,14 +112,28 @@ public class PostListAdapter extends RecyclerView.Adapter {
             myPosition = getBindingAdapterPosition();
 
             titleText.setText(post.getTitle().toString());
-            contentText.setText(post.getContent().toString());
+
+            if(post.getShowFull()){
+                contentText.setText(post.getContent().toString());
+                contentText.setVisibility(View.VISIBLE);
+            }
+            
             finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+
+            publisherNameText.setText(post.getPublisherName().toString());
+            publisherNameText.setTextSize(9);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
 
             ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
+
+            if(post.getType().toString().equals(INSHORTS_TYPE)){
+                ViewGroup.LayoutParams params = postImage.getLayoutParams();
+                params.height = params.width * 0.57;
+                postImage.setLayoutParams(params);
+            }
 
             Vote didVote = post.getDidVote();
             if(didVote != null){
