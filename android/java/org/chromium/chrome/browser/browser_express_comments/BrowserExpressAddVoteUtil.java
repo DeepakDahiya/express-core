@@ -94,7 +94,7 @@ public class BrowserExpressAddVoteUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         String baseUrl;
-        if(resourceType == "post"){
+        if(resourceType.equals("post")){
             baseUrl = ADD_POST_VOTE_BASE_URL;
         }else{
             baseUrl = ADD_COMMENT_VOTE_BASE_URL;
