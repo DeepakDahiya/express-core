@@ -94,4 +94,9 @@
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
             android:scaleType="centerCrop"/>
     </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginVertical="4sp"
+        android:background="#DAD8D8"/>
 </LinearLayout>
