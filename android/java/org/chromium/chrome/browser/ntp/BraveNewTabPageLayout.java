@@ -368,8 +368,8 @@ public class BraveNewTabPageLayout
                 true,
                 true,
                 null));
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mPostAdapter = new PostListAdapter(requireContext(), mPosts);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+        mPostAdapter = new PostListAdapter(mActivity, mPosts);
         mRecyclerView.setAdapter(mPostAdapter);
     }
 
