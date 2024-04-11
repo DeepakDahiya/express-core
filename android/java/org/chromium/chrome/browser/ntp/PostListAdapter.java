@@ -121,7 +121,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
 
-            ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 0, postImage, null);
+            ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
 
             Vote didVote = post.getDidVote();
             if(didVote != null){
