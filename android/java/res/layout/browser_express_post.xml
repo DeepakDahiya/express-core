@@ -15,6 +15,7 @@
         app:cardCornerRadius="6dp">
         <ImageView
             android:id="@+id/post_image"
+            android:src="@drawable/loading_image"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scaleType="centerCrop"
@@ -60,12 +61,12 @@
         android:layout_height="wrap_content"
         android:textColor="@color/news_settings_title_color"
         android:layout_marginVertical="4sp"
-        android:visibility="invisible"
+        android:visibility="gone"
         android:textSize="11sp"/>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginVertical="2sp"
+        android:layout_marginVertical="8sp"
         android:orientation="horizontal">
         <ImageButton
             android:id="@+id/btn_upvote"

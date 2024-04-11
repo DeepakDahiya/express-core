@@ -135,8 +135,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             if(post.getType().toString().equals(INSHORTS_TYPE)){
                 ViewGroup.LayoutParams params = postImage.getLayoutParams();
-                params.height = (int)(params.width * 0.57);
-                postImage.setLayoutParams(params);
+                ViewGroup.LayoutParams paramsForImage = postImage.getLayoutParams();
+                paramsForImage.height = (int)(params.width * 0.57);
+                paramsForImage.width = params.width;
+                postImage.setLayoutParams(paramsForImage);
             }
 
             Vote didVote = post.getDidVote();
