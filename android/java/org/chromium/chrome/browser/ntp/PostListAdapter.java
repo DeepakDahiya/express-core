@@ -93,7 +93,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
             publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
             titleText = (TextView) itemView.findViewById(R.id.title);
-            contentText = (TextView) itemView.findViewById(R.id.content);
+            contentText = (TextView) itemView.findViewById(R.id.post_content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
