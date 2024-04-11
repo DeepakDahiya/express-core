@@ -37,6 +37,8 @@ import org.chromium.chrome.browser.browser_express_comments.Vote;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
 import com.bumptech.glide.Glide;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import android.content.Intent;
+import android.net.Uri;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -72,6 +74,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private class PostHolder extends RecyclerView.ViewHolder {
         ImageView postImage;
+        LinearLayout postLayout;
         TextView publisherNameText;
         TextView publishedTimeText;
         TextView titleText;
@@ -92,6 +95,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         PostHolder(View itemView) {
             super(itemView);
+            postLayout = (LinearLayout) itemView.findViewById(R.id.post_layout);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
             // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
@@ -131,7 +135,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             if(post.getType().toString().equals(INSHORTS_TYPE)){
                 ViewGroup.LayoutParams params = postImage.getLayoutParams();
-                params.height = params.width * 0.57;
+                params.height = (int)(params.width * 0.57);
                 postImage.setLayoutParams(params);
             }
 
@@ -145,6 +149,18 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                 }
             }
+
+            postLayout.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(post.getRedirect()){
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
+                        activity.startActivity(webIntent);
+                    }else{
+
+                    }
+                }
+            });
 
             mUpvoteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
