@@ -354,37 +354,42 @@ public class BraveNewTabPageLayout
         // });
 
         mPosts = new ArrayList<Post>();
-        mPosts.add(new Post(
-                "123", 
-                "",
-                "Test Title",
-                "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-                "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
-                5,
-                2,
-                10,
-                "Test",
-                "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-                true,
-                true,
-                null));
-        mPosts.add(new Post(
-                "1234", 
-                "",
-                "Test Title",
-                "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-                "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
-                5,
-                2,
-                10,
-                "Test",
-                "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-                true,
-                true,
-                null));
+        // mPosts.add(new Post(
+        //         "123", 
+        //         "",
+        //         "Test Title",
+        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
+        //         "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
+        //         5,
+        //         2,
+        //         10,
+        //         "Test",
+        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
+        //         true,
+        //         true,
+        //         null));
+        // mPosts.add(new Post(
+        //         "1234", 
+        //         "",
+        //         "Test Title",
+        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
+        //         "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
+        //         5,
+        //         2,
+        //         10,
+        //         "Test",
+        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
+        //         true,
+        //         true,
+        //         null));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts);
         mRecyclerView.setAdapter(mPostAdapter);
+
+        String accessToken = mActivity.getAccessToken();
+        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
+            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(mPage, mPerPage, accessToken, getPostsCallback);
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private boolean shouldDisplayTopSites() {
