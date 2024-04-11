@@ -37,7 +37,8 @@ import java.nio.charset.StandardCharsets;
 
 public class BrowserExpressAddVoteUtil {
     private static final String TAG = "Add_Vote_Browser_Express";
-    private static final String ADD_COMMENT_BASE_URL = "https://api.browser.express/v1/comment";
+    private static final String ADD_COMMENT_VOTE_BASE_URL = "https://api.browser.express/v1/comment";
+    private static final String ADD_POST_VOTE_BASE_URL = "https://api.browser.express/v1/post";
 
     public interface AddVoteCallback {
         void addVoteSuccessful();
@@ -51,14 +52,16 @@ public class BrowserExpressAddVoteUtil {
         private static String mCommentId;
         private static String mType;
         private static String mAccessToken;
+        private static String mResourceType;
 
-        public AddVoteWorkerTask(String commentId, String type, String accessToken, AddVoteCallback callback) {
+        public AddVoteWorkerTask(String commentId, String type, String resourceType, String accessToken, AddVoteCallback callback) {
             mCallback = callback;
             addVoteStatus = false;
             mErrorMessage = "";
             mCommentId = commentId;
             mType = type;
             mAccessToken = accessToken;
+            mResourceType = resourceType;
         }
 
         public static void setAddVoteSuccessStatus(Boolean status){
@@ -71,7 +74,7 @@ public class BrowserExpressAddVoteUtil {
 
         @Override
         protected Void doInBackground() {
-            sendAddVoteRequest(mCommentId, mType, mAccessToken, mCallback);
+            sendAddVoteRequest(mCommentId, mType, mResourceType, mAccessToken, mCallback);
             return null;
         }
 
@@ -87,11 +90,17 @@ public class BrowserExpressAddVoteUtil {
         }
     }
 
-    private static void sendAddVoteRequest(String commentId, String type, String accessToken, AddVoteCallback callback) {
+    private static void sendAddVoteRequest(String commentId, String type, String resourceType, String accessToken, AddVoteCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
+        String baseUrl;
+        if(resourceType == "post"){
+            baseUrl = ADD_POST_VOTE_BASE_URL;
+        }else{
+            baseUrl = ADD_COMMENT_VOTE_BASE_URL;
+        }
         try {
-            URL url = new URL(ADD_COMMENT_BASE_URL + "/" + commentId + "/vote");
+            URL url = new URL(ADD_COMMENT_VOTE_BASE_URL + "/" + commentId + "/vote");
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setDoOutput(true);

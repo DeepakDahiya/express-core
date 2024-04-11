@@ -322,7 +322,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                         new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                comment.getId(), "up", accessToken, addVoteCallback);
+                                comment.getId(), "up", "comment", accessToken, addVoteCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
@@ -362,7 +362,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                         new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                comment.getId(), "down", accessToken, addVoteCallback);
+                                comment.getId(), "down", "comment", accessToken, addVoteCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });

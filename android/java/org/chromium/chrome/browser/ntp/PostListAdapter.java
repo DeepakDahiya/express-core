@@ -134,7 +134,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
 
             if(post.getType().toString().equals(INSHORTS_TYPE)){
-                ViewGroup.LayoutParams params = postImage.getLayoutParams();
+                ViewGroup.LayoutParams params = postLayout.getLayoutParams();
                 ViewGroup.LayoutParams paramsForImage = postImage.getLayoutParams();
                 paramsForImage.height = (int)(params.width * 0.57);
                 paramsForImage.width = params.width;
@@ -197,10 +197,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
-                    // BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                    //     new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                    //             post.getId(), "up", accessToken, addVoteCallback);
-                    // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                post.getId(), "up", "post", accessToken, addVoteCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
 
@@ -237,10 +237,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
-                    // BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                    //     new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                    //             post.getId(), "down", accessToken, addVoteCallback);
-                    // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                post.getId(), "down", "post", accessToken, addVoteCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });
         }
