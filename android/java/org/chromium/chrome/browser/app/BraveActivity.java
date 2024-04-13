@@ -349,14 +349,14 @@ public abstract class BraveActivity extends ChromeActivity
             updateWalletBadgeVisibility();
         }
 
-        BraveSafeBrowsingApiHandler.getInstance().setDelegate(
-                BraveActivityJni.get().getSafeBrowsingApiKey(), this);
-        // We can store a state of that flag as a browser has to be restarted
-        // when the flag state is changed in any case
-        mSafeBrowsingFlagEnabled =
-                ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
+        // BraveSafeBrowsingApiHandler.getInstance().setDelegate(
+        //         BraveActivityJni.get().getSafeBrowsingApiKey(), this);
+        // // We can store a state of that flag as a browser has to be restarted
+        // // when the flag state is changed in any case
+        // mSafeBrowsingFlagEnabled =
+        //         ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
 
-        executeInitSafeBrowsing(0);
+        // executeInitSafeBrowsing(0);
     }
 
     @Override
@@ -2093,7 +2093,7 @@ public abstract class BraveActivity extends ChromeActivity
 
     public void setCustomFilterList() {
         String boolInString = getCustomListSet();
-        if(boolInString == null || !boolInString.equals("true1") ){
+        if(boolInString == null || !boolInString.equals("true2") ){
             List<String> urlList = new ArrayList<String>();
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt");
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt");
@@ -2106,10 +2106,10 @@ public abstract class BraveActivity extends ChromeActivity
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt");
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt");
             urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt");
-            // urlList.add("https://easylist.to/easylist/easylist.txt");
-            // urlList.add("https://easylist.to/easylist/easyprivacy.txt");
-            // urlList.add("https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt");
-            // urlList.add("https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext");
+            urlList.add("https://easylist.to/easylist/easylist.txt");
+            urlList.add("https://easylist.to/easylist/easyprivacy.txt");
+            urlList.add("https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt");
+            urlList.add("https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-unbreak.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-specific.txt");
             urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-social.txt");
@@ -2152,7 +2152,7 @@ public abstract class BraveActivity extends ChromeActivity
                 mFilterListAndroidHandler.deleteSubscription(filterUrl);
             }
 
-            setCustomListSet("true1");
+            setCustomListSet("true2");
         }
     }
 
