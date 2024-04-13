@@ -356,8 +356,6 @@ public abstract class BraveActivity extends ChromeActivity
         mSafeBrowsingFlagEnabled =
                 ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
 
-        SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.NO_SAFE_BROWSING);
-
         executeInitSafeBrowsing(0);
     }
 
