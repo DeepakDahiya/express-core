@@ -9,7 +9,7 @@
      <PreferenceCategory
         android:key="features_section"
         android:order="1"
-        android:title="@string/prefs_section_features"/>
+        android:title="@string/prefs_section_general"/>
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.privacy.BravePrivacySettings"
         android:key="brave_shields_and_privacy"
