@@ -25,7 +25,7 @@ public class BraveApplicationImplBase extends SplitCompatApplication.Impl {
                 }
             });
             // Set a handler for SafeBrowsing. It has to be done only once for a process lifetime.
-            SafeBrowsingApiBridge.setSafetyNetApiHandler(BraveSafeBrowsingApiHandler.getInstance());
+            // SafeBrowsingApiBridge.setSafetyNetApiHandler(BraveSafeBrowsingApiHandler.getInstance());
         }
     }
 }
