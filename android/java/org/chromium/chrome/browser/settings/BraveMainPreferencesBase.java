@@ -251,7 +251,7 @@ public class BraveMainPreferencesBase
 
         // findPreference(PREF_FEATURES_SECTION).setOrder(++firstSectionOrder);
 
-        findPreference(PREF_SHIELDS_AND_PRIVACY).setOrder(++firstSectionOrder);
+        // findPreference(PREF_SHIELDS_AND_PRIVACY).setOrder(++firstSectionOrder);
         // findPreference(PREF_BRAVE_NEWS_V2).setOrder(++firstSectionOrder);
 
         // if (ChromeFeatureList.isEnabled(BraveFeatureList.NATIVE_BRAVE_WALLET)) {
