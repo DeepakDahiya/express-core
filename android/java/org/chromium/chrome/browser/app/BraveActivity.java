@@ -349,14 +349,16 @@ public abstract class BraveActivity extends ChromeActivity
             updateWalletBadgeVisibility();
         }
 
-        // BraveSafeBrowsingApiHandler.getInstance().setDelegate(
-        //         BraveActivityJni.get().getSafeBrowsingApiKey(), this);
-        // // We can store a state of that flag as a browser has to be restarted
-        // // when the flag state is changed in any case
-        // mSafeBrowsingFlagEnabled =
-        //         ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
+        BraveSafeBrowsingApiHandler.getInstance().setDelegate(
+                BraveActivityJni.get().getSafeBrowsingApiKey(), this);
+        // We can store a state of that flag as a browser has to be restarted
+        // when the flag state is changed in any case
+        mSafeBrowsingFlagEnabled =
+                ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
 
-        // executeInitSafeBrowsing(0);
+        SafeBrowsingBridge.setSafeBrowsingState(SafeBrowsingState.NO_SAFE_BROWSING);
+
+        executeInitSafeBrowsing(0);
     }
 
     @Override
