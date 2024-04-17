@@ -5,6 +5,6 @@ PRODUCT_SHORTNAME=Express Browser Nightly
 PRODUCT_INSTALLER_FULLNAME=Express Browser Installer
 PRODUCT_INSTALLER_SHORTNAME=Express Browser Installer
 COPYRIGHT=Copyright 2023 The Express Browser Authors. All rights reserved.
-MAC_BUNDLE_ID=com.discourse.express.nightly
+MAC_BUNDLE_ID=com.browser.express.nightly
 MAC_CREATOR_CODE=Cr24
 MAC_TEAM_ID=KL8N8XSYF4
