@@ -372,10 +372,10 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         // Using background music as pip for now
-        // if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
-        //     enterPip();
-        //     return;
-        // }
+        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+            enterPip();
+            return;
+        }
 
         super.onPauseWithNative();
     }
