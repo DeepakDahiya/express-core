@@ -28,39 +28,40 @@ namespace {
 
 constexpr size_t kHashSize = 32;
 const char kAdBlockResourceComponentName[] = "Brave Ad Block Resources Library";
-const char kAdBlockResourceComponentId[] = "mfddibmblmbccpadfndgakiopmmhebop";
+const char kAdBlockResourceComponentId[] = "dlibbfbdhhamaleoofdjnejelcgldodb";
 const char kAdBlockResourceComponentBase64PublicKey[] =
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7Qk6xtml8Siq8RD6cCbd"
-    "JpArt0kMci82W/KYw3KR96y67MZAsKJa8rOV2WC1BIpW539Qgl5b5lMS04cjw+sS"
-    "B7f2ZKM1WOqKNij24nvEKVubunP32u8tbjtzQk9VYNcM2MZMs330eqk7iuBRTvRV"
-    "iSMSeE3ymqp03HFpUGsdtjEBh1A5lroCg41eVnMn1I4GKPvuhT/Qc9Yem5gzXT/3"
-    "n7H6vOGQ2dVBHz44mhgwtiDcsduh+Det6lCE2TgHOhHPdCewklgcoiNXP4zfXxfp"
-    "Py1jbwb4w5KUnHSRelhfDnt+jI3jgHsD4IXdVNE5H5ZAnmcOJttbkRiT8kOVS0rJ"
-    "XwIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlYa/Beo8ErS7GB31gsjH"
+    "QOerBEGD58eXXf6GLPxp8cyJ/DFF06Svo8uXEZMuFK6pT6Qi1byX5UVjNmeB5Xwb"
+    "6TndxJGQAYPL2YA8R60OpKDL8fKRmikI6vBleV1Fw56qYi/SoT47xqxf/F7uOFms"
+    "W6768ImB9lyF6YWW5ZpUDaHj1H5XemUWSF3JzY6uBYEkjdn1KmbE+zz+tNh1UXrd"
+    "AkWSXr3opGDFNWKEg9kOBa2gEZh42mwNJDS8Olo8RgrKQbSHr5zxMCuxsntdua22"
+    "mH4vBzHoauLRwQqYpLW64Kkl5xx0cDizUF7EGbqhB+Xcm4yD5kvNzmDzQ6WdNMRL"
+    "kwIDAQAB";
 
 const char kAdBlockFilterListCatalogComponentName[] =
     "Brave Ad Block List Catalog";
 const char kAdBlockFilterListCatalogComponentId[] =
-    "gkboaolpopklhgplhaaiboijnklogmbc";
+    "bbhodghhfoljambigkiibfnmgkobming";
 const char kAdBlockFilterListCatalogComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsAnb1lw5UA1Ww4JIVE8P"
-    "jKNlPogAdFoie+Aczk6ppQ4OrHANxz6oAk1xFuT2W3uhGOc3b/1ydIUMqOIdRFvM"
-    "dEDUvKVeFyNAVXNSouFF7EBLEzcZfFtqoxeIbwEplVISUm+WUbsdVB9MInY3a4O3"
-    "kNNuUijY7bmHzAqWMTrBfenw0Lqv38OfREXCiNq/+Jm/gt7FhyBd2oviXWEGp6as"
-    "UwNavFnj8gQDGVvCf+dse8HRMJn00QH0MOypsZSWFZRmF08ybOu/jTiUo/TuIaHL"
-    "1H8y9SR970LqsUMozu3ioSHtFh/IVgq7Nqy4TljaKsTE+3AdtjiOyHpW9ZaOkA7j"
-    "2QIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAteLpEXUrGmrqoP0zVdrr"
+    "G6ryZX4zuM6uKMSFjTFwGYD3BmqKPZis65HABWe1dSVE96YojLBG+uGK9McNwHb7"
+    "pC+Ht3L9TRF4qY/vLLHFSb1lBzgNo+IVOC+s7cj0tQ5CquKd4I14xJTAlHovsI6y"
+    "tki4N89is2wFGuJCv+zY6Y8fBmseykhlcp3EHHNX3iKaQMX5B66omEw57iAHMXcB"
+    "xNzQEcssBcPnej3FlaPojgdtg+Fzb55OpRgYCq/N5VP8oKGG2LZAxW8rjyab4wVp"
+    "I5cNRpVJZzdDhRdkIU05TpIiC0drDprKvNdUpumTVxTtzeOfWjXQPqW7iTSX6HJP"
+    "UwIDAQAB";
 
 const char kAdBlockDefaultComponentName[] = "Brave Ad Block Updater";
-const char kAdBlockDefaultComponentId[] = "iodkpdagapdfkphljnddpjlldadblomo";
+const char kAdBlockDefaultComponentId[] = "pdekichlmeollipkjkbdgkijnlcofoed";
 const char kAdBlockDefaultComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsD/B/MGdz0gh7WkcFARn"
-    "ZTBX9KAw2fuGeogijoI+fET38IK0L+P/trCT2NshqhRNmrDpLzV2+Dmes6PvkA+O"
-    "dQkUV6VbChJG+baTfr3Oo5PdE0WxmP9Xh8XD7p85DQrk0jJilKuElxpK7Yq0JhcT"
-    "Sc3XNHeTwBVqCnHwWZZ+XysYQfjuDQ0MgQpS/s7U04OZ63NIPe/iCQm32stvS/pE"
-    "ya7KdBZXgRBQ59U6M1n1Ikkp3vfECShbBld6VrrmNrl59yKWlEPepJ9oqUc2Wf2M"
-    "q+SDNXROG554RnU4BnDJaNETTkDTZ0Pn+rmLmp1qY5Si0yGsfHkrv3FS3vdxVozO"
-    "PQIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtGFxHUZ9oZ8VJLlmG49d"
+    "tcGusEyrA8F7GBiiRtis3iBZYOeGiu10lCnmdKuSzmRWmwPNd5Vq7PHAYHRqZCI/"
+    "wKyXZdvw0ZPPNg57v+hqVU3DX0UBQE99/H7bZfADLiuwGrAfNPfqGdb3rcbbres1"
+    "WH+Zc9pv4Isoh6jc1AX7mDO3SJauKj/qrU7OWa0pDuZH5JOwKjY8JBHfJIuMc+SY"
+    "rpM8tsL6jsUW4Evdu+QeWMbL+kq5cXpPOW/72Jy2DoaK4S9JOsQhAdX1Zx6ujku7"
+    "vWu0uK/yr5Wv66naEVB2vYS0A1mDntLSx07sRHNDSg8JLpIweexrNbq1040sc99k"
+    "aQIDAQAB";
 
 class AdBlockComponentInstallerPolicy
     : public component_updater::ComponentInstallerPolicy {

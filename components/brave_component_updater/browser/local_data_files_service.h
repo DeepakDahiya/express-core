@@ -18,15 +18,15 @@ namespace brave_component_updater {
 class LocalDataFilesObserver;
 
 const char kLocalDataFilesComponentName[] = "Brave Local Data Updater";
-const char kLocalDataFilesComponentId[] = "afalakplffnnnlkncjhbmahjfjhmlkal";
+const char kLocalDataFilesComponentId[] = "apclhplomajomnpciajgmpmnjondfhek";
 const char kLocalDataFilesComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAs4TIQXRCftLpGmQZxmm6"
-    "AU8pqGKLoDyi537HGQyRKcK7j/CSXCf3vwJr7xkV72p7bayutuzyNZ3740QxBPie"
-    "sfBOp8bBb8d2VgTHP3b+SuNmK/rsSRsMRhT05x8AAr/7ab6U3rW0Gsalm2653xnn"
-    "QS8vt0s62xQTmC+UMXowaSLUZ0Be/TOu6lHZhOeo0NBMKc6PkOu0R1EEfP7dJR6S"
-    "M/v4dBUBZ1HXcuziVbCXVyU51opZCMjlxyUlQR9pTGk+Zh5sDn1Vw1MwLnWiEfQ4"
-    "EGL1V7GeI4vgLoOLgq7tmhEratHGCfC1IHm9luMACRr/ybMI6DQJOvgBvecb292F"
-    "xQIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAwAFiNKuDHk5VRj/HQ4XT"
+    "f3NuqwgNuN+CgbmXA033D8EKqp1S0gIR0/zajFujZOGqON/EvOLwZoAyRCa1VLu8"
+    "0GBw3UdvaE3vsz36u9SiXQKdEuqo7GppEr/YXm/zx2Y6sAywcFj/gUW2ddW+liZb"
+    "VI6PFQ8kN2yAkO0MQVcGfKL5ADwg91UP0qE0Vpf0kjJpDSyy+kD+sPPJrCRC7JIZ"
+    "AUa5GJSRylMUcv8LxP2sQqwQccfwzcpUhxDdyF55EAcJXT2yJNtDrZwymEh/SgLO"
+    "5+P35lKG0Gx6BZIvFkeobBYpA2DwS2w0Cjev4WLktfnm/BWPjJK84t44BG521053"
+    "fQIDAQAB";
 
 // The component in charge of delegating access to different DAT files
 // such as tracking protection.

@@ -40,6 +40,7 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
     { "name": "ai-chat.bsg.brave.com", "pins": "brave"},
     { "name": "feedback.brave.com", "pins": "brave"},
     { "name": "brave-core-ext.s3.brave.com", "pins": "brave"},
+    { "name": "express-core-ext.s3.brave.com", "pins": "brave"},
     { "name": "brave-today-cdn.brave.com", "pins": "brave"},
     { "name": "clients4.brave.com", "pins": "brave"},
     { "name": "componentupdater.brave.com", "pins": "brave"},
@@ -49,6 +50,7 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
     { "name": "extensionupdater.brave.com", "pins": "brave"},
     { "name": "gaia.brave.com", "pins": "brave"},
     { "name": "go-updater.brave.com", "pins": "brave"},
+    { "name": "go-updater.browser.express", "pins": "brave"},
     { "name": "mobile-data.s3.brave.com", "pins": "brave"},
     { "name": "p2a.brave.com", "pins": "brave"},
     { "name": "p2a-json.brave.com", "pins": "brave"},
@@ -169,6 +171,11 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
       "policy": "custom"
     },
     {
+      "name": "express-core-ext.s3.brave.com",
+      "mode": "force-https",
+      "policy": "custom"
+    },
+    {
       "name": "brave-today-cdn.brave.com",
       "mode": "force-https",
       "policy": "custom"
@@ -210,6 +217,11 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
     },
     {
       "name": "go-updater.brave.com",
+      "mode": "force-https",
+      "policy": "custom"
+    },
+    {
+      "name": "go-updater.browser.express",
       "mode": "force-https",
       "policy": "custom"
     },
