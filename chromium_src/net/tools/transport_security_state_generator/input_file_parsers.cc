@@ -40,7 +40,7 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
     { "name": "ai-chat.bsg.brave.com", "pins": "brave"},
     { "name": "feedback.brave.com", "pins": "brave"},
     { "name": "brave-core-ext.s3.brave.com", "pins": "brave"},
-    { "name": "express-core-ext.s3.brave.com", "pins": "brave"},
+    { "name": "express-core-ext.s3.us-west-2.amazonaws.com", "pins": "brave"},
     { "name": "brave-today-cdn.brave.com", "pins": "brave"},
     { "name": "clients4.brave.com", "pins": "brave"},
     { "name": "componentupdater.brave.com", "pins": "brave"},
@@ -171,7 +171,7 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
       "policy": "custom"
     },
     {
-      "name": "express-core-ext.s3.brave.com",
+      "name": "express-core-ext.s3.us-west-2.amazonaws.com",
       "mode": "force-https",
       "policy": "custom"
     },
