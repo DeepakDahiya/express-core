@@ -30,7 +30,6 @@ constexpr size_t kHashSize = 32;
 const char kAdBlockResourceComponentName[] = "Brave Ad Block Resources Library";
 const char kAdBlockResourceComponentId[] = "dlibbfbdhhamaleoofdjnejelcgldodb";
 const char kAdBlockResourceComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA7Qk6xtml8Siq8RD6cCbd"
     "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAlYa/Beo8ErS7GB31gsjH"
     "QOerBEGD58eXXf6GLPxp8cyJ/DFF06Svo8uXEZMuFK6pT6Qi1byX5UVjNmeB5Xwb"
     "6TndxJGQAYPL2YA8R60OpKDL8fKRmikI6vBleV1Fw56qYi/SoT47xqxf/F7uOFms"
