@@ -12,8 +12,8 @@ BASE_FEATURE(kEnforceCRX3PublisherProof,
              base::FEATURE_ENABLED_BY_DEFAULT);
 
 crx_file::VerifierFormat GetVerifierFormat() {
-  if (base::FeatureList::IsEnabled(kEnforceCRX3PublisherProof))
-    return crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
+  // if (base::FeatureList::IsEnabled(kEnforceCRX3PublisherProof))
+  //   return crx_file::VerifierFormat::CRX3_WITH_PUBLISHER_PROOF;
 
   return crx_file::VerifierFormat::CRX3;
 }

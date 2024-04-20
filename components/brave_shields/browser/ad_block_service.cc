@@ -41,27 +41,27 @@ using brave_component_updater::BraveOnDemandUpdater;
 namespace {
 
 const char kAdBlockDefaultComponentName[] = "Brave Ad Block Updater";
-const char kAdBlockDefaultComponentId[] = "iodkpdagapdfkphljnddpjlldadblomo";
+const char kAdBlockDefaultComponentId[] = "pdekichlmeollipkjkbdgkijnlcofoed";
 const char kAdBlockDefaultComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAsD/B/MGdz0gh7WkcFARn"
-    "ZTBX9KAw2fuGeogijoI+fET38IK0L+P/trCT2NshqhRNmrDpLzV2+Dmes6PvkA+O"
-    "dQkUV6VbChJG+baTfr3Oo5PdE0WxmP9Xh8XD7p85DQrk0jJilKuElxpK7Yq0JhcT"
-    "Sc3XNHeTwBVqCnHwWZZ+XysYQfjuDQ0MgQpS/s7U04OZ63NIPe/iCQm32stvS/pE"
-    "ya7KdBZXgRBQ59U6M1n1Ikkp3vfECShbBld6VrrmNrl59yKWlEPepJ9oqUc2Wf2M"
-    "q+SDNXROG554RnU4BnDJaNETTkDTZ0Pn+rmLmp1qY5Si0yGsfHkrv3FS3vdxVozO"
-    "PQIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtGFxHUZ9oZ8VJLlmG49d"
+    "tcGusEyrA8F7GBiiRtis3iBZYOeGiu10lCnmdKuSzmRWmwPNd5Vq7PHAYHRqZCI/"
+    "wKyXZdvw0ZPPNg57v+hqVU3DX0UBQE99/H7bZfADLiuwGrAfNPfqGdb3rcbbres1"
+    "WH+Zc9pv4Isoh6jc1AX7mDO3SJauKj/qrU7OWa0pDuZH5JOwKjY8JBHfJIuMc+SY"
+    "rpM8tsL6jsUW4Evdu+QeWMbL+kq5cXpPOW/72Jy2DoaK4S9JOsQhAdX1Zx6ujku7"
+    "vWu0uK/yr5Wv66naEVB2vYS0A1mDntLSx07sRHNDSg8JLpIweexrNbq1040sc99k"
+    "aQIDAQAB";
 
 const char kAdBlockExceptionComponentName[] =
     "Brave Ad Block First Party Filters";
-const char kAdBlockExceptionComponentId[] = "adcocjohghhfpidemphmcmlmhnfgikei";
+const char kAdBlockExceptionComponentId[] = "kmcdocogonkklaopedlkjnhhpfhelndf";
 const char kAdBlockExceptionComponentBase64PublicKey[] =
-    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAtvmLp4MOseThuH/vFSc7"
-    "kjr+CDCzR/ieGI8TJZyFQhzA1SKWRl4y0wB+HGkmoq0KPOzKNZq6hxK7jdm/r/nx"
-    "xOjqutPoUEL+ysxePErMTse2XeWu3psGSTEjPFdQTPEwH8MF2SwXXneOraD0V/GS"
-    "iCCvlx8yKIXNX7V9ujMo+QoD6hPGslKUZQJAg+OaZ7pAfq5cOuWXNN6jv12UL0eM"
-    "t6Dhl31yEu4kZWeTkiccHqdlB/KvPiqXTrV+qd3Tjvsk6kmUlexu3/zlOwVDz5H/"
-    "kPuOGvW7kYaW22NWQ9TH6fjffgVcSgHDbZETDiP8fHd76kyi1SZ5YJ09XHTE+i9i"
-    "kQIDAQAB";
+    "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAu8DyToVrLPveQO6rh6y2"
+    "UossKitcsn+7k8WANAfZaB5FB6aZzUsCtOWKqNwwEMxZmY7hdE7I3M/Hhc6ZyYzA"
+    "oDJmFdJSFTzTdtlad9shV8NxHiRJCeohMy2t7csgwWF9FZ6ThCR/g4V0qHRE00CJ"
+    "R0KqdZTsn1POVC2T1/gM0JycbdccJSVr3NUbgpvidlKF8lwUS6t2Zo0AdjKdwNMB"
+    "wykRyTc+oJHo7sChlu0bIss0/wQqfAcuboQpAlKzGaM30G0zoJATqoWQybSKIcxk"
+    "ao1NKraWDRORRI6v/+yewJf2ihnXeK037xWNT87De4uKsaQH4C18lYRMZonFEqeq"
+    "xwIDAQAB";
 
 std::string g_ad_block_default_component_id_(kAdBlockDefaultComponentId);
 std::string g_ad_block_default_component_base64_public_key_(
