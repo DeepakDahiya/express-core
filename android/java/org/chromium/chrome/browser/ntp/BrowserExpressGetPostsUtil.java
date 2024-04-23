@@ -118,14 +118,11 @@ public class BrowserExpressGetPostsUtil {
                 while ((line = br.readLine()) != null) {
                     sb.append(line + "\n");
                 }
-                Log.e("GET API RESPONSE", sb.toString());
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
-                    Log.e("GET API RESPONSE", "INSIDE SUCCESS");
                     GetPostsWorkerTask.setGetPostsSuccessStatus(true);
                     JSONArray postsArray = responseObject.getJSONArray("posts");
                     List<Post> posts = new ArrayList<Post>();
-                    Log.e("GET API RESPONSE LENGTH", Integer.toString(postsArray.length()));
                     for (int i = 0; i < postsArray.length(); i++) {
                         JSONObject post = postsArray.getJSONObject(i);
                         JSONObject didVote = post.optJSONObject("didVote");
@@ -151,8 +148,6 @@ public class BrowserExpressGetPostsUtil {
                             post.getBoolean("showFull"),
                             v));
                     }
-
-                    Log.e("GET API RESPONSE", posts.toString());
 
                     GetPostsWorkerTask.setPosts(posts);
                 }else{

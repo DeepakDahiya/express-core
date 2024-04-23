@@ -175,7 +175,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
             sharedPref.registerOnSharedPreferenceChangeListener(listener);
 
-            if(mCommentsFor == "post"){
+            if(mCommentsFor.equals"post"){
                 String accessToken = activity.getAccessToken();
                 mUrl = activity.getActivityTab().getUrl().getSpec();
 
