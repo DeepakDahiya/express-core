@@ -189,6 +189,7 @@ public class BraveNewTabPageLayout
     private boolean mIsDisplayNewsFeed;
     private boolean mIsDisplayNewsOptin;
     private boolean mNewsFeedViewedOnce;
+    private ProgressBar mFeedProgress;
 
     private Supplier<Tab> mTabProvider;
 
@@ -343,6 +344,7 @@ public class BraveNewTabPageLayout
         // });
 
         mRecyclerView = findViewById(R.id.recycler_posts);
+        mFeedProgress = findViewById(R.id.feed_progress);
         // LinearLayoutManagerWrapper linearLayoutManager =
         //         new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
         // mRecyclerView.setLayoutManager(linearLayoutManager);
@@ -354,6 +356,7 @@ public class BraveNewTabPageLayout
         // });
 
         mPosts = new ArrayList<Post>();
+        mFeedProgress.setVisibility(View.VISIBLE);
         // mPosts.add(new Post(
         //         "123", 
         //         "",
@@ -1407,6 +1410,7 @@ public class BraveNewTabPageLayout
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
+                    mFeedProgress.setVisibility(View.GONE);
                     int len = mPosts.size();
                     mPosts.addAll(posts);
                     mPostAdapter.notifyItemRangeInserted(len-1, posts.size());

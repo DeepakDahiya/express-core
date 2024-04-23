@@ -8,6 +8,7 @@
     android:orientation="vertical"
     android:padding="8sp">
     <androidx.cardview.widget.CardView
+        android:id="@+id/card_view"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/news_settings_title_color"

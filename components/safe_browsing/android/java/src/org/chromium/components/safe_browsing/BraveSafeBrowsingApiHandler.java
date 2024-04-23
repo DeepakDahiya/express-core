@@ -24,7 +24,7 @@ import org.chromium.base.Log;
  * Brave implementation of SafetyNetApiHandler for Safe Browsing
  */
 public class BraveSafeBrowsingApiHandler implements SafetyNetApiHandler {
-    public static final long SAFE_BROWSING_INIT_INTERVAL_MS = 1000;
+    public static final long SAFE_BROWSING_INIT_INTERVAL_MS = 30000;
     private static final long DEFAULT_CHECK_DELTA = 10;
     private static final String SAFE_METADATA = "{}";
     private static final String TAG = "BraveSafeBrowsingApiHandler";

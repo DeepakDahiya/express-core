@@ -39,6 +39,7 @@ import com.bumptech.glide.Glide;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Intent;
 import android.net.Uri;
+import androidx.cardview.widget.CardView;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -74,7 +75,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private class PostHolder extends RecyclerView.ViewHolder {
         ImageView postImage;
-        LinearLayout postLayout;
+        CardView cardView;
         TextView publisherNameText;
         TextView publishedTimeText;
         TextView titleText;
@@ -95,7 +96,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         PostHolder(View itemView) {
             super(itemView);
-            postLayout = (LinearLayout) itemView.findViewById(R.id.post_layout);
+            cardView = (LinearLayout) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
             // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
@@ -152,7 +153,31 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
             }
 
-            postLayout.setOnClickListener(new View.OnClickListener() {
+            titleText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(post.getRedirect()){
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
+                        activity.startActivity(webIntent);
+                    }else{
+
+                    }
+                }
+            });
+
+            contentText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(post.getRedirect()){
+                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
+                        activity.startActivity(webIntent);
+                    }else{
+
+                    }
+                }
+            });
+            
+            cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if(post.getRedirect()){

@@ -60,6 +60,14 @@
             android:scaleType="centerCrop" />
     </LinearLayout>
 
+     <ProgressBar
+        android:id="@+id/feed_progress"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:indeterminate="true"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_posts"
         android:layout_width="match_parent"
