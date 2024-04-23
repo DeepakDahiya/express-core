@@ -386,7 +386,7 @@ public class BraveNewTabPageLayout
         //         true,
         //         null));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-        mPostAdapter = new PostListAdapter(mActivity, mPosts);
+        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();

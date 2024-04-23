@@ -45,10 +45,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Post> mPostList;
     private String INSHORTS_TYPE = "Inshorts";
+    private RecyclerView mTopPostRecycler;
 
-    public PostListAdapter(Context context, List<Post> postList) {
+    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler) {
         mContext = context;
         mPostList = postList;
+        mTopPostRecycler = topPostRecycler;
     }
 
     @Override
@@ -62,7 +64,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
-        return new PostHolder(view);
+        return new PostHolder(view, mTopPostRecycler);
     }
 
     // Passes the post object to a ViewHolder so that the contents can be bound to UI.
@@ -96,7 +98,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private int myPosition;
 
-        PostHolder(View itemView) {
+        PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -110,6 +112,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             context = itemView.getContext();
+            mTopPostRecycler = topPostRecycler;
         }
 
         void bind(Post post) {
@@ -161,6 +164,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                    layoutManager.scrollToPositionWithOffset(myPosition, 0);
                     activity.showCommentsBottomSheetFromPost(post.getId());
                 }
             });
@@ -172,6 +177,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
                         activity.startActivity(webIntent);
                     }else{
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
                         activity.showCommentsBottomSheetFromPost(post.getId());
                     }
                 }
@@ -184,6 +191,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
                         activity.startActivity(webIntent);
                     }else{
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
                         activity.showCommentsBottomSheetFromPost(post.getId());
                     }
                 }
@@ -196,6 +205,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
                         activity.startActivity(webIntent);
                     }else{
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
                         activity.showCommentsBottomSheetFromPost(post.getId());
                     }
                 }
