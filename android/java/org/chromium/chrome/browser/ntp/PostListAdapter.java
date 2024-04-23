@@ -81,6 +81,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView titleText;
         TextView contentText;
         TextView voteCountText;
+        TextView commentCountText;
+        private ImageButton mCommentButton;
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
         private String didVoteType;
@@ -103,6 +105,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
+            commentCountText = (TextView) itemView.findViewById(R.id.comment_count);
+            mCommentButton = (ImageButton) itemView.findViewById(R.id.btn_comment);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             context = itemView.getContext();
@@ -125,6 +129,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             
             finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+            commentCountText.setText(post.getCommentCount());
 
             publisherNameText.setText(post.getPublisherName().toString());
             publisherNameText.setTextSize(9);
@@ -153,6 +158,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
             }
 
+            mCommentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    activity.showCommentsBottomSheetFromPost(post.getId());
+                }
+            });
+
             titleText.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -160,7 +172,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
                         activity.startActivity(webIntent);
                     }else{
-
+                        activity.showCommentsBottomSheetFromPost(post.getId());
                     }
                 }
             });
@@ -172,7 +184,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
                         activity.startActivity(webIntent);
                     }else{
-
+                        activity.showCommentsBottomSheetFromPost(post.getId());
                     }
                 }
             });
@@ -184,7 +196,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
                         activity.startActivity(webIntent);
                     }else{
-
+                        activity.showCommentsBottomSheetFromPost(post.getId());
                     }
                 }
             });

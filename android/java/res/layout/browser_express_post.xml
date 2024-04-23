@@ -76,35 +76,53 @@
             android:paddingVertical="12sp"
             android:orientation="horizontal">
             <ImageButton
-                android:id="@+id/btn_upvote"
+                android:id="@+id/btn_comment"
                 android:layout_width="16sp"
-                android:layout_height="14sp"
+                android:layout_height="16sp"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="5sp"
-                android:background="@drawable/btn_upvote"
+                android:background="@drawable/comments"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                 android:scaleType="centerCrop" />
 
             <TextView
-                android:id="@+id/vote_count"
+                android:id="@+id/comment_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/news_settings_title_color"
                 android:layout_gravity="center"
                 android:layout_marginHorizontal="4sp"
                 android:textSize="12sp"/>
-
-            <ImageButton
-                android:id="@+id/btn_downvote"
-                style="@style/ToolbarButton"
-                android:layout_width="16sp"
-                android:layout_height="14sp"
-                android:layout_gravity="center"
-                android:layout_marginHorizontal="5sp"
-                android:background="@drawable/btn_downvote"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                android:scaleType="centerCrop"/>
         </LinearLayout>
+        <ImageButton
+            android:id="@+id/btn_upvote"
+            android:layout_width="16sp"
+            android:layout_height="14sp"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="5sp"
+            android:background="@drawable/btn_upvote"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+            android:scaleType="centerCrop" />
+
+        <TextView
+            android:id="@+id/vote_count"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/news_settings_title_color"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="4sp"
+            android:textSize="12sp"/>
+
+        <ImageButton
+            android:id="@+id/btn_downvote"
+            style="@style/ToolbarButton"
+            android:layout_width="16sp"
+            android:layout_height="14sp"
+            android:layout_gravity="center"
+            android:layout_marginHorizontal="5sp"
+            android:background="@drawable/btn_downvote"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+            android:scaleType="centerCrop"/>
         <ImageButton
             android:id="@+id/btn_options"
             android:layout_width="18sp"

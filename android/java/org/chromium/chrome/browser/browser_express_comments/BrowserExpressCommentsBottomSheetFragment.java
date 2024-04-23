@@ -27,6 +27,7 @@ import android.view.WindowManager;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
+import android.widget.ProgressBar;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -59,6 +60,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
+    private ProgressBar mCommentProgress;
 
     private boolean isFromMenu;
     // private Button nextButton;
@@ -107,6 +109,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
+        mCommentProgress = view.findViewById(R.id.comment_progress); 
 
         // mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
         //     @Override
@@ -134,6 +137,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler);
         mCommentRecycler.setAdapter(mCommentAdapter);
+
+        mCommentProgress.setVisibility(View.VISIBLE);
 
         // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
         // params.height=a;
@@ -219,7 +224,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         mCommentAdapter.notifyItemRangeRemoved(0, len);
                         mComments.addAll(comments);
                         mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-
+                        mCommentProgress.setVisibility(View.GONE);
                         mPage = 2;
                     } catch (JSONException e) {
                         Log.e("Comments_Bottom_Sheet", e.getMessage());
@@ -305,6 +310,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+                    mCommentProgress.setVisibility(View.GONE);
 
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());

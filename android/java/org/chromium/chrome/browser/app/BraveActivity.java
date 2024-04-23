@@ -1887,6 +1887,31 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
+    public void showCommentsBottomSheetFromPost(String postId) {
+        try {
+            if(mBottomSheetCommentsDialog == null){
+                BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
+                        BrowserExpressCommentsBottomSheetFragment.newInstance(true);
+                
+                Bundle fragmentBundle = new Bundle();
+                fragmentBundle.putString("", fromStats);
+                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
+                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
+                bottomSheetDialog.setArguments(fragmentBundle);
+                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+                mBottomSheetCommentsDialog = bottomSheetDialog;
+            }else{
+                Bundle fragmentBundle = new Bundle();
+                fragmentBundle.putString("", fromStats);
+                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
+                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
+                bottomSheetDialog.setArguments(fragmentBundle);
+                mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        }
+    }
+
     public void showCommentsBottomSheet() {
         try {
             if(mBottomSheetCommentsDialog == null){

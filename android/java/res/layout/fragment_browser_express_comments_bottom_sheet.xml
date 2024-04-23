@@ -30,6 +30,15 @@
         android:textSize="20sp"
         android:textColor="@color/set_default_text_color"
         android:textStyle="bold"/>
+
+    <ProgressBar
+        android:id="@+id/comments_progress"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:indeterminate="true"/>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_comments"
         android:layout_width="match_parent"
