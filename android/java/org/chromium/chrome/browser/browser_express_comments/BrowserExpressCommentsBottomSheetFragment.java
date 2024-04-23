@@ -270,9 +270,15 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                         Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
                                     }
                                 }else{
+                                    String pType = "page";
+                                    String pId = null;
+                                    if(mCommentsFor.equals("post")){
+                                        pType = "post";
+                                        pId = mPostId;
+                                    }
                                     BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                         new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                                content, "page", mUrl, null, accessToken, addCommentCallback);
+                                                content, pType, mUrl, pId, accessToken, addCommentCallback);
                                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 }
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
