@@ -32,7 +32,7 @@
         android:textStyle="bold"/>
 
     <ProgressBar
-        android:id="@+id/comments_progress"
+        android:id="@+id/comment_progress"
         android:layout_width="20dp"
         android:layout_height="20dp"
         android:visibility="gone"
