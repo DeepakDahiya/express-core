@@ -408,7 +408,7 @@ public class BraveMainPreferencesBase
 
     private void overrideChromiumPreferences() {
         // Replace fragment.
-        findPreference(PREF_SHIELDS_AND_PRIVACY).setFragment(BravePrivacySettings.class.getName());
+        // findPreference(PREF_SHIELDS_AND_PRIVACY).setFragment(BravePrivacySettings.class.getName());
         Preference preference = findPreference(MainSettings.PREF_HOMEPAGE);
         if (preference != null) {
             preference.setFragment(BraveHomepageSettings.class.getName());
