@@ -176,7 +176,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                            null, null, mPostId, mPerPage, accessToken, getCommentsCallback);
+                            null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }else{
                 String commentsString = activity.getFirstComments();
