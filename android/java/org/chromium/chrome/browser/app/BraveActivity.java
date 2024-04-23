@@ -1903,7 +1903,7 @@ public abstract class BraveActivity extends ChromeActivity
                 Bundle fragmentBundle = new Bundle();
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
-                bottomSheetDialog.setArguments(fragmentBundle);
+                mBottomSheetCommentsDialog.setArguments(fragmentBundle);
                 mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
