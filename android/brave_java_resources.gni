@@ -375,6 +375,7 @@ brave_java_resources = [
   "java/res/drawable/settings.xml",
   "java/res/drawable/activity_feed.xml",
   "java/res/drawable/notifications.xml",
+  "java/res/drawable/maximize.xml",
   "java/res/drawable/bat_panel_gradient.xml",
   "java/res/drawable/blue_48_rounded_bg.xml",
   "java/res/drawable/blue_rounded_button.xml",
