@@ -61,7 +61,7 @@ public class BrowserExpressGetCommentsUtil {
         private static List<Comment> mComments;
         private static String mAccessToken;
 
-        public GetCommentsWorkerTask(String url, String commentId, String postId int page, int perPage, String accessToken, GetCommentsCallback callback) {
+        public GetCommentsWorkerTask(String url, String commentId, String postId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
             mCallback = callback;
             getCommentsStatus = false;
             mErrorMessage = "";
