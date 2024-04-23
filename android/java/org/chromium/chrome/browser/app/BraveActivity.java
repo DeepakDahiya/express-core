@@ -1894,7 +1894,6 @@ public abstract class BraveActivity extends ChromeActivity
                         BrowserExpressCommentsBottomSheetFragment.newInstance(true);
                 
                 Bundle fragmentBundle = new Bundle();
-                fragmentBundle.putString("", fromStats);
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
                 bottomSheetDialog.setArguments(fragmentBundle);
@@ -1902,7 +1901,6 @@ public abstract class BraveActivity extends ChromeActivity
                 mBottomSheetCommentsDialog = bottomSheetDialog;
             }else{
                 Bundle fragmentBundle = new Bundle();
-                fragmentBundle.putString("", fromStats);
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
                 bottomSheetDialog.setArguments(fragmentBundle);

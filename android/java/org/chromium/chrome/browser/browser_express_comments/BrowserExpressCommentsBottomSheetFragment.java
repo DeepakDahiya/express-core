@@ -49,9 +49,9 @@ import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
-    private static final String IS_FROM_MENU = "is_from_menu";
-    private static final String COMMENTS_FOR = "comments_for";
-    private static final String POST_ID = "post_id";
+    public static final String IS_FROM_MENU = "is_from_menu";
+    public static final String COMMENTS_FOR = "comments_for";
+    public static final String POST_ID = "post_id";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
