@@ -11,7 +11,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:baselineAligned="false"
-        android:paddingHorizontal="8dp"
+        android:paddingHorizontal="4dp"
         android:paddingVertical="4sp">
 
         <ImageButton
