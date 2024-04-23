@@ -281,7 +281,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     Log.e("Express Browser SHOW MORE", "BEFORE API");
                     BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                         new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                                null, comment.getId(), mPage, mPerPage, accessToken, getCommentsCallback);
+                                null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 }
             });

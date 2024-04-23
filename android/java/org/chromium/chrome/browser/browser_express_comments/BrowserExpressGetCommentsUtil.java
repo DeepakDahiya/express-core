@@ -55,12 +55,13 @@ public class BrowserExpressGetCommentsUtil {
         private static String mErrorMessage;
         private static String mUrl;
         private static String mCommentId;
+        private static String mPostId;
         private static int mPage;
         private static int mPerPage;
         private static List<Comment> mComments;
         private static String mAccessToken;
 
-        public GetCommentsWorkerTask(String url, String commentId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
+        public GetCommentsWorkerTask(String url, String commentId, String postId int page, int perPage, String accessToken, GetCommentsCallback callback) {
             mCallback = callback;
             getCommentsStatus = false;
             mErrorMessage = "";
@@ -70,6 +71,7 @@ public class BrowserExpressGetCommentsUtil {
             mPerPage = perPage;
             mAccessToken = accessToken;
             mCommentId = commentId;
+            mPostId = postId;
         }
 
         public static void setComments(List<Comment> comments){
@@ -86,7 +88,7 @@ public class BrowserExpressGetCommentsUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetCommentsRequest(mUrl, mCommentId, mPage, mPerPage, mAccessToken, mCallback);
+            sendGetCommentsRequest(mUrl, mCommentId, mPostId, mPage, mPerPage, mAccessToken, mCallback);
             return null;
         }
 
@@ -102,16 +104,21 @@ public class BrowserExpressGetCommentsUtil {
         }
     }
 
-    private static void sendGetCommentsRequest(String pageUrl, String commentId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
+    private static void sendGetCommentsRequest(String pageUrl, String commentId, String postId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
             String searchQuery;
             if(commentId != null && !commentId.equals("")){
-                searchQuery =  "?commentId=" + commentId + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+                searchQuery =  "?commentId=" + commentId;
+            }else if(postId != null && !postId.equals("")){
+                searchQuery =  "?postId=" + postId;
             }else{
-                searchQuery =  "?url=" + pageUrl + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+                searchQuery =  "?url=" + pageUrl;
             }
+
+            searchQuery = searchQuery + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+
             URL url = new URL(GET_COMMENTS_URL + searchQuery);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);

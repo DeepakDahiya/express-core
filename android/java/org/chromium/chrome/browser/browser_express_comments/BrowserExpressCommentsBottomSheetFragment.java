@@ -49,12 +49,16 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
+    private static final String COMMENTS_FOR = "comments_for";
+    private static final String POST_ID = "post_id";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
+    private String mCommentsFor;
+    private String mPostId;
 
     private boolean isFromMenu;
     // private Button nextButton;
@@ -79,6 +83,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         if (getArguments() != null) {
             isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
+            mCommentsFor = getArguments().getString(COMMENTS_FOR);
+            mPostId = getArguments().getString(POST_ID);
         }
     }
 
@@ -164,60 +170,69 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
             sharedPref.registerOnSharedPreferenceChangeListener(listener);
 
-            String commentsString = activity.getFirstComments();
-            if(commentsString != null){
-                try{
-                    JSONArray commentsArray = new JSONArray(commentsString);
-                    List<Comment> comments = new ArrayList<Comment>();
-                    for (int i = 0; i < commentsArray.length(); i++) {
-                        JSONObject comment = commentsArray.getJSONObject(i);
-                        JSONObject user = comment.getJSONObject("user");
-                        JSONObject didVote = comment.optJSONObject("didVote");
-                        Vote v = null;
-                        if(didVote != null){
-                            v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                        }
-                        User u = new User(user.getString("_id"), user.getString("username"));
-                        String pageParent = null;
-                        String commentParent = null;
-                        if(comment.has("pageParent")){
-                            pageParent = comment.getString("pageParent");
+            if(mCommentsFor == "post"){
+                String accessToken = activity.getAccessToken();
+                mUrl = activity.getActivityTab().getUrl().getSpec();
+
+                BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                            null, null, mPostId, mPerPage, accessToken, getCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }else{
+                String commentsString = activity.getFirstComments();
+                if(commentsString != null){
+                    try{
+                        JSONArray commentsArray = new JSONArray(commentsString);
+                        List<Comment> comments = new ArrayList<Comment>();
+                        for (int i = 0; i < commentsArray.length(); i++) {
+                            JSONObject comment = commentsArray.getJSONObject(i);
+                            JSONObject user = comment.getJSONObject("user");
+                            JSONObject didVote = comment.optJSONObject("didVote");
+                            Vote v = null;
+                            if(didVote != null){
+                                v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                            }
+                            User u = new User(user.getString("_id"), user.getString("username"));
+                            String pageParent = null;
+                            String commentParent = null;
+                            if(comment.has("pageParent")){
+                                pageParent = comment.getString("pageParent");
+                            }
+
+                            if(comment.has("commentParent")){
+                                commentParent = comment.getString("commentParent");
+                            }
+                            comments.add(new Comment(
+                                comment.getString("_id"), 
+                                comment.getString("content"),
+                                comment.getInt("upvoteCount"),
+                                comment.getInt("downvoteCount"),
+                                comment.getInt("commentCount"),
+                                pageParent,
+                                commentParent,
+                                u, 
+                                v));
                         }
 
-                        if(comment.has("commentParent")){
-                            commentParent = comment.getString("commentParent");
-                        }
-                        comments.add(new Comment(
-                            comment.getString("_id"), 
-                            comment.getString("content"),
-                            comment.getInt("upvoteCount"),
-                            comment.getInt("downvoteCount"),
-                            comment.getInt("commentCount"),
-                            pageParent,
-                            commentParent,
-                            u, 
-                            v));
+                        int len = mComments.size();
+                        mComments.clear();
+                        mCommentAdapter.notifyItemRangeRemoved(0, len);
+                        mComments.addAll(comments);
+                        mCommentAdapter.notifyItemRangeInserted(0, comments.size());
+
+                        mPage = 2;
+                    } catch (JSONException e) {
+                        Log.e("Comments_Bottom_Sheet", e.getMessage());
                     }
-
-                    int len = mComments.size();
-                    mComments.clear();
-                    mCommentAdapter.notifyItemRangeRemoved(0, len);
-                    mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-
-                    mPage = 2;
-                } catch (JSONException e) {
-                    Log.e("Comments_Bottom_Sheet", e.getMessage());
                 }
-            }
-        
-            String accessToken = activity.getAccessToken();
-            mUrl = activity.getActivityTab().getUrl().getSpec();
+                String accessToken = activity.getAccessToken();
+                mUrl = activity.getActivityTab().getUrl().getSpec();
 
-            BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                        mUrl, null, mPage, mPerPage, accessToken, getCommentsCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                            mUrl, null, null, mPage, mPerPage, accessToken, getCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }
