@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scaleType="centerCrop"
-            android:maxHeight="250sp"
+            android:maxHeight="200sp"
             android:adjustViewBounds="true"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
     </androidx.cardview.widget.CardView>
