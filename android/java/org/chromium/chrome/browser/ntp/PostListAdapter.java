@@ -129,7 +129,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             
             finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            commentCountText.setText(post.getCommentCount());
+            commentCountText.setText(String.format(Locale.getDefault(), "%d", post.getCommentCount()));
 
             publisherNameText.setText(post.getPublisherName().toString());
             publisherNameText.setTextSize(9);
