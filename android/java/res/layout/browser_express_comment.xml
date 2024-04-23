@@ -29,13 +29,13 @@
             android:padding="4sp"
             android:orientation="vertical">
 
-                <TextView
-                    android:id="@+id/username"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textStyle="bold"
-                    android:textSize="13sp"/>
+            <TextView
+                android:id="@+id/username"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/news_settings_title_color"
+                android:textStyle="bold"
+                android:textSize="13sp"/>
                 
             <TextView
                 android:id="@+id/comment_content"
@@ -55,7 +55,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:visibility="invisible"
-                    android:paddingVertical="12sp"
+                    android:paddingVertical="6sp"
                     android:orientation="horizontal">
                     <ImageButton
                         android:id="@+id/reply_icon"
@@ -150,7 +150,6 @@
                 android:text="@string/be_show_more"
                 android:layout_gravity="center"
                 android:minHeight="0dp"
-                android:paddingVertical="4sp"
                 android:paddingHorizontal="8sp"
                 android:visibility="gone"
                 android:textAllCaps="false"
@@ -160,7 +159,7 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_replies"
         android:layout_width="match_parent"
-        android:layout_marginStart="40sp"
+        android:layout_marginStart="24sp"
         android:layout_height="wrap_content"/>
     <LinearLayout
         android:layout_width="match_parent"
