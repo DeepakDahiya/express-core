@@ -96,7 +96,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         PostHolder(View itemView) {
             super(itemView);
-            cardView = (LinearLayout) itemView.findViewById(R.id.card_view);
+            cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
             // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
@@ -176,7 +176,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                 }
             });
-            
+
             cardView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
