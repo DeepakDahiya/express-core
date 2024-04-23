@@ -312,6 +312,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
                     int len = mComments.size();
+                    Log.e("GET API RESPONSE in WORKER", comments.toString());
                     // mComments.clear();
                     // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);

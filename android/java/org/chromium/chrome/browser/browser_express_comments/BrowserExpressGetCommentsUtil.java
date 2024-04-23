@@ -173,6 +173,7 @@ public class BrowserExpressGetCommentsUtil {
                             u, 
                             v));
                     }
+                    Log.e("GET API RESPONSE", comments.toString());
 
                     GetCommentsWorkerTask.setComments(comments);
                 }else{
