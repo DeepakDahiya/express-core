@@ -176,8 +176,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 public void onClick(View v) {
                     if(post.getRedirect()){
                         TabUtils.openUrlInSameTab(post.getUrl().toString());
-                        // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
-                        // activity.startActivity(webIntent);
                     }else{
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
@@ -191,8 +189,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 public void onClick(View v) {
                     if(post.getRedirect()){
                         TabUtils.openUrlInSameTab(post.getUrl().toString());
-                        // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
-                        // activity.startActivity(webIntent);
                     }else{
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
@@ -206,8 +202,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 public void onClick(View v) {
                     if(post.getRedirect()){
                         TabUtils.openUrlInSameTab(post.getUrl().toString());
-                        // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
-                        // activity.startActivity(webIntent);
                     }else{
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
