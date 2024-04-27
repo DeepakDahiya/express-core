@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Intent;
 import android.net.Uri;
 import androidx.cardview.widget.CardView;
+import org.chromium.chrome.browser.util.TabUtils;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -174,8 +175,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     if(post.getRedirect()){
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
-                        activity.startActivity(webIntent);
+                        TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
+                        // activity.startActivity(webIntent);
                     }else{
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
@@ -188,8 +190,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     if(post.getRedirect()){
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
-                        activity.startActivity(webIntent);
+                        TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
+                        // activity.startActivity(webIntent);
                     }else{
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
@@ -202,8 +205,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     if(post.getRedirect()){
-                        Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
-                        activity.startActivity(webIntent);
+                        TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        // Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(post.getUrl().toString()));
+                        // activity.startActivity(webIntent);
                     }else{
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);

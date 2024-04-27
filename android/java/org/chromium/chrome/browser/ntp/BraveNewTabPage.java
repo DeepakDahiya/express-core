@@ -115,6 +115,6 @@ public class BraveNewTabPage extends NewTabPage {
 
     public void updateSearchProviderHasLogo() {
         // Search provider logo is not used in Brave's NTP.
-        mSearchProviderHasLogo = false;
+        mSearchProviderHasLogo = true;
     }
 }
