@@ -142,6 +142,7 @@ public class BrowserExpressGetCommentsUtil {
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
+                    Log.e("GET API RESPONSE FROM SERVER", commentsArray.toString());
                     List<Comment> comments = new ArrayList<Comment>();
                     for (int i = 0; i < commentsArray.length(); i++) {
                         JSONObject comment = commentsArray.getJSONObject(i);
