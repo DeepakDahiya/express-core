@@ -156,9 +156,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
-            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-            ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
-
+            if(accessToken != null){
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
+            }
+            
             SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
                 @Override
