@@ -70,7 +70,6 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:visibility="invisible"
-                        android:paddingVertical="6sp"
                         android:orientation="horizontal">
                         <ImageButton
                             android:id="@+id/reply_icon"
@@ -135,7 +134,7 @@
                             android:layout_height="wrap_content"
                             android:textColor="@color/news_settings_title_color"
                             android:layout_gravity="center"
-                            android:layout_marginHorizontal="4sp"
+                            android:layout_marginHorizontal="2sp"
                             android:textSize="12sp"/>
         
                         <ImageButton
