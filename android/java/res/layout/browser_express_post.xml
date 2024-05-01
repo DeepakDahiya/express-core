@@ -6,9 +6,9 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    android:paddingHorizontal="12sp"
-    app:cardCornerRadius="12dp"
-    android:paddingVertical="8sp">
+    app:cardCornerRadius="6dp"
+    app:contentPadding="8sp"
+    android:layout_margin="10sp">
     <androidx.cardview.widget.CardView
         android:id="@+id/card_view"
         android:layout_width="match_parent"
