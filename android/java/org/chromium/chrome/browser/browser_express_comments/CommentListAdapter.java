@@ -115,7 +115,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mMessageEditText = messageEditText;
 
             mTopCommentRecycler = topCommentRecycler;
-            mAvatarImage = = (ImageView) itemView.findViewById(R.id.avatar_image);
+            mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
