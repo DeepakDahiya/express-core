@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
 import org.chromium.chrome.R;
+import com.bumptech.glide.Glide;
 import android.view.LayoutInflater;
 import org.chromium.chrome.browser.app.BraveActivity;
 import android.graphics.PorterDuff;
