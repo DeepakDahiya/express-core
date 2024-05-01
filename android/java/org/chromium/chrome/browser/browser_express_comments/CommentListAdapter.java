@@ -31,6 +31,8 @@ import android.view.inputmethod.InputMethodManager;
 import android.view.HapticFeedbackConstants;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ImageView;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -75,6 +77,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         TextView usernameText;
         TextView contentText;
         TextView voteCountText;
+        private ImageView mAvatarImage;
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
         private Button mReplyButton;
@@ -112,7 +115,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mMessageEditText = messageEditText;
 
             mTopCommentRecycler = topCommentRecycler;
-
+            mAvatarImage = = (ImageView) itemView.findViewById(R.id.avatar_image);
             usernameText = (TextView) itemView.findViewById(R.id.username);
             contentText = (TextView) itemView.findViewById(R.id.comment_content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
@@ -147,6 +150,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
+
+            ImageLoader.downloadImage("https://api.multiavatar.com/" + comment.getUser().getId().toString() + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
 
             mComments = new ArrayList<Comment>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
