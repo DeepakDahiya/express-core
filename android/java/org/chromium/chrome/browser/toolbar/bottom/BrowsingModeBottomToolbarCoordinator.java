@@ -43,6 +43,7 @@ import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
+import org.chromium.chrome.browser.util.TabUtils;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
@@ -375,9 +376,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                         int currentVersion = Integer.parseInt(pInfo.versionName.replace(".",""));
                         int newVersion = Integer.parseInt(version.replace(".",""));
                         if(newVersion > currentVersion){
-                            // activity.showUpdateApkBottomSheet();
-                            Intent webIntent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-                            activity.startActivity(webIntent);
+                            TabUtils.openUrlInSameTab(url);
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         Log.e(TAG, "BookmarkButton click " + e);
