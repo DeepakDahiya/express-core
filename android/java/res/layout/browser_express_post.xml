@@ -80,8 +80,13 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:paddingVertical="12sp"
-                android:background="@drawable/border_bg"
                 android:orientation="horizontal">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingVertical="12sp"
+                    android:background="@drawable/border_bg"
+                    android:orientation="horizontal">
                 <ImageButton
                     android:id="@+id/btn_comment"
                     android:layout_width="16sp"
@@ -100,6 +105,7 @@
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="4sp"
                     android:textSize="12sp"/>
+                </LinearLayout>
             </LinearLayout>
             <ImageButton
                 android:id="@+id/btn_upvote"
