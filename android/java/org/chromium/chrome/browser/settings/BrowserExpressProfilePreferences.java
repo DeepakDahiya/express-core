@@ -53,6 +53,9 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
+import com.bumptech.glide.Glide;
+import android.widget.ImageView;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 import java.util.List;
 
@@ -62,6 +65,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
+    private ImageView mAvatarImage;
     private TextView mUsernameText;
     private TextView mFullNameText;
 
@@ -97,6 +101,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
+            mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
             mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
 
             mViewsText = (TextView) view.findViewById(R.id.be_views);
@@ -115,6 +120,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
+                ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
                 Object ln = decodedAccessTokenObj.get("lastName");
                 String lnString = "";
                 if(ln != null){

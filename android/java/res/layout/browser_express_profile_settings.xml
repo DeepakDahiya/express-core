@@ -29,7 +29,18 @@
         android:layout_margin="10sp"
         android:background="@drawable/browser_express_profile_layout_bg">
 
-        <ImageButton android:id="@+id/profile_image_button"
+        <ImageView
+                android:id="@+id/avatar_image"
+                android:src="@drawable/btn_toolbar_profile"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="4dp"
+                android:layout_width="80sp"
+                android:layout_height="80sp"
+                android:scaleType="centerCrop"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+        <!-- <ImageButton android:id="@+id/profile_image_button"
             style="@style/ToolbarButton"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp"
@@ -38,7 +49,7 @@
             android:layout_width="80sp"
             android:layout_height="80sp"
             android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
 
         <TextView
             android:id="@+id/browser_express_username"
