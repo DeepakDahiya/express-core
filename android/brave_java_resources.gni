@@ -381,6 +381,7 @@ brave_java_resources = [
   "java/res/drawable/blue_rounded_button.xml",
   "java/res/drawable/blue_rounded_notification_bg.xml",
   "java/res/drawable/bookmark_menu_bg.xml",
+  "java/res/drawable/border_bg.xml",
   "java/res/drawable/bottomsheet_rewards_background.xml",
   "java/res/drawable/bottomsheet_rewards_background_tablet.xml",
   "java/res/drawable/bottomsheet_rewards_tipping_success_background.xml",

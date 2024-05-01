@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:id="@+id/post_layout"
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
     android:paddingHorizontal="12sp"
+    app:cardCornerRadius="12dp"
     android:paddingVertical="8sp">
     <androidx.cardview.widget.CardView
         android:id="@+id/card_view"
@@ -75,6 +76,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:paddingVertical="12sp"
+            android:background="@drawable/border_bg"
             android:orientation="horizontal">
             <ImageButton
                 android:id="@+id/btn_comment"
@@ -133,9 +135,4 @@
             android:background="@drawable/ic_more_vert_24dp"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
     </LinearLayout>
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:layout_marginTop="4sp"
-        android:background="#DAD8D8"/>
-</LinearLayout>
+</androidx.cardview.widget.CardView>
