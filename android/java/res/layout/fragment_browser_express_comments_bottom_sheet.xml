@@ -84,14 +84,24 @@
             android:padding="5sp"
             android:layout_gravity="bottom">
 
-            <ImageButton android:id="@+id/profile_button"
+            <ImageView
+                android:id="@+id/avatar_image"
+                android:src="@drawable/btn_toolbar_profile"
+                android:layout_width="32sp"
+                android:layout_height="32sp"
+                android:scaleType="centerCrop"
+                android:layout_gravity="center"
+                android:adjustViewBounds="true"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+            <!-- <ImageButton android:id="@+id/profile_button"
                 android:background="@drawable/btn_toolbar_profile"
                 android:layout_width="32sp"
                 android:layout_height="32sp"
                 android:visibility="visible"
                 android:layout_gravity="center"
                 android:layout_centerVertical="true"
-                android:contentDescription="@string/profile_image" />
+                android:contentDescription="@string/profile_image" /> -->
 
             <EditText
                 android:layout_marginStart="54dp"

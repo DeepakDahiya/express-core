@@ -28,6 +28,8 @@ import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
 import android.widget.ProgressBar;
+import android.util.Base64;
+import java.io.UnsupportedEncodingException;
 
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -47,6 +49,10 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+
+import com.bumptech.glide.Glide;
+import android.widget.ImageView;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -68,6 +74,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private ImageButton mCanceReplyButton;
     private EditText mMessageEditText;
     private TextView mReplyToText;
+
+    private ImageView mAvatarImage;
 
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =
@@ -105,6 +113,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
+        mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
@@ -146,6 +155,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
+            String accessToken = activity.getAccessToken();
+            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+            ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
 
             SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -176,7 +188,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             sharedPref.registerOnSharedPreferenceChangeListener(listener);
 
             if(mCommentsFor.equals("post")){
-                String accessToken = activity.getAccessToken();
                 mUrl = activity.getActivityTab().getUrl().getSpec();
 
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
@@ -230,7 +241,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         Log.e("Comments_Bottom_Sheet", e.getMessage());
                     }
                 }
-                String accessToken = activity.getAccessToken();
                 mUrl = activity.getActivityTab().getUrl().getSpec();
 
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
@@ -390,4 +400,25 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
+    
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }
+        
+    }
 }
