@@ -85,6 +85,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView contentText;
         TextView voteCountText;
         TextView commentCountText;
+        private LinearLayout mCommentLayout;
         private ImageButton mCommentButton;
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
@@ -108,6 +109,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
             voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
+            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             commentCountText = (TextView) itemView.findViewById(R.id.comment_count);
             mCommentButton = (ImageButton) itemView.findViewById(R.id.btn_comment);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
@@ -162,9 +164,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
             }
 
-            mCommentButton.setOnClickListener(new View.OnClickListener() {
+            mCommentLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
+                    mCommentLayout.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(myPosition, 0);
                     activity.showCommentsBottomSheetFromPost(post.getId());

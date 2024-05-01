@@ -37,6 +37,7 @@
                 android:layout_width="80sp"
                 android:layout_height="80sp"
                 android:scaleType="centerCrop"
+                android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 

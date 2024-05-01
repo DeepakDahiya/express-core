@@ -114,6 +114,7 @@
     <color name="news_time_color">#9CD2D5CF</color>
     <color name="news_promoted_background_color">#495057</color>
     <color name="news_settings_title_color">#212529</color>
+    <color name="border_color">#c5c6c7</color>
     <color name="news_settings_subtitle_color">#868E96</color>
     <color name="news_settings_divider_color">#E9E9F4</color>
     <color name="news_settings_icon_bg_color">#0D000000</color>
