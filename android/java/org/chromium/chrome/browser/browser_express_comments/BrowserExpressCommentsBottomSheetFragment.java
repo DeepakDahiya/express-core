@@ -250,6 +250,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
+        }catch (JSONException e) {
+            Log.e("Express Browser Access Token", e.getMessage());
+        }catch(Exception ex){
+            Log.e("Express Browser Access Token", ex.getMessage());
         }
 
         mSendButton.setOnClickListener((new View.OnClickListener() {
