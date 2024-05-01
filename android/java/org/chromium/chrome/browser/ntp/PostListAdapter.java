@@ -164,6 +164,16 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
             }
 
+            mCommentButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mCommentButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                    layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                    activity.showCommentsBottomSheetFromPost(post.getId());
+                }
+            });
+
             mCommentLayout.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
