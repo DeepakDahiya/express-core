@@ -370,4 +370,5 @@
 
     <color name="browser_express_orange_color">#FF9000</color>
     <color name="browser_express_error_color">#FF0000</color>
+    <color name="browser_express_card_color">#FFFFFF</color>
 </resources>
