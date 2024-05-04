@@ -100,7 +100,7 @@ public class BrowserExpressGetLatestApkUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(GET_LATEST_APK_URL);
+            URL url = new URL(GET_LATEST_APK_URL + "?arch=" + Build.CPU_ABI);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");
