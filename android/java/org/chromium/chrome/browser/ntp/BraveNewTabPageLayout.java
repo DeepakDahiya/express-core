@@ -391,7 +391,7 @@ public class BraveNewTabPageLayout
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 100, accessToken, getPostsCallback);
+            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
         workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
