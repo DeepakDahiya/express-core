@@ -538,17 +538,17 @@ Config.prototype.buildArgs = function () {
     args.android_channel = this.channel
     if (!this.isReleaseBuild()) {
       args.android_channel = 'default'
-      args.chrome_public_manifest_package = 'com.discourse.express_default'
+      args.chrome_public_manifest_package = 'com.discourse.browser_default'
     } else if (this.channel === '') {
       args.android_channel = 'stable'
-      args.chrome_public_manifest_package = 'com.discourse.express'
+      args.chrome_public_manifest_package = 'com.discourse.browser'
     } else if (this.channel === 'beta') {
-      args.chrome_public_manifest_package = 'com.discourse.express_beta'
+      args.chrome_public_manifest_package = 'com.discourse.browser_beta'
     } else if (this.channel === 'dev') {
-      args.chrome_public_manifest_package = 'com.discourse.express_dev'
+      args.chrome_public_manifest_package = 'com.discourse.browser_dev'
     } else if (this.channel === 'nightly') {
       args.android_channel = 'canary'
-      args.chrome_public_manifest_package = 'com.discourse.express_nightly'
+      args.chrome_public_manifest_package = 'com.discourse.browser_nightly'
     }
     // exclude_unwind_tables is inherited form upstream and is false for any
     // Android build

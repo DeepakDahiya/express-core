@@ -267,7 +267,7 @@ public abstract class BraveActivity extends ChromeActivity
     /**
      * Settings for sending local notification reminders.
      */
-    public static final String CHANNEL_ID = "com.discourse.express";
+    public static final String CHANNEL_ID = "com.discourse.browser";
 
     // Explicitly declare this variable to avoid build errors.
     // It will be removed in asm and parent variable will be used instead.
