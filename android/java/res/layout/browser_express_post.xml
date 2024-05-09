@@ -72,10 +72,12 @@
             android:visibility="gone"
             android:textSize="11sp"/>
         <LinearLayout
+            android:id="@+id/actions_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:paddingTop="6sp"
             android:gravity="center"
+            android:visibility="gone"
             android:orientation="horizontal">
             <View
                 android:layout_width="0dp"
