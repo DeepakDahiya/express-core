@@ -125,14 +125,14 @@ public class BrowsingModeBottomToolbarCoordinator {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String mUrl = activity.getActivityTab().getUrl().getSpec();
 
-            // BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
-            //     new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-            //             mUrl, getFirstCommentsCallback);
-            // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                        mUrl, getFirstCommentsCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-            // BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask getLatestApkWorkerTask =
-            //     new BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask(getLatestApkCallback);
-            // getLatestApkWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask getLatestApkWorkerTask =
+                new BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask(getLatestApkCallback);
+            getLatestApkWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }

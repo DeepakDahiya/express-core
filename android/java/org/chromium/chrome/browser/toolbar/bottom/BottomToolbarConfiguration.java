@@ -22,28 +22,28 @@ public class BottomToolbarConfiguration {
     private static final int SMALL_SCREEN_HEIGHT = 640;
 
     public static boolean isBottomToolbarEnabled() {
-        return false;
-        // if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-        //             ContextUtils.getApplicationContext())) {
-        //     return false;
-        // }
-        // SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        // if (sharedPreferences.getBoolean(
-        //             BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, false)) {
-        //     return sharedPreferences.getBoolean(
-        //             BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY, true);
-        // } else {
-        //     SharedPreferencesManager.getInstance().writeBoolean(
-        //             BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, true);
-        //     boolean enable = true;
-        //     if (isSmallScreen()) {
-        //         enable = false;
-        //     }
-        //     SharedPreferencesManager.getInstance().writeBoolean(
-        //             BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY, enable);
+        // return false;
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                    ContextUtils.getApplicationContext())) {
+            return false;
+        }
+        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
+        if (sharedPreferences.getBoolean(
+                    BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, false)) {
+            return sharedPreferences.getBoolean(
+                    BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY, true);
+        } else {
+            SharedPreferencesManager.getInstance().writeBoolean(
+                    BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, true);
+            boolean enable = true;
+            if (isSmallScreen()) {
+                enable = false;
+            }
+            SharedPreferencesManager.getInstance().writeBoolean(
+                    BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY, enable);
 
-        //     return enable;
-        // }
+            return enable;
+        }
     }
 
     private static boolean isSmallScreen() {
