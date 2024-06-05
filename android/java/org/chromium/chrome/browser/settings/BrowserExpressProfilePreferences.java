@@ -24,6 +24,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
@@ -141,7 +143,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String fulln = fnString + " " + lnString;
                 mFullNameText.setText(fulln);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }catch (JSONException e) {
+            } catch (NameNotFoundException e) {
+            } catch (JSONException e) {
                 Log.e("Express Browser Access Token", e.getMessage());
             }catch(Exception ex){
                 Log.e("Express Browser Access Token", ex.getMessage());
