@@ -48,8 +48,6 @@
                     android:layout_gravity="center"
                     android:adjustViewBounds="true"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    app:civ_border_color="?colorPrimarySurface"
-                    app:civ_border_width="8dp"
                     app:layout_constraintDimensionRatio="1"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
