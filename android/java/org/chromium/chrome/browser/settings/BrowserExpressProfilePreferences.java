@@ -150,8 +150,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 Log.e("Express Browser Access Token", ex.getMessage());
             }
 
-            setData();
-            onClickViews();
+            // setData();
+            // onClickViews();
         }
     }
 
