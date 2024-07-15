@@ -439,6 +439,7 @@ brave_java_resources = [
   "java/res/drawable/brave_sync_warning.xml",
   "java/res/drawable/carat_right.xml",
   "java/res/drawable/card_bg.xml",
+  "java/res/drawable/browser_express_profile_layout_bg.xml",
   "java/res/drawable/circular_background.xml",
   "java/res/drawable/circular_background_edit_icon.xml",
   "java/res/drawable/checked_circle_filled.xml",
