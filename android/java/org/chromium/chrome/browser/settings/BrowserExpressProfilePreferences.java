@@ -143,7 +143,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String fulln = fnString + " " + lnString;
                 mFullNameText.setText(fulln);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
-            } catch (NameNotFoundException e) {
+            // } catch (NameNotFoundException e) {
             } catch (JSONException e) {
                 Log.e("Express Browser Access Token", e.getMessage());
             }catch(Exception ex){
