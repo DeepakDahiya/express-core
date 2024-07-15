@@ -1,16 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2022 The Brave Authors. All rights reserved.
-     This Source Code Form is subject to the terms of the Mozilla Public
-     License, v. 2.0. If a copy of the MPL was not distributed with this file,
-     You can obtain one at https://mozilla.org/MPL/2.0/.
- -->
-
 <ScrollView android:id="@+id/browser_express_profile_settings"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_height="match_parent"
     android:layout_width="match_parent">
-
     <LinearLayout
         android:id="@+id/layout_parent"
         android:layout_width="match_parent"
@@ -18,74 +11,28 @@
         android:orientation="vertical"
         android:visibility="visible"
         android:padding="16sp">
-
-        <!-- <com.google.android.material.card.MaterialCardView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="0dp"
-            app:cardUseCompatPadding="true"> -->
-
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@color/news_settings_title_color"
             android:layout_margin="8sp"
-            app:contentPaddingBottom="8sp"
+            app:contentPaddingBottom="16sp"
+            app:contentPaddingTop="16sp"
             app:cardCornerRadius="12dp">
-
-            <androidx.constraintlayout.widget.ConstraintLayout
-                android:id="@+id/linearLayout"
+            <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:baselineAligned="false">
-
-                <View
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:background="@color/bg_profile_banner"
-                    app:layout_constraintDimensionRatio="5"
-                    app:layout_constraintTop_toTopOf="parent" />
-
+                android:layout_height="match_parent"
+                android:orientation="vertical"
+                android:visibility="visible">
                 <ImageView
                     android:id="@+id/profile_image_button"
                     android:src="@drawable/btn_toolbar_profile"
-                    android:layout_marginTop="20dp"
                     android:layout_width="100sp"
                     android:layout_height="100sp"
                     android:scaleType="centerCrop"
                     android:layout_gravity="center"
                     android:adjustViewBounds="true"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    app:layout_constraintDimensionRatio="1"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toTopOf="parent"/>
-
-<!--                <com.example.commentsection.util.CircleImageView-->
-<!--                    android:id="@+id/profile_image_button"-->
-<!--                    android:layout_width="100dp"-->
-<!--                    android:layout_height="100dp"-->
-<!--                    android:layout_gravity="center"-->
-<!--                    android:layout_margin="@dimen/inset_m"-->
-<!--                    android:src="@drawable/btn_toolbar_profile"-->
-<!--                    app:civ_border_color="?colorPrimarySurface"-->
-<!--                    app:civ_border_width="8dp"-->
-<!--                    app:layout_constraintDimensionRatio="1"-->
-<!--                    app:layout_constraintEnd_toEndOf="parent"-->
-<!--                    app:layout_constraintStart_toStartOf="parent"-->
-<!--                    app:layout_constraintTop_toTopOf="parent" />-->
-
-                <!-- <ImageView
-                    android:id="@+id/btn_share"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:src="@drawable/ic_share"
-                    app:layout_constraintBottom_toBottomOf="@+id/profile_image_button"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    app:tint="@color/browser_express_orange_color" /> -->
-
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
                 <TextView
                     android:id="@+id/browser_express_username"
                     android:layout_width="match_parent"
@@ -93,9 +40,7 @@
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
-                    android:textStyle="bold"
-                    app:layout_constraintTop_toBottomOf="@id/profile_image_button"/>
-
+                    android:textStyle="bold" />
                 <TextView
                     android:id="@+id/browser_express_full_name"
                     android:layout_width="match_parent"
@@ -104,99 +49,107 @@
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp"
                     app:layout_constraintTop_toBottomOf="@id/browser_express_username" />
-
-                <TextView
-                    android:id="@+id/be_views"
-                    android:layout_width="0dp"
+                <LinearLayout
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:layout_constraintEnd_toStartOf="@+id/be_likes_received"
-                    app:layout_constraintHorizontal_chainStyle="spread"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/browser_express_full_name"/>
-
-                <TextView
-                    android:id="@+id/textView4"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:lineSpacingExtra="6sp"
-                    android:text="@string/views"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="12sp"
-                    app:layout_constraintBottom_toBottomOf="parent"
-                    app:layout_constraintEnd_toStartOf="@+id/textView5"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@id/be_views" />
-
-                <TextView
-                    android:id="@+id/be_likes_received"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:layout_constraintEnd_toStartOf="@+id/be_likes_given"
-                    app:layout_constraintStart_toEndOf="@+id/be_views"
-                    app:layout_constraintTop_toTopOf="@id/be_views"/>
-
-                <TextView
-                    android:id="@+id/textView5"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:text="@string/likes_received"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="12sp"
-                    app:layout_constraintEnd_toStartOf="@+id/textView6"
-                    app:layout_constraintStart_toEndOf="@+id/textView4"
-                    app:layout_constraintTop_toBottomOf="@id/be_likes_received" />
-
-
-                <TextView
-                    android:id="@+id/be_likes_given"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="16sp"
-                    android:textStyle="bold"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/be_likes_received"
-                    app:layout_constraintTop_toTopOf="@id/be_views"/>
-
-                <TextView
-                    android:id="@+id/textView6"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:gravity="center"
-                    android:lineSpacingExtra="6sp"
-                    android:text="@string/likes_given"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textSize="12sp"
-                    app:layout_constraintEnd_toEndOf="parent"
-                    app:layout_constraintStart_toEndOf="@+id/textView5"
-                    app:layout_constraintTop_toBottomOf="@id/be_likes_given" />
-
-            </androidx.constraintlayout.widget.ConstraintLayout>
-
-        <!-- </com.google.android.material.card.MaterialCardView> -->
+                    android:orientation="horizontal">
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/be_views"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:textColor="@color/news_settings_title_color"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toStartOf="@+id/be_likes_received"
+                            app:layout_constraintHorizontal_chainStyle="spread"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/browser_express_full_name"/>
+                        <TextView
+                            android:id="@+id/textView4"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lineSpacingExtra="6sp"
+                            android:text="@string/views"
+                            android:textColor="@color/news_settings_title_color"
+                            android:textSize="12sp"
+                            app:layout_constraintBottom_toBottomOf="parent"
+                            app:layout_constraintEnd_toStartOf="@+id/textView5"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toBottomOf="@id/be_views" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/be_likes_received"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:textColor="@color/news_settings_title_color"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toStartOf="@+id/be_likes_given"
+                            app:layout_constraintStart_toEndOf="@+id/be_views"
+                            app:layout_constraintTop_toTopOf="@id/be_views"/>
+                        <TextView
+                            android:id="@+id/textView5"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:text="@string/likes_received"
+                            android:textColor="@color/news_settings_title_color"
+                            android:textSize="12sp"
+                            app:layout_constraintEnd_toStartOf="@+id/textView6"
+                            app:layout_constraintStart_toEndOf="@+id/textView4"
+                            app:layout_constraintTop_toBottomOf="@id/be_likes_received" />
+                    </LinearLayout>
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center"
+                        android:gravity="center"
+                        android:orientation="vertical">
+                        <TextView
+                            android:id="@+id/be_likes_given"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:textColor="@color/news_settings_title_color"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/be_likes_received"
+                            app:layout_constraintTop_toTopOf="@id/be_views"/>
+                        <TextView
+                            android:id="@+id/textView6"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:lineSpacingExtra="6sp"
+                            android:text="@string/likes_given"
+                            android:textColor="@color/news_settings_title_color"
+                            android:textSize="12sp"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintStart_toEndOf="@+id/textView5"
+                            app:layout_constraintTop_toBottomOf="@id/be_likes_given" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
-
-            <!-- <ImageButton android:id="@+id/profile_image_button"
-                style="@style/ToolbarButton"
-                android:layout_marginTop="4dp"
-                android:layout_marginBottom="4dp"
-                android:background="@drawable/btn_toolbar_profile"
-                android:layout_gravity="center"
-                android:layout_width="80sp"
-                android:layout_height="80sp"
-                android:visibility="visible"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -204,7 +157,6 @@
             android:orientation="horizontal"
             android:layout_marginTop="12dp"
             android:layout_marginBottom="4dp">
-
             <ImageView
                 android:background="@drawable/edit_profile"
                 android:layout_height="24sp"
@@ -213,7 +165,6 @@
                 android:visibility="visible"
                 android:layout_marginEnd="2sp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
             <Button
                 android:id="@+id/edit_profile_button"
                 android:layout_width="match_parent"
@@ -224,9 +175,7 @@
                 android:textColor="@color/news_settings_title_color"
                 android:drawableTint="@color/news_settings_title_color"
                 android:text="@string/be_edit_profile" />
-
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -234,7 +183,6 @@
             android:orientation="horizontal"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp">
-
             <ImageView
                 android:background="@drawable/activity_feed"
                 android:layout_height="24sp"
@@ -244,7 +192,6 @@
                 android:layout_marginEnd="2sp"
                 android:layout_marginStart="4sp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
             <Button
                 android:id="@+id/activity_feed_button"
                 android:layout_width="match_parent"
@@ -255,9 +202,7 @@
                 android:textColor="@color/news_settings_title_color"
                 android:drawableTint="@color/news_settings_title_color"
                 android:text="@string/be_activity_feed" />
-
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -265,7 +210,6 @@
             android:orientation="horizontal"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp">
-
             <ImageView
                 android:background="@drawable/youtube"
                 android:layout_height="24sp"
@@ -275,7 +219,6 @@
                 android:layout_marginEnd="2sp"
                 android:layout_marginStart="4sp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
             <Button
                 android:id="@+id/youtube_premium_button"
                 android:layout_width="match_parent"
@@ -286,9 +229,7 @@
                 android:textColor="@color/news_settings_title_color"
                 android:drawableTint="@color/news_settings_title_color"
                 android:text="@string/be_youtube" />
-
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -296,7 +237,6 @@
             android:orientation="horizontal"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp">
-
             <ImageView
                 android:background="@drawable/notifications"
                 android:layout_height="24sp"
@@ -306,7 +246,6 @@
                 android:layout_marginEnd="2sp"
                 android:layout_marginStart="4sp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
             <Button
                 android:id="@+id/notifications_button"
                 android:layout_width="match_parent"
@@ -317,9 +256,7 @@
                 android:textColor="@color/news_settings_title_color"
                 android:drawableTint="@color/news_settings_title_color"
                 android:text="@string/be_notifications" />
-
         </LinearLayout>
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -327,7 +264,6 @@
             android:orientation="horizontal"
             android:layout_marginTop="4dp"
             android:layout_marginBottom="4dp">
-
             <ImageView
                 android:background="@drawable/settings"
                 android:layout_height="24sp"
@@ -337,7 +273,6 @@
                 android:layout_marginEnd="2sp"
                 android:layout_marginStart="4sp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
             <Button
                 android:id="@+id/settings_button"
                 android:layout_width="match_parent"
@@ -348,9 +283,7 @@
                 android:textColor="@color/news_settings_title_color"
                 android:drawableTint="@color/news_settings_title_color"
                 android:text="@string/be_settings" />
-
         </LinearLayout>
-
         <TextView
             android:id="@+id/app_version"
             style="@style/TextAppearance.Material3.LabelSmall"
@@ -360,6 +293,5 @@
             android:layout_marginBottom="4dp"
             android:textColor="@color/news_settings_title_color"
             app:layout_anchorGravity="bottom"/>
-
     </LinearLayout>
 </ScrollView>
