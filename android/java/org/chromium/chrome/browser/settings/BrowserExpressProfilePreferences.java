@@ -123,8 +123,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
 
-                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
-                mAppVersionText.setText(pInfo.versionName);
+                // PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                // mAppVersionText.setText(pInfo.versionName);
 
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
