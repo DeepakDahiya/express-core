@@ -18,7 +18,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             app:cardCornerRadius="8dp"
-            app:cardElevation="0dp"
             app:cardUseCompatPadding="true">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -66,7 +65,7 @@
                         android:layout_gravity="bottom|end"
                         app:layout_constraintBottom_toBottomOf="@id/avatar_image"
                         app:layout_constraintEnd_toEndOf="@id/avatar_image"
-                        android:layout_margin="8dp"
+                        android:layout_margin="4dp"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                         android:background="@drawable/circular_background_edit_icon" />
                 </androidx.constraintlayout.widget.ConstraintLayout>
