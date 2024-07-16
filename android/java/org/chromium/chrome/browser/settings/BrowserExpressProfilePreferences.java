@@ -74,7 +74,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     private TextView mViewsText;
     private TextView mLikesReceivedText;
     private TextView mLikesGivenText;
-    // private TextView mAppVersionText;
+    private TextView mAppVersionText;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
