@@ -31,11 +31,11 @@
                     <ImageView
                         android:id="@+id/avatar_image"
                         android:src="@drawable/btn_toolbar_profile"
-                        android:layout_width="100sp"
+                        android:layout_width="95dp"
                         app:layout_constraintEnd_toEndOf="parent"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintTop_toTopOf="parent"
-                        android:layout_height="100sp"
+                        android:layout_height="95dp"
                         android:scaleType="centerCrop"
                         android:layout_gravity="center"
                         android:adjustViewBounds="true"
