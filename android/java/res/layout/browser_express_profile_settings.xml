@@ -77,7 +77,6 @@
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
-                    android:text="deepak dahiya"
                     android:paddingTop="8dp"
                     android:textStyle="bold"
                     app:layout_constraintTop_toBottomOf="@id/profile_image_button"/>
@@ -90,7 +89,6 @@
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp"
                     android:paddingVertical="8dp"
-                    android:text="deepak dahiya"
                     app:layout_constraintTop_toBottomOf="@id/browser_express_username" />
 
                 <TextView
