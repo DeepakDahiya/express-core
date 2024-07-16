@@ -125,7 +125,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
 
             mBtnYoutubePremium.setOnClickListener(view2 -> {
                 TabUtils.openUrlInSameTab("https://m.youtube.com");
-                finish()
+                finish();
             });
             
 
