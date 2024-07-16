@@ -24,8 +24,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
-// import android.content.pm.PackageInfo;
-// import android.content.pm.PackageManager.NameNotFoundException;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager.NameNotFoundException;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
@@ -110,7 +110,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mViewsText = (TextView) view.findViewById(R.id.be_views);
             mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);
             mLikesGivenText = (TextView) view.findViewById(R.id.be_likes_given);
-            // mAppVersionText = (TextView) view.findViewById(R.id.app_version);
+            mAppVersionText = (TextView) view.findViewById(R.id.app_version);
 
             String vc = "8.4K";
             String lc = "3.6K";
@@ -123,8 +123,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
 
-                // PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
-                // mAppVersionText.setText(pInfo.versionName);
+                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                mAppVersionText.setText(pInfo.versionName);
 
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
@@ -143,6 +143,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String fulln = fnString + " " + lnString;
                 mFullNameText.setText(fulln);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
+            } catch (NameNotFoundException e) {
             } catch (JSONException e) {
                 Log.e("Express Browser Access Token", e.getMessage());
             }catch(Exception ex){
