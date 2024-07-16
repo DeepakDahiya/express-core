@@ -61,6 +61,8 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 import java.util.List;
 
+import org.chromium.chrome.browser.util.TabUtils;
+
 public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
@@ -70,6 +72,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     private ImageView mAvatarImage;
     private TextView mUsernameText;
     private TextView mFullNameText;
+    private Button mBtnYoutubePremium;
 
     private TextView mViewsText;
     private TextView mLikesReceivedText;
@@ -106,6 +109,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
             mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
+            mBtnYoutubePremium = (Button) view.findViewById(R.id.youtube_premium_button);
 
             mViewsText = (TextView) view.findViewById(R.id.be_views);
             mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);
@@ -118,6 +122,10 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mViewsText.setText(vc);
             mLikesReceivedText.setText(lc);
             mLikesGivenText.setText(gc);
+
+            mBtnYoutubePremium.setOnClickListener(view -> {
+                TabUtils.openUrlInSameTab("https://m.youtube.com");
+            });
             
 
             try {
