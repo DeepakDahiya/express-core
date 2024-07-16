@@ -326,14 +326,14 @@
                 android:text="@string/be_settings" />
 
         </LinearLayout>
+        <TextView
+            android:id="@+id/app_version"
+            style="@style/TextAppearance.Material3.LabelSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="4dp"
+            android:textColor="@color/news_settings_title_color"
+            app:layout_anchorGravity="bottom"/>
     </LinearLayout>
-    <TextView
-        android:id="@+id/app_version"
-        style="@style/TextAppearance.Material3.LabelSmall"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|center_horizontal"
-        android:layout_marginBottom="4dp"
-        android:textColor="@color/news_settings_title_color"
-        app:layout_anchorGravity="bottom"/>
 </ScrollView>
