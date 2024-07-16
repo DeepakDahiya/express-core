@@ -46,11 +46,11 @@
                     <ImageView
                         android:id="@+id/avatar_image"
                         android:src="@drawable/btn_toolbar_profile"
-                        android:layout_width="95dp"
+                        android:layout_width="150dp"
                         app:layout_constraintEnd_toEndOf="@+id/profile_image_button"
                         app:layout_constraintStart_toStartOf="@+id/profile_image_button"
                         app:layout_constraintTop_toTopOf="@+id/profile_image_button"
-                        android:layout_height="95dp"
+                        android:layout_height="150dp"
                         android:scaleType="centerCrop"
                         android:layout_marginTop="20dp"
                         android:layout_gravity="center"
@@ -59,8 +59,8 @@
                         android:background="@drawable/circular_background" />
                     <ImageView
                         android:id="@+id/edit_icon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:src="@drawable/edit_image"
                         android:layout_gravity="bottom|end"
                         app:layout_constraintBottom_toBottomOf="@id/avatar_image"
@@ -78,6 +78,7 @@
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
                     android:text="deepak dahiya"
+                    android:paddingTop="8dp"
                     android:textStyle="bold"
                     app:layout_constraintTop_toBottomOf="@id/profile_image_button"/>
 
@@ -88,6 +89,7 @@
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="14sp"
+                    android:paddingVertical="8dp"
                     android:text="deepak dahiya"
                     app:layout_constraintTop_toBottomOf="@id/browser_express_username" />
 
@@ -96,7 +98,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/news_settings_title_color"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/be_likes_received"
@@ -123,7 +125,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/news_settings_title_color"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toStartOf="@+id/be_likes_given"
@@ -148,7 +150,7 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:gravity="center"
-                    android:textColor="@color/text_primary"
+                    android:textColor="@color/news_settings_title_color"
                     android:textSize="16sp"
                     android:textStyle="bold"
                     app:layout_constraintEnd_toEndOf="parent"
