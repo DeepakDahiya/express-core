@@ -9,7 +9,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
-
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
@@ -123,13 +123,16 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mLikesReceivedText.setText(lc);
             mLikesGivenText.setText(gc);
 
+            mBtnYoutubePremium.setOnClickListener(view2 -> {
+                TabUtils.openUrlInSameTab("https://m.youtube.com");
+                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                intent.setAction(Intent.ACTION_VIEW);
+                startActivity(intent);
+            });
+
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
-
-                mBtnYoutubePremium.setOnClickListener(view2 -> {
-                    TabUtils.openUrlInSameTab("https://m.youtube.com");
-                    activity.finish();
-                });
 
                 PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                 mAppVersionText.setText(pInfo.versionName);
