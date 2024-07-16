@@ -10,6 +10,7 @@ import org.json.JSONObject;
 
 import java.io.UnsupportedEncodingException;
 import android.content.Intent;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
