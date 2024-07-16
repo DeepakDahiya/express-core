@@ -150,7 +150,6 @@ brave_java_resources = [
   "java/res/drawable-night-nodpi/youtube.png",
   "java/res/drawable-night-nodpi/comments.png",
   "java/res/drawable-night-nodpi/btn_upvote.png",
-  "java/res/drawable-night-nodpi/edit_image.png",
   "java/res/drawable-night-nodpi/cancel_btn.png",
   "java/res/drawable-night-nodpi/btn_downvote.png",
   "java/res/drawable-night-nodpi/btn_reply.png",
