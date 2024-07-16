@@ -123,7 +123,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mLikesReceivedText.setText(lc);
             mLikesGivenText.setText(gc);
 
-            mBtnYoutubePremium.setOnClickListener(view -> {
+            mBtnYoutubePremium.setOnClickListener(view2 -> {
                 TabUtils.openUrlInSameTab("https://m.youtube.com");
             });
             
