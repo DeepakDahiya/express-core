@@ -143,9 +143,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 "<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>";
                 WebSettings webSettings = postWebView.getSettings();
                 webSettings.setJavaScriptEnabled(true);
-                webSettings.domStorageEnabled = true;
-                webSettings.loadsImagesAutomatically = true;
-                webSettings.defaultTextEncodingName = "UTF-8";
+                // webSettings.domStorageEnabled = true;
+                // webSettings.loadsImagesAutomatically = true;
+                // webSettings.defaultTextEncodingName = "UTF-8";
                 webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
                 webSettings.setUseWideViewPort(false);
 
