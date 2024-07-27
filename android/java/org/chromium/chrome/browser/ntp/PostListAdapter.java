@@ -166,8 +166,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
                 cardView.setVisibility(View.GONE);
-                
-                return;
             }else{
                 titleText.setText(post.getTitle().toString());
 
