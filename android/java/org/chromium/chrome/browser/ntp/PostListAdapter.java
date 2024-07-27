@@ -155,7 +155,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 postWebView.setScrollContainer(false);
                 postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
 
-                postWebView.setVisibility(View.VISIBLE);
+                // postWebView.setVisibility(View.VISIBLE);
                 titleText.setVisibility(View.GONE);
                 contentText.setVisibility(View.GONE);
                 publisherNameText.setVisibility(View.GONE);
