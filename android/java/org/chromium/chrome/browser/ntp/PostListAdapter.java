@@ -44,6 +44,7 @@ import org.chromium.chrome.browser.util.TabUtils;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -83,7 +84,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private class PostHolder extends RecyclerView.ViewHolder {
         WebView postWebView;
-        LinearLayout postLinearLayout;
         ImageView postImage;
         CardView cardView;
         TextView publisherNameText;
@@ -110,7 +110,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             postWebView = (WebView) itemView.findViewById(R.id.post_web_view);
-            postLinearLayout = (LinearLayout) itemView.findViewById(R.id.post_linear_layout);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
@@ -144,33 +143,86 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 "<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>";
                 WebSettings webSettings = postWebView.getSettings();
                 webSettings.setJavaScriptEnabled(true);
+                webSettings.domStorageEnabled = true;
+                webSettings.loadsImagesAutomatically = true;
+                webSettings.defaultTextEncodingName = "UTF-8";
+                webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+                webSettings.setUseWideViewPort(false);
+
+                postWebView.setWebChromeClient(new WebChromeClient());
                 postWebView.setWebViewClient(new WebViewClient());
-                postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "utf-8", null);
+                postWebView.setHorizontalScrollBarEnabled(false);
+                postWebView.setVerticalScrollBarEnabled(false);
+                postWebView.setScrollContainer(false);
+                postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
 
                 postWebView.setVisibility(View.VISIBLE);
-                postLinearLayout.setVisibility(View.GONE);
+                titleText.setVisibility(View.GONE);
+                contentText.setVisibility(View.GONE);
+                publisherNameText.setVisibility(View.GONE);
+                postImage.setVisibility(View.GONE);
+                cardView.setVisibility(View.GONE);
                 
                 return;
+            }else{
+                titleText.setText(post.getTitle().toString());
+
+                if(post.getShowFull()){
+                    contentText.setText(post.getContent().toString());
+                    contentText.setVisibility(View.VISIBLE);
+                }
+
+                publisherNameText.setText(post.getPublisherName().toString());
+                publisherNameText.setTextSize(9);
+
+                ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
+
+                titleText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId());
+                        }
+                    }
+                });
+
+                contentText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId());
+                        }
+                    }
+                });
+
+                cardView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId());
+                        }
+                    }
+                });
             }
 
-            titleText.setText(post.getTitle().toString());
-
-            if(post.getShowFull()){
-                contentText.setText(post.getContent().toString());
-                contentText.setVisibility(View.VISIBLE);
-            }
-            
             finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
             commentCountText.setText(String.format(Locale.getDefault(), "%d", post.getCommentCount()));
-
-            publisherNameText.setText(post.getPublisherName().toString());
-            publisherNameText.setTextSize(9);
-
+                
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
-
-            ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
 
             // if(post.getType().toString().equals(INSHORTS_TYPE)){
             //     ViewGroup.LayoutParams params = postLayout.getLayoutParams();
@@ -208,45 +260,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(myPosition, 0);
                     activity.showCommentsBottomSheetFromPost(post.getId());
-                }
-            });
-
-            titleText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(post.getRedirect()){
-                        TabUtils.openUrlInSameTab(post.getUrl().toString());
-                    }else{
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId());
-                    }
-                }
-            });
-
-            contentText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(post.getRedirect()){
-                        TabUtils.openUrlInSameTab(post.getUrl().toString());
-                    }else{
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId());
-                    }
-                }
-            });
-
-            cardView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(post.getRedirect()){
-                        TabUtils.openUrlInSameTab(post.getUrl().toString());
-                    }else{
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId());
-                    }
                 }
             });
 
