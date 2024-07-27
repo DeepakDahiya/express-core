@@ -154,7 +154,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 postWebView.setVisibility(View.VISIBLE);
 
                 // postWebView.setWebChromeClient(new WebChromeClient());
-                // postWebView.setWebViewClient(new WebViewClient());
+                postWebView.setWebViewClient(new WebViewClient());
                 // postWebView.setHorizontalScrollBarEnabled(false);
                 // postWebView.setVerticalScrollBarEnabled(false);
                 // postWebView.setScrollContainer(false);
