@@ -139,8 +139,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             Boolean t = true;
 
             if(postType.equals(TWITTER_TYPE) || t){
-                String tweetHtml = "<blockquote class=\"twitter-tweet\"><p lang=\"en\" dir=\"ltr\">Your Tweet content here</p>&mdash; User (@user) <a href=\"https://twitter.com/user/status/tweet_id\">Date</a></blockquote>\n" +
-                "<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>";
+                String tweetHtml = "<html><body>" + "<blockquote class=\"twitter-tweet\"><p lang=\"uk\" dir=\"ltr\">Не вірте фейкам. <a href=\"https://t.co/wiLqmCuz1p\">pic.twitter.com/wiLqmCuz1p</a></p>&mdash; Volodymyr Zelenskyy / Володимир Зеленський (@ZelenskyyUa) <a href=\"https://twitter.com/ZelenskyyUa/status/1497450853380280320?ref_src=twsrc^tfw\">February 26, 2022</a></blockquote><script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>" + "</body></html>";
                 WebSettings webSettings = postWebView.getSettings();
                 webSettings.setJavaScriptEnabled(true);
                 // webSettings.domStorageEnabled = true;
