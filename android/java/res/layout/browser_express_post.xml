@@ -9,7 +9,14 @@
     app:cardCornerRadius="6dp"
     app:contentPadding="8sp"
     android:layout_margin="10sp">
+    <WebView
+        android:id="@+id/post_web_view"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
     <LinearLayout
+        android:id="@+id/post_linear_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">

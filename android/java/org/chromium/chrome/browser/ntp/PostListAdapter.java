@@ -41,11 +41,16 @@ import android.content.Intent;
 import android.net.Uri;
 import androidx.cardview.widget.CardView;
 import org.chromium.chrome.browser.util.TabUtils;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Post> mPostList;
     private String INSHORTS_TYPE = "Inshorts";
+    private String TWITTER_TYPE = "Twitter";
+    private String INSTAGRAM_TYPE = "Instagram";
     private RecyclerView mTopPostRecycler;
 
     public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler) {
@@ -77,6 +82,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
+        WebView postWebView;
+        LinearLayout postLinearLayout;
         ImageView postImage;
         CardView cardView;
         TextView publisherNameText;
@@ -102,6 +109,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
+            postWebView = (WebView) itemView.findViewById(R.id.post_web_view);
+            postLinearLayout = (LinearLayout) itemView.findViewById(R.id.post_linear_layout);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
@@ -125,6 +134,24 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }
 
             myPosition = getBindingAdapterPosition();
+
+            String postType = post.getType().toString();
+
+            Boolean t = true;
+
+            if(postType.equals(TWITTER_TYPE) || t){
+                String tweetHtml = "<blockquote class=\"twitter-tweet\"><p lang=\"en\" dir=\"ltr\">Your Tweet content here</p>&mdash; User (@user) <a href=\"https://twitter.com/user/status/tweet_id\">Date</a></blockquote>\n" +
+                "<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>";
+                WebSettings webSettings = postWebView.getSettings();
+                webSettings.setJavaScriptEnabled(true);
+                postWebView.setWebViewClient(new WebViewClient());
+                postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "utf-8", null);
+
+                postWebView.setVisibility(View.VISIBLE);
+                postLinearLayout.setVisibility(View.GONE);
+                
+                return;
+            }
 
             titleText.setText(post.getTitle().toString());
 

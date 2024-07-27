@@ -546,7 +546,6 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public boolean isInPip(){
-        Rational ASPECT_RATIO = new Rational(16, 9);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
             return mActivity.isInPictureInPictureMode();
