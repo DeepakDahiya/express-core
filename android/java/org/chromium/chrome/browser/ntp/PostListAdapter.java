@@ -148,12 +148,17 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
                 webSettings.setUseWideViewPort(false);
 
-                postWebView.setWebChromeClient(new WebChromeClient());
-                postWebView.setWebViewClient(new WebViewClient());
-                postWebView.setHorizontalScrollBarEnabled(false);
-                postWebView.setVerticalScrollBarEnabled(false);
-                postWebView.setScrollContainer(false);
-                postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
+                String simpleHtml = "<html><body><h1>Hello, WebView</h1></body></html>";
+                postWebView.loadData(simpleHtml, "text/html", "UTF-8");
+
+                postWebView.setVisibility(View.VISIBLE);
+
+                // postWebView.setWebChromeClient(new WebChromeClient());
+                // postWebView.setWebViewClient(new WebViewClient());
+                // postWebView.setHorizontalScrollBarEnabled(false);
+                // postWebView.setVerticalScrollBarEnabled(false);
+                // postWebView.setScrollContainer(false);
+                // postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
 
                 // postWebView.setVisibility(View.VISIBLE);
                 titleText.setVisibility(View.GONE);
