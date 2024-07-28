@@ -45,6 +45,7 @@ import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
+import android.widget.ProgressBar;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -84,6 +85,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private class PostHolder extends RecyclerView.ViewHolder {
         WebView postWebView;
+        ProgressBar progressBar;
         ImageView postImage;
         CardView cardView;
         TextView publisherNameText;
@@ -110,6 +112,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             postWebView = (WebView) itemView.findViewById(R.id.post_web_view);
+            progressBar = itemView.findViewById(R.id.progressBar);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
@@ -359,8 +362,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     webSettings.setUseWideViewPort(false);
                     webSettings.setAllowFileAccess(true);
 
+                    postWebView.setWebContentsDebuggingEnabled(true);
+                    postWebView.setWebViewClient(new WebViewClient());
                     postWebView.setWebChromeClient(new WebChromeClient() {
                         public void onProgressChanged(WebView view, int progress) {
+                            progressBar.setVisibility(View.VISIBLE);
+                            progressBar.setProgress(progress);
+                            if (progress == 100) {
+                                progressBar.setVisibility(View.GONE);
+                            }
                             Log.e("POST_LIST_ADAPTER", "Progess: " +  Integer.toString(progress));
                         }
                     });
