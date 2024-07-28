@@ -36,7 +36,6 @@ import java.nio.charset.StandardCharsets;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.net.URLDecoder;
-import android.webkit.WebView;
 
 import org.chromium.chrome.browser.browser_express_comments.Vote;
 
@@ -45,7 +44,7 @@ public class TwitterGetOEmbedDataUtil {
     private static final String GET_OEMBED_URL = "https://publish.twitter.com/oembed";
 
     public interface GetTwitterOEmbedDataCallback {
-        void getTwitterOEmbedDataSuccessful(WebView wv, String html);
+        void getTwitterOEmbedDataSuccessful(String html);
         void getTwitterOEmbedDataFailed(String error);
     }
 
@@ -55,15 +54,13 @@ public class TwitterGetOEmbedDataUtil {
         private static String mErrorMessage;
         private static String mTweetUrl;
         private static String mTweetHtml;
-        private static WebView mPostWebView;
 
-        public GetTwitterOEmbedDataWorkerTask(WebView postWebView, String tweetUrl,  GetTwitterOEmbedDataCallback callback) {
+        public GetTwitterOEmbedDataWorkerTask(String tweetUrl,  GetTwitterOEmbedDataCallback callback) {
             mCallback = callback;
             getTwitterOEmbedDataStatus = false;
             mErrorMessage = "";
             mTweetUrl = tweetUrl;
             mTweetHtml = "";
-            mPostWebView = postWebView;
         }
 
         public static void setHtml(String html){
@@ -89,7 +86,7 @@ public class TwitterGetOEmbedDataUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(getTwitterOEmbedDataStatus){
-                mCallback.getTwitterOEmbedDataSuccessful(mPostWebView, mTweetHtml);
+                mCallback.getTwitterOEmbedDataSuccessful(mTweetHtml);
             }else{
                 mCallback.getTwitterOEmbedDataFailed(mErrorMessage);
             }

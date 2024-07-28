@@ -149,7 +149,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                 TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataWorkerTask getTwitterOEmbedDataWorkerTask =
                     new TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataWorkerTask(
-                            postWebView, "https://twitter.com/Interior/status/507185938620219395", getTwitterOEmbedDataCallback);
+                            "https://twitter.com/Interior/status/507185938620219395", getTwitterOEmbedDataCallback);
                 getTwitterOEmbedDataWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }else{
                 titleText.setText(post.getTitle().toString());
@@ -349,7 +349,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataCallback getTwitterOEmbedDataCallback=
             new TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataCallback() {
                 @Override
-                public void getTwitterOEmbedDataSuccessful(WebView postWebView, String html) {
+                public void getTwitterOEmbedDataSuccessful(String html) {
                     Log.e("GET_HTML","FETCHED HTML");
                     Log.e("GET_HTML", html);
 
