@@ -367,7 +367,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                     postWebView.setWebContentsDebuggingEnabled(true);
                     webView.setWebViewClient(new WebViewClient() {
-                        @RequiresApi(api = Build.VERSION_CODES.M)
                         @Override
                         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                             super.onReceivedError(view, request, error);
