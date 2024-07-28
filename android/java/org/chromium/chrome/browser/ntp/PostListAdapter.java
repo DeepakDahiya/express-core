@@ -147,6 +147,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 webSettings.setJavaScriptEnabled(true);
                 webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
                 webSettings.setUseWideViewPort(false);
+                webSettings.setAllowFileAccess(true);
 
                 // String simpleHtml = "<html><body><h1>Hello, WebView</h1></body></html>";
                 // postWebView.loadData(simpleHtml, "text/html", "UTF-8");
