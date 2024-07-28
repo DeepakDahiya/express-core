@@ -1,5 +1,6 @@
 package org.chromium.chrome.browser.ntp;
 
+import android.os.Build;
 import java.util.UUID;
 import java.util.List;
 import java.util.ArrayList;
@@ -46,6 +47,8 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.webkit.WebChromeClient;
 import android.widget.ProgressBar;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -363,7 +366,20 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     webSettings.setAllowFileAccess(true);
 
                     postWebView.setWebContentsDebuggingEnabled(true);
-                    postWebView.setWebViewClient(new WebViewClient());
+                    webView.setWebViewClient(new WebViewClient() {
+                        @RequiresApi(api = Build.VERSION_CODES.M)
+                        @Override
+                        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+                            super.onReceivedError(view, request, error);
+                            Log.e("GET_HTML", "Error loading page: " + error.getDescription());
+                        }
+
+                        @Override
+                        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
+                            super.onReceivedError(view, errorCode, description, failingUrl);
+                            Log.e("GET_HTML", "Error loading page: " + description);
+                        }
+                    });
                     postWebView.setWebChromeClient(new WebChromeClient() {
                         public void onProgressChanged(WebView view, int progress) {
                             progressBar.setVisibility(View.VISIBLE);
