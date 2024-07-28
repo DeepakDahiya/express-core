@@ -359,13 +359,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     webSettings.setUseWideViewPort(false);
                     webSettings.setAllowFileAccess(true);
 
-                    postWebView.setWebChromeClient(new WebChromeClient());
                     postWebView.setWebChromeClient(new WebChromeClient() {
                         public void onProgressChanged(WebView view, int progress) {
                             Log.e("POST_LIST_ADAPTER", "Progess: " +  Integer.toString(progress));
                         }
                     });
-                    // postWebView.setWebViewClient(new WebViewClient());
                     postWebView.setHorizontalScrollBarEnabled(false);
                     postWebView.setVerticalScrollBarEnabled(false);
                     postWebView.setScrollContainer(false);
