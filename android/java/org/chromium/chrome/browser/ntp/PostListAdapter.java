@@ -139,26 +139,26 @@ public class PostListAdapter extends RecyclerView.Adapter {
             Boolean t = true;
 
             if(postType.equals(TWITTER_TYPE) || t){
+                Log.e("POST_LIST_ADAPTER", "START");
                 String tweetHtml = "<blockquote class=\"twitter-tweet\"><p lang=\"en\" dir=\"ltr\">Mmm. <a href=\"https://twitter.com/bigfinish?ref_src=twsrc%5Etfw\">@bigfinish</a> sales are gateway drugs to so much good stuff I haven’t yet heard (or read!).</p>&mdash; Andy Piper (pipes) (@andypiper) <a href=\"https://twitter.com/andypiper/status/1008419070524448768?ref_src=twsrc%5Etfw\">June 17, 2018</a></blockquote>\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n";
                 WebSettings webSettings = postWebView.getSettings();
                 webSettings.setJavaScriptEnabled(true);
-                // webSettings.domStorageEnabled = true;
-                // webSettings.loadsImagesAutomatically = true;
-                // webSettings.defaultTextEncodingName = "UTF-8";
                 webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
                 webSettings.setUseWideViewPort(false);
 
-                String simpleHtml = "<html><body><h1>Hello, WebView</h1></body></html>";
-                postWebView.loadData(simpleHtml, "text/html", "UTF-8");
+                // String simpleHtml = "<html><body><h1>Hello, WebView</h1></body></html>";
+                // postWebView.loadData(simpleHtml, "text/html", "UTF-8");
 
-                postWebView.setVisibility(View.VISIBLE);
+                // postWebView.setVisibility(View.VISIBLE);
 
-                // postWebView.setWebChromeClient(new WebChromeClient());
+                Log.e("POST_LIST_ADAPTER", "MID");
+
+                postWebView.setWebChromeClient(new WebChromeClient());
                 postWebView.setWebViewClient(new WebViewClient());
-                // postWebView.setHorizontalScrollBarEnabled(false);
-                // postWebView.setVerticalScrollBarEnabled(false);
-                // postWebView.setScrollContainer(false);
-                // postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
+                postWebView.setHorizontalScrollBarEnabled(false);
+                postWebView.setVerticalScrollBarEnabled(false);
+                postWebView.setScrollContainer(false);
+                postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
 
                 // postWebView.setVisibility(View.VISIBLE);
                 titleText.setVisibility(View.GONE);
@@ -166,6 +166,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
                 cardView.setVisibility(View.GONE);
+                Log.e("POST_LIST_ADAPTER", "END");
             }else{
                 titleText.setText(post.getTitle().toString());
 
