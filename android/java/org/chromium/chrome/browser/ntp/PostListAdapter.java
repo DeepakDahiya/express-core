@@ -139,42 +139,18 @@ public class PostListAdapter extends RecyclerView.Adapter {
             Boolean t = true;
 
             if(postType.equals(TWITTER_TYPE) || t){
-                Log.e("POST_LIST_ADAPTER", "START");
-                String tweetHtml = "<blockquote class=\"twitter-tweet\"><p lang=\"uk\" dir=\"ltr\">Не вірте фейкам. <a href=\"https://t.co/wiLqmCuz1p\">pic.twitter.com/wiLqmCuz1p</a></p>&mdash; Volodymyr Zelenskyy / Володимир Зеленський (@ZelenskyyUa) <a href=\"https://twitter.com/ZelenskyyUa/status/1497450853380280320?ref_src=twsrc^tfw\">February 26, 2022</a></blockquote>\n" +
-                        "<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n" +
-                        "\n";
-                WebSettings webSettings = postWebView.getSettings();
-                webSettings.setJavaScriptEnabled(true);
-                webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-                webSettings.setUseWideViewPort(false);
-                webSettings.setAllowFileAccess(true);
-
-                // String simpleHtml = "<html><body><h1>Hello, WebView</h1></body></html>";
-                // postWebView.loadData(simpleHtml, "text/html", "UTF-8");
-
-                // postWebView.setVisibility(View.VISIBLE);
-
-                Log.e("POST_LIST_ADAPTER", "MID");
-
-                postWebView.setWebChromeClient(new WebChromeClient());
-                postWebView.setWebChromeClient(new WebChromeClient() {
-                    public void onProgressChanged(WebView view, int progress) {
-                        Log.e("POST_LIST_ADAPTER", "Progess: " +  Integer.toString(progress));
-                    }
-                });
-                postWebView.setWebViewClient(new WebViewClient());
-                postWebView.setHorizontalScrollBarEnabled(false);
-                postWebView.setVerticalScrollBarEnabled(false);
-                postWebView.setScrollContainer(false);
-                postWebView.loadDataWithBaseURL("https://twitter.com", tweetHtml, "text/html", "UTF-8", null);
-
-                // postWebView.setVisibility(View.VISIBLE);
+                postWebView.setVisibility(View.VISIBLE);
                 titleText.setVisibility(View.GONE);
                 contentText.setVisibility(View.GONE);
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
                 cardView.setVisibility(View.GONE);
                 Log.e("POST_LIST_ADAPTER", "END");
+
+                TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataWorkerTask getTwitterOEmbedDataWorkerTask =
+                    new TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataWorkerTask(
+                            postWebView, "https://twitter.com/Interior/status/507185938620219395", getTwitterOEmbedDataCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }else{
                 titleText.setText(post.getTitle().toString());
 
@@ -367,6 +343,38 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 public void addVoteFailed(String error) {
                     mDownvoteButton.setClickable(true);
                     mUpvoteButton.setClickable(true);
+                }
+            };
+        
+        private TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataCallback getTwitterOEmbedDataCallback=
+            new TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataCallback() {
+                @Override
+                public void getTwitterOEmbedDataSuccessful(WebView postWebView, String html) {
+                    Log.e("GET_HTML","FETCHED HTML");
+                    Log.e("GET_HTML", html);
+
+                    WebSettings webSettings = postWebView.getSettings();
+                    webSettings.setJavaScriptEnabled(true);
+                    webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
+                    webSettings.setUseWideViewPort(false);
+                    webSettings.setAllowFileAccess(true);
+
+                    postWebView.setWebChromeClient(new WebChromeClient());
+                    postWebView.setWebChromeClient(new WebChromeClient() {
+                        public void onProgressChanged(WebView view, int progress) {
+                            Log.e("POST_LIST_ADAPTER", "Progess: " +  Integer.toString(progress));
+                        }
+                    });
+                    // postWebView.setWebViewClient(new WebViewClient());
+                    postWebView.setHorizontalScrollBarEnabled(false);
+                    postWebView.setVerticalScrollBarEnabled(false);
+                    postWebView.setScrollContainer(false);
+                    postWebView.loadDataWithBaseURL("https://twitter.com", html, "text/html", "UTF-8", null);
+                }
+
+                @Override
+                public void getTwitterOEmbedDataFailed(String error) {
+                    Log.e("GET_HTML", error.getMessage());
                 }
             };
     }
