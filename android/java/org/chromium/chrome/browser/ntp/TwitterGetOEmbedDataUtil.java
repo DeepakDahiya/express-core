@@ -45,7 +45,7 @@ public class TwitterGetOEmbedDataUtil {
     private static final String GET_OEMBED_URL = "https://publish.twitter.com/oembed";
 
     public interface GetTwitterOEmbedDataCallback {
-        void getTwitterOEmbedDataSuccessful(String html);
+        void getTwitterOEmbedDataSuccessful(WebView wv, String html);
         void getTwitterOEmbedDataFailed(String error);
     }
 
@@ -118,7 +118,8 @@ public class TwitterGetOEmbedDataUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
-                if(responseObject.getString("html")){
+                String htmlString = responseObject.getString("html");
+                if(htmlString.length() > 0){
                     GetTwitterOEmbedDataWorkerTask.setGetTwitterOEmbedDataSuccessStatus(true);
                     try {
                         GetTwitterOEmbedDataWorkerTask.setHtml(URLDecoder.decode(responseObject.getString("html"), "UTF-8"));
