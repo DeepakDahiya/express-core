@@ -140,7 +140,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             if(postType.equals(TWITTER_TYPE) || t){
                 Log.e("POST_LIST_ADAPTER", "START");
-                String tweetHtml = "<blockquote class=\"twitter-tweet\"><p lang=\"en\" dir=\"ltr\">Mmm. <a href=\"https://twitter.com/bigfinish?ref_src=twsrc%5Etfw\">@bigfinish</a> sales are gateway drugs to so much good stuff I haven’t yet heard (or read!).</p>&mdash; Andy Piper (pipes) (@andypiper) <a href=\"https://twitter.com/andypiper/status/1008419070524448768?ref_src=twsrc%5Etfw\">June 17, 2018</a></blockquote>\n<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n";
+                String tweetHtml = "<blockquote class=\"twitter-tweet\"><p lang=\"uk\" dir=\"ltr\">Не вірте фейкам. <a href=\"https://t.co/wiLqmCuz1p\">pic.twitter.com/wiLqmCuz1p</a></p>&mdash; Volodymyr Zelenskyy / Володимир Зеленський (@ZelenskyyUa) <a href=\"https://twitter.com/ZelenskyyUa/status/1497450853380280320?ref_src=twsrc^tfw\">February 26, 2022</a></blockquote>\n" +
+                        "<script async src=\"https://platform.twitter.com/widgets.js\" charset=\"utf-8\"></script>\n" +
+                        "\n";
                 WebSettings webSettings = postWebView.getSettings();
                 webSettings.setJavaScriptEnabled(true);
                 webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
