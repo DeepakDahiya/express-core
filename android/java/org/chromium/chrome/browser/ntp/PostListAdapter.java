@@ -366,7 +366,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     webSettings.setAllowFileAccess(true);
 
                     postWebView.setWebContentsDebuggingEnabled(true);
-                    webView.setWebViewClient(new WebViewClient() {
+                    postWebView.setWebViewClient(new WebViewClient() {
                         @Override
                         public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
                             super.onReceivedError(view, request, error);
