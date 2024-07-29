@@ -160,13 +160,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
             if (postType.equals(TWITTER_TYPE) || t) {
                 twitterPostLayout.setVisibility(View.VISIBLE);
                 String name = "BombayTimes";
-                String username = "bombaytimes";
+                String username = "@" + "bombaytimes";
                 String content = ".@AzmiShabana shares an adorable picture with new mom @RichaChadha and her little one 👶\n\n#diamirza #richachadha #shabanaazmi #urmilamatondkar #tanviazmi #bollywood #motherhood #newmom";
                 String profilePicUrl = "https://pbs.twimg.com/profile_images/1743147598247268352/R49drbzf_normal.jpg";
                 String twitterImageUrl = "https://pbs.twimg.com/media/GTpoqKfXwAAJsYc.jpg";
 
                 twitterName.setText(name);
-                twitterUsername.setText("@" + username);
+                twitterUsername.setText(username);
                 twitterContent.setText(content);
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
