@@ -166,6 +166,7 @@ brave_java_resources = [
   "java/res/drawable-nodpi/youtube.png",
   "java/res/drawable-nodpi/comments.png",
   "java/res/drawable-nodpi/send.png",
+  "java/res/drawable-nodpi/verified.png",
   "java/res/drawable-nodpi/loading_image.png",
   "java/res/drawable-nodpi/cancel_btn.png",
   "java/res/drawable-nodpi/btn_upvote.png",
