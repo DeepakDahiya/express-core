@@ -172,6 +172,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
                 ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
 
+                titleText.setVisibility(View.GONE);
+                contentText.setVisibility(View.GONE);
+                publisherNameText.setVisibility(View.GONE);
+                postImage.setVisibility(View.GONE);
+
         // ImageView twitterImage;
         // VideoView twitterVideo;
             } else {
