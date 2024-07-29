@@ -8,6 +8,8 @@ import android.widget.TextView;
 import android.view.View;
 import org.chromium.base.Log;
 import android.widget.ImageButton;
+import android.widget.MediaController;
+import android.media.MediaPlayer;
 import android.widget.ImageView;
 import android.widget.VideoView;
 import android.widget.Button;
@@ -95,6 +97,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView twitterContent;
         ImageView twitterImage;
         VideoView twitterVideo;
+        ImageButton twitterPlayButton;
 
         ImageView postImage;
         CardView cardView;
@@ -128,6 +131,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
             twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
+            twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
         
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -162,8 +166,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 String name = "BombayTimes";
                 String username = "@" + "bombaytimes";
                 String content = ".@AzmiShabana shares an adorable picture with new mom @RichaChadha and her little one 👶\n\n#diamirza #richachadha #shabanaazmi #urmilamatondkar #tanviazmi #bollywood #motherhood #newmom";
-                String profilePicUrl = "https://pbs.twimg.com/profile_images/1743147598247268352/R49drbzf_normal.jpg";
-                String twitterImageUrl = "https://pbs.twimg.com/media/GTpoqKfXwAAJsYc.jpg";
+                String profilePicUrl = "https://pbs.twimg.com/profile_images/1585550046740848642/OpGKpqx9_normal.jpg";
+
+                String twitterImageUrl = "https://pbs.twimg.com/ext_tw_video_thumb/1497450795532439554/pu/img/b7JxO8OAXonSfaHv.jpg";
+                String videoUrl = "https://video.twimg.com/ext_tw_video/1497450795532439554/pu/vid/848x480/dxXxEuM6ZGNLRPjZ.mp4?tag=12";
 
                 twitterName.setText(name);
                 twitterUsername.setText(username);
@@ -177,8 +183,49 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
 
-        // ImageView twitterImage;
-        // VideoView twitterVideo;
+                if(videoUrl.length() > 0){
+                    Uri uri = Uri.parse(videoUrl);
+                    twitterVideo.setVideoURI(uri);
+
+                    MediaController mediaController = new MediaController(context);
+                    twitterVideo.setMediaController(mediaController);
+                    mediaController.setAnchorView(twitterVideo);
+
+                    twitterVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                        @Override
+                        public void onPrepared(MediaPlayer mp) {
+                            twitterImage.setVisibility(View.GONE);
+                            twitterImage.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    int h = twitterImage.getHeight();
+                                    twitterVideo.getLayoutParams().height = h;
+                                    twitterVideo.requestLayout();
+                                }
+                            });
+                            twitterVideo.setVisibility(View.VISIBLE);
+                            twitterVideo.start();
+                        }
+                    });
+
+                    twitterPlayButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            twitterImage.setVisibility(View.GONE);
+                            twitterPlayButton.setVisibility(View.GONE);
+                            twitterImage.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    int h = twitterImage.getHeight();
+                                    twitterVideo.getLayoutParams().height = h;
+                                    twitterVideo.requestLayout();
+                                }
+                            });
+                            twitterVideo.setVisibility(View.VISIBLE);
+                            twitterVideo.start();
+                        }
+                    });
+                }
             } else {
                 twitterPostLayout.setVisibility(View.GONE);
                 titleText.setText(post.getTitle().toString());
