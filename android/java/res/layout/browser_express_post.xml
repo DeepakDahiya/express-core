@@ -32,6 +32,7 @@
                     android:layout_height="75dp"
                     android:scaleType="centerCrop"
                     android:layout_gravity="center"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:adjustViewBounds="true" />
                 <LinearLayout
                     android:layout_width="0dp"
@@ -77,6 +78,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@drawable/loading_image"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="centerCrop"/>
                 <VideoView
                     android:id="@+id/twitter_video"
