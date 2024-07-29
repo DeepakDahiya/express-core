@@ -87,8 +87,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
-        WebView postWebView;
-        ProgressBar progressBar;
         ImageView postImage;
         CardView cardView;
         TextView publisherNameText;
@@ -114,8 +112,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
-            postWebView = (WebView) itemView.findViewById(R.id.post_web_view);
-            progressBar = itemView.findViewById(R.id.progressBar);
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
@@ -144,71 +140,56 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             Boolean t = true;
 
-            if(postType.equals(TWITTER_TYPE) || t){
-                postWebView.setVisibility(View.VISIBLE);
-                titleText.setVisibility(View.GONE);
-                contentText.setVisibility(View.GONE);
-                publisherNameText.setVisibility(View.GONE);
-                postImage.setVisibility(View.GONE);
-                cardView.setVisibility(View.GONE);
-                Log.e("POST_LIST_ADAPTER", "END");
+            titleText.setText(post.getTitle().toString());
 
-                TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataWorkerTask getTwitterOEmbedDataWorkerTask =
-                    new TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataWorkerTask(
-                            "https://twitter.com/Interior/status/507185938620219395", getTwitterOEmbedDataCallback);
-                getTwitterOEmbedDataWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }else{
-                titleText.setText(post.getTitle().toString());
-
-                if(post.getShowFull()){
-                    contentText.setText(post.getContent().toString());
-                    contentText.setVisibility(View.VISIBLE);
-                }
-
-                publisherNameText.setText(post.getPublisherName().toString());
-                publisherNameText.setTextSize(9);
-
-                ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
-
-                titleText.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(post.getRedirect()){
-                            TabUtils.openUrlInSameTab(post.getUrl().toString());
-                        }else{
-                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId());
-                        }
-                    }
-                });
-
-                contentText.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(post.getRedirect()){
-                            TabUtils.openUrlInSameTab(post.getUrl().toString());
-                        }else{
-                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId());
-                        }
-                    }
-                });
-
-                cardView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        if(post.getRedirect()){
-                            TabUtils.openUrlInSameTab(post.getUrl().toString());
-                        }else{
-                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId());
-                        }
-                    }
-                });
+            if(post.getShowFull()){
+                contentText.setText(post.getContent().toString());
+                contentText.setVisibility(View.VISIBLE);
             }
+
+            publisherNameText.setText(post.getPublisherName().toString());
+            publisherNameText.setTextSize(9);
+
+            ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
+
+            titleText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(post.getRedirect()){
+                        TabUtils.openUrlInSameTab(post.getUrl().toString());
+                    }else{
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        activity.showCommentsBottomSheetFromPost(post.getId());
+                    }
+                }
+            });
+
+            contentText.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(post.getRedirect()){
+                        TabUtils.openUrlInSameTab(post.getUrl().toString());
+                    }else{
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        activity.showCommentsBottomSheetFromPost(post.getId());
+                    }
+                }
+            });
+
+            cardView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if(post.getRedirect()){
+                        TabUtils.openUrlInSameTab(post.getUrl().toString());
+                    }else{
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        activity.showCommentsBottomSheetFromPost(post.getId());
+                    }
+                }
+            });
 
             finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
