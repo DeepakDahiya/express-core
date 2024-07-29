@@ -332,54 +332,5 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mUpvoteButton.setClickable(true);
                 }
             };
-        
-        private TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataCallback getTwitterOEmbedDataCallback=
-            new TwitterGetOEmbedDataUtil.GetTwitterOEmbedDataCallback() {
-                @Override
-                public void getTwitterOEmbedDataSuccessful(String html) {
-                    Log.e("GET_HTML","FETCHED HTML");
-                    Log.e("GET_HTML", html);
-
-                    WebSettings webSettings = postWebView.getSettings();
-                    webSettings.setJavaScriptEnabled(true);
-                    webSettings.setLayoutAlgorithm(WebSettings.LayoutAlgorithm.NORMAL);
-                    webSettings.setUseWideViewPort(false);
-                    webSettings.setAllowFileAccess(true);
-
-                    postWebView.setWebContentsDebuggingEnabled(true);
-                    postWebView.setWebViewClient(new WebViewClient() {
-                        @Override
-                        public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
-                            super.onReceivedError(view, request, error);
-                            Log.e("GET_HTML", "Error loading page: " + error.getDescription());
-                        }
-
-                        @Override
-                        public void onReceivedError(WebView view, int errorCode, String description, String failingUrl) {
-                            super.onReceivedError(view, errorCode, description, failingUrl);
-                            Log.e("GET_HTML", "Error loading page: " + description);
-                        }
-                    });
-                    postWebView.setWebChromeClient(new WebChromeClient() {
-                        public void onProgressChanged(WebView view, int progress) {
-                            progressBar.setVisibility(View.VISIBLE);
-                            progressBar.setProgress(progress);
-                            if (progress == 100) {
-                                progressBar.setVisibility(View.GONE);
-                            }
-                            Log.e("POST_LIST_ADAPTER", "Progess: " +  Integer.toString(progress));
-                        }
-                    });
-                    postWebView.setHorizontalScrollBarEnabled(false);
-                    postWebView.setVerticalScrollBarEnabled(false);
-                    postWebView.setScrollContainer(false);
-                    postWebView.loadDataWithBaseURL("https://twitter.com", html, "text/html", "UTF-8", null);
-                }
-
-                @Override
-                public void getTwitterOEmbedDataFailed(String error) {
-                    Log.e("GET_HTML", error);
-                }
-            };
     }
 }
