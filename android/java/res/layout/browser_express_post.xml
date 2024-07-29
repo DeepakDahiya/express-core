@@ -61,6 +61,7 @@
                             android:layout_height="20dp"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
+                            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                             android:layout_marginStart="8sp"
                             android:adjustViewBounds="true" />
                     </LinearLayout>
