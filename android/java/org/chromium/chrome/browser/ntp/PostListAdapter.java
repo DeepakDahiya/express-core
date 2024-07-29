@@ -9,6 +9,7 @@ import android.view.View;
 import org.chromium.base.Log;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.VideoView;
 import android.widget.Button;
 import android.view.ViewGroup;
 import androidx.recyclerview.widget.RecyclerView;
@@ -87,6 +88,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
+        LinearLayout twitterPostLayout;
+        ImageView twitterProfilePicture;
+        TextView twitterName;
+        TextView twitterUsername;
+        TextView twitterContent;
+        ImageView twitterImage;
+        VideoView twitterVideo;
+
         ImageView postImage;
         CardView cardView;
         TextView publisherNameText;
@@ -112,6 +121,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
+            twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
+            twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
+            twitterName = (TextView) itemView.findViewById(R.id.twitter_name);
+            twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
+            twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
+            twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
+            twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
+        
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
@@ -140,56 +157,76 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             Boolean t = true;
 
-            titleText.setText(post.getTitle().toString());
+            if (postType.equals(TWITTER_TYPE) || t) {
+                twitterPostLayout.setVisibility(View.VISIBLE);
+                String name = "BombayTimes";
+                String username = "bombaytimes";
+                String content = ".@AzmiShabana shares an adorable picture with new mom @RichaChadha and her little one 👶\n\n#diamirza #richachadha #shabanaazmi #urmilamatondkar #tanviazmi #bollywood #motherhood #newmom";
+                String profilePicUrl = "https://pbs.twimg.com/profile_images/1743147598247268352/R49drbzf_normal.jpg";
+                String twitterImageUrl = "https://pbs.twimg.com/media/GTpoqKfXwAAJsYc.jpg";
 
-            if(post.getShowFull()){
-                contentText.setText(post.getContent().toString());
-                contentText.setVisibility(View.VISIBLE);
+                twitterName.setText(name);
+                twitterUsername.setText("@" + username);
+                twitterContent.setText(content);
+
+                ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
+                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
+
+        // ImageView twitterImage;
+        // VideoView twitterVideo;
+            } else {
+                twitterPostLayout.setVisibility(View.GONE);
+                titleText.setText(post.getTitle().toString());
+
+                if(post.getShowFull()){
+                    contentText.setText(post.getContent().toString());
+                    contentText.setVisibility(View.VISIBLE);
+                }
+
+                publisherNameText.setText(post.getPublisherName().toString());
+                publisherNameText.setTextSize(9);
+
+                ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
+
+                titleText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId());
+                        }
+                    }
+                });
+
+                contentText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId());
+                        }
+                    }
+                });
+
+                cardView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId());
+                        }
+                    }
+                });
             }
-
-            publisherNameText.setText(post.getPublisherName().toString());
-            publisherNameText.setTextSize(9);
-
-            ImageLoader.downloadImage(post.getImageUrl().toString(), Glide.with(activity), false, 5, postImage, null);
-
-            titleText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(post.getRedirect()){
-                        TabUtils.openUrlInSameTab(post.getUrl().toString());
-                    }else{
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId());
-                    }
-                }
-            });
-
-            contentText.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(post.getRedirect()){
-                        TabUtils.openUrlInSameTab(post.getUrl().toString());
-                    }else{
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId());
-                    }
-                }
-            });
-
-            cardView.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if(post.getRedirect()){
-                        TabUtils.openUrlInSameTab(post.getUrl().toString());
-                    }else{
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId());
-                    }
-                }
-            });
 
             finalVote = post.getUpvoteCount() - post.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
