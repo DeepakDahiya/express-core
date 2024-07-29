@@ -311,80 +311,10 @@ public class BraveNewTabPageLayout
 
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
-        // mNewsSettingsBar = findViewById(R.id.news_settings_bar);
-        // // to make sure that tap on the settings bar doesn't go through and
-        // // trigger the article view
-        // mNewsSettingsBar.setOnClickListener(view -> {});
-
-        // // Double tap on the settings bar to scroll back up
-        // mNewsSettingsBar.setOnTouchListener(new OnTouchListener() {
-        //     private GestureDetector mGestureDetector =
-        //             new GestureDetector(mActivity, new GestureDetector.SimpleOnGestureListener() {
-        //                 @Override
-        //                 public boolean onDoubleTap(MotionEvent e) {
-        //                     mRecyclerView.smoothScrollToPosition(0);
-        //                     return super.onDoubleTap(e);
-        //                 }
-        //             });
-
-        //     @Override
-        //     public boolean onTouch(View v, MotionEvent event) {
-        //         mGestureDetector.onTouchEvent(event);
-        //         return true;
-        //     }
-        // });
-        // mNewContentLayout = findViewById(R.id.news_load_new_content);
-        // mNewContentText = findViewById(R.id.new_content_button_text);
-        // mNewContentProgressBar = findViewById(R.id.new_content_loading_spinner);
-        // mNewContentLayout.setOnClickListener(view -> { loadNewContent(); });
-        // ImageView ivNewsSettings = findViewById(R.id.news_settings_button);
-        // ivNewsSettings.setOnClickListener(view -> {
-        //     SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
-        //     settingsLauncher.launchSettingsActivity(getContext(), BraveNewsPreferencesV2.class);
-        // });
-
         mRecyclerView = findViewById(R.id.recycler_posts);
         mFeedProgress = findViewById(R.id.feed_progress);
-        // LinearLayoutManagerWrapper linearLayoutManager =
-        //         new LinearLayoutManagerWrapper(mActivity, LinearLayoutManager.VERTICAL, false);
-        // mRecyclerView.setLayoutManager(linearLayoutManager);
-        // mRecyclerView.post(new Runnable() {
-        //     @Override
-        //     public void run() {
-        //         setNtpRecyclerView(linearLayoutManager);
-        //     }
-        // });
-
         mPosts = new ArrayList<Post>();
         mFeedProgress.setVisibility(View.VISIBLE);
-        // mPosts.add(new Post(
-        //         "123", 
-        //         "",
-        //         "Test Title",
-        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-        //         "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
-        //         5,
-        //         2,
-        //         10,
-        //         "Test",
-        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-        //         true,
-        //         true,
-        //         null));
-        // mPosts.add(new Post(
-        //         "1234", 
-        //         "",
-        //         "Test Title",
-        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-        //         "https://telanganatoday.com/bigg-boss-star-elvish-yadav-booked-for-assaulting-youtuber-in-gurugram",
-        //         5,
-        //         2,
-        //         10,
-        //         "Test",
-        //         "https://image.telanganatoday.com/wp-content/uploads/2024/03/Bigg-Boss-fame-Elvish-Yadav-booked-for-assaulting-YouTuber-in-Gurugram_V_jpg--816x480-4g.webp?sw=1927&dsz=816x480&iw=659&p=false&r=2",
-        //         true,
-        //         true,
-        //         null));
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
@@ -402,8 +332,6 @@ public class BraveNewTabPageLayout
 
     private boolean shouldDisplayBraveStats() {
         return false;
-        // return ContextUtils.getAppSharedPreferences().getBoolean(
-        //         BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, true);
     }
 
     private void setNtpRecyclerView(LinearLayoutManager linearLayoutManager) {
