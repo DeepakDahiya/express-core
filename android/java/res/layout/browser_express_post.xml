@@ -73,12 +73,6 @@
                 app:contentPadding="0sp"
                 android:layout_margin="0dp">
                 <ImageView
-                    android:id="@+id/twitter_placeholder_image"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_placeholder" />
-                <ImageView
                     android:id="@+id/twitter_image"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
