@@ -157,7 +157,6 @@ public class BrowserExpressGetPostsUtil {
                                 media != null ? media.getInt("height") : 0,
                                 media != null ? media.getInt("width") : 0
                             );
-                        } 
                         }
 
                         posts.add(new Post(
