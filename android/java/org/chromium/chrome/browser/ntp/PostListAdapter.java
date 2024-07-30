@@ -89,6 +89,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
         ((PostHolder) holder).bind(post);
     }
 
+    @Override
+    public void onViewDetachedFromWindow(@NonNull PostViewHolder holder) {
+        super.onViewDetachedFromWindow(holder);
+        // Pause the video when the ViewHolder is detached from the window
+        if (holder.twitterVideo.isPlaying()) {
+            holder.twitterVideo.pause();
+        }
+    }
+
     private class PostHolder extends RecyclerView.ViewHolder {
         LinearLayout twitterPostLayout;
         ImageView twitterProfilePicture;
