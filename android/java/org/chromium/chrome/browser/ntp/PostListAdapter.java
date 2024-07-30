@@ -197,6 +197,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
 
+                Log.e("VIDEO_URL", videoUrl);
+
                 if(videoUrl != null && videoUrl.length() > 0){
                     Uri uri = Uri.parse(videoUrl);
                     twitterVideo.setVideoURI(uri);
