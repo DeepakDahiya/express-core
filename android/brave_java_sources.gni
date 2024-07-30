@@ -269,7 +269,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/ntp/BrowserExpressGetPostsUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/Post.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/TwitterGetOEmbedDataUtil.java",
-  "../../brave/android/java/org/chromium/chrome/browser/ntp/TweetSubPost.java",
+  "../../brave/android/java/org/chromium/chrome/browser/ntp/SubPost.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/PostListAdapter.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/IncognitoNewTabPageView.java",
   "../../brave/android/java/org/chromium/chrome/browser/ntp/OnBraveNtpListener.java",

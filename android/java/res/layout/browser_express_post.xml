@@ -76,6 +76,28 @@
                         android:textSize="12sp"
                         android:textColor="@color/news_settings_title_color" />
                 </LinearLayout>
+                <ImageView
+                    android:id="@+id/x_logo"
+                    android:src="@drawable/x_logo"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="top"
+                    android:visibility="gone"
+                    android:layout_marginStart="8sp"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                    android:adjustViewBounds="true" />
+                <ImageView
+                    android:id="@+id/instagram_logo"
+                    android:src="@drawable/instagram_logo"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="top"
+                    android:visibility="gone"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                    android:layout_marginStart="8sp"
+                    android:adjustViewBounds="true" />
             </LinearLayout>
             <TextView
                 android:id="@+id/twitter_content"

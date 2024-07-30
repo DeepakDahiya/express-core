@@ -89,15 +89,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         ((PostHolder) holder).bind(post);
     }
 
-    @Override
-    public void onViewDetachedFromWindow(RecyclerView.ViewHolder holder) {
-        super.onViewDetachedFromWindow(holder);
-        // Pause the video when the ViewHolder is detached from the window
-        if (holder.twitterVideo.isPlaying()) {
-            holder.twitterVideo.pause();
-        }
-    }
-
     private class PostHolder extends RecyclerView.ViewHolder {
         LinearLayout twitterPostLayout;
         ImageView twitterProfilePicture;
@@ -109,6 +100,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         ImageButton twitterPlayButton;
         ImageView twitterVerifiedImage;
         CardView twitterMediaCard;
+        ImageView xLogo;
+        ImageView instagramLogo;
 
         ImageView postImage;
         CardView cardView;
@@ -145,6 +138,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterVerifiedImage = (ImageView) itemView.findViewById(R.id.twitter_verified);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
+            xLogo = (ImageView) itemView.findViewById(R.id.x_logo);
+            instagramLogo = (ImageView) itemView.findViewById(R.id.instagram_logo);
         
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -172,23 +167,23 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             String postType = post.getType().toString();
 
-            Boolean t = true;
-
-            if (postType.equals(TWITTER_TYPE)) {
+            if (postType.equals(TWITTER_TYPE) || postType.equals(INSTAGRAM_TYPE)) {
                 twitterPostLayout.setVisibility(View.VISIBLE);
-                TweetSubPost tweetSubPost = post.getTweetSubPost();
-                String name = tweetSubPost.getAuthorName();
-                String username = "@" + tweetSubPost.getAuthorUsername();
-                String content = tweetSubPost.getContent();
-                String profilePicUrl = tweetSubPost.getAuthorProfilePicture();
-                Boolean verified = tweetSubPost.getAuthorVerified();
+                SubPost subPost = post.getSubPost();
+                String name = subPost.getAuthorName();
+                String username = "@" + subPost.getAuthorUsername();
+                String content = subPost.getContent();
+                String profilePicUrl = subPost.getAuthorProfilePicture();
+                Boolean verified = subPost.getAuthorVerified();
+
+                postType.equals(INSTAGRAM_TYPE) ? instagramLogo.setVisibility(View.VISIBLE) : xLogo.setVisibility(View.VISIBLE);
 
                 if(verified){
                     twitterVerifiedImage.setVisibility(View.VISIBLE);
                 }
 
-                String twitterImageUrl = tweetSubPost.getMediaImageUrl();
-                String videoUrl = tweetSubPost.getMediaVideoUrl();
+                String twitterImageUrl = subPost.getMediaImageUrl();
+                String videoUrl = subPost.getMediaVideoUrl();
 
                 twitterName.setText(name);
                 twitterUsername.setText(username);
@@ -205,11 +200,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 contentText.setVisibility(View.GONE);
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
-
-                Log.e("VIDEO_URL", videoUrl);
-                Log.e("VIDEO_URL_BOOL1", videoUrl != null ? "true" : "false");
-                Log.e("VIDEO_URL_BOOL2", videoUrl.length() > 0 ? "true" : "false");
-                Log.e("VIDEO_URL_BOOL3", videoUrl != null && videoUrl.length() > 0 ? "true" : "false");
 
                 if(videoUrl != null && videoUrl != "null"){
                     Uri uri = Uri.parse(videoUrl);

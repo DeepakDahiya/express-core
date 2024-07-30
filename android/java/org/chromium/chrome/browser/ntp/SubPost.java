@@ -1,8 +1,8 @@
 package org.chromium.chrome.browser.ntp;
 
-public class TweetSubPost{  
-    private String tweetId;  
-    private String linkToTweet;  
+public class SubPost{  
+    private String id;  
+    private String url;  
     private String content;  
     private String authorName;  
     private String authorUsername;  
@@ -14,9 +14,9 @@ public class TweetSubPost{
     private int mediaHeight;  
     private int mediaWidth;  
     
-    public TweetSubPost(
-        String tweetId,
-        String linkToTweet,
+    public SubPost(
+        String id,
+        String url,
         String content,
         String authorName,
         String authorUsername,
@@ -28,8 +28,8 @@ public class TweetSubPost{
         int mediaHeight,
         int mediaWidth
     ) {  
-        this.tweetId = tweetId;
-        this.linkToTweet = linkToTweet;
+        this.id = id;
+        this.url = url;
         this.content = content;
         this.authorName = authorName;
         this.authorUsername = authorUsername;
@@ -42,12 +42,12 @@ public class TweetSubPost{
         this.mediaWidth = mediaWidth;
     }  
 
-    public String getTweetId() {  
-        return this.tweetId;  
+    public String getId() {  
+        return this.id;  
     }  
 
-    public String getLinkToTweet() {  
-        return this.linkToTweet;  
+    public String getUrl() {  
+        return this.url;  
     }  
 
     public String getContent() {  
