@@ -136,9 +136,13 @@ public class BrowserExpressGetPostsUtil {
 
                         String postType = post.getString("type");
                         TweetSubPost tweetSubPost = null;
-                        if(postType.equals(TWITTER_TYPE)){
+                        if (postType.equals(TWITTER_TYPE)) {
                             JSONObject author = tsp.optJSONObject("author");
                             JSONObject media = tsp.optJSONObject("media");
+                            String videoUrl = null; // Initialize videoUrl as null
+                            if (media != null) {
+                                videoUrl = media.getString("videoUrl"); // Assign the actual value of videoUrl
+                            }
                             tweetSubPost = new TweetSubPost(
                                 tsp.getString("tweetId"),
                                 tsp.getString("linkToTweet"),
@@ -147,12 +151,13 @@ public class BrowserExpressGetPostsUtil {
                                 author.getString("username"),
                                 author.getBoolean("isVerified"),
                                 author.getString("profilePicture"),
-                                media != null ? media.getString("type"): null,
-                                media != null ? media.getString("imageUrl"): null,
-                                media != null ? media.getString("videoUrl"): null,
-                                media != null ? media.getInt("height"): 0,
-                                media != null ? media.getInt("width"): 0
+                                media != null ? media.getString("type") : null,
+                                media != null ? media.getString("imageUrl") : null,
+                                videoUrl, // Use the actual value of videoUrl
+                                media != null ? media.getInt("height") : 0,
+                                media != null ? media.getInt("width") : 0
                             );
+                        } 
                         }
 
                         posts.add(new Post(

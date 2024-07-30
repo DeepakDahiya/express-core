@@ -202,7 +202,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 Log.e("VIDEO_URL_BOOL2", videoUrl.length() > 0 ? "true" : "false");
                 Log.e("VIDEO_URL_BOOL3", videoUrl != null && videoUrl.length() > 0 ? "true" : "false");
 
-                if(videoUrl != null){
+                if(videoUrl != null && videoUrl != "null"){
                     Uri uri = Uri.parse(videoUrl);
                     twitterVideo.setVideoURI(uri);
 
