@@ -176,7 +176,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 String profilePicUrl = subPost.getAuthorProfilePicture();
                 Boolean verified = subPost.getAuthorVerified();
 
-                postType.equals(INSTAGRAM_TYPE) ? instagramLogo.setVisibility(View.VISIBLE) : xLogo.setVisibility(View.VISIBLE);
+                if(postType.equals(INSTAGRAM_TYPE)){
+                    instagramLogo.setVisibility(View.VISIBLE);
+                }
+
+                if(postType.equals(TWITTER_TYPE)){
+                    xLogo.setVisibility(View.VISIBLE);
+                }
 
                 if(verified){
                     twitterVerifiedImage.setVisibility(View.VISIBLE);
