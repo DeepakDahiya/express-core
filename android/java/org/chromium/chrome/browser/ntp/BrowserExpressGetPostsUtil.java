@@ -40,6 +40,7 @@ public class BrowserExpressGetPostsUtil {
     private static final String TAG = "Get_Posts_Browser_Express";
     private static final String GET_POSTS_URL = "https://api.browser.express/v1/post/feed";
     private static final String TWITTER_TYPE = "Twitter";
+    private static final String INSTAGRAM_TYPE = "Instagram";
 
     public interface GetPostsCallback {
         void getPostsSuccessful(List<Post> posts);
@@ -136,7 +137,7 @@ public class BrowserExpressGetPostsUtil {
 
                         String postType = post.getString("type");
                         SubPost subPost = null;
-                        if (postType.equals(TWITTER_TYPE)) {
+                        if (postType.equals(TWITTER_TYPE) || postType.equals(INSTAGRAM_TYPE)) {
                             JSONObject author = tsp.optJSONObject("author");
                             JSONObject media = tsp.optJSONObject("media");
                             String videoUrl = null; // Initialize videoUrl as null
