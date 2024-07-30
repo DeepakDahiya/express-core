@@ -178,9 +178,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                 if(postType.equals(INSTAGRAM_TYPE)){
                     instagramLogo.setVisibility(View.VISIBLE);
+                    xLogo.setVisibility(View.GONE);
                 }
 
                 if(postType.equals(TWITTER_TYPE)){
+                    instagramLogo.setVisibility(View.GONE);
                     xLogo.setVisibility(View.VISIBLE);
                 }
 
