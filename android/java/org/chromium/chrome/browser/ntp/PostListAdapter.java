@@ -98,6 +98,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         ImageView twitterImage;
         VideoView twitterVideo;
         ImageButton twitterPlayButton;
+        ImageView twitterVerifiedImage;
+        CardView twitterMediaCard;
 
         ImageView postImage;
         CardView cardView;
@@ -132,6 +134,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
             twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
+            twitterVerifiedImage = (ImageButton) itemView.findViewById(R.id.verified);
+            twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
         
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -161,29 +165,39 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             Boolean t = true;
 
-            if (postType.equals(TWITTER_TYPE) || t) {
+            if (postType.equals(TWITTER_TYPE)) {
                 twitterPostLayout.setVisibility(View.VISIBLE);
-                String name = "BombayTimes";
-                String username = "@" + "bombaytimes";
-                String content = ".@AzmiShabana shares an adorable picture with new mom @RichaChadha and her little one 👶\n\n#diamirza #richachadha #shabanaazmi #urmilamatondkar #tanviazmi #bollywood #motherhood #newmom";
-                String profilePicUrl = "https://pbs.twimg.com/profile_images/1585550046740848642/OpGKpqx9_normal.jpg";
+                TweetSubPost tweetSubPost = post.getTweetSubPost();
+                String name = tweetSubPost.getAuthorName();
+                String username = "@" + tweetSubPost.getAuthorUsername();
+                String content = tweetSubPost.getContent();
+                String profilePicUrl = tweetSubPost.getAuthorProfilePicture();
+                Boolean verified = tweetSubPost.getAuthorVerified();
 
-                String twitterImageUrl = "https://pbs.twimg.com/ext_tw_video_thumb/1497450795532439554/pu/img/b7JxO8OAXonSfaHv.jpg";
-                String videoUrl = "https://video.twimg.com/ext_tw_video/1497450795532439554/pu/vid/848x480/dxXxEuM6ZGNLRPjZ.mp4?tag=12";
+                if(verified){
+                    twitterVerifiedImage.setVisibility(View.VISIBLE);
+                }
+
+                String twitterImageUrl = tweetSubPost.getMediaImageUrl();
+                String videoUrl = tweetSubPost.getMediaVideoUrl();
 
                 twitterName.setText(name);
                 twitterUsername.setText(username);
                 twitterContent.setText(content);
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
-                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
+                if(twitterImageUrl != null){
+                    ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
+                    twitterMediaCard.setVisibility(View.VISIBLE);
+                    twitterImage.setVisibility(View.VISIBLE);
+                }
 
                 titleText.setVisibility(View.GONE);
                 contentText.setVisibility(View.GONE);
                 publisherNameText.setVisibility(View.GONE);
                 postImage.setVisibility(View.GONE);
 
-                if(videoUrl.length() > 0){
+                if(videoUrl != null && videoUrl.length() > 0){
                     Uri uri = Uri.parse(videoUrl);
                     twitterVideo.setVideoURI(uri);
 
@@ -191,18 +205,21 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterVideo.setMediaController(mediaController);
                     mediaController.setAnchorView(twitterVideo);
 
+                    twitterPlayButton.setVisibility(View.VISIBLE);
+
+                    twitterImage.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            int h = twitterImage.getHeight();
+                            twitterVideo.getLayoutParams().height = h;
+                            twitterVideo.requestLayout();
+                        }
+                    });
+
                     twitterVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
                         @Override
                         public void onPrepared(MediaPlayer mp) {
                             twitterImage.setVisibility(View.GONE);
-                            twitterImage.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    int h = twitterImage.getHeight();
-                                    twitterVideo.getLayoutParams().height = h;
-                                    twitterVideo.requestLayout();
-                                }
-                            });
                             twitterVideo.setVisibility(View.VISIBLE);
                             twitterVideo.start();
                         }
@@ -211,7 +228,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterPlayButton.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            twitterImage.setVisibility(View.GONE);
                             twitterPlayButton.setVisibility(View.GONE);
                             twitterImage.post(new Runnable() {
                                 @Override

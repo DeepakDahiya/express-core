@@ -127,9 +127,31 @@ public class BrowserExpressGetPostsUtil {
                         JSONObject post = postsArray.getJSONObject(i);
                         JSONObject didVote = post.optJSONObject("didVote");
                         JSONObject publisher = post.optJSONObject("publisher");
+                        JSONObject tsp = post.optJSONObject("tweetSubPost");
                         Vote v = null;
                         if(didVote != null){
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                        }
+
+                        String postType = post.getString("type");
+                        TweetSubPost tweetSubPost = null;
+                        if(postType.equals(TWITTER_TYPE)){
+                            JSONObject author = tsp.optJSONObject("author");
+                            JSONObject media = tsp.optJSONObject("media");
+                            tweetSubPost = new TweetSubPost(
+                                tsp.getString("tweetId"),
+                                tsp.getString("linkToTweet"),
+                                tsp.getString("content"),
+                                author.getString("name"),
+                                author.getString("username"),
+                                author.getBoolean("isVerified"),
+                                author.getString("profilePicture"),
+                                media != null ? media.getString("type"): null,
+                                media != null ? media.getString("imageUrl"): null,
+                                media != null ? media.getString("videoUrl"): null,
+                                media != null ? media.getInt("height"): 0,
+                                media != null ? media.getInt("width"): 0
+                            );
                         }
 
                         posts.add(new Post(
@@ -146,7 +168,8 @@ public class BrowserExpressGetPostsUtil {
                             publisher.getString("imageUrl"),
                             post.getBoolean("redirect"),
                             post.getBoolean("showFull"),
-                            v));
+                            v,
+                            tweetSubPost));
                     }
 
                     GetPostsWorkerTask.setPosts(posts);

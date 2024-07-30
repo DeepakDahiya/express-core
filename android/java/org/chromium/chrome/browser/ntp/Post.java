@@ -16,8 +16,9 @@ public class Post{
     private Boolean redirect;
     private Boolean showFull;
     private Vote didVote;
+    private TweetSubPost tweetSubPost;
 
-    public Post(String _id, String content, String type, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote) {  
+    public Post(String _id, String content, String type, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote, TweetSubPost tweetSubPost) {  
         this._id = _id;  
         this.content = content;
         this.type = type;
@@ -32,6 +33,7 @@ public class Post{
         this.redirect = redirect;
         this.showFull = showFull;
         this.publisherImageUrl = publisherImageUrl;
+        this.tweetSubPost = tweetSubPost;
     }  
 
     public String getId() {  
@@ -89,4 +91,8 @@ public class Post{
     public int getCommentCount() {  
         return this.commentCount;  
     }  
+
+    public TweetSubPost getTweetSubPost() {
+        return this.tweetSubPost;
+    }
 }  

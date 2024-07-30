@@ -57,12 +57,13 @@
                             android:textStyle="bold" />
                         <ImageView
                             android:src="@drawable/verified"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
                             android:scaleType="centerCrop"
                             android:layout_gravity="center"
                             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                             android:layout_marginStart="8sp"
+                            android:visibility="gone"
                             android:adjustViewBounds="true" />
                     </LinearLayout>
                     <TextView
@@ -84,11 +85,13 @@
                 android:textSize="14sp" />
 
             <androidx.cardview.widget.CardView
+                android:id="@+id/twitter_media_card"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 app:cardCornerRadius="12dp"
                 app:contentPadding="0sp"
+                android:visibility="gone"
                 android:layout_margin="0dp">
                 <FrameLayout
                     android:layout_width="match_parent"
@@ -100,6 +103,7 @@
                         android:src="@drawable/loading_image"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                         android:adjustViewBounds="true"
+                        android:visibility="gone"
                         android:scaleType="centerCrop"/>
                     <VideoView
                         android:id="@+id/twitter_video"
@@ -112,6 +116,7 @@
                         android:layout_width="75sp"
                         android:layout_height="75sp"
                         android:layout_gravity="center"
+                        android:visibility="gone"
                         android:background="@drawable/play_video"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                         android:scaleType="centerCrop" />
