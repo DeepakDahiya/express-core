@@ -134,7 +134,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
             twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
-            twitterVerifiedImage = (ImageButton) itemView.findViewById(R.id.verified);
+            twitterVerifiedImage = (ImageView) itemView.findViewById(R.id.verified);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
         
             cardView = (CardView) itemView.findViewById(R.id.card_view);
