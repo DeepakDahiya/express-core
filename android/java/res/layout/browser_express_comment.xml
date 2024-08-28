@@ -144,13 +144,18 @@
                         android:layout_marginHorizontal="8dp"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
                 </LinearLayout>
-                <ImageButton
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginVertical="4dp"
+                    android:background="@color/browser_express_divider_color"/>
+                <!-- <ImageButton
                     android:id="@+id/btn_options"
                     android:layout_width="18sp"
                     android:layout_height="18sp"
                     android:layout_gravity="center"
                     android:background="@drawable/ic_more_vert_24dp"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
             </LinearLayout>
 
             <Button
@@ -171,15 +176,10 @@
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
     </LinearLayout>
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="1dp"
-        android:background="@color/browser_express_divider_color"
-        android:layout_marginHorizontal="8dp"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_replies"
         android:layout_width="match_parent"
-        android:layout_marginStart="24sp"
+        android:layout_marginStart="28sp"
         android:visibility="gone"
         android:layout_height="wrap_content"/>
 </LinearLayout>
