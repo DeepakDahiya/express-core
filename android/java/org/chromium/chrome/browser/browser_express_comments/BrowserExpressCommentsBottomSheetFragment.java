@@ -245,6 +245,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
                 mUrl = activity.getActivityTab().getUrl().getSpec();
 
+                Log.e("EXPRESS BROWSER URL", mUrl);
+
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                             mUrl, null, null, mPage, mPerPage, accessToken, getCommentsCallback);

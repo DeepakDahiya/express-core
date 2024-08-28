@@ -14,6 +14,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import android.net.Uri;
 import java.util.List;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import org.chromium.base.ContextUtils;
@@ -115,6 +117,18 @@ public class BrowserExpressGetCommentsUtil {
                 searchQuery =  "?postId=" + postId;
             }else{
                 searchQuery =  "?url=" + pageUrl;
+            }
+
+            Log.e("EXPRESS BROWSER URL PAGE URL", pageUrl);
+
+            Log.e("EXPRESS BROWSER URL SEARCH QUERY", searchQuery);
+
+            if(pageUrl != null){
+                try {
+                    String encodedUrl = URLEncoder.encode(pageUrl, "UTF-8");
+                    Log.e("EXPRESS BROWSER URL ENCODED URL", encodedUrl);
+                } catch (UnsupportedEncodingException e) {
+                }
             }
 
             searchQuery = searchQuery + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
