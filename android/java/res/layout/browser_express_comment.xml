@@ -91,17 +91,12 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/action_items"
                 android:baselineAligned="false"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:visibility="visible"
                 android:orientation="horizontal">
-                <LinearLayout
-                    android:id="@+id/action_items"
-                    android:layout_width="0sp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:visibility="visible"
-                    android:orientation="horizontal">
                     <ImageButton
                         android:id="@+id/reply_icon"
                         android:layout_width="16sp"
@@ -144,7 +139,6 @@
                         android:textAllCaps="true"
                         android:layout_marginHorizontal="8dp"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-                </LinearLayout>
                 <!-- <ImageButton
                     android:id="@+id/btn_options"
                     android:layout_width="18sp"
