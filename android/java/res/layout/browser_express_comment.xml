@@ -163,7 +163,7 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="@color/news_settings_title_color"
+        android:background="@color/browser_express_divider_color"
         android:layout_marginHorizontal="8dp"/>
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_replies"

@@ -246,5 +246,5 @@
 
     <color name="leo_reset_text_color">#FF4B6A</color>
 
-    <color name="browser_express_card_color">#FF424242</color>
+    <color name="browser_express_divider_color">#f3f4f6</color>
 </resources>
