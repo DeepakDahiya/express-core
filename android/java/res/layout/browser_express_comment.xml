@@ -101,6 +101,16 @@
                     android:layout_weight="1"
                     android:visibility="visible"
                     android:orientation="horizontal">
+                    <ImageButton
+                        android:id="@+id/reply_icon"
+                        android:layout_width="16sp"
+                        android:layout_height="16sp"
+                        android:layout_gravity="center"
+                        android:layout_marginHorizontal="5sp"
+                        android:background="@drawable/btn_reply"
+                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                        android:scaleType="centerCrop" />
+
                     <Button
                         android:id="@+id/btn_reply"
                         android:layout_width="wrap_content"
