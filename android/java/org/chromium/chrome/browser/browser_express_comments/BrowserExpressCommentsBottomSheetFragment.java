@@ -392,7 +392,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                             activity.setReplyComment(commentJson.toString());
                             activity.setReplyTo(null);
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e("Express Browser Access Token", e.getMessage());
+                        } catch (JSONException e) {
+                            Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
+                        }
+                    }else{
+                        mComments.add(0, comment);
+                        mCommentAdapter.notifyItemInserted(0);
 
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(0, 0);
+
+                        try{
+                            BraveActivity activity = BraveActivity.getBraveActivity();
                             // Updating comment count for bottom toolbar
                             mCommentsText = activity.getCommentCountText();
 
@@ -415,12 +428,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         } catch (JSONException e) {
                             Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                         }
-                    }else{
-                        mComments.add(0, comment);
-                        mCommentAdapter.notifyItemInserted(0);
-
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(0, 0);
                     }
                 }
 
