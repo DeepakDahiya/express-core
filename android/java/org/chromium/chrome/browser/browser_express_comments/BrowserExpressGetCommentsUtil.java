@@ -116,17 +116,9 @@ public class BrowserExpressGetCommentsUtil {
             }else if(postId != null && !postId.equals("")){
                 searchQuery =  "?postId=" + postId;
             }else{
-                searchQuery =  "?url=" + pageUrl;
-            }
-
-            Log.e("EXPRESS BROWSER URL PAGE URL", pageUrl);
-
-            Log.e("EXPRESS BROWSER URL SEARCH QUERY", searchQuery);
-
-            if(pageUrl != null){
                 try {
                     String encodedUrl = URLEncoder.encode(pageUrl, "UTF-8");
-                    Log.e("EXPRESS BROWSER URL ENCODED URL", encodedUrl);
+                    searchQuery =  "?url=" + encodedUrl;
                 } catch (UnsupportedEncodingException e) {
                 }
             }
