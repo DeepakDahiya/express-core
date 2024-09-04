@@ -74,6 +74,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private ImageButton mCanceReplyButton;
     private EditText mMessageEditText;
     private TextView mReplyToText;
+    private TextView mCommentsText;
 
     private ImageView mAvatarImage;
 
@@ -155,6 +156,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
+            // bottom bar comment count
+            mCommentsText = activity.getCommentCountText();
             String accessToken = activity.getAccessToken();
             if(accessToken != null){
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
@@ -389,6 +392,24 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                             activity.setReplyComment(commentJson.toString());
                             activity.setReplyTo(null);
+
+                            // Updating comment count for bottom toolbar
+                            mCommentsText = activity.getCommentCountText();
+
+                            String currentText = mCommentsText.getText().toString();
+                            int commentCount = 0;
+                            try {
+                                String[] parts = currentText.split(" ");
+                                if (parts.length > 0) {
+                                    commentCount = Integer.parseInt(parts[0]);
+                                }
+                            } catch (NumberFormatException e) {
+                            }
+
+                            // Increment the comment count
+                            commentCount++;
+
+                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Express Browser Access Token", e.getMessage());
                         } catch (JSONException e) {
