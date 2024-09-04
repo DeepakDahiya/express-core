@@ -30,7 +30,7 @@ import android.content.Context;
 import android.widget.ProgressBar;
 import android.util.Base64;
 import java.io.UnsupportedEncodingException;
-
+import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
