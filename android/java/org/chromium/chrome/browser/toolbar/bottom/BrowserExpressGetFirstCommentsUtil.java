@@ -14,6 +14,8 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import android.net.Uri;
 import java.util.List;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 
 import org.chromium.base.ContextUtils;
@@ -103,6 +105,10 @@ public class BrowserExpressGetFirstCommentsUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
+            try {
+                pageUrl = URLEncoder.encode(pageUrl, "UTF-8");
+            } catch (UnsupportedEncodingException e) {
+            }
             URL url = new URL(GET_FIRST_COMMENTS_URL + "?url=" + pageUrl);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
