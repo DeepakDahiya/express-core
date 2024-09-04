@@ -425,8 +425,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Express Browser Access Token", e.getMessage());
-                        } catch (JSONException e) {
-                            Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                         }
                     }
                 }
