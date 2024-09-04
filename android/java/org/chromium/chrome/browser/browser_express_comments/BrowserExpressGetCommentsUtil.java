@@ -110,7 +110,7 @@ public class BrowserExpressGetCommentsUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            String searchQuery;
+            String searchQuery = "";
             if(commentId != null && !commentId.equals("")){
                 searchQuery =  "?commentId=" + commentId;
             }else if(postId != null && !postId.equals("")){
