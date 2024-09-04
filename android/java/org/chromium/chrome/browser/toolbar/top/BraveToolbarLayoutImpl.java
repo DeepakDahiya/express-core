@@ -439,6 +439,28 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             }
 
             @Override
+            public void onUrlUpdated(Tab tab) {
+                String mUrl = tab.getUrl().getSpec();
+
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+
+                    int commentCount = 0;
+                    mCommentsText = activity.getCommentCountText();
+                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "BookmarkButton click " + e);
+                }
+
+                BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                    new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                            mUrl, getFirstCommentsCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                super.onUrlUpdated(tab);
+            }
+
+            @Override
             public void onPageLoadFinished(final Tab tab, GURL url) {
                 if (getToolbarDataProvider().getTab() == tab) {
                     mBraveShieldsHandler.updateUrlSpec(url.getSpec());
