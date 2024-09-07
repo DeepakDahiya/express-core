@@ -4,30 +4,22 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
-    android:layout_marginTop="60dp"
     android:orientation="vertical"
-    app:behavior_fitToContents="false"
-    app:behavior_halfExpandedRatio="0.6"
-    android:id="@+id/comment_fragment_container"
-    tools:context=".BrowserExpressCommentsBottomSheetFragment">
-
-    <ImageButton android:id="@+id/btn_maximize"
-        style="@style/ToolbarButton"
-        android:src="@drawable/maximize"
-        android:layout_gravity="center"
-        android:visibility="visible"
-        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+    tools:context=".BrowserExpressRepliesFragment">
 
     <TextView
+        android:id="@+id/original_comment"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textSize="16sp"
+        android:text="@string/browser_express_login_title"
+        android:padding="10dp" />
+
+    <Button
+        android:id="@+id/back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/comments"
-        android:textSize="20sp"
-        android:textColor="@color/set_default_text_color"
-        android:textStyle="bold"/>
+        android:text="Back" />
 
     <ProgressBar
         android:id="@+id/comment_progress"
@@ -38,11 +30,12 @@
         android:indeterminate="true"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_comments"
+        android:id="@+id/recycler_replies"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="0dp"
         android:layout_marginBottom="5sp"/>
+        
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -89,15 +82,6 @@
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-            <!-- <ImageButton android:id="@+id/profile_button"
-                android:background="@drawable/btn_toolbar_profile"
-                android:layout_width="32sp"
-                android:layout_height="32sp"
-                android:visibility="visible"
-                android:layout_gravity="center"
-                android:layout_centerVertical="true"
-                android:contentDescription="@string/profile_image" /> -->
 
             <EditText
                 android:layout_marginStart="54dp"
