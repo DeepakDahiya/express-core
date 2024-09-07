@@ -84,7 +84,6 @@ public class BrowserExpressRepliesFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
 
         if (getArguments() != null) {
             isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
@@ -102,12 +101,6 @@ public class BrowserExpressRepliesFragment extends Fragment {
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        ((BottomSheetDialog) getDialog())
-                .getBehavior()
-                .setState(BottomSheetBehavior.STATE_EXPANDED);
-
-        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = view.findViewById(R.id.comment_content);
@@ -298,11 +291,11 @@ public class BrowserExpressRepliesFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-        // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
-    }
+    // @Override
+    // public void onDismiss(@NonNull DialogInterface dialog) {
+    //     super.onDismiss(dialog);
+    //     // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
+    // }
 
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {

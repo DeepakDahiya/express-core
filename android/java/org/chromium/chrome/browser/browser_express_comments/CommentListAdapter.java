@@ -38,6 +38,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+import org.chromium.chrome.browser.app.ChromeActivity;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -243,9 +244,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    BrowserExpressRepliesFragment fragment = BrowserExpressRepliesFragment.newInstance("123");
+                    BrowserExpressRepliesFragment fragment = BrowserExpressRepliesFragment.newInstance(false);
                     // Replace 'R.id.container' with the ID of your container
-                    FragmentManager fragmentManager = getParentFragmentManager();
+                    FragmentManager fragmentManager = ((ChromeActivity) activity).getSupportFragmentManager();
                     fragmentManager.beginTransaction().replace(R.id.comment_fragment_container, fragment).addToBackStack(null).commit();
                     
                     // try{
