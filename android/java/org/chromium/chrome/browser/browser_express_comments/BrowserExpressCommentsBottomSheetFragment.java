@@ -34,22 +34,18 @@ import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.app.BraveActivity;
-
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-
+import android.widget.LinearLayout;
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
