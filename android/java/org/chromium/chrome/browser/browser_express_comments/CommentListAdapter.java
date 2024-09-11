@@ -413,7 +413,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     mTopCommentRecycler.setVisibility(View.GONE);
 
                     // mShowMoreButton.setVisibility(View.GONE);
-                    mCommentRecycler.setVisibility(View.VISIBLE);
+                    // mCommentRecycler.setVisibility(View.VISIBLE);
 
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
