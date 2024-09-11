@@ -165,7 +165,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mComments = new ArrayList<Comment>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText, null, null);
+            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText, null, null, null);
             mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
