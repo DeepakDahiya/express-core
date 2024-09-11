@@ -163,7 +163,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             ImageLoader.downloadImage("https://api.multiavatar.com/" + comment.getUser().getId().toString() + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
 
             mComments = new ArrayList<Comment>();
-            mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
             mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText, null, null, null);
             mCommentRecycler.setAdapter(mCommentAdapter);
@@ -413,7 +412,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     mTopCommentRecycler.setVisibility(View.GONE);
 
                     // mShowMoreButton.setVisibility(View.GONE);
-                    // mCommentRecycler.setVisibility(View.VISIBLE);
+                    mCommentRecycler.setVisibility(View.VISIBLE);
 
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
