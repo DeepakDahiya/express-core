@@ -34,11 +34,6 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import org.chromium.chrome.browser.app.ChromeActivity;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -244,49 +239,44 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    BrowserExpressRepliesFragment fragment = BrowserExpressRepliesFragment.newInstance(false);
-                    // Replace 'R.id.container' with the ID of your container
-                    FragmentManager fragmentManager = ((ChromeActivity) activity).getSupportFragmentManager();
-                    fragmentManager.beginTransaction().replace(R.id.comment_fragment_container, fragment).addToBackStack(null).commit();
-                    
-                    // try{
-                    //     try {
-                    //         activity = BraveActivity.getBraveActivity();
-                    //     } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    //     }
+                    try{
+                        try {
+                            activity = BraveActivity.getBraveActivity();
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        }
 
-                    //     LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
-                    //     layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
 
-                    //     String accessToken = activity.getAccessToken();
-                    //     if (accessToken == null) {
-                    //         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    //         imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                    //         activity.showGenerateUsernameBottomSheet();
-                    //         activity.dismissCommentsBottomSheet();
-                    //         return;
-                    //     }
+                        String accessToken = activity.getAccessToken();
+                        if (accessToken == null) {
+                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                            activity.showGenerateUsernameBottomSheet();
+                            activity.dismissCommentsBottomSheet();
+                            return;
+                        }
 
-                    //     JSONObject json = new JSONObject();
-                    //     json.put("name", comment.getUser().getUsername());
-                    //     json.put("commentId", comment.getId());
-                    //     activity.setReplyTo(json.toString());
-                    //     // mCanceReplyButton = activity.getReplyToCancelButton();
-                    //     // mReplyToText = activity.getReplyToText();
-                    //     // mMessageEditText =  activity.getContentEditText();
-                    //     if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
-                    //         Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
-                    //         String replyToString = "replying to " + comment.getUser().getUsername();
-                    //         mReplyToText.setText(replyToString);
-                    //         mCanceReplyButton.setVisibility(View.VISIBLE);
-                    //         mMessageEditText.requestFocus();
-                    //         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    //         imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
-                    //     }
-                    //     Log.e("REPLY TO", "OUTSIDE REPLY TO TEXT");
-                    // } catch (JSONException e) {
-                    //     Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
-                    // }
+                        JSONObject json = new JSONObject();
+                        json.put("name", comment.getUser().getUsername());
+                        json.put("commentId", comment.getId());
+                        activity.setReplyTo(json.toString());
+                        // mCanceReplyButton = activity.getReplyToCancelButton();
+                        // mReplyToText = activity.getReplyToText();
+                        // mMessageEditText =  activity.getContentEditText();
+                        if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
+                            Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
+                            String replyToString = "replying to " + comment.getUser().getUsername();
+                            mReplyToText.setText(replyToString);
+                            mCanceReplyButton.setVisibility(View.VISIBLE);
+                            mMessageEditText.requestFocus();
+                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
+                        }
+                        Log.e("REPLY TO", "OUTSIDE REPLY TO TEXT");
+                    } catch (JSONException e) {
+                        Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
+                    }
                 }
             });
 

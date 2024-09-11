@@ -363,7 +363,6 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/Vote.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/CommentListAdapter.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressCommentsBottomSheetFragment.java",
-  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressRepliesFragment.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/AppearancePreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BackgroundImagesPreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BraveDialogPreference.java",
