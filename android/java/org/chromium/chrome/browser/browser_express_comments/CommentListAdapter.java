@@ -51,7 +51,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         mCanceReplyButton = canceReplyButton;
         mMessageEditText = messageEditText;
         mTopCommentRecycler = topCommentRecycler;
-        mReplyContainer = replyContainerLayout
+        mReplyContainer = replyContainerLayout;
     }
 
     @Override
