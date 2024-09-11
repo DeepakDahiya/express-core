@@ -55,6 +55,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     private RecyclerView mCommentRecycler;
+    private RecyclerView mReplyRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
     private int mPage = 1;
@@ -64,6 +65,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mPostId;
     private ProgressBar mCommentProgress;
     private LinearLayout mReplyContainer;
+    private ImageButton mBackButton;
 
     private boolean isFromMenu;
     // private Button nextButton;
@@ -118,6 +120,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
         mCommentProgress = view.findViewById(R.id.comment_progress); 
         mReplyContainer = view.findViewById(R.id.reply_container);
+        mBackButton = view.findViewById(R.id.btn_back);
 
         // mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
         //     @Override
@@ -143,7 +146,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler, mReplyContainer);
+        mReplyRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
+        mReplyRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler, mReplyContainer, mReplyRecycler);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mCommentProgress.setVisibility(View.VISIBLE);
@@ -260,6 +266,14 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }catch(Exception ex){
             Log.e("Express Browser Access Token", ex.getMessage());
         }
+
+        mBackButton..setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mCommentRecycler.setVisibility(View.VISIBLE);
+                mReplyContainer.setVisibility(View.GONE);
+            }
+        }));
 
         mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override

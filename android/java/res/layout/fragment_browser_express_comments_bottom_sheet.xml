@@ -48,7 +48,7 @@
         android:layout_weight="1"
         android:layout_height="0dp"
         android:layout_marginBottom="5sp"/>
-    
+
     <LinearLayout
         android:id="@+id/reply_container"
         android:layout_width="match_parent"
@@ -58,6 +58,16 @@
         android:animateLayoutChanges="true"
         android:orientation="vertical" >
 
+        <ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="24sp"
+            android:layout_height="24sp"
+            android:layout_gravity="center"
+            android:layout_marginVertical="5sp"
+            android:background="@drawable/back_btn"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+            android:scaleType="centerCrop" />
+
         <TextView
             android:id="@+id/original_comment"
             android:layout_width="match_parent"
@@ -65,6 +75,13 @@
             android:textSize="16sp"
             android:text="@string/browser_express_login_title"
             android:padding="10dp" />
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/recycler_replies"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="0dp"
+            android:layout_marginBottom="5sp"/>
 
     </LinearLayout>
 
