@@ -42,14 +42,16 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private TextView mReplyToText;
     private EditText mMessageEditText;
     private RecyclerView mTopCommentRecycler;
+    private LinearLayout mReplyContainer;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, LinearLayout replyContainerLayout) {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
         mCanceReplyButton = canceReplyButton;
         mMessageEditText = messageEditText;
         mTopCommentRecycler = topCommentRecycler;
+        mReplyContainer = replyContainerLayout
     }
 
     @Override
@@ -63,7 +65,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText, mTopCommentRecycler);
+        return new CommentHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText, mTopCommentRecycler, mReplyContainer);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -97,6 +99,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private Context context;
         private LinearLayout mActionItemsLayout;
         private LinearLayout mCommentLayout;
+        private LinearLayout mReplyContainer;
 
         private ImageButton mCanceReplyButton;
         private TextView mReplyToText;
@@ -108,12 +111,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int myPosition;
 
 
-        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
+        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, LinearLayout replyContainerLayout) {
             super(itemView);
 
             mReplyToText = replyToText;
             mCanceReplyButton = canceReplyButton;
             mMessageEditText = messageEditText;
+
+            mReplyContainer = replyContainerLayout;
 
             mTopCommentRecycler = topCommentRecycler;
             mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
@@ -401,8 +406,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     mPage = mPage + 1;
 
-                    mShowMoreButton.setVisibility(View.GONE);
-                    mCommentRecycler.setVisibility(View.VISIBLE);
+                    mReplyContainer.setVisibility(View.VISIBLE);
+                    mTopCommentRecycler.setVisibility(View.GONE);
+
+                    // mShowMoreButton.setVisibility(View.GONE);
+                    // mCommentRecycler.setVisibility(View.VISIBLE);
 
                     // data.addAll(insertIndex, items);
                     // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
