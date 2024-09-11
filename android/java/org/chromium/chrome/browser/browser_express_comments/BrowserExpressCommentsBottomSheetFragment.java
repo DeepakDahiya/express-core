@@ -267,7 +267,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             Log.e("Express Browser Access Token", ex.getMessage());
         }
 
-        mBackButton..setOnClickListener((new View.OnClickListener() {
+        mBackButton.setOnClickListener((new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 mCommentRecycler.setVisibility(View.VISIBLE);
