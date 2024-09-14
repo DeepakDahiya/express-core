@@ -1,4 +1,3 @@
-<!-- res/layout/fragment_comment_list.xml -->
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
@@ -24,7 +23,7 @@
         android:indeterminate="true"/>
 
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_comments"
+        android:id="@+id/recycler_replies"
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:layout_height="0dp"

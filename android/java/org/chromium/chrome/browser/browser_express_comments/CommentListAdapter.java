@@ -34,6 +34,9 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -96,7 +99,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int mPerPage = 100;
         private Context context;
         private LinearLayout mActionItemsLayout;
-        private LinearLayout mCommentLayout;
 
         private ImageButton mCancelReplyButton;
         private TextView mReplyToText;
@@ -127,7 +129,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mCommentRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_replies);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
-            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             context = itemView.getContext();
 
             mReplyButton.setTextSize(10);
@@ -283,12 +284,24 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    String accessToken = activity.getAccessToken();
-                    Log.e("Express Browser SHOW MORE", "BEFORE API");
-                    BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                        new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                                null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    // String accessToken = activity.getAccessToken();
+                    // Log.e("Express Browser SHOW MORE", "BEFORE API");
+                    // BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
+                    //     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
+                    //             null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
+                    // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    FragmentManager fragmentManager = getChildFragmentManager();
+                    ReplyListFragment replyFragment = new ReplyListFragment();
+
+                    Bundle args = new Bundle();
+                    args.putString("comment_id", comment.getId());
+                    replyFragment.setArguments(args);
+
+                    // Replace the current fragment with the ReplyFragment
+                    fragmentManager.beginTransaction()
+                        .replace(R.id.bottom_sheet_container, replyFragment)
+                        .addToBackStack(null)
+                        .commit();
                 }
             });
 
@@ -394,8 +407,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments) {
                     int len = comments.size();
-                    // mComments.clear();
-                    // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
 
@@ -403,25 +414,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     mShowMoreButton.setVisibility(View.GONE);
                     mCommentRecycler.setVisibility(View.VISIBLE);
-
-                    // data.addAll(insertIndex, items);
-                    // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
-
-                    // DisplayMetrics displaymetrics = new DisplayMetrics();
-                    // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-
-                    // int a =  (displaymetrics.heightPixels*70)/100;
-
-                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-                    // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-                    // mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
-                    // mCommentRecycler.setAdapter(mCommentAdapter);
-
-                    // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
-                    // params.height=a;
-                    // mCommentRecycler.setLayoutParams(params);
-
                 }
 
                 @Override
