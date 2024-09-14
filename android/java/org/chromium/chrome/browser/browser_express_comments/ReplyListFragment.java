@@ -34,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.widget.Toolbar;
+import androidx.appcompat.app.AppCompatActivity;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
@@ -79,11 +80,26 @@ public class ReplyListFragment extends Fragment {
         }
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
-        setSupportActionBar(toolbar);
-        ActionBar actionBar = getSupportActionBar();
-        assert actionBar != null;
-        actionBar.setDisplayHomeAsUpEnabled(true);
-        actionBar.setDisplayShowHomeEnabled(true);
+
+        AppCompatActivity acActivity = (AppCompatActivity) getActivity();
+        if (acActivity != null) {
+            acActivity.setSupportActionBar(toolbar);
+            acActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            acActivity.getSupportActionBar().setDisplayShowHomeEnabled(true);
+        }
+
+        // mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        //     @Override
+        //     public void onClick(View v) {
+        //         requireActivity().onBackPressed();
+        //     }
+        // });
+
+        // setSupportActionBar(toolbar);
+        // ActionBar actionBar = getSupportActionBar();
+        // assert actionBar != null;
+        // actionBar.setDisplayHomeAsUpEnabled(true);
+        // actionBar.setDisplayShowHomeEnabled(true);
 
         mCommentProgress = view.findViewById(R.id.comment_progress); 
         mCommentProgress.setVisibility(View.VISIBLE);
