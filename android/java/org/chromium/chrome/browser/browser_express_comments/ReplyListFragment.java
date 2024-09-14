@@ -80,6 +80,12 @@ public class ReplyListFragment extends Fragment {
         }
 
         Toolbar toolbar = view.findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                requireActivity().onBackPressed();
+            }
+        });
 
         AppCompatActivity acActivity = (AppCompatActivity) getActivity();
         if (acActivity != null) {
