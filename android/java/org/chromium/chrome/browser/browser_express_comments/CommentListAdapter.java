@@ -38,7 +38,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Comment> mCommentList;
-    private ImageButton mCanceReplyButton;
+    private ImageButton mCancelReplyButton;
     private TextView mReplyToText;
     private EditText mMessageEditText;
     private RecyclerView mTopCommentRecycler;
@@ -47,7 +47,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
-        mCanceReplyButton = canceReplyButton;
+        mCancelReplyButton = canceReplyButton;
         mMessageEditText = messageEditText;
         mTopCommentRecycler = topCommentRecycler;
     }
@@ -63,7 +63,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCanceReplyButton, mMessageEditText, mTopCommentRecycler);
+        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -98,7 +98,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private LinearLayout mActionItemsLayout;
         private LinearLayout mCommentLayout;
 
-        private ImageButton mCanceReplyButton;
+        private ImageButton mCancelReplyButton;
         private TextView mReplyToText;
         private EditText mMessageEditText;
 
@@ -112,7 +112,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             super(itemView);
 
             mReplyToText = replyToText;
-            mCanceReplyButton = canceReplyButton;
+            mCancelReplyButton = canceReplyButton;
             mMessageEditText = messageEditText;
 
             mTopCommentRecycler = topCommentRecycler;
@@ -157,7 +157,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mComments = new ArrayList<Comment>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCanceReplyButton, mMessageEditText, null);
+            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCancelReplyButton, mMessageEditText, null);
             mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
@@ -201,7 +201,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                 }
                             } catch (JSONException e) {
                                 mReplyToText.setText(R.string.browser_express_empty_text);
-                                mCanceReplyButton.setVisibility(View.INVISIBLE);
+                                mCancelReplyButton.setVisibility(View.INVISIBLE);
                                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                             }
                         }
@@ -222,19 +222,19 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }
 
-            mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        activity = BraveActivity.getBraveActivity();
-                        activity.setReplyTo(null);
-                        mReplyToText.setText(R.string.browser_express_empty_text);
-                        mCanceReplyButton.setVisibility(View.INVISIBLE);
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Express Browser Access Token", e.getMessage());
-                    }
-                }
-            }));
+            // mCancelReplyButton.setOnClickListener((new View.OnClickListener() {
+            //     @Override
+            //     public void onClick(View v) {
+            //         try {
+            //             activity = BraveActivity.getBraveActivity();
+            //             activity.setReplyTo(null);
+            //             mReplyToText.setText(R.string.browser_express_empty_text);
+            //             mCancelReplyButton.setVisibility(View.INVISIBLE);
+            //         } catch (BraveActivity.BraveActivityNotFoundException e) {
+            //             Log.e("Express Browser Access Token", e.getMessage());
+            //         }
+            //     }
+            // }));
 
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -261,14 +261,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
-                        mCanceReplyButton = activity.getReplyToCancelButton();
+                        mCancelReplyButton = activity.getReplyToCancelButton();
                         mReplyToText = activity.getReplyToText();
                         mMessageEditText =  activity.getContentEditText();
-                        if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
+                        if(mReplyToText != null || mCancelReplyButton != null || mMessageEditText != null){
                             Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
                             String replyToString = "replying to " + comment.getUser().getUsername();
                             mReplyToText.setText(replyToString);
-                            mCanceReplyButton.setVisibility(View.VISIBLE);
+                            mCancelReplyButton.setVisibility(View.VISIBLE);
                             mMessageEditText.requestFocus();
                             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
