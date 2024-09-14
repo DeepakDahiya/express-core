@@ -261,9 +261,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
-                        // mCanceReplyButton = activity.getReplyToCancelButton();
-                        // mReplyToText = activity.getReplyToText();
-                        // mMessageEditText =  activity.getContentEditText();
+                        mCanceReplyButton = activity.getReplyToCancelButton();
+                        mReplyToText = activity.getReplyToText();
+                        mMessageEditText =  activity.getContentEditText();
                         if(mReplyToText != null || mCanceReplyButton != null || mMessageEditText != null){
                             Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
                             String replyToString = "replying to " + comment.getUser().getUsername();
