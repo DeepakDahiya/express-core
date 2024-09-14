@@ -78,7 +78,7 @@ public class ReplyListFragment extends Fragment {
             mCommentId = getArguments().getString(COMMENT_ID);
         }
 
-        Toolbar toolbar = findViewById(R.id.toolbar);
+        Toolbar toolbar = view.findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         ActionBar actionBar = getSupportActionBar();
         assert actionBar != null;
