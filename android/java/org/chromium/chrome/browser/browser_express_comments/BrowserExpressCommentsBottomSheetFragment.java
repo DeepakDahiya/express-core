@@ -34,7 +34,9 @@ import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
-
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -102,8 +104,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(
+        View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
+        loadFragment(new CommentListFragment());
+        return view;
     }
 
     @Override
@@ -121,20 +125,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
         mCommentProgress = view.findViewById(R.id.comment_progress); 
 
-        // mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
-        //     @Override
-        //     public void onClick(View v) {
-        //         if (getActivity() != null) {
-        //             try {
-        //                 BraveActivity activity = BraveActivity.getBraveActivity();
-        //                 activity.setReplyTo(null);
-        //             } catch (BraveActivity.BraveActivityNotFoundException e) {
-        //                 Log.e("Express Browser Access Token", e.getMessage());
-        //             }
-        //         }
-        //     }
-        // }));
-
         mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
@@ -142,17 +132,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         int a =  (displaymetrics.heightPixels*70)/100;
 
-        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-        mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+        // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
+        // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler);
-        mCommentRecycler.setAdapter(mCommentAdapter);
+        // mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler);
+        // mCommentRecycler.setAdapter(mCommentAdapter);
 
         mCommentProgress.setVisibility(View.VISIBLE);
-
-        // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
-        // params.height=a;
-        // mCommentRecycler.setLayoutParams(params);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -334,30 +320,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 public void getCommentsSuccessful(List<Comment> comments) {
                     int len = mComments.size();
                     Log.e("GET API RESPONSE in WORKER", comments.toString());
-                    // mComments.clear();
-                    // mCommentAdapter.notifyItemRangeRemoved(0, len);
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
                     mCommentProgress.setVisibility(View.GONE);
-
-                    // data.addAll(insertIndex, items);
-                    // mCommentAdapter.notifyItemRangeInserted(insertIndex, items.size());
-
-                    // DisplayMetrics displaymetrics = new DisplayMetrics();
-                    // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-
-                    // int a =  (displaymetrics.heightPixels*70)/100;
-
-                    // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-                    // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-                    // mCommentAdapter = new CommentListAdapter(requireContext(), mComments);
-                    // mCommentRecycler.setAdapter(mCommentAdapter);
-
-                    // ViewGroup.LayoutParams params=mCommentRecycler.getLayoutParams();
-                    // params.height=a;
-                    // mCommentRecycler.setLayoutParams(params);
-
                 }
 
                 @Override
@@ -401,8 +366,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                         mComments.add(0, comment);
                         mCommentAdapter.notifyItemInserted(0);
 
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(0, 0);
+                        // LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                        // layoutManager.scrollToPositionWithOffset(0, 0);
 
                         try{
                             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -454,5 +419,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             return null;
         }
         
+    }
+
+    private void loadFragment(Fragment fragment) {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
+        transaction.replace(R.id.bottom_sheet_container, fragment);
+        transaction.commit();
     }
 }

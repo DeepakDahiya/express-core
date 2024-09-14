@@ -920,6 +920,8 @@ brave_java_resources = [
   "java/res/layout/fragment_browser_express_generate_username_bottom_sheet.xml",
   "java/res/layout/fragment_browser_express_update_apk_bottom_sheet.xml",
   "java/res/layout/fragment_browser_express_comments_bottom_sheet.xml",
+  "java/res/layout/fragment_comment_list.xml",
+  "java/res/layout/fragment_reply_list.xml",
   "java/res/layout/fragment_content_filtering.xml",
   "java/res/layout/fragment_create_account.xml",
   "java/res/layout/fragment_create_account.xml",

@@ -1,0 +1,55 @@
+<!-- res/layout/fragment_comment_list.xml -->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <ImageButton android:id="@+id/btn_maximize"
+        style="@style/ToolbarButton"
+        android:src="@drawable/maximize"
+        android:layout_gravity="center"
+        android:visibility="visible"
+        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/comments"
+        android:textSize="20sp"
+        android:textColor="@color/set_default_text_color"
+        android:textStyle="bold"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:text="@string/browser_express_login_title"
+        android:textSize="20sp"
+        android:textColor="@color/set_default_text_color"
+        android:textStyle="bold"/>
+
+    <ProgressBar
+        android:id="@+id/comment_progress"
+        android:layout_width="20dp"
+        android:layout_height="20dp"
+        android:visibility="gone"
+        android:layout_gravity="center"
+        android:indeterminate="true"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_comments"
+        android:layout_width="match_parent"
+        android:layout_weight="1"
+        android:layout_height="0dp"
+        android:layout_marginBottom="5sp"/>
+
+    <!-- <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_view_comments"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:visibility="gone"/> -->
+</LinearLayout>
