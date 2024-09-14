@@ -17,6 +17,11 @@
     app:behavior_halfExpandedRatio="0.6"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
+    <com.google.android.material.divider.MaterialDivider
+        android:layout_width="wrap_content"
+        android:layout_height="1dp"
+        android:layout_marginTop="@dimen/inset_s" />
+        
     <ImageButton android:id="@+id/btn_maximize"
         style="@style/ToolbarButton"
         android:src="@drawable/maximize"
