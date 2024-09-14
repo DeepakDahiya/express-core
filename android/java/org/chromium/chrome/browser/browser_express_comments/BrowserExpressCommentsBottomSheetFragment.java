@@ -339,7 +339,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.bottom_sheet_container, fragment);
-        transaction.commit();
+        transaction..addToBackStack(null).commit();
     }
 
     public void openReplies(String commentId) {
