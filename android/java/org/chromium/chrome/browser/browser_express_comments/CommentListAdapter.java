@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
+import android.os.Bundle;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -290,7 +291,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     //     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                     //             null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
                     // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    FragmentManager fragmentManager = getChildFragmentManager();
+                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
                     ReplyListFragment replyFragment = new ReplyListFragment();
 
                     Bundle args = new Bundle();

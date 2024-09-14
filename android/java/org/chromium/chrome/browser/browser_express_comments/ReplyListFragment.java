@@ -71,7 +71,7 @@ public class ReplyListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_comment_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_reply_list, container, false);
 
         if (getArguments() != null) {
             mCommentId = getArguments().getString(COMMENT_ID);
@@ -82,7 +82,7 @@ public class ReplyListFragment extends Fragment {
 
         mComments = new ArrayList<Comment>();
 
-        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
+        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
