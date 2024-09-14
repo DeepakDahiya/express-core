@@ -1007,6 +1007,9 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_COMMENTS" desc="Set default browser modal title">
         Comments
       </message>
+      <message name="IDS_REPLIES" desc="Set default browser modal title">
+        Replies
+      </message>
       <message name="IDS_BROWSER_EXPRESS_GENERATE_USERNAME_DESC" desc="Set default browser modal title">
         This will allow you to like and comment in thread.
       </message>

@@ -9,7 +9,6 @@
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:theme="@style/BraveVpnToolbar"
         android:minHeight="?attr/actionBarSize">
 
         <TextView
@@ -17,7 +16,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:text="@string/comments"
-            android:textSize="20sp"
+            android:textSize="16sp"
             android:textColor="@color/set_default_text_color"
             android:textStyle="bold"/>
 
