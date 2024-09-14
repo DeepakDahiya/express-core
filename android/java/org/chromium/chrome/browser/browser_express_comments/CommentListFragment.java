@@ -164,7 +164,7 @@ public class CommentListFragment extends Fragment {
         return view;
     }
 
-    public static CommentListFragment newInstance(string postId, string commentsFor) {
+    public static CommentListFragment newInstance(String postId, String commentsFor) {
         CommentListFragment fragment = new CommentListFragment();
         Bundle args = new Bundle();
         args.putString(COMMENTS_FOR, commentsFor);
