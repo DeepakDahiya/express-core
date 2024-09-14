@@ -63,6 +63,10 @@ public class CommentListFragment extends Fragment {
     private String mPostId;
     private ProgressBar mCommentProgress;
 
+    private ImageButton mCancelReplyButton;
+    private EditText mMessageEditText;
+    private TextView mReplyToText;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -81,7 +85,19 @@ public class CommentListFragment extends Fragment {
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, null, null, null, mCommentRecycler);
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getActivity();
+        
+        mCancelReplyButton = null;
+        mMessageEditText = null;
+        mReplyToText = null;
+
+        if(parentFragment != null){
+            mMessageEditText = parentFragment.getMessageEditText();
+            mReplyToText = parentFragment.getReplyToText();
+            mCancelReplyButton = parentFragment.getCancelReplyButton();
+        }
+
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {

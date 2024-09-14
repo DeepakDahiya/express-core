@@ -73,7 +73,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private boolean isFromMenu;
     // private Button nextButton;
     private ImageButton mSendButton;
-    private ImageButton mCanceReplyButton;
+    private ImageButton mCancelReplyButton;
     private EditText mMessageEditText;
     private TextView mReplyToText;
     private TextView mCommentsText;
@@ -122,7 +122,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
-        mCanceReplyButton = view.findViewById(R.id.cancel_btn);
+        mCancelReplyButton = view.findViewById(R.id.cancel_btn);
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -132,7 +132,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler);
+        // mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler);
         // mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {
@@ -156,7 +156,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                 String username = jsonObj.getString("name");
                                 String replyToString = "replying to " + username;
                                 mReplyToText.setText(replyToString);
-                                mCanceReplyButton.setVisibility(View.VISIBLE);
+                                mCancelReplyButton.setVisibility(View.VISIBLE);
                                 mMessageEditText.requestFocus();
                                 InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                                 imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
@@ -165,7 +165,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             }
                         }else{
                             mReplyToText.setText(R.string.browser_express_empty_text);
-                            mCanceReplyButton.setVisibility(View.INVISIBLE);
+                            mCancelReplyButton.setVisibility(View.INVISIBLE);
                         }
                     }
                 }
@@ -340,5 +340,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.bottom_sheet_container, fragment);
         transaction.commit();
+    }
+
+    public EditText getMessageEditText() {
+        return mMessageEditText;
+    }
+
+    public TextView getReplyToText() {
+        return mReplyToText;
+    }
+
+    public TextView getCancelReplyButton() {
+        return mCancelReplyButton;
     }
 }
