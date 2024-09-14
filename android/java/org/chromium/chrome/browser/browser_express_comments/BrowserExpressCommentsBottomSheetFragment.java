@@ -350,7 +350,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         return mReplyToText;
     }
 
-    public TextView getCancelReplyButton() {
+    public ImageButton getCancelReplyButton() {
         return mCancelReplyButton;
     }
 }
