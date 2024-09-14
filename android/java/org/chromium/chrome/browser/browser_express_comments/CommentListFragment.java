@@ -151,8 +151,6 @@ public class CommentListFragment extends Fragment {
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
-        }catch (JSONException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
             Log.e("Express Browser Access Token", ex.getMessage());
         }
