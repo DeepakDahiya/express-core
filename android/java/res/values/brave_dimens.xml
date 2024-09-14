@@ -58,4 +58,6 @@
     <dimen name="tile_grid_layout_min_horizontal_spacing">0dp</dimen>
 
     <dimen name="custom_tabs_control_container_leo_height">0dp</dimen>
+
+    <dimen name="inset_s">8dp</dimen>
 </resources>
