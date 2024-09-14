@@ -87,10 +87,6 @@ public class CommentListFragment extends Fragment {
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
-            if(accessToken != null){
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
-            }
             
             if(mCommentsFor.equals("post")){
                 mUrl = activity.getActivityTab().getUrl().getSpec();
@@ -188,25 +184,4 @@ public class CommentListFragment extends Fragment {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
-
-    private JSONObject getDecodedToken(String accessToken){
-        try{
-            String[] split_string = accessToken.split("\\.");
-            String base64EncodedHeader = split_string[0];
-            String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
-
-            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-            String decodedString = new String(data, "UTF-8");
-            JSONObject jsonObj = new JSONObject(decodedString.toString());
-            return jsonObj;
-        }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }
-        
-    }
 }
