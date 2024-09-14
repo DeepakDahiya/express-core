@@ -32,7 +32,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
@@ -76,6 +77,13 @@ public class ReplyListFragment extends Fragment {
         if (getArguments() != null) {
             mCommentId = getArguments().getString(COMMENT_ID);
         }
+
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        assert actionBar != null;
+        actionBar.setDisplayHomeAsUpEnabled(true);
+        actionBar.setDisplayShowHomeEnabled(true);
 
         mCommentProgress = view.findViewById(R.id.comment_progress); 
         mCommentProgress.setVisibility(View.VISIBLE);

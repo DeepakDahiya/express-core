@@ -44,7 +44,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-
+import androidx.appcompat.app.ActionBar;
+import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
