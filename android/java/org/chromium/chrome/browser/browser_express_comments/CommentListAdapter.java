@@ -300,7 +300,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                     // Replace the current fragment with the ReplyFragment
                     fragmentManager.beginTransaction()
-                        .replace(R.id.bottom_sheet_container, replyFragment)
+                        .add(R.id.bottom_sheet_container, replyFragment)
                         .addToBackStack(null)
                         .commit();
                 }
