@@ -291,7 +291,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     //     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                     //             null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
                     // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    FragmentManager fragmentManager = getActivity().getSupportFragmentManager();
+                    FragmentManager fragmentManager = activity.getSupportFragmentManager();
                     ReplyListFragment replyFragment = new ReplyListFragment();
 
                     Bundle args = new Bundle();
