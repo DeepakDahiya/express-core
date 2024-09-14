@@ -46,14 +46,16 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private TextView mReplyToText;
     private EditText mMessageEditText;
     private RecyclerView mTopCommentRecycler;
+    private BrowserExpressCommentsBottomSheetFragment mParentFragment;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment) {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
         mCancelReplyButton = canceReplyButton;
         mMessageEditText = messageEditText;
         mTopCommentRecycler = topCommentRecycler;
+        mParentFragment = parentFragment;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler);
+        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, mParentFragment);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -109,14 +111,15 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private Animation bounceDown;
 
         private int myPosition;
+        private BrowserExpressCommentsBottomSheetFragment mParentFragment;
 
-
-        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler) {
+        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment) {
             super(itemView);
 
             mReplyToText = replyToText;
             mCancelReplyButton = canceReplyButton;
             mMessageEditText = messageEditText;
+            mParentFragment = parentFragment;
 
             mTopCommentRecycler = topCommentRecycler;
             mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
@@ -159,7 +162,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mComments = new ArrayList<Comment>();
             mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
 
-            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCancelReplyButton, mMessageEditText, null);
+            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCancelReplyButton, mMessageEditText, null, null);
             mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
@@ -291,18 +294,20 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     //     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                     //             null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
                     // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                    ReplyListFragment replyFragment = new ReplyListFragment();
+                    // FragmentManager fragmentManager = activity.getSupportFragmentManager();
+                    // ReplyListFragment replyFragment = new ReplyListFragment();
 
-                    Bundle args = new Bundle();
-                    args.putString("comment_id", comment.getId());
-                    replyFragment.setArguments(args);
+                    // Bundle args = new Bundle();
+                    // args.putString("comment_id", comment.getId());
+                    // replyFragment.setArguments(args);
 
-                    // Replace the current fragment with the ReplyFragment
-                    fragmentManager.beginTransaction()
-                        .add(R.id.bottom_sheet_container, replyFragment)
-                        .addToBackStack(null)
-                        .commit();
+                    // // Replace the current fragment with the ReplyFragment
+                    // fragmentManager.beginTransaction()
+                    //     .add(R.id.bottom_sheet_container, replyFragment)
+                    //     .addToBackStack(null)
+                    //     .commit();
+
+                    mParentFragment.openReplies(comment.getId());
                 }
             });
 

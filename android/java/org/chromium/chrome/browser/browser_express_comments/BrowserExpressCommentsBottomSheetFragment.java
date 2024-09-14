@@ -342,6 +342,14 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         transaction.commit();
     }
 
+    public void openReplies(String commentId) {
+        ReplyListFragment replyFragment = new ReplyListFragment();
+        Bundle args = new Bundle();
+        args.putString("comment_id", commentId);
+        replyFragment.setArguments(args);
+        loadFragment(replyFragment);
+    }
+
     public EditText getMessageEditText() {
         return mMessageEditText;
     }

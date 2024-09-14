@@ -97,7 +97,7 @@ public class CommentListFragment extends Fragment {
             mCancelReplyButton = parentFragment.getCancelReplyButton();
         }
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {
