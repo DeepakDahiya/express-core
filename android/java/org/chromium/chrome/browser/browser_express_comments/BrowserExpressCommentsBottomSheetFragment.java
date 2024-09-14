@@ -34,18 +34,22 @@ import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.app.BraveActivity;
+
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
+
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-import android.widget.LinearLayout;
+
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
@@ -55,7 +59,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     private RecyclerView mCommentRecycler;
-    private RecyclerView mReplyRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
     private int mPage = 1;
@@ -64,8 +67,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mCommentsFor;
     private String mPostId;
     private ProgressBar mCommentProgress;
-    private LinearLayout mReplyContainer;
-    private ImageButton mBackButton;
 
     private boolean isFromMenu;
     // private Button nextButton;
@@ -119,8 +120,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mReplyToText = view.findViewById(R.id.reply_to);
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
         mCommentProgress = view.findViewById(R.id.comment_progress); 
-        mReplyContainer = view.findViewById(R.id.reply_container);
-        mBackButton = view.findViewById(R.id.btn_back);
 
         // mCanceReplyButton.setOnClickListener((new View.OnClickListener() {
         //     @Override
@@ -146,10 +145,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        mReplyRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
-        mReplyRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler, mReplyContainer, mReplyRecycler);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mCommentProgress.setVisibility(View.VISIBLE);
@@ -266,14 +262,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }catch(Exception ex){
             Log.e("Express Browser Access Token", ex.getMessage());
         }
-
-        mBackButton.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                mCommentRecycler.setVisibility(View.VISIBLE);
-                mReplyContainer.setVisibility(View.GONE);
-            }
-        }));
 
         mSendButton.setOnClickListener((new View.OnClickListener() {
             @Override
