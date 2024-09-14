@@ -338,7 +338,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private void loadFragment(Fragment fragment) {
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
-        transaction.add(R.id.bottom_sheet_container, fragment);
+        transaction.replace(R.id.bottom_sheet_container, fragment);
         transaction.commit();
     }
 
