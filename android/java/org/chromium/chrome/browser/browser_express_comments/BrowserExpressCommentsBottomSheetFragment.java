@@ -106,7 +106,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
-        loadFragment(new CommentListFragment());
+        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor));
         return view;
     }
 
@@ -123,9 +123,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
         mCanceReplyButton = view.findViewById(R.id.cancel_btn);
-        mCommentProgress = view.findViewById(R.id.comment_progress); 
-
-        mComments = new ArrayList<Comment>();
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -137,8 +134,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         // mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCanceReplyButton, mMessageEditText, mCommentRecycler);
         // mCommentRecycler.setAdapter(mCommentAdapter);
-
-        mCommentProgress.setVisibility(View.VISIBLE);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -177,70 +172,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             };
 
             sharedPref.registerOnSharedPreferenceChangeListener(listener);
-
-            if(mCommentsFor.equals("post")){
-                mUrl = activity.getActivityTab().getUrl().getSpec();
-
-                BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                            null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }else{
-                String commentsString = activity.getFirstComments();
-                if(commentsString != null){
-                    try{
-                        JSONArray commentsArray = new JSONArray(commentsString);
-                        List<Comment> comments = new ArrayList<Comment>();
-                        for (int i = 0; i < commentsArray.length(); i++) {
-                            JSONObject comment = commentsArray.getJSONObject(i);
-                            JSONObject user = comment.getJSONObject("user");
-                            JSONObject didVote = comment.optJSONObject("didVote");
-                            Vote v = null;
-                            if(didVote != null){
-                                v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                            }
-                            User u = new User(user.getString("_id"), user.getString("username"));
-                            String pageParent = null;
-                            String commentParent = null;
-                            if(comment.has("pageParent")){
-                                pageParent = comment.getString("pageParent");
-                            }
-
-                            if(comment.has("commentParent")){
-                                commentParent = comment.getString("commentParent");
-                            }
-                            comments.add(new Comment(
-                                comment.getString("_id"), 
-                                comment.getString("content"),
-                                comment.getInt("upvoteCount"),
-                                comment.getInt("downvoteCount"),
-                                comment.getInt("commentCount"),
-                                pageParent,
-                                commentParent,
-                                u, 
-                                v));
-                        }
-
-                        int len = mComments.size();
-                        mComments.clear();
-                        mCommentAdapter.notifyItemRangeRemoved(0, len);
-                        mComments.addAll(comments);
-                        mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-                        mCommentProgress.setVisibility(View.GONE);
-                        mPage = 2;
-                    } catch (JSONException e) {
-                        Log.e("Comments_Bottom_Sheet", e.getMessage());
-                    }
-                }
-                mUrl = activity.getActivityTab().getUrl().getSpec();
-
-                Log.e("EXPRESS BROWSER URL", mUrl);
-
-                BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                    new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                            mUrl, null, null, mPage, mPerPage, accessToken, getCommentsCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }catch (JSONException e) {
@@ -314,23 +245,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 
-    private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
-            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
-                @Override
-                public void getCommentsSuccessful(List<Comment> comments) {
-                    int len = mComments.size();
-                    Log.e("GET API RESPONSE in WORKER", comments.toString());
-                    mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-                    mCommentProgress.setVisibility(View.GONE);
-                }
-
-                @Override
-                public void getCommentsFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
-                }
-            };
-
     private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
@@ -363,8 +277,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                         }
                     }else{
-                        mComments.add(0, comment);
-                        mCommentAdapter.notifyItemInserted(0);
+                        // mComments.add(0, comment);
+                        // mCommentAdapter.notifyItemInserted(0);
 
                         // LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                         // layoutManager.scrollToPositionWithOffset(0, 0);

@@ -24,23 +24,6 @@
         android:visibility="visible"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:text="@string/comments"
-        android:textSize="20sp"
-        android:textColor="@color/set_default_text_color"
-        android:textStyle="bold"/>
-
-    <ProgressBar
-        android:id="@+id/comment_progress"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:layout_gravity="center"
-        android:indeterminate="true"/>
-
     <FrameLayout
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
