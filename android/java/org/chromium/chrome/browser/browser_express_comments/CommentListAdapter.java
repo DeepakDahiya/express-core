@@ -222,19 +222,19 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }
 
-            // mCancelReplyButton.setOnClickListener((new View.OnClickListener() {
-            //     @Override
-            //     public void onClick(View v) {
-            //         try {
-            //             activity = BraveActivity.getBraveActivity();
-            //             activity.setReplyTo(null);
-            //             mReplyToText.setText(R.string.browser_express_empty_text);
-            //             mCancelReplyButton.setVisibility(View.INVISIBLE);
-            //         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            //             Log.e("Express Browser Access Token", e.getMessage());
-            //         }
-            //     }
-            // }));
+            mCancelReplyButton.setOnClickListener((new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    try {
+                        activity = BraveActivity.getBraveActivity();
+                        activity.setReplyTo(null);
+                        mReplyToText.setText(R.string.browser_express_empty_text);
+                        mCancelReplyButton.setVisibility(View.INVISIBLE);
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Express Browser Access Token", e.getMessage());
+                    }
+                }
+            }));
 
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
