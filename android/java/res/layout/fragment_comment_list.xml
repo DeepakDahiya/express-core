@@ -25,10 +25,7 @@
     <org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout
         android:id="@+id/skeleton_shimmer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:shimmer_auto_start="true">
+        android:layout_height="match_parent">
 
         <LinearLayout
             android:id="@+id/shimmer_items"
