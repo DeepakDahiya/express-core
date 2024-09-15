@@ -170,7 +170,7 @@ public class ReplyListFragment extends Fragment {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-                    // mCommentProgress.setVisibility(View.GONE);
+                    mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
                 }
