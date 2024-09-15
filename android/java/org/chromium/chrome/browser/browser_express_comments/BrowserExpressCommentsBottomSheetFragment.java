@@ -358,6 +358,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         loadFragment(replyFragment);
     }
 
+    public void openComments(String commentId) {
+        FragmentManager fragmentManager = getChildFragmentManager();
+        fragmentManager.popBackStack();
+    }
+
     public EditText getMessageEditText() {
         return mMessageEditText;
     }

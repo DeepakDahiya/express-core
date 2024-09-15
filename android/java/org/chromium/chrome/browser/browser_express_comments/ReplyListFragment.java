@@ -43,10 +43,10 @@ import org.chromium.chrome.browser.app.BraveActivity;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-
+import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
-
+import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
@@ -70,6 +70,9 @@ public class ReplyListFragment extends Fragment {
     private EditText mMessageEditText;
     private TextView mReplyToText;
 
+    private ShimmerFrameLayout mShimmerLoading;
+    private ViewGroup mShimmerItems;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -79,11 +82,13 @@ public class ReplyListFragment extends Fragment {
             mCommentId = getArguments().getString(COMMENT_ID);
         }
 
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+        
         Toolbar toolbar = view.findViewById(R.id.toolbar);
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                requireActivity().onBackPressed();
+                parentFragment.openComments();
             }
         });
 
@@ -91,6 +96,8 @@ public class ReplyListFragment extends Fragment {
         if (acActivity != null) {
             acActivity.setSupportActionBar(toolbar);
             acActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            acActivity.getSupportActionBar().setDisplayShowHomeEnabled(false);
+            acActivity.getSupportActionBar()
         }
 
         // mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -106,8 +113,19 @@ public class ReplyListFragment extends Fragment {
         // actionBar.setDisplayHomeAsUpEnabled(true);
         // actionBar.setDisplayShowHomeEnabled(true);
 
-        mCommentProgress = view.findViewById(R.id.comment_progress); 
-        mCommentProgress.setVisibility(View.VISIBLE);
+        mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
+        mShimmerItems = view.findViewById(R.id.shimmer_items);
+        int shimmerSkeletonRows =
+                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(requireContext(), 50));
+        for (int i = 0; i < shimmerSkeletonRows; i++) {
+            inflater.inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+        }
+
+        // mCommentProgress = view.findViewById(R.id.comment_progress); 
+        // mCommentProgress.setVisibility(View.VISIBLE);
+
+        mShimmerLoading.showShimmer(true);
+        AndroidUtils.show(mShimmerItems);
 
         mComments = new ArrayList<Comment>();
 
@@ -154,7 +172,9 @@ public class ReplyListFragment extends Fragment {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-                    mCommentProgress.setVisibility(View.GONE);
+                    // mCommentProgress.setVisibility(View.GONE);
+                    AndroidUtils.gone(mShimmerItems);
+                    mShimmerLoading.hideShimmer();
                 }
 
                 @Override

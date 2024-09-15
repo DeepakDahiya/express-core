@@ -49,6 +49,8 @@ import androidx.appcompat.widget.Toolbar;
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
+import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -68,6 +70,9 @@ public class CommentListFragment extends Fragment {
     private EditText mMessageEditText;
     private TextView mReplyToText;
 
+    private ShimmerFrameLayout mShimmerLoading;
+    private ViewGroup mShimmerItems;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -78,8 +83,19 @@ public class CommentListFragment extends Fragment {
             mPostId = getArguments().getString(POST_ID);
         }
 
-        mCommentProgress = view.findViewById(R.id.comment_progress); 
-        mCommentProgress.setVisibility(View.VISIBLE);
+        mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
+        mShimmerItems = view.findViewById(R.id.shimmer_items);
+        int shimmerSkeletonRows =
+                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(requireContext(), 50));
+        for (int i = 0; i < shimmerSkeletonRows; i++) {
+            inflater.inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+        }
+
+        // mCommentProgress = view.findViewById(R.id.comment_progress); 
+        // mCommentProgress.setVisibility(View.VISIBLE);
+
+        mShimmerLoading.showShimmer(true);
+        AndroidUtils.show(mShimmerItems);
 
         mComments = new ArrayList<Comment>();
 
@@ -191,7 +207,9 @@ public class CommentListFragment extends Fragment {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-                    mCommentProgress.setVisibility(View.GONE);
+                    // mCommentProgress.setVisibility(View.GONE);
+                    AndroidUtils.gone(mShimmerItems);
+                    mShimmerLoading.hideShimmer();
                 }
 
                 @Override
