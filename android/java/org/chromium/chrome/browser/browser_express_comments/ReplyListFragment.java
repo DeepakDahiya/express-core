@@ -39,7 +39,7 @@ import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.app.BraveActivity;
-
+import org.chromium.ui.base.ViewUtils;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
@@ -132,8 +132,6 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-        
         mCancelReplyButton = null;
         mMessageEditText = null;
         mReplyToText = null;
