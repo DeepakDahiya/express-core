@@ -358,7 +358,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         loadFragment(replyFragment);
     }
 
-    public void openComments(String commentId) {
+    public void openComments() {
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();
     }
