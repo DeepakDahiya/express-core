@@ -346,7 +346,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             R.anim.slide_out_right  // popExit
         );
 
-        transaction.replace(R.id.bottom_sheet_container, fragment);
+        transaction.add(R.id.bottom_sheet_container, fragment);
         transaction.addToBackStack(null).commit();
     }
 
