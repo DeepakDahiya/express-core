@@ -64,7 +64,6 @@ public class CommentListFragment extends Fragment {
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
-    private ProgressBar mCommentProgress;
 
     private ImageButton mCancelReplyButton;
     private EditText mMessageEditText;
@@ -91,9 +90,6 @@ public class CommentListFragment extends Fragment {
             inflater.inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
         }
 
-        // mCommentProgress = view.findViewById(R.id.comment_progress); 
-        // mCommentProgress.setVisibility(View.VISIBLE);
-
         mShimmerLoading.showShimmer(true);
         AndroidUtils.show(mShimmerItems);
 
@@ -114,7 +110,8 @@ public class CommentListFragment extends Fragment {
             mCancelReplyButton = parentFragment.getCancelReplyButton();
         }
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment);
+        boolean isReplyAdapter = false;
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {
@@ -169,7 +166,6 @@ public class CommentListFragment extends Fragment {
                         mCommentAdapter.notifyItemRangeRemoved(0, len);
                         mComments.addAll(comments);
                         mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-                        mCommentProgress.setVisibility(View.GONE);
                         mPage = 2;
                     } catch (JSONException e) {
                         Log.e("Comments_Bottom_Sheet", e.getMessage());
@@ -203,7 +199,7 @@ public class CommentListFragment extends Fragment {
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
-                public void getCommentsSuccessful(List<Comment> comments) {
+                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());

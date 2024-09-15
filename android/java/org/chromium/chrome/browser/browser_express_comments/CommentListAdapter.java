@@ -47,8 +47,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private EditText mMessageEditText;
     private RecyclerView mTopCommentRecycler;
     private BrowserExpressCommentsBottomSheetFragment mParentFragment;
+    private boolean mIsReplyAdapter;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment) {
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter) {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
@@ -56,6 +57,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         mMessageEditText = messageEditText;
         mTopCommentRecycler = topCommentRecycler;
         mParentFragment = parentFragment;
+        mIsReplyAdapter = isReplyAdapter;
     }
 
     @Override
@@ -69,7 +71,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, mParentFragment);
+        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -94,7 +96,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int finalVote;
         private BraveActivity activity;
 
-        private RecyclerView mCommentRecycler;
         private RecyclerView mTopCommentRecycler;
         private CommentListAdapter mCommentAdapter;
         private List<Comment> mComments;
@@ -113,7 +114,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int myPosition;
         private BrowserExpressCommentsBottomSheetFragment mParentFragment;
 
-        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment) {
+        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter) {
             super(itemView);
 
             mReplyToText = replyToText;
@@ -131,7 +132,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
             mShareButton = (Button) itemView.findViewById(R.id.btn_share);
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
-            mCommentRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_replies);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             context = itemView.getContext();
 
@@ -152,18 +152,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             contentText.setText(comment.getContent().toString());
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 ? View.VISIBLE : View.GONE);
+            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !isReplyAdapter ? View.VISIBLE : View.GONE);
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
 
             ImageLoader.downloadImage("https://api.multiavatar.com/" + comment.getUser().getId().toString() + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
-
-            mComments = new ArrayList<Comment>();
-            mCommentRecycler.setLayoutManager(new LinearLayoutManager(context));
-
-            mCommentAdapter = new CommentListAdapter(context, mComments, mReplyToText, mCancelReplyButton, mMessageEditText, null, null);
-            mCommentRecycler.setAdapter(mCommentAdapter);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
@@ -288,25 +282,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // String accessToken = activity.getAccessToken();
-                    // Log.e("Express Browser SHOW MORE", "BEFORE API");
-                    // BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
-                    //     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
-                    //             null, comment.getId(), null, mPage, mPerPage, accessToken, getCommentsCallback);
-                    // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                    // FragmentManager fragmentManager = activity.getSupportFragmentManager();
-                    // ReplyListFragment replyFragment = new ReplyListFragment();
-
-                    // Bundle args = new Bundle();
-                    // args.putString("comment_id", comment.getId());
-                    // replyFragment.setArguments(args);
-
-                    // // Replace the current fragment with the ReplyFragment
-                    // fragmentManager.beginTransaction()
-                    //     .add(R.id.bottom_sheet_container, replyFragment)
-                    //     .addToBackStack(null)
-                    //     .commit();
-
                     mParentFragment.openReplies(comment.getId());
                 }
             });
@@ -405,26 +380,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 public void addVoteFailed(String error) {
                     mDownvoteButton.setClickable(true);
                     mUpvoteButton.setClickable(true);
-                }
-            };
-
-        private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
-            new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
-                @Override
-                public void getCommentsSuccessful(List<Comment> comments) {
-                    int len = comments.size();
-                    mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-
-                    mPage = mPage + 1;
-
-                    mShowMoreButton.setVisibility(View.GONE);
-                    mCommentRecycler.setVisibility(View.VISIBLE);
-                }
-
-                @Override
-                public void getCommentsFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
     }

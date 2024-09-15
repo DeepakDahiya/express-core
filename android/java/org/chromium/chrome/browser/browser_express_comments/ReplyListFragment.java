@@ -62,7 +62,10 @@ public class ReplyListFragment extends Fragment {
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
-    private ProgressBar mCommentProgress;
+
+    private RecyclerView mTopCommentRecycler;
+    private CommentListAdapter mTopCommentAdapter;
+    private List<Comment> mTopComments;
 
     private String mCommentId;
 
@@ -100,19 +103,6 @@ public class ReplyListFragment extends Fragment {
             acActivity.getSupportActionBar().setTitle("");
         }
 
-        // mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
-        //     @Override
-        //     public void onClick(View v) {
-        //         requireActivity().onBackPressed();
-        //     }
-        // });
-
-        // setSupportActionBar(toolbar);
-        // ActionBar actionBar = getSupportActionBar();
-        // assert actionBar != null;
-        // actionBar.setDisplayHomeAsUpEnabled(true);
-        // actionBar.setDisplayShowHomeEnabled(true);
-
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
         int shimmerSkeletonRows =
@@ -120,9 +110,6 @@ public class ReplyListFragment extends Fragment {
         for (int i = 0; i < shimmerSkeletonRows; i++) {
             inflater.inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
         }
-
-        // mCommentProgress = view.findViewById(R.id.comment_progress); 
-        // mCommentProgress.setVisibility(View.VISIBLE);
 
         mShimmerLoading.showShimmer(true);
         AndroidUtils.show(mShimmerItems);
@@ -142,8 +129,15 @@ public class ReplyListFragment extends Fragment {
             mCancelReplyButton = parentFragment.getCancelReplyButton();
         }
 
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, null);
+        boolean isReplyAdapter = true;
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, null, isReplyAdapter);
         mCommentRecycler.setAdapter(mCommentAdapter);
+
+        mTopComments = new ArrayList<Comment>();
+        mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
+        mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, null, false);
+        mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -166,10 +160,17 @@ public class ReplyListFragment extends Fragment {
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
-                public void getCommentsSuccessful(List<Comment> comments) {
+                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+
+                    if(parentComment != null){
+                        mTopComments = new ArrayList<Comment>();
+                        mTopComments.add(parentComment);
+                        mTopCommentAdapter.notifyDataSetChanged();
+                    }
+
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();

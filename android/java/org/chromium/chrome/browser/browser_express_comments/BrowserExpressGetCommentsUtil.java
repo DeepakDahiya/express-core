@@ -47,7 +47,7 @@ public class BrowserExpressGetCommentsUtil {
     private static final String GET_COMMENTS_URL = "https://api.browser.express/v1/comment";
 
     public interface GetCommentsCallback {
-        void getCommentsSuccessful(List<Comment> comments);
+        void getCommentsSuccessful(List<Comment> comments, Comment parentComment);
         void getCommentsFailed(String error);
     }
 
@@ -62,6 +62,7 @@ public class BrowserExpressGetCommentsUtil {
         private static int mPerPage;
         private static List<Comment> mComments;
         private static String mAccessToken;
+        private static Comment mParentComment;
 
         public GetCommentsWorkerTask(String url, String commentId, String postId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
             mCallback = callback;
@@ -74,10 +75,15 @@ public class BrowserExpressGetCommentsUtil {
             mAccessToken = accessToken;
             mCommentId = commentId;
             mPostId = postId;
+            mParentComment = null;
         }
 
         public static void setComments(List<Comment> comments){
             mComments = comments;
+        }
+
+        public static void setParentComment(Comment comment){
+            mParentComment = comment;
         }
 
         public static void setGetCommentsSuccessStatus(Boolean status){
@@ -99,7 +105,7 @@ public class BrowserExpressGetCommentsUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(getCommentsStatus){
-                mCallback.getCommentsSuccessful(mComments);
+                mCallback.getCommentsSuccessful(mComments, mParentComment);
             }else{
                 mCallback.getCommentsFailed(mErrorMessage);
             }
@@ -148,6 +154,27 @@ public class BrowserExpressGetCommentsUtil {
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
+                    JSONObject parentComment = responseObject.getJSONObject("parentComment");
+                    if(parentComment != null){
+                        JSONObject user = parentComment.getJSONObject("user");
+                        JSONObject didVote = parentComment.optJSONObject("didVote");
+                        Vote v = null;
+                        if(didVote != null){
+                            v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                        }
+                        User u = new User(user.getString("_id"), user.getString("username"));
+                        GetCommentsWorkerTask.setParentComment(new Comment(
+                            parentComment.getString("_id"), 
+                            parentComment.getString("content"),
+                            parentComment.getInt("upvoteCount"),
+                            parentComment.getInt("downvoteCount"),
+                            parentComment.getInt("commentCount"),
+                            null,
+                            null,
+                            u, 
+                            v));
+                    }
+                    
                     Log.e("GET API RESPONSE FROM SERVER", commentsArray.toString());
                     List<Comment> comments = new ArrayList<Comment>();
                     for (int i = 0; i < commentsArray.length(); i++) {

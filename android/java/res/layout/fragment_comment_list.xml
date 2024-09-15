@@ -34,14 +34,6 @@
             android:orientation="vertical" />
     </org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout>
 
-    <ProgressBar
-        android:id="@+id/comment_progress"
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:visibility="gone"
-        android:layout_gravity="center"
-        android:indeterminate="true"/>
-
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_comments"
         android:layout_width="match_parent"

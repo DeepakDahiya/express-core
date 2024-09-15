@@ -60,9 +60,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
-    private RecyclerView mCommentRecycler;
-    private CommentListAdapter mCommentAdapter;
-    private List<Comment> mComments;
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
@@ -128,12 +125,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
 
         int a =  (displaymetrics.heightPixels*70)/100;
-
-        // mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-        // mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-
-        // mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler);
-        // mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -277,12 +268,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                         }
                     }else{
-                        // mComments.add(0, comment);
-                        // mCommentAdapter.notifyItemInserted(0);
-
-                        // LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-                        // layoutManager.scrollToPositionWithOffset(0, 0);
-
                         try{
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             // Updating comment count for bottom toolbar
