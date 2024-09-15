@@ -154,27 +154,29 @@ public class BrowserExpressGetCommentsUtil {
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
-                    JSONObject parentComment = responseObject.getJSONObject("parentComment");
-                    if(parentComment != null){
-                        JSONObject user = parentComment.getJSONObject("user");
-                        JSONObject didVote = parentComment.optJSONObject("didVote");
-                        Vote v = null;
-                        if(didVote != null){
-                            v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                    if (!responseObject.isNull("parentComment")) {
+                        JSONObject parentComment = responseObject.getJSONObject("parentComment");
+                        if(parentComment != null){
+                            JSONObject user = parentComment.getJSONObject("user");
+                            JSONObject didVote = parentComment.optJSONObject("didVote");
+                            Vote v = null;
+                            if(didVote != null){
+                                v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                            }
+                            User u = new User(user.getString("_id"), user.getString("username"));
+                            GetCommentsWorkerTask.setParentComment(new Comment(
+                                parentComment.getString("_id"), 
+                                parentComment.getString("content"),
+                                parentComment.getInt("upvoteCount"),
+                                parentComment.getInt("downvoteCount"),
+                                parentComment.getInt("commentCount"),
+                                null,
+                                null,
+                                u, 
+                                v));
                         }
-                        User u = new User(user.getString("_id"), user.getString("username"));
-                        GetCommentsWorkerTask.setParentComment(new Comment(
-                            parentComment.getString("_id"), 
-                            parentComment.getString("content"),
-                            parentComment.getInt("upvoteCount"),
-                            parentComment.getInt("downvoteCount"),
-                            parentComment.getInt("commentCount"),
-                            null,
-                            null,
-                            u, 
-                            v));
                     }
-                    
+
                     Log.e("GET API RESPONSE FROM SERVER", commentsArray.toString());
                     List<Comment> comments = new ArrayList<Comment>();
                     for (int i = 0; i < commentsArray.length(); i++) {
