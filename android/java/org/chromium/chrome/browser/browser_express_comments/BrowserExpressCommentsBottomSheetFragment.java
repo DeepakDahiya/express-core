@@ -346,7 +346,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             R.anim.slide_out_right  // popExit
         );
 
-        transaction.add(R.id.bottom_sheet_container, fragment);
+        transaction.replace(R.id.bottom_sheet_container, fragment);
         transaction.addToBackStack(null).commit();
     }
 
@@ -359,7 +359,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
-        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentManager fragmentManager = getParentFragmentManager();
         fragmentManager.popBackStack();
     }
 
