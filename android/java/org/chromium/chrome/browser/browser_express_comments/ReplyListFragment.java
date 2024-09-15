@@ -168,7 +168,7 @@ public class ReplyListFragment extends Fragment {
                     if(parentComment != null){
                         mTopComments = new ArrayList<Comment>();
                         mTopComments.add(parentComment);
-                        mTopCommentAdapter.notifyDataSetChanged();
+                        mTopCommentAdapter.notifyItemRangeInserted(0, 1);
                     }
 
                     mShimmerLoading.setVisibility(View.GONE);

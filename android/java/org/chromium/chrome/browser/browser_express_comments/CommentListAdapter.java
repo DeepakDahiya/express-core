@@ -114,6 +114,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int myPosition;
         private BrowserExpressCommentsBottomSheetFragment mParentFragment;
 
+        private boolean mIsReplyAdapter;
+
         CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter) {
             super(itemView);
 
@@ -121,6 +123,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mCancelReplyButton = canceReplyButton;
             mMessageEditText = messageEditText;
             mParentFragment = parentFragment;
+            mIsReplyAdapter = isReplyAdapter;
 
             mTopCommentRecycler = topCommentRecycler;
             mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
@@ -152,7 +155,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             contentText.setText(comment.getContent().toString());
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !isReplyAdapter ? View.VISIBLE : View.GONE);
+            mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !mIsReplyAdapter ? View.VISIBLE : View.GONE);
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }
