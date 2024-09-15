@@ -166,6 +166,7 @@ public class ReplyListFragment extends Fragment {
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
 
                     if(parentComment != null){
+                        Log.e("SETTING PARENT COMMENT", parentComment.toString());
                         mTopComments = new ArrayList<Comment>();
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);

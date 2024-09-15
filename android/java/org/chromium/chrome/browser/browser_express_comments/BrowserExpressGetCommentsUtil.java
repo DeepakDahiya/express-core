@@ -156,6 +156,7 @@ public class BrowserExpressGetCommentsUtil {
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
                     if (!responseObject.isNull("parentComment")) {
                         JSONObject parentComment = responseObject.getJSONObject("parentComment");
+                        Log.e("PARENT COMMENT", parentComment.toString());
                         if(parentComment != null){
                             JSONObject user = parentComment.getJSONObject("user");
                             JSONObject didVote = parentComment.optJSONObject("didVote");
