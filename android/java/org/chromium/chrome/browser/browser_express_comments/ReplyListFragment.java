@@ -97,7 +97,7 @@ public class ReplyListFragment extends Fragment {
             acActivity.setSupportActionBar(toolbar);
             acActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
             acActivity.getSupportActionBar().setDisplayShowHomeEnabled(false);
-            acActivity.getSupportActionBar()
+            acActivity.getSupportActionBar().setTitle("");
         }
 
         // mToolbar.setNavigationOnClickListener(new View.OnClickListener() {
