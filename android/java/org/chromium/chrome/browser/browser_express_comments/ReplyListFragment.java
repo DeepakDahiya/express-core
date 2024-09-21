@@ -134,17 +134,17 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mTopComments = new ArrayList<Comment>();
-        User u = new User("123", "Test Username");
-        Comment parentComment = new Comment(
-                                "123", 
-                                "Test Comment",
-                                5,
-                                2,
-                                0,
-                                null,
-                                null,
-                                u, 
-                                null);
+        // User u = new User("123", "Test Username");
+        // Comment parentComment = new Comment(
+        //                         "123", 
+        //                         "Test Comment",
+        //                         5,
+        //                         2,
+        //                         0,
+        //                         null,
+        //                         null,
+        //                         u, 
+        //                         null);
         mTopComments.add(parentComment);
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
