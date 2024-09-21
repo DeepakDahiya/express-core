@@ -48,8 +48,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private RecyclerView mTopCommentRecycler;
     private BrowserExpressCommentsBottomSheetFragment mParentFragment;
     private boolean mIsReplyAdapter;
+    private boolean mIsReplyTopComment;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter) {
+    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
         mContext = context;
         mCommentList = commentList;
         mReplyToText = replyToText;
@@ -58,6 +59,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         mTopCommentRecycler = topCommentRecycler;
         mParentFragment = parentFragment;
         mIsReplyAdapter = isReplyAdapter;
+        mIsReplyTopComment = isReplyTopComment;
     }
 
     @Override
@@ -71,7 +73,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter);
+        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -107,6 +109,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private ImageButton mCancelReplyButton;
         private TextView mReplyToText;
         private EditText mMessageEditText;
+        private LinearLayout mCommentLayout;
 
         private Animation bounceUp;
         private Animation bounceDown;
@@ -115,8 +118,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private BrowserExpressCommentsBottomSheetFragment mParentFragment;
 
         private boolean mIsReplyAdapter;
+        private boolean mIsReplyTopComment;
 
-        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter) {
+        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
             super(itemView);
 
             mReplyToText = replyToText;
@@ -124,6 +128,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mMessageEditText = messageEditText;
             mParentFragment = parentFragment;
             mIsReplyAdapter = isReplyAdapter;
+            mIsReplyTopComment = isReplyTopComment;
 
             mTopCommentRecycler = topCommentRecycler;
             mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
@@ -136,6 +141,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShareButton = (Button) itemView.findViewById(R.id.btn_share);
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
+            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             context = itemView.getContext();
 
             mReplyButton.setTextSize(10);
@@ -147,6 +153,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             try {
                 activity = BraveActivity.getBraveActivity();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
+
+            if(mIsReplyTopComment){
+                mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_grey));
             }
 
             myPosition = getBindingAdapterPosition();

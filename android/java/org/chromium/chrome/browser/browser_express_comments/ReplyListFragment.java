@@ -140,7 +140,7 @@ public class ReplyListFragment extends Fragment {
         // }
 
         boolean isReplyAdapter = true;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, null, isReplyAdapter);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mTopComments = new ArrayList<Comment>();
@@ -158,7 +158,7 @@ public class ReplyListFragment extends Fragment {
         // mTopComments.add(parentComment);
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter);
+        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
         try {
@@ -248,6 +248,8 @@ public class ReplyListFragment extends Fragment {
                 public void addCommentSuccessful(Comment comment) {
                     mComments.add(0, comment);
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                    layoutManager.scrollToPositionWithOffset(0, 0);
                 }
 
                 @Override

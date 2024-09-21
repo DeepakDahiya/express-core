@@ -121,7 +121,7 @@ public class CommentListFragment extends Fragment {
         // }
 
         boolean isReplyAdapter = false;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {
@@ -274,6 +274,8 @@ public class CommentListFragment extends Fragment {
                 public void addCommentSuccessful(Comment comment) {
                     mComments.add(0, comment);
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+                    layoutManager.scrollToPositionWithOffset(0, 0);
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         // Updating comment count for bottom toolbar

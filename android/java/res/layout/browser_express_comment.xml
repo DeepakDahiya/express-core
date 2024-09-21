@@ -6,7 +6,8 @@
     android:layout_height="wrap_content"
     android:baselineAligned="false"
     android:padding="4dp"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:id="@+id/comment_layout">
     <ImageView
         android:id="@+id/avatar_image"
         android:src="@drawable/btn_toolbar_profile"
