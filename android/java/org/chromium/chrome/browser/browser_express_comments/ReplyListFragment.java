@@ -79,6 +79,7 @@ public class ReplyListFragment extends Fragment {
     private TextView mCommentsText;
 
     private ImageView mAvatarImage;
+    private ImageView mBackButton;
 
     @Nullable
     @Override
@@ -94,24 +95,33 @@ public class ReplyListFragment extends Fragment {
         mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
         mCancelReplyButton = view.findViewById(R.id.cancel_btn);
+        mBackButton = view.findViewById(R.id.back_button);
 
-        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-        
-        Toolbar toolbar = view.findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
+            public void onClick(View view) {
                 parentFragment.openComments();
             }
         });
 
-        AppCompatActivity acActivity = (AppCompatActivity) getActivity();
-        if (acActivity != null) {
-            acActivity.setSupportActionBar(toolbar);
-            acActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-            acActivity.getSupportActionBar().setDisplayShowHomeEnabled(false);
-            acActivity.getSupportActionBar().setTitle("");
-        }
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+        
+        // Toolbar toolbar = view.findViewById(R.id.toolbar);
+
+        // AppCompatActivity acActivity = (AppCompatActivity) getActivity();
+        // if (acActivity != null) {
+        //     acActivity.setSupportActionBar(toolbar);
+        //     acActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //     acActivity.getSupportActionBar().setDisplayShowHomeEnabled(false);
+        //     acActivity.getSupportActionBar().setTitle("");
+        // }
+
+        // toolbar.setNavigationOnClickListener(new View.OnClickListener() {
+        //     @Override
+        //     public void onClick(View v) {
+        //         parentFragment.openComments();
+        //     }
+        // });
 
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);

@@ -5,22 +5,32 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <androidx.appcompat.widget.Toolbar
-        android:id="@+id/toolbar"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:minHeight="?attr/actionBarSize">
+        android:orientation="horizontal"
+        tools:ignore="UseCompoundDrawables">
+
+        <ImageView
+            android:id="@+id/back_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:contentDescription="@null"
+            android:gravity="start|center_vertical"
+            android:padding="16dp"
+            app:srcCompat="@drawable/ic_back"
+            app:tint="@color/shield_back_button_tint"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:text="@string/replies"
+            android:text="@string/comments"
             android:textSize="16sp"
             android:textColor="@color/set_default_text_color"
             android:textStyle="bold"/>
 
-    </androidx.appcompat.widget.Toolbar>
+    </LinearLayout>
 
     <org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout
         android:id="@+id/skeleton_shimmer"
