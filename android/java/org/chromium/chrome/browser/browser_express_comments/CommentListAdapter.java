@@ -195,7 +195,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                         commentObject.getString("content"),
                                         commentObject.getInt("upvoteCount"),
                                         commentObject.getInt("downvoteCount"),
-                                    commentObject.getInt("commentCount"),
+                                        commentObject.getInt("commentCount"),
                                         pageParent, 
                                         commentParent,
                                         u,
@@ -258,6 +258,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                             activity.showGenerateUsernameBottomSheet();
                             activity.dismissCommentsBottomSheet();
+                            return;
+                        }
+
+                        if(!mIsReplyAdapter){
+                            mParentFragment.openReplies(comment.getId());
                             return;
                         }
 

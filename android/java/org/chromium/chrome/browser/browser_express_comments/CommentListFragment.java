@@ -65,12 +65,16 @@ public class CommentListFragment extends Fragment {
     private String mCommentsFor;
     private String mPostId;
 
+    private ShimmerFrameLayout mShimmerLoading;
+    private ViewGroup mShimmerItems;
+
+    private ImageButton mSendButton;
     private ImageButton mCancelReplyButton;
     private EditText mMessageEditText;
     private TextView mReplyToText;
+    private TextView mCommentsText;
 
-    private ShimmerFrameLayout mShimmerLoading;
-    private ViewGroup mShimmerItems;
+    private ImageView mAvatarImage;
 
     @Nullable
     @Override
@@ -81,6 +85,12 @@ public class CommentListFragment extends Fragment {
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
         }
+
+        mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
+        mSendButton = view.findViewById(R.id.button_send);
+        mMessageEditText = view.findViewById(R.id.comment_content);
+        mReplyToText = view.findViewById(R.id.reply_to);
+        mCancelReplyButton = view.findViewById(R.id.cancel_btn);
 
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
@@ -100,15 +110,15 @@ public class CommentListFragment extends Fragment {
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         
-        mCancelReplyButton = null;
-        mMessageEditText = null;
-        mReplyToText = null;
+        // mCancelReplyButton = null;
+        // mMessageEditText = null;
+        // mReplyToText = null;
 
-        if(parentFragment != null){
-            mMessageEditText = parentFragment.getMessageEditText();
-            mReplyToText = parentFragment.getReplyToText();
-            mCancelReplyButton = parentFragment.getCancelReplyButton();
-        }
+        // if(parentFragment != null){
+        //     mMessageEditText = parentFragment.getMessageEditText();
+        //     mReplyToText = parentFragment.getReplyToText();
+        //     mCancelReplyButton = parentFragment.getCancelReplyButton();
+        // }
 
         boolean isReplyAdapter = false;
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter);
@@ -117,6 +127,11 @@ public class CommentListFragment extends Fragment {
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
+            mCommentsText = activity.getCommentCountText();
+            if(accessToken != null){
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
+            }
             
             if(mCommentsFor.equals("post")){
                 mUrl = activity.getActivityTab().getUrl().getSpec();
@@ -178,6 +193,58 @@ public class CommentListFragment extends Fragment {
                             mUrl, null, null, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
+
+            mSendButton.setOnClickListener((new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    if (getActivity() != null) {
+                        try {
+                            mSendButton.setClickable(false);
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            String accessToken = activity.getAccessToken();
+                            if (accessToken == null) {
+                                InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                                activity.showGenerateUsernameBottomSheet();
+                                dismiss();
+                            } else {
+                                String content = mMessageEditText.getText().toString().trim();
+                                if(content.length() > 0){
+                                    if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
+                                        try{
+                                            JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
+                                            String commentId = jsonObj.getString("commentId");
+                                            BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                                new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                                        content, "comment", mUrl, commentId, accessToken, addCommentCallback);
+                                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                        } catch (JSONException e) {
+                                            Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
+                                        }
+                                    }else{
+                                        String pType = "page";
+                                        String pId = null;
+                                        if(mCommentsFor.equals("post")){
+                                            pType = "post";
+                                            pId = mPostId;
+                                        }
+                                        BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                            new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                                    content, pType, mUrl, pId, accessToken, addCommentCallback);
+                                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                    }
+                                    mMessageEditText.setText(R.string.browser_express_empty_text);
+                                }
+                            }
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e("Express Browser Access Token", e.getMessage());
+                        }finally{
+                            mSendButton.setClickable(true);
+                        }
+                    }
+                }
+            }));
+
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
@@ -210,6 +277,42 @@ public class CommentListFragment extends Fragment {
 
                 @Override
                 public void getCommentsFailed(String error) {
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                }
+            };
+
+    private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
+            new BrowserExpressAddCommentUtil.AddCommentCallback() {
+                @Override
+                public void addCommentSuccessful(Comment comment) {
+                    mComments.add(comment);
+                    mCommentAdapter.notifyItemRangeInserted(0, 1);
+                    try{
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        // Updating comment count for bottom toolbar
+                        mCommentsText = activity.getCommentCountText();
+
+                        String currentText = mCommentsText.getText().toString();
+                        int commentCount = 0;
+                        try {
+                            String[] parts = currentText.split(" ");
+                            if (parts.length > 0) {
+                                commentCount = Integer.parseInt(parts[0]);
+                            }
+                        } catch (NumberFormatException e) {
+                        }
+
+                        // Increment the comment count
+                        commentCount++;
+
+                        mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        Log.e("Express Browser Access Token", e.getMessage());
+                    }
+                }
+
+                @Override
+                public void addCommentFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
