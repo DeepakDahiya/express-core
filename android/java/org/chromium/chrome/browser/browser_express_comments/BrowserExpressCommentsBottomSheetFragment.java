@@ -235,69 +235,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 
-    private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
-            new BrowserExpressAddCommentUtil.AddCommentCallback() {
-                @Override
-                public void addCommentSuccessful(Comment comment) {
-                    if(comment.getPageParent() == null){
-                        try {
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-
-                            JSONObject commentJson = new JSONObject();
-                            commentJson.put("_id", comment.getId());
-                            commentJson.put("content", comment.getContent());
-                            commentJson.put("upvoteCount", comment.getUpvoteCount());
-                            commentJson.put("downvoteCount", comment.getDownvoteCount());
-                            commentJson.put("commentCount", comment.getCommentCount());
-                            commentJson.put("commentParent", comment.getCommentParent());
-                            commentJson.put("pageParent", comment.getPageParent());
-                            commentJson.put("didVote", null);
-
-                            User u = comment.getUser();
-                            JSONObject userJson = new JSONObject();
-                            userJson.put("_id", u.getId());
-                            userJson.put("username", u.getUsername());
-                            commentJson.put("user", userJson);
-
-                            activity.setReplyComment(commentJson.toString());
-                            activity.setReplyTo(null);
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                            Log.e("Express Browser Access Token", e.getMessage());
-                        } catch (JSONException e) {
-                            Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
-                        }
-                    }else{
-                        try{
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-                            // Updating comment count for bottom toolbar
-                            mCommentsText = activity.getCommentCountText();
-
-                            String currentText = mCommentsText.getText().toString();
-                            int commentCount = 0;
-                            try {
-                                String[] parts = currentText.split(" ");
-                                if (parts.length > 0) {
-                                    commentCount = Integer.parseInt(parts[0]);
-                                }
-                            } catch (NumberFormatException e) {
-                            }
-
-                            // Increment the comment count
-                            commentCount++;
-
-                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                            Log.e("Express Browser Access Token", e.getMessage());
-                        }
-                    }
-                }
-
-                @Override
-                public void addCommentFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
-                }
-            };
-    
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");
@@ -339,6 +276,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         args.putString("comment_id", commentId);
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
+    }
+
+    public void dismissBottomsheet() {
+        dismiss();
     }
 
     public void openComments() {

@@ -206,33 +206,20 @@ public class CommentListFragment extends Fragment {
                                 InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 activity.showGenerateUsernameBottomSheet();
-                                dismiss();
+                                parentFragment.dismissBottomsheet();
                             } else {
                                 String content = mMessageEditText.getText().toString().trim();
                                 if(content.length() > 0){
-                                    if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
-                                        try{
-                                            JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
-                                            String commentId = jsonObj.getString("commentId");
-                                            BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                                new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                                        content, "comment", mUrl, commentId, accessToken, addCommentCallback);
-                                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                        } catch (JSONException e) {
-                                            Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
-                                        }
-                                    }else{
-                                        String pType = "page";
-                                        String pId = null;
-                                        if(mCommentsFor.equals("post")){
-                                            pType = "post";
-                                            pId = mPostId;
-                                        }
-                                        BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                            new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                                    content, pType, mUrl, pId, accessToken, addCommentCallback);
-                                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                    String pType = "page";
+                                    String pId = null;
+                                    if(mCommentsFor.equals("post")){
+                                        pType = "post";
+                                        pId = mPostId;
                                     }
+                                    BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                        new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                                content, pType, mUrl, pId, accessToken, addCommentCallback);
+                                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                     mMessageEditText.setText(R.string.browser_express_empty_text);
                                 }
                             }
@@ -316,4 +303,25 @@ public class CommentListFragment extends Fragment {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
+
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }
+        
+    }
 }
