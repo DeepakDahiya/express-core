@@ -90,7 +90,7 @@
 
             <EditText
                 android:layout_marginStart="54dp"
-                android:id="@+id/comment_content"
+                android:id="@+id/comment_content_input"
                 android:layout_width="match_parent"
                 android:layout_height="42dp"
                 android:layout_centerVertical="true"
