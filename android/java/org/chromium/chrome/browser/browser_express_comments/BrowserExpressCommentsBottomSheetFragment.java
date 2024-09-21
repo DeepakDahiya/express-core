@@ -331,8 +331,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             R.anim.slide_out_right  // popExit
         );
 
-        transaction.replace(R.id.bottom_sheet_container, fragment);
-        transaction.addToBackStack(null).commit();
+        transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
     }
 
     public void openReplies(String commentId) {
@@ -344,8 +343,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
-        FragmentManager fragmentManager = getParentFragmentManager();
-        fragmentManager.popBackStack();
+        if (getFragmentManager() != null) {
+            getFragmentManager().popBackStack();
+        }
+        // FragmentManager fragmentManager = getParentFragmentManager();
+        // fragmentManager.popBackStack();
     }
 
     public EditText getMessageEditText() {
