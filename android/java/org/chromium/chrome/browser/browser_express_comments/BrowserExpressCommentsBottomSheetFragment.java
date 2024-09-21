@@ -290,15 +290,15 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // fragmentManager.popBackStack();
     }
 
-    public EditText getMessageEditText() {
-        return mMessageEditText;
-    }
+    // public EditText getMessageEditText() {
+    //     return mMessageEditText;
+    // }
 
-    public TextView getReplyToText() {
-        return mReplyToText;
-    }
+    // public TextView getReplyToText() {
+    //     return mReplyToText;
+    // }
 
-    public ImageButton getCancelReplyButton() {
-        return mCancelReplyButton;
-    }
+    // public ImageButton getCancelReplyButton() {
+    //     return mCancelReplyButton;
+    // }
 }
