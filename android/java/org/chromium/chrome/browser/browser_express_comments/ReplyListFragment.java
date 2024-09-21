@@ -145,7 +145,7 @@ public class ReplyListFragment extends Fragment {
         //                         null,
         //                         u, 
         //                         null);
-        mTopComments.add(parentComment);
+        // mTopComments.add(parentComment);
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, null, false);
