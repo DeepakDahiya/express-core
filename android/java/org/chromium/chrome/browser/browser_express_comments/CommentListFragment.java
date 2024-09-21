@@ -272,7 +272,7 @@ public class CommentListFragment extends Fragment {
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment) {
-                    mComments.add(comment);
+                    mComments.add(0, comment);
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();

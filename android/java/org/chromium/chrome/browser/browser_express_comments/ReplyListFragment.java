@@ -191,6 +191,7 @@ public class ReplyListFragment extends Fragment {
                                         new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
                                                 content, "comment", mUrl, mCommentId, accessToken, addCommentCallback);
                                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                    mMessageEditText.setText(R.string.browser_express_empty_text);
                                 }
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
@@ -245,7 +246,7 @@ public class ReplyListFragment extends Fragment {
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment) {
-                    mComments.add(comment);
+                    mComments.add(0, comment);
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                 }
 
