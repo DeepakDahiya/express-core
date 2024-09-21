@@ -92,7 +92,7 @@ public class ReplyListFragment extends Fragment {
 
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
-        mMessageEditText = view.findViewById(R.id.comment_content);
+        mMessageEditText = (EditText) view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
         mCancelReplyButton = view.findViewById(R.id.cancel_btn);
         
