@@ -95,16 +95,16 @@ public class ReplyListFragment extends Fragment {
         mMessageEditText = view.findViewById(R.id.comment_content);
         mReplyToText = view.findViewById(R.id.reply_to);
         mCancelReplyButton = view.findViewById(R.id.cancel_btn);
-        mBackButton = view.findViewById(R.id.back_button);
+        
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
+        mBackButton = view.findViewById(R.id.back_button);
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 parentFragment.openComments();
             }
         });
-
-        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         
         // Toolbar toolbar = view.findViewById(R.id.toolbar);
 
