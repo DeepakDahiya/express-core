@@ -164,6 +164,15 @@ public class BrowserExpressGetCommentsUtil {
                             if(didVote != null){
                                 v = new Vote(didVote.getString("_id"), didVote.getString("type"));
                             }
+                            String pageParent = null;
+                            String commentParent = null;
+                            if(parentComment.has("pageParent")){
+                                pageParent = parentComment.getString("pageParent");
+                            }
+
+                            if(parentComment.has("commentParent")){
+                                commentParent = parentComment.getString("commentParent");
+                            }
                             User u = new User(user.getString("_id"), user.getString("username"));
                             GetCommentsWorkerTask.setParentComment(new Comment(
                                 parentComment.getString("_id"), 
@@ -171,8 +180,8 @@ public class BrowserExpressGetCommentsUtil {
                                 parentComment.getInt("upvoteCount"),
                                 parentComment.getInt("downvoteCount"),
                                 parentComment.getInt("commentCount"),
-                                null,
-                                null,
+                                pageParent,
+                                commentParent,
                                 u, 
                                 v));
                         }
