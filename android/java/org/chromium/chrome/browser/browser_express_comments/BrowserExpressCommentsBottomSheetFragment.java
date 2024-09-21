@@ -281,11 +281,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
-        if (getFragmentManager() != null) {
-            getFragmentManager().popBackStack();
-        }
-        // FragmentManager fragmentManager = getParentFragmentManager();
-        // fragmentManager.popBackStack();
+        // if (getFragmentManager() != null) {
+        //     getFragmentManager().popBackStack();
+        // }
+        FragmentManager fragmentManager = getChildFragmentManager();
+        fragmentManager.popBackStack();
     }
 
     // public EditText getMessageEditText() {
