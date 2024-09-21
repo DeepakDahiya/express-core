@@ -158,6 +158,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !mIsReplyAdapter ? View.VISIBLE : View.GONE);
             if(comment.getCommentParent() == null){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
+            }else{
+                mActionItemsLayout.setVisibility(View.GONE);
             }
 
             ImageLoader.downloadImage("https://api.multiavatar.com/" + comment.getUser().getId().toString() + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
