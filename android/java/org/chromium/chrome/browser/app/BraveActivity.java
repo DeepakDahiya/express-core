@@ -975,10 +975,6 @@ public abstract class BraveActivity extends ChromeActivity
         mFilterListAndroidHandler =
                 FilterListServiceFactory.getInstance().getFilterListAndroidHandler(this);
 
-        // Log.e("CUSTOM_FILTER", "BEFORE setCustomFilterList");
-        // setCustomFilterList();
-        // Log.e("CUSTOM_FILTER", "AFTER setCustomFilterList");
-
         PrefChangeRegistrar mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(BravePref.SCHEDULED_CAPTCHA_ID, this);
 
@@ -2110,71 +2106,6 @@ public abstract class BraveActivity extends ChromeActivity
                 BravePreferenceKeys.BROWSER_EXPRESS_CUSTOM_LIST_SET, 0);
         String boolInString = sharedPref.getString(BROWSER_EXPRESS_CUSTOM_LIST_SET, null);
         return boolInString;
-    }
-
-    public void setCustomFilterList() {
-        String boolInString = getCustomListSet();
-        if(boolInString == null || !boolInString.equals("true2") ){
-            List<String> urlList = new ArrayList<String>();
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2020.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2021.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2022.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2023.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/filters-2024.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/badware.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/privacy.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/resource-abuse.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/unbreak.txt");
-            // urlList.add("https://raw.githubusercontent.com/uBlockOrigin/uAssets/master/filters/quick-fixes.txt");
-            urlList.add("https://easylist.to/easylist/easylist.txt");
-            // urlList.add("https://easylist.to/easylist/easyprivacy.txt");
-            // urlList.add("https://malware-filter.gitlab.io/malware-filter/urlhaus-filter-agh-online.txt");
-            // urlList.add("https://pgl.yoyo.org/adservers/serverlist.php?hostformat=adblockplus&showintro=1&mimetype=plaintext");
-            // urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-unbreak.txt");
-            urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-specific.txt");
-            urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-social.txt");
-            // urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-unbreak.txt");
-            urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-android-specific.txt");
-            // urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-sugarcoat.txt");
-            urlList.add("https://raw.githubusercontent.com/brave/adblock-lists/master/brave-lists/brave-firstparty.txt");
-            urlList.add("https://secure.fanboy.co.nz/fanboy-mobile-notifications.txt");
-            urlList.add("https://raw.githubusercontent.com/bpc-clone/bypass-paywalls-clean-filters/main/bpc-paywall-filter.txt");
-            urlList.add("https://easylist-downloads.adblockplus.org/indianlist.txt");
-
-            // currentSubList = mFilterListAndroidHandler.getSubscriptions();
-
-            // // Create an array to store subscription URLs
-            // ArrayList<String> subscriptionUrls = new ArrayList<>();
-
-            // // Iterate over each SubscriptionInfo object and extract the subscription URL
-            // for (SubscriptionInfo subscriptionInfo : currentSubList) {
-            //     String subscriptionUrl = subscriptionInfo.subscriptionUrl.toString(); // Assuming subscription_url is a URL object
-            //     Log.e("CUSTOM_FILTER CURRENT", subscriptionUrl);
-            //     subscriptionUrls.add(subscriptionUrl);
-            // }
-
-            for (String element : urlList) {
-                // if(!subscriptionUrls.contains(element)){
-                //     Url filterUrl = new Url();
-                //     filterUrl.url = element;
-                //     mFilterListAndroidHandler.createSubscription(filterUrl);
-                // }
-                Url filterUrl = new Url();
-                filterUrl.url = element;
-                mFilterListAndroidHandler.createSubscription(filterUrl);
-            }
-
-            List<String> deleteUrlList = new ArrayList<String>();
-
-            for (String element : deleteUrlList) {
-                Url filterUrl = new Url();
-                filterUrl.url = element;
-                mFilterListAndroidHandler.deleteSubscription(filterUrl);
-            }
-
-            setCustomListSet("true2");
-        }
     }
 
     public void setReplyComment(String comment) {

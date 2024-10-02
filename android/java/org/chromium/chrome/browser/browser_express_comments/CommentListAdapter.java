@@ -92,7 +92,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
         private Button mReplyButton;
-        private Button mShareButton;
+        private ImageButton mShareButton;
         private Button mShowMoreButton;
         private String didVoteType;
         private int finalVote;
@@ -138,14 +138,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
-            mShareButton = (Button) itemView.findViewById(R.id.btn_share);
+            mShareButton = (ImageButton) itemView.findViewById(R.id.btn_share);
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             context = itemView.getContext();
 
             mReplyButton.setTextSize(10);
-            mShareButton.setTextSize(10);
             mShowMoreButton.setTextSize(10);
         }
 
@@ -250,6 +249,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }));
 
+            if(comment.getCommentCount() > 0){
+                String mReplyButtonText = comment.getCommentCount() + " replies";
+                mReplyButton.setText(mReplyButtonText);
+            }
+            
             mReplyButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
