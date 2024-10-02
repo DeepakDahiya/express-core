@@ -92,7 +92,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private ImageButton mUpvoteButton;
         private ImageButton mDownvoteButton;
         private Button mReplyButton;
-        private ImageButton mShareButton;
+        private Button mShareButton;
         private Button mShowMoreButton;
         private String didVoteType;
         private int finalVote;
@@ -138,7 +138,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
-            mShareButton = (ImageButton) itemView.findViewById(R.id.btn_share);
+            mShareButton = (Button) itemView.findViewById(R.id.btn_share);
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
