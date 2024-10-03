@@ -370,7 +370,7 @@
 
     <color name="browser_express_orange_color">#FF9000</color>
     <color name="browser_express_error_color">#FF0000</color>
-    <color name="browser_express_divider_color">#9ca3af</color>
+    <color name="browser_express_divider_color">#EAEAEA</color>
     <color name="bg_profile_banner">#C4C4C4</color>
     <color name="browser_express_grey">#eeeeee</color>
 </resources>

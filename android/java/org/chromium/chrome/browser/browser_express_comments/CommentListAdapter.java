@@ -94,7 +94,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private ImageButton mDownvoteButton;
         private Button mReplyButton;
         private ImageButton mShareButton;
-        private Button mShowMoreButton;
+        // private Button mShowMoreButton;
         private String didVoteType;
         private int finalVote;
         private BraveActivity activity;
@@ -141,14 +141,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
             mShareButton = (ImageButton) itemView.findViewById(R.id.btn_share_image);
-            mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
+            // mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
             context = itemView.getContext();
 
-            mReplyButton.setTextSize(10);
-            mShowMoreButton.setTextSize(10);
+            mReplyButton.setTextSize(11);
+            // mShowMoreButton.setTextSize(10);
         }
 
         void bind(Comment comment) {
@@ -320,12 +320,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             });
 
-            mShowMoreButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mParentFragment.openReplies(comment.getId());
-                }
-            });
+            // mShowMoreButton.setOnClickListener(new View.OnClickListener() {
+            //     @Override
+            //     public void onClick(View v) {
+            //         mParentFragment.openReplies(comment.getId());
+            //     }
+            // });
 
             mShareButton.setOnClickListener(new View.OnClickListener() {
                 @Override
