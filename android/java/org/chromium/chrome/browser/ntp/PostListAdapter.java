@@ -120,6 +120,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private BraveActivity activity;
 
         private Button mReadMoreButton;
+        private Button mReadMoreButton2;
 
         private Context context;
 
@@ -156,6 +157,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_post);
+            mReadMoreButton2 = (Button) itemView.findViewById(R.id.btn_read_more_post2);
             context = itemView.getContext();
             mTopPostRecycler = topPostRecycler;
         }
@@ -209,7 +211,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             mReadMoreButton.setVisibility(View.GONE);
                         }
                     });
+                }else{
+                    twitterContent.setText(content.toString());
+                    mReadMoreButton.setVisibility(View.INVISIBLE);
                 }
+                
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
                 if(twitterImageUrl != null){
@@ -276,14 +282,17 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     if(post.getContent().toString().length() > 150){
                         String contentString = post.getContent().toString().subSequence(0, 150) + "...";
                         contentText.setText(contentString);
-                        mReadMoreButton.setVisibility(View.VISIBLE);
-                        mReadMoreButton.setOnClickListener(new View.OnClickListener() {
+                        mReadMoreButton2.setVisibility(View.VISIBLE);
+                        mReadMoreButton2.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
                                 contentText.setText(post.getContent().toString());
                                 mReadMoreButton.setVisibility(View.GONE);
                             }
                         });
+                    }else{
+                        contentText.setText(post.getContent().toString());
+                        mReadMoreButton2.setVisibility(View.INVISIBLE);
                     }
 
                     contentText.setVisibility(View.VISIBLE);

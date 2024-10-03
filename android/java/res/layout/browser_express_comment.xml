@@ -125,15 +125,16 @@
                     android:textAllCaps="true"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-                <View
+                <!-- <View
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
-                    android:background="@color/news_settings_title_color" />
+                    android:background="@color/news_settings_title_color" /> -->
 
                 <ImageButton
                     android:id="@+id/btn_share_image"
-                    android:layout_width="16sp"
-                    android:layout_height="16sp"
+                    style="@style/ToolbarButton"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/share_icon"

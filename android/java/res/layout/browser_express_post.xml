@@ -103,7 +103,7 @@
                 android:id="@+id/twitter_content"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginVertical="4dp"
+                android:layout_marginTop="4dp"
                 android:textColor="@color/news_settings_title_color"
                 android:textSize="14sp" />
 
@@ -118,7 +118,7 @@
                 android:textSize="11sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="2sp"
                 android:paddingHorizontal="0dp"
                 android:textAllCaps="false"
                 android:visibility="gone"
@@ -218,9 +218,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:textColor="@color/news_settings_title_color"
-            android:layout_marginVertical="4sp"
+            android:layout_marginTop="4sp"
             android:visibility="gone"
             android:textSize="11sp"/>
+        <Button
+            android:id="@+id/btn_read_more_post2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/be_read_more"
+            android:background="@android:color/transparent"
+            style="?android:attr/borderlessButtonStyle"
+            android:textColor="@color/set_default_text_color"
+            android:textSize="11sp"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            android:paddingVertical="2sp"
+            android:paddingHorizontal="0dp"
+            android:textAllCaps="false"
+            android:visibility="gone"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
