@@ -114,17 +114,17 @@
                     android:layout_height="1dp"
                     android:background="@color/news_settings_title_color" />
 
-                <!-- <ImageButton
-                    android:id="@+id/btn_share"
+                <ImageButton
+                    android:id="@+id/btn_share_image"
                     android:layout_width="16sp"
                     android:layout_height="16sp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/share_icon"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:scaleType="centerCrop" /> -->
+                    android:scaleType="centerCrop" />
 
-                <Button
+                <!-- <Button
                     android:id="@+id/btn_share"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -138,7 +138,7 @@
                     android:paddingVertical="4sp"
                     android:paddingHorizontal="8sp"
                     android:textAllCaps="true"
-                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginHorizontal="8dp" -->
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             <!-- <ImageButton
                 android:id="@+id/btn_options"
