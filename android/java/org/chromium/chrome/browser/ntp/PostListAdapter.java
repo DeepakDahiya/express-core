@@ -199,7 +199,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 twitterName.setText(name);
                 twitterUsername.setText(username);
                 if(content.toString().length() > 150){
-                    twitterContent.setText(content.toString().subSequence(0, 150) + "...");
+                    String contentString = content.toString().subSequence(0, 150) + "...";
+                    twitterContent.setText(contentString);
                     mReadMoreButton.setVisibility(View.VISIBLE);
                     mReadMoreButton.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -273,7 +274,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                 if(post.getShowFull()){
                     if(post.getContent().toString().length() > 150){
-                        contentText.setText(post.getContent().toString().subSequence(0, 150) + "...");
+                        String contentString = post.getContent().toString().subSequence(0, 150) + "...";
+                        contentText.setText(contentString);
                         mReadMoreButton.setVisibility(View.VISIBLE);
                         mReadMoreButton.setOnClickListener(new View.OnClickListener() {
                             @Override

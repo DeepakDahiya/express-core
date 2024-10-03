@@ -165,7 +165,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
             usernameText.setText(comment.getUser().getUsername().toString());
             if(comment.getContent().toString().length() > 150){
-                contentText.setText(comment.getContent().toString().subSequence(0, 150) + "...");
+                String contentString = comment.getContent().toString().subSequence(0, 150) + "...";
+                contentText.setText(contentString);
                 mReadMoreButton.setVisibility(View.VISIBLE);
                 mReadMoreButton.setOnClickListener(new View.OnClickListener() {
                     @Override
