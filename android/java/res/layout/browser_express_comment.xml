@@ -121,7 +121,6 @@
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/share_icon"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="centerCrop" />
 
                 <!-- <Button
