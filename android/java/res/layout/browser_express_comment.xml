@@ -121,6 +121,7 @@
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/share_icon"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="centerCrop" />
 
                 <!-- <Button
@@ -137,8 +138,8 @@
                     android:paddingVertical="4sp"
                     android:paddingHorizontal="8sp"
                     android:textAllCaps="true"
-                    android:layout_marginHorizontal="8dp" -->
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+                    android:layout_marginHorizontal="8dp"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
             <!-- <ImageButton
                 android:id="@+id/btn_options"
                 android:layout_width="18sp"
