@@ -119,6 +119,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private int finalVote;
         private BraveActivity activity;
 
+        private Button mReadMoreButton;
+
         private Context context;
 
         private Animation bounceUp;
@@ -153,6 +155,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mCommentButton = (ImageButton) itemView.findViewById(R.id.btn_comment);
             mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
+            mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_post);
             context = itemView.getContext();
             mTopPostRecycler = topPostRecycler;
         }
@@ -195,7 +198,17 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                 twitterName.setText(name);
                 twitterUsername.setText(username);
-                twitterContent.setText(content);
+                if(content.toString().length() > 150){
+                    twitterContent.setText(content.toString().subSequence(0, 150) + "...");
+                    mReadMoreButton.setVisibility(View.VISIBLE);
+                    mReadMoreButton.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            twitterContent.setText(content.toString());
+                            mReadMoreButton.setVisibility(View.GONE);
+                        }
+                    });
+                }
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
                 if(twitterImageUrl != null){
@@ -259,7 +272,18 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 titleText.setText(post.getTitle().toString());
 
                 if(post.getShowFull()){
-                    contentText.setText(post.getContent().toString());
+                    if(post.getContent().toString().length() > 150){
+                        contentText.setText(post.getContent().toString().subSequence(0, 150) + "...");
+                        mReadMoreButton.setVisibility(View.VISIBLE);
+                        mReadMoreButton.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                contentText.setText(post.getContent().toString());
+                                mReadMoreButton.setVisibility(View.GONE);
+                            }
+                        });
+                    }
+
                     contentText.setVisibility(View.VISIBLE);
                 }
 

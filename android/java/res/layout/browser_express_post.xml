@@ -107,6 +107,23 @@
                 android:textColor="@color/news_settings_title_color"
                 android:textSize="14sp" />
 
+            <Button
+                android:id="@+id/btn_read_more_post"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/be_read_more"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textColor="@color/set_default_text_color"
+                android:textSize="11sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
             <androidx.cardview.widget.CardView
                 android:id="@+id/twitter_media_card"
                 android:layout_width="match_parent"

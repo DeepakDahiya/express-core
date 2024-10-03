@@ -98,6 +98,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private String didVoteType;
         private int finalVote;
         private BraveActivity activity;
+        private Button mReadMoreButton;
 
         private RecyclerView mTopCommentRecycler;
         private CommentListAdapter mCommentAdapter;
@@ -143,6 +144,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
+            mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
             context = itemView.getContext();
 
             mReplyButton.setTextSize(10);
@@ -162,7 +164,17 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             myPosition = getBindingAdapterPosition();
 
             usernameText.setText(comment.getUser().getUsername().toString());
-            contentText.setText(comment.getContent().toString());
+            if(comment.getContent().toString().length() > 150){
+                contentText.setText(comment.getContent().toString().subSequence(0, 150) + "...");
+                mReadMoreButton.setVisibility(View.VISIBLE);
+                mReadMoreButton.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        contentText.setText(comment.getContent().toString());
+                        mReadMoreButton.setVisibility(View.GONE);
+                    }
+                });
+            }
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
             mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !mIsReplyAdapter ? View.VISIBLE : View.GONE);
