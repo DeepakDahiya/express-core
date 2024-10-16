@@ -541,13 +541,11 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void enterPip(){
-        Rational ASPECT_RATIO = new Rational(16, 9);
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
 
             int left = 0;
-            int top = 48;
+            int top = 480;
             int windowWidth = mActivity.getWindow().getDecorView().getWidth();
             int width = windowWidth;
             float defaultAspectRation = 1.78f; // rect.width() / (float) rect.height() calculate from video but currently hardcoding
@@ -555,6 +553,10 @@ public abstract class BraveActivity extends ChromeActivity
                 defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
             int height = (int) (windowWidth / videoAspectRatio);
             Rect bounds = new Rect(left, top, left + width, top + height);
+
+            Rational ASPECT_RATIO = new Rational(width, height);
+
+            var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
             builder.setSourceRectHint(bounds);
             
             boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
