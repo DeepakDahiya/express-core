@@ -137,7 +137,7 @@
                     android:layout_height="18sp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
-                    android:background="@drawable/share_icon"
+                    android:background="@drawable/share"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="centerCrop" />
 
