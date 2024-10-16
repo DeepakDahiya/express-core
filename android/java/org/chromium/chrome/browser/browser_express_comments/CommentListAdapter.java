@@ -3,6 +3,13 @@ package org.chromium.chrome.browser.browser_express_comments;
 import android.content.Intent;
 import java.util.UUID;
 import java.util.List;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import android.net.Uri;
+import androidx.core.content.FileProvider;
 import java.util.ArrayList;
 import android.widget.TextView;
 import android.view.View;
@@ -330,10 +337,34 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mShareButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-                    sharingIntent.setType("text/plain");
-                    sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, comment.getContent().toString());
-                    activity.startActivity(Intent.createChooser(sharingIntent, null));
+                    String link = "https://browser.express/view?id=" + comment.getId();
+                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" +
+                                    link + "\n\n" +
+                                    "Dive in—it's where everyone’s talking about everything, nonstop.";
+
+                    // Convert the drawable resource to a bitmap
+                    Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.share_message_image); // Replace with your drawable
+
+                    try {
+                        // Save bitmap to a file
+                        File file = new File(activity.getCacheDir(), "shared_image.png");
+                        FileOutputStream outputStream = new FileOutputStream(file);
+                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                        outputStream.close();
+
+                        // Get URI for sharing
+                        Uri imageUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
+                        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                        sharingIntent.setType("image/*");
+                        sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
+                        sharingIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                        sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                        // Start the chooser
+                        activity.startActivity(Intent.createChooser(sharingIntent, null));
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             });
 

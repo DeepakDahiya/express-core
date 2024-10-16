@@ -181,6 +181,7 @@ brave_java_resources = [
   "java/res/drawable-nodpi/cancel_btn.png",
   "java/res/drawable-nodpi/btn_upvote.png",
   "java/res/drawable-nodpi/edit_image.png",
+  "java/res/drawable-nodpi/share_message_image.png",
   "java/res/drawable-nodpi/btn_downvote.png",
   "java/res/drawable-nodpi/btn_upvote_orange.png",
   "java/res/drawable-nodpi/btn_downvote_orange.png",
