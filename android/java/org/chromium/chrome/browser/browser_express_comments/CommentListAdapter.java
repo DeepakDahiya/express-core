@@ -8,6 +8,7 @@ import android.graphics.BitmapFactory;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import android.net.Uri;
 import androidx.core.content.FileProvider;
 import java.util.ArrayList;
