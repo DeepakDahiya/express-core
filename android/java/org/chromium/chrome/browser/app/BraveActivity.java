@@ -18,6 +18,8 @@ import android.content.res.Configuration;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import org.chromium.base.MathUtils;
+import android.graphics.Rect;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.View;
@@ -260,6 +262,8 @@ public abstract class BraveActivity extends ChromeActivity
     private static final int DAYS_5 = 5;
     private static final int DAYS_12 = 12;
 
+    private static final float MIN_ASPECT_RATIO = 1 / 2.39f;
+    private static final float MAX_ASPECT_RATIO = 2.39f;
     public static final int MAX_FAILED_CAPTCHA_ATTEMPTS = 10;
 
     public static final int APP_OPEN_COUNT_FOR_WIDGET_PROMO = 25;
@@ -541,6 +545,18 @@ public abstract class BraveActivity extends ChromeActivity
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+
+            int left = 0;
+            int top = 48;
+            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
+            int width = windowWidth;
+            float defaultAspectRation = 1.78f; // rect.width() / (float) rect.height() calculate from video but currently hardcoding
+            float videoAspectRatio = MathUtils.clamp(
+                defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+            int height = (int) (windowWidth / videoAspectRatio);
+            Rect bounds = new Rect(left, top, left + width, top + height);
+            builder.setSourceRectHint(bounds);
+            
             boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
         }
     }
