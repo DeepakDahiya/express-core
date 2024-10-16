@@ -343,29 +343,34 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                     link + "\n\n" +
                                     "Dive in—it's where everyone’s talking about everything, nonstop.";
 
-                    // Convert the drawable resource to a bitmap
-                    Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.share_message_image); // Replace with your drawable
+                    Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
+                    sharingIntent.setType("text/plain");
+                    sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, message);
+                    activity.startActivity(Intent.createChooser(sharingIntent, null));
 
-                    try {
-                        // Save bitmap to a file
-                        File file = new File(activity.getCacheDir(), "shared_image.png");
-                        FileOutputStream outputStream = new FileOutputStream(file);
-                        bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                        outputStream.close();
+                    // // Convert the drawable resource to a bitmap
+                    // Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.share_message_image); // Replace with your drawable
 
-                        // Get URI for sharing
-                        Uri imageUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
-                        Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-                        sharingIntent.setType("image/*");
-                        sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
-                        sharingIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                        sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+                    // try {
+                    //     // Save bitmap to a file
+                    //     File file = new File(activity.getCacheDir(), "shared_image.png");
+                    //     FileOutputStream outputStream = new FileOutputStream(file);
+                    //     bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
+                    //     outputStream.close();
 
-                        // Start the chooser
-                        activity.startActivity(Intent.createChooser(sharingIntent, null));
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
+                    //     // Get URI for sharing
+                    //     Uri imageUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
+                    //     Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                    //     sharingIntent.setType("image/*");
+                    //     sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
+                    //     sharingIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
+                    //     sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+
+                    //     // Start the chooser
+                    //     activity.startActivity(Intent.createChooser(sharingIntent, null));
+                    // } catch (IOException e) {
+                    //     e.printStackTrace();
+                    // }
                 }
             });
 
