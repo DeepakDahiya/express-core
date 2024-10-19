@@ -141,6 +141,10 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
 
+                mLogoutButton.setOnClickListener(view2 -> {
+                    activity.logout();
+                });
+
                 PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                 mAppVersionText.setText(pInfo.versionName);
 
