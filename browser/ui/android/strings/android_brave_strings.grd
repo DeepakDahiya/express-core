@@ -4211,6 +4211,12 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BE_SETTINGS" desc="Brave wallet password hint text">
       Settings
     </message>
+    <message name="IDS_BE_DELETE_ACCOUNT" desc="Brave wallet password hint text">
+      Delete account
+    </message>
+    <message name="IDS_BE_LOGOUT" desc="Brave wallet password hint text">
+      Logout
+    </message>
     <message name="IDS_BE_REPLY" desc="Brave wallet password hint text">
       Reply
     </message>

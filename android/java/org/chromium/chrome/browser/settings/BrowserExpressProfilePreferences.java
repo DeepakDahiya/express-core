@@ -75,6 +75,9 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     private TextView mFullNameText;
     private Button mBtnYoutubePremium;
 
+    private Button mDeleteButton;
+    private Button mLogoutButton;
+
     private TextView mViewsText;
     private TextView mLikesReceivedText;
     private TextView mLikesGivenText;
@@ -111,6 +114,9 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
             mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
             mBtnYoutubePremium = (Button) view.findViewById(R.id.youtube_premium_button);
+
+            mDeleteButton = (Button) view.findViewById(R.id.delete_button);
+            mLogoutButton = (Button) view.findViewById(R.id.logout_button);
 
             mViewsText = (TextView) view.findViewById(R.id.be_views);
             mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);

@@ -2176,6 +2176,16 @@ public abstract class BraveActivity extends ChromeActivity
         return sharedPref;
     }
 
+    public void logout() {
+        // SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
+        //         BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);
+        // SharedPreferences.Editor editor = sharedPref.edit();
+        // editor.remove(ACCESS_TOKEN_KEY);
+        // editor.apply();
+
+        getSupportFragmentManager().popBackStack();
+    }
+
     public void setAccessToken(String accessToken) {
         SharedPreferences sharedPref = getApplicationContext().getSharedPreferences(
                 BravePreferenceKeys.BROWSER_EXPRESS_ACCESS_TOKEN, 0);

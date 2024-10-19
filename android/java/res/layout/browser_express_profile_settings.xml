@@ -325,6 +325,68 @@
                 android:text="@string/be_settings" />
 
         </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:background="@drawable/delete"
+                android:layout_height="24sp"
+                android:layout_width="24sp"
+                android:layout_gravity="center"
+                android:visibility="visible"
+                android:layout_marginEnd="2sp"
+                android:layout_marginStart="4sp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+            <Button
+                android:id="@+id/delete_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@android:color/transparent"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/news_settings_title_color"
+                android:drawableTint="@color/news_settings_title_color"
+                android:text="@string/be_delete_account" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp">
+
+            <ImageView
+                android:background="@drawable/logout"
+                android:layout_height="24sp"
+                android:layout_width="24sp"
+                android:layout_gravity="center"
+                android:visibility="visible"
+                android:layout_marginEnd="2sp"
+                android:layout_marginStart="4sp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+            <Button
+                android:id="@+id/logout_button"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textAllCaps="false"
+                android:background="@android:color/transparent"
+                android:gravity="start|center_vertical"
+                android:textColor="@color/news_settings_title_color"
+                android:drawableTint="@color/news_settings_title_color"
+                android:text="@string/be_logout" />
+
+        </LinearLayout>
         <TextView
             android:id="@+id/app_version"
             style="@style/TextAppearance.Material3.LabelSmall"
