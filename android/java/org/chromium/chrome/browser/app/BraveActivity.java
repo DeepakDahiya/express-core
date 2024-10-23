@@ -544,6 +544,7 @@ public abstract class BraveActivity extends ChromeActivity
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
 
+            Log.e("BE_PIP", "Before JS");
             Tab tab = getActivityTab();
             tab.getWebContents().evaluateJavaScript(
                 "(function() {" +
@@ -556,11 +557,15 @@ public abstract class BraveActivity extends ChromeActivity
                 null
             );
 
+            Log.e("BE_PIP", "AFTER JS");
+
             try{
                 Thread.sleep(500);
             }catch(InterruptedException e){
-
+                Log.e("BE_PIP", e.getMessage());
             }
+
+            Log.e("BE_PIP", "AFTER SLEEP");
 
             int left = 0;
             int top = 480;
@@ -573,11 +578,12 @@ public abstract class BraveActivity extends ChromeActivity
             Rect bounds = new Rect(left, top, left + width, top + height);
 
             Rational ASPECT_RATIO = new Rational(width, height);
-
+            Log.e("BE_PIP", "BEFORE PIP");
             var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
             // builder.setSourceRectHint(bounds);
             
             boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
+            Log.e("BE_PIP", "AFTER PIP");
         }
     }
 
