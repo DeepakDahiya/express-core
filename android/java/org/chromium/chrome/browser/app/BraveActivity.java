@@ -556,7 +556,11 @@ public abstract class BraveActivity extends ChromeActivity
                 null
             );
 
-            Thread.sleep(500);
+            try{
+                Thread.sleep(500);
+            }catch(InterruptedException e){
+
+            }
 
             int left = 0;
             int top = 480;
