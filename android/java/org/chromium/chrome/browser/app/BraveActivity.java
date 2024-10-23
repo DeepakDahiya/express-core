@@ -546,13 +546,18 @@ public abstract class BraveActivity extends ChromeActivity
 
             Log.e("BE_PIP", "Before JS");
             Tab tab = getActivityTab();
+            Log.e("BE_PIP", "GOT TAB");
             tab.getWebContents().evaluateJavaScript(
                 "(function() {" +
-                "  const video = document.querySelector('video');" +
-                "  if (video) {" +
-                "    video.play();" +
-                "    video.requestFullscreen();" +
-                "  }" +
+                "   try{" +
+                "       const video = document.querySelector('video');" +
+                "       if (video) {" +
+                "           video.play();" +
+                "           video.requestFullscreen();" +
+                "       }" +
+                "   }catch(e){" +
+                "       console.error(e);" +
+                "   }" +
                 "})()",
                 null
             );
