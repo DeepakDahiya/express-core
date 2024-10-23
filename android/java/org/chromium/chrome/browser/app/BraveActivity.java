@@ -376,10 +376,10 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         // Using background music as pip for now
-        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
-            enterPip();
-            return;
-        }
+        // if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+        //     enterPip();
+        //     return;
+        // }
 
         super.onPauseWithNative();
     }
@@ -544,33 +544,33 @@ public abstract class BraveActivity extends ChromeActivity
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
 
-            Log.e("BE_PIP", "Before JS");
-            Tab tab = getActivityTab();
-            Log.e("BE_PIP", "GOT TAB");
-            tab.getWebContents().evaluateJavaScript(
-                "(function() {" +
-                "   try{" +
-                "       const video = document.querySelector('video');" +
-                "       if (video) {" +
-                "           video.play();" +
-                "           video.requestFullscreen();" +
-                "       }" +
-                "   }catch(e){" +
-                "       console.error(e);" +
-                "   }" +
-                "})()",
-                null
-            );
+            // Log.e("BE_PIP", "Before JS");
+            // Tab tab = getActivityTab();
+            // Log.e("BE_PIP", "GOT TAB");
+            // tab.getWebContents().evaluateJavaScript(
+            //     "(function() {" +
+            //     "   try{" +
+            //     "       const video = document.querySelector('video');" +
+            //     "       if (video) {" +
+            //     "           video.play();" +
+            //     "           video.requestFullscreen();" +
+            //     "       }" +
+            //     "   }catch(e){" +
+            //     "       console.error(e);" +
+            //     "   }" +
+            //     "})()",
+            //     null
+            // );
 
-            Log.e("BE_PIP", "AFTER JS");
+            // Log.e("BE_PIP", "AFTER JS");
 
-            try{
-                Thread.sleep(500);
-            }catch(InterruptedException e){
-                Log.e("BE_PIP", e.getMessage());
-            }
+            // try{
+            //     Thread.sleep(500);
+            // }catch(InterruptedException e){
+            //     Log.e("BE_PIP", e.getMessage());
+            // }
 
-            Log.e("BE_PIP", "AFTER SLEEP");
+            // Log.e("BE_PIP", "AFTER SLEEP");
 
             int left = 0;
             int top = 480;
