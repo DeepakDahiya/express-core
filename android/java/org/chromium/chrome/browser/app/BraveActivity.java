@@ -544,6 +544,20 @@ public abstract class BraveActivity extends ChromeActivity
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
 
+            Tab tab = getActivityTab();
+            tab.getWebContents().evaluateJavascript(
+                "(function() {" +
+                "  const video = document.querySelector('video');" +
+                "  if (video) {" +
+                "    video.play();" +
+                "    video.requestFullscreen();" +
+                "  }" +
+                "})()",
+                null
+            );
+
+            Thread.Sleep(500);
+
             int left = 0;
             int top = 480;
             int windowWidth = mActivity.getWindow().getDecorView().getWidth();
@@ -557,7 +571,7 @@ public abstract class BraveActivity extends ChromeActivity
             Rational ASPECT_RATIO = new Rational(width, height);
 
             var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
-            builder.setSourceRectHint(bounds);
+            // builder.setSourceRectHint(bounds);
             
             boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
         }
