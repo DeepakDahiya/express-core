@@ -545,7 +545,7 @@ public abstract class BraveActivity extends ChromeActivity
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
 
             Tab tab = getActivityTab();
-            tab.getWebContents().evaluateJavascript(
+            tab.getWebContents().evaluateJavaScript(
                 "(function() {" +
                 "  const video = document.querySelector('video');" +
                 "  if (video) {" +
@@ -556,7 +556,7 @@ public abstract class BraveActivity extends ChromeActivity
                 null
             );
 
-            Thread.Sleep(500);
+            Thread.sleep(500);
 
             int left = 0;
             int top = 480;
