@@ -4196,7 +4196,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_LIKES_GIVEN" desc="Brave wallet password hint text">
       Likes Given
     </message>
-    <message name="IDS_BE_EDIT_PROFILE" desc="Brave wallet password hint text">
+    <!-- <message name="IDS_BE_EDIT_PROFILE" desc="Brave wallet password hint text">
       Edit Profile
     </message>
     <message name="IDS_BE_ACTIVITY_FEED" desc="Brave wallet password hint text">
@@ -4204,16 +4204,16 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     </message>
     <message name="IDS_BE_NOTIFICATIONS" desc="Brave wallet password hint text">
       Notifications
-    </message>
+    </message> -->
     <message name="IDS_BE_YOUTUBE" desc="Brave wallet password hint text">
       Youtube
     </message>
-    <message name="IDS_BE_SETTINGS" desc="Brave wallet password hint text">
+    <!-- <message name="IDS_BE_SETTINGS" desc="Brave wallet password hint text">
       Settings
     </message>
     <message name="IDS_BE_DELETE_ACCOUNT" desc="Brave wallet password hint text">
       Delete account
-    </message>
+    </message> -->
     <message name="IDS_BE_LOGOUT" desc="Brave wallet password hint text">
       Logout
     </message>
