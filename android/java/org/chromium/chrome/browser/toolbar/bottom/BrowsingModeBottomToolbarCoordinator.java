@@ -154,17 +154,18 @@ public class BrowsingModeBottomToolbarCoordinator {
                             }
                         };
                     tab1.getWebContents().evaluateJavaScript(
-                        "(function() {" +
-                        "   try{" +
-                        "       const video = document.querySelector('video');" +
-                        "       if (video) {" +
-                        "           video.play();" +
-                        "           video.requestFullscreen();" +
-                        "       }" +
-                        "   }catch(e){" +
-                        "       console.error(e);" +
-                        "   }" +
-                        "})()",
+                        "(function(){})()",
+                        // "(function() {" +
+                        // "   try{" +
+                        // "       const video = document.querySelector('video');" +
+                        // "       if (video) {" +
+                        // "           video.play();" +
+                        // "           video.requestFullscreen();" +
+                        // "       }" +
+                        // "   }catch(e){" +
+                        // "       console.error(e);" +
+                        // "   }" +
+                        // "})()",
                         callback
                     );
                     // activity.showCommentsBottomSheet();
