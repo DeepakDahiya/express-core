@@ -153,7 +153,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                                 Log.e("PIP_RESULT", jsonResult);
                             }
                         };
-                    if (tab.getWebContents() != null){
+                    if (tab != null && tab.getWebContents() != null){
                         tab.getWebContents().evaluateJavaScript(
                             "(function(){})()",
                             // "(function() {" +
