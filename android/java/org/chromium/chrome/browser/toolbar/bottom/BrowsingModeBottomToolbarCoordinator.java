@@ -16,7 +16,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-
+import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
 import org.chromium.base.Log;
@@ -144,8 +144,29 @@ public class BrowsingModeBottomToolbarCoordinator {
                 TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    activity.showCommentsBottomSheet();
-                    // activity.openBrowserExpressCommentsSettings();
+                    Tab tab = activity.getActivityTab();
+                    JavaScriptCallback callback =
+                        new JavaScriptCallback() {
+                            @Override
+                            public void handleJavaScriptResult(String jsonResult) {
+                                Log.e("PIP_RESULT", jsonResult);
+                            }
+                        };
+                    tab.getWebContents().evaluateJavaScript(
+                        "(function() {" +
+                        "   try{" +
+                        "       const video = document.querySelector('video');" +
+                        "       if (video) {" +
+                        "           video.play();" +
+                        "           video.requestFullscreen();" +
+                        "       }" +
+                        "   }catch(e){" +
+                        "       console.error(e);" +
+                        "   }" +
+                        "})()",
+                        callback
+                    );
+                    // activity.showCommentsBottomSheet();
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
                 }
@@ -155,7 +176,6 @@ public class BrowsingModeBottomToolbarCoordinator {
             BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
              // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
            
-
             mCommentsButton.post(new Runnable() {
                 @Override
                 public void run() {
