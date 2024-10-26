@@ -145,7 +145,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    Tab tab1 = activity.getActivityTab();
+                    // Tab tab1 = activity.getActivityTab();
                     JavaScriptCallback callback =
                         new JavaScriptCallback() {
                             @Override
@@ -153,8 +153,8 @@ public class BrowsingModeBottomToolbarCoordinator {
                                 Log.e("PIP_RESULT", jsonResult);
                             }
                         };
-                    if (tab1.getWebContents() != null){
-                        tab1.getWebContents().evaluateJavaScript(
+                    if (tab.getWebContents() != null){
+                        tab.getWebContents().evaluateJavaScript(
                             "(function(){})()",
                             // "(function() {" +
                             // "   try{" +
