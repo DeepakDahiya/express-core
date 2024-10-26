@@ -16,6 +16,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
+import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
