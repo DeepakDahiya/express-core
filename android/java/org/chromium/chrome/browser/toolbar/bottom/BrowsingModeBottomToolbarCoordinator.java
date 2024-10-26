@@ -153,21 +153,26 @@ public class BrowsingModeBottomToolbarCoordinator {
                                 Log.e("PIP_RESULT", jsonResult);
                             }
                         };
-                    tab1.getWebContents().evaluateJavaScript(
-                        "(function(){})()",
-                        // "(function() {" +
-                        // "   try{" +
-                        // "       const video = document.querySelector('video');" +
-                        // "       if (video) {" +
-                        // "           video.play();" +
-                        // "           video.requestFullscreen();" +
-                        // "       }" +
-                        // "   }catch(e){" +
-                        // "       console.error(e);" +
-                        // "   }" +
-                        // "})()",
-                        callback
-                    );
+                    if (tab1.getWebContents() != null){
+                        tab1.getWebContents().evaluateJavaScript(
+                            "(function(){})()",
+                            // "(function() {" +
+                            // "   try{" +
+                            // "       const video = document.querySelector('video');" +
+                            // "       if (video) {" +
+                            // "           video.play();" +
+                            // "           video.requestFullscreen();" +
+                            // "       }" +
+                            // "   }catch(e){" +
+                            // "       console.error(e);" +
+                            // "   }" +
+                            // "})()",
+                            callback
+                        );
+                    }else{
+                        Log.e("PIP_RESULT", "NULL WEBCONTENT");
+                    }
+                    
                     // activity.showCommentsBottomSheet();
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
