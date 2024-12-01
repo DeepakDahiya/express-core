@@ -190,9 +190,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
             // mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !mIsReplyAdapter ? View.VISIBLE : View.GONE);
+            Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT", comment.getCommentParent());
             if(comment.getCommentParent() == null){
+                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT_NOT_FOUND");
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }else{
+                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT_FOUND");
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 
