@@ -28,6 +28,9 @@ import android.widget.TextView;
 import org.chromium.url.mojom.Url;
 import org.chromium.brave_shields.mojom.SubscriptionInfo;
 import org.chromium.chrome.browser.shields.FilterListServiceFactory;
+import androidx.core.app.NotificationCompat;
+import android.app.PendingIntent;
+import androidx.core.app.NotificationManagerCompat;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -361,6 +364,7 @@ public abstract class BraveActivity extends ChromeActivity
                 ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
 
         executeInitSafeBrowsing(0);
+        showPersistentNotification();
     }
 
     @Override
@@ -538,6 +542,27 @@ public abstract class BraveActivity extends ChromeActivity
             }
             maybeShowSignMessageErrorsLayout();
         });
+    }
+    
+    public static void showPersistentNotification() {
+        Context context = ContextUtils.getApplicationContext();
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_notification)
+            .setContentTitle("Express Browser")
+            .setContentText("Browser is running")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true) // Makes notification persistent
+            .setCategory(NotificationCompat.CATEGORY_SERVICE);
+
+        // Add an intent to open the app when notification is clicked
+        Intent intent = new Intent(context, BraveActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE);
+        builder.setContentIntent(pendingIntent);
+
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(3232, builder.build());
     }
 
     public void enterPip(){
