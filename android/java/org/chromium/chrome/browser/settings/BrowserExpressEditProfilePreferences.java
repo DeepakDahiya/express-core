@@ -157,7 +157,6 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
             ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-        } catch (NameNotFoundException e) {
         } catch (JSONException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
