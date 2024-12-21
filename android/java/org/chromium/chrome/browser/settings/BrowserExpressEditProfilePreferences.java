@@ -5,17 +5,11 @@
 
 package org.chromium.chrome.browser.settings;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.UnsupportedEncodingException;
 import android.content.Intent;
-import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
-import android.util.Base64;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -24,9 +18,8 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.EditText;
 
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager.NameNotFoundException;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
 
@@ -34,9 +27,11 @@ import com.airbnb.lottie.LottieAnimationView;
 import com.airbnb.lottie.LottieProperty;
 import com.airbnb.lottie.model.KeyPath;
 
+import org.chromium.ui.widget.Toast;
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.task.AsyncTask;
 import org.chromium.base.task.PostTask;
 import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_news.mojom.BraveNewsController;
@@ -46,6 +41,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_news.BraveNewsControllerFactory;
 import org.chromium.chrome.browser.brave_news.BraveNewsUtils;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.night_mode.GlobalNightModeStateProviderHolder;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
@@ -56,33 +53,26 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
+
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 import java.util.List;
 
-import org.chromium.chrome.browser.util.TabUtils;
-
-public class BrowserExpressProfilePreferences extends BravePreferenceFragment
+public class BrowserExpressEditProfilePreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
     public static final String PREF_SHOW_OPTIN = "show_optin";
 
     private LinearLayout mParentLayout;
     private ImageView mAvatarImage;
-    private TextView mUsernameText;
-    private TextView mFullNameText;
-    private Button mBtnYoutubePremium;
-
-    // private Button mDeleteButton;
-    private Button mLogoutButton;
-    private Button mEditProfileButton;
-
-    private TextView mViewsText;
-    private TextView mLikesReceivedText;
-    private TextView mLikesGivenText;
-    private TextView mAppVersionText;
+    private ImageView mEditImage;
+    private Button mBtnEdit;
+    private EditText mNameEditText;
+    private EditText mEmailEditText;
+    private EditText mUsernameEditText;
+    private TextView mErrorTextView;
 
     private boolean mIsSuggestionAvailable;
     private boolean mIsChannelAvailable;
@@ -95,13 +85,13 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.browser_express_profile_settings, container, false);
+        return inflater.inflate(R.layout.browser_express_edit_profile_settings, container, false);
     }
 
     @Override
     public void onActivityCreated(Bundle savedInstanceState) {
         if (getActivity() != null) {
-            getActivity().setTitle(R.string.browser_express_profile_title);
+            getActivity().setTitle("");
         }
 
         super.onActivityCreated(savedInstanceState);
@@ -111,91 +101,20 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
-            mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
+            
+            mNameEditText = (EditText) view.findViewById(R.id.name);
+            mUsernameEditText = (EditText) view.findViewById(R.id.username);
+            mEmailEditText = (EditText) view.findViewById(R.id.email);
+
+            mBtnEdit = (Button) view.findViewById(R.id.btn_edit);
+            mErrorTextView = (TextView) view.findViewById(R.id.error_message);
+
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
-            mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
-            mBtnYoutubePremium = (Button) view.findViewById(R.id.youtube_premium_button);
-
-            // mDeleteButton = (Button) view.findViewById(R.id.delete_button);
-            mLogoutButton = (Button) view.findViewById(R.id.logout_button);
-            mEditProfileButton = (Button) view.findViewById(R.id.edit_profile_button);
-
-            mViewsText = (TextView) view.findViewById(R.id.be_views);
-            mLikesReceivedText = (TextView) view.findViewById(R.id.be_likes_received);
-            mLikesGivenText = (TextView) view.findViewById(R.id.be_likes_given);
-            mAppVersionText = (TextView) view.findViewById(R.id.app_version);
-
-            String vc = "8.4K";
-            String lc = "3.6K";
-            String gc = "6.4K";
-            mViewsText.setText(vc);
-            mLikesReceivedText.setText(lc);
-            mLikesGivenText.setText(gc);
-
-            mBtnYoutubePremium.setOnClickListener(view2 -> {
-                TabUtils.openUrlInSameTab("https://m.youtube.com");
-                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.setAction(Intent.ACTION_VIEW);
-                startActivity(intent);
-            });
-
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-
-                mLogoutButton.setOnClickListener(view2 -> {
-                    activity.logout();
-                });
-
-                mEditProfileButton.setOnClickListener(view2 -> {
-                    activity.openBrowserExpressEditProfileSettings();
-                });
-
-                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
-                mAppVersionText.setText(pInfo.versionName);
-
-                String accessToken = activity.getAccessToken();
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                mUsernameText.setText(decodedAccessTokenObj.getString("username"));
-                ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
-                Object name = decodedAccessTokenObj.get("name");
-                String fnString = "";
-                if(name != null){
-                    fnString = name.toString();
-                }
-                mFullNameText.setText(fnString);
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            } catch (NameNotFoundException e) {
-            } catch (JSONException e) {
-                Log.e("Express Browser Access Token", e.getMessage());
-            }catch(Exception ex){
-                Log.e("Express Browser Access Token", ex.getMessage());
-            }
+            mEditImage = (ImageView) view.findViewById(R.id.edit_icon);
 
             setData();
             onClickViews();
         }
-    }
-
-    private JSONObject getDecodedToken(String accessToken){
-        try{
-            String[] split_string = accessToken.split("\\.");
-            String base64EncodedHeader = split_string[0];
-            String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
-
-            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-            String decodedString = new String(data, "UTF-8");
-            JSONObject jsonObj = new JSONObject(decodedString.toString());
-            return jsonObj;
-        }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }
-        
     }
 
     private void setData() {
@@ -226,6 +145,46 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     }
 
     private void onClickViews() {
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+
+            String accessToken = activity.getAccessToken();
+            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+            ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        } catch (NameNotFoundException e) {
+        } catch (JSONException e) {
+            Log.e("Express Browser Access Token", e.getMessage());
+        }catch(Exception ex){
+            Log.e("Express Browser Access Token", ex.getMessage());
+        }
+
+        mBtnEdit.setOnClickListener(view -> {
+            String email = mEmailEditText.getText().toString();
+            String name = mNameEditText.getText().toString();
+            String username = mUsernameEditText.getText().toString();
+
+            mErrorTextView.setText(R.string.browser_express_empty_text);
+            mErrorTextView.setVisibility(View.INVISIBLE);
+
+            String emptyString = "";
+
+            if(username.equals(emptyString)){
+                mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
+                mErrorTextView.setVisibility(View.VISIBLE);
+                return;
+            }
+
+            mBtnEdit.setClickable(false);
+            mBtnEdit.setText(R.string.browser_express_loading_title);
+
+            Utils.hideKeyboard(getActivity());
+
+            BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
+                    new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
+                            email, username, name, editProfileCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
@@ -292,4 +251,36 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mBraveNewsController.close();
         }
     }
+
+    private BrowserExpressEditProfilePreferencesUtil.EditProfileCallback editProfileCallback =
+            new BrowserExpressEditProfilePreferencesUtil.EditProfileCallback() {
+                @Override
+                public void editProfileSuccessful(String accessToken, String refreshToken) {
+                    mBtnEdit.setClickable(true);
+                    mBtnEdit.setText(R.string.browser_express_edit_profile_button_title);
+
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setAccessToken(accessToken);
+                        Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        intent.setAction(Intent.ACTION_VIEW);
+                        Toast.makeText(activity, "Profile Updated", Toast.LENGTH_SHORT).show();
+                        startActivity(intent);
+                        // if (getFragmentManager() != null) {
+                        //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                        // }
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
+                }
+
+                @Override
+                public void editProfileFailed(String error) {
+                    mErrorTextView.setText(error);
+                    mErrorTextView.setVisibility(View.VISIBLE);
+
+                    mBtnEdit.setClickable(true);
+                    mBtnEdit.setText(R.string.browser_express_edit_profile_button_title);
+                }
+            };
 }

@@ -1495,6 +1495,11 @@ public abstract class BraveActivity extends ChromeActivity
         settingsLauncher.launchSettingsActivity(this, BrowserExpressSignupPreferences.class);
     }
 
+    public void openBrowserExpressEditProfileSettings() {
+        SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
+        settingsLauncher.launchSettingsActivity(this, BrowserExpressEditProfilePreferences.class);
+    }
+
     public void openBrowserExpressVerify() {
         SettingsLauncher settingsLauncher = new SettingsLauncherImpl();
         settingsLauncher.launchSettingsActivity(this, BrowserExpressOtpVerifyPreferences.class);
