@@ -107,9 +107,9 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             
-            mNameEditText = (EditText) view.findViewById(R.id.name);
-            mUsernameEditText = (EditText) view.findViewById(R.id.username);
-            mEmailEditText = (EditText) view.findViewById(R.id.email);
+            mNameEditText = (EditText) view.findViewById(R.id.be_name);
+            mUsernameEditText = (EditText) view.findViewById(R.id.be_username);
+            mEmailEditText = (EditText) view.findViewById(R.id.be_email);
 
             mBtnEdit = (Button) view.findViewById(R.id.btn_edit);
             mErrorTextView = (TextView) view.findViewById(R.id.error_message);
