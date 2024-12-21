@@ -160,6 +160,7 @@ import org.chromium.chrome.browser.browser_express_comments.BrowserExpressCommen
 import org.chromium.chrome.browser.set_default_browser.OnBraveSetDefaultBrowserListener;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
+import org.chromium.chrome.browser.settings.BrowserExpressEditProfilePreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressLoginPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressCommentsPreferences;
 import org.chromium.chrome.browser.settings.BrowserExpressSignupPreferences;

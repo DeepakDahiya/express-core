@@ -23,6 +23,7 @@ import org.json.JSONObject;
 import android.widget.EditText;
 import java.io.UnsupportedEncodingException;
 import android.content.pm.PackageManager.NameNotFoundException;
+import android.util.Base64;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
