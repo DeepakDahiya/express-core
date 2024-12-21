@@ -18,7 +18,11 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import org.json.JSONException;
+import org.json.JSONObject;
 import android.widget.EditText;
+import java.io.UnsupportedEncodingException;
+import android.content.pm.PackageManager.NameNotFoundException;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -250,6 +254,27 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
         if (mBraveNewsController != null) {
             mBraveNewsController.close();
         }
+    }
+
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }
+        
     }
 
     private BrowserExpressEditProfilePreferencesUtil.EditProfileCallback editProfileCallback =
