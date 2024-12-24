@@ -24,6 +24,7 @@ import android.widget.EditText;
 import java.io.UnsupportedEncodingException;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Base64;
+import android.net.Uri;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -69,6 +70,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
     public static final String PREF_SHOW_OPTIN = "show_optin";
+    private static final int REQUEST_IMAGE_PICK = 1;
 
     private LinearLayout mParentLayout;
     private ImageView mAvatarImage;
@@ -173,6 +175,9 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             Log.e("Express Browser Access Token", ex.getMessage());
         }
 
+        mAvatarImage.setOnClickListener(view -> openImagePicker());
+        mEditImage.setOnClickListener(view -> openImagePicker());
+
         mBtnEdit.setOnClickListener(view -> {
             String email = mEmailEditText.getText().toString();
             String name = mNameEditText.getText().toString();
@@ -263,6 +268,31 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
         super.onDestroy();
         if (mBraveNewsController != null) {
             mBraveNewsController.close();
+        }
+    }
+
+    private void openImagePicker() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        intent.setType("image/*");
+        startActivityForResult(intent, REQUEST_IMAGE_PICK);
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK && data != null) {
+            Uri selectedImage = data.getData();
+            if (selectedImage != null) {
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    Glide.with(activity)
+                        .load(selectedImage)
+                        .circleCrop()
+                        .into(mAvatarImage);
+                } catch (BraveActivity.BraveActivityNotFoundException e) {}
+                
+            }
         }
     }
 
