@@ -177,7 +177,7 @@ public class ReplyListFragment extends Fragment {
 
             if(accessToken != null){
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/svg?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
             }
 
             mSendButton.setOnClickListener((new View.OnClickListener() {

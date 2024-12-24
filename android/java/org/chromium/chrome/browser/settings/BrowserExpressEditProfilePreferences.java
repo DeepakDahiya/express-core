@@ -169,7 +169,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 mEmailEditText.setEnabled(false);
             }
 
-            ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
+            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/svg?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         } catch (JSONException e) {
             Log.e("Express Browser Access Token", e.getMessage());
@@ -285,12 +285,14 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
 
         if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK && data != null) {
             Uri selectedImage = data.getData();
+            Log.e("ImagePicker", "Selected image URI: " + selectedImage.toString());
             if (selectedImage != null) {
                 try {
+                    Log.e("ImagePicker", "Selected image URI 2: " + selectedImage.toString());
                     BraveActivity activity = BraveActivity.getBraveActivity();
                     Glide.with(activity)
                         .load(selectedImage)
-                        .circleCrop()
+                        // .circleCrop()
                         .into(mAvatarImage);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {}
                 
