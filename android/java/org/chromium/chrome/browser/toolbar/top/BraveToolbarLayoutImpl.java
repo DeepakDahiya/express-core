@@ -36,6 +36,12 @@ import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import com.bumptech.glide.Glide;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.json.JSONException;
+import org.json.JSONObject;
+import android.util.Base64;
+import java.io.UnsupportedEncodingException;
 
 import androidx.annotation.NonNull;
 import androidx.core.content.ContextCompat;
@@ -267,6 +273,21 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mProfileButton.setOnClickListener(this);
             mProfileButton.setOnLongClickListener(this);
             BraveTouchUtils.ensureMinTouchTarget(mProfileButton);
+
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                String accessToken = activity.getAccessToken();
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mProfileButton, null);
+                
+                if (accessToken == null) {
+                    activity.openBrowserExpressLoginSettings();
+                } else {
+                    activity.openBrowserExpressProfileSettings();
+                }
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e(TAG, "maybeShowWalletPanel " + e);
+            }
         }
 
         mBraveShieldsHandler = new BraveShieldsHandler(getContext());
@@ -1446,6 +1467,27 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             return;
         }
         showPlaylistButton(items);
+    }
+
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }
+        
     }
 
     private BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
