@@ -121,6 +121,60 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_1);
             mEditImage = (ImageView) view.findViewById(R.id.edit_icon);
 
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+
+                String accessToken = activity.getAccessToken();
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+
+                mEmailEditText.setText(decodedAccessTokenObj.getString("email"));
+                mNameEditText.setText(decodedAccessTokenObj.getString("name"));
+                mUsernameEditText.setText(decodedAccessTokenObj.getString("username"));
+
+                if(decodedAccessTokenObj.getString("email").length() > 0)
+                {
+                    mEmailEditText.setEnabled(false);
+                }
+
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e("Express Browser Access Token", e.getMessage());
+            } catch (JSONException e) {
+                Log.e("Express Browser Access Token", e.getMessage());
+            }catch(Exception ex){
+                Log.e("Express Browser Access Token", ex.getMessage());
+            }
+
+            mAvatarImage.setOnClickListener(view -> openImagePicker());
+            mEditImage.setOnClickListener(view -> openImagePicker());
+
+            mBtnEdit.setOnClickListener(view -> {
+                String email = mEmailEditText.getText().toString();
+                String name = mNameEditText.getText().toString();
+                String username = mUsernameEditText.getText().toString();
+
+                mErrorTextView.setText(R.string.browser_express_empty_text);
+                mErrorTextView.setVisibility(View.INVISIBLE);
+
+                String emptyString = "";
+
+                if(username.equals(emptyString)){
+                    mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
+                    mErrorTextView.setVisibility(View.VISIBLE);
+                    return;
+                }
+
+                mBtnEdit.setClickable(false);
+                mBtnEdit.setText(R.string.browser_express_loading_title);
+
+                Utils.hideKeyboard(getActivity());
+
+                BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
+                        new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
+                                email, username, name, editProfileCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            });
+
             setData();
             onClickViews();
         }
@@ -154,58 +208,6 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
     }
 
     private void onClickViews() {
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-
-            String accessToken = activity.getAccessToken();
-            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-
-            mEmailEditText.setText(decodedAccessTokenObj.getString("email"));
-            mNameEditText.setText(decodedAccessTokenObj.getString("name"));
-            mUsernameEditText.setText(decodedAccessTokenObj.getString("username"));
-
-            if(decodedAccessTokenObj.getString("email").length() > 0)
-            {
-                mEmailEditText.setEnabled(false);
-            }
-
-            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-        } catch (JSONException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
-        }catch(Exception ex){
-            Log.e("Express Browser Access Token", ex.getMessage());
-        }
-
-        mAvatarImage.setOnClickListener(view -> openImagePicker());
-        mEditImage.setOnClickListener(view -> openImagePicker());
-
-        mBtnEdit.setOnClickListener(view -> {
-            String email = mEmailEditText.getText().toString();
-            String name = mNameEditText.getText().toString();
-            String username = mUsernameEditText.getText().toString();
-
-            mErrorTextView.setText(R.string.browser_express_empty_text);
-            mErrorTextView.setVisibility(View.INVISIBLE);
-
-            String emptyString = "";
-
-            if(username.equals(emptyString)){
-                mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
-                mErrorTextView.setVisibility(View.VISIBLE);
-                return;
-            }
-
-            mBtnEdit.setClickable(false);
-            mBtnEdit.setText(R.string.browser_express_loading_title);
-
-            Utils.hideKeyboard(getActivity());
-
-            BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
-                    new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
-                            email, username, name, editProfileCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        });
     }
 
     private void onShowNewsToggle(boolean isEnable) {
