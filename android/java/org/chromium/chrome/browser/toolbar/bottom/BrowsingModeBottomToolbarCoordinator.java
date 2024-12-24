@@ -145,35 +145,7 @@ public class BrowsingModeBottomToolbarCoordinator {
                 TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    // Tab tab1 = activity.getActivityTab();
-                    JavaScriptCallback callback =
-                        new JavaScriptCallback() {
-                            @Override
-                            public void handleJavaScriptResult(String jsonResult) {
-                                Log.e("PIP_RESULT", jsonResult);
-                            }
-                        };
-                    if (tab != null && tab.getWebContents() != null){
-                        tab.getWebContents().evaluateJavaScript(
-                            "(function(){})()",
-                            // "(function() {" +
-                            // "   try{" +
-                            // "       const video = document.querySelector('video');" +
-                            // "       if (video) {" +
-                            // "           video.play();" +
-                            // "           video.requestFullscreen();" +
-                            // "       }" +
-                            // "   }catch(e){" +
-                            // "       console.error(e);" +
-                            // "   }" +
-                            // "})()",
-                            callback
-                        );
-                    }else{
-                        Log.e("PIP_RESULT", "NULL WEBCONTENT");
-                    }
-                    
-                    // activity.showCommentsBottomSheet();
+                    activity.showCommentsBottomSheet();
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
                 }
