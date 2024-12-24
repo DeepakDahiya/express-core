@@ -127,13 +127,30 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
-                mEmailEditText.setText(decodedAccessTokenObj.getString("email"));
-                mNameEditText.setText(decodedAccessTokenObj.getString("name"));
-                mUsernameEditText.setText(decodedAccessTokenObj.getString("username"));
+                if (decodedAccessTokenObj.has("email") && !decodedAccessTokenObj.isNull("email")) {
+                    String email = decodedAccessTokenObj.getString("email");
+                    mEmailEditText.setText(email);
 
-                if(decodedAccessTokenObj.getString("email").length() > 0)
-                {
-                    mEmailEditText.setEnabled(false);
+                    if (email.length() > 0) {
+                        mEmailEditText.setEnabled(false);
+                    }
+                } else {
+                    mEmailEditText.setText(""); // Set default or placeholder
+                    Log.e("Express Browser", "Email not found in token.");
+                }
+
+                if (decodedAccessTokenObj.has("name") && !decodedAccessTokenObj.isNull("name")) {
+                    mNameEditText.setText(decodedAccessTokenObj.getString("name"));
+                } else {
+                    mNameEditText.setText(""); // Set default or placeholder
+                    Log.e("Express Browser", "Name not found in token.");
+                }
+
+                if (decodedAccessTokenObj.has("username") && !decodedAccessTokenObj.isNull("username")) {
+                    mUsernameEditText.setText(decodedAccessTokenObj.getString("username"));
+                } else {
+                    mUsernameEditText.setText(""); // Set default or placeholder
+                    Log.e("Express Browser", "Username not found in token.");
                 }
 
                 ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
@@ -147,6 +164,8 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
 
             mAvatarImage.setOnClickListener(view1 -> openImagePicker());
             mEditImage.setOnClickListener(view1 -> openImagePicker());
+
+            mBtnEdit.setText(R.string.browser_express_edit_profile_button_title);
 
             mBtnEdit.setOnClickListener(view1 -> {
                 String email = mEmailEditText.getText().toString();
