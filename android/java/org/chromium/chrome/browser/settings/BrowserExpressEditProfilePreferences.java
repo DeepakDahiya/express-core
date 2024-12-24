@@ -25,6 +25,8 @@ import java.io.UnsupportedEncodingException;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.util.Base64;
 import android.net.Uri;
+import android.app.Activity;
+import android.provider.MediaStore;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
