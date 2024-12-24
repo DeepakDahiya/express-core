@@ -199,7 +199,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 
-            ImageLoader.downloadImage("https://api.multiavatar.com/" + comment.getUser().getId().toString() + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
+            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/svg?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
