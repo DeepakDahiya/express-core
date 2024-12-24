@@ -22,7 +22,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
-                android:id="@+id/avatar_image"
+                android:id="@+id/avatar_image_1"
                 android:src="@drawable/btn_toolbar_profile"
                 android:layout_width="120dp"
                 app:layout_constraintEnd_toEndOf="@+id/profile_image_button"
@@ -41,8 +41,8 @@
                 android:layout_height="32dp"
                 android:src="@drawable/edit_image"
                 android:layout_gravity="bottom|end"
-                app:layout_constraintBottom_toBottomOf="@id/avatar_image"
-                app:layout_constraintEnd_toEndOf="@id/avatar_image"
+                app:layout_constraintBottom_toBottomOf="@id/avatar_image_1"
+                app:layout_constraintEnd_toEndOf="@id/avatar_image_1"
                 android:layout_margin="6dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                 android:background="@drawable/circular_background_edit_icon" />
@@ -55,7 +55,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:drawableStart="@drawable/mail"
+            android:drawableStart="@drawable/person"
             android:drawablePadding="10dp"
             android:background="@drawable/rounded_wallet_edittext"
             android:hint="@string/enter_your_username"
@@ -77,7 +77,7 @@
             android:layout_marginTop="20dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
-            android:drawableStart="@drawable/mail"
+            android:drawableStart="@drawable/person"
             android:drawablePadding="10dp"
             android:background="@drawable/rounded_wallet_edittext"
             android:hint="@string/enter_your_name"
@@ -97,6 +97,7 @@
             android:layout_width="match_parent"
             android:layout_height="48dp"
             android:layout_marginTop="20dp"
+            android:layout_marginBottom="40dp"
             android:layout_marginStart="20dp"
             android:layout_marginEnd="20dp"
             android:drawableStart="@drawable/mail"
@@ -108,7 +109,7 @@
             android:paddingEnd="18dp"
             android:paddingStart="18dp"
             android:paddingTop="10dp"
-            android:paddingBottom="20dp"
+            android:paddingBottom="10dp"
             android:textCursorDrawable="@null"
             android:textSize="14sp"
             android:textColor="@color/wallet_text_color"
@@ -130,7 +131,6 @@
             android:textSize="16sp"
             android:paddingVertical="20dp"
             android:paddingHorizontal="20dp"
-            android:minHeight="0dp"
             style="?android:attr/borderlessButtonStyle"/>
 
         <TextView

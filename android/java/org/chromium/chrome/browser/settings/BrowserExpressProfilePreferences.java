@@ -112,7 +112,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mUsernameText = (TextView) view.findViewById(R.id.browser_express_username);
-            mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
+            mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_2);
             mFullNameText = (TextView) view.findViewById(R.id.browser_express_full_name);
             mBtnYoutubePremium = (Button) view.findViewById(R.id.youtube_premium_button);
 

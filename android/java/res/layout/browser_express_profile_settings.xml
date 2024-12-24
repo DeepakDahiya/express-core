@@ -44,7 +44,7 @@
                     app:layout_constraintTop_toTopOf="parent">
 
                     <ImageView
-                        android:id="@+id/avatar_image"
+                        android:id="@+id/avatar_image_2"
                         android:src="@drawable/btn_toolbar_profile"
                         android:layout_width="120dp"
                         app:layout_constraintEnd_toEndOf="@+id/profile_image_button"
@@ -63,8 +63,8 @@
                         android:layout_height="32dp"
                         android:src="@drawable/edit_image"
                         android:layout_gravity="bottom|end"
-                        app:layout_constraintBottom_toBottomOf="@id/avatar_image"
-                        app:layout_constraintEnd_toEndOf="@id/avatar_image"
+                        app:layout_constraintBottom_toBottomOf="@id/avatar_image_2"
+                        app:layout_constraintEnd_toEndOf="@id/avatar_image_2"
                         android:layout_margin="6dp"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                         android:background="@drawable/circular_background_edit_icon" />

@@ -118,7 +118,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mBtnEdit = (Button) view.findViewById(R.id.btn_edit);
             mErrorTextView = (TextView) view.findViewById(R.id.error_message);
 
-            mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
+            mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_1);
             mEditImage = (ImageView) view.findViewById(R.id.edit_icon);
 
             setData();
