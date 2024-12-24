@@ -145,10 +145,10 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 Log.e("Express Browser Access Token", ex.getMessage());
             }
 
-            mAvatarImage.setOnClickListener(view -> openImagePicker());
-            mEditImage.setOnClickListener(view -> openImagePicker());
+            mAvatarImage.setOnClickListener(view1 -> openImagePicker());
+            mEditImage.setOnClickListener(view1 -> openImagePicker());
 
-            mBtnEdit.setOnClickListener(view -> {
+            mBtnEdit.setOnClickListener(view1 -> {
                 String email = mEmailEditText.getText().toString();
                 String name = mNameEditText.getText().toString();
                 String username = mUsernameEditText.getText().toString();
