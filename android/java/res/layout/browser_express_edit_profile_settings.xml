@@ -128,7 +128,7 @@
             android:textAllCaps="false"
             android:textColor="@android:color/black"
             android:textSize="16sp"
-            android:paddingVertical="4dp"
+            android:paddingVertical="20dp"
             android:paddingHorizontal="20dp"
             android:minHeight="0dp"
             style="?android:attr/borderlessButtonStyle"/>

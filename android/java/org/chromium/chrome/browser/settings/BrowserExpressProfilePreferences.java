@@ -158,12 +158,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
                 ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
-                Object name = decodedAccessTokenObj.get("name");
-                String fnString = "";
-                if(name != null){
-                    fnString = name.toString();
-                }
-                mFullNameText.setText(fnString);
+                mFullNameText.setText(decodedAccessTokenObj.getString("name"));
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             } catch (NameNotFoundException e) {
             } catch (JSONException e) {

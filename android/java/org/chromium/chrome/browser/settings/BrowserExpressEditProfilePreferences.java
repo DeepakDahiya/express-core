@@ -155,6 +155,16 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
 
             String accessToken = activity.getAccessToken();
             JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+
+            mEmailEditText.setText(decodedAccessTokenObj.getString("email"));
+            mNameEditText.setText(decodedAccessTokenObj.getString("name"));
+            mUsernameEditText.setText(decodedAccessTokenObj.getString("username"));
+
+            if(decodedAccessTokenObj.getString("email").length() > 0)
+            {
+                mEmailEditText.setEnabled(false);
+            }
+
             ImageLoader.downloadImage("https://api.multiavatar.com/" + decodedAccessTokenObj.getString("_id") + ".png?apikey=ewsXMRIAbcdY5F", Glide.with(activity), false, 5, mAvatarImage, null);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         } catch (JSONException e) {
