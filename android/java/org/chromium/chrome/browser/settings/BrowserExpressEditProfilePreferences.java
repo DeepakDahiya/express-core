@@ -116,12 +116,10 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_1);
             mEditImage = (ImageView) view.findViewById(R.id.edit_icon);
 
-            String accessToken = null;
-
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
 
-                accessToken = activity.getAccessToken();
+                String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                 if (decodedAccessTokenObj.has("email") && !decodedAccessTokenObj.isNull("email")) {
@@ -165,30 +163,40 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mBtnEdit.setText(R.string.browser_express_edit_profile_button_title);
 
             mBtnEdit.setOnClickListener(view1 -> {
-                String email = mEmailEditText.getText().toString();
-                String name = mNameEditText.getText().toString();
-                String username = mUsernameEditText.getText().toString();
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    String accessToken = activity.getAccessToken();
 
-                mErrorTextView.setText(R.string.browser_express_empty_text);
-                mErrorTextView.setVisibility(View.INVISIBLE);
+                    String accessToken = activity.getAccessToken();
+                    String email = mEmailEditText.getText().toString();
+                    String name = mNameEditText.getText().toString();
+                    String username = mUsernameEditText.getText().toString();
 
-                String emptyString = "";
+                    mErrorTextView.setText(R.string.browser_express_empty_text);
+                    mErrorTextView.setVisibility(View.INVISIBLE);
 
-                if(username.equals(emptyString)){
-                    mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
-                    mErrorTextView.setVisibility(View.VISIBLE);
-                    return;
+                    String emptyString = "";
+
+                    if(username.equals(emptyString)){
+                        mErrorTextView.setText(R.string.browser_express_fill_all_fields_text);
+                        mErrorTextView.setVisibility(View.VISIBLE);
+                        return;
+                    }
+
+                    mBtnEdit.setClickable(false);
+                    mBtnEdit.setText(R.string.browser_express_loading_title);
+
+                    Utils.hideKeyboard(getActivity());
+
+                    BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
+                            new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
+                                    email, username, name, accessToken, editProfileCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e("Express Browser Access Token", e.getMessage());
+                }catch(Exception ex){
+                    Log.e("Express Browser Access Token", ex.getMessage());
                 }
-
-                mBtnEdit.setClickable(false);
-                mBtnEdit.setText(R.string.browser_express_loading_title);
-
-                Utils.hideKeyboard(getActivity());
-
-                BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
-                        new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
-                                email, username, name, accessToken, editProfileCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             });
 
             setData();
