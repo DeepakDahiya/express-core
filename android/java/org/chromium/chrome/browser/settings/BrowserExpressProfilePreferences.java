@@ -24,6 +24,7 @@ import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import org.chromium.base.task.AsyncTask;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -125,12 +126,12 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mLikesGivenText = (TextView) view.findViewById(R.id.be_likes_given);
             mAppVersionText = (TextView) view.findViewById(R.id.app_version);
 
-            String vc = "8.4K";
-            String lc = "3.6K";
-            String gc = "6.4K";
-            mViewsText.setText(vc);
-            mLikesReceivedText.setText(lc);
-            mLikesGivenText.setText(gc);
+            // String vc = "8.4K";
+            // String lc = "3.6K";
+            // String gc = "6.4K";
+            // mViewsText.setText(vc);
+            // mLikesReceivedText.setText(lc);
+            // mLikesGivenText.setText(gc);
 
             mBtnYoutubePremium.setOnClickListener(view2 -> {
                 TabUtils.openUrlInSameTab("https://m.youtube.com");
@@ -159,6 +160,11 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
                 ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
                 mFullNameText.setText(decodedAccessTokenObj.getString("name"));
+
+                BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask =
+                    new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             } catch (NameNotFoundException e) {
             } catch (JSONException e) {
@@ -287,4 +293,48 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             mBraveNewsController.close();
         }
     }
+
+    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+            new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
+                @Override
+                public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        String accessToken = activity.getAccessToken();
+                        JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+
+                        if(avatar != null && avatar.length() > 0){
+                            ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, null);
+                        }else{
+                            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
+                        }
+
+                        if(xp != null && xp.length() > 0){
+                            mViewsText.setText(xp);
+                        }else{
+                            mViewsText.setText("-");
+                        }
+
+                        if(lg != null && lg.length() > 0){
+                            mLikesGivenText.setText(lg);
+                        }else{
+                            mLikesGivenText.setText("-");
+                        }
+
+                        if(lr != null && lr.length() > 0){
+                            mLikesReceivedText.setText(lr);
+                        }else{
+                            mLikesReceivedText.setText("-");
+                        }
+                    } catch (JSONException e) {
+                        Log.e("Express Browser Access Token", e.getMessage());
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
+                }
+
+                @Override
+                public void getProfileFailed(String error) {
+                    Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
+                }
+            };
 }

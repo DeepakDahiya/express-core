@@ -38,11 +38,12 @@ public class BrowserExpressGetProfilePreferencesUtil {
     private static final String GET_PROFILE_URL = "https://api.browser.express/v1/user/me";
 
     public interface GetProfileCallback {
-        void getProfileSuccessful(String xp, String lg, String lr);
+        void getProfileSuccessful(String avatar, String xp, String lg, String lr);
         void getProfileFailed(String error);
     }
 
     public static class GetProfileWorkerTask extends AsyncTask<Void> {
+        private static String mAvatar;
         private static String mXp;
         private static String mLikesGiven;
         private static String mLikesReceived;
@@ -59,9 +60,11 @@ public class BrowserExpressGetProfilePreferencesUtil {
             mXp = "0";
             mLikesGiven = "0";
             mLikesReceived = "0";
+            mAvatar = "";
         }
 
-        public static void setData(String xp, String lg, String lr){
+        public static void setData(String avatar, String xp, String lg, String lr){
+            mAvatar = avatar;
             mXp = xp;
             mLikesGiven = lg;
             mLikesReceived = lr;
@@ -86,7 +89,7 @@ public class BrowserExpressGetProfilePreferencesUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(getProfileStatus){
-                mCallback.getProfileSuccessful(mXp, mLikesGiven, mLikesReceived);
+                mCallback.getProfileSuccessful(mAvatar, mXp, mLikesGiven, mLikesReceived);
             }else{
                 mCallback.getProfileFailed(mErrorMessage);
             }
@@ -121,10 +124,15 @@ public class BrowserExpressGetProfilePreferencesUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     GetProfileWorkerTask.setGetProfileSuccessStatus(true);
+                    String avatar = "";
+                    if(responseObject.getString("avatar") != null && responseObject.getString("avatar").length() > 0)
+                    {
+                        avatar = responseObject.getString("avatar");
+                    }
                     String xp =  responseObject.getString("xp");
                     String likesReceived = responseObject.getString("likesReceived");
                     String likesGiven = responseObject.getString("likesGiven");
-                    GetProfileWorkerTask.setData(xp, likesGiven, likesReceived);
+                    GetProfileWorkerTask.setData(avatar, xp, likesGiven, likesReceived);
                 }else{
                     GetProfileWorkerTask.setGetProfileSuccessStatus(false);
                     GetProfileWorkerTask.setErrorMessage(responseObject.getString("error"));
