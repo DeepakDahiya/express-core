@@ -960,11 +960,6 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void OnCheckDefaultResume() {
         mIsDefaultCheckOnResume = true;
-        if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
-            BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
-        }else{
-            BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
-        }
     }
 
     @Override
@@ -976,6 +971,8 @@ public abstract class BraveActivity extends ChromeActivity
 
             if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
                 BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
+            }else{
+                BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
             }
         }
 

@@ -95,20 +95,20 @@ public class SetDefaultBrowserBottomSheetFragment extends BottomSheetDialogFragm
         });
 
         Button cancelButton = view.findViewById(R.id.btn_cancel);
-        cancelButton.setOnClickListener((new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (dontAskCheckBox.isChecked()) {
-                    BraveSetDefaultBrowserUtils.setBraveDefaultDontAsk();
-                }
-                dismiss();
-            }
-        }));
+        // cancelButton.setOnClickListener((new View.OnClickListener() {
+        //     @Override
+        //     public void onClick(View v) {
+        //         if (dontAskCheckBox.isChecked()) {
+        //             BraveSetDefaultBrowserUtils.setBraveDefaultDontAsk();
+        //         }
+        //         dismiss();
+        //     }
+        // }));
     }
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
-        super.onDismiss(dialog);
-        BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
+        // super.onDismiss(dialog);
+        // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 }
