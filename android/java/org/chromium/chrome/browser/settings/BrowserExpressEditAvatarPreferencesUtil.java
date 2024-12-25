@@ -32,6 +32,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.io.FileInputStream;
+import java.io.InputStream;
 
 public class BrowserExpressEditAvatarPreferencesUtil {
     private static final String TAG = "Edit_Avatar_Browser_Express";
