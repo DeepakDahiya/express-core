@@ -166,8 +166,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
                     String accessToken = activity.getAccessToken();
-
-                    String accessToken = activity.getAccessToken();
+                    
                     String email = mEmailEditText.getText().toString();
                     String name = mNameEditText.getText().toString();
                     String username = mUsernameEditText.getText().toString();
