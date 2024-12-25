@@ -159,7 +159,13 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
                 ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
-                mFullNameText.setText(decodedAccessTokenObj.getString("name"));
+
+                if (decodedAccessTokenObj.has("name") && !decodedAccessTokenObj.isNull("name")) {
+                    mFullNameText.setText(decodedAccessTokenObj.getString("name"));
+                } else {
+                    mFullNameText.setText(""); // Set default or placeholder
+                    Log.e("Express Browser", "Name not found in token.");
+                }
 
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask =
                     new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
