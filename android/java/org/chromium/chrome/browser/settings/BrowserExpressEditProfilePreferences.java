@@ -1,8 +1,3 @@
-/* Copyright (c) 2022 The Brave Authors. All rights reserved.
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at https://mozilla.org/MPL/2.0/. */
-
 package org.chromium.chrome.browser.settings;
 
 import android.content.Intent;
@@ -115,7 +110,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mUsernameEditText = (EditText) view.findViewById(R.id.be_username);
             mEmailEditText = (EditText) view.findViewById(R.id.be_email);
 
-            mBtnEdit = (Button) view.findViewById(R.id.btn_edit);
+            mBtnEdit = (Button) view.findViewById(R.id.btn_edit_1);
             mErrorTextView = (TextView) view.findViewById(R.id.error_message);
 
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_1);
@@ -153,7 +148,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                     Log.e("Express Browser", "Username not found in token.");
                 }
 
-                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,pissed,plain,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e("Express Browser Access Token", e.getMessage());
             } catch (JSONException e) {
@@ -311,9 +306,9 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 try {
                     Log.e("ImagePicker", "Selected image URI 2: " + selectedImage.toString());
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    Glide.with(activity)
+                    Glide.with(getActivity())
                         .load(selectedImage)
-                        // .circleCrop()
+                        .circleCrop()
                         .into(mAvatarImage);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {}
                 
