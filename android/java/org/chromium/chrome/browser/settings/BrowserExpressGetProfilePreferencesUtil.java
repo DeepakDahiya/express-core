@@ -124,6 +124,7 @@ public class BrowserExpressGetProfilePreferencesUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e("GET PROFILE RESPONSE FROM SERVER", responseObject.toString());
                 if(responseObject.getBoolean("success")){
                     GetProfileWorkerTask.setGetProfileSuccessStatus(true);
                     String avatar = "";
