@@ -44,13 +44,13 @@ public class BrowserExpressEditAvatarPreferencesUtil {
     }
 
     public static class EditAvatarWorkerTask extends AsyncTask<Void> {
-        private String mImagePath;
+        private InputStream mImagePath;
         private EditAvatarCallback mCallback;
         private static Boolean editAvatarStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
 
-        public EditAvatarWorkerTask(String imagePath, String accessToken, EditAvatarCallback callback) {
+        public EditAvatarWorkerTask(InputStream imagePath, String accessToken, EditAvatarCallback callback) {
             mImagePath = imagePath;
             mCallback = callback;
             editAvatarStatus = false;
@@ -87,7 +87,8 @@ public class BrowserExpressEditAvatarPreferencesUtil {
         }
     }
 
-    private static void sendEditAvatarRequest(String imagePath, String accessToken, EditAvatarCallback callback) {
+    private static void sendEditAvatarRequest(InputStream imageStream, String accessToken, EditAvatarCallback callback) {
+        Log.e("ImagePicker 2", "Inside sendEditAvatarRequest");
         String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
         String LINE_FEED = "\r\n";
         HttpURLConnection urlConnection = null;
@@ -117,22 +118,20 @@ public class BrowserExpressEditAvatarPreferencesUtil {
             // outputStream.write(("--" + boundary + LINE_FEED).getBytes());
             // outputStream.write(("Content-Disposition: form-data; name=\"username\"" + LINE_FEED + LINE_FEED + username + LINE_FEED).getBytes());
 
-            // Add the image
-            if (imagePath != null && !imagePath.isEmpty()) {
-                outputStream.write(("--" + boundary + LINE_FEED).getBytes());
-                outputStream.write(("Content-Disposition: form-data; name=\"image\"; filename=\"" + imagePath.substring(imagePath.lastIndexOf("/") + 1) + "\"" + LINE_FEED).getBytes());
-                outputStream.write(("Content-Type: image/jpeg" + LINE_FEED + LINE_FEED).getBytes());
+            long epochTime = System.currentTimeMillis();
+            int randomNum = (int) (Math.random() * 1000); // Random number between 0 and 999
+            String name = "avatar_" + epochTime + "_" + randomNum + ".jpg";
 
-                // Read the image file
-                InputStream inputStream = new FileInputStream(imagePath);
-                byte[] buffer = new byte[4096];
-                int bytesRead;
-                while ((bytesRead = inputStream.read(buffer)) != -1) {
-                    outputStream.write(buffer, 0, bytesRead);
-                }
-                inputStream.close();
-                outputStream.write(LINE_FEED.getBytes());
+            outputStream.write(("--" + boundary + LINE_FEED).getBytes());
+            outputStream.write(("Content-Disposition: form-data; name=\"reports\"; filename=\"" + name + "\"" + LINE_FEED).getBytes());
+            outputStream.write(("Content-Type: image/jpeg" + LINE_FEED + LINE_FEED).getBytes());
+            byte[] buffer = new byte[4096];
+            int bytesRead;
+            while ((bytesRead = imageStream.read(buffer)) != -1) {
+                outputStream.write(buffer, 0, bytesRead);
             }
+            imageStream.close();
+            outputStream.write(LINE_FEED.getBytes());
 
             // End of multipart
             outputStream.write(("--" + boundary + "--" + LINE_FEED).getBytes());

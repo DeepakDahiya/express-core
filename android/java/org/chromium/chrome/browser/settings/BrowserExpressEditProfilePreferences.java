@@ -29,6 +29,7 @@ import androidx.core.content.ContextCompat;
 import com.airbnb.lottie.LottieAnimationView;
 import com.airbnb.lottie.LottieProperty;
 import com.airbnb.lottie.model.KeyPath;
+import java.io.InputStream;
 
 import org.chromium.ui.widget.Toast;
 import org.chromium.base.BravePreferenceKeys;
@@ -320,9 +321,13 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                         .circleCrop()
                         .into(mAvatarImage);
                     
+                    Log.e("ImagePicker", "Sending image to backend");
                     String accessToken = activity.getAccessToken();
+
+                    InputStream imageStream = getActivity().getContentResolver().openInputStream(selectedImage);
+
                     BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask workerTask =
-                            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(selectedImage.toString(), accessToken, editAvatarCallback);
+                            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(imageStream, accessToken, editAvatarCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     
                 } catch (BraveActivity.BraveActivityNotFoundException e) {}
