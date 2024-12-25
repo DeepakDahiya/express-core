@@ -108,7 +108,7 @@ public class SetDefaultBrowserBottomSheetFragment extends BottomSheetDialogFragm
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
-        // super.onDismiss(dialog);
-        // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
+        super.onDismiss(dialog);
+        BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 }
