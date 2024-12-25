@@ -37,7 +37,7 @@ public class BrowserExpressEditAvatarPreferencesUtil {
     private static final String EDIT_AVATAR_URL = "https://api.browser.express/v1/user/avatar";
 
     public interface EditAvatarCallback {
-        void editAvatarSuccessful(String accessToken, String refreshToken);
+        void editAvatarSuccessful();
         void editAvatarFailed(String error);
     }
 
@@ -47,7 +47,6 @@ public class BrowserExpressEditAvatarPreferencesUtil {
         private static Boolean editAvatarStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
-        private static String mRefreshToken;
 
         public EditAvatarWorkerTask(String imagePath, String accessToken, EditAvatarCallback callback) {
             mImagePath = imagePath;
@@ -79,7 +78,7 @@ public class BrowserExpressEditAvatarPreferencesUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(editAvatarStatus){
-                mCallback.editAvatarSuccessful(mAccessToken, mRefreshToken);
+                mCallback.editAvatarSuccessful();
             }else{
                 mCallback.editAvatarFailed(mErrorMessage);
             }

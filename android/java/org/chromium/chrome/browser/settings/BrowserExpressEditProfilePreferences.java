@@ -322,7 +322,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                     
                     String accessToken = activity.getAccessToken();
                     BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask workerTask =
-                            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(selectedImage.toString(), accessToken, editProfileCallback);
+                            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(selectedImage.toString(), accessToken, editAvatarCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     
                 } catch (BraveActivity.BraveActivityNotFoundException e) {}
