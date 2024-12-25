@@ -37,14 +37,14 @@ public class BrowserExpressGetProfilePreferencesUtil {
     private static final String GET_PROFILE_URL = "https://api.browser.express/v1/user/me";
 
     public interface GetProfileCallback {
-        void getProfileSuccessful(String accessToken, String refreshToken);
+        void getProfileSuccessful(String xp, String lg, String lr);
         void getProfileFailed(String error);
     }
 
     public static class GetProfileWorkerTask extends AsyncTask<Void> {
-        private String mXp;
-        private String mLikesGiven;
-        private String mLikesReceived;
+        private static String mXp;
+        private static String mLikesGiven;
+        private static String mLikesReceived;
         private GetProfileCallback mCallback;
         private static Boolean getProfileStatus;
         private static String mErrorMessage;
