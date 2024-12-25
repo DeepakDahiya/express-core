@@ -165,8 +165,8 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mBtnEdit.setOnClickListener(view1 -> {
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    String accessToken = activity.getAccessToken();
-                    
+                    String accessToken1 = activity.getAccessToken();
+
                     String email = mEmailEditText.getText().toString();
                     String name = mNameEditText.getText().toString();
                     String username = mUsernameEditText.getText().toString();
@@ -189,7 +189,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
 
                     BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
                             new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
-                                    email, username, name, accessToken, editProfileCallback);
+                                    email, username, name, accessToken1, editProfileCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e("Express Browser Access Token", e.getMessage());
