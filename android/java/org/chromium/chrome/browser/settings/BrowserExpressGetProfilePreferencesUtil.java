@@ -31,6 +31,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.lang.Integer;
 
 public class BrowserExpressGetProfilePreferencesUtil {
     private static final String TAG = "Get_Profile_Browser_Express";
