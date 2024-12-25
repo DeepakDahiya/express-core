@@ -167,6 +167,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                     Log.e("Express Browser", "Name not found in token.");
                 }
 
+                Log.e("Express Browser", "GETTING USER PROFILE 1");
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask =
                     new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

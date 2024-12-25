@@ -97,6 +97,7 @@ public class BrowserExpressGetProfilePreferencesUtil {
     }
 
     private static void sendGetProfileRequest(String accessToken, GetProfileCallback callback) {
+        Log.e("Express Browser", "GETTING USER PROFILE 2");
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -107,11 +108,12 @@ public class BrowserExpressGetProfilePreferencesUtil {
             urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.connect();
 
             if(accessToken != null && !accessToken.equals("")){
                 urlConnection.setRequestProperty ("Authorization", accessToken);
             }
+
+            urlConnection.connect();
 
             int HttpResult = urlConnection.getResponseCode();
             if (HttpResult == HttpURLConnection.HTTP_OK) {
