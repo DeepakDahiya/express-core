@@ -52,14 +52,14 @@ public class BrowserExpressEditProfilePreferencesUtil {
         private static String mRefreshToken;
 
         public EditProfileWorkerTask(
-                String email, String username, String name, EditProfileCallback callback) {
+                String email, String username, String name, String accessToken, EditProfileCallback callback) {
             mEmail = email;
             mName = name;
             mUsername = username;
             mCallback = callback;
             editProfileStatus = false;
             mErrorMessage = "";
-            mAccessToken = null;
+            mAccessToken = accessToken;
             mRefreshToken = null;
         }
 
@@ -78,7 +78,7 @@ public class BrowserExpressEditProfilePreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendEditProfileRequest(mEmail, mUsername, mName, mCallback);
+            sendEditProfileRequest(mEmail, mUsername, mName, mAccessToken, mCallback);
             return null;
         }
 
@@ -94,7 +94,7 @@ public class BrowserExpressEditProfilePreferencesUtil {
         }
     }
 
-    private static void sendEditProfileRequest(String email, String username, String name, EditProfileCallback callback) {
+    private static void sendEditProfileRequest(String email, String username, String name, String accessToken, EditProfileCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
@@ -106,6 +106,10 @@ public class BrowserExpressEditProfilePreferencesUtil {
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.connect();
+
+            if(accessToken != null && !accessToken.equals("")){
+                urlConnection.setRequestProperty ("Authorization", accessToken);
+            }
 
             JSONObject jsonParam = new JSONObject();
             jsonParam.put("email", email);

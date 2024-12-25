@@ -116,10 +116,12 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image_1);
             mEditImage = (ImageView) view.findViewById(R.id.edit_icon);
 
+            String accessToken = null;
+
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
 
-                String accessToken = activity.getAccessToken();
+                accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                 if (decodedAccessTokenObj.has("email") && !decodedAccessTokenObj.isNull("email")) {
@@ -185,7 +187,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
 
                 BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask workerTask =
                         new BrowserExpressEditProfilePreferencesUtil.EditProfileWorkerTask(
-                                email, username, name, editProfileCallback);
+                                email, username, name, accessToken, editProfileCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             });
 
