@@ -134,59 +134,59 @@ public class CommentListFragment extends Fragment {
             }
             
             if(mCommentsFor.equals("post")){
-                mUrl = activity.getActivityTab().getUrl().getSpec();
-
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                             null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }else{
-                String commentsString = activity.getFirstComments();
-                if(commentsString != null){
-                    try{
-                        JSONArray commentsArray = new JSONArray(commentsString);
-                        List<Comment> comments = new ArrayList<Comment>();
-                        for (int i = 0; i < commentsArray.length(); i++) {
-                            JSONObject comment = commentsArray.getJSONObject(i);
-                            JSONObject user = comment.getJSONObject("user");
-                            JSONObject didVote = comment.optJSONObject("didVote");
-                            Vote v = null;
-                            if(didVote != null){
-                                v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                            }
-                            User u = new User(user.getString("_id"), user.getString("username"));
-                            String pageParent = null;
-                            String commentParent = null;
-                            if(comment.has("pageParent")){
-                                pageParent = comment.getString("pageParent");
-                            }
+                // String commentsString = activity.getFirstComments();
+                // if(commentsString != null){
+                //     try{
+                //         JSONArray commentsArray = new JSONArray(commentsString);
+                //         List<Comment> comments = new ArrayList<Comment>();
+                //         for (int i = 0; i < commentsArray.length(); i++) {
+                //             JSONObject comment = commentsArray.getJSONObject(i);
+                //             JSONObject user = comment.getJSONObject("user");
+                //             JSONObject didVote = comment.optJSONObject("didVote");
+                //             Vote v = null;
+                //             if(didVote != null){
+                //                 v = new Vote(didVote.getString("_id"), didVote.getString("type"));
+                //             }
+                //             User u = new User(user.getString("_id"), user.getString("username"));
+                //             String pageParent = null;
+                //             String commentParent = null;
+                //             if(comment.has("pageParent")){
+                //                 pageParent = comment.getString("pageParent");
+                //             }
 
-                            if(comment.has("commentParent")){
-                                commentParent = comment.getString("commentParent");
-                            }
-                            comments.add(new Comment(
-                                comment.getString("_id"), 
-                                comment.getString("content"),
-                                comment.getInt("upvoteCount"),
-                                comment.getInt("downvoteCount"),
-                                comment.getInt("commentCount"),
-                                pageParent,
-                                commentParent,
-                                u, 
-                                v));
-                        }
+                //             if(comment.has("commentParent")){
+                //                 commentParent = comment.getString("commentParent");
+                //             }
+                //             comments.add(new Comment(
+                //                 comment.getString("_id"), 
+                //                 comment.getString("content"),
+                //                 comment.getInt("upvoteCount"),
+                //                 comment.getInt("downvoteCount"),
+                //                 comment.getInt("commentCount"),
+                //                 pageParent,
+                //                 commentParent,
+                //                 u, 
+                //                 v));
+                //         }
 
-                        int len = mComments.size();
-                        mComments.clear();
-                        mCommentAdapter.notifyItemRangeRemoved(0, len);
-                        mComments.addAll(comments);
-                        mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-                        mPage = 2;
-                    } catch (JSONException e) {
-                        Log.e("Comments_Bottom_Sheet", e.getMessage());
-                    }
-                }
+                //         int len = mComments.size();
+                //         mComments.clear();
+                //         mCommentAdapter.notifyItemRangeRemoved(0, len);
+                //         mComments.addAll(comments);
+                //         mCommentAdapter.notifyItemRangeInserted(0, comments.size());
+                //         mPage = 2;
+                //     } catch (JSONException e) {
+                //         Log.e("Comments_Bottom_Sheet", e.getMessage());
+                //     }
+                // }
                 mUrl = activity.getActivityTab().getUrl().getSpec();
+
+                Log.e("BROWSER_EXPRESS_URL", mUrl);
 
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -254,6 +254,7 @@ public class CommentListFragment extends Fragment {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED");
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());

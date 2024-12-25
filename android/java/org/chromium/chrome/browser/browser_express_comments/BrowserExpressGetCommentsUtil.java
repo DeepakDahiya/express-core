@@ -142,6 +142,8 @@ public class BrowserExpressGetCommentsUtil {
             urlConnection.setRequestProperty("Content-Type", "application/json");
             urlConnection.connect();
 
+            Log.e("BROWSER_EXPRESS_SENDING_REQUESTS", "REACHED");
+
             int HttpResult = urlConnection.getResponseCode();
             if (HttpResult == HttpURLConnection.HTTP_OK) {
                 BufferedReader br = new BufferedReader(new InputStreamReader(
@@ -151,13 +153,17 @@ public class BrowserExpressGetCommentsUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e("BROWSER_EXPRESS_RESPONSE", "1");
                 if(responseObject.getBoolean("success")){
                     GetCommentsWorkerTask.setGetCommentsSuccessStatus(true);
                     JSONArray commentsArray = responseObject.getJSONArray("comments");
+                    Log.e("BROWSER_EXPRESS_RESPONSE", "2");
                     if (!responseObject.isNull("parentComment")) {
+                        Log.e("BROWSER_EXPRESS_RESPONSE", "3");
                         JSONObject parentComment = responseObject.getJSONObject("parentComment");
                         Log.e("PARENT COMMENT", parentComment.toString());
                         if(parentComment != null){
+                            Log.e("BROWSER_EXPRESS_RESPONSE", "4");
                             JSONObject user = parentComment.getJSONObject("user");
                             JSONObject didVote = parentComment.optJSONObject("didVote");
                             Vote v = null;
@@ -174,6 +180,7 @@ public class BrowserExpressGetCommentsUtil {
                                 commentParent = parentComment.getString("commentParent");
                             }
                             User u = new User(user.getString("_id"), user.getString("username"));
+                            Log.e("BROWSER_EXPRESS_RESPONSE", "5");
                             GetCommentsWorkerTask.setParentComment(new Comment(
                                 parentComment.getString("_id"), 
                                 parentComment.getString("content"),
@@ -184,9 +191,10 @@ public class BrowserExpressGetCommentsUtil {
                                 commentParent,
                                 u, 
                                 v));
+                            Log.e("BROWSER_EXPRESS_RESPONSE", "6");
                         }
                     }
-
+                    Log.e("BROWSER_EXPRESS_RESPONSE", "7");
                     Log.e("GET API RESPONSE FROM SERVER", commentsArray.toString());
                     List<Comment> comments = new ArrayList<Comment>();
                     for (int i = 0; i < commentsArray.length(); i++) {
@@ -208,6 +216,7 @@ public class BrowserExpressGetCommentsUtil {
                         }
 
                         User u = new User(user.getString("_id"), user.getString("username"));
+                        Log.e("BROWSER_EXPRESS_RESPONSE", "8");
                         comments.add(new Comment(
                             comment.getString("_id"), 
                             comment.getString("content"),
@@ -218,6 +227,8 @@ public class BrowserExpressGetCommentsUtil {
                             commentParent,
                             u, 
                             v));
+
+                        Log.e("BROWSER_EXPRESS_RESPONSE", "9");
                     }
                     Log.e("GET API RESPONSE", comments.toString());
 
