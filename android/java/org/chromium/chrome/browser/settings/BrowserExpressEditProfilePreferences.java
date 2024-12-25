@@ -319,6 +319,12 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                         .load(selectedImage)
                         .circleCrop()
                         .into(mAvatarImage);
+                    
+                    String accessToken = activity.getAccessToken();
+                    BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask workerTask =
+                            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(selectedImage.toString(), accessToken, editProfileCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    
                 } catch (BraveActivity.BraveActivityNotFoundException e) {}
                 
             }
@@ -370,6 +376,38 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
 
                 @Override
                 public void editProfileFailed(String error) {
+                    mErrorTextView.setText(error);
+                    mErrorTextView.setVisibility(View.VISIBLE);
+
+                    mBtnEdit.setClickable(true);
+                    mBtnEdit.setText(R.string.browser_express_edit_profile_button_title);
+                }
+            };
+
+    private BrowserExpressEditAvatarPreferencesUtil.EditAvatarCallback editAvatarCallback =
+            new BrowserExpressEditAvatarPreferencesUtil.EditAvatarCallback() {
+                @Override
+                public void editAvatarSuccessful() {
+                    mBtnEdit.setClickable(true);
+                    mBtnEdit.setText(R.string.browser_express_edit_profile_button_title);
+
+                    // try {
+                    //     BraveActivity activity = BraveActivity.getBraveActivity();
+                    //     activity.setAccessToken(accessToken);
+                    //     Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                    //     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    //     intent.setAction(Intent.ACTION_VIEW);
+                    //     Toast.makeText(activity, "Profile Updated", Toast.LENGTH_SHORT).show();
+                    //     startActivity(intent);
+                    //     // if (getFragmentManager() != null) {
+                    //     //     getFragmentManager().popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    //     // }
+                    // } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    // }
+                }
+
+                @Override
+                public void editAvatarFailed(String error) {
                     mErrorTextView.setText(error);
                     mErrorTextView.setVisibility(View.VISIBLE);
 
