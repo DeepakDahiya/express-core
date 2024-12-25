@@ -127,25 +127,22 @@ public class BrowserExpressGetProfilePreferencesUtil {
                 Log.e("GET PROFILE RESPONSE FROM SERVER", responseObject.toString());
                 if(responseObject.getBoolean("success")){
                     GetProfileWorkerTask.setGetProfileSuccessStatus(true);
-                    // String avatar = "";
-                    // Log.e("GET PROFILE EXTRACTION", avatar);
-                    // if(responseObject.has("avatar") && !responseObject.isNull("avatar") && responseObject.getString("avatar").length() > 0)
-                    // {
-                    //     Log.e("GET PROFILE EXTRACTION", "SETTING AVATAR");
-                    //     Log.e("GET PROFILE EXTRACTION", responseObject.getString("avatar"));
-                    //     avatar = responseObject.getString("avatar");
-                    // }
-                    // Log.e("GET PROFILE EXTRACTION", "AVATAR SET");
-                    // String xp = responseObject.getString("xp");
-                    // String likesReceived = responseObject.getString("likesReceived");
-                    // String likesGiven = responseObject.getString("likesGiven");
-                    // Log.e("GET PROFILE EXTRACTION", "SETTING FINAL DATA");
-                    // GetProfileWorkerTask.setData(avatar, xp, likesGiven, likesReceived);
+                    JSONObject userObject = responseObject.getJSONObject("user");
+                    String avatar = userObject.optString("avatar", "https://api.dicebear.com/9.x/fun-emoji/png?seed=123&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
+
+                    int xp = userObject.optInt("xp", 0); // Default to 0 if key is missing
+                    int likesReceived = userObject.optInt("likesReceived", 0);
+                    int likesGiven = userObject.optInt("likesGiven", 0);
+
+                    Log.e("GET PROFILE EXTRACTION", "Avatar: " + avatar + ", XP: " + xp + 
+                                                    ", Likes Received: " + likesReceived + 
+                                                    ", Likes Given: " + likesGiven);
+
                     GetProfileWorkerTask.setData(
-                        responseObject.optString("avatar", "https://api.dicebear.com/9.x/fun-emoji/png?seed=123456&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile"),
-                        responseObject.optString("xp", "0"),
-                        responseObject.optString("likesGiven", "0"),
-                        responseObject.optString("likesReceived", "0")
+                        avatar,
+                        String.valueOf(xp),
+                        String.valueOf(likesGiven),
+                        String.valueOf(likesReceived)
                     );
                 }else{
                     GetProfileWorkerTask.setGetProfileSuccessStatus(false);
