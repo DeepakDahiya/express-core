@@ -186,7 +186,7 @@ public class CommentListFragment extends Fragment {
                 // }
                 mUrl = activity.getActivityTab().getUrl().getSpec();
 
-                Log.e("BROWSER_EXPRESS_URL", mUrl);
+                // Log.e("BROWSER_EXPRESS_URL", mUrl);
 
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -224,7 +224,7 @@ public class CommentListFragment extends Fragment {
                                 }
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
-                            Log.e("Express Browser Access Token", e.getMessage());
+                            // Log.e("Express Browser Access Token", e.getMessage());
                         }finally{
                             mSendButton.setClickable(true);
                         }
@@ -233,9 +233,9 @@ public class CommentListFragment extends Fragment {
             }));
 
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
+            // Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
-            Log.e("Express Browser Access Token", ex.getMessage());
+            // Log.e("Express Browser Access Token", ex.getMessage());
         }
 
         return view;
@@ -303,7 +303,7 @@ public class CommentListFragment extends Fragment {
 
                         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Express Browser Access Token", e.getMessage());
+                        // Log.e("Express Browser Access Token", e.getMessage());
                     }
                 }
 
@@ -325,10 +325,10 @@ public class CommentListFragment extends Fragment {
             JSONObject jsonObj = new JSONObject(decodedString.toString());
             return jsonObj;
         }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            // Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            // Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }
         

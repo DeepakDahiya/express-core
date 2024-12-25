@@ -366,6 +366,12 @@ public abstract class BraveActivity extends ChromeActivity
 
         executeInitSafeBrowsing(0);
         showPersistentNotification();
+
+        if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
+            BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
+        }else{
+            BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
+        }
     }
 
     @Override

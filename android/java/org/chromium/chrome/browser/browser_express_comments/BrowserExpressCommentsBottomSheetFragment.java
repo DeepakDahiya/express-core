@@ -163,9 +163,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
             // sharedPref.registerOnSharedPreferenceChangeListener(listener);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e("Express Browser Access Token", e.getMessage());
+            // Log.e("Express Browser Access Token", e.getMessage());
         }catch(Exception ex){
-            Log.e("Express Browser Access Token", ex.getMessage());
+            // Log.e("Express Browser Access Token", ex.getMessage());
         }
 
         // mSendButton.setOnClickListener((new View.OnClickListener() {
@@ -245,10 +245,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             JSONObject jsonObj = new JSONObject(decodedString.toString());
             return jsonObj;
         }catch(JSONException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            // Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }catch(UnsupportedEncodingException e){
-            Log.e("Express Browser Access Token", e.getMessage());
+            // Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }
         
