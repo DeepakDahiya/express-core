@@ -385,6 +385,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressLoginPreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressEditProfilePreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressEditProfilePreferencesUtil.java",
+  "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressGetProfilePreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressCommentsPreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressLoginPreferencesUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BrowserExpressOtpVerifyPreferences.java",

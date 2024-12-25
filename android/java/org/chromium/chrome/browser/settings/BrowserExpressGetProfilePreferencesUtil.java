@@ -32,44 +32,42 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 
-public class BrowserExpressEditProfilePreferencesUtil {
-    private static final String TAG = "Edit_Profile_Browser_Express";
-    private static final String EDIT_PROFILE_URL = "https://api.browser.express/v1/user/me";
+public class BrowserExpressGetProfilePreferencesUtil {
+    private static final String TAG = "Get_Profile_Browser_Express";
+    private static final String GET_PROFILE_URL = "https://api.browser.express/v1/user/me";
 
-    public interface EditProfileCallback {
-        void editProfileSuccessful(String accessToken, String refreshToken);
-        void editProfileFailed(String error);
+    public interface GetProfileCallback {
+        void getProfileSuccessful(String accessToken, String refreshToken);
+        void getProfileFailed(String error);
     }
 
-    public static class EditProfileWorkerTask extends AsyncTask<Void> {
-        private String mEmail;
-        private String mName;
-        private String mUsername;
-        private EditProfileCallback mCallback;
-        private static Boolean editProfileStatus;
+    public static class GetProfileWorkerTask extends AsyncTask<Void> {
+        private String mXp;
+        private String mLikesGiven;
+        private String mLikesReceived;
+        private GetProfileCallback mCallback;
+        private static Boolean getProfileStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
-        private static String mRefreshToken;
 
-        public EditProfileWorkerTask(
-                String email, String username, String name, String accessToken, EditProfileCallback callback) {
-            mEmail = email;
-            mName = name;
-            mUsername = username;
+        public GetProfileWorkerTask(String accessToken, GetProfileCallback callback) {
             mCallback = callback;
-            editProfileStatus = false;
+            getProfileStatus = false;
             mErrorMessage = "";
             mAccessToken = accessToken;
-            mRefreshToken = null;
+            mXp = "0";
+            mLikesGiven = "0";
+            mLikesReceived = "0";
         }
 
-        public static void setAuthTokens(String accessToken, String refreshToken){
-            mAccessToken = accessToken;
-            mRefreshToken = refreshToken;
+        public static void setData(String xp, String lg, String lr){
+            mXp = xp;
+            mLikesGiven = lg;
+            mLikesReceived = lr;
         }
 
-        public static void setEditProfileSuccessStatus(Boolean status){
-            editProfileStatus = status;
+        public static void setGetProfileSuccessStatus(Boolean status){
+            getProfileStatus = status;
         }
 
         public static void setErrorMessage(String error){
@@ -78,7 +76,7 @@ public class BrowserExpressEditProfilePreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendEditProfileRequest(mEmail, mUsername, mName, mAccessToken, mCallback);
+            sendGetProfileRequest(mAccessToken, mCallback);
             return null;
         }
 
@@ -86,42 +84,30 @@ public class BrowserExpressEditProfilePreferencesUtil {
         protected void onPostExecute(Void result) {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
-            if(editProfileStatus){
-                mCallback.editProfileSuccessful(mAccessToken, mRefreshToken);
+            if(getProfileStatus){
+                mCallback.getProfileSuccessful(mXp, mLikesGiven, mLikesReceived);
             }else{
-                mCallback.editProfileFailed(mErrorMessage);
+                mCallback.getProfileFailed(mErrorMessage);
             }
         }
     }
 
-    private static void sendEditProfileRequest(String email, String username, String name, String accessToken, EditProfileCallback callback) {
+    private static void sendGetProfileRequest(String accessToken, GetProfileCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(EDIT_PROFILE_URL);
+            URL url = new URL(GET_PROFILE_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
-            urlConnection.setDoOutput(true);
-            urlConnection.setRequestMethod("PATCH");
+
+            urlConnection.setRequestMethod("GET");
             urlConnection.setUseCaches(false);
             urlConnection.setRequestProperty("Content-Type", "application/json");
+            urlConnection.connect();
 
             if(accessToken != null && !accessToken.equals("")){
                 urlConnection.setRequestProperty ("Authorization", accessToken);
             }
-
-            urlConnection.connect();
-
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("email", email);
-            jsonParam.put("name", name);
-            jsonParam.put("username", username);
-
-            OutputStream outputStream = urlConnection.getOutputStream();
-            byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
-            outputStream.write(input, 0, input.length);
-            outputStream.flush();
-            outputStream.close();
 
             int HttpResult = urlConnection.getResponseCode();
             if (HttpResult == HttpURLConnection.HTTP_OK) {
@@ -133,13 +119,14 @@ public class BrowserExpressEditProfilePreferencesUtil {
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
-                    EditProfileWorkerTask.setEditProfileSuccessStatus(true);
-                    String accessToken1 = responseObject.getString("accessToken");
-                    String refreshToken = responseObject.getString("refreshToken");
-                    EditProfileWorkerTask.setAuthTokens(accessToken1, refreshToken);
+                    GetProfileWorkerTask.setGetProfileSuccessStatus(true);
+                    String xp =  Integer(responseObject.getInt("xp")).toString();
+                    String likesReceived =  Integer(responseObject.getInt("likesReceived")).toString();
+                    String likesGiven =  Integer(responseObject.getInt("likesGiven")).toString();
+                    GetProfileWorkerTask.setData(xp, likesGiven, likesReceived);
                 }else{
-                    EditProfileWorkerTask.setEditProfileSuccessStatus(false);
-                    EditProfileWorkerTask.setErrorMessage(responseObject.getString("error"));
+                    GetProfileWorkerTask.setGetProfileSuccessStatus(false);
+                    GetProfileWorkerTask.setErrorMessage(responseObject.getString("error"));
                 }
                 br.close();
             } else {
