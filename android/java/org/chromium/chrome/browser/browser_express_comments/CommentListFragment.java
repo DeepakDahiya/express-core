@@ -256,11 +256,17 @@ public class CommentListFragment extends Fragment {
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
                     Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED");
                     int len = mComments.size();
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 2");
                     mComments.addAll(comments);
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 3");
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 4");
                     mShimmerLoading.setVisibility(View.GONE);
-                    AndroidUtils.gone(mShimmerItems);
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 5");
+                    // AndroidUtils.gone(mShimmerItems);
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 6");
                     mShimmerLoading.hideShimmer();
+                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 7");
                 }
 
                 @Override
