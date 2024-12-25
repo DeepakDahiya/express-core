@@ -121,9 +121,9 @@ public class BrowserExpressGetProfilePreferencesUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     GetProfileWorkerTask.setGetProfileSuccessStatus(true);
-                    String xp =  Integer(responseObject.getInt("xp")).toString();
-                    String likesReceived =  Integer(responseObject.getInt("likesReceived")).toString();
-                    String likesGiven =  Integer(responseObject.getInt("likesGiven")).toString();
+                    String xp =  responseObject.getString("xp");
+                    String likesReceived = responseObject.getString("likesReceived");
+                    String likesGiven = responseObject.getString("likesGiven");
                     GetProfileWorkerTask.setData(xp, likesGiven, likesReceived);
                 }else{
                     GetProfileWorkerTask.setGetProfileSuccessStatus(false);
