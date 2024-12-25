@@ -22,6 +22,7 @@ import android.util.Base64;
 import android.net.Uri;
 import android.app.Activity;
 import android.provider.MediaStore;
+import java.io.FileNotFoundException;
 
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.core.content.ContextCompat;
@@ -330,7 +331,8 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                             new BrowserExpressEditAvatarPreferencesUtil.EditAvatarWorkerTask(imageStream, accessToken, editAvatarCallback);
                     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     
-                } catch (BraveActivity.BraveActivityNotFoundException e) {}
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                } catch(FileNotFoundException ex){}
                 
             }
         }
