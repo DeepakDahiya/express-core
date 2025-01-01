@@ -313,10 +313,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void onClick(View v) {
                     String link = "https://browser.express/view?id=" + comment.getId();
-                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" +
-                                    link + "\n\n" +
-                                    "Dive in—it's where everyone’s talking about everything, nonstop.";
-
+                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it's where everyone’s talking about everything, nonstop.";
                     Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
                     sharingIntent.setType("text/plain");
                     sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, message);

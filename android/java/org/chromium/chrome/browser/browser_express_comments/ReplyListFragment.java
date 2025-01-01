@@ -79,6 +79,13 @@ public class ReplyListFragment extends Fragment {
     private ImageView mAvatarImage;
     private ImageView mBackButton;
 
+    private Button mLolButton;
+    private Button mHeartButton;
+    private Button mCryButton;
+    private Button mFireButton;
+    private Button mLoveButton;
+    private Button mClapButton;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -91,6 +98,13 @@ public class ReplyListFragment extends Fragment {
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = (EditText) view.findViewById(R.id.comment_content_input);
+
+        mLolButton = view.findViewById(R.id.lol_button);
+        mHeartButton = view.findViewById(R.id.heart_button);
+        mCryButton = view.findViewById(R.id.cry_button);
+        mFireButton = view.findViewById(R.id.fire_button);
+        mLoveButton = view.findViewById(R.id.love_button);
+        mClapButton = view.findViewById(R.id.clap_button);
         
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
@@ -144,6 +158,13 @@ public class ReplyListFragment extends Fragment {
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
+
+        this.setOnClickForEmoji(mLolButton, mMessageEditText);
+        this.setOnClickForEmoji(mHeartButton, mMessageEditText);
+        this.setOnClickForEmoji(mCryButton, mMessageEditText);
+        this.setOnClickForEmoji(mFireButton, mMessageEditText);
+        this.setOnClickForEmoji(mLoveButton, mMessageEditText);
+        this.setOnClickForEmoji(mClapButton, mMessageEditText);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -200,6 +221,21 @@ public class ReplyListFragment extends Fragment {
 
         return view;
     }
+
+    private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
+        emojiButton.setOnClickListener((new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String content = editText.getText().toString().trim();
+                    if(content.length() > 0){
+                        String finalContent = content + emojiButton.getText().toString();
+                        editText.setText(finalContent);
+                    }else{
+                        editText.setText(emojiButton.getText().toString());
+                    }
+                }
+            }));
+        }
 
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
