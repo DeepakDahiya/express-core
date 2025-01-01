@@ -131,19 +131,6 @@ public class CommentListFragment extends Fragment {
         this.setOnClickForEmoji(mLoveButton, mMessageEditText);
         this.setOnClickForEmoji(mClapButton, mMessageEditText);
 
-        // mHeartButton.setOnClickListener((new View.OnClickListener() {
-        //         @Override
-        //         public void onClick(View v) {
-        //             String content = mMessageEditText.getText().toString().trim();
-        //             if(content.length() > 0){
-        //                 String finalContent = content + mHeartButton.getText().toString();
-        //                 mMessageEditText.setText(finalContent);
-        //             }else{
-        //                 mMessageEditText.setText(mHeartButton.getText().toString());
-        //             }
-        //         }
-        //     }));
-
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
@@ -205,11 +192,8 @@ public class CommentListFragment extends Fragment {
             }));
 
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-            // Log.e("Express Browser Access Token", e.getMessage());
-        }catch(Exception ex){
-            // Log.e("Express Browser Access Token", ex.getMessage());
+        } catch(Exception ex){
         }
-
         return view;
     }
 
@@ -235,6 +219,7 @@ public class CommentListFragment extends Fragment {
                     }
                 }
             }));
+        }
     }
 
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
@@ -311,6 +296,5 @@ public class CommentListFragment extends Fragment {
             // Log.e("Express Browser Access Token", e.getMessage());
             return null;
         }
-        
     }
 }

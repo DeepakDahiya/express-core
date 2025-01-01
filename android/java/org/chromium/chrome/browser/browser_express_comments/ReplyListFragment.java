@@ -236,6 +236,7 @@ public class ReplyListFragment extends Fragment {
                 }
             }));
         }
+    }
 
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
