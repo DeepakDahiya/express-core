@@ -371,7 +371,6 @@
     <color name="browser_express_orange_color">#FF9000</color>
     <color name="browser_express_blue_color">#39B1F6</color>
     <color name="browser_express_error_color">#FF0000</color>
-    <color name="browser_express_divider_color">#EAEAEA</color>
     <color name="bg_profile_banner">#C4C4C4</color>
     <color name="browser_express_grey">#eeeeee</color>
     <color name="vote_stroke_color">#333333</color>

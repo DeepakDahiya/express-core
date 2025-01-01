@@ -4227,9 +4227,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BE_READ_MORE" desc="Brave wallet password hint text">
       read more
     </message>
-    <message name="IDS_BE_SHOW_MORE" desc="Brave wallet password hint text">
-      Show replies
-    </message>
     <message name="IDS_BROWSER_EXPRESS_HOME_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Home
     </message>
