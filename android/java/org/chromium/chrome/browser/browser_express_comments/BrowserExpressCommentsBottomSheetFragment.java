@@ -40,7 +40,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
+import android.view.Gravity;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
@@ -105,7 +105,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        BottomSheetBehavior<View> behavior = dialog.getBehavior();
+        BottomSheetBehavior behavior = dialog.getBehavior();
         
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
