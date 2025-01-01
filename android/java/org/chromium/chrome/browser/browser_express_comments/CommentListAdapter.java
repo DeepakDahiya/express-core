@@ -47,6 +47,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
+import androidx.core.content.res.ResourcesCompat;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -155,7 +156,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             }
 
             if(mIsReplyTopComment){
-                mCommentLayout.setBackground(activity.getResources().getDrawable(R.drawable.rounded_corner_background));
+                mCommentLayout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.rounded_corner_background, null));
             }
 
             myPosition = getBindingAdapterPosition();
@@ -251,7 +252,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             if(comment.getCommentCount() > 0){
                 String mReplyButtonText = comment.getCommentCount() + " replies";
                 mReplyButton.setText(mReplyButtonText);
-                mReplyButton.setTextColor(getResources().getColor(R.color.browser_express_blue_color));
+                mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
             }
             
             mReplyButton.setOnClickListener(new View.OnClickListener() {
