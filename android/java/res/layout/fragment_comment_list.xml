@@ -61,7 +61,72 @@
                 android:text="@string/lol"
                 android:background="@android:color/transparent"
                 style="?android:attr/borderlessButtonStyle"
-                android:textSize="16sp"
+                android:textSize="20sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <Button
+                android:id="@+id/heart_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/heart"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textSize="20sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <Button
+                android:id="@+id/cry_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/cry"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textSize="20sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <Button
+                android:id="@+id/fire_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/fire"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textSize="20sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <Button
+                android:id="@+id/love_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/love"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textSize="20sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <Button
+                android:id="@+id/clap_button"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/clap"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
@@ -83,7 +148,6 @@
                 android:scaleType="centerCrop"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"
-                android:background="@drawable/circular_background"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
             <EditText
@@ -103,7 +167,7 @@
                 android:textColor="@color/wallet_text_color"
                 android:textColorHint="@color/brave_theme_hint_text"
                 android:hint="@string/type_your_comment"
-                android:background="@drawable/rounded_wallet_edittext"
+                android:background="@drawable/rounded_edittext"
                 tools:ignore="Autofill" />
 
             <ImageButton android:id="@+id/button_send"

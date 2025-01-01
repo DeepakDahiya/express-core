@@ -4185,9 +4185,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Enter your password
     </message>
     <message name="IDS_TYPE_YOUR_COMMENT" desc="Brave wallet password hint text">
-      Type your comment...
+      Add a comment
     </message>
-    <message name="IDS_CONFIRM_PASSWORD" desc="Brave wallet password hint text">
+    <message name="IDS_CONFIRMund_PASSWORD" desc="Brave wallet password hint text">
       Confirm password
     </message>
     <message name="IDS_VIEWS" desc="Brave wallet password hint text">
@@ -4238,6 +4238,21 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     </message>
     <message name="IDS_LOL" desc="Lol emoji">
       😂
+    </message>
+    <message name="IDS_HEART" desc="Lol emoji">
+      ❤️
+    </message>
+    <message name="IDS_CRY" desc="Lol emoji">
+      😭
+    </message>
+    <message name="IDS_FIRE" desc="Lol emoji">
+      🔥
+    </message>
+    <message name="IDS_LOVE" desc="Lol emoji">
+      😍
+    </message>
+    <message name="IDS_CLAP" desc="Lol emoji">
+      👏
     </message>
     <!-- <message name="IDS_BROWSER_EXPRESS_SEPARATOR_DOT" desc="Sign in with Brave Wallet Request ID label">
       \u2022

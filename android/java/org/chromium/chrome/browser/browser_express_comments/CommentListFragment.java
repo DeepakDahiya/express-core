@@ -68,6 +68,13 @@ public class CommentListFragment extends Fragment {
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
+    private Button mLolButton;
+    private Button mHeartButton;
+    private Button mCryButton;
+    private Button mFireButton;
+    private Button mLoveButton;
+    private Button mClapButton;
+
     private ImageButton mSendButton;
     private EditText mMessageEditText;
     private TextView mCommentsText;
@@ -87,6 +94,13 @@ public class CommentListFragment extends Fragment {
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = (EditText) view.findViewById(R.id.comment_content_input);
+
+        mLolButton = view.findViewById(R.id.lol_button);
+        mHeartButton = view.findViewById(R.id.heart_button);
+        mCryButton = view.findViewById(R.id.cry_button);
+        mFireButton = view.findViewById(R.id.fire_button);
+        mLoveButton = view.findViewById(R.id.love_button);
+        mClapButton = view.findViewById(R.id.clap_button);
 
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
@@ -110,6 +124,26 @@ public class CommentListFragment extends Fragment {
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
+        this.setOnClickForEmoji(mLolButton, mMessageEditText);
+        this.setOnClickForEmoji(mHeartButton, mMessageEditText);
+        this.setOnClickForEmoji(mCryButton, mMessageEditText);
+        this.setOnClickForEmoji(mFireButton, mMessageEditText);
+        this.setOnClickForEmoji(mLoveButton, mMessageEditText);
+        this.setOnClickForEmoji(mClapButton, mMessageEditText);
+
+        // mHeartButton.setOnClickListener((new View.OnClickListener() {
+        //         @Override
+        //         public void onClick(View v) {
+        //             String content = mMessageEditText.getText().toString().trim();
+        //             if(content.length() > 0){
+        //                 String finalContent = content + mHeartButton.getText().toString();
+        //                 mMessageEditText.setText(finalContent);
+        //             }else{
+        //                 mMessageEditText.setText(mHeartButton.getText().toString());
+        //             }
+        //         }
+        //     }));
+
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
@@ -125,55 +159,7 @@ public class CommentListFragment extends Fragment {
                             null, null, mPostId, mPage, mPerPage, accessToken, getCommentsCallback);
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }else{
-                // String commentsString = activity.getFirstComments();
-                // if(commentsString != null){
-                //     try{
-                //         JSONArray commentsArray = new JSONArray(commentsString);
-                //         List<Comment> comments = new ArrayList<Comment>();
-                //         for (int i = 0; i < commentsArray.length(); i++) {
-                //             JSONObject comment = commentsArray.getJSONObject(i);
-                //             JSONObject user = comment.getJSONObject("user");
-                //             JSONObject didVote = comment.optJSONObject("didVote");
-                //             Vote v = null;
-                //             if(didVote != null){
-                //                 v = new Vote(didVote.getString("_id"), didVote.getString("type"));
-                //             }
-                //             User u = new User(user.getString("_id"), user.getString("username"));
-                //             String pageParent = null;
-                //             String commentParent = null;
-                //             if(comment.has("pageParent")){
-                //                 pageParent = comment.getString("pageParent");
-                //             }
-
-                //             if(comment.has("commentParent")){
-                //                 commentParent = comment.getString("commentParent");
-                //             }
-                //             comments.add(new Comment(
-                //                 comment.getString("_id"), 
-                //                 comment.getString("content"),
-                //                 comment.getInt("upvoteCount"),
-                //                 comment.getInt("downvoteCount"),
-                //                 comment.getInt("commentCount"),
-                //                 pageParent,
-                //                 commentParent,
-                //                 u, 
-                //                 v));
-                //         }
-
-                //         int len = mComments.size();
-                //         mComments.clear();
-                //         mCommentAdapter.notifyItemRangeRemoved(0, len);
-                //         mComments.addAll(comments);
-                //         mCommentAdapter.notifyItemRangeInserted(0, comments.size());
-                //         mPage = 2;
-                //     } catch (JSONException e) {
-                //         Log.e("Comments_Bottom_Sheet", e.getMessage());
-                //     }
-                // }
                 mUrl = activity.getActivityTab().getUrl().getSpec();
-
-                // Log.e("BROWSER_EXPRESS_URL", mUrl);
-
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
                             mUrl, null, null, mPage, mPerPage, accessToken, getCommentsCallback);
@@ -234,6 +220,21 @@ public class CommentListFragment extends Fragment {
         args.putString(POST_ID, postId);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
+        emojiButton.setOnClickListener((new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    String content = editText.getText().toString().trim();
+                    if(content.length() > 0){
+                        String finalContent = content + emojiButton.getText().toString();
+                        editText.setText(finalContent);
+                    }else{
+                        editText.setText(emojiButton.getText().toString());
+                    }
+                }
+            }));
     }
 
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
