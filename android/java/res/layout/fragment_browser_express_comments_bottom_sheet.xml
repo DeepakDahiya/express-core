@@ -14,14 +14,15 @@
     android:layout_marginTop="60dp"
     android:orientation="vertical"
     app:behavior_fitToContents="false"
-    app:behavior_halfExpandedRatio="0.6"
+    app:behavior_halfExpandedRatio="0.7"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
     <View
         android:layout_width="60dp"
         android:layout_height="4dp"
         android:layout_gravity="center"
-        android:background="@color/browser_express_grey"/>
+        android:layout_marginTop="6dp"
+        android:background="@color/news_settings_title_color"/>
 
     <FrameLayout
         android:id="@+id/bottom_sheet_container"

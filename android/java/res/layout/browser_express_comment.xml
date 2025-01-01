@@ -13,7 +13,7 @@
         android:src="@drawable/btn_toolbar_profile"
         android:layout_width="24sp"
         android:layout_height="24sp"
-        android:scaleType="centerCrop"
+        android:scaleType="fitCenter"
         android:adjustViewBounds="true"
         android:background="@drawable/circular_background"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
@@ -72,13 +72,13 @@
                 android:orientation="vertical">
                 <ImageButton
                     android:id="@+id/btn_upvote"
-                    android:layout_width="18sp"
-                    android:layout_height="18sp"
+                    android:layout_width="36dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/btn_upvote"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="fitCenter" />
 
                 <TextView
                     android:id="@+id/vote_count"
@@ -93,13 +93,13 @@
                 <ImageButton
                     android:id="@+id/btn_downvote"
                     style="@style/ToolbarButton"
-                    android:layout_width="18sp"
-                    android:layout_height="18sp"
+                    android:layout_width="36dp"
+                    android:layout_height="42dp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/btn_downvote"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:scaleType="centerCrop"/>
+                    android:scaleType="fitCenter"/>
             </LinearLayout>
         </LinearLayout>
 
