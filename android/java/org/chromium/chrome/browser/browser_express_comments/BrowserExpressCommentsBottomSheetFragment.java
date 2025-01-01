@@ -117,8 +117,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         // mSendButton = view.findViewById(R.id.button_send);
         // mMessageEditText = view.findViewById(R.id.comment_content);
-        // mReplyToText = view.findViewById(R.id.reply_to);
-        // mCancelReplyButton = view.findViewById(R.id.cancel_btn);
 
         DisplayMetrics displaymetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
@@ -287,16 +285,4 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();
     }
-
-    // public EditText getMessageEditText() {
-    //     return mMessageEditText;
-    // }
-
-    // public TextView getReplyToText() {
-    //     return mReplyToText;
-    // }
-
-    // public ImageButton getCancelReplyButton() {
-    //     return mCancelReplyButton;
-    // }
 }

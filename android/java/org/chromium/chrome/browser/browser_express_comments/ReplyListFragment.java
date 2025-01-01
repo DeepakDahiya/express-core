@@ -73,9 +73,7 @@ public class ReplyListFragment extends Fragment {
     private ViewGroup mShimmerItems;
 
     private ImageButton mSendButton;
-    private ImageButton mCancelReplyButton;
     private EditText mMessageEditText;
-    private TextView mReplyToText;
     private TextView mCommentsText;
 
     private ImageView mAvatarImage;
@@ -93,8 +91,6 @@ public class ReplyListFragment extends Fragment {
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = (EditText) view.findViewById(R.id.comment_content_input);
-        mReplyToText = view.findViewById(R.id.reply_to);
-        mCancelReplyButton = view.findViewById(R.id.cancel_btn);
         
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
@@ -139,36 +135,14 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        // mCancelReplyButton = null;
-        // mMessageEditText = null;
-        // mReplyToText = null;
-
-        // if(parentFragment != null){
-        //     mMessageEditText = parentFragment.getMessageEditText();
-        //     mReplyToText = parentFragment.getReplyToText();
-        //     mCancelReplyButton = parentFragment.getCancelReplyButton();
-        // }
-
         boolean isReplyAdapter = true;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mTopComments = new ArrayList<Comment>();
-        // User u = new User("123", "Test Username");
-        // Comment parentComment = new Comment(
-        //                         "123", 
-        //                         "Test Comment",
-        //                         5,
-        //                         2,
-        //                         0,
-        //                         null,
-        //                         null,
-        //                         u, 
-        //                         null);
-        // mTopComments.add(parentComment);
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true);
+        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
         try {

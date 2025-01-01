@@ -69,9 +69,7 @@ public class CommentListFragment extends Fragment {
     private ViewGroup mShimmerItems;
 
     private ImageButton mSendButton;
-    private ImageButton mCancelReplyButton;
     private EditText mMessageEditText;
-    private TextView mReplyToText;
     private TextView mCommentsText;
 
     private ImageView mAvatarImage;
@@ -89,8 +87,6 @@ public class CommentListFragment extends Fragment {
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
         mSendButton = view.findViewById(R.id.button_send);
         mMessageEditText = (EditText) view.findViewById(R.id.comment_content_input);
-        mReplyToText = view.findViewById(R.id.reply_to);
-        mCancelReplyButton = view.findViewById(R.id.cancel_btn);
 
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
@@ -110,18 +106,8 @@ public class CommentListFragment extends Fragment {
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         
-        // mCancelReplyButton = null;
-        // mMessageEditText = null;
-        // mReplyToText = null;
-
-        // if(parentFragment != null){
-        //     mMessageEditText = parentFragment.getMessageEditText();
-        //     mReplyToText = parentFragment.getReplyToText();
-        //     mCancelReplyButton = parentFragment.getCancelReplyButton();
-        // }
-
         boolean isReplyAdapter = false;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mReplyToText, mCancelReplyButton, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         try {
@@ -254,19 +240,12 @@ public class CommentListFragment extends Fragment {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED");
                     int len = mComments.size();
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 2");
                     mComments.addAll(comments);
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 3");
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 4");
                     mShimmerLoading.setVisibility(View.GONE);
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 5");
-                    // AndroidUtils.gone(mShimmerItems);
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 6");
+                    AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
-                    Log.e("BROWSER_EXPRESS_AFTER_COMMENTS", "REACHED 7");
                 }
 
                 @Override

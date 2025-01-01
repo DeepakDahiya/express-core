@@ -2213,14 +2213,6 @@ public abstract class BraveActivity extends ChromeActivity
         return findViewById(R.id.comments_button1);
     }
 
-    public TextView getReplyToText() {
-        return findViewById(R.id.reply_to);
-    }
-
-    public ImageButton getReplyToCancelButton() {
-        return findViewById(R.id.cancel_btn);
-    }
-
     public EditText getContentEditText() {
         return findViewById(R.id.comment_content);
     }

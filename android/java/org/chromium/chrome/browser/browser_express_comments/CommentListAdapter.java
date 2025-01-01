@@ -51,19 +51,15 @@ import android.os.Bundle;
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Comment> mCommentList;
-    private ImageButton mCancelReplyButton;
-    private TextView mReplyToText;
     private EditText mMessageEditText;
     private RecyclerView mTopCommentRecycler;
     private BrowserExpressCommentsBottomSheetFragment mParentFragment;
     private boolean mIsReplyAdapter;
     private boolean mIsReplyTopComment;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, TextView  replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
+    public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
         mContext = context;
         mCommentList = commentList;
-        mReplyToText = replyToText;
-        mCancelReplyButton = canceReplyButton;
         mMessageEditText = messageEditText;
         mTopCommentRecycler = topCommentRecycler;
         mParentFragment = parentFragment;
@@ -82,7 +78,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mReplyToText, mCancelReplyButton, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment);
+        return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -116,8 +112,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private Context context;
         private LinearLayout mActionItemsLayout;
 
-        private ImageButton mCancelReplyButton;
-        private TextView mReplyToText;
         private EditText mMessageEditText;
         private LinearLayout mCommentLayout;
 
@@ -130,11 +124,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private boolean mIsReplyAdapter;
         private boolean mIsReplyTopComment;
 
-        CommentHolder(View itemView, TextView replyToText, ImageButton canceReplyButton, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
+        CommentHolder(View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
             super(itemView);
 
-            mReplyToText = replyToText;
-            mCancelReplyButton = canceReplyButton;
             mMessageEditText = messageEditText;
             mParentFragment = parentFragment;
             mIsReplyAdapter = isReplyAdapter;
@@ -240,8 +232,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                     mCommentAdapter.notifyItemInserted(0);
                                 }
                             } catch (JSONException e) {
-                                mReplyToText.setText(R.string.browser_express_empty_text);
-                                mCancelReplyButton.setVisibility(View.INVISIBLE);
                                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
                             }
                         }
@@ -261,20 +251,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
                 }
             }
-
-            mCancelReplyButton.setOnClickListener((new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    try {
-                        activity = BraveActivity.getBraveActivity();
-                        activity.setReplyTo(null);
-                        mReplyToText.setText(R.string.browser_express_empty_text);
-                        mCancelReplyButton.setVisibility(View.INVISIBLE);
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e("Express Browser Access Token", e.getMessage());
-                    }
-                }
-            }));
 
             if(comment.getCommentCount() > 0){
                 String mReplyButtonText = comment.getCommentCount() + " replies";
@@ -311,14 +287,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         json.put("name", comment.getUser().getUsername());
                         json.put("commentId", comment.getId());
                         activity.setReplyTo(json.toString());
-                        mCancelReplyButton = activity.getReplyToCancelButton();
-                        mReplyToText = activity.getReplyToText();
                         mMessageEditText =  activity.getContentEditText();
-                        if(mReplyToText != null || mCancelReplyButton != null || mMessageEditText != null){
+                        if(mMessageEditText != null){
                             Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
                             String replyToString = "replying to " + comment.getUser().getUsername();
-                            mReplyToText.setText(replyToString);
-                            mCancelReplyButton.setVisibility(View.VISIBLE);
                             mMessageEditText.requestFocus();
                             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
@@ -349,30 +321,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     sharingIntent.setType("text/plain");
                     sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, message);
                     activity.startActivity(Intent.createChooser(sharingIntent, null));
-
-                    // // Convert the drawable resource to a bitmap
-                    // Bitmap bitmap = BitmapFactory.decodeResource(activity.getResources(), R.drawable.share_message_image); // Replace with your drawable
-
-                    // try {
-                    //     // Save bitmap to a file
-                    //     File file = new File(activity.getCacheDir(), "shared_image.png");
-                    //     FileOutputStream outputStream = new FileOutputStream(file);
-                    //     bitmap.compress(Bitmap.CompressFormat.PNG, 100, outputStream);
-                    //     outputStream.close();
-
-                    //     // Get URI for sharing
-                    //     Uri imageUri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
-                    //     Intent sharingIntent = new Intent(Intent.ACTION_SEND);
-                    //     sharingIntent.setType("image/*");
-                    //     sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
-                    //     sharingIntent.putExtra(Intent.EXTRA_STREAM, imageUri);
-                    //     sharingIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-
-                    //     // Start the chooser
-                    //     activity.startActivity(Intent.createChooser(sharingIntent, null));
-                    // } catch (IOException e) {
-                    //     e.printStackTrace();
-                    // }
                 }
             });
 

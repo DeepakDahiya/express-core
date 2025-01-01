@@ -73,22 +73,19 @@
             android:visibility="gone"
             android:orientation="horizontal"
             android:layout_gravity="bottom">
-            <TextView
-                android:id="@+id/reply_to"
+            <Button
+                android:id="@+id/lol_button"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:textSize="12sp"
-                android:textColor="@color/set_default_text_color" />
-
-            <ImageButton android:id="@+id/cancel_btn"
-                android:background="@drawable/cancel_btn"
-                android:layout_width="18sp"
-                android:layout_height="18sp"
-                android:visibility="invisible"
-                android:layout_marginStart="12sp"
-                android:layout_gravity="center"
-                android:contentDescription="@string/profile_image" />
+                android:text="@string/lol"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textSize="16sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
 
         <RelativeLayout
