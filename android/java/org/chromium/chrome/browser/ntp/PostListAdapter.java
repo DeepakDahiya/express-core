@@ -363,9 +363,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 String type = didVote.getType();
                 didVoteType = type;
                 if(type.equals("up")){
-                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                    mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                 }else if(type.equals("down")){
-                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                    mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                 }
             }
 
@@ -409,7 +409,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         if(didVoteType.equals("down")){
                             finalVote = finalVote + 2;
                             didVoteType = "up";
-                            mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                            mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                         }else if(didVoteType.equals("up")){
                             finalVote = finalVote - 1;
                             mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
@@ -418,7 +418,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }else{
                         finalVote = finalVote + 1;
                         didVoteType = "up";
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
@@ -449,7 +449,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         if(didVoteType.equals("up")){
                             finalVote = finalVote - 2;
                             didVoteType = "down";
-                            mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                            mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                         }else if(didVoteType.equals("down")){
                             finalVote = finalVote + 1;
                             mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
@@ -458,7 +458,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }else{
                         finalVote = finalVote - 1;
                         didVoteType = "down";
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 

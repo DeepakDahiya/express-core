@@ -7,13 +7,12 @@
     android:baselineAligned="false"
     android:padding="8dp"
     android:orientation="horizontal"
-    android:background="@drawable/rounded_corner_background"
     android:id="@+id/comment_layout">
     <ImageView
         android:id="@+id/avatar_image"
         android:src="@drawable/btn_toolbar_profile"
-        android:layout_width="28sp"
-        android:layout_height="28sp"
+        android:layout_width="24sp"
+        android:layout_height="24sp"
         android:scaleType="centerCrop"
         android:adjustViewBounds="true"
         android:background="@drawable/circular_background"
@@ -48,7 +47,7 @@
                     android:textColor="@color/news_settings_title_color"
                     android:layout_height="wrap_content"
                     android:layout_marginVertical="4sp"
-                    android:textSize="11sp" />
+                    android:textSize="14sp" />
                 <Button
                     android:id="@+id/btn_read_more_comment"
                     android:layout_width="wrap_content"
@@ -87,6 +86,7 @@
                     android:layout_height="wrap_content"
                     android:textColor="@color/news_settings_title_color"
                     android:layout_gravity="center"
+                    android:layout_marginVertical="4sp"
                     android:layout_marginHorizontal="2sp"
                     android:textSize="12sp"/>
 
@@ -119,12 +119,12 @@
                     android:background="@android:color/transparent"
                     style="?android:attr/borderlessButtonStyle"
                     android:textColor="@color/set_default_text_color"
-                    android:textSize="11sp"
+                    android:textSize="14sp"
                     android:minWidth="0dp"
                     android:minHeight="0dp"
                     android:paddingVertical="4sp"
                     android:paddingHorizontal="0dp"
-                    android:textAllCaps="true"
+                    android:textAllCaps="false"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
                 <View
@@ -142,53 +142,6 @@
                     android:background="@drawable/share"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="centerCrop" />
-
-                <!-- <Button
-                    android:id="@+id/btn_share"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/be_share"
-                    android:background="@android:color/transparent"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:textColor="@color/set_default_text_color"
-                    android:textSize="11sp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingVertical="4sp"
-                    android:paddingHorizontal="8sp"
-                    android:textAllCaps="true"
-                    android:layout_marginHorizontal="8dp"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
-            <!-- <ImageButton
-                android:id="@+id/btn_options"
-                android:layout_width="18sp"
-                android:layout_height="18sp"
-                android:layout_gravity="center"
-                android:background="@drawable/ic_more_vert_24dp"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" /> -->
         </LinearLayout>
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:layout_marginVertical="4dp"
-            android:background="@color/browser_express_divider_color"/>
-
-        <Button
-            android:id="@+id/btn_more_comments"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@android:color/transparent"
-            style="?android:attr/borderlessButtonStyle"
-            android:textColor="@color/set_default_text_color"
-            android:textSize="11sp"
-            android:minWidth="0dp"
-            android:text="@string/be_show_more"
-            android:layout_gravity="center"
-            android:minHeight="0dp"
-            android:paddingHorizontal="8sp"
-            android:visibility="gone"
-            android:textAllCaps="false"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
     </LinearLayout>
 </LinearLayout>

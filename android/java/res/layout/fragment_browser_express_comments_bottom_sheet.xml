@@ -17,12 +17,11 @@
     app:behavior_halfExpandedRatio="0.6"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
-    <ImageButton android:id="@+id/btn_maximize"
-        style="@style/ToolbarButton"
-        android:src="@drawable/maximize"
+    <View
+        android:layout_width="60dp"
+        android:layout_height="4dp"
         android:layout_gravity="center"
-        android:visibility="visible"
-        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+        android:background="@color/browser_express_grey"/>
 
     <FrameLayout
         android:id="@+id/bottom_sheet_container"

@@ -50,13 +50,14 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5sp"
-            android:visibility="visible"
             android:orientation="horizontal"
-            android:layout_gravity="bottom">
+            android:layout_gravity="bottom"
+            android:padding="5sp"
+            android:weightSum="6">
+
             <Button
                 android:id="@+id/lol_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/lol"
                 android:background="@android:color/transparent"
@@ -66,10 +67,12 @@
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
                 android:paddingHorizontal="0dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
             <Button
                 android:id="@+id/heart_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/heart"
                 android:background="@android:color/transparent"
@@ -79,10 +82,12 @@
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
                 android:paddingHorizontal="0dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
             <Button
                 android:id="@+id/cry_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/cry"
                 android:background="@android:color/transparent"
@@ -92,10 +97,12 @@
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
                 android:paddingHorizontal="0dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
             <Button
                 android:id="@+id/fire_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/fire"
                 android:background="@android:color/transparent"
@@ -105,10 +112,12 @@
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
                 android:paddingHorizontal="0dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
             <Button
                 android:id="@+id/love_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/love"
                 android:background="@android:color/transparent"
@@ -118,10 +127,12 @@
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
                 android:paddingHorizontal="0dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
             <Button
                 android:id="@+id/clap_button"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:text="@string/clap"
                 android:background="@android:color/transparent"
@@ -131,8 +142,10 @@
                 android:minHeight="0dp"
                 android:paddingVertical="0sp"
                 android:paddingHorizontal="0dp"
+                android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
+
 
         <RelativeLayout
             android:layout_width="match_parent"

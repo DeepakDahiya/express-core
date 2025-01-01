@@ -68,11 +68,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private ProgressBar mCommentProgress;
 
     private boolean isFromMenu;
-    // private ImageButton mSendButton;
-    // private ImageButton mCancelReplyButton;
-    // private EditText mMessageEditText;
-    // private TextView mReplyToText;
-    // private TextView mCommentsText;
 
     private ImageView mAvatarImage;
 
@@ -112,110 +107,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
 
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenHeight = displayMetrics.heightPixels;
+
+        int desiredHeight = (int) (screenHeight * 0.7);
+
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.height = desiredHeight;
+        view.setLayoutParams(params);
+
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
-        // mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
-        // mSendButton = view.findViewById(R.id.button_send);
-        // mMessageEditText = view.findViewById(R.id.comment_content);
-
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-
-        int a =  (displaymetrics.heightPixels*70)/100;
-
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            // bottom bar comment count
-            // mCommentsText = activity.getCommentCountText();
-            String accessToken = activity.getAccessToken();
-            // if(accessToken != null){
-            //     JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-            //     ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
-            // }
-            
-            // SharedPreferences sharedPref = activity.getSharedPreferencesForReplyTo();
-            // SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-            //     @Override
-            //     public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-            //         if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_TO)){
-            //             if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
-            //                 try{
-            //                     JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
-            //                     String username = jsonObj.getString("name");
-            //                     String replyToString = "replying to " + username;
-            //                     mReplyToText.setText(replyToString);
-            //                     mCancelReplyButton.setVisibility(View.VISIBLE);
-            //                     mMessageEditText.requestFocus();
-            //                     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            //                     imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
-            //                 } catch (JSONException e) {
-            //                     Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
-            //                 }
-            //             }else{
-            //                 mReplyToText.setText(R.string.browser_express_empty_text);
-            //                 mCancelReplyButton.setVisibility(View.INVISIBLE);
-            //             }
-            //         }
-            //     }
-            // };
-
-            // sharedPref.registerOnSharedPreferenceChangeListener(listener);
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            // Log.e("Express Browser Access Token", e.getMessage());
-        }catch(Exception ex){
-            // Log.e("Express Browser Access Token", ex.getMessage());
-        }
-
-        // mSendButton.setOnClickListener((new View.OnClickListener() {
-        //     @Override
-        //     public void onClick(View v) {
-        //         if (getActivity() != null) {
-        //             try {
-        //                 mSendButton.setClickable(false);
-        //                 BraveActivity activity = BraveActivity.getBraveActivity();
-        //                 String accessToken = activity.getAccessToken();
-        //                 if (accessToken == null) {
-        //                     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-        //                     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-        //                     activity.showGenerateUsernameBottomSheet();
-        //                     dismiss();
-        //                 } else {
-        //                     String content = mMessageEditText.getText().toString().trim();
-        //                     if(content.length() > 0){
-        //                         if(activity.getReplyTo() != null && !activity.getReplyTo().equals("")){
-        //                             try{
-        //                                 JSONObject jsonObj = new JSONObject(activity.getReplyTo().toString());
-        //                                 String commentId = jsonObj.getString("commentId");
-        //                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-        //                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-        //                                             content, "comment", mUrl, commentId, accessToken, addCommentCallback);
-        //                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        //                             } catch (JSONException e) {
-        //                                 Log.e("BROWSER_EXPRESS_REPLY_TO_EXTRACT", e.getMessage());
-        //                             }
-        //                         }else{
-        //                             String pType = "page";
-        //                             String pId = null;
-        //                             if(mCommentsFor.equals("post")){
-        //                                 pType = "post";
-        //                                 pId = mPostId;
-        //                             }
-        //                             BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-        //                                 new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-        //                                         content, pType, mUrl, pId, accessToken, addCommentCallback);
-        //                             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        //                         }
-        //                         mMessageEditText.setText(R.string.browser_express_empty_text);
-        //                     }
-        //                 }
-        //             } catch (BraveActivity.BraveActivityNotFoundException e) {
-        //                 Log.e("Express Browser Access Token", e.getMessage());
-        //             }finally{
-        //                 mSendButton.setClickable(true);
-        //             }
-        //         }
-        //     }
-        // }));
 
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
@@ -229,27 +131,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
-    }
-
-    private JSONObject getDecodedToken(String accessToken){
-        try{
-            String[] split_string = accessToken.split("\\.");
-            String base64EncodedHeader = split_string[0];
-            String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
-
-            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-            String decodedString = new String(data, "UTF-8");
-            JSONObject jsonObj = new JSONObject(decodedString.toString());
-            return jsonObj;
-        }catch(JSONException e){
-            // Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }catch(UnsupportedEncodingException e){
-            // Log.e("Express Browser Access Token", e.getMessage());
-            return null;
-        }
-        
     }
 
     private void loadFragment(Fragment fragment) {
@@ -279,9 +160,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
-        // if (getFragmentManager() != null) {
-        //     getFragmentManager().popBackStack();
-        // }
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();
     }

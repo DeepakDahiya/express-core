@@ -98,7 +98,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private ImageButton mDownvoteButton;
         private Button mReplyButton;
         private ImageButton mShareButton;
-        // private Button mShowMoreButton;
         private String didVoteType;
         private int finalVote;
         private BraveActivity activity;
@@ -141,14 +140,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
             mShareButton = (ImageButton) itemView.findViewById(R.id.btn_share_image);
-            // mShowMoreButton = (Button) itemView.findViewById(R.id.btn_more_comments);
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
             context = itemView.getContext();
 
             mReplyButton.setTextSize(11);
-            // mShowMoreButton.setTextSize(10);
         }
 
         void bind(Comment comment) {
@@ -158,7 +155,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             }
 
             if(mIsReplyTopComment){
-                mCommentLayout.setBackgroundColor(activity.getResources().getColor(R.color.browser_express_grey));
+                mCommentLayout.setBackground(activity.getResources().getDrawable(R.drawable.rounded_corner_background));
             }
 
             myPosition = getBindingAdapterPosition();
@@ -181,7 +178,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            // mShowMoreButton.setVisibility(comment.getCommentCount() > 0 && !mIsReplyAdapter ? View.VISIBLE : View.GONE);
             if(mIsReplyAdapter == false){
                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT", "NOT_FOUND");
                 mActionItemsLayout.setVisibility(View.VISIBLE);
@@ -246,15 +242,16 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 String type = didVote.getType();
                 didVoteType = type;
                 if(type.equals("up")){
-                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                    mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                 }else if(type.equals("down")){
-                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                    mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                 }
             }
 
             if(comment.getCommentCount() > 0){
                 String mReplyButtonText = comment.getCommentCount() + " replies";
                 mReplyButton.setText(mReplyButtonText);
+                mReplyButton.setTextColor(getResources().getColor(R.color.browser_express_blue_color));
             }
             
             mReplyButton.setOnClickListener(new View.OnClickListener() {
@@ -302,13 +299,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             });
 
-            // mShowMoreButton.setOnClickListener(new View.OnClickListener() {
-            //     @Override
-            //     public void onClick(View v) {
-            //         mParentFragment.openReplies(comment.getId());
-            //     }
-            // });
-
             mShareButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -341,7 +331,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         if(didVoteType.equals("down")){
                             finalVote = finalVote + 2;
                             didVoteType = "up";
-                            mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                            mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                         }else if(didVoteType.equals("up")){
                             finalVote = finalVote - 1;
                             mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
@@ -350,7 +340,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     }else{
                         finalVote = finalVote + 1;
                         didVoteType = "up";
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote_orange);
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
@@ -381,7 +371,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         if(didVoteType.equals("up")){
                             finalVote = finalVote - 2;
                             didVoteType = "down";
-                            mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                            mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                         }else if(didVoteType.equals("down")){
                             finalVote = finalVote + 1;
                             mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
@@ -390,7 +380,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     }else{
                         finalVote = finalVote - 1;
                         didVoteType = "down";
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote_orange);
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                     }
                     voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
 
