@@ -24,7 +24,6 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.view.WindowManager;
-import android.view.Window;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
@@ -40,7 +39,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import android.view.Gravity;
+
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
@@ -104,9 +103,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        BottomSheetBehavior behavior = dialog.getBehavior();
-        
+        ((BottomSheetDialog) getDialog())
+                .getBehavior()
+                .setState(BottomSheetBehavior.STATE_EXPANDED);
+
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
@@ -114,24 +114,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int defaultHeight = (int) (screenHeight * 0.7);
         int fullHeight = screenHeight;
 
-        ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.height = fullHeight; 
-        view.setLayoutParams(params);
+        // ViewGroup.LayoutParams params = view.getLayoutParams();
+        // params.height = fullHeight; 
+        // view.setLayoutParams(params);
 
-        behavior.setPeekHeight(defaultHeight);
-        behavior.setSkipCollapsed(true);
-        behavior.setFitToContents(false);
-        behavior.setHalfExpandedRatio(0.7f);
-        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        // // Configure the BottomSheetBehavior
+        // behavior.setPeekHeight(defaultHeight);
+        // behavior.setFitToContents(false);
+        // behavior.setHalfExpandedRatio(0.7f);
+        // behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
-        Window window = getDialog().getWindow();
-        if (window != null) {
-            window.setSoftInputMode(
-                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE |
-                WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
-            );
-            window.setGravity(Gravity.BOTTOM);
-        }
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
