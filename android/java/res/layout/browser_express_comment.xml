@@ -72,8 +72,8 @@
                 android:orientation="vertical">
                 <ImageButton
                     android:id="@+id/btn_upvote"
-                    android:layout_width="26dp"
-                    android:layout_height="30dp"
+                    android:layout_width="21dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/btn_upvote"
@@ -93,8 +93,8 @@
                 <ImageButton
                     android:id="@+id/btn_downvote"
                     style="@style/ToolbarButton"
-                    android:layout_width="26dp"
-                    android:layout_height="30dp"
+                    android:layout_width="21dp"
+                    android:layout_height="24dp"
                     android:layout_gravity="center"
                     android:layout_marginHorizontal="5sp"
                     android:background="@drawable/btn_downvote"

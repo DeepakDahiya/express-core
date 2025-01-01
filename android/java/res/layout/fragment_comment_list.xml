@@ -156,8 +156,8 @@
             <ImageView
                 android:id="@+id/avatar_image"
                 android:src="@drawable/btn_toolbar_profile"
-                android:layout_width="32sp"
-                android:layout_height="32sp"
+                android:layout_width="24sp"
+                android:layout_height="24sp"
                 android:scaleType="centerCrop"
                 android:layout_gravity="center"
                 android:adjustViewBounds="true"

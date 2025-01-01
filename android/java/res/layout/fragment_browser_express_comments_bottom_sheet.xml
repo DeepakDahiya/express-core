@@ -21,7 +21,7 @@
         android:layout_width="40dp"
         android:layout_height="4dp"
         android:layout_gravity="center"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="16dp"
         android:background="@color/news_settings_title_color"/>
 
     <FrameLayout

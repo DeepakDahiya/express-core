@@ -145,8 +145,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
             context = itemView.getContext();
-
-            mReplyButton.setTextSize(11);
         }
 
         void bind(Comment comment) {
@@ -187,7 +185,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 
-            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
+            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=37&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
