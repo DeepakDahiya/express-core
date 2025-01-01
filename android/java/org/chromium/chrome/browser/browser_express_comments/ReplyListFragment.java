@@ -116,23 +116,6 @@ public class ReplyListFragment extends Fragment {
             }
         });
         
-        // Toolbar toolbar = view.findViewById(R.id.toolbar);
-
-        // AppCompatActivity acActivity = (AppCompatActivity) getActivity();
-        // if (acActivity != null) {
-        //     acActivity.setSupportActionBar(toolbar);
-        //     acActivity.getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-        //     acActivity.getSupportActionBar().setDisplayShowHomeEnabled(false);
-        //     acActivity.getSupportActionBar().setTitle("");
-        // }
-
-        // toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-        //     @Override
-        //     public void onClick(View v) {
-        //         parentFragment.openComments();
-        //     }
-        // });
-
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
         int shimmerSkeletonRows =

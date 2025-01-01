@@ -24,6 +24,7 @@ import org.json.JSONObject;
 import org.json.JSONArray;
 import org.json.JSONException;
 import android.view.WindowManager;
+import android.view.Window;
 import android.content.SharedPreferences;
 import android.view.inputmethod.InputMethodManager;
 import android.content.Context;
@@ -103,10 +104,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        ((BottomSheetDialog) getDialog())
-                .getBehavior()
-                .setState(BottomSheetBehavior.STATE_EXPANDED);
-
+        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+        BottomSheetBehavior<View> behavior = dialog.getBehavior();
+        
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
@@ -118,12 +118,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         params.height = fullHeight; 
         view.setLayoutParams(params);
 
-        ((BottomSheetDialog) getDialog()).getBehavior().setPeekHeight(defaultHeight);
-        ((BottomSheetDialog) getDialog()).getBehavior().setFitToContents(false);
-        ((BottomSheetDialog) getDialog()).getBehavior().setHalfExpandedRatio(0.7f);
-        ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        behavior.setPeekHeight(defaultHeight);
+        behavior.setSkipCollapsed(true);
+        behavior.setFitToContents(false);
+        behavior.setHalfExpandedRatio(0.7f);
+        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
-        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        Window window = getDialog().getWindow();
+        if (window != null) {
+            window.setSoftInputMode(
+                WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE |
+                WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN
+            );
+            window.setGravity(Gravity.BOTTOM);
+        }
 
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
