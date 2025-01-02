@@ -1,5 +1,6 @@
 package org.chromium.chrome.browser.ntp;
 import org.chromium.chrome.browser.browser_express_comments.Vote;
+import org.chromium.chrome.browser.browser_express_comments.Comment;
 
 public class Post{  
     private String _id;  

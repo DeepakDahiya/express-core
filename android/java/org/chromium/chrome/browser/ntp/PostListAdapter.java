@@ -53,6 +53,7 @@ import android.widget.ProgressBar;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
+import org.chromium.chrome.browser.browser_express_comments.Comment;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
