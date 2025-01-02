@@ -126,13 +126,14 @@ public class BrowserExpressGetPostsUtil {
                 if(responseObject.getBoolean("success")){
                     GetPostsWorkerTask.setGetPostsSuccessStatus(true);
                     JSONArray postsArray = responseObject.getJSONArray("posts");
+                    JSONArray commentsArray = responseObject.optJSONArray("comments");
                     List<Post> posts = new ArrayList<Post>();
                     for (int i = 0; i < postsArray.length(); i++) {
                         JSONObject post = postsArray.getJSONObject(i);
                         JSONObject didVote = post.optJSONObject("didVote");
                         JSONObject publisher = post.optJSONObject("publisher");
                         JSONObject tsp = post.optJSONObject("subPost");
-                        JSONArray commentsArray = post.optJSONArray("comments");
+                        // JSONArray commentsArray = post.optJSONArray("comments");
                         Vote v = null;
                         if(didVote != null){
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
