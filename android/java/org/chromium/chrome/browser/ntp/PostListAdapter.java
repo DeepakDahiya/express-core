@@ -139,7 +139,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
-            mCommentButton = (ImageButton) itemView.findViewById(R.id.btn_comment);
+            mCommentButton = (Button) itemView.findViewById(R.id.btn_comment);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_post);
             mReadMoreButton2 = (Button) itemView.findViewById(R.id.btn_read_more_post2);
             context = itemView.getContext();
@@ -322,7 +322,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 });
             }
 
-            if (comment.getCommentCount() > 0) {
+            if (post.getCommentCount() > 0) {
                 String commentCountText = "View " + post.getCommentCount() + " comments";
                 mCommentButton.setText(commentCountText);
             } else {
