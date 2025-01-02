@@ -176,10 +176,10 @@ public class BrowserExpressGetPostsUtil {
                             post.getBoolean("redirect"),
                             post.getBoolean("showFull"),
                             v,
-                            subPost)
+                            subPost);
 
+                        List<Comment> newComments = new ArrayList<Comment>();
                         if(commentsArray != null){
-                            List<Comment> newComments = new ArrayList<Comment>();
                             for (int j = 0; j < commentsArray.length(); j++) {
                                 JSONObject comment = commentsArray.getJSONObject(j);
                                 JSONObject commentDidVote = comment.optJSONObject("didVote");
@@ -199,10 +199,7 @@ public class BrowserExpressGetPostsUtil {
                                     commentParent = comment.getString("commentParent");
                                 }
 
-                                User commentUserObj = new User(
-                                    commentUser.getString("_id"),
-                                    commentUser.getString("username"),
-                                );
+                                User commentUserObj = new User(commentUser.getString("_id"), commentUser.getString("username"));
 
                                 Comment tempComment = new Comment(
                                     comment.getString("_id"),
@@ -217,9 +214,9 @@ public class BrowserExpressGetPostsUtil {
                                 );
                                 newComments.add(tempComment);
                             }
-
-                            tempPost.setComments(newComments);
                         }
+
+                        tempPost.setComments(newComments);
 
                         posts.add(tempPost);
                     }
