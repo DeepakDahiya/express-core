@@ -54,6 +54,7 @@ import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
 import org.chromium.chrome.browser.browser_express_comments.Comment;
+import androidx.annotation.NonNull;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -209,7 +210,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     super.onScrolled(recyclerView, dx, dy);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                     int position = layoutManager.findFirstVisibleItemPosition();
-                    updateDots(position);
                     dot1.setImageResource(position == 0 ? R.drawable.be_selected_dot : R.drawable.be_dot);
                     dot2.setImageResource(position == 1 ? R.drawable.be_selected_dot : R.drawable.be_dot);
                     dot3.setImageResource(position == 2 ? R.drawable.be_selected_dot : R.drawable.be_dot);

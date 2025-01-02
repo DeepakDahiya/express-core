@@ -35,6 +35,8 @@ import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
 import org.chromium.chrome.browser.browser_express_comments.Vote;
+import org.chromium.chrome.browser.browser_express_comments.Comment;
+import org.chromium.chrome.browser.browser_express_comments.User;
 
 public class BrowserExpressGetPostsUtil {
     private static final String TAG = "Get_Posts_Browser_Express";
