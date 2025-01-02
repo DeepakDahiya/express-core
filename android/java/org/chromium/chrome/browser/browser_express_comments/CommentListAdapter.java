@@ -155,6 +155,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
             if(mIsReplyTopComment){
                 mCommentLayout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.rounded_corner_background, null));
+                mActionItemsLayout.setVisibility(View.VISIBLE);
+                mReplyButton.setVisibility(View.INVISIBLE);
             }
 
             myPosition = getBindingAdapterPosition();
