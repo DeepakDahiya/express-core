@@ -92,13 +92,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private class PostHolder extends RecyclerView.ViewHolder {
         LinearLayout twitterPostLayout;
         ImageView twitterProfilePicture;
-        TextView twitterName;
         TextView twitterUsername;
         TextView twitterContent;
         ImageView twitterImage;
         VideoView twitterVideo;
         ImageButton twitterPlayButton;
-        ImageView twitterVerifiedImage;
         CardView twitterMediaCard;
         ImageView xLogo;
         ImageView instagramLogo;
@@ -109,14 +107,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView publishedTimeText;
         TextView titleText;
         TextView contentText;
-        TextView voteCountText;
-        TextView commentCountText;
-        private LinearLayout mCommentLayout;
-        private ImageButton mCommentButton;
-        private ImageButton mUpvoteButton;
-        private ImageButton mDownvoteButton;
-        private String didVoteType;
-        private int finalVote;
+        private Button mCommentButton;
         private BraveActivity activity;
 
         private Button mReadMoreButton;
@@ -133,13 +124,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
             twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
-            twitterName = (TextView) itemView.findViewById(R.id.twitter_name);
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
             twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
-            twitterVerifiedImage = (ImageView) itemView.findViewById(R.id.twitter_verified);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
             xLogo = (ImageView) itemView.findViewById(R.id.x_logo);
             instagramLogo = (ImageView) itemView.findViewById(R.id.instagram_logo);
@@ -150,12 +139,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
-            voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
-            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
-            commentCountText = (TextView) itemView.findViewById(R.id.comment_count);
             mCommentButton = (ImageButton) itemView.findViewById(R.id.btn_comment);
-            mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
-            mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_post);
             mReadMoreButton2 = (Button) itemView.findViewById(R.id.btn_read_more_post2);
             context = itemView.getContext();
@@ -191,14 +175,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     xLogo.setVisibility(View.VISIBLE);
                 }
 
-                if(verified){
-                    twitterVerifiedImage.setVisibility(View.VISIBLE);
-                }
-
                 String twitterImageUrl = subPost.getMediaImageUrl();
                 String videoUrl = subPost.getMediaVideoUrl();
 
-                twitterName.setText(name);
                 twitterUsername.setText(username);
                 if(content.toString().length() > 150){
                     String contentString = content.toString().subSequence(0, 150) + "...";
@@ -343,9 +322,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 });
             }
 
-            finalVote = post.getUpvoteCount() - post.getDownvoteCount();
-            voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-            commentCountText.setText(String.format(Locale.getDefault(), "%d", post.getCommentCount()));
+            if (comment.getCommentCount() > 0) {
+                String commentCountText = "View " + post.getCommentCount() + " comments";
+                mCommentButton.setText(commentCountText);
+            } else {
+                String commentCountText = "View comments";
+                mCommentButton.setText(commentCountText);
+            }
+            
                 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
@@ -358,17 +342,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
             //     postImage.setLayoutParams(paramsForImage);
             // }
 
-            Vote didVote = post.getDidVote();
-            if(didVote != null){
-                String type = didVote.getType();
-                didVoteType = type;
-                if(type.equals("up")){
-                    mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                }else if(type.equals("down")){
-                    mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                }
-            }
-
             mCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -378,111 +351,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     activity.showCommentsBottomSheetFromPost(post.getId());
                 }
             });
-
-            mCommentLayout.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    mCommentLayout.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                    layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                    activity.showCommentsBottomSheetFromPost(post.getId());
-                }
-            });
-
-            mUpvoteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String accessToken = activity.getAccessToken();
-                    if (accessToken == null) {
-                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                        activity.showGenerateUsernameBottomSheet();
-                        activity.dismissCommentsBottomSheet();
-                        return;
-                    }
-
-                    mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                    mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                    mUpvoteButton.startAnimation(bounceUp);
-
-                    if(didVoteType != null){
-                        if(didVoteType.equals("down")){
-                            finalVote = finalVote + 2;
-                            didVoteType = "up";
-                            mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                        }else if(didVoteType.equals("up")){
-                            finalVote = finalVote - 1;
-                            mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                            didVoteType = null;
-                        }
-                    }else{
-                        finalVote = finalVote + 1;
-                        didVoteType = "up";
-                        mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                    }
-                    voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                post.getId(), "up", "post", accessToken, addVoteCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-            });
-
-            mDownvoteButton.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    String accessToken = activity.getAccessToken();
-                    if (accessToken == null) {
-                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                        imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                        activity.showGenerateUsernameBottomSheet();
-                        activity.dismissCommentsBottomSheet();
-                        return;
-                    }
-
-                    mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                    mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                    mDownvoteButton.startAnimation(bounceDown);
-
-                    if(didVoteType != null){
-                        if(didVoteType.equals("up")){
-                            finalVote = finalVote - 2;
-                            didVoteType = "down";
-                            mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                        }else if(didVoteType.equals("down")){
-                            finalVote = finalVote + 1;
-                            mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                            didVoteType = null;
-                        }
-                    }else{
-                        finalVote = finalVote - 1;
-                        didVoteType = "down";
-                        mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                    }
-                    voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                post.getId(), "down", "post", accessToken, addVoteCallback);
-                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-            });
         }
-
-        private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback=
-            new BrowserExpressAddVoteUtil.AddVoteCallback() {
-                @Override
-                public void addVoteSuccessful() {
-                    mDownvoteButton.setClickable(true);
-                    mUpvoteButton.setClickable(true);
-                }
-
-                @Override
-                public void addVoteFailed(String error) {
-                    mDownvoteButton.setClickable(true);
-                    mUpvoteButton.setClickable(true);
-                }
-            };
     }
 }
