@@ -187,9 +187,6 @@ public class BrowserExpressGetPostsUtil {
                                 JSONObject commentDidVote = comment.optJSONObject("didVote");
                                 JSONObject commentUser = comment.optJSONObject("user");
                                 Vote commentVote = null;
-                                if(commentDidVote != null){
-                                    commentVote = new Vote(commentDidVote.getString("_id"), commentDidVote.getString("type"));
-                                }
 
                                 String pageParent = null;
                                 String commentParent = null;
