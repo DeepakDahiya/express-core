@@ -52,6 +52,7 @@ import android.webkit.WebChromeClient;
 import android.widget.ProgressBar;
 import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
+import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -98,8 +99,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
         VideoView twitterVideo;
         ImageButton twitterPlayButton;
         CardView twitterMediaCard;
-        ImageView xLogo;
-        ImageView instagramLogo;
+        RecyclerView mTopCommentsRecycler;
+        CommentListAdapter mCommentAdapter;
+        List<Comment> mComments;
 
         ImageView postImage;
         CardView cardView;
@@ -130,13 +132,16 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
-            xLogo = (ImageView) itemView.findViewById(R.id.x_logo);
-            instagramLogo = (ImageView) itemView.findViewById(R.id.instagram_logo);
-        
+
+            mComments = new ArrayList<Comment>();
+            mTopCommentsRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_top_comments);
+            mTopCommentsRecycler.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false));
+            mCommentAdapter = new CommentListAdapter(requireContext(), mComments, null, null, null, null, false);
+            mCommentRecycler.setAdapter(mCommentAdapter);
+
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
             publisherNameText = (TextView) itemView.findViewById(R.id.publisher_name);
-            // publishedTimeText = (TextView) itemView.findViewById(R.id.published_time);
             titleText = (TextView) itemView.findViewById(R.id.title);
             contentText = (TextView) itemView.findViewById(R.id.post_content);
             mCommentButton = (Button) itemView.findViewById(R.id.btn_comment);
@@ -164,16 +169,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 String content = subPost.getContent();
                 String profilePicUrl = subPost.getAuthorProfilePicture();
                 Boolean verified = subPost.getAuthorVerified();
-
-                if(postType.equals(INSTAGRAM_TYPE)){
-                    instagramLogo.setVisibility(View.VISIBLE);
-                    xLogo.setVisibility(View.GONE);
-                }
-
-                if(postType.equals(TWITTER_TYPE)){
-                    instagramLogo.setVisibility(View.GONE);
-                    xLogo.setVisibility(View.VISIBLE);
-                }
 
                 String twitterImageUrl = subPost.getMediaImageUrl();
                 String videoUrl = subPost.getMediaVideoUrl();
@@ -333,14 +328,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
-
-            // if(post.getType().toString().equals(INSHORTS_TYPE)){
-            //     ViewGroup.LayoutParams params = postLayout.getLayoutParams();
-            //     ViewGroup.LayoutParams paramsForImage = postImage.getLayoutParams();
-            //     paramsForImage.height = (int)(params.width * 0.57);
-            //     paramsForImage.width = params.width;
-            //     postImage.setLayoutParams(paramsForImage);
-            // }
 
             mCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
