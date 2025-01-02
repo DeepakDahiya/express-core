@@ -111,6 +111,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private int mPerPage = 100;
         private Context context;
         private LinearLayout mActionItemsLayout;
+        private LinearLayout mVoteLayout;
 
         private EditText mMessageEditText;
         private LinearLayout mCommentLayout;
@@ -144,6 +145,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
+
+            mVoteLayout = (LinearLayout) itemView.findViewById(R.id.vote_layout);
             context = itemView.getContext();
         }
 
@@ -184,6 +187,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 mActionItemsLayout.setVisibility(View.VISIBLE);
             }else{
                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT", "FOUND");
+                mActionItemsLayout.setVisibility(View.GONE);
+            }
+
+            // This is used to make the comment work for post top comments
+            if(mMessageEditText.equals(null) && mParentFragment.equals(null) && mTopCommentRecycler.equals(null)){
+                mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 

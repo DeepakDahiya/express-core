@@ -2,7 +2,7 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="oval">
     <size
-        android:width="10dp"
-        android:height="10dp" />
+        android:width="7dp"
+        android:height="7dp" />
     <solid android:color="@color/news_settings_title_color" />
 </shape>

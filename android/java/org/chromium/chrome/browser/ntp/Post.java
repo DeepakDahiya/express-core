@@ -1,6 +1,8 @@
 package org.chromium.chrome.browser.ntp;
 import org.chromium.chrome.browser.browser_express_comments.Vote;
 import org.chromium.chrome.browser.browser_express_comments.Comment;
+import java.util.List;
+import java.util.ArrayList;
 
 public class Post{  
     private String _id;  
@@ -18,7 +20,7 @@ public class Post{
     private Boolean showFull;
     private Vote didVote;
     private SubPost subPost;
-    private Comment[] comments;
+    private List<Comment> comments;
 
     public Post(String _id, String content, String type, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote, SubPost subPost) {  
         this._id = _id;  
@@ -36,6 +38,14 @@ public class Post{
         this.showFull = showFull;
         this.publisherImageUrl = publisherImageUrl;
         this.subPost = subPost;
+    }  
+
+    public List<Comment> getComments() {  
+        return this.comments;  
+    }  
+
+    public void setComments(List<Comment> comments) {  
+        this.comments = comments;  
     }  
 
     public String getId() {  

@@ -103,6 +103,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
         RecyclerView mTopCommentsRecycler;
         CommentListAdapter mCommentAdapter;
         List<Comment> mComments;
+        LinearLayout dotsLayout;
+
+        ImageView dot1;
+        ImageView dot2;
+        ImageView dot3;
 
         ImageView postImage;
         CardView cardView;
@@ -126,6 +131,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
+            dotsLayout = (LinearLayout) itemView.findViewById(R.id.dots_layout);
             twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
@@ -135,6 +141,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
             mTopCommentsRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_top_comments);
+
+            dot1 = (ImageView) itemView.findViewById(R.id.dot1);
+            dot1 = (ImageView) itemView.findViewById(R.id.dot2);
+            dot1 = (ImageView) itemView.findViewById(R.id.dot3);
 
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -158,6 +168,54 @@ public class PostListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
+            List<Comment> comments = post.getComments();
+            int len = comments.size();
+
+            if (len > 0 ) {
+                dotsLayout.setVisibility(View.VISIBLE);
+                mTopCommentsRecycler.setVisibility(View.VISIBLE);
+                mComments.addAll(comments);
+                mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+            }
+
+            if (len == 0){
+                dotsLayout.setVisibility(View.GONE);
+                mTopCommentsRecycler.setVisibility(View.GONE);
+            } else if(len == 1) {
+                dot1.setVisibility(View.VISIBLE);
+                dot1.setImageResource(R.drawable.be_selected_dot);
+                dot2.setVisibility(View.GONE);
+                dot3.setVisibility(View.GONE);
+            } else if(len == 2) {
+                dot1.setVisibility(View.VISIBLE);
+                dot2.setVisibility(View.VISIBLE);
+                dot3.setVisibility(View.GONE);
+
+                dot1.setImageResource(R.drawable.be_selected_dot);
+                dot2.setImageResource(R.drawable.be_dot);
+            } else if(len == 3) {
+                dot1.setVisibility(View.VISIBLE);
+                dot2.setVisibility(View.VISIBLE);
+                dot3.setVisibility(View.VISIBLE);
+
+                dot1.setImageResource(R.drawable.be_selected_dot);
+                dot2.setImageResource(R.drawable.be_dot);
+                dot3.setImageResource(R.drawable.be_dot);
+            }
+
+            mTopCommentsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                    int position = layoutManager.findFirstVisibleItemPosition();
+                    updateDots(position);
+                    dot1.setImageResource(position == 0 ? R.drawable.be_selected_dot : R.drawable.be_dot);
+                    dot2.setImageResource(position == 1 ? R.drawable.be_selected_dot : R.drawable.be_dot);
+                    dot3.setImageResource(position == 2 ? R.drawable.be_selected_dot : R.drawable.be_dot);
+                }
+            });
+            
             myPosition = getBindingAdapterPosition();
 
             String postType = post.getType().toString();

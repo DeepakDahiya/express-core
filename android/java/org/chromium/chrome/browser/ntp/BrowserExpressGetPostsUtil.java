@@ -130,6 +130,7 @@ public class BrowserExpressGetPostsUtil {
                         JSONObject didVote = post.optJSONObject("didVote");
                         JSONObject publisher = post.optJSONObject("publisher");
                         JSONObject tsp = post.optJSONObject("subPost");
+                        JSONArray commentsArray = post.optJSONArray("comments");
                         Vote v = null;
                         if(didVote != null){
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
@@ -160,7 +161,7 @@ public class BrowserExpressGetPostsUtil {
                             );
                         }
 
-                        posts.add(new Post(
+                        Post tempPost = new Post(
                             post.getString("_id"), 
                             post.getString("content"),
                             post.getString("type"),
@@ -175,7 +176,52 @@ public class BrowserExpressGetPostsUtil {
                             post.getBoolean("redirect"),
                             post.getBoolean("showFull"),
                             v,
-                            subPost));
+                            subPost)
+
+                        if(commentsArray != null){
+                            List<Comment> newComments = new ArrayList<Comment>();
+                            for (int j = 0; j < commentsArray.length(); j++) {
+                                JSONObject comment = commentsArray.getJSONObject(j);
+                                JSONObject commentDidVote = comment.optJSONObject("didVote");
+                                JSONObject commentUser = comment.optJSONObject("user");
+                                Vote commentVote = null;
+                                if(commentDidVote != null){
+                                    commentVote = new Vote(commentDidVote.getString("_id"), commentDidVote.getString("type"));
+                                }
+
+                                String pageParent = null;
+                                String commentParent = null;
+                                if(comment.has("pageParent")){
+                                    pageParent = comment.getString("pageParent");
+                                }
+
+                                if(comment.has("commentParent")){
+                                    commentParent = comment.getString("commentParent");
+                                }
+
+                                User commentUserObj = new User(
+                                    commentUser.getString("_id"),
+                                    commentUser.getString("username"),
+                                );
+
+                                Comment tempComment = new Comment(
+                                    comment.getString("_id"),
+                                    comment.getString("content"),
+                                    comment.getInt("upvoteCount"),
+                                    comment.getInt("downvoteCount"),
+                                    comment.getInt("commentCount"),
+                                    pageParent,
+                                    commentParent,
+                                    commentUserObj,
+                                    commentVote
+                                );
+                                newComments.add(tempComment);
+                            }
+
+                            tempPost.setComments(newComments);
+                        }
+
+                        posts.add(tempPost);
                     }
 
                     GetPostsWorkerTask.setPosts(posts);
