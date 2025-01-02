@@ -174,7 +174,6 @@ brave_java_resources = [
   "java/res/drawable-nodpi/instagram_logo.png",
   "java/res/drawable-nodpi/x_logo.png",
   "java/res/drawable-nodpi/play_video.png",
-  "java/res/drawable-nodpi/verified.png",
   "java/res/drawable-nodpi/loading_image.png",
   "java/res/drawable-nodpi/edit_image.png",
   "java/res/drawable-nodpi/btn_toolbar_profile.png",
