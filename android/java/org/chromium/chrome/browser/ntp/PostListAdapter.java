@@ -153,7 +153,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 activity = BraveActivity.getBraveActivity();
                 mComments = new ArrayList<Comment>();
                 mTopCommentsRecycler.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL,false));
-                mCommentAdapter = new CommentListAdapter(activity, mComments, null, null, null, null, false);
+                mCommentAdapter = new CommentListAdapter(activity, mComments, null, null, null, false, false);
                 mTopCommentsRecycler.setAdapter(mCommentAdapter);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
