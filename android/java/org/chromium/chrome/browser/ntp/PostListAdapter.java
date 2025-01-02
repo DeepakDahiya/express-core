@@ -134,11 +134,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
-            mComments = new ArrayList<Comment>();
             mTopCommentsRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_top_comments);
-            mTopCommentsRecycler.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL,false));
-            mCommentAdapter = new CommentListAdapter(requireContext(), mComments, null, null, null, null, false);
-            mCommentRecycler.setAdapter(mCommentAdapter);
 
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -155,6 +151,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
         void bind(Post post) {
             try {
                 activity = BraveActivity.getBraveActivity();
+                mComments = new ArrayList<Comment>();
+                mTopCommentsRecycler.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL,false));
+                mCommentAdapter = new CommentListAdapter(activity, mComments, null, null, null, null, false);
+                mTopCommentsRecycler.setAdapter(mCommentAdapter);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
