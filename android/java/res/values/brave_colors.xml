@@ -377,5 +377,5 @@
     <color name="downvote_stroke_color">#000000</color>
     <color name="upvote_stroke_color">#39B1F6</color>
 
-    <color name="username_color">#00000060</color>
+    <color name="username_color">#777777</color>
 </resources>
