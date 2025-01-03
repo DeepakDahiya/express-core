@@ -7,9 +7,7 @@
     android:layout_height="wrap_content"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:orientation="vertical"
-    app:cardCornerRadius="6dp"
-    app:contentPadding="8sp"
-    android:layout_margin="10sp">
+    android:layout_marginHorizontal="10dp">
 
     <LinearLayout
         android:id="@+id/twitter_post_layout"
@@ -238,10 +236,34 @@
         android:paddingHorizontal="4dp"
         android:textAllCaps="false"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_vertical"
+        android:orientation="horizontal"
+        android:background="@drawable/rounded_edittext">
+        <ImageView
+            android:background="@drawable/comments"
+            android:layout_height="18sp"
+            android:layout_width="18sp"
+            android:layout_gravity="center"
+            android:layout_marginEnd="2sp"
+            android:layout_marginStart="4sp"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+        <TextView
+            android:text="@string/type_your_comment"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/brave_theme_hint_text"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginVertical="2dp"
+        android:layout_marginVertical="4dp"
         android:background="@color/browser_express_divider_color"/>
 
 </LinearLayout>
