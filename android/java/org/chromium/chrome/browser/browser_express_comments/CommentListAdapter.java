@@ -329,7 +329,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
             Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "11");
 
-            if()(mShareButton != null){
+            if(mShareButton != null){
                 mShareButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
