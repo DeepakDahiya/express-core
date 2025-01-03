@@ -375,7 +375,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         if(!NotificationManagerCompat.from(this).areNotificationsEnabled()){
-            this.showNotificationRationale()
+            this.showNotificationRationale();
             // BravePermissionUtils.requestPermission(this);
         }
     }
