@@ -62,7 +62,7 @@
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/notification_continue_button"
-        android:layout_width="96dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
         android:background="@drawable/orange_rounded_button"
