@@ -175,6 +175,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             List<Comment> comments = post.getComments();
             int len = comments.size();
 
+            Log.e("BE_GET_POST", len); 
+
             if (len > 0 ) {
                 dotsLayout.setVisibility(View.VISIBLE);
                 mTopCommentsRecycler.setVisibility(View.VISIBLE);
@@ -182,15 +184,20 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
             }
 
+            Log.e("BE_GET_POST", "11.5"); 
+
             if (len == 0){
+                Log.e("BE_GET_POST", "11.6"); 
                 dotsLayout.setVisibility(View.GONE);
                 mTopCommentsRecycler.setVisibility(View.GONE);
             } else if(len == 1) {
+                Log.e("BE_GET_POST", "11.7"); 
                 dot1.setVisibility(View.VISIBLE);
                 dot1.setImageResource(R.drawable.be_selected_dot);
                 dot2.setVisibility(View.GONE);
                 dot3.setVisibility(View.GONE);
             } else if(len == 2) {
+                Log.e("BE_GET_POST", "11.8"); 
                 dot1.setVisibility(View.VISIBLE);
                 dot2.setVisibility(View.VISIBLE);
                 dot3.setVisibility(View.GONE);
@@ -198,13 +205,18 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 dot1.setImageResource(R.drawable.be_selected_dot);
                 dot2.setImageResource(R.drawable.be_dot);
             } else if(len == 3) {
+                Log.e("BE_GET_POST", "11.9"); 
                 dot1.setVisibility(View.VISIBLE);
                 dot2.setVisibility(View.VISIBLE);
                 dot3.setVisibility(View.VISIBLE);
 
+                Log.e("BE_GET_POST", "11.10"); 
                 dot1.setImageResource(R.drawable.be_selected_dot);
+                Log.e("BE_GET_POST", "11.11"); 
                 dot2.setImageResource(R.drawable.be_dot);
+                Log.e("BE_GET_POST", "11.12"); 
                 dot3.setImageResource(R.drawable.be_dot);
+                Log.e("BE_GET_POST", "11.13"); 
             }
 
             Log.e("BE_GET_POST", "12"); 
@@ -405,7 +417,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
             });
             }catch(Exception ex){
-                Log.e("BE_GET_POST", ex.getMessage()); 
+                Log.e("BE_GET_POST", "Exception occurred", ex);
             }
         }
     }
