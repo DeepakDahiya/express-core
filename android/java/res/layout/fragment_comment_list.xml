@@ -25,7 +25,7 @@
     <org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout
         android:id="@+id/skeleton_shimmer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content">
 
         <LinearLayout
             android:id="@+id/shimmer_items"

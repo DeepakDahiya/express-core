@@ -56,6 +56,7 @@ public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
+    public static final String OPEN_KEYBOARD = "open_keyboard";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
@@ -64,6 +65,7 @@ public class CommentListFragment extends Fragment {
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
+    private Boolean mOpenKeyboard = false;
 
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
@@ -89,6 +91,7 @@ public class CommentListFragment extends Fragment {
         if (getArguments() != null) {
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
+            mOpenKeyboard = getArguments().getBoolean(OPEN_KEYBOARD);
         }
 
         mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
@@ -140,6 +143,10 @@ public class CommentListFragment extends Fragment {
                 ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
             }
             
+            mMessageEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
+
             if(mCommentsFor.equals("post")){
                 BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
                     new BrowserExpressGetCommentsUtil.GetCommentsWorkerTask(
@@ -197,11 +204,12 @@ public class CommentListFragment extends Fragment {
         return view;
     }
 
-    public static CommentListFragment newInstance(String postId, String commentsFor) {
+    public static CommentListFragment newInstance(String postId, String commentsFor, Boolean openKeyboard) {
         CommentListFragment fragment = new CommentListFragment();
         Bundle args = new Bundle();
         args.putString(COMMENTS_FOR, commentsFor);
         args.putString(POST_ID, postId);
+        args.putBoolean(OPEN_KEYBOARD, openKeyboard);
         fragment.setArguments(args);
         return fragment;
     }

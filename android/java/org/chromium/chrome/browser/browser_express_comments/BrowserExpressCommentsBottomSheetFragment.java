@@ -60,11 +60,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
+    public static final String OPEN_KEYBOARD = "open_keyboard";
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
+    private Boolean mOpenKeyboard = false;
     private ProgressBar mCommentProgress;
 
     private boolean isFromMenu;
@@ -89,6 +91,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
+            String tempOpenKeyboard = getArguments().getString(OPEN_KEYBOARD);
+            if (tempOpenKeyboard.equals("true")) {
+                mOpenKeyboard = true;
+            } else {
+                mOpenKeyboard = false;
+            }
         }
     }
 
@@ -97,7 +105,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
-        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor));
+        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
         return view;
     }
 

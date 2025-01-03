@@ -108,6 +108,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         CommentListAdapter mCommentAdapter;
         List<Comment> mComments;
         LinearLayout dotsLayout;
+        LinearLayout editTextLayout;
 
         ImageView dot1;
         ImageView dot2;
@@ -147,6 +148,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
+
+            editTextLayout = (LinearLayout) itemView.findViewById(R.id.edit_text_layout);
 
             mTopCommentsRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_top_comments);
 
@@ -388,7 +391,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId());
+                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
                         }
                     }
                 });
@@ -401,7 +404,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId());
+                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
                         }
                     }
                 });
@@ -414,11 +417,24 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId());
+                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
                         }
                     }
                 });
             }
+
+            editTextLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if(post.getRedirect()){
+                            TabUtils.openUrlInSameTab(post.getUrl().toString());
+                        }else{
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                            layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                        }
+                    }
+                });
 
             if (post.getCommentCount() > 0) {
                 String commentCountText = "View " + post.getCommentCount() + " comments";
@@ -438,7 +454,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mCommentButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                    activity.showCommentsBottomSheetFromPost(post.getId());
+                    activity.showCommentsBottomSheetFromPost(post.getId(), false);
                 }
             });
             }catch(Exception ex){

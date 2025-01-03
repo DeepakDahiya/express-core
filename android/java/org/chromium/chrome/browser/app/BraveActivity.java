@@ -1984,7 +1984,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    public void showCommentsBottomSheetFromPost(String postId) {
+    public void showCommentsBottomSheetFromPost(String postId, Boolean openKeyboard) {
         try {
             if(mBottomSheetCommentsDialog == null){
                 BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
@@ -1993,6 +1993,7 @@ public abstract class BraveActivity extends ChromeActivity
                 Bundle fragmentBundle = new Bundle();
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
+                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
                 bottomSheetDialog.setArguments(fragmentBundle);
                 bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
                 mBottomSheetCommentsDialog = bottomSheetDialog;
@@ -2000,6 +2001,7 @@ public abstract class BraveActivity extends ChromeActivity
                 Bundle fragmentBundle = new Bundle();
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
+                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
                 mBottomSheetCommentsDialog.setArguments(fragmentBundle);
                 mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
             }
