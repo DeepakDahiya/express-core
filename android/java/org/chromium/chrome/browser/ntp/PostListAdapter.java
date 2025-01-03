@@ -175,8 +175,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
             List<Comment> comments = post.getComments();
             int len = comments.size();
 
-            Log.e("BE_GET_POST", len); 
-
             if (len > 0 ) {
                 dotsLayout.setVisibility(View.VISIBLE);
                 mTopCommentsRecycler.setVisibility(View.VISIBLE);
