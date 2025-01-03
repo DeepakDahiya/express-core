@@ -190,11 +190,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                     mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
 
-                    autoScrollHandler.postDelayed(this, 3000);
+                    autoScrollHandler.postDelayed(this, 5000);
                 }
             };
 
-            autoScrollHandler.postDelayed(autoScrollRunnable, 3000);
+            autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
 
             try{
 

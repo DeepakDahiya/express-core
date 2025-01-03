@@ -222,6 +222,7 @@ import android.app.PictureInPictureParams;
 
 import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
 import java.util.ArrayList;
+import org.chromium.chrome.browser.notifications.BravePermissionUtils;
 
 import android.widget.EditText;
 import android.widget.ImageButton;
@@ -371,6 +372,10 @@ public abstract class BraveActivity extends ChromeActivity
             BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
         }else{
             BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
+        }
+
+        if(!NotificationManagerCompat.from(this).areNotificationsEnabled()){
+            BravePermissionUtils.requestPermission(this);
         }
     }
 

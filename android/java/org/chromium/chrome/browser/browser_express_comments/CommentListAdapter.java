@@ -198,11 +198,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);
 
-                usernameText.setTextSize(9);
-                contentText.setTextSize(10);
+                usernameText.setTextSize(10);
+                contentText.setTextSize(11);
                 mReadMoreButton.setVisibility(View.GONE);
 
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(16, 16);
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(this.dpToPx(18), this.dpToPx(18));
 
                 mAvatarImage.setLayoutParams(params);
             }
@@ -438,6 +438,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     }
                 });
             }
+        }
+
+        private int dpToPx(int dp) {
+            float density = getResources().getDisplayMetrics().density;
+            return Math.round(dp * density);
         }
 
         private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback=
