@@ -1338,15 +1338,17 @@ public class BraveNewTabPageLayout
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
+                    Log.e("BE_GET_POST", "9"); 
                     mFeedProgress.setVisibility(View.GONE);
                     int len = mPosts.size();
                     mPosts.addAll(posts);
+                    Log.e("BE_GET_POST", "10"); 
                     mPostAdapter.notifyItemRangeInserted(len-1, posts.size());
                 }
 
                 @Override
                 public void getPostsFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("BE_GET_POST", error);
                 }
             };
 }

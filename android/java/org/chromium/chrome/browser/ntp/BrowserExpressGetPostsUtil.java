@@ -123,10 +123,12 @@ public class BrowserExpressGetPostsUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e("BE_GET_POST", "1");
                 if(responseObject.getBoolean("success")){
                     GetPostsWorkerTask.setGetPostsSuccessStatus(true);
                     JSONArray postsArray = responseObject.getJSONArray("posts");
                     List<Post> posts = new ArrayList<Post>();
+                    Log.e("BE_GET_POST", "2");
                     for (int i = 0; i < postsArray.length(); i++) {
                         JSONObject post = postsArray.getJSONObject(i);
                         JSONObject didVote = post.optJSONObject("didVote");
@@ -162,7 +164,7 @@ public class BrowserExpressGetPostsUtil {
                                 media != null ? media.getInt("width") : 0
                             );
                         }
-
+                        Log.e("BE_GET_POST", "3");
                         Post tempPost = new Post(
                             post.getString("_id"), 
                             post.getString("content"),
@@ -181,8 +183,11 @@ public class BrowserExpressGetPostsUtil {
                             subPost);
 
                         List<Comment> newComments = new ArrayList<Comment>();
+                        Log.e("BE_GET_POST", "4");
                         if(commentsArray != null){
+                            Log.e("BE_GET_POST", "5");
                             for (int j = 0; j < commentsArray.length(); j++) {
+                                Log.e("BE_GET_POST", "6");
                                 JSONObject comment = commentsArray.getJSONObject(j);
                                 JSONObject commentDidVote = comment.optJSONObject("didVote");
                                 JSONObject commentUser = comment.optJSONObject("user");
@@ -214,12 +219,12 @@ public class BrowserExpressGetPostsUtil {
                                 newComments.add(tempComment);
                             }
                         }
-
+                        Log.e("BE_GET_POST", "7"); 
                         tempPost.setComments(newComments);
 
                         posts.add(tempPost);
                     }
-
+                    Log.e("BE_GET_POST", "8"); 
                     GetPostsWorkerTask.setPosts(posts);
                 }else{
                     GetPostsWorkerTask.setGetPostsSuccessStatus(false);

@@ -169,6 +169,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
+            try{
+
+            Log.e("BE_GET_POST", "11"); 
             List<Comment> comments = post.getComments();
             int len = comments.size();
 
@@ -204,6 +207,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 dot3.setImageResource(R.drawable.be_dot);
             }
 
+            Log.e("BE_GET_POST", "12"); 
+
             mTopCommentsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
                 @Override
                 public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -215,6 +220,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     dot3.setImageResource(position == 2 ? R.drawable.be_selected_dot : R.drawable.be_dot);
                 }
             });
+
+            Log.e("BE_GET_POST", "13"); 
             
             myPosition = getBindingAdapterPosition();
 
@@ -397,6 +404,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     activity.showCommentsBottomSheetFromPost(post.getId());
                 }
             });
+            }catch(Exception ex){
+                Log.e("BE_GET_POST", ex.getMessage()); 
+            }
         }
     }
 }
