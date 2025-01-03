@@ -210,7 +210,7 @@ import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.widget.Toast;
 import android.net.Uri;
-
+import org.chromium.chrome.browser.notifications.permissions.BraveNotificationPermissionRationaleDialog;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
