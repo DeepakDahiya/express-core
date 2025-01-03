@@ -198,7 +198,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);
 
-                usernameText.setTextSize(9)
+                usernameText.setTextSize(9);
                 contentText.setTextSize(10);
                 mReadMoreButton.setVisibility(View.GONE);
 
