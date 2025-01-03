@@ -191,10 +191,6 @@
     <color name="bookmark_import_export_dialog_button_color">#AAA8F7</color>
 
     <color name="notification_volume_icon_color">#F0F2FF</color>
-    <color name="notification_bat1_icon_color">#A0A5EB</color>
-    <color name="notification_bat2_icon_color">#FF7654</color>
-    <color name="notification_bat3_icon_color">#A0A5EB</color>
-    <color name="notification_graph_icon_color">#FF7654</color>
     <color name="notification_badge_icon_color">#737ADE</color>
     <color name="notification_download_icon_color">#F0F2FF</color>
     <color name="notification_rationale_dialog_card_bg_color">#17171F</color>
