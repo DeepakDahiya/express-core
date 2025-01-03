@@ -176,10 +176,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
             int len = comments.size();
 
             if (len > 0 ) {
-                // dotsLayout.setVisibility(View.VISIBLE);
-                // mTopCommentsRecycler.setVisibility(View.VISIBLE);
-                // mComments.addAll(comments);
-                // mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+                dotsLayout.setVisibility(View.VISIBLE);
+                mTopCommentsRecycler.setVisibility(View.VISIBLE);
+                mComments.addAll(comments);
+                mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
             }
 
             Log.e("BE_GET_POST", "11.5"); 
