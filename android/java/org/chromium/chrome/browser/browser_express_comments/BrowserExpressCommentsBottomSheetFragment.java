@@ -92,7 +92,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
             String tempOpenKeyboard = getArguments().getString(OPEN_KEYBOARD);
-            if (tempOpenKeyboard.equals("true")) {
+            if (tempOpenKeyboard != null && tempOpenKeyboard.equals("true")) {
                 mOpenKeyboard = true;
             } else {
                 mOpenKeyboard = false;
