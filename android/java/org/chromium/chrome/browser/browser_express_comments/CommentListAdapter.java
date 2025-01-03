@@ -202,7 +202,8 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 contentText.setTextSize(11);
                 mReadMoreButton.setVisibility(View.GONE);
 
-                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(this.dpToPx(18), this.dpToPx(18));
+                float density = activity.getResources().getDisplayMetrics().density;
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Math.round(18 * density), Math.round(18 * density));
 
                 mAvatarImage.setLayoutParams(params);
             }
@@ -438,11 +439,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     }
                 });
             }
-        }
-
-        private int dpToPx(int dp) {
-            float density = getResources().getDisplayMetrics().density;
-            return Math.round(dp * density);
         }
 
         private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback=
