@@ -182,22 +182,22 @@ public class PostListAdapter extends RecyclerView.Adapter {
             LinearSnapHelper snapHelper = new LinearSnapHelper();
             snapHelper.attachToRecyclerView(mTopCommentsRecycler);
 
-            autoScrollHandler = new Handler(Looper.getMainLooper());
-            autoScrollRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    currentPosition++;
-                    if (currentPosition >= mCommentAdapter.getItemCount()) {
-                        currentPosition = 0; // Loop back to the start
-                    }
+            // autoScrollHandler = new Handler(Looper.getMainLooper());
+            // autoScrollRunnable = new Runnable() {
+            //     @Override
+            //     public void run() {
+            //         currentPosition++;
+            //         if (currentPosition >= mCommentAdapter.getItemCount()) {
+            //             currentPosition = 0; // Loop back to the start
+            //         }
 
-                    mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
+            //         mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
 
-                    autoScrollHandler.postDelayed(this, 5000);
-                }
-            };
+            //         autoScrollHandler.postDelayed(this, 5000);
+            //     }
+            // };
 
-            autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
+            // autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
 
             try{
 
