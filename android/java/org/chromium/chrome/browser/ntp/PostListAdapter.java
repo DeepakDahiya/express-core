@@ -55,6 +55,9 @@ import android.webkit.WebResourceRequest;
 import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
 import org.chromium.chrome.browser.browser_express_comments.Comment;
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearSnapHelper;
+import android.os.Handler;
+import android.os.Looper;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -129,6 +132,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private int myPosition;
 
+        private Handler autoScrollHandler;
+        private Runnable autoScrollRunnable;
+        private int currentPosition = 0;
+
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
@@ -168,6 +175,26 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mTopCommentsRecycler.setAdapter(mCommentAdapter);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
+
+            LinearSnapHelper snapHelper = new LinearSnapHelper();
+            snapHelper.attachToRecyclerView(mTopCommentsRecycler);
+
+            autoScrollHandler = new Handler(Looper.getMainLooper());
+            autoScrollRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    currentPosition++;
+                    if (currentPosition >= mCommentAdapter.getItemCount()) {
+                        currentPosition = 0; // Loop back to the start
+                    }
+
+                    mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
+
+                    autoScrollHandler.postDelayed(this, 3000);
+                }
+            };
+
+            autoScrollHandler.postDelayed(autoScrollRunnable, 3000);
 
             try{
 
