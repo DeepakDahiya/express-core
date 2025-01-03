@@ -144,8 +144,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mTopCommentsRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_top_comments);
 
             dot1 = (ImageView) itemView.findViewById(R.id.dot1);
-            dot1 = (ImageView) itemView.findViewById(R.id.dot2);
-            dot1 = (ImageView) itemView.findViewById(R.id.dot3);
+            dot2 = (ImageView) itemView.findViewById(R.id.dot2);
+            dot3 = (ImageView) itemView.findViewById(R.id.dot3);
 
             cardView = (CardView) itemView.findViewById(R.id.card_view);
             postImage = (ImageView) itemView.findViewById(R.id.post_image);
@@ -190,31 +190,31 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mTopCommentsRecycler.setVisibility(View.GONE);
             } else if(len == 1) {
                 Log.e("BE_GET_POST", "11.7"); 
-                // dot1.setVisibility(View.VISIBLE);
-                // dot1.setImageResource(R.drawable.be_selected_dot);
-                // dot2.setVisibility(View.GONE);
-                // dot3.setVisibility(View.GONE);
+                dot1.setVisibility(View.VISIBLE);
+                dot1.setImageResource(R.drawable.be_selected_dot);
+                dot2.setVisibility(View.GONE);
+                dot3.setVisibility(View.GONE);
             } else if(len == 2) {
                 Log.e("BE_GET_POST", "11.8"); 
-                // dot1.setVisibility(View.VISIBLE);
-                // dot2.setVisibility(View.VISIBLE);
-                // dot3.setVisibility(View.GONE);
+                dot1.setVisibility(View.VISIBLE);
+                dot2.setVisibility(View.VISIBLE);
+                dot3.setVisibility(View.GONE);
 
-                // dot1.setImageResource(R.drawable.be_selected_dot);
-                // dot2.setImageResource(R.drawable.be_dot);
+                dot1.setImageResource(R.drawable.be_selected_dot);
+                dot2.setImageResource(R.drawable.be_dot);
             } else if(len == 3) {
                 Log.e("BE_GET_POST", "11.9"); 
-                // dot1.setVisibility(View.VISIBLE);
-                // dot2.setVisibility(View.VISIBLE);
-                // dot3.setVisibility(View.VISIBLE);
+                dot1.setVisibility(View.VISIBLE);
+                dot2.setVisibility(View.VISIBLE);
+                dot3.setVisibility(View.VISIBLE);
 
-                // Log.e("BE_GET_POST", "11.10"); 
-                // dot1.setImageResource(R.drawable.be_selected_dot);
-                // Log.e("BE_GET_POST", "11.11"); 
-                // dot2.setImageResource(R.drawable.be_dot);
-                // Log.e("BE_GET_POST", "11.12"); 
-                // dot3.setImageResource(R.drawable.be_dot);
-                // Log.e("BE_GET_POST", "11.13"); 
+                Log.e("BE_GET_POST", "11.10"); 
+                dot1.setImageResource(R.drawable.be_selected_dot);
+                Log.e("BE_GET_POST", "11.11"); 
+                dot2.setImageResource(R.drawable.be_dot);
+                Log.e("BE_GET_POST", "11.12"); 
+                dot3.setImageResource(R.drawable.be_dot);
+                Log.e("BE_GET_POST", "11.13"); 
             }
 
             Log.e("BE_GET_POST", "12"); 
