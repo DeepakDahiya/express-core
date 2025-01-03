@@ -375,7 +375,8 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         if(!NotificationManagerCompat.from(this).areNotificationsEnabled()){
-            BravePermissionUtils.requestPermission(this);
+            this.showNotificationRationale()
+            // BravePermissionUtils.requestPermission(this);
         }
     }
 
@@ -1886,6 +1887,16 @@ public abstract class BraveActivity extends ChromeActivity
         mWalletModel.getCryptoModel()
                 .getNetworkModel()
                 .mNeedToCreateAccountForNetwork.removeObservers(this);
+    }
+
+    private void showNotificationRationale() {
+        BraveNotificationPermissionRationaleDialog notificationWarningDialog =
+                BraveNotificationPermissionRationaleDialog.newInstance();
+        notificationWarningDialog.setCancelable(false);
+        notificationWarningDialog.show(getSupportFragmentManager(),
+                BraveNotificationWarningDialog.NOTIFICATION_WARNING_DIALOG_TAG);
+        // BraveRateDialogFragment rateDialogFragment = BraveRateDialogFragment.newInstance(false);
+        // rateDialogFragment.show(getSupportFragmentManager(), BraveRateDialogFragment.TAG_FRAGMENT);
     }
 
     private void showBraveRateDialog() {

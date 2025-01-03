@@ -277,13 +277,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             // try {
             //     BraveActivity activity = BraveActivity.getBraveActivity();
             //     String accessToken = activity.getAccessToken();
-            //     JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-            //     ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mProfileButton, null);
                 
-            //     if (accessToken == null) {
-            //         activity.openBrowserExpressLoginSettings();
-            //     } else {
-            //         activity.openBrowserExpressProfileSettings();
+            //     if (accessToken != null) {
+            //         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+            //         ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mProfileButton, null);
             //     }
             // } catch (BraveActivity.BraveActivityNotFoundException e) {
             //     Log.e(TAG, "maybeShowWalletPanel " + e);
