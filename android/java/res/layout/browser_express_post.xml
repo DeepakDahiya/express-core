@@ -104,12 +104,18 @@
                     android:adjustViewBounds="true"
                     android:visibility="gone"
                     android:scaleType="centerCrop"/>
-                <VideoView
+                <com.google.android.exoplayer2.ui.PlayerView
+                    android:id="@+id/twitter_video"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    android:layout_centerInParent="true" />
+                <!-- <VideoView
                     android:id="@+id/twitter_video"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:adjustViewBounds="true"
-                    android:visibility="gone"/>
+                    android:visibility="gone"/> -->
                 <ImageButton
                     android:id="@+id/twitter_play_button"
                     android:layout_width="75sp"
