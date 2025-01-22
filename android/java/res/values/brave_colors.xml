@@ -114,7 +114,7 @@
     <color name="news_time_color">#9CD2D5CF</color>
     <color name="news_promoted_background_color">#495057</color>
     <color name="news_settings_title_color">#212529</color>
-    <color name="news_settings_subtitle_color">#868E96</color>
+    <color name="news_settings_subtitle_color">#4e5861</color>
     <color name="news_settings_divider_color">#E9E9F4</color>
     <color name="news_settings_icon_bg_color">#0D000000</color>
     <color name="news_settings_following_count_color">#D9495057</color>
@@ -367,7 +367,7 @@
     <color name="browser_express_blue_color">#39B1F6</color>
     <color name="browser_express_error_color">#FF0000</color>
     <color name="bg_profile_banner">#C4C4C4</color>
-    <color name="browser_express_grey">#eeeeee</color>
+    <color name="browser_express_grey">#dddddd</color>
     <color name="vote_stroke_color">#333333</color>
     <color name="downvote_stroke_color">#000000</color>
     <color name="upvote_stroke_color">#39B1F6</color>

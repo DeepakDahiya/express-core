@@ -293,7 +293,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     });
                 }else{
                     twitterContent.setText(content.toString());
-                    mReadMoreButton.setVisibility(View.INVISIBLE);
+                    mReadMoreButton.setVisibility(View.GONE);
                 }
                 
 

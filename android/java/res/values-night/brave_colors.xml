@@ -6,6 +6,7 @@
 -->
 
 <resources>
+    <color name="default_bg_color_dark">#202124</color>
     <!-- Theme colors -->
     <!-- Overriding chromium theme colors to brave theme colors -->
     <color name="baseline_primary_90">#5B2A23</color>
@@ -69,7 +70,7 @@
     <color name="news_text_color">@android:color/white</color>
     <color name="news_time_color">#9CD2D5CF</color>
     <color name="news_settings_title_color">#F0F2FF</color>
-    <color name="news_settings_subtitle_color">#C2C4CF</color>
+    <color name="news_settings_subtitle_color">#A4A4A4</color>
     <color name="news_settings_divider_color">#1AFFFFFF</color>
     <color name="news_settings_icon_bg_color">#0DFFFFFF</color>
     <color name="news_settings_following_count_color">#D9F0F2FF</color>
@@ -242,10 +243,10 @@
 
     <color name="leo_reset_text_color">#FF4B6A</color>
 
-    <color name="browser_express_grey">#444444</color>
+    <color name="browser_express_grey">#282c2f</color>
 
     <color name="vote_stroke_color">#EAEAEA</color>
     <color name="downvote_stroke_color">#ffffff</color>
 
-    <color name="username_color">#999999</color>
+    <color name="username_color">#A4A4A4</color>
 </resources>
