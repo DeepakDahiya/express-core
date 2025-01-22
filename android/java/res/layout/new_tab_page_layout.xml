@@ -128,13 +128,6 @@
                 android:visibility="invisible" />
 
             <!-- Spacer for when there is no search provider logo. -->
-            <View
-                android:id="@+id/no_search_logo_spacer"
-                android:layout_width="match_parent"
-                android:layout_height="0dp"
-                android:layout_weight="1"
-                android:visibility="gone" />
-
         </LinearLayout>
 
     <include layout="@layout/ntp_non_disruptive_banner"/>
