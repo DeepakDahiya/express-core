@@ -59,10 +59,6 @@ import androidx.recyclerview.widget.LinearSnapHelper;
 import android.os.Handler;
 import android.os.Looper;
 
-import com.google.android.exoplayer2.ExoPlayer;
-import com.google.android.exoplayer2.MediaItem;
-import com.google.android.exoplayer2.ui.PlayerView;
-
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
     private List<Post> mPostList;
@@ -97,14 +93,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         Post post = (Post) mPostList.get(position);
 
         ((PostHolder) holder).bind(post);
-    }
-
-    @Override
-    public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
-        if (holder instanceof PostHolder) {
-            ((PostHolder) holder).releasePlayer();
-        }
-        super.onViewRecycled(holder);
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
@@ -149,9 +137,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private Runnable autoScrollRunnable;
         private int currentPosition = 0;
 
-        private PlayerView twitterVideoPlayer;
-        private ExoPlayer exoPlayer;
-
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
@@ -160,7 +145,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
-            twitterVideoPlayer = (PlayerView) itemView.findViewById(R.id.twitter_video);
+            twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
@@ -325,14 +310,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 postImage.setVisibility(View.GONE);
 
                 if(videoUrl != null && !"null".equals(videoUrl)){
-                    // Uri uri = Uri.parse(videoUrl);
-                    // twitterVideo.setVideoURI(uri);
+                    Uri uri = Uri.parse(videoUrl);
+                    twitterVideo.setVideoURI(uri);
 
-                    this.initializePlayer(context, videoUrl);
-
-                    // MediaController mediaController = new MediaController(context);
-                    // twitterVideo.setMediaController(mediaController);
-                    // mediaController.setAnchorView(twitterVideo);
+                    MediaController mediaController = new MediaController(context);
+                    twitterVideo.setMediaController(mediaController);
+                    mediaController.setAnchorView(twitterVideo);
 
                     twitterPlayButton.setVisibility(View.VISIBLE);
 
@@ -362,14 +345,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
                                 @Override
                                 public void run() {
                                     int h = twitterImage.getHeight();
-                                    twitterVideoPlayer.getLayoutParams().height = h;
-                                    twitterVideoPlayer.requestLayout();
+                                    twitterVideo.getLayoutParams().height = h;
+                                    twitterVideo.requestLayout();
                                 }
                             });
-                            // twitterVideo.setVisibility(View.VISIBLE);
-                            // twitterVideo.start();
-                            twitterVideoPlayer.setVisibility(View.VISIBLE);
-                            exoPlayer.setPlayWhenReady(true);
+                            twitterVideo.setVisibility(View.VISIBLE);
+                            twitterVideo.start();
                         }
                     });
                 }
@@ -478,21 +459,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
             });
             }catch(Exception ex){
                 Log.e("BE_GET_POST", "Exception occurred", ex);
-            }
-        }
-
-        private void initializePlayer(Context context, String videoUrl) {
-            exoPlayer = new ExoPlayer.Builder(context).build();
-            twitterVideoPlayer.setPlayer(exoPlayer);
-            MediaItem mediaItem = MediaItem.fromUri(videoUrl);
-            exoPlayer.setMediaItem(mediaItem);
-            exoPlayer.prepare();
-        }
-
-        private void releasePlayer() {
-            if (exoPlayer != null) {
-                exoPlayer.release();
-                exoPlayer = null;
             }
         }
     }
