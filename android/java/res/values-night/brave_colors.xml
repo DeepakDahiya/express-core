@@ -6,7 +6,9 @@
 -->
 
 <resources>
-    <color name="default_bg_color_dark">#202124</color>
+    <color name="default_bg_color_dark">#ff0000</color>
+    <color name="sheet_bg_color_baseline">#202124</color>
+
     <!-- Theme colors -->
     <!-- Overriding chromium theme colors to brave theme colors -->
     <color name="baseline_primary_90">#5B2A23</color>
