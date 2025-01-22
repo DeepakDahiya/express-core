@@ -181,7 +181,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             }
 
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
-            voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
+            voteCountText.setText(formatNumberCompact(finalVote));
             if(mIsReplyAdapter == false){
                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT", "NOT_FOUND");
                 mActionItemsLayout.setVisibility(View.VISIBLE);
@@ -455,5 +455,15 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     mUpvoteButton.setClickable(true);
                 }
             };
+
+        public String formatNumberCompact(int number) {
+            if (number >= 1_000_000) {
+                return String.format(Locale.getDefault(), "%dM", number / 1_000_000);
+            } else if (number >= 1_000) {
+                return String.format(Locale.getDefault(), "%dK", number / 1_000);
+            } else {
+                return String.format(Locale.getDefault(), "%d", number);
+            }
+        }
     }
 }

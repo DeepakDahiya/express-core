@@ -16,7 +16,6 @@
         android:layout_height="24sp"
         android:layout_marginEnd="4sp"
         android:scaleType="centerCrop"
-        android:layout_gravity="center"
         android:adjustViewBounds="true"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
     <LinearLayout
@@ -73,6 +72,7 @@
                 android:layout_height="wrap_content"
                 android:background="@drawable/border_bg"
                 android:layout_gravity="center"
+                android:layout_marginStart="4sp"
                 android:visibility="visible"
                 android:orientation="vertical">
                 <ImageButton
@@ -80,7 +80,7 @@
                     android:layout_width="21dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:layout_marginHorizontal="5sp"
+                    android:layout_marginHorizontal="4sp"
                     android:background="@drawable/btn_upvote"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="fitCenter" />
@@ -92,7 +92,6 @@
                     android:textColor="@color/news_settings_title_color"
                     android:layout_gravity="center"
                     android:layout_marginVertical="4sp"
-                    android:layout_marginHorizontal="2sp"
                     android:textSize="11sp"/>
 
                 <ImageButton
@@ -101,7 +100,7 @@
                     android:layout_width="21dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
-                    android:layout_marginHorizontal="5sp"
+                    android:layout_marginHorizontal="4sp"
                     android:background="@drawable/btn_downvote"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:scaleType="fitCenter"/>
