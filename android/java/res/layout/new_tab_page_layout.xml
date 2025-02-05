@@ -178,10 +178,8 @@ found in the LICENSE file.
         android:orientation="vertical"
         android:visibility="gone">
 
-            <!-- Search box -->
             <include layout="@layout/fake_search_box_layout"/>
 
-            <!-- Query tiles -->
             <FrameLayout
                 android:id="@+id/query_tiles"
                 android:layout_width="match_parent"
@@ -189,7 +187,6 @@ found in the LICENSE file.
                 android:layout_marginTop="16dp"
                 android:visibility="gone"/>
 
-            <!-- Single tab card -->
             <ViewStub
                 android:id="@+id/tab_switcher_module_container_stub"
                 android:layout_width="match_parent"
@@ -203,7 +200,6 @@ found in the LICENSE file.
                 android:layout_marginTop="@dimen/search_resumption_module_margin_top"
                 android:layout="@layout/search_resumption_module_layout" />
 
-            <!-- Middle spacer -->
             <View
                 android:id="@+id/ntp_middle_spacer"
                 android:layout_width="0dp"
@@ -212,7 +208,6 @@ found in the LICENSE file.
                 android:layout_weight="0"
                 android:visibility="invisible" />
 
-            <!-- Spacer for when there is no search provider logo. -->
         </LinearLayout>
 
     <include layout="@layout/ntp_non_disruptive_banner"/>
