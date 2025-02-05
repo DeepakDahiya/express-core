@@ -85,16 +85,23 @@
                     android:textAllCaps="false"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-                <ImageButton
+                <Button
                     android:id="@+id/btn_share_image"
-                    style="@style/ToolbarButton"
-                    android:layout_width="18sp"
-                    android:layout_height="18sp"
-                    android:layout_gravity="center"
-                    android:layout_marginHorizontal="5sp"
-                    android:background="@drawable/share"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:scaleType="centerCrop" />
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/brave_news_share"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/username_color"
+                    android:textSize="14sp"
+                    android:fontWeight="700"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:layout_marginStart="8sp"
+                    android:paddingVertical="4sp"
+                    android:paddingHorizontal="0dp"
+                    android:textAllCaps="false"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </LinearLayout>
         </LinearLayout>
         <LinearLayout
@@ -102,7 +109,6 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:background="@drawable/border_bg"
-            android:layout_gravity="center"
             android:layout_marginStart="4sp"
             android:visibility="visible"
             android:orientation="vertical">

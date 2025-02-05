@@ -6,11 +6,14 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
+    <!-- <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        tools:ignore="UseCompoundDrawables">
+        tools:ignore="UseCompoundDrawables"> -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
 
         <ImageView
             android:id="@+id/back_button"
@@ -19,19 +22,19 @@
             android:contentDescription="@null"
             android:gravity="start|center_vertical"
             android:padding="16dp"
-            app:srcCompat="@drawable/ic_back"
-            app:tint="@color/shield_back_button_tint"/>
+            app:srcCompat="@drawable/ic_back"/>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:text="@string/comments"
+            android:layout_centerInParent="true"
+            android:text="@string/replies"
             android:textSize="24sp"
             android:textColor="@color/set_default_text_color"
             android:textStyle="bold"/>
 
-    </LinearLayout>
+    <!-- </LinearLayout> -->
+    </RelativeLayout>
 
     <org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout
         android:id="@+id/skeleton_shimmer"
