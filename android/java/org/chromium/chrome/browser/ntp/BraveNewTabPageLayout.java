@@ -737,7 +737,6 @@ public class BraveNewTabPageLayout
     }
 
     private void initPreferenceObserver() {
-        mNtpAdapter.setTopSitesEnabled(true);
         // mPreferenceObserver = (key) -> {
         //     if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
         //         if (SharedPreferencesManager.getInstance().readBoolean(
