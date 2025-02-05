@@ -258,4 +258,6 @@
     <color name="downvote_stroke_color">#ffffff</color>
 
     <color name="username_color">#A4A4A4</color>
+
+    <color name="content_color">#DCDCDC</color>
 </resources>

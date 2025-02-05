@@ -64,7 +64,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="6dp"
             android:layout_marginBottom="6dp"
-            android:textColor="@color/news_settings_title_color"
+            android:textColor="@color/content_color"
             android:textSize="13sp" />
 
         <Button
@@ -196,39 +196,6 @@
         android:layout_marginHorizontal="15dp"
         android:layout_weight="1"
         android:layout_height="0dp"/>
-
-    <LinearLayout
-        android:id="@+id/dots_layout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginHorizontal="15dp"
-        android:gravity="center"
-        android:visibility="gone">
-
-        <ImageView
-            android:id="@+id/dot1"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/be_dot"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-        <ImageView
-            android:id="@+id/dot2"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/be_selected_dot"
-            android:layout_marginStart="8dp"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-        <ImageView
-            android:id="@+id/dot3"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:src="@drawable/be_dot"
-            android:layout_marginStart="8dp"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-    </LinearLayout>
 
     <Button
         android:id="@+id/btn_comment"

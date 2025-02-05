@@ -723,8 +723,6 @@ brave_java_resources = [
   "java/res/drawable/rounded_wallet_edittext.xml",
   "java/res/drawable/rounded_white_holo_bg.xml",
   "java/res/drawable/selected_dot.xml",
-  "java/res/drawable/be_dot.xml",
-  "java/res/drawable/be_selected_dot.xml",
   "java/res/drawable/selected_indicator.xml",
   "java/res/drawable/send_contribution_button_background.xml",
   "java/res/drawable/set_default_rounded_button_disabled.xml",
