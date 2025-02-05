@@ -133,4 +133,4 @@
     <include layout="@layout/ntp_non_disruptive_banner"/>
     <include layout="@layout/bre_bottom_banner"/>
 
-</org.chromium.chrome.browser.ntp.BraveNewTabPageLayout>
+</org.chromium.chrome.browser.ntp.NewTabPageLayout>
