@@ -107,7 +107,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         RecyclerView mTopCommentsRecycler;
         CommentListAdapter mCommentAdapter;
         List<Comment> mComments;
-        LinearLayout dotsLayout;
         LinearLayout editTextLayout;
 
         ImageView postImage;
@@ -136,7 +135,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
-            dotsLayout = (LinearLayout) itemView.findViewById(R.id.dots_layout);
             twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
@@ -198,7 +196,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
             int len = comments.size();
 
             if (len > 0 ) {
-                dotsLayout.setVisibility(View.VISIBLE);
                 mTopCommentsRecycler.setVisibility(View.VISIBLE);
                 mComments.addAll(comments);
                 mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
@@ -208,7 +205,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             if (len == 0){
                 Log.e("BE_GET_POST", "11.6"); 
-                dotsLayout.setVisibility(View.GONE);
                 mTopCommentsRecycler.setVisibility(View.GONE);
             }
 
