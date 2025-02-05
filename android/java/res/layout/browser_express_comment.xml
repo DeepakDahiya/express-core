@@ -19,129 +19,121 @@
         android:adjustViewBounds="true"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:padding="4sp"
-        android:orientation="vertical">
-
+        android:orientation="horizontal">
         <LinearLayout
-            android:baselineAligned="false"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-                <TextView
-                    android:id="@+id/username"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textColor="@color/username_color"
-                    android:textStyle="bold"
-                    android:textSize="13sp"/>
-                <TextView
-                    android:id="@+id/comment_content"
-                    android:layout_width="wrap_content"
-                    android:textColor="@color/content_color"
-                    android:layout_height="wrap_content"
-                    android:layout_marginVertical="4sp"
-                    android:textSize="14sp" />
-                <Button
-                    android:id="@+id/btn_read_more_comment"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/be_read_more"
-                    android:background="@android:color/transparent"
-                    style="?android:attr/borderlessButtonStyle"
-                    android:textColor="@color/set_default_text_color"
-                    android:textSize="11sp"
-                    android:minWidth="0dp"
-                    android:minHeight="0dp"
-                    android:paddingVertical="0sp"
-                    android:paddingHorizontal="0dp"
-                    android:textAllCaps="false"
-                    android:visibility="gone"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-                <LinearLayout
-                    android:id="@+id/action_items"
-                    android:baselineAligned="false"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:visibility="visible"
-                    android:layout_marginTop="10sp"
-                    android:orientation="horizontal">
-
-                    <Button
-                        android:id="@+id/btn_reply"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/be_reply"
-                        android:background="@android:color/transparent"
-                        style="?android:attr/borderlessButtonStyle"
-                        android:textColor="@color/username_color"
-                        android:textSize="14sp"
-                        android:fontWeight="700"
-                        android:minWidth="0dp"
-                        android:minHeight="0dp"
-                        android:paddingVertical="4sp"
-                        android:paddingHorizontal="0dp"
-                        android:textAllCaps="false"
-                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-                    <ImageButton
-                        android:id="@+id/btn_share_image"
-                        style="@style/ToolbarButton"
-                        android:layout_width="18sp"
-                        android:layout_height="18sp"
-                        android:layout_gravity="center"
-                        android:layout_marginHorizontal="5sp"
-                        android:background="@drawable/share"
-                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                        android:scaleType="centerCrop" />
-                </LinearLayout>
-            </LinearLayout>
-            <LinearLayout
-                android:id="@+id/vote_layout"
+            android:layout_weight="1"
+            android:orientation="vertical">
+            <TextView
+                android:id="@+id/username"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/border_bg"
-                android:layout_gravity="center"
-                android:layout_marginStart="4sp"
+                android:textColor="@color/username_color"
+                android:textStyle="bold"
+                android:textSize="13sp"/>
+            <TextView
+                android:id="@+id/comment_content"
+                android:layout_width="wrap_content"
+                android:textColor="@color/content_color"
+                android:layout_height="wrap_content"
+                android:layout_marginVertical="4sp"
+                android:textSize="14sp" />
+            <Button
+                android:id="@+id/btn_read_more_comment"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/be_read_more"
+                android:background="@android:color/transparent"
+                style="?android:attr/borderlessButtonStyle"
+                android:textColor="@color/set_default_text_color"
+                android:textSize="11sp"
+                android:minWidth="0dp"
+                android:minHeight="0dp"
+                android:paddingVertical="0sp"
+                android:paddingHorizontal="0dp"
+                android:textAllCaps="false"
+                android:visibility="gone"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            <LinearLayout
+                android:id="@+id/action_items"
+                android:baselineAligned="false"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
                 android:visibility="visible"
-                android:orientation="vertical">
-                <ImageButton
-                    android:id="@+id/btn_upvote"
-                    android:layout_width="21dp"
-                    android:layout_height="24dp"
-                    android:layout_gravity="center"
-                    android:layout_marginHorizontal="4sp"
-                    android:background="@drawable/btn_upvote"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:scaleType="fitCenter" />
+                android:layout_marginTop="10sp"
+                android:orientation="horizontal">
 
-                <TextView
-                    android:id="@+id/vote_count"
+                <Button
+                    android:id="@+id/btn_reply"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:textColor="@color/news_settings_title_color"
-                    android:layout_gravity="center"
-                    android:layout_marginVertical="4sp"
-                    android:textSize="11sp"/>
+                    android:text="@string/be_reply"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textColor="@color/username_color"
+                    android:textSize="14sp"
+                    android:fontWeight="700"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="4sp"
+                    android:paddingHorizontal="0dp"
+                    android:textAllCaps="false"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
                 <ImageButton
-                    android:id="@+id/btn_downvote"
+                    android:id="@+id/btn_share_image"
                     style="@style/ToolbarButton"
-                    android:layout_width="21dp"
-                    android:layout_height="24dp"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
                     android:layout_gravity="center"
-                    android:layout_marginHorizontal="4sp"
-                    android:background="@drawable/btn_downvote"
+                    android:layout_marginHorizontal="5sp"
+                    android:background="@drawable/share"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:scaleType="fitCenter"/>
+                    android:scaleType="centerCrop" />
             </LinearLayout>
+        </LinearLayout>
+        <LinearLayout
+            android:id="@+id/vote_layout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:background="@drawable/border_bg"
+            android:layout_gravity="center"
+            android:layout_marginStart="4sp"
+            android:visibility="visible"
+            android:orientation="vertical">
+            <ImageButton
+                android:id="@+id/btn_upvote"
+                android:layout_width="21dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="4sp"
+                android:background="@drawable/btn_upvote"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                android:scaleType="fitCenter" />
+
+            <TextView
+                android:id="@+id/vote_count"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="@color/news_settings_title_color"
+                android:layout_gravity="center"
+                android:layout_marginVertical="4sp"
+                android:textSize="11sp"/>
+
+            <ImageButton
+                android:id="@+id/btn_downvote"
+                style="@style/ToolbarButton"
+                android:layout_width="21dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:layout_marginHorizontal="4sp"
+                android:background="@drawable/btn_downvote"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                android:scaleType="fitCenter"/>
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
