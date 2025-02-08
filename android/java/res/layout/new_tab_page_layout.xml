@@ -15,10 +15,22 @@
     android:paddingTop="@dimen/toolbar_height_no_shadow"
     android:visibility="visible" >
 
+    <TextView
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="@string/browser_express_name"
+        android:layout_gravity="center_horizontal"
+        android:layout_weight="1"
+        android:textColor="@color/content_color"
+        android:textStyle="bold"
+        android:textSize="40sp"/>
+
     <FrameLayout
         android:id="@+id/logo_holder"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
+
+        <include layout="@layout/logo_view_layout"/>
 
         <ViewStub
             android:id="@+id/cryptid_holder"
