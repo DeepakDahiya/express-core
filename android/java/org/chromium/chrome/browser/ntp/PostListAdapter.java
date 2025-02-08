@@ -131,6 +131,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private Handler autoScrollHandler;
         private Runnable autoScrollRunnable;
         private int currentPosition = 0;
+        private boolean isAutoScrolling = false;
 
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
@@ -157,6 +158,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mReadMoreButton2 = (Button) itemView.findViewById(R.id.btn_read_more_post2);
             context = itemView.getContext();
             mTopPostRecycler = topPostRecycler;
+
+            autoScrollHandler = new Handler(Looper.getMainLooper());
         }
 
         void bind(Post post) {
@@ -169,25 +172,28 @@ public class PostListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
-            // LinearSnapHelper snapHelper = new LinearSnapHelper();
-            // snapHelper.attachToRecyclerView(mTopCommentsRecycler);
+            stopAutoScroll();
 
-            autoScrollHandler = new Handler(Looper.getMainLooper());
-            autoScrollRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    currentPosition++;
-                    if (currentPosition >= mCommentAdapter.getItemCount()) {
-                        currentPosition = 0; // Loop back to the start
+            if (post.getComments() != null && post.getComments().size() > 0) {
+                setupAutoScroll();
+            }
+
+            itemView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
+                    @Override
+                    public void onViewAttachedToWindow(View v) {
+                        if (mComments.size() > 0 && !isAutoScrolling) {
+                            setupAutoScroll();
+                        }
                     }
 
-                    mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
+                    @Override
+                    public void onViewDetachedFromWindow(View v) {
+                        stopAutoScroll();
+                    }
+                });
 
-                    autoScrollHandler.postDelayed(this, 5000);
-                }
-            };
-
-            autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
+            // LinearSnapHelper snapHelper = new LinearSnapHelper();
+            // snapHelper.attachToRecyclerView(mTopCommentsRecycler);
 
             try{
 
@@ -417,7 +423,49 @@ public class PostListAdapter extends RecyclerView.Adapter {
             });
             }catch(Exception ex){
                 Log.e("BE_GET_POST", "Exception occurred", ex);
+                stopAutoScroll();
             }
+        }
+
+        private void setupAutoScroll() {
+            if (isAutoScrolling) return;
+            
+            isAutoScrolling = true;
+            currentPosition = 0;
+            
+            autoScrollRunnable = new Runnable() {
+                @Override
+                public void run() {
+                    if (!isAutoScrolling) return;
+                    
+                    if (mCommentAdapter != null && mCommentAdapter.getItemCount() > 0) {
+                        currentPosition++;
+                        if (currentPosition >= mCommentAdapter.getItemCount()) {
+                            currentPosition = 0;
+                        }
+                        
+                        try {
+                            mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
+                        } catch (Exception e) {
+                            Log.e("BE_GET_POST", "Error during auto-scroll", e);
+                            stopAutoScroll();
+                            return;
+                        }
+                    }
+                    
+                    autoScrollHandler.postDelayed(this, 5000);
+                }
+            };
+            
+            autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
+        }
+
+        private void stopAutoScroll() {
+            isAutoScrolling = false;
+            if (autoScrollHandler != null && autoScrollRunnable != null) {
+                autoScrollHandler.removeCallbacks(autoScrollRunnable);
+            }
+            currentPosition = 0;
         }
     }
 }
