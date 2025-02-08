@@ -131,7 +131,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="2dp"
                         android:layout_gravity="bottom"
-                        android:progressTint="@color/white"
+                        android:progressTint="@color/browser_express_orange_color"
                         android:background="@android:color/transparent"/>
 
                 </FrameLayout>
