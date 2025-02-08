@@ -30,9 +30,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
-        <include layout="@layout/logo_view_layout"/>
-
-        <!-- <ViewStub
+        <ViewStub
             android:id="@+id/cryptid_holder"
             android:layout="@layout/new_tab_page_cryptid_holder"
             android:layout_width="@dimen/cryptid_width_in_logo_wrapper"
@@ -47,7 +45,7 @@
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
             android:layout_marginTop="@dimen/ntp_logo_margin_top"
-            android:layout_marginBottom="23dp" /> -->
+            android:layout_marginBottom="23dp" />
 
     </FrameLayout>
 
