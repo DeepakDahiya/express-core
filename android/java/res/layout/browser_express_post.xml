@@ -105,6 +105,13 @@
                     android:adjustViewBounds="true"
                     android:visibility="gone"
                     android:scaleType="centerCrop"/>
+                <androidx.media3.ui.PlayerView
+                    android:id="@+id/twitter_video2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone"
+                    app:use_controller="false"
+                    app:resize_mode="fit"/>
                 <VideoView
                     android:id="@+id/twitter_video"
                     android:layout_width="match_parent"
