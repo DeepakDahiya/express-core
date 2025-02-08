@@ -335,19 +335,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
 
-                    twitterVideo.setOnTouchListener(new View.OnTouchListener() {
-                        @Override
-                        public boolean onTouch(View v, MotionEvent event) {
-                            Log.d("VideoPlayer", "Touch event: " + event.getAction());
-                            if (event.getAction() == MotionEvent.ACTION_UP) {
-                                Log.d("VideoPlayer", "Video view clicked");
-                                togglePlayPause();
-                                return true;
-                            }
-                            return false;
-                        }
-                    });
-
                     twitterImage.post(new Runnable() {
                         @Override
                         public void run() {
