@@ -98,19 +98,17 @@
                 android:layout_height="wrap_content">
                 <ImageView
                     android:id="@+id/twitter_image"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:src="@drawable/loading_image"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:adjustViewBounds="true"
                     android:visibility="gone"
-                    android:scaleType="fitCenter"/>
+                    android:scaleType="centerCrop"/>
                 <com.google.android.exoplayer2.ui.StyledPlayerView
                     android:id="@+id/twitter_video"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:visibility="gone"
                     app:use_controller="false"
                     app:resize_mode="fit"/>
