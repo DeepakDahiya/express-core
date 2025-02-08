@@ -123,6 +123,7 @@
                         android:layout_height="64dp"
                         android:layout_gravity="center"
                         android:visibility="gone"
+                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                         android:alpha="0.8"/>
 
                     <ProgressBar

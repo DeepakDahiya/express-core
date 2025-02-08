@@ -185,8 +185,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 public boolean onSingleTapConfirmed(MotionEvent e) {
                     if (player != null) {
                         togglePlayPause();
+                        return true;
                     }
-                    return true;
+                    return false;
                 }
             });
         }
@@ -321,11 +322,24 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     player.prepare();
 
                     twitterPlayButton.setVisibility(View.VISIBLE);
+                    
+                    twitterVideo.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            if (player != null) {
+                                togglePlayPause();
+                            }
+                        }
+                    });
 
                     twitterVideo.setOnTouchListener(new View.OnTouchListener() {
                         @Override
                         public boolean onTouch(View v, MotionEvent event) {
-                            return gestureDetector.onTouchEvent(event);
+                            boolean handled = gestureDetector.onTouchEvent(event);
+                            if (handled) {
+                                v.performClick(); // Ensure accessibility events are fired
+                            }
+                            return handled;
                         }
                     });
 
@@ -502,7 +516,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 
                 // Show and fade out play/pause icon
                 playPauseIcon.setImageResource(newPlayWhenReady ? 
-                    R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
+                    R.drawable.ic_play_circle2 : R.drawable.ic_pause_circle2);
                 playPauseIcon.setVisibility(View.VISIBLE);
                 playPauseIcon.animate()
                     .alpha(0f)
@@ -557,7 +571,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private void updatePlayPauseIcon(boolean isPlaying) {
             playPauseIcon.setImageResource(isPlaying ? 
-                R.drawable.ic_pause_circle : R.drawable.ic_play_circle);
+                R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
         }
 
         private void releasePlayer() {
