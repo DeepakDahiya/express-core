@@ -282,7 +282,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 postImage.setVisibility(View.GONE);
 
                 if(videoUrl != null && !"null".equals(videoUrl)){
-                    releasePlayer()
+                    releasePlayer();
                     player = new ExoPlayer.Builder(context).build();
 
                     twitterVideo.setPlayer(player);
