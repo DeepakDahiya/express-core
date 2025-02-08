@@ -112,7 +112,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView twitterContent;
         ImageView twitterImage;
         // VideoView twitterVideo;
-        ImageButton twitterPlayButton;
         CardView twitterMediaCard;
         RecyclerView mTopCommentsRecycler;
         CommentListAdapter mCommentAdapter;
@@ -158,7 +157,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
             twitterVideo = (StyledPlayerView) itemView.findViewById(R.id.twitter_video);
-            twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
             playPauseIcon = (ImageView) itemView.findViewById(R.id.play_pause_icon);
@@ -321,8 +319,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     // Prepare player
                     player.prepare();
 
-                    twitterPlayButton.setVisibility(View.VISIBLE);
-                    
+                    playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
+                    playPauseIcon.setVisibility(View.VISIBLE);
+
                     twitterVideo.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -381,23 +380,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     //         twitterVideo.start();
                     //     }
                     // });
-
-                    twitterPlayButton.setOnClickListener(new View.OnClickListener() {
-                        @Override
-                        public void onClick(View v) {
-                            twitterPlayButton.setVisibility(View.GONE);
-                            twitterImage.post(new Runnable() {
-                                @Override
-                                public void run() {
-                                    int h = twitterImage.getHeight();
-                                    twitterVideo.getLayoutParams().height = h;
-                                    twitterVideo.requestLayout();
-                                }
-                            });
-                            twitterVideo.setVisibility(View.VISIBLE);
-                            player.setPlayWhenReady(true);
-                        }
-                    });
                 }
             } else {
                 twitterPostLayout.setVisibility(View.GONE);
@@ -514,9 +496,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 boolean newPlayWhenReady = !player.getPlayWhenReady();
                 player.setPlayWhenReady(newPlayWhenReady);
                 
-                // Show and fade out play/pause icon
                 playPauseIcon.setImageResource(newPlayWhenReady ? 
-                    R.drawable.ic_play_circle2 : R.drawable.ic_pause_circle2);
+                    R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
                 playPauseIcon.setVisibility(View.VISIBLE);
                 playPauseIcon.animate()
                     .alpha(0f)
@@ -525,8 +506,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     .withEndAction(new Runnable() {
                         @Override
                         public void run() {
-                            playPauseIcon.setVisibility(View.GONE);
-                            playPauseIcon.setAlpha(1f);
+                            if (!player.getPlayWhenReady()) {
+                                // Keep icon visible if video is paused
+                                playPauseIcon.setVisibility(View.VISIBLE);
+                                playPauseIcon.setAlpha(1f);
+                            } else {
+                                playPauseIcon.setVisibility(View.GONE);
+                                playPauseIcon.setAlpha(1f);
+                            }
                         }
                     })
                     .start();
