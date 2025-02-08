@@ -63,6 +63,11 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
 import com.google.android.exoplayer2.util.Util;
+import android.view.GestureDetector;
+import android.view.MotionEvent;
+import android.widget.ProgressBar;
+import android.animation.ValueAnimator;
+import android.view.animation.LinearInterpolator;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -116,6 +121,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         StyledPlayerView twitterVideo;
         ExoPlayer player;
+        ImageView playPauseIcon;
+        ProgressBar videoProgressBar;
+        ValueAnimator progressAnimator;
+        GestureDetector gestureDetector;
 
         ImageView postImage;
         CardView cardView;
@@ -152,6 +161,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
+            playPauseIcon = (ImageView) itemView.findViewById(R.id.play_pause_icon);
+            videoProgressBar = (ProgressBar) itemView.findViewById(R.id.video_progress);
+
             editTextLayout = (LinearLayout) itemView.findViewById(R.id.edit_text_layout);
 
             mTopCommentsRecycler = (RecyclerView) itemView.findViewById(R.id.recycler_top_comments);
@@ -168,6 +180,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mTopPostRecycler = topPostRecycler;
 
             autoScrollHandler = new Handler(Looper.getMainLooper());
+            gestureDetector = new GestureDetector(context, new GestureDetector.SimpleOnGestureListener() {
+                @Override
+                public boolean onSingleTapConfirmed(MotionEvent e) {
+                    if (player != null) {
+                        togglePlayPause();
+                    }
+                    return true;
+                }
+            });
         }
 
         void bind(Post post) {
@@ -293,13 +314,20 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     player.setMediaItem(mediaItem);
                     
                     // Set player properties
-                    player.setRepeatMode(Player.REPEAT_MODE_OFF);
-                    player.setPlayWhenReady(false); // Don't auto-play
-                    
+                    player.setRepeatMode(Player.REPEAT_MODE_ALL);
+                    player.setPlayWhenReady(false);
+
                     // Prepare player
                     player.prepare();
 
                     twitterPlayButton.setVisibility(View.VISIBLE);
+
+                    twitterVideo.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            return gestureDetector.onTouchEvent(event);
+                        }
+                    });
 
                     twitterImage.post(new Runnable() {
                         @Override
@@ -316,13 +344,17 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             if (state == Player.STATE_READY) {
                                 twitterImage.setVisibility(View.GONE);
                                 twitterVideo.setVisibility(View.VISIBLE);
+                                setupProgressBar();
                             }
                         }
                         
                         @Override
                         public void onIsPlayingChanged(boolean isPlaying) {
+                            updatePlayPauseIcon(isPlaying);
                             if (isPlaying) {
-                                twitterPlayButton.setVisibility(View.GONE);
+                                startProgressAnimation();
+                            } else {
+                                pauseProgressAnimation();
                             }
                         }
                     });
@@ -463,7 +495,76 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }
         }
 
+        private void togglePlayPause() {
+            if (player != null) {
+                boolean newPlayWhenReady = !player.getPlayWhenReady();
+                player.setPlayWhenReady(newPlayWhenReady);
+                
+                // Show and fade out play/pause icon
+                playPauseIcon.setImageResource(newPlayWhenReady ? 
+                    R.drawable.ic_play_circle : R.drawable.ic_pause_circle);
+                playPauseIcon.setVisibility(View.VISIBLE);
+                playPauseIcon.animate()
+                    .alpha(0f)
+                    .setDuration(500)
+                    .setStartDelay(500)
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            playPauseIcon.setVisibility(View.GONE);
+                            playPauseIcon.setAlpha(1f);
+                        }
+                    })
+                    .start();
+            }
+        }
+
+        private void setupProgressBar() {
+            if (player != null) {
+                videoProgressBar.setMax(1000); // Use 1000 for smoother progress
+                videoProgressBar.setProgress(0);
+            }
+        }
+
+        private void startProgressAnimation() {
+            if (progressAnimator != null) {
+                progressAnimator.cancel();
+            }
+
+            long duration = player.getDuration();
+            long currentPosition = player.getCurrentPosition();
+            
+            progressAnimator = ValueAnimator.ofInt((int)(currentPosition * 1000 / duration), 1000);
+            progressAnimator.setDuration(duration - currentPosition);
+            progressAnimator.setInterpolator(new LinearInterpolator());
+            progressAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    if (videoProgressBar != null) {
+                        int progress = (int) animation.getAnimatedValue();
+                        videoProgressBar.setProgress(progress);
+                    }
+                }
+            });
+            progressAnimator.start();
+        }
+
+        private void pauseProgressAnimation() {
+            if (progressAnimator != null) {
+                progressAnimator.pause();
+            }
+        }
+
+        private void updatePlayPauseIcon(boolean isPlaying) {
+            playPauseIcon.setImageResource(isPlaying ? 
+                R.drawable.ic_pause_circle : R.drawable.ic_play_circle);
+        }
+
         private void releasePlayer() {
+            if (progressAnimator != null) {
+                progressAnimator.cancel();
+                progressAnimator = null;
+            }
             if (player != null) {
                 player.release();
                 player = null;
