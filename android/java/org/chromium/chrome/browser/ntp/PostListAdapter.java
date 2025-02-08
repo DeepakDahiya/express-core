@@ -205,6 +205,10 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     @Override
                     public void onViewDetachedFromWindow(View v) {
                         stopAutoScroll();
+                        if (player != null && player.isPlaying()) {
+                            player.pause();
+                            updatePlayPauseUI(false);
+                        }
                     }
                 });
 
