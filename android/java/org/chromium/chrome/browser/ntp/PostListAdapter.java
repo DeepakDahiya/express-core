@@ -310,6 +310,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
                     playPauseIcon.setVisibility(View.VISIBLE);
 
+                    twitterVideo.setClickable(true);
+                    twitterVideo.setFocusable(true);
+
                     View.OnClickListener videoClickListener = new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -471,58 +474,41 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private void togglePlayPause() {
             if (player != null) {
-                boolean newPlayWhenReady = !player.getPlayWhenReady();
-                player.setPlayWhenReady(newPlayWhenReady);
-                
-                // Show play/pause icon
-                updatePlayPauseIcon(!newPlayWhenReady);  // Inverse because we're showing the next action
-                playPauseIcon.setVisibility(View.VISIBLE);
-                
-                if (newPlayWhenReady) {
-                    // If playing, fade out the icon
-                    playPauseIcon.animate()
-                        .alpha(0f)
-                        .setDuration(500)
-                        .setStartDelay(500)
-                        .withEndAction(new Runnable() {
-                            @Override
-                            public void run() {
-                                playPauseIcon.setVisibility(View.GONE);
-                                playPauseIcon.setAlpha(1f);
-                            }
-                        })
-                        .start();
-                } else {
-                    // If pausing, keep icon visible
-                    playPauseIcon.setAlpha(1f);
-                }
+                boolean isCurrentlyPlaying = player.isPlaying();
+                player.setPlayWhenReady(!isCurrentlyPlaying);
+                updatePlayPauseUI(!isCurrentlyPlaying);
             }
-            // if (player != null) {
-            //     boolean newPlayWhenReady = !player.getPlayWhenReady();
-            //     player.setPlayWhenReady(newPlayWhenReady);
+        }
+        
+        private void updatePlayPauseUI(boolean isPlaying) {
+            if (isPlaying) {
+                // Show pause icon briefly when video starts playing
+                playPauseIcon.setImageResource(R.drawable.ic_pause_circle2);
+                playPauseIcon.setVisibility(View.VISIBLE);
+                playPauseIcon.setAlpha(1f);
                 
-            //     playPauseIcon.setImageResource(newPlayWhenReady ? 
-            //         R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
-            //     playPauseIcon.setVisibility(View.VISIBLE);
-            //     playPauseIcon.animate()
-            //         .alpha(0f)
-            //         .setDuration(500)
-            //         .setStartDelay(500)
-            //         .withEndAction(new Runnable() {
-            //             @Override
-            //             public void run() {
-            //                 if (!player.getPlayWhenReady()) {
-            //                     // Keep icon visible if video is paused
-            //                     playPauseIcon.setVisibility(View.VISIBLE);
-            //                     playPauseIcon.setAlpha(1f);
-            //                 } else {
-            //                     playPauseIcon.setVisibility(View.GONE);
-            //                     playPauseIcon.setAlpha(1f);
-            //                 }
-            //             }
-            //         })
-            //         .start();
-            // }
+                // Fade out after 2 seconds when playing
+                playPauseIcon.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .setStartDelay(2000) // Show for 2 seconds before fading
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (player != null && player.isPlaying()) {
+                                playPauseIcon.setVisibility(View.GONE);
+                            }
+                            playPauseIcon.setAlpha(1f);
+                        }
+                    })
+                    .start();
+            } else {
+                // Show play icon and keep it visible when paused
+                playPauseIcon.animate().cancel(); // Cancel any ongoing animation
+                playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
+                playPauseIcon.setVisibility(View.VISIBLE);
+                playPauseIcon.setAlpha(1f);
+            }
         }
 
         private void setupProgressBar() {
@@ -574,6 +560,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
             if (player != null) {
                 player.release();
                 player = null;
+            }
+            if (playPauseIcon != null) {
+                playPauseIcon.animate().cancel();
             }
         }
 
