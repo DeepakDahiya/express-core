@@ -585,6 +585,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
         // Make sure to release the player when the view is recycled
         public void onViewRecycled() {
             releasePlayer();
+
+            if (twitterImage != null) {
+                Glide.with(context).clear(twitterImage);
+                twitterImage.setImageDrawable(null);
+            }
+            if (twitterProfilePicture != null) {
+                Glide.with(context).clear(twitterProfilePicture);
+                twitterProfilePicture.setImageDrawable(null);
+            }
         }
 
         // Make sure to release the player when the view is detached
