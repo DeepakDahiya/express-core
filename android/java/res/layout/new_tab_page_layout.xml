@@ -15,7 +15,7 @@
     android:paddingTop="@dimen/toolbar_height_no_shadow"
     android:visibility="visible" >
 
-    <TextView
+    <!-- <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/browser_express_name"
@@ -24,7 +24,7 @@
         android:textColor="@color/content_color"
         android:layout_marginVertical="16dp"
         android:textStyle="bold"
-        android:textSize="40sp"/>
+        android:textSize="40sp"/> -->
 
     <FrameLayout
         android:id="@+id/logo_holder"
@@ -63,7 +63,6 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="12dp"
-        android:visibility="gone"
         android:gravity="center_vertical">
         <TextView
             android:layout_width="0dp"
@@ -93,7 +92,6 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recycler_posts"
         android:layout_width="match_parent"
-        android:visibility="gone"
         android:layout_height="match_parent"
         android:layout_marginTop="44sp"
         android:overScrollMode="never" />
