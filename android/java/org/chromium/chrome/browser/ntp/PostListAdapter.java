@@ -58,6 +58,11 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearSnapHelper;
 import android.os.Handler;
 import android.os.Looper;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.exoplayer2.util.Util;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -101,13 +106,16 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView twitterUsername;
         TextView twitterContent;
         ImageView twitterImage;
-        VideoView twitterVideo;
+        // VideoView twitterVideo;
         ImageButton twitterPlayButton;
         CardView twitterMediaCard;
         RecyclerView mTopCommentsRecycler;
         CommentListAdapter mCommentAdapter;
         List<Comment> mComments;
         LinearLayout editTextLayout;
+
+        StyledPlayerView twitterVideo;
+        ExoPlayer player;
 
         ImageView postImage;
         CardView cardView;
@@ -140,7 +148,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
             twitterImage = (ImageView) itemView.findViewById(R.id.twitter_image);
-            twitterVideo = (VideoView) itemView.findViewById(R.id.twitter_video);
+            twitterVideo = (StyledPlayerView) itemView.findViewById(R.id.twitter_video);
             twitterPlayButton = (ImageButton) itemView.findViewById(R.id.twitter_play_button);
             twitterMediaCard = (CardView) itemView.findViewById(R.id.twitter_media_card);
 
@@ -274,12 +282,22 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 postImage.setVisibility(View.GONE);
 
                 if(videoUrl != null && !"null".equals(videoUrl)){
-                    Uri uri = Uri.parse(videoUrl);
-                    twitterVideo.setVideoURI(uri);
+                    releasePlayer()
+                    player = new ExoPlayer.Builder(context).build();
 
-                    MediaController mediaController = new MediaController(context);
-                    twitterVideo.setMediaController(mediaController);
-                    mediaController.setAnchorView(twitterVideo);
+                    twitterVideo.setPlayer(player);
+                    twitterVideo.setUseController(false); // Hide default controls
+                    
+                    // Create MediaItem
+                    MediaItem mediaItem = MediaItem.fromUri(videoUrl);
+                    player.setMediaItem(mediaItem);
+                    
+                    // Set player properties
+                    player.setRepeatMode(Player.REPEAT_MODE_OFF);
+                    player.setPlayWhenReady(false); // Don't auto-play
+                    
+                    // Prepare player
+                    player.prepare();
 
                     twitterPlayButton.setVisibility(View.VISIBLE);
 
@@ -292,14 +310,31 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }
                     });
 
-                    twitterVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    player.addListener(new Player.Listener() {
                         @Override
-                        public void onPrepared(MediaPlayer mp) {
-                            twitterImage.setVisibility(View.GONE);
-                            twitterVideo.setVisibility(View.VISIBLE);
-                            twitterVideo.start();
+                        public void onPlaybackStateChanged(int state) {
+                            if (state == Player.STATE_READY) {
+                                twitterImage.setVisibility(View.GONE);
+                                twitterVideo.setVisibility(View.VISIBLE);
+                            }
+                        }
+                        
+                        @Override
+                        public void onIsPlayingChanged(boolean isPlaying) {
+                            if (isPlaying) {
+                                twitterPlayButton.setVisibility(View.GONE);
+                            }
                         }
                     });
+
+                    // twitterVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
+                    //     @Override
+                    //     public void onPrepared(MediaPlayer mp) {
+                    //         twitterImage.setVisibility(View.GONE);
+                    //         twitterVideo.setVisibility(View.VISIBLE);
+                    //         twitterVideo.start();
+                    //     }
+                    // });
 
                     twitterPlayButton.setOnClickListener(new View.OnClickListener() {
                         @Override
@@ -314,7 +349,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                                 }
                             });
                             twitterVideo.setVisibility(View.VISIBLE);
-                            twitterVideo.start();
+                            player.setPlayWhenReady(true);
                         }
                     });
                 }
@@ -424,7 +459,25 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }catch(Exception ex){
                 Log.e("BE_GET_POST", "Exception occurred", ex);
                 stopAutoScroll();
+                releasePlayer();
             }
+        }
+
+        private void releasePlayer() {
+            if (player != null) {
+                player.release();
+                player = null;
+            }
+        }
+
+        // Make sure to release the player when the view is recycled
+        public void onViewRecycled() {
+            releasePlayer();
+        }
+
+        // Make sure to release the player when the view is detached
+        public void onViewDetachedFromWindow() {
+            releasePlayer();
         }
 
         private void setupAutoScroll() {
