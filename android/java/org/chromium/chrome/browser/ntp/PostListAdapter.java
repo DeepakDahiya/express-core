@@ -313,6 +313,18 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterVideo.setClickable(true);
                     twitterVideo.setFocusable(true);
 
+                    View videoParent = (View) twitterVideo.getParent();
+                    if (videoParent != null) {
+                        videoParent.setClickable(true);
+                        videoParent.setOnClickListener(new View.OnClickListener() {
+                            @Override
+                            public void onClick(View v) {
+                                Log.d("VideoPlayer", "Parent view clicked");
+                                togglePlayPause();
+                            }
+                        });
+                    }
+
                     View.OnClickListener videoClickListener = new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
@@ -322,6 +334,19 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                     twitterVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
+
+                    twitterVideo.setOnTouchListener(new View.OnTouchListener() {
+                        @Override
+                        public boolean onTouch(View v, MotionEvent event) {
+                            Log.d("VideoPlayer", "Touch event: " + event.getAction());
+                            if (event.getAction() == MotionEvent.ACTION_UP) {
+                                Log.d("VideoPlayer", "Video view clicked");
+                                togglePlayPause();
+                                return true;
+                            }
+                            return false;
+                        }
+                    });
 
                     twitterImage.post(new Runnable() {
                         @Override
