@@ -137,7 +137,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
 
-        BottomSheetBehavior<View> behavior = ((BottomSheetDialog) getDialog()).getBehavior();
+        BottomSheetBehavior behavior = ((BottomSheetDialog) getDialog()).getBehavior();
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
