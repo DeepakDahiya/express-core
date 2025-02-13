@@ -219,7 +219,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public Button getEmojiButton(String type) {
-        switch(type.toLowerCase()) {
+        switch(type) {
             case "lol": return mLolButton;
             case "heart": return mHeartButton;
             case "cry": return mCryButton;
