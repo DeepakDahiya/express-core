@@ -81,7 +81,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private Button mClapButton;
 
     private LinearLayout mSheetButton;
-    private ViewGroup.LayoutParams buttonLayoutParams;
+    private ViewGroup.MarginLayoutParams buttonLayoutParams;
 
     private int expandedHeight;
     private int collapsedMargin;
@@ -149,7 +149,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         BottomSheetBehavior behavior = ((BottomSheetDialog) getDialog()).getBehavior();
 
-        buttonLayoutParams = mSheetButton.getLayoutParams();
+        buttonLayoutParams = (ViewGroup.MarginLayoutParams) mSheetButton.getLayoutParams();
         ViewGroup.LayoutParams bottomSheetLayoutParams = view.getLayoutParams();
         bottomSheetLayoutParams.height = getBottomSheetDialogDefaultHeight();
 
