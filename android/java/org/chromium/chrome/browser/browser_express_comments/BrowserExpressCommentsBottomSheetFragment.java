@@ -56,7 +56,16 @@ import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
-public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment {
+public interface BottomSheetInputCallback {
+    void onSendClicked(String content);
+    EditText getInputEditText();
+    void setInputEnabled(boolean enabled);
+    ImageButton getSendButton();
+    Button getEmojiButton(String type);
+    void updateAvatar(String avatarUrl, BraveActivity activity);
+}
+
+public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
@@ -68,6 +77,16 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mPostId;
     private Boolean mOpenKeyboard = false;
     private ProgressBar mCommentProgress;
+
+    private ImageButton mSendButton;
+    private EditText mMessageEditText;
+
+    private Button mLolButton;
+    private Button mHeartButton;
+    private Button mCryButton;
+    private Button mFireButton;
+    private Button mLoveButton;
+    private Button mClapButton;
 
     private boolean isFromMenu;
 
@@ -106,6 +125,18 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
         loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
+
+        mMessageEditText = view.findViewById(R.id.comment_content_input);
+        mSendButton = view.findViewById(R.id.button_send);
+        mAvatarImage = view.findViewById(R.id.avatar_image);
+
+        mLolButton = view.findViewById(R.id.lol_button);
+        mHeartButton = view.findViewById(R.id.heart_button);
+        mCryButton = view.findViewById(R.id.cry_button);
+        mFireButton = view.findViewById(R.id.fire_button);
+        mLoveButton = view.findViewById(R.id.love_button);
+        mClapButton = view.findViewById(R.id.clap_button);
+
         return view;
     }
 
@@ -178,4 +209,48 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();
     }
+
+    @Override
+    public EditText getInputEditText() {
+        return mMessageEditText;
+    }
+
+    @Override
+    public ImageButton getSendButton() {
+        return mSendButton;
+    }
+
+    @Override
+    public void setInputEnabled(boolean enabled) {
+        if (mMessageEditText != null) mMessageEditText.setEnabled(enabled);
+        if (mSendButton != null) mSendButton.setEnabled(enabled);
+    }
+
+    @Override
+    public Button getEmojiButton(String type) {
+        switch(type.toLowerCase()) {
+            case "lol": return mLolButton;
+            case "heart": return mHeartButton;
+            case "cry": return mCryButton;
+            case "fire": return mFireButton;
+            case "love": return mLoveButton;
+            case "clap": return mClapButton;
+            default: return null;
+        }
+    }
+
+    @Override
+    public void updateAvatar(String avatarUrl, BraveActivity activity) {
+        if (mAvatarImage != null && getContext() != null) {
+            ImageLoader.downloadImage(
+                avatarUrl,
+                Glide.with(activity),
+                false,
+                5,
+                mAvatarImage,
+                null
+            );
+        }
+    }
+
 }

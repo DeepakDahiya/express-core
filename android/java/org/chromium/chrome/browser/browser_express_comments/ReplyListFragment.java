@@ -76,7 +76,6 @@ public class ReplyListFragment extends Fragment {
     private EditText mMessageEditText;
     private TextView mCommentsText;
 
-    private ImageView mAvatarImage;
     private ImageView mBackButton;
 
     private Button mLolButton;
@@ -85,6 +84,19 @@ public class ReplyListFragment extends Fragment {
     private Button mFireButton;
     private Button mLoveButton;
     private Button mClapButton;
+
+    private BottomSheetInputCallback inputCallback;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        Fragment parentFragment = getParentFragment();
+        if (parentFragment instanceof BottomSheetInputCallback) {
+            inputCallback = (BottomSheetInputCallback) parentFragment;
+        } else {
+            Log.e("Reply List Fragment", "Parent fragment must implement BottomSheetInputCallback");
+        }
+    }
 
     @Nullable
     @Override
@@ -95,9 +107,8 @@ public class ReplyListFragment extends Fragment {
             mCommentId = getArguments().getString(COMMENT_ID);
         }
 
-        mAvatarImage = (ImageView) view.findViewById(R.id.avatar_image);
-        mSendButton = view.findViewById(R.id.button_send);
-        mMessageEditText = (EditText) view.findViewById(R.id.comment_content_input);
+        mMessageEditText = inputCallback.getInputEditText();
+        mSendButton = inputCallback.getSendButton();
 
         mLolButton = view.findViewById(R.id.lol_button);
         mHeartButton = view.findViewById(R.id.heart_button);
@@ -142,21 +153,16 @@ public class ReplyListFragment extends Fragment {
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
-        this.setOnClickForEmoji(mLolButton, mMessageEditText);
-        this.setOnClickForEmoji(mHeartButton, mMessageEditText);
-        this.setOnClickForEmoji(mCryButton, mMessageEditText);
-        this.setOnClickForEmoji(mFireButton, mMessageEditText);
-        this.setOnClickForEmoji(mLoveButton, mMessageEditText);
-        this.setOnClickForEmoji(mClapButton, mMessageEditText);
+        this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
+        this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
+        this.setOnClickForEmoji(inputCallback.getEmojiButton("cry"), mMessageEditText);
+        this.setOnClickForEmoji(inputCallback.getEmojiButton("fire"), mMessageEditText);
+        this.setOnClickForEmoji(inputCallback.getEmojiButton("love"), mMessageEditText);
+        this.setOnClickForEmoji(inputCallback.getEmojiButton("clap"), mMessageEditText);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
-
-            if(accessToken != null){
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
-            }
 
             mSendButton.setOnClickListener((new View.OnClickListener() {
                 @Override
