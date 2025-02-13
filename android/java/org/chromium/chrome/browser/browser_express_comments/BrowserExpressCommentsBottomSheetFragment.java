@@ -193,13 +193,16 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                if (slideOffset > 0) {
-                    buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
-                } else {
-                    buttonLayoutParams.topMargin = collapsedMargin;
-                }
+                // if (slideOffset > 0) {
+                //     buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
+                // } else {
+                //     buttonLayoutParams.topMargin = collapsedMargin;
+                // }
                    
-                mSheetButton.setLayoutParams(buttonLayoutParams);
+                // mSheetButton.setLayoutParams(buttonLayoutParams);
+
+                float newTranslationY = (1 - slideOffset) * expandedHeight;
+                mSheetButton.setTranslationY(newTranslationY);
 
                 // View container = view.findViewById(R.id.bottom_sheet_container);
                 // int inputHeight = view.findViewById(R.id.comment_content_input).getHeight();

@@ -27,8 +27,9 @@
     <FrameLayout
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
         android:layout_weight="1"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toTopOf="@id/sheet_button"
         app:layout_constraintBottom_toBottomOf="@id/sheet_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -40,6 +41,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5sp"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="@+id/bottom_sheet_container"
         app:layout_constraintStart_toStartOf="@+id/bottom_sheet_container"
         app:layout_constraintTop_toTopOf="parent"
