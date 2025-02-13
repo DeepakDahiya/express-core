@@ -4,183 +4,188 @@
      License, v. 2.0. If a copy of the MPL was not distributed with this file,
      You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:paddingStart="10dp"
-    android:paddingEnd="10dp"
-    android:layout_marginTop="60dp"
-    android:orientation="vertical"
-    app:behavior_fitToContents="false"
-    app:behavior_halfExpandedRatio="0.7"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
-
-    <View
-        android:layout_width="30dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:background="@color/news_settings_title_color"/>
-
-    <FrameLayout
-        android:id="@+id/bottom_sheet_container"
-        android:layout_width="match_parent"
-        android:layout_weight="1"
-        android:layout_height="0dp" />
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5sp"
-        android:orientation="vertical">
+        android:orientation="vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp"
+        android:layout_marginTop="60dp"
+        app:layout_behavior="com.google.android.material.bottomsheet.BottomSheetBehavior">
+
+        <View
+            android:layout_width="30dp"
+            android:layout_height="4dp"
+            android:layout_gravity="center"
+            android:layout_marginTop="16dp"
+            android:background="@color/news_settings_title_color"/>
+
+        <FrameLayout
+            android:id="@+id/bottom_sheet_container"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="200dp"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
             android:padding="5sp"
-            android:weightSum="6">
+            android:orientation="vertical">
 
-            <Button
-                android:id="@+id/lol_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/lol"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/heart_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/heart"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/cry_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/cry"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/fire_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/fire"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/love_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/love"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-            <Button
-                android:id="@+id/clap_button"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:text="@string/clap"
-                android:background="@android:color/transparent"
-                style="?android:attr/borderlessButtonStyle"
-                android:textSize="20sp"
-                android:minWidth="0dp"
-                android:minHeight="0dp"
-                android:paddingVertical="0sp"
-                android:paddingHorizontal="0dp"
-                android:layout_weight="1"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-        </LinearLayout>
-
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:padding="5sp">
-
-            <ImageView
-                android:id="@+id/avatar_image"
-                android:src="@drawable/btn_toolbar_profile"
-                android:layout_width="24sp"
-                android:layout_height="24sp"
-                android:scaleType="centerCrop"
-                android:layout_gravity="center"
-                android:adjustViewBounds="true"
-                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-            <EditText
-                android:layout_marginStart="54dp"
-                android:id="@+id/comment_content_input"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/button_send"
-                android:inputType="textImeMultiLine|textMultiLine"
-                android:paddingEnd="18dp"
-                android:paddingStart="18dp"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp"
-                android:maxLines="6"
-                android:textSize="14sp"
-                android:textColor="@color/wallet_text_color"
-                android:textColorHint="@color/brave_theme_hint_text"
-                android:hint="@string/type_your_comment"
-                android:background="@drawable/rounded_edittext"
-                tools:ignore="Autofill" />
+                android:orientation="horizontal"
+                android:padding="5sp"
+                android:weightSum="6">
 
-            <ImageButton android:id="@+id/button_send"
-                style="@style/ToolbarButton"
-                android:background="@drawable/send"
-                android:layout_gravity="center"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="8sp"
-                android:visibility="visible"
-                android:layout_width="28sp"
-                android:layout_height="28sp"
-                android:contentDescription="@string/send_comment" />
-        </RelativeLayout>
+                <Button
+                    android:id="@+id/lol_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/lol"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textSize="20sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="0sp"
+                    android:paddingHorizontal="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
+                    android:id="@+id/heart_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/heart"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textSize="20sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="0sp"
+                    android:paddingHorizontal="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
+                    android:id="@+id/cry_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/cry"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textSize="20sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="0sp"
+                    android:paddingHorizontal="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
+                    android:id="@+id/fire_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/fire"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textSize="20sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="0sp"
+                    android:paddingHorizontal="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
+                    android:id="@+id/love_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/love"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textSize="20sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="0sp"
+                    android:paddingHorizontal="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
+                <Button
+                    android:id="@+id/clap_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:text="@string/clap"
+                    android:background="@android:color/transparent"
+                    style="?android:attr/borderlessButtonStyle"
+                    android:textSize="20sp"
+                    android:minWidth="0dp"
+                    android:minHeight="0dp"
+                    android:paddingVertical="0sp"
+                    android:paddingHorizontal="0dp"
+                    android:layout_weight="1"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            </LinearLayout>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="5sp">
+
+                <ImageView
+                    android:id="@+id/avatar_image"
+                    android:src="@drawable/btn_toolbar_profile"
+                    android:layout_width="24sp"
+                    android:layout_height="24sp"
+                    android:scaleType="centerCrop"
+                    android:layout_gravity="center"
+                    android:adjustViewBounds="true"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+                <EditText
+                    android:layout_marginStart="54dp"
+                    android:id="@+id/comment_content_input"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toStartOf="@+id/button_send"
+                    android:inputType="textImeMultiLine|textMultiLine"
+                    android:paddingEnd="18dp"
+                    android:paddingStart="18dp"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:maxLines="6"
+                    android:textSize="14sp"
+                    android:textColor="@color/wallet_text_color"
+                    android:textColorHint="@color/brave_theme_hint_text"
+                    android:hint="@string/type_your_comment"
+                    android:background="@drawable/rounded_edittext"
+                    tools:ignore="Autofill" />
+
+                <ImageButton android:id="@+id/button_send"
+                    style="@style/ToolbarButton"
+                    android:background="@drawable/send"
+                    android:layout_gravity="center"
+                    android:layout_centerVertical="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_marginStart="8sp"
+                    android:visibility="visible"
+                    android:layout_width="28sp"
+                    android:layout_height="28sp"
+                    android:contentDescription="@string/send_comment" />
+            </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
-
-</LinearLayout>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

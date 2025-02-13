@@ -137,12 +137,19 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
 
+        BottomSheetBehavior<View> behavior = ((BottomSheetDialog) getDialog()).getBehavior();
+
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
         int defaultHeight = (int) (screenHeight * 0.7);
         int fullHeight = screenHeight;
+
+        behavior.setFitToContents(false);
+        behavior.setPeekHeight(defaultHeight);
+        behavior.setHalfExpandedRatio(0.7f);
+        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
         // ViewGroup.LayoutParams params = view.getLayoutParams();
         // params.height = fullHeight; 
@@ -155,6 +162,26 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+            }
+
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                View container = view.findViewById(R.id.bottom_sheet_container);
+                int inputHeight = view.findViewById(R.id.comment_content_input).getHeight();
+                int emojiHeight = ((ViewGroup)view.findViewById(R.id.lol_button).getParent()).getHeight();
+                int availableHeight = bottomSheet.getHeight() - inputHeight - emojiHeight - 80;
+                
+                if (container != null && availableHeight > 0) {
+                    ViewGroup.LayoutParams params = container.getLayoutParams();
+                    params.height = availableHeight;
+                    container.setLayoutParams(params);
+                }
+            }
+        });
 
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
