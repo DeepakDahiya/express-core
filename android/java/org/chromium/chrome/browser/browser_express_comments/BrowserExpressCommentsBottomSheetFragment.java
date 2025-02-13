@@ -56,15 +56,6 @@ import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
-public interface BottomSheetInputCallback {
-    void onSendClicked(String content);
-    EditText getInputEditText();
-    void setInputEnabled(boolean enabled);
-    ImageButton getSendButton();
-    Button getEmojiButton(String type);
-    void updateAvatar(String avatarUrl, BraveActivity activity);
-}
-
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
