@@ -149,17 +149,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         BottomSheetBehavior behavior = ((BottomSheetDialog) getDialog()).getBehavior();
 
-        buttonLayoutParams = (ViewGroup.MarginLayoutParams) mSheetButton.getLayoutParams();
-        ViewGroup.LayoutParams bottomSheetLayoutParams = view.getLayoutParams();
-        bottomSheetLayoutParams.height = getBottomSheetDialogDefaultHeight();
+        // buttonLayoutParams = (ViewGroup.MarginLayoutParams) mSheetButton.getLayoutParams();
+        // ViewGroup.LayoutParams bottomSheetLayoutParams = view.getLayoutParams();
+        // bottomSheetLayoutParams.height = getBottomSheetDialogDefaultHeight();
 
-        expandedHeight = bottomSheetLayoutParams.height;
-        int peekHeight = (int) (expandedHeight / 1.3);
+        // expandedHeight = bottomSheetLayoutParams.height;
+        // int peekHeight = (int) (expandedHeight / 1.3);
 
-        buttonHeight = mSheetButton.getHeight() + 20;
-        collapsedMargin = peekHeight - buttonHeight;
-        buttonLayoutParams.topMargin = collapsedMargin;
-        mSheetButton.setLayoutParams(buttonLayoutParams);
+        // buttonHeight = mSheetButton.getHeight() + 20;
+        // collapsedMargin = peekHeight - buttonHeight;
+        // buttonLayoutParams.topMargin = collapsedMargin;
+        // mSheetButton.setLayoutParams(buttonLayoutParams);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
@@ -168,11 +168,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int defaultHeight = (int) (screenHeight * 0.7);
         int fullHeight = screenHeight;
 
-        view.setLayoutParams(bottomSheetLayoutParams);
-        behavior.setFitToContents(false);
-        behavior.setPeekHeight(peekHeight);
-        behavior.setHalfExpandedRatio(0.7f);
-        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        // view.setLayoutParams(bottomSheetLayoutParams);
+        // behavior.setFitToContents(false);
+        // behavior.setPeekHeight(peekHeight);
+        // behavior.setHalfExpandedRatio(0.7f);
+        // behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
         // ViewGroup.LayoutParams params = view.getLayoutParams();
         // params.height = fullHeight; 
@@ -186,36 +186,36 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-        behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-            }
+        // behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+        //     @Override
+        //     public void onStateChanged(@NonNull View bottomSheet, int newState) {
+        //     }
 
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                if (slideOffset > 0) {
-                    buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
-                } else {
-                    buttonLayoutParams.topMargin = collapsedMargin;
-                }
+        //     @Override
+        //     public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+        //         if (slideOffset > 0) {
+        //             buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
+        //         } else {
+        //             buttonLayoutParams.topMargin = collapsedMargin;
+        //         }
                    
-                mSheetButton.setLayoutParams(buttonLayoutParams);
+        //         mSheetButton.setLayoutParams(buttonLayoutParams);
 
-                // float newTranslationY = (1 - slideOffset) * expandedHeight;
-                // mSheetButton.setTranslationY(newTranslationY);
+        //         // float newTranslationY = (1 - slideOffset) * expandedHeight;
+        //         // mSheetButton.setTranslationY(newTranslationY);
 
-                // View container = view.findViewById(R.id.bottom_sheet_container);
-                // int inputHeight = view.findViewById(R.id.comment_content_input).getHeight();
-                // int emojiHeight = ((ViewGroup)view.findViewById(R.id.lol_button).getParent()).getHeight();
-                // int availableHeight = bottomSheet.getHeight() - inputHeight - emojiHeight - 80;
+        //         // View container = view.findViewById(R.id.bottom_sheet_container);
+        //         // int inputHeight = view.findViewById(R.id.comment_content_input).getHeight();
+        //         // int emojiHeight = ((ViewGroup)view.findViewById(R.id.lol_button).getParent()).getHeight();
+        //         // int availableHeight = bottomSheet.getHeight() - inputHeight - emojiHeight - 80;
                 
-                // if (container != null && availableHeight > 0) {
-                //     ViewGroup.LayoutParams params = container.getLayoutParams();
-                //     params.height = availableHeight;
-                //     container.setLayoutParams(params);
-                // }
-            }
-        });
+        //         // if (container != null && availableHeight > 0) {
+        //         //     ViewGroup.LayoutParams params = container.getLayoutParams();
+        //         //     params.height = availableHeight;
+        //         //     container.setLayoutParams(params);
+        //         // }
+        //     }
+        // });
 
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
