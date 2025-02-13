@@ -79,6 +79,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private Button mLoveButton;
     private Button mClapButton;
 
+    private LinearLayout mSheetButton;
+    private LinearLayout.LayoutParams buttonLayoutParams;
+
+    private int expandedHeight;
+    private int collapsedMargin;
+    private int buttonHeight;
+
     private boolean isFromMenu;
 
     private ImageView mAvatarImage;
@@ -128,6 +135,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
 
+        mSheetButton = view.findViewById(R.id.sheet_button);
+
         return view;
     }
 
@@ -139,6 +148,18 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         BottomSheetBehavior behavior = ((BottomSheetDialog) getDialog()).getBehavior();
 
+        buttonLayoutParams = mSheetButton.getLayoutParams();
+        ViewGroup.LayoutParams bottomSheetLayoutParams = view.getLayoutParams();
+        bottomSheetLayoutParams.height = getBottomSheetDialogDefaultHeight();
+
+        expandedHeight = bottomSheetLayoutParams.height;
+        int peekHeight = (int) (expandedHeight / 1.3);
+
+        buttonHeight = mSheetButton.getHeight() + 20;
+        collapsedMargin = peekHeight - buttonHeight;
+        buttonLayoutParams.topMargin = collapsedMargin;
+        mSheetButton.setLayoutParams(buttonLayoutParams);
+
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
@@ -146,8 +167,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int defaultHeight = (int) (screenHeight * 0.7);
         int fullHeight = screenHeight;
 
+        behavior.setLayoutParams(bottomSheetLayoutParams);
         behavior.setFitToContents(false);
-        behavior.setPeekHeight(defaultHeight);
+        behavior.setPeekHeight(peekHeight);
         behavior.setHalfExpandedRatio(0.7f);
         behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
@@ -170,16 +192,24 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                View container = view.findViewById(R.id.bottom_sheet_container);
-                int inputHeight = view.findViewById(R.id.comment_content_input).getHeight();
-                int emojiHeight = ((ViewGroup)view.findViewById(R.id.lol_button).getParent()).getHeight();
-                int availableHeight = bottomSheet.getHeight() - inputHeight - emojiHeight - 80;
-                
-                if (container != null && availableHeight > 0) {
-                    ViewGroup.LayoutParams params = container.getLayoutParams();
-                    params.height = availableHeight;
-                    container.setLayoutParams(params);
+                if (slideOffset > 0) {
+                    buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
+                } else {
+                    buttonLayoutParams.topMargin = collapsedMargin;
                 }
+                   
+                mSheetButton.setLayoutParams(buttonLayoutParams);
+
+                // View container = view.findViewById(R.id.bottom_sheet_container);
+                // int inputHeight = view.findViewById(R.id.comment_content_input).getHeight();
+                // int emojiHeight = ((ViewGroup)view.findViewById(R.id.lol_button).getParent()).getHeight();
+                // int availableHeight = bottomSheet.getHeight() - inputHeight - emojiHeight - 80;
+                
+                // if (container != null && availableHeight > 0) {
+                //     ViewGroup.LayoutParams params = container.getLayoutParams();
+                //     params.height = availableHeight;
+                //     container.setLayoutParams(params);
+                // }
             }
         });
 
@@ -269,6 +299,16 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 null
             );
         }
+    }
+
+    private int getBottomSheetDialogDefaultHeight() {
+        return getWindowHeight() * 80 / 100;
+    }
+
+    private int getWindowHeight() {
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        return displayMetrics.heightPixels;
     }
 
 }
