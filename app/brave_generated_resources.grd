@@ -512,19 +512,19 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
       <!-- App shortcuts -->
       <if expr="not is_win">
         <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BRAVE_NIGHTLY" desc="Name for the Brave Apps Start Menu folder name.">
-          Brave Browser Nightly Apps
+          Express Browser Nightly Apps
         </message>
         <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BRAVE_BETA" desc="Name for the Brave Apps Start Menu folder name.">
-          Brave Browser Beta Apps
+          Express Browser Beta Apps
         </message>
         <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BRAVE_DEV" desc="Name for the Brave Apps Start Menu folder name.">
-          Brave Browser Dev Apps
+          Express Browser Dev Apps
         </message>
         <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BRAVE_STABLE" desc="Name for the Brave Apps Start Menu folder name.">
-          Brave Browser Apps
+          Express Browser Apps
         </message>
         <message name="IDS_APP_SHORTCUTS_SUBDIR_NAME_BRAVE_DEVELOPMENT" desc="Name for the Brave Apps Start Menu folder name.">
-          Brave Browser Development Apps
+          Express Browser Development Apps
         </message>
       </if>
 
@@ -543,10 +543,10 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
           Help improve Brave's product stability by automatically sending diagnostic reports when the Brave Browser crashes or freezes.
         </message>
         <message name="IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_HEADER_TEXT" desc="The header text for crash report ask dialog">
-          <ph name="BROWSER_NAME">$1<ex>Brave Browser</ex></ph> quit unexpectedly.
+          <ph name="BROWSER_NAME">$1<ex>Express Browser</ex></ph> quit unexpectedly.
         </message>
         <message name="IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_HEADER_TEXT_BROWSER_NAME_PART" desc="This is used for replacing BROWSER_NAME from above HEADER_TEXT.">
-          Brave Browser
+          Express Browser
         </message>
         <message name="IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_FOOTNOTE_TEXT" desc="The footnote text for crash report ask dialog.">
           You can change <ph name="SETTING_TEXT">$1<ex>this</ex></ph> at any time in browser settings.

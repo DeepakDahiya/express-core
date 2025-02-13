@@ -191,7 +191,7 @@
                 android:layout_height="42dp"
                 android:layout_centerVertical="true"
                 android:layout_toStartOf="@+id/button_send"
-                android:inputType="textMultiLine"
+                android:inputType="textImeMultiLine|textMultiLine"
                 android:paddingEnd="18dp"
                 android:paddingStart="18dp"
                 android:paddingTop="10dp"

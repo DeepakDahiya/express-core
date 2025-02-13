@@ -279,6 +279,24 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterContent.setText(content.toString());
                     mReadMoreButton.setVisibility(View.GONE);
                 }
+
+                twitterContent.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                    }
+                });
+
+                twitterPostLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                    }
+                });
                 
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);

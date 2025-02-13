@@ -1005,7 +1005,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         New update available
       </message>
       <message name="IDS_COMMENTS" desc="Set default browser modal title">
-        Comment
+        Comments
       </message>
       <message name="IDS_REPLIES" desc="Set default browser modal title">
         Replies

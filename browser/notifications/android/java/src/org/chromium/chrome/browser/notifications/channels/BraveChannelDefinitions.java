@@ -32,23 +32,23 @@ public class BraveChannelDefinitions {
     @SuppressLint("NewApi")
     static protected void addBraveChannels(
             Map<String, PredefinedChannel> map, Set<String> startup) {
-        map.put(ChannelId.BRAVE_ADS,
-                PredefinedChannel.create(ChannelId.BRAVE_ADS, R.string.brave_ads_text,
-                        NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.BRAVE_ADS));
-        startup.add(ChannelId.BRAVE_ADS);
+        // map.put(ChannelId.BRAVE_ADS,
+        //         PredefinedChannel.create(ChannelId.BRAVE_ADS, R.string.brave_ads_text,
+        //                 NotificationManager.IMPORTANCE_HIGH, ChannelGroupId.BRAVE_ADS));
+        // startup.add(ChannelId.BRAVE_ADS);
 
-        map.put(ChannelId.BRAVE_ADS_BACKGROUND,
-                PredefinedChannel.create(ChannelId.BRAVE_ADS_BACKGROUND,
-                        R.string.notification_category_brave_ads_background,
-                        NotificationManager.IMPORTANCE_LOW, ChannelGroupId.BRAVE_ADS));
-        startup.add(ChannelId.BRAVE_ADS_BACKGROUND);
+        // map.put(ChannelId.BRAVE_ADS_BACKGROUND,
+        //         PredefinedChannel.create(ChannelId.BRAVE_ADS_BACKGROUND,
+        //                 R.string.notification_category_brave_ads_background,
+        //                 NotificationManager.IMPORTANCE_LOW, ChannelGroupId.BRAVE_ADS));
+        // startup.add(ChannelId.BRAVE_ADS_BACKGROUND);
     }
 
     @SuppressLint("NewApi")
     static protected void addBraveChannelGroups(
             Map<String, ChannelDefinitions.PredefinedChannelGroup> map) {
-        map.put(ChannelGroupId.BRAVE_ADS,
-                new ChannelDefinitions.PredefinedChannelGroup(
-                        ChannelGroupId.BRAVE_ADS, R.string.brave_ads_text));
+        // map.put(ChannelGroupId.BRAVE_ADS,
+        //         new ChannelDefinitions.PredefinedChannelGroup(
+        //                 ChannelGroupId.BRAVE_ADS, R.string.brave_ads_text));
     }
 }
