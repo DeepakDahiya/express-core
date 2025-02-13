@@ -81,7 +81,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private Button mClapButton;
 
     private LinearLayout mSheetButton;
-    private LinearLayout.LayoutParams buttonLayoutParams;
+    private ViewGroup.LayoutParams buttonLayoutParams;
 
     private int expandedHeight;
     private int collapsedMargin;
@@ -168,7 +168,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int defaultHeight = (int) (screenHeight * 0.7);
         int fullHeight = screenHeight;
 
-        behavior.setLayoutParams(bottomSheetLayoutParams);
+        view.setLayoutParams(bottomSheetLayoutParams);
         behavior.setFitToContents(false);
         behavior.setPeekHeight(peekHeight);
         behavior.setHalfExpandedRatio(0.7f);
