@@ -181,15 +181,15 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             R.anim.slide_out_right  // popExit
         );
 
-        // transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
+        transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
     }
 
     public void openReplies(String commentId) {
-        // ReplyListFragment replyFragment = new ReplyListFragment();
-        // Bundle args = new Bundle();
-        // args.putString("comment_id", commentId);
-        // replyFragment.setArguments(args);
-        // loadFragment(replyFragment);
+        ReplyListFragment replyFragment = new ReplyListFragment();
+        Bundle args = new Bundle();
+        args.putString("comment_id", commentId);
+        replyFragment.setArguments(args);
+        loadFragment(replyFragment);
     }
 
     public void dismissBottomsheet() {
