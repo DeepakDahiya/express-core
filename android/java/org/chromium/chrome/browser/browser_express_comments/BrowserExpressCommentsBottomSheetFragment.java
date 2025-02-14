@@ -115,7 +115,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
-        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
+        // loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
 
         mMessageEditText = view.findViewById(R.id.comment_content_input);
         mSendButton = view.findViewById(R.id.button_send);
