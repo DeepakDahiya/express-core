@@ -145,8 +145,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int fullHeight = screenHeight;
 
         ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.height = fullHeight; 
+        params.height = defaultHeight; 
         view.setLayoutParams(params);
+
+        ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
         // // Configure the BottomSheetBehavior
         // behavior.setPeekHeight(defaultHeight);

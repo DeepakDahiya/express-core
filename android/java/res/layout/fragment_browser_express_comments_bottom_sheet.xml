@@ -23,9 +23,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    app:behavior_fitToContents="false"
+    app:behavior_halfExpandedRatio="0.5"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
     <View
+        android:id="@+id/sheet_title"
         android:layout_width="30dp"
         android:layout_height="4dp"
         android:layout_gravity="center"
@@ -39,9 +42,10 @@
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        app:layout_constraintBottom_toBottomOf="@id/sheet_button"
+        app:layout_constraintBottom_toTopOf="@id/sheet_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/sheet_title"
         android:layout_height="0dp" />
 
     <LinearLayout
