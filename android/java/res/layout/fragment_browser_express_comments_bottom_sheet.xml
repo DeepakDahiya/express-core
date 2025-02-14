@@ -39,7 +39,6 @@
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        android:visibility="gone"
         app:layout_constraintBottom_toBottomOf="@id/sheet_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
