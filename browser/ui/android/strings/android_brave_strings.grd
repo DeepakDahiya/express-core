@@ -963,7 +963,7 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
         Set as Default Browser
       </message>
       <message name="IDS_BRAVE_SET_DEFAULT_BROWSER_DIALOG_TEXT" desc="Dialog for setting default browser">
-        Select Express Browser and tap 'Always'
+        Select Brave Browser and tap 'Always'
       </message>
       <message name="IDS_BRAVE_ALREADY_SET_AS_DEFAULT_BROWSER" desc="Toast message for those whom have already set Brave as default browser">
         Brave is already set as your default browser.
@@ -3217,10 +3217,10 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Importing database, please wait...
     </message>
     <message name="IDS_BRAVE_BROWSER" desc="Brave browser title text">
-      Express Browser
+      Brave Browser
     </message>
     <message name="IDS_BRAVE_BROWSER_NOTIFICATION_CHANNEL_DESCRIPTION" desc="Brave broswer notification channel creation information for user">
-      Notification channel for Express Browser
+      Notification channel for Brave Browser
     </message>
     <message name="IDS_BRAVE_WALLET_ACCOUNT_SELECTOR_ACTIVITY_TITLE" desc="Account Selector activity toolbar title">
       Select Account
