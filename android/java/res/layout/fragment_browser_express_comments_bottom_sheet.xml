@@ -24,7 +24,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     app:behavior_fitToContents="false"
-    app:behavior_halfExpandedRatio="0.5"
+    app:behavior_halfExpandedRatio="0.6"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
     <View
