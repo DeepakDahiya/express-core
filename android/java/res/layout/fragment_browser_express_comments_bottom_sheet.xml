@@ -40,10 +40,13 @@
         android:layout_width="match_parent"
         android:layout_weight="1"
         android:visibility="gone"
+        app:layout_constraintBottom_toBottomOf="@id/sheet_button"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         android:layout_height="0dp" />
 
     <LinearLayout
+        android:id="@+id/sheet_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5sp"
