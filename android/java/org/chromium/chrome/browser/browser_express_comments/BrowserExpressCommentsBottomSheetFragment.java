@@ -149,10 +149,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         view.setLayoutParams(params);
 
         // // Configure the BottomSheetBehavior
-        behavior.setPeekHeight(defaultHeight);
-        behavior.setFitToContents(false);
-        behavior.setHalfExpandedRatio(0.6f);
-        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        // behavior.setPeekHeight(defaultHeight);
+        // behavior.setFitToContents(false);
+        // behavior.setHalfExpandedRatio(0.7f);
+        // behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
