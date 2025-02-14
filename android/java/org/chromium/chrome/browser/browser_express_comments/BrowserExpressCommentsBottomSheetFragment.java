@@ -171,15 +171,15 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void loadFragment(Fragment fragment) {
-        // FragmentManager fragmentManager = getChildFragmentManager();
-        // FragmentTransaction transaction = fragmentManager.beginTransaction();
+        FragmentManager fragmentManager = getChildFragmentManager();
+        FragmentTransaction transaction = fragmentManager.beginTransaction();
 
-        // transaction.setCustomAnimations(
-        //     R.anim.slide_in_right,  // enter
-        //     R.anim.slide_out_left,  // exit
-        //     R.anim.slide_in_left,   // popEnter
-        //     R.anim.slide_out_right  // popExit
-        // );
+        transaction.setCustomAnimations(
+            R.anim.slide_in_right,  // enter
+            R.anim.slide_out_left,  // exit
+            R.anim.slide_in_left,   // popEnter
+            R.anim.slide_out_right  // popExit
+        );
 
         // transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
     }
