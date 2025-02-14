@@ -141,7 +141,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int defaultHeight = (int) (screenHeight * 0.8);
+        int defaultHeight = (int) (screenHeight * 0.9);
         int fullHeight = screenHeight;
 
         ViewGroup.LayoutParams params = view.getLayoutParams();
