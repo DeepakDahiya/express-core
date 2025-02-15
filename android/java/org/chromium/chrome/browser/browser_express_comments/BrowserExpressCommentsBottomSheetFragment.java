@@ -158,6 +158,22 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
+        // getDialog().getBehavior().addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+        //     @Override
+        //     public void onStateChanged(@NonNull View bottomSheet, int newState) {
+        //     }
+
+        //     @Override
+        //     public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+        //         if(slideOffset > 0) //Sliding happens from 0 (Collapsed) to 1 (Expanded) - if so, calculate margins
+        //             buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
+        //         else //If not sliding above expanded, set initial margin
+        //             buttonLayoutParams.topMargin = collapsedMargin;
+        //         binding.sheetButton.setLayoutParams(buttonLayoutParams); //Set layout params to button (margin from top)
+        //     }
+        // });
+
+
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
