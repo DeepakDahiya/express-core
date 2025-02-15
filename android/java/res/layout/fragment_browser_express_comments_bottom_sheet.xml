@@ -4,7 +4,7 @@
      License, v. 2.0. If a copy of the MPL was not distributed with this file,
      You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
-<!-- <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -14,10 +14,10 @@
     android:layout_marginTop="60dp"
     android:orientation="vertical"
     app:behavior_fitToContents="false"
-    app:behavior_halfExpandedRatio="0.7"
-    tools:context=".BrowserExpressCommentsBottomSheetFragment"> -->
+    app:behavior_halfExpandedRatio="0.6"
+    tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
-<androidx.constraintlayout.widget.ConstraintLayout
+<!-- <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -25,7 +25,7 @@
     android:layout_height="match_parent"
     app:behavior_fitToContents="false"
     app:behavior_halfExpandedRatio="0.6"
-    tools:context=".BrowserExpressCommentsBottomSheetFragment">
+    tools:context=".BrowserExpressCommentsBottomSheetFragment"> -->
 
     <View
         android:id="@+id/sheet_title"
@@ -33,19 +33,12 @@
         android:layout_height="4dp"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
         android:background="@color/news_settings_title_color"/>
 
     <FrameLayout
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        app:layout_constraintBottom_toTopOf="@id/sheet_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/sheet_title"
         android:layout_height="0dp" />
 
     <LinearLayout
@@ -53,7 +46,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="5sp"
-        app:layout_constraintBottom_toBottomOf="parent"
         android:orientation="vertical">
 
         <LinearLayout
@@ -202,5 +194,5 @@
                 android:contentDescription="@string/send_comment" />
         </RelativeLayout>
     </LinearLayout>
-</androidx.constraintlayout.widget.ConstraintLayout>
-<!-- </LinearLayout> -->
+<!-- </androidx.constraintlayout.widget.ConstraintLayout> -->
+</LinearLayout>
