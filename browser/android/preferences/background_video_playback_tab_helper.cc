@@ -25,15 +25,25 @@
 namespace {
 const char16_t k_youtube_background_playback_script[] =
     u"(function() {"
-    "    if (document._addEventListener === undefined) {"
-    "        document._addEventListener = document.addEventListener;"
-    "        document.addEventListener = function(a,b,c) {"
-    "            if(a != 'visibilitychange') {"
-    "                document._addEventListener(a,b,c);"
-    "            }"
-    "        };"
+    "    function enablePiP() {"
+    "        let video = document.querySelector('video');"
+    "        if (video && document.pictureInPictureEnabled && !document.pictureInPictureElement) {"
+    "            video.requestPictureInPicture().catch(err => console.log('PiP Error:', err));"
+    "        }"
     "    }"
+    "    enablePiP();"
+    "    document.addEventListener('visibilitychange', enablePiP);"
     "}());";
+    // u"(function() {"
+    // "    if (document._addEventListener === undefined) {"
+    // "        document._addEventListener = document.addEventListener;"
+    // "        document.addEventListener = function(a,b,c) {"
+    // "            if(a != 'visibilitychange') {"
+    // "                document._addEventListener(a,b,c);"
+    // "            }"
+    // "        };"
+    // "    }"
+    // "}());";
 
 bool IsYouTubeDomain(const GURL& url) {
   if (net::registry_controlled_domains::SameDomainOrHost(
