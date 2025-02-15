@@ -38,7 +38,6 @@
         android:id="@+id/recycler_comments"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        app:layout_constrainedHeight="true"
         android:layout_height="0dp"/>
 
 </LinearLayout>
