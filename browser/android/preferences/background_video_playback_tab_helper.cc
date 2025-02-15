@@ -28,6 +28,8 @@ const char16_t k_youtube_background_playback_script[] =
     "    function enablePiP() {"
     "        let video = document.querySelector('video');"
     "        if (video && document.pictureInPictureEnabled && !document.pictureInPictureElement) {"
+    "            video.play();"  
+    "            video.requestFullscreen();"
     "            video.requestPictureInPicture().catch(err => console.log('PiP Error:', err));"
     "        }"
     "    }"
