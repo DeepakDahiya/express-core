@@ -24,47 +24,35 @@
 
 namespace {
 const char16_t k_youtube_background_playback_script[] =
-    u"(function() { " +
-    "  const videoElement = document.querySelector('video'); " + // Adjust selector if needed
-    "  if (videoElement) { " +
-    "    if (document.pictureInPictureEnabled) { " +
-    "      let pipButton = document.createElement('button'); " +
-    "      pipButton.innerText = 'PIP'; " +
-    "      pipButton.style.position = 'absolute'; " +
-    "      pipButton.style.top = '10px'; " +
-    "      pipButton.style.right = '10px'; " +
-    "      pipButton.style.zIndex = '9999'; " +
-
-    "      pipButton.addEventListener('click', () => { " +
-    "        if (!document.pictureInPictureElement) { " + // Prevent multiple PIPs
-
-    "          // 1. Create a wrapper div " +
-    "          const pipWrapper = document.createElement('div'); " +
-    "          pipWrapper.style.display = 'inline-block'; // Or 'block', experiment if needed " +
-    "          pipWrapper.style.overflow = 'hidden'; " + // Clip content outside " +
-    "          pipWrapper.style.width = videoElement.offsetWidth + 'px'; " + // Match video width " +
-    "          pipWrapper.style.height = videoElement.offsetHeight + 'px'; " + // Match video height " +
-
-    "          // 2. Insert the wrapper before the video " +
-    "          videoElement.parentNode.insertBefore(pipWrapper, videoElement); " +
-
-    "          // 3. Move the video inside the wrapper " +
-    "          pipWrapper.appendChild(videoElement); " +
-
-    "          // 4. Request Picture-in-Picture on the WRAPPER, not the video directly " +
-    "          pipWrapper.requestPictureInPicture().catch(error => console.error('PIP error:', error)); " +
-
-
-    "        } " +
-    "      }); " +
-
-    "      videoElement.parentNode.insertBefore(pipButton, videoElement.nextSibling); " +
-    "    } else { " +
-    "      console.log('Picture-in-Picture API is not enabled in this browser.'); " +
-    "    } " +
-    "  } else { " +
-    "    console.log('No video element found on this page.'); " +
-    "  } " +
+    u"(function() { "
+    "  const videoElement = document.querySelector('video'); "
+    "  if (videoElement) { "
+    "    if (document.pictureInPictureEnabled) { "
+    "      let pipButton = document.createElement('button'); "
+    "      pipButton.innerText = 'PIP'; "
+    "      pipButton.style.position = 'absolute'; "
+    "      pipButton.style.top = '10px'; "
+    "      pipButton.style.right = '10px'; "
+    "      pipButton.style.zIndex = '9999'; "
+    "      pipButton.addEventListener('click', () => { "
+    "        if (!document.pictureInPictureElement) { "
+    "          const pipWrapper = document.createElement('div'); "
+    "          pipWrapper.style.display = 'inline-block'; // Or 'block', experiment if needed "
+    "          pipWrapper.style.overflow = 'hidden'; "
+    "          pipWrapper.style.width = videoElement.offsetWidth 'px'; "
+    "          pipWrapper.style.height = videoElement.offsetHeight 'px'; "
+    "          videoElement.parentNode.insertBefore(pipWrapper, videoElement); "
+    "          pipWrapper.appendChild(videoElement); "
+    "          pipWrapper.requestPictureInPicture().catch(error => console.error('PIP error:', error)); "
+    "        } "
+    "      }); "
+    "      videoElement.parentNode.insertBefore(pipButton, videoElement.nextSibling); "
+    "    } else { "
+    "      console.log('Picture-in-Picture API is not enabled in this browser.'); "
+    "    } "
+    "  } else { "
+    "    console.log('No video element found on this page.'); "
+    "  } "
     "})();";
 
     // u"(function() {"
