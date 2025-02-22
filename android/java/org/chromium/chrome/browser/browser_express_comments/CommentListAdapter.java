@@ -202,6 +202,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 contentText.setTextSize(12);
                 mReadMoreButton.setVisibility(View.GONE);
 
+                LinearLayout.LayoutParams params = (LinearLayout.LayoutParams) contentText.getLayoutParams();
+                params.bottomMargin = 0;
+                contentText.setLayoutParams(params);
+
+                mCommentLayout.setPadding(10, 10, 10, 0);
+
                 // float density = activity.getResources().getDisplayMetrics().density;
                 // LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Math.round(24 * density), Math.round(24 * density));
 
