@@ -209,12 +209,15 @@
 
     <Button
         android:id="@+id/btn_comment"
+        android:layout_marginTop="-2dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@android:color/black"
         style="?android:attr/borderlessButtonStyle"
         android:textColor="@color/browser_express_blue_color"
         android:layout_marginHorizontal="15dp"
+        android:includeFontPadding="false"
+        android:gravity="top"
         android:textSize="16sp"
         android:fontWeight="600"
         android:minWidth="0dp"
