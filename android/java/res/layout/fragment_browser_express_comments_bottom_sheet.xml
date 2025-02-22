@@ -27,18 +27,11 @@
     app:behavior_halfExpandedRatio="0.7"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
-    <!-- <View
-        android:id="@+id/sheet_title"
-        android:layout_width="30dp"
-        android:layout_height="4dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="16dp"
-        android:background="@color/news_settings_title_color"/> -->
-
     <FrameLayout
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
         android:layout_height="0dp"
+        android:layout_weight="1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/sheet_button"/>
 
