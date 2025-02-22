@@ -208,6 +208,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                 mCommentLayout.setPadding(10, 10, 10, 0);
 
+                if(comment.getContent().toString().length() > 75){
+                    String contentString = comment.getContent().toString().subSequence(0, 75) + "...";
+                    contentText.setText(contentString);
+                }
+
                 // float density = activity.getResources().getDisplayMetrics().density;
                 // LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Math.round(24 * density), Math.round(24 * density));
 
