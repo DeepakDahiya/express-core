@@ -234,7 +234,7 @@
         android:orientation="horizontal"
         android:paddingEnd="12dp"
         android:layout_marginHorizontal="15dp"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="12dp"
         android:paddingStart="12dp"
         android:paddingTop="10dp"
         android:paddingBottom="10dp"
