@@ -133,20 +133,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        ((BottomSheetDialog) getDialog())
-                .getBehavior()
-                .setState(BottomSheetBehavior.STATE_EXPANDED);
+        // ((BottomSheetDialog) getDialog())
+        //         .getBehavior()
+        //         .setState(BottomSheetBehavior.STATE_EXPANDED);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int defaultHeight = (int) (screenHeight * 0.95);
+        int defaultHeight = (int) (screenHeight * 0.8);
         int fullHeight = screenHeight;
 
-        // ViewGroup.LayoutParams params = view.getLayoutParams();
-        // params.height = defaultHeight; 
-        // view.setLayoutParams(params);
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.height = defaultHeight; 
+        view.setLayoutParams(params);
 
         ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
