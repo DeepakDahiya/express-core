@@ -110,7 +110,6 @@
             android:layout_height="wrap_content"
             android:background="@drawable/border_bg"
             android:layout_marginStart="4sp"
-            android:visibility="gone"
             android:orientation="vertical">
             <ImageButton
                 android:id="@+id/btn_upvote"
