@@ -185,7 +185,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         // };
 
         // Adjust height after layout is complete
-        bottomSheet.post(updateHeight);
+        // bottomSheet.post(updateHeight);
 
         // Listen for BottomSheet slide events
         behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
