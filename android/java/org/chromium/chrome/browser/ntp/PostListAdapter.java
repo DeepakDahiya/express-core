@@ -107,6 +107,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private class PostHolder extends RecyclerView.ViewHolder {
         LinearLayout twitterPostLayout;
+        LinearLayout recylerOverlayLayout;
         ImageView twitterProfilePicture;
         TextView twitterUsername;
         TextView twitterContent;
@@ -151,6 +152,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
+            recylerOverlayLayout = (LinearLayout) itemView.findViewById(R.id.recycler_overlay);
             twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
@@ -282,6 +284,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 }
 
                 twitterContent.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                    }
+                });
+
+                recylerOverlayLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
@@ -436,29 +447,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
                             activity.showCommentsBottomSheetFromPost(post.getId(), false);
                         }
-                    }
-                });
-
-                mTopPostRecycler.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
-                    GestureDetector gestureDetector = new GestureDetector(mTopPostRecycler.getContext(),
-                        new GestureDetector.SimpleOnGestureListener() {
-                            @Override
-                            public boolean onSingleTapUp(MotionEvent e) {
-                                return true;
-                            }
-                        });
-
-                    @Override
-                    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
-                        View child = rv.findChildViewUnder(e.getX(), e.getY());
-                        if (child != null && gestureDetector.onTouchEvent(e)) {
-                            int position = rv.getChildAdapterPosition(child);
-                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                            layoutManager.scrollToPositionWithOffset(position, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
-                            return true;
-                        }
-                        return false;
                     }
                 });
 
