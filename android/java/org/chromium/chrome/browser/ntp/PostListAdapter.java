@@ -440,7 +440,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 });
 
                 mTopPostRecycler.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
-                    GestureDetector gestureDetector = new GestureDetector(recyclerView.getContext(),
+                    GestureDetector gestureDetector = new GestureDetector(mTopPostRecycler.getContext(),
                         new GestureDetector.SimpleOnGestureListener() {
                             @Override
                             public boolean onSingleTapUp(MotionEvent e) {
@@ -453,6 +453,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         View child = rv.findChildViewUnder(e.getX(), e.getY());
                         if (child != null && gestureDetector.onTouchEvent(e)) {
                             int position = rv.getChildAdapterPosition(child);
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(position, 0);
                             activity.showCommentsBottomSheetFromPost(post.getId(), false);
                             return true;
