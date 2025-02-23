@@ -152,7 +152,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         // Get BottomSheetDialog and its behavior
         BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) getDialog();
-        FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        FrameLayout bottomSheet = bottomSheetDialog.findViewById(R.id.design_bottom_sheet);
         
         if (bottomSheet == null) {
             return; // Prevent crash if bottomSheet is not found
