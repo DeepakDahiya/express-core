@@ -7,6 +7,8 @@
 
 package org.chromium.chrome.browser.browser_express_comments;
 
+import android.graphics.Rect;
+import android.widget.FrameLayout;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
