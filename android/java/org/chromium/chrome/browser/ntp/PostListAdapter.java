@@ -369,14 +369,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
 
-                    twitterImage.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            int h = twitterImage.getHeight();
-                            twitterVideo.getLayoutParams().height = h;
-                            twitterVideo.requestLayout();
-                        }
-                    });
+                    // twitterImage.post(new Runnable() {
+                    //     @Override
+                    //     public void run() {
+                    //         int h = twitterImage.getHeight();
+                    //         twitterVideo.getLayoutParams().height = h;
+                    //         twitterVideo.requestLayout();
+                    //     }
+                    // });
 
                     player.addListener(new Player.Listener() {
                         @Override
