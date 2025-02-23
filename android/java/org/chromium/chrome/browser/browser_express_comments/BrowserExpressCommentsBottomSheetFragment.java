@@ -171,18 +171,18 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         View bottomInput = view.findViewById(R.id.sheet_button);
 
         // Method to update the container height
-        Runnable updateHeight = () -> {
-            int visibleHeight = bottomSheet.getHeight();
-            int titleHeight = sheetTitle.getHeight();
-            int inputHeight = bottomInput.getHeight();
-            int newHeight = visibleHeight - titleHeight - inputHeight;
+        // Runnable updateHeight = () -> {
+        //     int visibleHeight = bottomSheet.getHeight();
+        //     int titleHeight = sheetTitle.getHeight();
+        //     int inputHeight = bottomInput.getHeight();
+        //     int newHeight = visibleHeight - titleHeight - inputHeight;
 
-            if (newHeight > 0) {
-                ViewGroup.LayoutParams containerParams = bottomSheetContainer.getLayoutParams();
-                containerParams.height = newHeight;
-                bottomSheetContainer.setLayoutParams(containerParams);
-            }
-        };
+        //     if (newHeight > 0) {
+        //         ViewGroup.LayoutParams containerParams = bottomSheetContainer.getLayoutParams();
+        //         containerParams.height = newHeight;
+        //         bottomSheetContainer.setLayoutParams(containerParams);
+        //     }
+        // };
 
         // Adjust height after layout is complete
         bottomSheet.post(updateHeight);
@@ -196,7 +196,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
             @Override
             public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                updateHeight.run();
+                // updateHeight.run();
+                int visibleHeight = bottomSheet.getHeight();
+                int titleHeight = sheetTitle.getHeight();
+                int inputHeight = bottomInput.getHeight();
+                int newHeight = visibleHeight - titleHeight - inputHeight;
+
+                if (newHeight > 0) {
+                    ViewGroup.LayoutParams containerParams = bottomSheetContainer.getLayoutParams();
+                    containerParams.height = newHeight;
+                    bottomSheetContainer.setLayoutParams(containerParams);
+                }
             }
         });
 
