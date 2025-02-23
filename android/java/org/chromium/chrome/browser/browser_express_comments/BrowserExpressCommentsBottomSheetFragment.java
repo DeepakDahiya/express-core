@@ -139,13 +139,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int screenHeight = displayMetrics.heightPixels;
 
         int defaultHeight = (int) (screenHeight * 0.8);
-        int fullHeight = screenHeight;
 
-        // ViewGroup.LayoutParams params = view.getLayoutParams();
-        // params.height = defaultHeight; 
-        // view.setLayoutParams(params);
+        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+        BottomSheetBehavior behavior = dialog.getBehavior();
 
-        ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        behavior.setMaxHeight(defaultHeight);
+
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
