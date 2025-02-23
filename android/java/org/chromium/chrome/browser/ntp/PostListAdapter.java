@@ -107,7 +107,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private class PostHolder extends RecyclerView.ViewHolder {
         LinearLayout twitterPostLayout;
-        LinearLayout recylerOverlayLayout;
         ImageView twitterProfilePicture;
         TextView twitterUsername;
         TextView twitterContent;
@@ -152,7 +151,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
         PostHolder(View itemView, RecyclerView topPostRecycler) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
-            recylerOverlayLayout = (LinearLayout) itemView.findViewById(R.id.recycler_overlay);
             twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
             twitterUsername = (TextView) itemView.findViewById(R.id.twitter_username);
             twitterContent = (TextView) itemView.findViewById(R.id.twitter_content);
@@ -292,15 +290,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     }
                 });
 
-                recylerOverlayLayout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId(), true);
-                    }
-                });
-
                 twitterPostLayout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
@@ -369,14 +358,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
 
-                    // twitterImage.post(new Runnable() {
-                    //     @Override
-                    //     public void run() {
-                    //         int h = twitterImage.getHeight();
-                    //         twitterVideo.getLayoutParams().height = h;
-                    //         twitterVideo.requestLayout();
-                    //     }
-                    // });
+                    twitterImage.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            int h = twitterImage.getHeight();
+                            twitterVideo.getLayoutParams().height = h;
+                            twitterVideo.requestLayout();
+                        }
+                    });
 
                     player.addListener(new Player.Listener() {
                         @Override

@@ -200,24 +200,12 @@
         android:visibility="gone"
         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
-    <FrameLayout
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recycler_top_comments"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/recycler_top_comments"
-            android:layout_width="match_parent"
-            android:layout_marginHorizontal="15dp"
-            android:layout_height="wrap_content"/>
-
-        <View
-            android:id="@+id/recycler_overlay"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:background="@android:color/transparent"
-            android:visibility="invisible"
-            android:translationZ="10dp"/>
-    </FrameLayout>
+        android:layout_marginHorizontal="15dp"
+        android:layout_weight="1"
+        android:layout_height="0dp"/>
 
     <Button
         android:id="@+id/btn_comment"
