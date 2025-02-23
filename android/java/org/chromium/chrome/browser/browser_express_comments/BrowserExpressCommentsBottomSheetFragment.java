@@ -135,6 +135,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        // Get screen height for calculations
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
@@ -142,74 +143,74 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int maxHeight = (int) (screenHeight * 0.8);
         int peekHeight = (int) (screenHeight * 0.6);
 
-        ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.height = maxHeight;
-        view.setLayoutParams(params);
+        // Set max height for the bottom sheet view
+        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
+        layoutParams.height = maxHeight;
+        view.setLayoutParams(layoutParams);
 
+        // Get BottomSheetDialog and its behavior
         BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) getDialog();
-        BottomSheetBehavior<View> behavior = bottomSheetDialog.getBehavior();
+        FrameLayout bottomSheet = bottomSheetDialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        
+        if (bottomSheet == null) {
+            return; // Prevent crash if bottomSheet is not found
+        }
+
+        BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
 
         behavior.setPeekHeight(peekHeight, true);
         behavior.setHalfExpandedRatio(0.6f);
         behavior.setFitToContents(false);
-
         behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
+        // Get inner views for height adjustment
         View bottomSheetContainer = view.findViewById(R.id.bottom_sheet_container);
         View sheetTitle = view.findViewById(R.id.sheet_title);
         View bottomInput = view.findViewById(R.id.sheet_button);
 
+        // Method to update the container height
         Runnable updateHeight = () -> {
-            if (bottomSheet == null) return;
-
             int visibleHeight = bottomSheet.getHeight();
             int titleHeight = sheetTitle.getHeight();
             int inputHeight = bottomInput.getHeight();
             int newHeight = visibleHeight - titleHeight - inputHeight;
 
             if (newHeight > 0) {
-                ViewGroup.LayoutParams params = bottomSheetContainer.getLayoutParams();
-                params.height = newHeight;
-                bottomSheetContainer.setLayoutParams(params);
+                ViewGroup.LayoutParams containerParams = bottomSheetContainer.getLayoutParams();
+                containerParams.height = newHeight;
+                bottomSheetContainer.setLayoutParams(containerParams);
             }
         };
 
+        // Adjust height after layout is complete
         bottomSheet.post(updateHeight);
 
+        // Listen for BottomSheet slide events
         behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
             @Override
-                public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                }
+            public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                // Handle state changes if needed
+            }
 
-                @Override
-                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                    updateHeight.run();
-                    // int visibleHeight = bottomSheet.getHeight();
+            @Override
+            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                updateHeight.run();
+            }
+        });
 
-                    // int titleHeight = sheetTitle.getHeight();
-
-                    // int inputHeight = bottomInput.getHeight();
-
-                    // int newHeight = visibleHeight - titleHeight - inputHeight - 20;
-
-                    // if (newHeight > 0) {
-                    //     ViewGroup.LayoutParams params = bottomSheetContainer.getLayoutParams();
-                    //     params.height = newHeight;
-                    //     bottomSheetContainer.setLayoutParams(params);
-                    // }
-                }
-            });
-
+        // Ensure soft keyboard adjusts the bottom sheet
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
+        // Read preference for modal count
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
         if (braveDefaultModalCount > 2 && !isFromMenu) {
+            // Handle condition if needed
         } else {
+            // Handle other case if needed
         }
     }
-
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
