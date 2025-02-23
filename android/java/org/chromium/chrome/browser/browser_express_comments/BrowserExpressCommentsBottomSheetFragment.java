@@ -134,26 +134,19 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int maxHeight = (int) (screenHeight * 0.8);
-        int peekHeight = (int) (screenHeight * 0.6);
+        int defaultHeight = (int) (screenHeight * 0.8);
+        int fullHeight = screenHeight;
 
         ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.height = maxHeight;
+        params.height = defaultHeight; 
         view.setLayoutParams(params);
 
-        BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) getDialog();
-        BottomSheetBehavior<View> behavior = bottomSheetDialog.getBehavior();
-
-        behavior.setPeekHeight(peekHeight, true);
-        behavior.setHalfExpandedRatio(0.6f);
-        behavior.setFitToContents(false);
-
-        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        ((BottomSheetDialog) getDialog()).getBehavior().setHalfExpandedRatio(0.6f);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -164,7 +157,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } else {
         }
     }
-
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
