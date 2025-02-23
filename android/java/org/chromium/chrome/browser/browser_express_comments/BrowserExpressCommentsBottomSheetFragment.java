@@ -133,46 +133,74 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
-        // ((BottomSheetDialog) getDialog())
-        //         .getBehavior()
-        //         .setState(BottomSheetBehavior.STATE_EXPANDED);
+        super.onViewCreated(view, savedInstanceState);
 
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int defaultHeight = (int) (screenHeight * 0.8);
-        int fullHeight = screenHeight;
+        int maxHeight = (int) (screenHeight * 0.8);
+        int peekHeight = (int) (screenHeight * 0.6);
 
         ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.height = defaultHeight; 
+        params.height = maxHeight;
         view.setLayoutParams(params);
 
-        ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) getDialog();
+        BottomSheetBehavior<View> behavior = bottomSheetDialog.getBehavior();
 
-        // // Configure the BottomSheetBehavior
-        // behavior.setPeekHeight(defaultHeight);
-        // behavior.setFitToContents(false);
-        // behavior.setHalfExpandedRatio(0.7f);
-        // behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+        behavior.setPeekHeight(peekHeight, true);
+        behavior.setHalfExpandedRatio(0.6f);
+        behavior.setFitToContents(false);
+
+        behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
+
+        View bottomSheetContainer = view.findViewById(R.id.bottom_sheet_container);
+        View sheetTitle = view.findViewById(R.id.sheet_title);
+        View bottomInput = view.findViewById(R.id.sheet_button);
+
+        Runnable updateHeight = () -> {
+            if (bottomSheet == null) return;
+
+            int visibleHeight = bottomSheet.getHeight();
+            int titleHeight = sheetTitle.getHeight();
+            int inputHeight = bottomInput.getHeight();
+            int newHeight = visibleHeight - titleHeight - inputHeight;
+
+            if (newHeight > 0) {
+                ViewGroup.LayoutParams params = bottomSheetContainer.getLayoutParams();
+                params.height = newHeight;
+                bottomSheetContainer.setLayoutParams(params);
+            }
+        };
+
+        bottomSheet.post(updateHeight);
+
+        behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
+            @Override
+                public void onStateChanged(@NonNull View bottomSheet, int newState) {
+                }
+
+                @Override
+                public void onSlide(@NonNull View bottomSheet, float slideOffset) {
+                    updateHeight.run();
+                    // int visibleHeight = bottomSheet.getHeight();
+
+                    // int titleHeight = sheetTitle.getHeight();
+
+                    // int inputHeight = bottomInput.getHeight();
+
+                    // int newHeight = visibleHeight - titleHeight - inputHeight - 20;
+
+                    // if (newHeight > 0) {
+                    //     ViewGroup.LayoutParams params = bottomSheetContainer.getLayoutParams();
+                    //     params.height = newHeight;
+                    //     bottomSheetContainer.setLayoutParams(params);
+                    // }
+                }
+            });
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
-        // getDialog().getBehavior().addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-        //     @Override
-        //     public void onStateChanged(@NonNull View bottomSheet, int newState) {
-        //     }
-
-        //     @Override
-        //     public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-        //         if(slideOffset > 0) //Sliding happens from 0 (Collapsed) to 1 (Expanded) - if so, calculate margins
-        //             buttonLayoutParams.topMargin = (int) (((expandedHeight - buttonHeight) - collapsedMargin) * slideOffset + collapsedMargin);
-        //         else //If not sliding above expanded, set initial margin
-        //             buttonLayoutParams.topMargin = collapsedMargin;
-        //         binding.sheetButton.setLayoutParams(buttonLayoutParams); //Set layout params to button (margin from top)
-        //     }
-        // });
-
 
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
@@ -181,6 +209,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } else {
         }
     }
+
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
