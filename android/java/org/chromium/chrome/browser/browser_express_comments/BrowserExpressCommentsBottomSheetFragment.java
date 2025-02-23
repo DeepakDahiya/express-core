@@ -165,55 +165,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         behavior.setFitToContents(false);
         behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
-        // Get inner views for height adjustment
-        View bottomSheetContainer = view.findViewById(R.id.bottom_sheet_container);
-        View sheetTitle = view.findViewById(R.id.sheet_title);
-        View bottomInput = view.findViewById(R.id.sheet_button);
-
-        // Method to update the container height
-        // Runnable updateHeight = () -> {
-        //     int visibleHeight = bottomSheet.getHeight();
-        //     int titleHeight = sheetTitle.getHeight();
-        //     int inputHeight = bottomInput.getHeight();
-        //     int newHeight = visibleHeight - titleHeight - inputHeight;
-
-        //     if (newHeight > 0) {
-        //         ViewGroup.LayoutParams containerParams = bottomSheetContainer.getLayoutParams();
-        //         containerParams.height = newHeight;
-        //         bottomSheetContainer.setLayoutParams(containerParams);
-        //     }
-        // };
-
-        // Adjust height after layout is complete
-        // bottomSheet.post(updateHeight);
-
-        // Listen for BottomSheet slide events
-        behavior.addBottomSheetCallback(new BottomSheetBehavior.BottomSheetCallback() {
-            @Override
-            public void onStateChanged(@NonNull View bottomSheet, int newState) {
-                // Handle state changes if needed
-            }
-
-            @Override
-            public void onSlide(@NonNull View bottomSheet, float slideOffset) {
-                // updateHeight.run();
-                int visibleHeight = bottomSheet.getHeight();
-                int titleHeight = sheetTitle.getHeight();
-                int inputHeight = bottomInput.getHeight();
-                int newHeight = visibleHeight - titleHeight - inputHeight;
-
-                if (newHeight > 0) {
-                    ViewGroup.LayoutParams containerParams = bottomSheetContainer.getLayoutParams();
-                    containerParams.height = newHeight;
-                    bottomSheetContainer.setLayoutParams(containerParams);
-                }
-            }
-        });
-
-        // Ensure soft keyboard adjusts the bottom sheet
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
-        // Read preference for modal count
         int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
