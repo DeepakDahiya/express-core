@@ -7,8 +7,6 @@
 
 package org.chromium.chrome.browser.browser_express_comments;
 
-import android.graphics.Rect;
-import android.widget.FrameLayout;
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -136,49 +134,26 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int maxHeight = (int) (screenHeight * 0.8); // 80% of the screen
-        int peekHeight = (int) (screenHeight * 0.6); // 60% of the screen
+        int defaultHeight = (int) (screenHeight * 0.8);
+        int fullHeight = screenHeight;
 
-        ViewGroup.LayoutParams params = view.getLayoutParams();
-        params.height = maxHeight;
-        view.setLayoutParams(params);
+        // ViewGroup.LayoutParams params = view.getLayoutParams();
+        // params.height = defaultHeight; 
+        // view.setLayoutParams(params);
 
-        BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) getDialog();
-        if (bottomSheetDialog != null) {
-            FrameLayout bottomSheet = bottomSheetDialog.findViewById(R.id.design_bottom_sheet);
-            if (bottomSheet != null) {
-                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+        ((BottomSheetDialog) getDialog()).getBehavior().setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
-                behavior.setPeekHeight(peekHeight, true);
-                behavior.setHalfExpandedRatio(0.6f);
-                behavior.setFitToContents(false);
-                behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
-
-                // Listen for keyboard visibility changes
-                bottomSheet.getViewTreeObserver().addOnGlobalLayoutListener(() -> adjustForKeyboard(bottomSheet));
-            }
-        }
-
-        // Ensures input moves above the keyboard
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-    }
 
-    // Function to adjust height when keyboard opens
-    private void adjustForKeyboard(View bottomSheet) {
-        Rect rect = new Rect();
-        bottomSheet.getWindowVisibleDisplayFrame(rect);
-        int screenHeight = bottomSheet.getRootView().getHeight();
-        int keyboardHeight = screenHeight - rect.bottom;
+        int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
+                BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
-        if (keyboardHeight > screenHeight * 0.15) { // If keyboard is visible
-            bottomSheet.setPadding(0, 0, 0, keyboardHeight);
+        if (braveDefaultModalCount > 2 && !isFromMenu) {
         } else {
-            bottomSheet.setPadding(0, 0, 0, 0); // Reset when keyboard closes
         }
     }
 
