@@ -7,8 +7,6 @@
 
 package org.chromium.chrome.browser.browser_express_comments;
 
-import android.widget.FrameLayout;
-
 import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -137,7 +135,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        // Get screen height for calculations
         DisplayMetrics displayMetrics = new DisplayMetrics();
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
@@ -145,24 +142,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         int maxHeight = (int) (screenHeight * 0.8);
         int peekHeight = (int) (screenHeight * 0.6);
 
-        // Set max height for the bottom sheet view
-        ViewGroup.LayoutParams layoutParams = view.getLayoutParams();
-        layoutParams.height = maxHeight;
-        view.setLayoutParams(layoutParams);
+        ViewGroup.LayoutParams params = view.getLayoutParams();
+        params.height = maxHeight;
+        view.setLayoutParams(params);
 
-        // Get BottomSheetDialog and its behavior
         BottomSheetDialog bottomSheetDialog = (BottomSheetDialog) getDialog();
-        FrameLayout bottomSheet = bottomSheetDialog.findViewById(R.id.design_bottom_sheet);
-        
-        if (bottomSheet == null) {
-            return; // Prevent crash if bottomSheet is not found
-        }
-
-        BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+        BottomSheetBehavior<View> behavior = bottomSheetDialog.getBehavior();
 
         behavior.setPeekHeight(peekHeight, true);
         behavior.setHalfExpandedRatio(0.6f);
         behavior.setFitToContents(false);
+
         behavior.setState(BottomSheetBehavior.STATE_HALF_EXPANDED);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
@@ -171,11 +161,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
         if (braveDefaultModalCount > 2 && !isFromMenu) {
-            // Handle condition if needed
         } else {
-            // Handle other case if needed
         }
     }
+
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
