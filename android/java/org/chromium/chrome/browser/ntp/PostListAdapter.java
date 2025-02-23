@@ -1,5 +1,6 @@
 package org.chromium.chrome.browser.ntp;
 
+import android.view.GestureDetector;
 import android.os.Build;
 import java.util.UUID;
 import java.util.List;
@@ -435,6 +436,28 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
                             activity.showCommentsBottomSheetFromPost(post.getId(), false);
                         }
+                    }
+                });
+
+                mTopPostRecycler.addOnItemTouchListener(new RecyclerView.SimpleOnItemTouchListener() {
+                    GestureDetector gestureDetector = new GestureDetector(recyclerView.getContext(),
+                        new GestureDetector.SimpleOnGestureListener() {
+                            @Override
+                            public boolean onSingleTapUp(MotionEvent e) {
+                                return true;
+                            }
+                        });
+
+                    @Override
+                    public boolean onInterceptTouchEvent(RecyclerView rv, MotionEvent e) {
+                        View child = rv.findChildViewUnder(e.getX(), e.getY());
+                        if (child != null && gestureDetector.onTouchEvent(e)) {
+                            int position = rv.getChildAdapterPosition(child);
+                            layoutManager.scrollToPositionWithOffset(position, 0);
+                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                            return true;
+                        }
+                        return false;
                     }
                 });
 
