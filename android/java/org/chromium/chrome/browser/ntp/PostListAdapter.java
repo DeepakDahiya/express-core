@@ -301,11 +301,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
-                // if(twitterImageUrl != null){
-                //     ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
-                //     twitterMediaCard.setVisibility(View.VISIBLE);
-                //     twitterImage.setVisibility(View.VISIBLE);
-                // }
+                if(twitterImageUrl != null){
+                    // ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
+                    twitterMediaCard.setVisibility(View.VISIBLE);
+                    // twitterImage.setVisibility(View.VISIBLE);
+                }
 
                 titleText.setVisibility(View.GONE);
                 contentText.setVisibility(View.GONE);
