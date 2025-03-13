@@ -157,14 +157,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                     FragmentManager fragmentManager = getChildFragmentManager();
-                    openComments();
-                    return true;
-                    // if (fragmentManager.getBackStackEntryCount() > 1) {
-                    //     // We're on the reply fragment, pop back to comments fragment
-                    //     openComments();
-                    //     return true; // Consume the event
-                    // }
-                    // // Otherwise, let the system handle it (which will dismiss the bottomsheet)
+                    if (fragmentManager.getBackStackEntryCount() > 1) {
+                        openComments();
+                        return true;
+                    }
                 }
                 return false;
             }

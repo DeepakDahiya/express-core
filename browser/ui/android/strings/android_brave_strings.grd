@@ -4193,14 +4193,11 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_CONFIRM_PASSWORD" desc="Brave wallet password hint text">
       Confirm password
     </message>
-    <message name="IDS_VIEWS" desc="Brave wallet password hint text">
-      XP
-    </message>
     <message name="IDS_LIKES_RECEIVED" desc="Brave wallet password hint text">
-      Likes Received
+      Received Xp
     </message>
     <message name="IDS_LIKES_GIVEN" desc="Brave wallet password hint text">
-      Likes Given
+      Given Xp
     </message>
     <message name="IDS_BE_EDIT_PROFILE" desc="Brave wallet password hint text">
       Edit Profile
