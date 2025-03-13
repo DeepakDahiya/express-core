@@ -318,7 +318,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                                             imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                             activity.showGenerateUsernameBottomSheet();
-                                            activity.dismissCommentsBottomSheet();
+                                            // activity.dismissCommentsBottomSheet();
                                             return;
                                         }
 
@@ -374,7 +374,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                             activity.showGenerateUsernameBottomSheet();
-                            activity.dismissCommentsBottomSheet();
+                            // activity.dismissCommentsBottomSheet();
                             return;
                         }
 
@@ -418,7 +418,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                             imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                             activity.showGenerateUsernameBottomSheet();
-                            activity.dismissCommentsBottomSheet();
+                            // activity.dismissCommentsBottomSheet();
                             return;
                         }
 
