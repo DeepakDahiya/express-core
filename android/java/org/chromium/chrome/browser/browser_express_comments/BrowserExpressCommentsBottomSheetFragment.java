@@ -40,6 +40,7 @@ import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.activity.OnBackPressedCallback;
+import androidx.fragment.app.FragmentActivity;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -157,7 +158,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } else {
         }
 
-        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), 
+        ((FragmentActivity) requireActivity()).getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), 
             new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
