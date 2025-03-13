@@ -98,13 +98,6 @@ public class ReplyListFragment extends Fragment {
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-        parentFragment.openComments();
-    }
-
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {

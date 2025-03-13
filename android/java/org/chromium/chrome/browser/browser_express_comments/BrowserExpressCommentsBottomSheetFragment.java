@@ -39,6 +39,7 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.activity.OnBackPressedCallback;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -155,6 +156,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         if (braveDefaultModalCount > 2 && !isFromMenu) {
         } else {
         }
+
+        requireActivity().getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), 
+            new OnBackPressedCallback(true) {
+                @Override
+                public void handleOnBackPressed() {
+                    FragmentManager fragmentManager = getChildFragmentManager();
+                    if (fragmentManager.getBackStackEntryCount() > 1) {
+                        openComments();
+                    } else {
+                        this.remove();
+                        dismissBottomsheet();
+                    }
+                }
+            });
     }
 
     @Override
