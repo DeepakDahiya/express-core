@@ -286,7 +286,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), false);
                     }
                 });
 
@@ -295,7 +295,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), false);
                     }
                 });
                 
