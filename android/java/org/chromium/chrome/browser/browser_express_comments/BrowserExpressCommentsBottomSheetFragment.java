@@ -41,6 +41,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.FragmentActivity;
+import android.view.KeyEvent;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
