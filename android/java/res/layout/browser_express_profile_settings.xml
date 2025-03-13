@@ -62,8 +62,6 @@
                         android:drawableRight="@drawable/xp"
                         android:textStyle="bold" />
 
-                     </LinearLayout>
-
                 </LinearLayout>
 
             </LinearLayout>
