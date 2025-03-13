@@ -59,7 +59,7 @@
                         android:gravity="center"
                         android:textColor="@color/gold_color"
                         android:textSize="36sp"
-                        android:drawableEnd="@drawable/xp"
+                        app:drawableEndCompat="@drawable/xp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -121,7 +121,7 @@
                     android:id="@+id/be_likes_received"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableStart="@drawable/fire"
+                    app:drawableStartCompat="@drawable/fire"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
@@ -154,7 +154,7 @@
                     android:id="@+id/be_likes_given"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableStart="@drawable/gold"
+                    app:drawableStartCompat="@drawable/gold"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
