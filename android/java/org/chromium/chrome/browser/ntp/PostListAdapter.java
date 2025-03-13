@@ -301,11 +301,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 
 
                 ImageLoader.downloadImage(profilePicUrl, Glide.with(activity), false, 5, twitterProfilePicture, null);
-                if(twitterImageUrl != null){
-                    ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
-                    twitterMediaCard.setVisibility(View.VISIBLE);
-                    twitterImage.setVisibility(View.VISIBLE);
-                }
+                // if(twitterImageUrl != null){
+                //     ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, twitterImage, null);
+                //     twitterMediaCard.setVisibility(View.VISIBLE);
+                //     twitterImage.setVisibility(View.VISIBLE);
+                // }
 
                 titleText.setVisibility(View.GONE);
                 contentText.setVisibility(View.GONE);
@@ -329,6 +329,14 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                     // Prepare player
                     player.prepare();
+
+                    // // Set video player to be visible and MATCH_PARENT width
+                    // twitterVideo.setVisibility(View.VISIBLE);
+                    // ViewGroup.LayoutParams params = twitterVideo.getLayoutParams();
+                    // params.width = ViewGroup.LayoutParams.MATCH_PARENT;
+                    // // We'll let the aspect ratio be determined by the video content
+                    // // using the player's built-in aspect ratio handling
+                    // twitterVideo.setLayoutParams(params);
 
                     playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
                     playPauseIcon.setVisibility(View.VISIBLE);
@@ -358,21 +366,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     twitterVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
 
-                    twitterImage.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            int h = twitterImage.getHeight();
-                            twitterVideo.getLayoutParams().height = h;
-                            twitterVideo.requestLayout();
-                        }
-                    });
-
                     player.addListener(new Player.Listener() {
                         @Override
                         public void onPlaybackStateChanged(int state) {
                             if (state == Player.STATE_READY) {
+                                // Now that the video is ready, hide the image thumbnail
                                 twitterImage.setVisibility(View.GONE);
-                                twitterVideo.setVisibility(View.VISIBLE);
                                 setupProgressBar();
                             }
                         }
@@ -387,15 +386,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                             }
                         }
                     });
-
-                    // twitterVideo.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
-                    //     @Override
-                    //     public void onPrepared(MediaPlayer mp) {
-                    //         twitterImage.setVisibility(View.GONE);
-                    //         twitterVideo.setVisibility(View.VISIBLE);
-                    //         twitterVideo.start();
-                    //     }
-                    // });
                 }
             } else {
                 twitterPostLayout.setVisibility(View.GONE);
