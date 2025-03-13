@@ -163,12 +163,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 @Override
                 public void handleOnBackPressed() {
                     FragmentManager fragmentManager = getChildFragmentManager();
-                    if (fragmentManager.getBackStackEntryCount() > 1) {
-                        openComments();
-                    } else {
-                        this.remove();
-                        dismissBottomsheet();
-                    }
+                    openComments();
+                    // if (fragmentManager.getBackStackEntryCount() > 1) {
+                    //     openComments();
+                    // } else {
+                    //     this.remove();
+                    //     dismissBottomsheet();
+                    // }
                 }
             });
     }
