@@ -186,7 +186,7 @@ public class CommentListFragment extends Fragment {
                                 InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                                 imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
                                 activity.showGenerateUsernameBottomSheet();
-                                parentFragment.dismissBottomsheet();
+                                // parentFragment.dismissBottomsheet();
                             } else {
                                 String content = mMessageEditText.getText().toString().trim();
                                 if(content.length() > 0){
