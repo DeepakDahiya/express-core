@@ -59,7 +59,7 @@
                         android:gravity="center"
                         android:textColor="@color/gold_color"
                         android:textSize="36sp"
-                        android:drawableRight="@drawable/xp"
+                        android:drawableEnd="@drawable/xp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -119,9 +119,9 @@
 
                 <TextView
                     android:id="@+id/be_likes_received"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/fire"
+                    android:drawableStart="@drawable/fire"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
@@ -129,7 +129,7 @@
 
                 <TextView
                     android:id="@+id/textView5"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/likes_received"
@@ -152,9 +152,9 @@
 
                 <TextView
                     android:id="@+id/be_likes_given"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:drawableLeft="@drawable/gold"
+                    android:drawableStart="@drawable/gold"
                     android:gravity="center"
                     android:textColor="@color/news_settings_title_color"
                     android:textSize="18sp"
@@ -162,7 +162,7 @@
 
                 <TextView
                     android:id="@+id/textView6"
-                    android:layout_width="0dp"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:lineSpacingExtra="6sp"
