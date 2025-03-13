@@ -52,29 +52,15 @@
                         android:textSize="14sp"
                         android:paddingVertical="8dp" />
 
-                    <LinearLayout
+                    <TextView
+                        android:id="@+id/be_views"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center">
-
-                        <TextView
-                            android:id="@+id/be_views"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="center"
-                            android:textColor="@color/gold_color"
-                            android:textSize="36sp"
-                            android:textStyle="bold" />
-
-                        <ImageView
-                            android:background="@drawable/xp"
-                            android:layout_height="70sp"
-                            android:layout_width="70sp"
-                            android:layout_gravity="center"
-                            android:visibility="visible"
-                            android:layout_marginStart="12sp"
-                            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+                        android:gravity="center"
+                        android:textColor="@color/gold_color"
+                        android:textSize="36sp"
+                        android:drawableRight="@drawable/xp"
+                        android:textStyle="bold" />
 
                      </LinearLayout>
 
@@ -133,30 +119,15 @@
                 android:orientation="vertical"
                 android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/be_likes_received"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:background="@drawable/fire"
-                        android:layout_height="24sp"
-                        android:layout_width="24sp"
-                        android:layout_gravity="center"
-                        android:visibility="visible"
-                        android:layout_marginEnd="4sp"
-                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-                    <TextView
-                        android:id="@+id/be_likes_received"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:textColor="@color/news_settings_title_color"
-                        android:textSize="18sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
+                    android:drawableLeft="@drawable/fire"
+                    android:gravity="center"
+                    android:textColor="@color/news_settings_title_color"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/textView5"
@@ -181,30 +152,15 @@
                 android:orientation="vertical"
                 android:gravity="center">
 
-                <LinearLayout
-                    android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/be_likes_given"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
-
-                    <ImageView
-                        android:background="@drawable/gold"
-                        android:layout_height="24sp"
-                        android:layout_width="24sp"
-                        android:layout_gravity="center"
-                        android:visibility="visible"
-                        android:layout_marginEnd="4sp"
-                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-
-                    <TextView
-                        android:id="@+id/be_likes_given"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:gravity="center"
-                        android:textColor="@color/news_settings_title_color"
-                        android:textSize="18sp"
-                        android:textStyle="bold"/>
-                </LinearLayout>
+                    android:drawableLeft="@drawable/gold"
+                    android:gravity="center"
+                    android:textColor="@color/news_settings_title_color"
+                    android:textSize="18sp"
+                    android:textStyle="bold"/>
 
                 <TextView
                     android:id="@+id/textView6"
