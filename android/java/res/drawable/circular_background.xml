@@ -5,6 +5,6 @@
     android:thickness="4dp"
     android:useLevel="false">
 
-    <solid android:color="#e1e1e1"/>
+    <solid android:color="@color/circle_border"/>
 
 </shape>

@@ -63,7 +63,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:textColor="@color/gold_color"
-                            android:drawablePadding="12dp"
+                            android:drawablePadding="4dp"
                             android:textSize="36sp"
                             app:drawableEndCompat="@drawable/xp"
                             android:textStyle="bold" />
