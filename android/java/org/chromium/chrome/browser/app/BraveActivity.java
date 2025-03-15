@@ -374,6 +374,8 @@ public abstract class BraveActivity extends ChromeActivity
             BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
         }
 
+        BraveFeatureUtil.enableFeature(BraveFeatureList.ENABLE_FORCE_DARK, true, true);
+
         if(!NotificationManagerCompat.from(this).areNotificationsEnabled()){
             this.showNotificationRationale();
             // BravePermissionUtils.requestPermission(this);
