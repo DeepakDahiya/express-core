@@ -261,5 +261,6 @@
 
     <color name="content_color">#DCDCDC</color>
     <color name="top_profile_bg_color">#383838</color>
+    <color name="profile_sub_bg_color">#323639</color>
     <color name="gold_color">#FAD569</color>
 </resources>

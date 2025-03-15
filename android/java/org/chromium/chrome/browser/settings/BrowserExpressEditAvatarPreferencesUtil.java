@@ -33,6 +33,10 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.io.FileInputStream;
 import java.io.InputStream;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 
 public class BrowserExpressEditAvatarPreferencesUtil {
     private static final String TAG = "Edit_Avatar_Browser_Express";
@@ -94,6 +98,11 @@ public class BrowserExpressEditAvatarPreferencesUtil {
         HttpURLConnection urlConnection = null;
         StringBuilder sb = new StringBuilder();
         try {
+            Bitmap originalBitmap = BitmapFactory.decodeStream(imageStream);
+            ByteArrayOutputStream pngOutputStream = new ByteArrayOutputStream();
+            originalBitmap.compress(Bitmap.CompressFormat.PNG, 100, pngOutputStream);
+            InputStream pngInputStream = new ByteArrayInputStream(pngOutputStream.toByteArray());
+
             URL url = new URL(EDIT_AVATAR_URL);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
@@ -120,17 +129,17 @@ public class BrowserExpressEditAvatarPreferencesUtil {
 
             long epochTime = System.currentTimeMillis();
             int randomNum = (int) (Math.random() * 1000); // Random number between 0 and 999
-            String name = "avatar_" + epochTime + "_" + randomNum + ".jpg";
+            String name = "avatar_" + epochTime + "_" + randomNum + ".png";
 
             outputStream.write(("--" + boundary + LINE_FEED).getBytes());
             outputStream.write(("Content-Disposition: form-data; name=\"reports\"; filename=\"" + name + "\"" + LINE_FEED).getBytes());
-            outputStream.write(("Content-Type: image/jpeg" + LINE_FEED + LINE_FEED).getBytes());
+            outputStream.write(("Content-Type: image/png" + LINE_FEED + LINE_FEED).getBytes());
             byte[] buffer = new byte[4096];
             int bytesRead;
-            while ((bytesRead = imageStream.read(buffer)) != -1) {
+            while ((bytesRead = pngInputStream.read(buffer)) != -1) {
                 outputStream.write(buffer, 0, bytesRead);
             }
-            imageStream.close();
+            pngInputStream.close();
             outputStream.write(LINE_FEED.getBytes());
 
             // End of multipart
