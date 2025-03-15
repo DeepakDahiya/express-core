@@ -326,8 +326,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         }else{
                             mLikesReceivedText.setText("-");
                         }
-                    } catch (JSONException e) {
-                        Log.e("Express Browser Access Token", e.getMessage());
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
