@@ -290,9 +290,21 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                         if(avatar != null && avatar.length() > 0){
-                            ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, null);
-                        }else{
-                            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
+                            ImageLoader.Callback callback = new ImageLoader.Callback() {
+                                @Override
+                                public boolean onLoadFailed() {
+                                    Log.e(TAG, "Failed to load avatar from URL: " + avatar);
+                                    mAvatarImage.setImageResource(R.drawable.btn_toolbar_profile);
+                                    return true;
+                                }
+                                
+                                @Override
+                                public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
+                                    Log.d(TAG, "Successfully loaded avatar from URL: " + avatar);
+                                    return false; // Return false to allow Glide to set the resource
+                                }
+                            };
+                            ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, callback);
                         }
 
                         if(xp != null && xp.length() > 0){
