@@ -25,6 +25,8 @@ import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import org.chromium.base.task.AsyncTask;
+import android.graphics.drawable.Drawable;
+import com.bumptech.glide.request.target.Target;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -293,14 +295,14 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                             ImageLoader.Callback callback = new ImageLoader.Callback() {
                                 @Override
                                 public boolean onLoadFailed() {
-                                    Log.e(TAG, "Failed to load avatar from URL: " + avatar);
+                                    Log.e("LOADING IMAGE", "Failed to load avatar from URL: " + avatar);
                                     mAvatarImage.setImageResource(R.drawable.btn_toolbar_profile);
                                     return true;
                                 }
                                 
                                 @Override
                                 public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
-                                    Log.d(TAG, "Successfully loaded avatar from URL: " + avatar);
+                                    Log.d("LOADING IMAGE", "Successfully loaded avatar from URL: " + avatar);
                                     return false; // Return false to allow Glide to set the resource
                                 }
                             };
