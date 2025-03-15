@@ -377,8 +377,8 @@
 
     <color name="vote_border_color">#818181</color>
 
-    <color name="top_profile_bg_color">#0A0909</color>
+    <color name="top_profile_bg_color">#a3a3a3</color>
     <color name="bottom_profile_bg_color">#fce190</color>
-    <color name="profile_sub_bg_color">#323639</color>
+    <color name="profile_sub_bg_color">#dddddd</color>
     <color name="gold_color">#FAD569</color>
 </resources>
