@@ -8,10 +8,11 @@ public class Comment{
     private int commentCount;  
     private String commentParent;  
     private String pageParent;  
+    private String postParent;  
     private User user;
     private Vote didVote;
 
-    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String commentParent, User user, Vote vote) {  
+    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote) {  
         this._id = _id;  
         this.content = content;
         this.upvoteCount = upvoteCount;
@@ -21,6 +22,7 @@ public class Comment{
         this.didVote = vote;
         this.commentParent = commentParent;
         this.pageParent = pageParent;
+        this.postParent = postParent;
     }  
 
     public String getId() {  
@@ -33,6 +35,10 @@ public class Comment{
 
     public String getPageParent() {  
         return this.pageParent;  
+    }
+
+    public String getPostParent() {  
+        return this.postParent;  
     }
 
     public User getUser() {  

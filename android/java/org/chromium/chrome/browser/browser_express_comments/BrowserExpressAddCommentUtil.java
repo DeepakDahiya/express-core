@@ -141,9 +141,13 @@ public class BrowserExpressAddCommentUtil {
                     User u = new User(user.getString("_id"), user.getString("username"));
                     Vote v = null;
                     String pageParent = null;
+                    String postParent = null;
                     String commentParent = null;
                     if(comment.has("pageParent")){
                         pageParent = comment.getString("pageParent");
+                    }
+                    if(comment.has("postParent")){
+                        postParent = comment.getString("postParent");
                     }
 
                     if(comment.has("commentParent")){
@@ -156,6 +160,7 @@ public class BrowserExpressAddCommentUtil {
                         comment.getInt("downvoteCount"),
                         comment.getInt("commentCount"),
                         pageParent, 
+                        postParent,
                         commentParent,
                         u,
                         v));

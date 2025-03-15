@@ -171,9 +171,14 @@ public class BrowserExpressGetCommentsUtil {
                                 v = new Vote(didVote.getString("_id"), didVote.getString("type"));
                             }
                             String pageParent = null;
+                            String postParent = null;
                             String commentParent = null;
                             if(parentComment.has("pageParent")){
                                 pageParent = parentComment.getString("pageParent");
+                            }
+
+                            if(parentComment.has("postParent")){
+                                postParent = parentComment.getString("postParent");
                             }
 
                             if(parentComment.has("commentParent")){
@@ -188,6 +193,7 @@ public class BrowserExpressGetCommentsUtil {
                                 parentComment.getInt("downvoteCount"),
                                 parentComment.getInt("commentCount"),
                                 pageParent,
+                                postParent,
                                 commentParent,
                                 u, 
                                 v));
@@ -206,9 +212,14 @@ public class BrowserExpressGetCommentsUtil {
                             v = new Vote(didVote.getString("_id"), didVote.getString("type"));
                         }
                         String pageParent = null;
+                        String postParent = null;
                         String commentParent = null;
                         if(comment.has("pageParent")){
                             pageParent = comment.getString("pageParent");
+                        }
+
+                        if(comment.has("postParent")){
+                            postParent = comment.getString("postParent");
                         }
 
                         if(comment.has("commentParent")){
@@ -224,6 +235,7 @@ public class BrowserExpressGetCommentsUtil {
                             comment.getInt("downvoteCount"),
                             comment.getInt("commentCount"),
                             pageParent,
+                            postParent,
                             commentParent,
                             u, 
                             v));

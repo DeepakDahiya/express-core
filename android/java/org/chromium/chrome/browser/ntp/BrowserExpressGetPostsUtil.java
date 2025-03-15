@@ -194,9 +194,14 @@ public class BrowserExpressGetPostsUtil {
                                 Vote commentVote = null;
 
                                 String pageParent = null;
+                                String postParent = null;
                                 String commentParent = null;
                                 if(comment.has("pageParent")){
                                     pageParent = comment.getString("pageParent");
+                                }
+
+                                if(comment.has("postParent")){
+                                    postParent = comment.getString("postParent");
                                 }
 
                                 if(comment.has("commentParent")){
@@ -212,6 +217,7 @@ public class BrowserExpressGetPostsUtil {
                                     comment.getInt("downvoteCount"),
                                     comment.getInt("commentCount"),
                                     pageParent,
+                                    postParent,
                                     commentParent,
                                     commentUserObj,
                                     commentVote

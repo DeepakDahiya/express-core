@@ -208,6 +208,27 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
                 mCommentLayout.setPadding(10, 10, 10, 0);
 
+                usernameText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
+                    }
+                });
+
+                mCommentLayout.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
+                    }
+                });
+
+                contentText.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
+                    }
+                });
+
                 if(comment.getContent().toString().length() > 75){
                     String contentString = comment.getContent().toString().subSequence(0, 75) + "...";
                     contentText.setText(contentString);
@@ -241,9 +262,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                 User u = new User(user.getString("_id"), user.getString("username"));
                                 Vote v = null;
                                 String pageParent = null;
+                                String postParent = null;
                                 String commentParent = null;
                                 if(commentObject.has("pageParent")){
                                     pageParent = commentObject.getString("pageParent");
+                                }
+
+                                if(commentObject.has("postParent")){
+                                    postParent = commentObject.getString("postParent");
                                 }
 
                                 if(commentObject.has("commentParent")){
@@ -258,6 +284,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                         commentObject.getInt("downvoteCount"),
                                         commentObject.getInt("commentCount"),
                                         pageParent, 
+                                        postParent,
                                         commentParent,
                                         u,
                                         v);
