@@ -15,7 +15,12 @@
     android:paddingTop="@dimen/toolbar_height_no_shadow"
     android:visibility="visible" >
 
-    <!-- <TextView
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:fillViewport="true">
+
+    <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/browser_express_name"
@@ -24,7 +29,7 @@
         android:textColor="@color/content_color"
         android:layout_marginVertical="16dp"
         android:textStyle="bold"
-        android:textSize="40sp"/> -->
+        android:textSize="40sp"/>
 
     <FrameLayout
         android:id="@+id/logo_holder"
@@ -72,13 +77,6 @@
             android:textColor="@color/news_settings_title_color"
             android:textStyle="bold"
             android:textSize="18sp"/>
-        <ImageButton
-            android:id="@+id/btn_menu"
-            android:layout_width="16sp"
-            android:layout_height="18sp"
-            android:background="@drawable/btn_menu"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-            android:scaleType="centerCrop" />
     </LinearLayout>
 
      <ProgressBar
@@ -93,7 +91,7 @@
         android:id="@+id/recycler_posts"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="44sp"
+        android:layout_marginTop="88sp"
         android:overScrollMode="never" />
 
     <LinearLayout
@@ -143,5 +141,7 @@
 
     <include layout="@layout/ntp_non_disruptive_banner"/>
     <include layout="@layout/bre_bottom_banner"/>
+
+    </androidx.core.widget.NestedScrollView>
 
 </org.chromium.chrome.browser.ntp.BraveNewTabPageLayout>
