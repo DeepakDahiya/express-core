@@ -25,19 +25,20 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout android:layout_width="match_parent"
+            <LinearLayout 
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
+                android:layout_marginVertical="18dp"
                 android:padding="12dp">
 
                 <TextView
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="@string/browser_express_name"
                     android:layout_gravity="center_horizontal"
-                    android:layout_weight="1"
+                    android:gravity="center"
                     android:textColor="@color/content_color"
-                    android:layout_marginVertical="32dp"
                     android:textStyle="bold"
                     android:textSize="40sp"/>
 
