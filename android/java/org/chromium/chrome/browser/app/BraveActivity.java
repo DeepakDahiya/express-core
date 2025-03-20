@@ -367,8 +367,8 @@ public abstract class BraveActivity extends ChromeActivity
         mSafeBrowsingFlagEnabled =
                 ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
 
-        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, 1);
-        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+        // SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, 1);
+        // AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         executeInitSafeBrowsing(0);
         showPersistentNotification();
@@ -576,7 +576,7 @@ public abstract class BraveActivity extends ChromeActivity
         Intent intent = new Intent(context, BraveActivity.class);
         intent.setAction(Intent.ACTION_MAIN);
         intent.addCategory(Intent.CATEGORY_LAUNCHER);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
         
         // Use FLAG_UPDATE_CURRENT to update existing PendingIntent with same ID
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
