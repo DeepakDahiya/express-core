@@ -36,6 +36,8 @@ import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
+
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -223,7 +225,7 @@ import android.app.PictureInPictureParams;
 import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
 import java.util.ArrayList;
 import org.chromium.chrome.browser.notifications.BravePermissionUtils;
-
+import static org.chromium.chrome.browser.preferences.ChromePreferenceKeys.UI_THEME_SETTING;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
@@ -364,6 +366,9 @@ public abstract class BraveActivity extends ChromeActivity
         // when the flag state is changed in any case
         mSafeBrowsingFlagEnabled =
                 ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ANDROID_SAFE_BROWSING);
+
+        SharedPreferencesManager.getInstance().writeInt(UI_THEME_SETTING, 1);
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
 
         executeInitSafeBrowsing(0);
         showPersistentNotification();
@@ -569,9 +574,13 @@ public abstract class BraveActivity extends ChromeActivity
 
         // Add an intent to open the app when notification is clicked
         Intent intent = new Intent(context, BraveActivity.class);
+        intent.setAction(Intent.ACTION_MAIN);
+        intent.addCategory(Intent.CATEGORY_LAUNCHER);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        
+        // Use FLAG_UPDATE_CURRENT to update existing PendingIntent with same ID
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent.FLAG_IMMUTABLE | PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
