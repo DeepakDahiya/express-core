@@ -37,7 +37,7 @@ dark_mode::BraveDarkModeType GetDarkModeTypeBasedOnChannel() {
   switch (chrome::GetChannel()) {
     case version_info::Channel::STABLE:
     case version_info::Channel::BETA:
-      return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
+      return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_LIGHT;
     case version_info::Channel::DEV:
     case version_info::Channel::CANARY:
     case version_info::Channel::UNKNOWN:
@@ -128,7 +128,6 @@ void SetBraveDarkModeType(const std::string& type) {
   } else if (type == "Dark") {
     parsed_type = BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
   }
-  parsed_type = BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
   SetBraveDarkModeType(parsed_type);
 }
 
