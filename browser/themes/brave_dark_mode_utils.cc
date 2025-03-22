@@ -113,7 +113,7 @@ std::string GetStringFromBraveDarkModeType(BraveDarkModeType type) {
 
 void SetBraveDarkModeType(const std::string& type) {
   BraveDarkModeType parsed_type =
-      BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT;
+      BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
 
   if (type == "Light") {
     parsed_type = BraveDarkModeType::BRAVE_DARK_MODE_TYPE_LIGHT;
@@ -143,7 +143,7 @@ BraveDarkModeType GetActiveBraveDarkModeType() {
 
   BraveDarkModeType type = static_cast<BraveDarkModeType>(
       g_browser_process->local_state()->GetInteger(kBraveDarkMode));
-  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT) {
+  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK) {
     if (!SystemDarkModeEnabled())
       return GetDarkModeTypeBasedOnChannel();
 
@@ -169,7 +169,7 @@ BraveDarkModeType GetBraveDarkModeType() {
 
   BraveDarkModeType type = static_cast<BraveDarkModeType>(
       g_browser_process->local_state()->GetInteger(kBraveDarkMode));
-  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT) {
+  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK) {
     if (!SystemDarkModeEnabled())
       return GetDarkModeTypeBasedOnChannel();
     return type;
@@ -184,7 +184,7 @@ base::Value::List GetBraveDarkModeTypeList() {
     base::Value::Dict system_type;
     system_type.Set(
         "value",
-        static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT));
+        static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK));
     system_type.Set("name", brave_l10n::GetLocalizedResourceUTF16String(
                                 IDS_BRAVE_THEME_TYPE_SYSTEM));
     list.Append(std::move(system_type));
