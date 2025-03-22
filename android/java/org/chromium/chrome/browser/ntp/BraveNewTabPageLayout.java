@@ -263,7 +263,7 @@ public class BraveNewTabPageLayout
                             int oldHeight = oldBottom - oldTop;
                             int newHeight = bottom - top;
 
-                            if (oldHeight != newHeight && mIsTopSitesEnabled
+                            if (oldHeight != newHeight
                                     && mNtpAdapter != null) {
                                 new Handler(Looper.getMainLooper()).post(() -> {
                                     mNtpAdapter.notifyItemRangeChanged(mNtpAdapter.getStatsCount(),
@@ -301,6 +301,7 @@ public class BraveNewTabPageLayout
 
         mIsDisplayNewsOptin = false;
         mIsDisplayNewsFeed = false;
+        mIsTopSitesEnabled = true;
 
         initPreferenceObserver();
         if (mPreferenceObserver != null) {
@@ -737,8 +738,6 @@ public class BraveNewTabPageLayout
 
     private void initPreferenceObserver() {
         mPreferenceObserver = (key) -> {
-            mIsTopSitesEnabled = true;
-            mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
             if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
                 mIsTopSitesEnabled = shouldDisplayTopSites();
                 mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
