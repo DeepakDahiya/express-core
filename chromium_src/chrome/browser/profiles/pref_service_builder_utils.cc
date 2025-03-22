@@ -34,6 +34,12 @@ void RegisterProfilePrefs(bool is_signin_profile,
 
   registry->SetDefaultPrefValue(prefs::kSigninAllowedOnNextStartup,
                                 base::Value(false));
+
+  // Set default theme to dark mode
+  registry->SetDefaultPrefValue(
+      kBraveDarkMode,
+      base::Value(static_cast<int>(dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK)));
+
 #if BUILDFLAG(IS_LINUX)
   // Use brave theme by default instead of gtk theme.
   registry->SetDefaultPrefValue(
