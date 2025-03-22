@@ -34,16 +34,8 @@ void ClearBraveDarkModeProfilePrefs(PrefService* prefs) {
 }
 
 dark_mode::BraveDarkModeType GetDarkModeTypeBasedOnChannel() {
-  switch (chrome::GetChannel()) {
-    case version_info::Channel::STABLE:
-    case version_info::Channel::BETA:
-      return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_LIGHT;
-    case version_info::Channel::DEV:
-    case version_info::Channel::CANARY:
-    case version_info::Channel::UNKNOWN:
-    default:
-      return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
-  }
+  // Always return dark mode regardless of channel
+  return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
 }
 
 dark_mode::BraveDarkModeType GetDarkModeSwitchValue(
@@ -84,14 +76,14 @@ void MigrateBraveDarkModePrefs(PrefService* prefs) {
 void RegisterBraveDarkModeLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       kBraveDarkMode,
-      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT));
+      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK));
 }
 
 void RegisterBraveDarkModePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       kBraveThemeType,
-      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT));
+      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK));
   registry->RegisterBooleanPref(kUseOverriddenBraveThemeType, false);
 }
 
