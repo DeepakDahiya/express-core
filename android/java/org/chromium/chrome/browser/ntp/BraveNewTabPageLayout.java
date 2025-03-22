@@ -1140,6 +1140,8 @@ public class BraveNewTabPageLayout
 
         @Override
         public void updateTopSites(List<TopSite> topSites) {
+            Log.e("TOP_SITES", "updateTopSites");
+            Log.e("TOP_SITES", topSites.toString());
             new AsyncTask<List<TopSiteTable>>() {
                 @Override
                 protected List<TopSiteTable> doInBackground() {
@@ -1193,6 +1195,8 @@ public class BraveNewTabPageLayout
             };
 
     private void loadTopSites(List<TopSiteTable> topSites) {
+        Log.e("TOP_SITES", "loadTopSites");
+        Log.e("TOP_SITES", topSites.toString());
         mSuperReferralSitesLayout = new LinearLayout(mActivity);
         mSuperReferralSitesLayout.setWeightSum(1f);
         mSuperReferralSitesLayout.setOrientation(LinearLayout.HORIZONTAL);
