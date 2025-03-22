@@ -312,9 +312,9 @@ public class BraveNewTabPageLayout
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
         mRecyclerView = findViewById(R.id.recycler_posts);
-        mFeedProgress = findViewById(R.id.feed_progress);
+        // mFeedProgress = findViewById(R.id.feed_progress);
         mPosts = new ArrayList<Post>();
-        mFeedProgress.setVisibility(View.VISIBLE);
+        // mFeedProgress.setVisibility(View.VISIBLE);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
@@ -1343,7 +1343,7 @@ public class BraveNewTabPageLayout
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
                     Log.e("BE_GET_POST", "9"); 
-                    mFeedProgress.setVisibility(View.GONE);
+                    // mFeedProgress.setVisibility(View.GONE);
                     int len = mPosts.size();
                     mPosts.addAll(posts);
                     Log.e("BE_GET_POST", "10"); 
