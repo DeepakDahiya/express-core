@@ -737,6 +737,8 @@ public class BraveNewTabPageLayout
 
     private void initPreferenceObserver() {
         mPreferenceObserver = (key) -> {
+            mIsTopSitesEnabled = true;
+            mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
             if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
                 mIsTopSitesEnabled = shouldDisplayTopSites();
                 mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
