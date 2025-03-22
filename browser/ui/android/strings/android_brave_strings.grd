@@ -4205,9 +4205,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BE_ACTIVITY_FEED" desc="Brave wallet password hint text">
       Activity Feed
     </message>
-    <message name="IDS_BROWSER_EXPRESS_NAME" desc="App name">
+    <!-- <message name="IDS_BROWSER_EXPRESS_NAME" desc="App name">
       Express
-    </message>
+    </message> -->
     <!-- <message name="IDS_BE_NOTIFICATIONS" desc="Brave wallet password hint text">
       Notifications
     </message> -->
@@ -4233,9 +4233,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_HOME_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Home
     </message>
-    <message name="IDS_BROWSER_EXPRESS_FEED_TITLE" desc="Sign in with Brave Wallet Request ID label">
+    <!-- <message name="IDS_BROWSER_EXPRESS_FEED_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Discover Feed
-    </message>
+    </message> -->
     <message name="IDS_LOL" desc="Lol emoji">
       😂
     </message>
