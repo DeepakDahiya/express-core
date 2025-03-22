@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <LinearLayout 
+            <!-- <LinearLayout 
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
@@ -42,7 +42,7 @@
                     android:textStyle="bold"
                     android:textSize="40sp"/>
 
-             </LinearLayout>
+             </LinearLayout> -->
 
             <FrameLayout
                 android:id="@+id/logo_holder"
@@ -70,7 +70,7 @@
 
             </FrameLayout>
 
-            <LinearLayout android:layout_width="match_parent"
+            <!-- <LinearLayout android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:padding="12dp"
@@ -83,7 +83,7 @@
                     android:textColor="@color/news_settings_title_color"
                     android:textStyle="bold"
                     android:textSize="18sp"/>
-            </LinearLayout>
+            </LinearLayout> -->
 
             <ProgressBar
                 android:id="@+id/feed_progress"
@@ -97,7 +97,7 @@
                 android:id="@+id/recycler_posts"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_marginTop="8sp"
+                android:layout_marginTop="160sp"
                 android:overScrollMode="never" />
 
             <LinearLayout
