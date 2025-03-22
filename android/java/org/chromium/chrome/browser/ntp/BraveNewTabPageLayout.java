@@ -326,8 +326,7 @@ public class BraveNewTabPageLayout
     }
 
     private boolean shouldDisplayTopSites() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                BackgroundImagesPreferences.PREF_SHOW_TOP_SITES, true);
+        return true;
     }
 
     private boolean shouldDisplayBraveStats() {
