@@ -229,8 +229,8 @@ public class BraveNewTabPageLayout
     }
 
     private void loadTopSitesDataAndDisplay() {
-        Log.e("TOP_SITES", "getDefaultTopSites");
-        mNTPBackgroundImagesBridge.getDefaultTopSites();
+        Log.e("TOP_SITES", "loadTopSitesDataAndDisplay");
+        mNTPBackgroundImagesBridge.getTopSites();
         // new AsyncTask<List<TopSiteTable>>() {
         //     @Override
         //     protected List<TopSiteTable> doInBackground() {
