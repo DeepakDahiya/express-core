@@ -456,7 +456,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
-                new TopSiteAsyncTask(ContextUtils.getApplicationContext(), mDatabaseHelper).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
+                new TopSiteAsyncTask(ContextUtils.getApplicationContext(), mDatabaseHelper).execute(url.getSpec());
 
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();

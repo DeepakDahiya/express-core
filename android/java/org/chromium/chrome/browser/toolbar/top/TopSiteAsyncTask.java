@@ -174,7 +174,7 @@ import java.net.HttpURLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 
-public class TopSiteAsyncTask extends AsyncTask<GURL, Void, TopSite> {
+public class TopSiteAsyncTask extends AsyncTask<String, Void, TopSite> {
     private static final String TAG = "TopSiteAsyncTask";
     private static final int CONNECTION_TIMEOUT = 15000; // 15 seconds
     private static final int READ_TIMEOUT = 15000; // 15 seconds
@@ -187,15 +187,14 @@ public class TopSiteAsyncTask extends AsyncTask<GURL, Void, TopSite> {
     }
 
     @Override
-    protected TopSite doInBackground(GURL... params) {
+    protected TopSite doInBackground(String... params) {
         if (params.length == 0) return null;
 
         try {
-            GURL url = params[0];
-            String mUrl = url.getSpec();
+            String mUrl = params[0];
             URL tempUrl = new URL(mUrl);
             String protocol = tempUrl.getProtocol();
-            String host = url.getHost();
+            String host = tempUrl.getHost();
 
             // Download favicon in background
             String faviconPath = saveFavicon(context, mUrl);
