@@ -230,14 +230,13 @@ public class BraveNewTabPageLayout
 
     private void loadTopSitesDataAndDisplay() {
         Log.e("TOP_SITES", "updateTopSites");
-        Log.e("TOP_SITES", topSites.toString());
         new AsyncTask<List<TopSiteTable>>() {
             @Override
             protected List<TopSiteTable> doInBackground() {
-                for (TopSite topSite : topSites) {
-                    mDatabaseHelper.insertTopSite(topSite);
-                }
-                return mDatabaseHelper.getAllTopSites();
+                Log.e("TOP_SITES", "do in background");
+                List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+                Log.e("TOP_SITES", topSites.toString());
+                return topSites;
             }
 
             @Override
