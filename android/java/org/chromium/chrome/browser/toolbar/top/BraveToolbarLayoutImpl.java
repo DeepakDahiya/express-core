@@ -456,7 +456,44 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
-                new TopSiteAsyncTask(ContextUtils.getApplicationContext(), mDatabaseHelper).execute(url.getSpec());
+                new AsyncTask<List<TopSiteTable>>() {
+                    @Override
+                    protected TopSite doInBackground() {
+                        try {
+                            URL tempUrl = new URL(mUrl);
+                            String protocol = tempUrl.getProtocol();
+                            String host = tempUrl.getHost();
+
+                            // Download favicon in background
+                            String faviconPath = saveFavicon(context, mUrl);
+
+                            // Create TopSite object
+                            Log.d(TAG, "Creating TopSite for URL: " + mUrl);
+                            return new TopSite(
+                                getWebsiteName(mUrl), 
+                                protocol + "://" + host, 
+                                "#FFFFFF", 
+                                faviconPath
+                            );
+                        } catch (Exception e) {
+                            Log.e(TAG, "Error processing top site", e);
+                            return null;
+                        }
+                    }
+
+                    @Override
+                    protected void onPostExecute(TopSite topSite) {
+                        Log.e(TAG, "TopSiteAsyncTask onPostExecute");
+                        if (topSite != null) {
+                            try {
+                                Log.e(TAG, "Inserting TopSite: " + topSite.getName());
+                                databaseHelper.insertTopSite(topSite);
+                            } catch (Exception e) {
+                                Log.e(TAG, "Error inserting top site", e);
+                            }
+                        }
+                    }
+                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
@@ -1503,6 +1540,170 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             return null;
         }
         
+    }
+
+    public String saveFavicon(Context context, String urlString) {
+        try {
+            URL fullUrl = new URL(urlString);
+            String host = fullUrl.getHost();
+            
+            // List of potential favicon retrieval URLs
+            List<String> faviconCandidates = generateFaviconCandidateUrls(fullUrl);
+            
+            for (String faviconUrlStr : faviconCandidates) {
+                try {
+                    URL faviconUrl = new URL(faviconUrlStr);
+                    Bitmap favicon = downloadFavicon(faviconUrl);
+                    
+                    if (favicon != null) {
+                        return saveFaviconBitmap(context, favicon, host);
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "Failed to download favicon from " + faviconUrlStr, e);
+                }
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Favicon download failed", e);
+        }
+        
+        return null;
+    }
+
+    private List<String> generateFaviconCandidateUrls(URL fullUrl) {
+        String baseUrl = fullUrl.getProtocol() + "://" + fullUrl.getHost();
+        List<String> candidates = new ArrayList<>();
+        
+        // Standard favicon locations
+        candidates.add(baseUrl + "/favicon.ico");
+        candidates.add(baseUrl + "/apple-touch-icon.png");
+        candidates.add(baseUrl + "/android-chrome-192x192.png");
+        
+        // More complex favicon URL
+        String cleanHost = fullUrl.getHost().replaceAll("^www\\.", "");
+        candidates.add(baseUrl + "/" + cleanHost + "-favicon.ico");
+        
+        return candidates;
+    }
+
+    private Bitmap downloadFavicon(URL faviconUrl) throws IOException {
+        HttpURLConnection connection = (HttpURLConnection) faviconUrl.openConnection();
+        connection.setConnectTimeout(CONNECTION_TIMEOUT);
+        connection.setReadTimeout(READ_TIMEOUT);
+        connection.setRequestMethod("GET");
+        
+        // Check for successful response
+        int responseCode = connection.getResponseCode();
+        if (responseCode != HttpURLConnection.HTTP_OK) {
+            return null;
+        }
+        
+        // Check content type
+        String contentType = connection.getContentType();
+        if (contentType == null || 
+            (!contentType.startsWith("image/") && 
+             !contentType.contains("icon"))) {
+            return null;
+        }
+        
+        try (InputStream inputStream = connection.getInputStream()) {
+            return BitmapFactory.decodeStream(inputStream);
+        }
+    }
+
+    private String saveFaviconBitmap(Context context, Bitmap favicon, String host) {
+        try {
+            // Generate unique filename using MD5 hash
+            String fileName = generateUniqueFileName(host);
+            
+            // Get app-specific external files directory
+            File faviconDir = new File(context.getExternalFilesDir(null), "favicons");
+            if (!faviconDir.exists()) {
+                faviconDir.mkdirs();
+            }
+            
+            File faviconFile = new File(faviconDir, fileName);
+            
+            try (FileOutputStream out = new FileOutputStream(faviconFile)) {
+                // Compress to PNG to ensure compatibility
+                favicon.compress(Bitmap.CompressFormat.PNG, 100, out);
+                return faviconFile.getAbsolutePath();
+            }
+        } catch (Exception e) {
+            Log.e(TAG, "Error saving favicon", e);
+            return null;
+        }
+    }
+
+    private String generateUniqueFileName(String host) {
+        try {
+            // Use MD5 hash to create a unique, deterministic filename
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] hashBytes = md.digest(host.getBytes());
+            
+            // Convert to hex
+            StringBuilder sb = new StringBuilder();
+            for (byte b : hashBytes) {
+                sb.append(String.format("%02x", b));
+            }
+            
+            return sb.toString() + ".png";
+        } catch (NoSuchAlgorithmException e) {
+            // Fallback to timestamp-based filename
+            return host.replaceAll("[^a-zA-Z0-9]", "_") + 
+                   System.currentTimeMillis() + ".png";
+        }
+    }
+
+    private String getWebsiteName(String urlString) {
+        if (urlString == null || urlString.isEmpty()) {
+            return "Unknown Website"; // Handle empty input.
+        }
+
+        try {
+            URL url = new URL(urlString);
+            String host = url.getHost();
+
+            // Handle IP addresses.
+            if (host.matches("\\d+\\.\\d+\\.\\d+\\.\\d+")) {
+                return host;
+            }
+
+            // Remove "www." prefix (if present).
+            if (host.startsWith("www.")) {
+                host = host.substring(4);
+            }
+
+            // Split the host by dots.
+            String[] parts = host.split("\\.");
+
+            // Return the second-to-last part as the website name.
+            if (parts.length >= 2) {
+                return parts[parts.length - 2];
+            } else {
+                return host; // Return the entire host if it's simple.
+            }
+
+        } catch (MalformedURLException e) {
+            // Default Fallback
+            String cleanUrl = urlString;
+            if (cleanUrl.startsWith("https://")) {
+                cleanUrl = cleanUrl.substring(8);
+            } else if (cleanUrl.startsWith("http://")) {
+                cleanUrl = cleanUrl.substring(7);
+            }
+
+            if (cleanUrl.startsWith("www.")) {
+                cleanUrl = cleanUrl.substring(4);
+            }
+
+            try{
+                URL url = new URL("https://" + cleanUrl);
+                return url.getHost();
+            } catch (MalformedURLException e2){
+                return cleanUrl;
+            }
+
+        }
     }
 
     private BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
