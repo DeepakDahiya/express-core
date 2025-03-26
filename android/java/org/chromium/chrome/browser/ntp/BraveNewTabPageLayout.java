@@ -229,28 +229,22 @@ public class BraveNewTabPageLayout
     }
 
     private void loadTopSitesDataAndDisplay() {
-        Log.e("TOP_SITES", "loadTopSitesDataAndDisplay");
-        mNTPBackgroundImagesBridge.getTopSites();
-        // new AsyncTask<List<TopSiteTable>>() {
-        //     @Override
-        //     protected List<TopSiteTable> doInBackground() {
-        //         Log.e("TOP_SITES", "do in background");
-        //         List<TopSite> defaultTopSites = mNTPBackgroundImagesBridge.getDefaultTopSites();
-        //         for (TopSite topSite : defaultTopSites) {   
-        //             mDatabaseHelper.insertTopSite(topSite);
-        //         }
-        //         List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-        //         Log.e("TOP_SITES", topSites.toString());
-        //         return topSites;
-        //     }
+        new AsyncTask<List<TopSiteTable>>() {
+            @Override
+            protected List<TopSiteTable> doInBackground() {
+                Log.e("TOP_SITES", "do in background");
+                List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+                Log.e("TOP_SITES", topSites.toString());
+                return topSites;
+            }
 
-        //     @Override
-        //     protected void onPostExecute(List<TopSiteTable> topSites) {
-        //         assert ThreadUtils.runningOnUiThread();
-        //         if (isCancelled()) return;
-        //         loadTopSites(topSites);
-        //     }
-        // }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            @Override
+            protected void onPostExecute(List<TopSiteTable> topSites) {
+                assert ThreadUtils.runningOnUiThread();
+                if (isCancelled()) return;
+                loadTopSites(topSites);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     protected void updateTileGridPlaceholderVisibility() {

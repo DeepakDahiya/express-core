@@ -159,6 +159,20 @@ import java.util.Locale;
 import java.util.Set;
 import java.util.function.BooleanSupplier;
 import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetFirstCommentsUtil;
+import java.net.MalformedURLException;
+import org.chromium.chrome.browser.ntp_background_images.model.TopSite;
+import java.io.File;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.net.Uri;
+
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.HttpURLConnection;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
@@ -441,6 +455,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 hidePlaylistButton();
 
                 String mUrl = url.getSpec();
+
+                new TopSiteAsyncTask(ContextUtils.getApplicationContext(), mDatabaseHelper).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, url);
 
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
