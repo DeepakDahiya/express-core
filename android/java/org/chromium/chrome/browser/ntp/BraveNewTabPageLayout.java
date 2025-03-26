@@ -228,25 +228,6 @@ public class BraveNewTabPageLayout
         }
     }
 
-    private void loadTopSitesDataAndDisplay() {
-        new AsyncTask<List<TopSiteTable>>() {
-            @Override
-            protected List<TopSiteTable> doInBackground() {
-                Log.e("TOP_SITES", "do in background");
-                List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-                Log.e("TOP_SITES", topSites.toString());
-                return topSites;
-            }
-
-            @Override
-            protected void onPostExecute(List<TopSiteTable> topSites) {
-                assert ThreadUtils.runningOnUiThread();
-                if (isCancelled()) return;
-                loadTopSites(topSites);
-            }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-    }
-
     protected void updateTileGridPlaceholderVisibility() {
         // This function is kept empty to avoid placeholder implementation
     }
@@ -282,7 +263,7 @@ public class BraveNewTabPageLayout
                             int oldHeight = oldBottom - oldTop;
                             int newHeight = bottom - top;
 
-                            if (oldHeight != newHeight
+                            if (oldHeight != newHeight && mIsTopSitesEnabled
                                     && mNtpAdapter != null) {
                                 new Handler(Looper.getMainLooper()).post(() -> {
                                     mNtpAdapter.notifyItemRangeChanged(mNtpAdapter.getStatsCount(),
@@ -318,9 +299,8 @@ public class BraveNewTabPageLayout
             mBadgeAnimationView.setVisibility(View.INVISIBLE);
         }
 
-        mIsDisplayNewsOptin = false;
-        mIsDisplayNewsFeed = false;
-        mIsTopSitesEnabled = true;
+        mIsDisplayNewsOptin = BraveNewsUtils.shouldDisplayNewsOptin();
+        mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
 
         initPreferenceObserver();
         if (mPreferenceObserver != null) {
@@ -332,14 +312,12 @@ public class BraveNewTabPageLayout
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
         mRecyclerView = findViewById(R.id.recycler_posts);
-        // mFeedProgress = findViewById(R.id.feed_progress);
+        mFeedProgress = findViewById(R.id.feed_progress);
         mPosts = new ArrayList<Post>();
-        // mFeedProgress.setVisibility(View.VISIBLE);
+        mFeedProgress.setVisibility(View.VISIBLE);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
-
-        loadTopSitesDataAndDisplay();
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
@@ -348,11 +326,13 @@ public class BraveNewTabPageLayout
     }
 
     private boolean shouldDisplayTopSites() {
-        return true;
+        return ContextUtils.getAppSharedPreferences().getBoolean(
+                BackgroundImagesPreferences.PREF_SHOW_TOP_SITES, true);
     }
 
     private boolean shouldDisplayBraveStats() {
-        return false;
+        return ContextUtils.getAppSharedPreferences().getBoolean(
+                BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, true);
     }
 
     private void setNtpRecyclerView(LinearLayoutManager linearLayoutManager) {
@@ -747,7 +727,7 @@ public class BraveNewTabPageLayout
         BravePrefServiceBridge.getInstance().setShowNews(isOptin);
 
         mIsDisplayNewsOptin = false;
-        mIsDisplayNewsFeed = false;
+        mIsDisplayNewsFeed = isOptin;
         mNtpAdapter.removeNewsOptin();
         mNtpAdapter.setImageCreditAlpha(1f);
         mNtpAdapter.setDisplayNewsFeed(mIsDisplayNewsFeed);
@@ -759,28 +739,24 @@ public class BraveNewTabPageLayout
 
     private void initPreferenceObserver() {
         mPreferenceObserver = (key) -> {
-            if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
+            if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
+                if (SharedPreferencesManager.getInstance().readBoolean(
+                            BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE, false)) {
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        mPrevVisibleNewsCardPosition = mPrevVisibleNewsCardPosition + 1;
+                        setNewContentChanges(true);
+                    }, 10);
+                }
+
+            } else if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS)) {
+                new Handler(Looper.getMainLooper()).postDelayed(() -> { refreshFeed(); }, 10);
+            } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
                 mIsTopSitesEnabled = shouldDisplayTopSites();
                 mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
+            } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS)) {
+                mIsBraveStatsEnabled = shouldDisplayBraveStats();
+                mNtpAdapter.setBraveStatsEnabled(mIsBraveStatsEnabled);
             }
-            // if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
-            //     if (SharedPreferencesManager.getInstance().readBoolean(
-            //                 BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE, false)) {
-            //         new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            //             mPrevVisibleNewsCardPosition = mPrevVisibleNewsCardPosition + 1;
-            //             setNewContentChanges(true);
-            //         }, 10);
-            //     }
-
-            // } else if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS)) {
-            //     new Handler(Looper.getMainLooper()).postDelayed(() -> { refreshFeed(); }, 10);
-            // } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
-            //     mIsTopSitesEnabled = shouldDisplayTopSites();
-            //     mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
-            // } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS)) {
-            //     mIsBraveStatsEnabled = shouldDisplayBraveStats();
-            //     mNtpAdapter.setBraveStatsEnabled(mIsBraveStatsEnabled);
-            // }
         };
     }
 
@@ -978,8 +954,7 @@ public class BraveNewTabPageLayout
 
     private void refreshFeed() {
         boolean isShowNewsOn = BravePrefServiceBridge.getInstance().getShowNews();
-        // mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
-        mIsDisplayNewsFeed = false;
+        mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
         if (!isShowNewsOn) {
             mNtpAdapter.setDisplayNewsFeed(false);
 
@@ -1161,8 +1136,6 @@ public class BraveNewTabPageLayout
 
         @Override
         public void updateTopSites(List<TopSite> topSites) {
-            Log.e("TOP_SITES", "updateTopSites");
-            Log.e("TOP_SITES", topSites.toString());
             new AsyncTask<List<TopSiteTable>>() {
                 @Override
                 protected List<TopSiteTable> doInBackground() {
@@ -1216,8 +1189,6 @@ public class BraveNewTabPageLayout
             };
 
     private void loadTopSites(List<TopSiteTable> topSites) {
-        Log.e("TOP_SITES", "loadTopSites");
-        Log.e("TOP_SITES", topSites.toString());
         mSuperReferralSitesLayout = new LinearLayout(mActivity);
         mSuperReferralSitesLayout.setWeightSum(1f);
         mSuperReferralSitesLayout.setOrientation(LinearLayout.HORIZONTAL);
@@ -1227,13 +1198,8 @@ public class BraveNewTabPageLayout
         LayoutInflater inflater =
                 (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
-        Log.e("TOP_SITES", "loadTopSites 1");
-
         for (TopSiteTable topSite : topSites) {
-            Log.e("TOP_SITES", "loadTopSites 2");
             final View tileView = inflater.inflate(R.layout.suggestions_tile_view, null);
-
-            Log.e("TOP_SITES", "loadTopSites 3");
 
             TextView tileViewTitleTv = tileView.findViewById(R.id.tile_view_title);
             tileViewTitleTv.setText(topSite.getName());
@@ -1250,23 +1216,16 @@ public class BraveNewTabPageLayout
             iconIv.setBackgroundColor(mActivity.getResources().getColor(android.R.color.white));
             iconIv.setClickable(false);
 
-            Log.e("TOP_SITES", "loadTopSites 4");
-
             tileView.setOnClickListener(
                     view -> { TabUtils.openUrlInSameTab(topSite.getDestinationUrl()); });
 
             tileView.setPadding(0, dpToPx(mActivity, 12), 0, 0);
-
-            Log.e("TOP_SITES", "loadTopSites 5");
 
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT);
             layoutParams.weight = 0.25f;
             layoutParams.gravity = Gravity.CENTER;
             tileView.setLayoutParams(layoutParams);
-
-            Log.e("TOP_SITES", "loadTopSites 6");
-
             tileView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                 @Override
                 public void onCreateContextMenu(
@@ -1319,9 +1278,6 @@ public class BraveNewTabPageLayout
                             });
                 }
             });
-
-            Log.e("TOP_SITES", "loadTopSites 4");
-
             mSuperReferralSitesLayout.addView(tileView);
         }
     }
@@ -1383,7 +1339,7 @@ public class BraveNewTabPageLayout
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
                     Log.e("BE_GET_POST", "9"); 
-                    // mFeedProgress.setVisibility(View.GONE);
+                    mFeedProgress.setVisibility(View.GONE);
                     int len = mPosts.size();
                     mPosts.addAll(posts);
                     Log.e("BE_GET_POST", "10"); 

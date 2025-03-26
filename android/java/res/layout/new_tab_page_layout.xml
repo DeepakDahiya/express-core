@@ -13,85 +13,40 @@
     android:orientation="vertical"
     android:gravity="center"
     android:paddingTop="@dimen/toolbar_height_no_shadow"
-    android:visibility="visible" >
+    android:visibility="gone" >
 
-    <!-- <androidx.core.widget.NestedScrollView
+
+    <FrameLayout
+        android:id="@+id/logo_holder"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:fillViewport="true">
+        android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"> -->
+        <ViewStub
+            android:id="@+id/cryptid_holder"
+            android:layout="@layout/new_tab_page_cryptid_holder"
+            android:layout_width="@dimen/cryptid_width_in_logo_wrapper"
+            android:layout_height="@dimen/cryptid_height_in_logo_wrapper"
+            android:layout_gravity="bottom|start" />
 
-            <!-- <LinearLayout 
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginVertical="32dp"
-                android:padding="12dp">
+        <org.chromium.chrome.browser.logo.LogoView
+            android:id="@+id/search_provider_logo"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/ntp_logo_height"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="@dimen/ntp_logo_margin_top"
+            android:layout_marginBottom="23dp" />
 
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="@string/browser_express_name"
-                    android:layout_gravity="center_horizontal"
-                    android:gravity="center"
-                    android:textColor="@color/content_color"
-                    android:textStyle="bold"
-                    android:textSize="40sp"/>
+    </FrameLayout>
 
-             </LinearLayout> -->
-
-            <FrameLayout
-                android:id="@+id/logo_holder"
-                android:layout_width="match_parent"
-                android:elevation="8dp"
-                android:layout_marginBottom="16dp"
-                android:layout_height="wrap_content">
-
-                <ViewStub
-                    android:id="@+id/cryptid_holder"
-                    android:layout="@layout/new_tab_page_cryptid_holder"
-                    android:layout_width="@dimen/cryptid_width_in_logo_wrapper"
-                    android:layout_height="@dimen/cryptid_height_in_logo_wrapper"
-                    android:layout_gravity="bottom|start" />
-
-                <org.chromium.chrome.browser.logo.LogoView
-                    android:id="@+id/search_provider_logo"
-                    android:layout_width="wrap_content"
-                    android:layout_height="@dimen/ntp_logo_height"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginStart="16dp"
-                    android:layout_marginEnd="16dp"
-                    android:layout_marginTop="@dimen/ntp_logo_margin_top"
-                    android:layout_marginBottom="23dp" />
-
-            </FrameLayout>
-
-            <!-- <LinearLayout android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:padding="12dp"
-                android:gravity="center_vertical">
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:text="@string/browser_express_feed_title"
-                    android:layout_weight="1"
-                    android:textColor="@color/news_settings_title_color"
-                    android:textStyle="bold"
-                    android:textSize="18sp"/>
-            </LinearLayout> -->
-
-            <!-- <ProgressBar
+    <ProgressBar
                 android:id="@+id/feed_progress"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
                 android:visibility="gone"
                 android:layout_gravity="center"
-                android:indeterminate="true"/> -->
+                android:indeterminate="true"/>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recycler_posts"
@@ -100,60 +55,59 @@
                 android:layout_marginTop="160sp"
                 android:overScrollMode="never" />
 
-            <LinearLayout
-                android:id="@+id/ntp_main_layout"
+    <LinearLayout
+        android:id="@+id/ntp_main_layout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_horizontal"
+        android:orientation="vertical"
+        android:visibility="gone">
+
+            <!-- Search box -->
+            <include layout="@layout/fake_search_box_layout"/>
+
+            <!-- Query tiles -->
+            <FrameLayout
+                android:id="@+id/query_tiles"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:visibility="gone"/>
+
+            <!-- Single tab card -->
+            <ViewStub
+                android:id="@+id/tab_switcher_module_container_stub"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_gravity="center_horizontal"
-                android:orientation="vertical"
-                android:visibility="gone">
+                android:layout="@layout/tab_switcher_module_container" />
 
-                    <!-- Search box -->
-                    <include layout="@layout/fake_search_box_layout"/>
+            <ViewStub
+                android:id="@+id/search_resumption_module_container_stub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/search_resumption_module_margin_top"
+                android:layout="@layout/search_resumption_module_layout" />
 
-                    <!-- Query tiles -->
-                    <FrameLayout
-                        android:id="@+id/query_tiles"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:visibility="gone"/>
+            <!-- Middle spacer -->
+            <View
+                android:id="@+id/ntp_middle_spacer"
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                tools:ignore="NestedWeights"
+                android:layout_weight="0"
+                android:visibility="invisible" />
 
-                    <!-- Single tab card -->
-                    <ViewStub
-                        android:id="@+id/tab_switcher_module_container_stub"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:layout="@layout/tab_switcher_module_container" />
+            <!-- Spacer for when there is no search provider logo. -->
+            <View
+                android:id="@+id/no_search_logo_spacer"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:visibility="gone" />
 
-                    <ViewStub
-                        android:id="@+id/search_resumption_module_container_stub"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/search_resumption_module_margin_top"
-                        android:layout="@layout/search_resumption_module_layout" />
+        </LinearLayout>
 
-                    <!-- Middle spacer -->
-                    <View
-                        android:id="@+id/ntp_middle_spacer"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        tools:ignore="NestedWeights"
-                        android:layout_weight="0"
-                        android:visibility="invisible" />
-
-                    <!-- Spacer for when there is no search provider logo. -->
-                    <View
-                        android:id="@+id/no_search_logo_spacer"
-                        android:layout_width="match_parent"
-                        android:layout_height="0dp"
-                        android:layout_weight="1"
-                        android:visibility="gone" />
-                </LinearLayout>
-
-            <include layout="@layout/ntp_non_disruptive_banner"/>
-            <include layout="@layout/bre_bottom_banner"/>
-        <!-- </LinearLayout>
-    </androidx.core.widget.NestedScrollView> -->
+    <include layout="@layout/ntp_non_disruptive_banner"/>
+    <include layout="@layout/bre_bottom_banner"/>
 
 </org.chromium.chrome.browser.ntp.BraveNewTabPageLayout>
