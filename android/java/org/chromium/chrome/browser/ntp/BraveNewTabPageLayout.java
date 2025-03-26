@@ -228,6 +228,27 @@ public class BraveNewTabPageLayout
         }
     }
 
+    private void loadTopSitesDataAndDisplay() {
+        Log.e("TOP_SITES", "updateTopSites");
+        Log.e("TOP_SITES", topSites.toString());
+        new AsyncTask<List<TopSiteTable>>() {
+            @Override
+            protected List<TopSiteTable> doInBackground() {
+                for (TopSite topSite : topSites) {
+                    mDatabaseHelper.insertTopSite(topSite);
+                }
+                return mDatabaseHelper.getAllTopSites();
+            }
+
+            @Override
+            protected void onPostExecute(List<TopSiteTable> topSites) {
+                assert ThreadUtils.runningOnUiThread();
+                if (isCancelled()) return;
+                loadTopSites(topSites);
+            }
+        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+    }
+
     protected void updateTileGridPlaceholderVisibility() {
         // This function is kept empty to avoid placeholder implementation
     }
@@ -319,6 +340,8 @@ public class BraveNewTabPageLayout
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
+
+        loadTopSitesDataAndDisplay();
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
