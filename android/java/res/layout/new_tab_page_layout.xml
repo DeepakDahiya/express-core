@@ -40,7 +40,7 @@
 
     </FrameLayout>
 
-    <ProgressBar
+    <!-- <ProgressBar
                 android:id="@+id/feed_progress"
                 android:layout_width="20dp"
                 android:layout_height="20dp"
@@ -53,7 +53,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_marginTop="160sp"
-                android:overScrollMode="never" />
+                android:overScrollMode="never" /> -->
 
     <LinearLayout
         android:id="@+id/ntp_main_layout"
