@@ -460,44 +460,46 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
-                new AsyncTask<TopSite>() {
-                    @Override
-                    protected TopSite doInBackground() {
-                        try {
-                            URL tempUrl = new URL(mUrl);
-                            String protocol = tempUrl.getProtocol();
-                            String host = tempUrl.getHost();
-
-                            // Download favicon in background
-                            String faviconPath = saveFavicon(ContextUtils.getApplicationContext(), mUrl);
-
-                            // Create TopSite object
-                            Log.d(TAG, "Creating TopSite for URL: " + mUrl);
-                            return new TopSite(
-                                getWebsiteName(mUrl), 
-                                protocol + "://" + host, 
-                                "#FFFFFF", 
-                                faviconPath
-                            );
-                        } catch (Exception e) {
-                            Log.e(TAG, "Error processing top site", e);
-                            return null;
-                        }
-                    }
-
-                    @Override
-                    protected void onPostExecute(TopSite topSite) {
-                        Log.e(TAG, "TopSiteAsyncTask onPostExecute");
-                        if (topSite != null) {
+                if(isValidUrl(mUrl)) {
+                    new AsyncTask<TopSite>() {
+                        @Override
+                        protected TopSite doInBackground() {
                             try {
-                                Log.e(TAG, "Inserting TopSite: " + topSite.getName());
-                                mDatabaseHelper.insertTopSite(topSite);
+                                URL tempUrl = new URL(mUrl);
+                                String protocol = tempUrl.getProtocol();
+                                String host = tempUrl.getHost();
+
+                                // Download favicon in background
+                                String faviconPath = saveFavicon(ContextUtils.getApplicationContext(), mUrl);
+
+                                // Create TopSite object
+                                Log.d(TAG, "Creating TopSite for URL: " + mUrl);
+                                return new TopSite(
+                                    getWebsiteName(mUrl), 
+                                    protocol + "://" + host, 
+                                    "#FFFFFF", 
+                                    faviconPath
+                                );
                             } catch (Exception e) {
-                                Log.e(TAG, "Error inserting top site", e);
+                                Log.e(TAG, "Error processing top site", e);
+                                return null;
                             }
                         }
-                    }
-                }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                        @Override
+                        protected void onPostExecute(TopSite topSite) {
+                            Log.e(TAG, "TopSiteAsyncTask onPostExecute");
+                            if (topSite != null) {
+                                try {
+                                    Log.e(TAG, "Inserting TopSite: " + topSite.getName());
+                                    mDatabaseHelper.insertTopSite(topSite);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Error inserting top site", e);
+                                }
+                            }
+                        }
+                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
 
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
@@ -1655,6 +1657,22 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             // Fallback to timestamp-based filename
             return host.replaceAll("[^a-zA-Z0-9]", "_") + 
                    System.currentTimeMillis() + ".png";
+        }
+    }
+
+    public boolean isValidUrl(String urlString) {
+        try {
+            // Attempt to create a URL object. If it fails, it's not a valid URL.
+            new URL(urlString);
+
+            // Check if the protocol is one we consider valid (http or https).
+            if (!urlString.startsWith("http://") && !urlString.startsWith("https://")) {
+                return false; // Not http or https, invalid for our purpose.
+            }
+            return true; // If no exceptions and http/https, it's valid.
+
+        } catch (MalformedURLException e) {
+            return false; // URL is malformed.
         }
     }
 

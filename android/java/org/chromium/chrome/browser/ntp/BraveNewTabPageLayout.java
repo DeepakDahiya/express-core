@@ -1227,8 +1227,13 @@ public class BraveNewTabPageLayout
         LayoutInflater inflater =
                 (LayoutInflater) mActivity.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
+        Log.e("TOP_SITES", "loadTopSites 1");
+
         for (TopSiteTable topSite : topSites) {
+            Log.e("TOP_SITES", "loadTopSites 2");
             final View tileView = inflater.inflate(R.layout.suggestions_tile_view, null);
+
+            Log.e("TOP_SITES", "loadTopSites 3");
 
             TextView tileViewTitleTv = tileView.findViewById(R.id.tile_view_title);
             tileViewTitleTv.setText(topSite.getName());
@@ -1245,16 +1250,23 @@ public class BraveNewTabPageLayout
             iconIv.setBackgroundColor(mActivity.getResources().getColor(android.R.color.white));
             iconIv.setClickable(false);
 
+            Log.e("TOP_SITES", "loadTopSites 4");
+
             tileView.setOnClickListener(
                     view -> { TabUtils.openUrlInSameTab(topSite.getDestinationUrl()); });
 
             tileView.setPadding(0, dpToPx(mActivity, 12), 0, 0);
+
+            Log.e("TOP_SITES", "loadTopSites 5");
 
             LinearLayout.LayoutParams layoutParams =
                     new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.MATCH_PARENT);
             layoutParams.weight = 0.25f;
             layoutParams.gravity = Gravity.CENTER;
             tileView.setLayoutParams(layoutParams);
+
+            Log.e("TOP_SITES", "loadTopSites 6");
+
             tileView.setOnCreateContextMenuListener(new View.OnCreateContextMenuListener() {
                 @Override
                 public void onCreateContextMenu(
@@ -1307,6 +1319,9 @@ public class BraveNewTabPageLayout
                             });
                 }
             });
+
+            Log.e("TOP_SITES", "loadTopSites 4");
+
             mSuperReferralSitesLayout.addView(tileView);
         }
     }
