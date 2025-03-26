@@ -161,6 +161,7 @@ import java.util.function.BooleanSupplier;
 import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetFirstCommentsUtil;
 import java.net.MalformedURLException;
 import org.chromium.chrome.browser.ntp_background_images.model.TopSite;
+import org.chromium.chrome.browser.local_database.TopSiteTable;
 import java.io.File;
 
 import android.graphics.Bitmap;
@@ -179,6 +180,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                    BraveRewardsObserver, BraveRewardsNativeWorker.PublisherObserver,
                    ConnectionErrorHandler, PlaylistServiceObserverImplDelegate {
     private static final String TAG = "BraveToolbar";
+
+    private static final int CONNECTION_TIMEOUT = 5000;
+    private static final int READ_TIMEOUT = 5000;
 
     private static final String YOUTUBE_DOMAIN = "youtube.com";
     private static final List<String> BRAVE_SEARCH_ENGINE_DEFAULT_REGIONS =
@@ -456,7 +460,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
-                new AsyncTask<List<TopSiteTable>>() {
+                new AsyncTask<TopSite>() {
                     @Override
                     protected TopSite doInBackground() {
                         try {
@@ -465,7 +469,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             String host = tempUrl.getHost();
 
                             // Download favicon in background
-                            String faviconPath = saveFavicon(context, mUrl);
+                            String faviconPath = saveFavicon(ContextUtils.getApplicationContext(), mUrl);
 
                             // Create TopSite object
                             Log.d(TAG, "Creating TopSite for URL: " + mUrl);
@@ -487,7 +491,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         if (topSite != null) {
                             try {
                                 Log.e(TAG, "Inserting TopSite: " + topSite.getName());
-                                databaseHelper.insertTopSite(topSite);
+                                mDatabaseHelper.insertTopSite(topSite);
                             } catch (Exception e) {
                                 Log.e(TAG, "Error inserting top site", e);
                             }
