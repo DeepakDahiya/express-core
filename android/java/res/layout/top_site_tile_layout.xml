@@ -17,9 +17,10 @@
 
         <ImageView
             android:id="@+id/tile_image"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:scaleType="centerCrop" />
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
     </LinearLayout>
 
