@@ -1046,18 +1046,18 @@ public class BraveNewTabPageLayout
         LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
         ImageView imageView = tileView.findViewById(R.id.tile_image);
         TextView textView = tileView.findViewById(R.id.tile_text);
+        LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
 
-        // Set background color
+        // Set background color for image container
         try {
             int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
             GradientDrawable shape = new GradientDrawable();
-            shape.setShape(GradientDrawable.RECTANGLE);
-            shape.setCornerRadius(dpToPx(context, 8)); // Rounded corners
+            shape.setShape(GradientDrawable.OVAL); // Circular background
             shape.setColor(backgroundColor);
-            tileLayout.setBackground(shape);
+            imageContainer.setBackground(shape);
         } catch (IllegalArgumentException e) {
             // Handle invalid color string
-            tileLayout.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
+            imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
         }
 
         // Load favicon
@@ -1075,11 +1075,17 @@ public class BraveNewTabPageLayout
             imageView.setImageResource(android.R.drawable.ic_menu_help);
         }
 
-        textView.setText(topSite.getName());
+        // Limit name length and set text
+        String name = topSite.getName();
+        if (name.length() > 30) {
+            name = name.substring(0, 27) + "...";
+        }
+        textView.setText(name);
 
         // Click listener to open website
         tileView.setOnClickListener(v -> {
-            TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
+            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(topSite.getDestinationUrl()));
+            context.startActivity(intent);
         });
 
         return tileView;
