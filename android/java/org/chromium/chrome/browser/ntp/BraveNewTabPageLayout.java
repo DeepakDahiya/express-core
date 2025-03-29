@@ -129,6 +129,10 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.util.TypedValue;
 import java.io.File;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.Paint;
+import java.util.Random;
 
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
