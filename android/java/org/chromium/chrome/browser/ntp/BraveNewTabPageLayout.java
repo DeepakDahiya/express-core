@@ -121,7 +121,11 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
-
+import android.graphics.drawable.GradientDrawable;
+import android.net.Uri;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.util.TypedValue;
 import java.io.File;
