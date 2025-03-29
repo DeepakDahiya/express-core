@@ -120,7 +120,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
-
+import java.util.Locale;
 import android.graphics.drawable.GradientDrawable;
 import android.net.Uri;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
@@ -1104,7 +1104,7 @@ public class BraveNewTabPageLayout
         paint.setColor(Color.WHITE);
         paint.setTextSize(60);
         paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(), 50, 70, paint);
+        canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(Locale.ROOT), 50, 70, paint);
 
         return new BitmapDrawable(context.getResources(), bitmap);
     }
