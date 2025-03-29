@@ -121,6 +121,11 @@ import java.util.TimerTask;
 import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+
+import android.graphics.BitmapFactory;
+import android.util.TypedValue;
+import java.io.File;
+
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
     private static final String TAG = "BraveNewTabPage";
@@ -318,6 +323,28 @@ public class BraveNewTabPageLayout
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
+
+        mMainLayout = findViewById(R.id.ntp_content);
+        LinearLayout topSitesContainer = newTabPageLayout.findViewById(R.id.top_sites_container);
+
+        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+
+        if (topSites != null && !topSites.isEmpty()) {
+            topSitesContainer.removeAllViews(); // Clear existing views.
+
+            int maxSites = Math.min(4, topSites.size()); // Limit to 4 sites.
+
+            for (int i = 0; i < maxSites; i++) {
+                TopSiteTable topSite = topSites.get(i);
+                LinearLayout tileLayout = createTile(getContext(), topSite);
+                LinearLayout.LayoutParams tileParams = new LinearLayout.LayoutParams(
+                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f); // Evenly distribute space.
+                topSitesContainer.addView(tileLayout, tileParams);
+            }
+            topSitesContainer.setVisibility(View.VISIBLE);
+        } else {
+            topSitesContainer.setVisibility(View.GONE); // Hide if no top sites.
+        }
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
@@ -1009,6 +1036,44 @@ public class BraveNewTabPageLayout
                 Log.e(TAG, "processFeed " + e);
             }
         });
+    }
+
+    private LinearLayout createTile(Context context, TopSiteTable topSite) {
+        LinearLayout tileLayout = new LinearLayout(context);
+        tileLayout.setOrientation(LinearLayout.HORIZONTAL);
+        tileLayout.setGravity(Gravity.CENTER_VERTICAL);
+
+        ImageView imageView = new ImageView(context);
+        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(
+                dpToPx(context, 60),
+                dpToPx(context, 60));
+        imageView.setLayoutParams(imageParams);
+
+        if (topSite.getImagePath() != null) {
+            File imgFile = new File(topSite.getImagePath());
+            if (imgFile.exists()) {
+                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                imageView.setImageBitmap(myBitmap);
+            } else {
+                imageView.setImageResource(android.R.drawable.ic_menu_help);
+            }
+        } else {
+            imageView.setImageResource(android.R.drawable.ic_menu_help);
+        }
+
+        TextView textView = new TextView(context);
+        textView.setText(topSite.getName());
+        textView.setGravity(Gravity.CENTER_VERTICAL);
+        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        textParams.leftMargin = dpToPx(context, 8);
+        textView.setLayoutParams(textParams);
+
+        tileLayout.addView(imageView);
+        tileLayout.addView(textView);
+
+        return tileLayout;
     }
 
     private void setNewContentChanges(boolean isNewContent) {
