@@ -92,12 +92,12 @@
         android:order="17"
         android:icon="@drawable/ic_appearance"
         android:title="@string/prefs_appearance"/> -->
-    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BackgroundImagesPreferences"
         android:key="background_images"
         android:order="18"
         android:icon="@drawable/ic_new_tab_page"
-        android:title="@string/prefs_new_tab_page"/>
+        android:title="@string/prefs_new_tab_page"/> -->
     <!-- <PreferenceCategory
         android:key="online_checkout_section"
         android:order="21"

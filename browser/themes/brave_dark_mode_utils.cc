@@ -34,8 +34,16 @@ void ClearBraveDarkModeProfilePrefs(PrefService* prefs) {
 }
 
 dark_mode::BraveDarkModeType GetDarkModeTypeBasedOnChannel() {
-  // Always return dark mode regardless of channel
-  return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
+  switch (chrome::GetChannel()) {
+    case version_info::Channel::STABLE:
+    case version_info::Channel::BETA:
+      return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_LIGHT;
+    case version_info::Channel::DEV:
+    case version_info::Channel::CANARY:
+    case version_info::Channel::UNKNOWN:
+    default:
+      return dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
+  }
 }
 
 dark_mode::BraveDarkModeType GetDarkModeSwitchValue(
@@ -76,14 +84,14 @@ void MigrateBraveDarkModePrefs(PrefService* prefs) {
 void RegisterBraveDarkModeLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterIntegerPref(
       kBraveDarkMode,
-      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK));
+      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT));
 }
 
 void RegisterBraveDarkModePrefsForMigration(
     user_prefs::PrefRegistrySyncable* registry) {
   registry->RegisterIntegerPref(
       kBraveThemeType,
-      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK));
+      static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT));
   registry->RegisterBooleanPref(kUseOverriddenBraveThemeType, false);
 }
 
@@ -113,7 +121,7 @@ std::string GetStringFromBraveDarkModeType(BraveDarkModeType type) {
 
 void SetBraveDarkModeType(const std::string& type) {
   BraveDarkModeType parsed_type =
-      BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
+      BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT;
 
   if (type == "Light") {
     parsed_type = BraveDarkModeType::BRAVE_DARK_MODE_TYPE_LIGHT;
@@ -143,7 +151,7 @@ BraveDarkModeType GetActiveBraveDarkModeType() {
 
   BraveDarkModeType type = static_cast<BraveDarkModeType>(
       g_browser_process->local_state()->GetInteger(kBraveDarkMode));
-  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK) {
+  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT) {
     if (!SystemDarkModeEnabled())
       return GetDarkModeTypeBasedOnChannel();
 
@@ -169,7 +177,7 @@ BraveDarkModeType GetBraveDarkModeType() {
 
   BraveDarkModeType type = static_cast<BraveDarkModeType>(
       g_browser_process->local_state()->GetInteger(kBraveDarkMode));
-  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK) {
+  if (type == BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT) {
     if (!SystemDarkModeEnabled())
       return GetDarkModeTypeBasedOnChannel();
     return type;
@@ -184,7 +192,7 @@ base::Value::List GetBraveDarkModeTypeList() {
     base::Value::Dict system_type;
     system_type.Set(
         "value",
-        static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK));
+        static_cast<int>(BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT));
     system_type.Set("name", brave_l10n::GetLocalizedResourceUTF16String(
                                 IDS_BRAVE_THEME_TYPE_SYSTEM));
     list.Append(std::move(system_type));

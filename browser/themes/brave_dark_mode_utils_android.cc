@@ -24,7 +24,7 @@ void SetUseSystemDarkModeEnabledForTest(bool enabled) {
 }
 
 std::string GetStringFromBraveDarkModeType(BraveDarkModeType type) {
-  return "Dark";
+  return "Default";
 }
 
 void SetBraveDarkModeType(const std::string& type) {
@@ -34,11 +34,11 @@ void SetBraveDarkModeType(BraveDarkModeType type) {
 }
 
 BraveDarkModeType GetActiveBraveDarkModeType() {
-  return BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
+  return BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT;
 }
 
 BraveDarkModeType GetBraveDarkModeType() {
-  return BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
+  return BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DEFAULT;
 }
 
 base::Value::List GetBraveDarkModeTypeList() {

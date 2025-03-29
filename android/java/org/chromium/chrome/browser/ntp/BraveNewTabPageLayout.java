@@ -299,8 +299,8 @@ public class BraveNewTabPageLayout
             mBadgeAnimationView.setVisibility(View.INVISIBLE);
         }
 
-        mIsDisplayNewsOptin = BraveNewsUtils.shouldDisplayNewsOptin();
-        mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
+        mIsDisplayNewsOptin = false;
+        mIsDisplayNewsFeed = false;
 
         initPreferenceObserver();
         if (mPreferenceObserver != null) {
@@ -311,18 +311,18 @@ public class BraveNewTabPageLayout
 
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
-        // mRecyclerView = findViewById(R.id.recycler_posts);
-        // mFeedProgress = findViewById(R.id.feed_progress);
-        // mPosts = new ArrayList<Post>();
-        // mFeedProgress.setVisibility(View.VISIBLE);
-        // mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-        // mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
-        // mRecyclerView.setAdapter(mPostAdapter);
+        mRecyclerView = findViewById(R.id.recycler_posts);
+        mFeedProgress = findViewById(R.id.feed_progress);
+        mPosts = new ArrayList<Post>();
+        mFeedProgress.setVisibility(View.VISIBLE);
+        mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
+        mRecyclerView.setAdapter(mPostAdapter);
 
-        // String accessToken = ((BraveActivity)mActivity).getAccessToken();
-        // BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-        //     new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
-        // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        String accessToken = ((BraveActivity)mActivity).getAccessToken();
+        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
+            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
+        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
     private boolean shouldDisplayTopSites() {
@@ -331,8 +331,7 @@ public class BraveNewTabPageLayout
     }
 
     private boolean shouldDisplayBraveStats() {
-        return ContextUtils.getAppSharedPreferences().getBoolean(
-                BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS, true);
+        return false;
     }
 
     private void setNtpRecyclerView(LinearLayoutManager linearLayoutManager) {
@@ -727,7 +726,7 @@ public class BraveNewTabPageLayout
         BravePrefServiceBridge.getInstance().setShowNews(isOptin);
 
         mIsDisplayNewsOptin = false;
-        mIsDisplayNewsFeed = isOptin;
+        mIsDisplayNewsFeed = false;
         mNtpAdapter.removeNewsOptin();
         mNtpAdapter.setImageCreditAlpha(1f);
         mNtpAdapter.setDisplayNewsFeed(mIsDisplayNewsFeed);
@@ -739,24 +738,28 @@ public class BraveNewTabPageLayout
 
     private void initPreferenceObserver() {
         mPreferenceObserver = (key) -> {
-            if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
-                if (SharedPreferencesManager.getInstance().readBoolean(
-                            BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE, false)) {
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        mPrevVisibleNewsCardPosition = mPrevVisibleNewsCardPosition + 1;
-                        setNewContentChanges(true);
-                    }, 10);
-                }
-
-            } else if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS)) {
-                new Handler(Looper.getMainLooper()).postDelayed(() -> { refreshFeed(); }, 10);
-            } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
+            if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
                 mIsTopSitesEnabled = shouldDisplayTopSites();
                 mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
-            } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS)) {
-                mIsBraveStatsEnabled = shouldDisplayBraveStats();
-                mNtpAdapter.setBraveStatsEnabled(mIsBraveStatsEnabled);
             }
+            // if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE)) {
+            //     if (SharedPreferencesManager.getInstance().readBoolean(
+            //                 BravePreferenceKeys.BRAVE_NEWS_CHANGE_SOURCE, false)) {
+            //         new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            //             mPrevVisibleNewsCardPosition = mPrevVisibleNewsCardPosition + 1;
+            //             setNewContentChanges(true);
+            //         }, 10);
+            //     }
+
+            // } else if (TextUtils.equals(key, BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS)) {
+            //     new Handler(Looper.getMainLooper()).postDelayed(() -> { refreshFeed(); }, 10);
+            // } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_TOP_SITES)) {
+            //     mIsTopSitesEnabled = shouldDisplayTopSites();
+            //     mNtpAdapter.setTopSitesEnabled(mIsTopSitesEnabled);
+            // } else if (TextUtils.equals(key, BackgroundImagesPreferences.PREF_SHOW_BRAVE_STATS)) {
+            //     mIsBraveStatsEnabled = shouldDisplayBraveStats();
+            //     mNtpAdapter.setBraveStatsEnabled(mIsBraveStatsEnabled);
+            // }
         };
     }
 
@@ -954,7 +957,8 @@ public class BraveNewTabPageLayout
 
     private void refreshFeed() {
         boolean isShowNewsOn = BravePrefServiceBridge.getInstance().getShowNews();
-        mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
+        // mIsDisplayNewsFeed = BraveNewsUtils.shouldDisplayNewsFeed();
+        mIsDisplayNewsFeed = false;
         if (!isShowNewsOn) {
             mNtpAdapter.setDisplayNewsFeed(false);
 
@@ -1338,17 +1342,17 @@ public class BraveNewTabPageLayout
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
-                    // Log.e("BE_GET_POST", "9"); 
-                    // mFeedProgress.setVisibility(View.GONE);
-                    // int len = mPosts.size();
-                    // mPosts.addAll(posts);
-                    // Log.e("BE_GET_POST", "10"); 
-                    // mPostAdapter.notifyItemRangeInserted(len-1, posts.size());
+                    Log.e("BE_GET_POST", "9"); 
+                    mFeedProgress.setVisibility(View.GONE);
+                    int len = mPosts.size();
+                    mPosts.addAll(posts);
+                    Log.e("BE_GET_POST", "10"); 
+                    mPostAdapter.notifyItemRangeInserted(len-1, posts.size());
                 }
 
                 @Override
                 public void getPostsFailed(String error) {
-                    // Log.e("BE_GET_POST", error);
+                    Log.e("BE_GET_POST", error);
                 }
             };
 }

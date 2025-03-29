@@ -6,7 +6,6 @@
 #include "chrome/browser/profiles/pref_service_builder_utils.h"
 
 #include "brave/browser/brave_profile_prefs.h"
-#include "brave/browser/themes/brave_dark_mode_utils.h"
 #include "brave/components/brave_ads/browser/ads_service.h"
 #include "brave/components/brave_rewards/browser/rewards_service.h"
 #include "brave/components/constants/pref_names.h"
@@ -35,7 +34,6 @@ void RegisterProfilePrefs(bool is_signin_profile,
 
   registry->SetDefaultPrefValue(prefs::kSigninAllowedOnNextStartup,
                                 base::Value(false));
-
 #if BUILDFLAG(IS_LINUX)
   // Use brave theme by default instead of gtk theme.
   registry->SetDefaultPrefValue(
