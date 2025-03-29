@@ -44,7 +44,6 @@
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_horizontal"
-                android:layout_marginTop="16dp"
                 android:visibility="gone"
                 android:paddingHorizontal="8dp"
                 />

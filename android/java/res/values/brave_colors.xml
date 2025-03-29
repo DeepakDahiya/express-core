@@ -382,4 +382,6 @@
     <color name="profile_sub_bg_color">#dddddd</color>
     <color name="gold_color">#fbbf24</color>
     <color name="circle_border">#282c2f</color>
+
+    <color name="be_background_black">#202124</color>
 </resources>

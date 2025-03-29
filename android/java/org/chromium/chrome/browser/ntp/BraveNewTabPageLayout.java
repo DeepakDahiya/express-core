@@ -1060,7 +1060,6 @@ public class BraveNewTabPageLayout
             imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
         }
 
-        // Load favicon
         if (topSite.getImagePath() != null) {
             File imgFile = new File(topSite.getImagePath());
             if (imgFile.exists()) {
@@ -1069,10 +1068,10 @@ public class BraveNewTabPageLayout
                 roundedBitmap.setCircular(true);
                 imageView.setImageDrawable(roundedBitmap);
             } else {
-                imageView.setImageResource(android.R.drawable.ic_menu_help);
+                imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
             }
         } else {
-            imageView.setImageResource(android.R.drawable.ic_menu_help);
+            imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
         }
 
         // Limit name length and set text
@@ -1089,6 +1088,25 @@ public class BraveNewTabPageLayout
         });
 
         return tileView;
+    }
+
+    private BitmapDrawable generateAvatar(Context context, String name) {
+        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(bitmap);
+
+        // Generate a random color
+        Random rnd = new Random();
+        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+        canvas.drawColor(color);
+
+        // Draw the first letter of the name
+        Paint paint = new Paint();
+        paint.setColor(Color.WHITE);
+        paint.setTextSize(60);
+        paint.setTextAlign(Paint.Align.CENTER);
+        canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(), 50, 70, paint);
+
+        return new BitmapDrawable(context.getResources(), bitmap);
     }
 
     private void setNewContentChanges(boolean isNewContent) {

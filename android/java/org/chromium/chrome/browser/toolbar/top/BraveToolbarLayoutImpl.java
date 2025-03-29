@@ -477,7 +477,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                                 return new TopSite(
                                     getWebsiteName(mUrl), 
                                     protocol + "://" + host, 
-                                    "#FFFFFF", 
+                                    "#323639", 
                                     faviconPath
                                 );
                             } catch (Exception e) {
