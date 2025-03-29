@@ -340,10 +340,8 @@ public class BraveNewTabPageLayout
 
             for (int i = 0; i < maxSites; i++) {
                 TopSiteTable topSite = topSites.get(i);
-                LinearLayout tileLayout = createTile(getContext(), topSite);
-                LinearLayout.LayoutParams tileParams = new LinearLayout.LayoutParams(
-                        0, ViewGroup.LayoutParams.WRAP_CONTENT, 1.0f); // Evenly distribute space.
-                topSitesContainer.addView(tileLayout, tileParams);
+                View tileView = createTile(getContext(), topSite);
+                topSitesContainer.addView(tileView, tileParams);
             }
             topSitesContainer.setVisibility(View.VISIBLE);
         } else {
@@ -1042,7 +1040,7 @@ public class BraveNewTabPageLayout
         });
     }
 
-    private LinearLayout createTile(Context context, TopSiteTable topSite) {
+    private View createTile(Context context, TopSiteTable topSite) {
         View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
 
         LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
