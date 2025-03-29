@@ -325,7 +325,7 @@ public class BraveNewTabPageLayout
         mRecyclerView.setAdapter(mPostAdapter);
 
         mMainLayout = findViewById(R.id.ntp_content);
-        LinearLayout topSitesContainer = newTabPageLayout.findViewById(R.id.top_sites_container);
+        LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
 
         List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
 
