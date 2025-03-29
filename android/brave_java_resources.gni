@@ -976,6 +976,7 @@ brave_java_resources = [
   "java/res/layout/network_spinner_items.xml",
   "java/res/layout/new_tab_page_incognito.xml",
   "java/res/layout/new_tab_page_layout.xml",
+  "java/res/layout/top_site_tile_layout.xml",
   "java/res/layout/news_loading.xml",
   "java/res/layout/ntp_bottom_sheet.xml",
   "java/res/layout/ntp_image_credit.xml",

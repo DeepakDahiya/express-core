@@ -1039,21 +1039,33 @@ public class BraveNewTabPageLayout
     }
 
     private LinearLayout createTile(Context context, TopSiteTable topSite) {
-        LinearLayout tileLayout = new LinearLayout(context);
-        tileLayout.setOrientation(LinearLayout.HORIZONTAL);
-        tileLayout.setGravity(Gravity.CENTER_VERTICAL);
+        View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
 
-        ImageView imageView = new ImageView(context);
-        LinearLayout.LayoutParams imageParams = new LinearLayout.LayoutParams(
-                dpToPx(context, 60),
-                dpToPx(context, 60));
-        imageView.setLayoutParams(imageParams);
+        LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
+        ImageView imageView = tileView.findViewById(R.id.tile_image);
+        TextView textView = tileView.findViewById(R.id.tile_text);
 
+        // Set background color
+        try {
+            int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
+            GradientDrawable shape = new GradientDrawable();
+            shape.setShape(GradientDrawable.RECTANGLE);
+            shape.setCornerRadius(dpToPx(context, 8)); // Rounded corners
+            shape.setColor(backgroundColor);
+            tileLayout.setBackground(shape);
+        } catch (IllegalArgumentException e) {
+            // Handle invalid color string
+            tileLayout.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
+        }
+
+        // Load favicon
         if (topSite.getImagePath() != null) {
             File imgFile = new File(topSite.getImagePath());
             if (imgFile.exists()) {
-                Bitmap myBitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                imageView.setImageBitmap(myBitmap);
+                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(context.getResources(), bitmap);
+                roundedBitmap.setCircular(true);
+                imageView.setImageDrawable(roundedBitmap);
             } else {
                 imageView.setImageResource(android.R.drawable.ic_menu_help);
             }
@@ -1061,19 +1073,14 @@ public class BraveNewTabPageLayout
             imageView.setImageResource(android.R.drawable.ic_menu_help);
         }
 
-        TextView textView = new TextView(context);
         textView.setText(topSite.getName());
-        textView.setGravity(Gravity.CENTER_VERTICAL);
-        LinearLayout.LayoutParams textParams = new LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        textParams.leftMargin = dpToPx(context, 8);
-        textView.setLayoutParams(textParams);
 
-        tileLayout.addView(imageView);
-        tileLayout.addView(textView);
+        // Click listener to open website
+        tileView.setOnClickListener(v -> {
+            TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
+        });
 
-        return tileLayout;
+        return tileView;
     }
 
     private void setNewContentChanges(boolean isNewContent) {
