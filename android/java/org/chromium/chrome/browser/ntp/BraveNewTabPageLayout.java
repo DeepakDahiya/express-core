@@ -341,7 +341,7 @@ public class BraveNewTabPageLayout
             for (int i = 0; i < maxSites; i++) {
                 TopSiteTable topSite = topSites.get(i);
                 View tileView = createTile(getContext(), topSite);
-                topSitesContainer.addView(tileView, tileParams);
+                topSitesContainer.addView(tileView);
             }
             topSitesContainer.setVisibility(View.VISIBLE);
         } else {
