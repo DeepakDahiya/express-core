@@ -125,7 +125,7 @@
                 android:id="@+id/vote_count"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
                 android:layout_gravity="center"
                 android:layout_marginVertical="4sp"
                 android:textSize="11sp"/>

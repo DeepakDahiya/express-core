@@ -75,8 +75,11 @@
     <color name="scan_qr_code_bg_color">@android:color/white</color>
 
     <!-- Set Default Browser colors -->
-    <color name="set_default_bottom_sheet_bg_color">@android:color/white</color>
-    <color name="set_default_text_color">#212529</color>
+    <color name="set_default_bottom_sheet_bg_color">#1E2029</color>
+    <color name="set_default_text_color">#F0F2FF</color>
+
+    <!-- <color name="set_default_bottom_sheet_bg_color">@android:color/white</color>
+    <color name="set_default_text_color">#212529</color> -->
     <color name="set_default_bottom_sheet_button_disable_color">#DADCE8</color>
 
     <color name="ad_free_card_cancel_color">#212529</color>
@@ -366,22 +369,34 @@
     <color name="browser_express_orange_color">#FF9000</color>
     <color name="browser_express_blue_color">#39B1F6</color>
     <color name="browser_express_error_color">#FF0000</color>
-    <color name="browser_express_grey">#dddddd</color>
-    <color name="vote_stroke_color">#333333</color>
-    <color name="downvote_stroke_color">#000000</color>
+    <!-- <color name="browser_express_grey">#dddddd</color> -->
+    <!-- <color name="vote_stroke_color">#333333</color> -->
+    <!-- <color name="downvote_stroke_color">#000000</color> -->
     <color name="upvote_stroke_color">#39B1F6</color>
 
-    <color name="username_color">#777777</color>
+    <!-- <color name="username_color">#777777</color> -->
 
-    <color name="content_color">#212529</color>
+    <!-- <color name="content_color">#212529</color> -->
 
     <color name="vote_border_color">#818181</color>
 
-    <color name="top_profile_bg_color">#a3a3a3</color>
+    <!-- <color name="top_profile_bg_color">#a3a3a3</color> -->
     <color name="bottom_profile_bg_color">#fef08a</color>
-    <color name="profile_sub_bg_color">#dddddd</color>
+    <!-- <color name="profile_sub_bg_color">#dddddd</color> -->
     <color name="gold_color">#fbbf24</color>
-    <color name="circle_border">#282c2f</color>
+    <!-- <color name="circle_border">#282c2f</color> -->
 
     <color name="be_background_black">#202124</color>
+    <color name="content_color">#DCDCDC</color>
+    <color name="top_profile_bg_color">#383838</color>
+    <color name="profile_sub_bg_color">#323639</color>
+    <color name="circle_border">#dddddd</color>
+    <color name="username_color">#A4A4A4</color>
+
+    <color name="browser_express_grey">#282c2f</color>
+
+    <color name="vote_stroke_color">#EAEAEA</color>
+    <color name="downvote_stroke_color">#ffffff</color>
+
+    <color name="username_color">#A4A4A4</color>
 </resources>

@@ -17,7 +17,7 @@
             android:layout_gravity="center"
             android:text="@string/comments"
             android:textSize="24sp"
-            android:textColor="@color/set_default_text_color"
+            android:textColor="@color/content_color"
             android:textStyle="bold"/>
 
     </androidx.appcompat.widget.Toolbar>
