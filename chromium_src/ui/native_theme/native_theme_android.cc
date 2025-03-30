@@ -7,7 +7,7 @@
 
 ui::NativeTheme* ui::NativeTheme::BraveGetInstanceForNativeUi() {
   struct StubNativeThemeAndroid : public ui::NativeThemeAndroid {
-    bool ShouldUseDarkColors() const override { return true; }
+    bool ShouldUseDarkColors() const override { return false; }
   };
   static base::NoDestructor<StubNativeThemeAndroid> s_native_theme;
   return s_native_theme.get();
