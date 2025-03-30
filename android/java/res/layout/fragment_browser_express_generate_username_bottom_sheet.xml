@@ -14,6 +14,7 @@
     android:paddingEnd="22dp"
     android:paddingBottom="31dp"
     android:orientation="vertical"
+    android:background="@color/be_background_black"
     tools:context=".BrowserExpressGenerateUsernameBottomSheetFragment">
 
     <TextView

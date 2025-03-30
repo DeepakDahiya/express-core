@@ -15,6 +15,7 @@
     android:paddingEnd="10dp"
     android:orientation="vertical"
     app:behavior_fitToContents="false"
+    android:background="@color/be_background_black"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
     <View
