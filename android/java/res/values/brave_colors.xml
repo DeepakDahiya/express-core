@@ -397,6 +397,4 @@
 
     <color name="vote_stroke_color">#EAEAEA</color>
     <color name="downvote_stroke_color">#ffffff</color>
-
-    <color name="username_color">#A4A4A4</color>
 </resources>
