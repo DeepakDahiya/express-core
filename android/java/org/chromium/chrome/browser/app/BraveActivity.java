@@ -564,14 +564,13 @@ public abstract class BraveActivity extends ChromeActivity
             .setContentTitle("Express Browser")
             .setContentText("Browser is running")
             .setPriority(NotificationCompat.PRIORITY_LOW)
-            .setOngoing(true) // Makes notification persistent
+            .setOngoing(true)
             .setCategory(NotificationCompat.CATEGORY_SERVICE);
 
-        // Add an intent to open the app when notification is clicked
         Intent intent = new Intent(context, BraveActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
-            PendingIntent.FLAG_IMMUTABLE);
+            PendingIntent.FLAG_UPDATE_CURRENT);
         builder.setContentIntent(pendingIntent);
 
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);

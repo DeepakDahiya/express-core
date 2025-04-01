@@ -153,8 +153,6 @@ brave_java_resources = [
   "java/res/drawable-nodpi/gold.png",
   "java/res/drawable-nodpi/xp.png",
   "java/res/drawable-nodpi/fire.png",
-  "java/res/drawable-night-nodpi/youtube.png",
-  "java/res/drawable-night-nodpi/logout.png",
   "java/res/drawable-night/bookmark_empty_state_illustration.xml",
   "java/res/drawable-night/history_empty_state_illustration.xml",
   "java/res/drawable-night/phone_recent_tab_empty_state_illustration.xml",
