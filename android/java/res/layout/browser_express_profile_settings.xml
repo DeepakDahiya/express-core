@@ -64,7 +64,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:textColor="@color/gold_color"
-                            android:layout_marginBottom="32dp"
+                            android:paddingBottom="32dp"
                             android:drawablePadding="4dp"
                             android:textSize="36sp"
                             app:drawableEndCompat="@drawable/xp"
@@ -90,9 +90,8 @@
                     android:scaleType="centerCrop"
                     android:layout_marginTop="15dp"
                     android:layout_gravity="center"
-                    android:adjustViewBounds="true"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    android:background="@drawable/circular_background" />
+                    />
 
                 <!-- <ImageView
                     android:id="@+id/edit_icon"
