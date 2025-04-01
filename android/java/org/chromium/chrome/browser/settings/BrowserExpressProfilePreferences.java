@@ -292,22 +292,32 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                         if(avatar != null && avatar.length() > 0){
-                            Log.e("LOADING IMAGE", avatar);
-                            ImageLoader.Callback callback = new ImageLoader.Callback() {
-                                @Override
-                                public boolean onLoadFailed() {
-                                    Log.e("LOADING IMAGE", "Failed to load avatar from URL: " + avatar);
-                                    mAvatarImage.setImageResource(R.drawable.btn_toolbar_profile);
-                                    return true;
-                                }
-                                
-                                @Override
-                                public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
-                                    Log.d("LOADING IMAGE", "Successfully loaded avatar from URL: " + avatar);
-                                    return false; // Return false to allow Glide to set the resource
-                                }
-                            };
-                            ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, callback);
+                            try{
+                                Log.e("LOADING IMAGE", avatar);
+                                Glide.with(activity)
+                                    .load(avatar)
+                                    .error(R.drawable.btn_toolbar_profile)
+                                    .listener(new RequestListener<Drawable>() {
+                                        @Override
+                                        public boolean onLoadFailed(@Nullable GlideException e, Object model, 
+                                                Target<Drawable> target, boolean isFirstResource) {
+                                            Log.e("LOADING IMAGE", "Direct Glide load failed: " + 
+                                                    (e != null ? e.getMessage() : "unknown error"));
+                                            return false;
+                                        }
+                                        
+                                        @Override
+                                        public boolean onResourceReady(Drawable resource, Object model, 
+                                                Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
+                                            Log.d("LOADING IMAGE", "Direct Glide load succeeded");
+                                            return false;
+                                        }
+                                    })
+                                    .into(mAvatarImage);
+                            } catch(Exception e){
+                               Log.e("LOADING IMAGE", "Exception with direct Glide: " + e.getMessage());
+                                ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, callback);
+                            }
                         }
 
                         if(xp != null && xp.length() > 0){
