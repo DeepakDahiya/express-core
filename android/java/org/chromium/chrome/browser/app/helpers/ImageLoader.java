@@ -18,6 +18,7 @@ import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.webkit.URLUtil;
 import android.widget.ImageView;
+import org.chromium.base.Log;
 
 import com.bumptech.glide.Priority;
 import com.bumptech.glide.RequestBuilder;
@@ -312,11 +313,13 @@ public class ImageLoader {
     private static void loadImage(ImageFetcherFacade imageFetcherFacade,
             RequestManager requestManager, boolean isCircular, final int roundedCorners,
             ImageView imageView, CustomTarget<Drawable> customTarget, Callback callback) {
+                Log.e("LOADIMAGE", "1");
         if (imageFetcherFacade == null
                 || (imageFetcherFacade.data == null && imageFetcherFacade.drawable == null)) {
             if (callback != null) callback.onLoadFailed();
             return;
         }
+        Log.e("LOADIMAGE", "2");
         RequestBuilder<Drawable> request =
                 requestManager
                         .load(imageFetcherFacade.data != null ? imageFetcherFacade.data
@@ -328,6 +331,7 @@ public class ImageLoader {
                             @Override
                             public boolean onLoadFailed(GlideException glideException, Object model,
                                     Target<Drawable> target, boolean isFirstResource) {
+                                Log.e("LOADIMAGE", "3");
                                 return callback != null && callback.onLoadFailed();
                             }
 
@@ -335,6 +339,7 @@ public class ImageLoader {
                             public boolean onResourceReady(Drawable resource, Object model,
                                     Target<Drawable> target, DataSource dataSource,
                                     boolean isFirstResource) {
+                                Log.e("LOADIMAGE", "4");
                                 return callback != null
                                         && callback.onResourceReady(resource, target);
                             }

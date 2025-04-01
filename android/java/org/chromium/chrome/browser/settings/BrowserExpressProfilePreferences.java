@@ -294,7 +294,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         if(avatar != null && avatar.length() > 0){
                             try{
                                 Log.e("LOADING IMAGE", avatar);
-                                Log.d("AVATAR_VIEW", "Width: " + mAvatarImage.getWidth() + 
+                                Log.e("AVATAR_VIEW", "Width: " + mAvatarImage.getWidth() + 
                                     ", Height: " + mAvatarImage.getHeight() + 
                                     ", Visibility: " + mAvatarImage.getVisibility());
                                 Glide.with(activity)
