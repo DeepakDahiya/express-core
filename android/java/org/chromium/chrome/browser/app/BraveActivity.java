@@ -573,8 +573,8 @@ public abstract class BraveActivity extends ChromeActivity
             .setBody("Browser is running")
             .setSmallIconId(R.drawable.ic_notification)
             .setPriority(Notification.PRIORITY_LOW)
-            .setOngoing(true)
             .setCategory(Notification.CATEGORY_SERVICE);
+            // .setOngoing(true)
         
         NotificationWrapper notification = notificationBuilder.build(new NotificationMetadata(
                                           NotificationUmaTracker.SystemNotificationType.UNKNOWN,
