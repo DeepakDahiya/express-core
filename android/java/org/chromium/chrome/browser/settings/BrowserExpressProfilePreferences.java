@@ -297,26 +297,10 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                                 Glide.with(activity)
                                     .load(avatar)
                                     .error(R.drawable.btn_toolbar_profile)
-                                    .listener(new RequestListener<Drawable>() {
-                                        @Override
-                                        public boolean onLoadFailed(@Nullable GlideException e, Object model, 
-                                                Target<Drawable> target, boolean isFirstResource) {
-                                            Log.e("LOADING IMAGE", "Direct Glide load failed: " + 
-                                                    (e != null ? e.getMessage() : "unknown error"));
-                                            return false;
-                                        }
-                                        
-                                        @Override
-                                        public boolean onResourceReady(Drawable resource, Object model, 
-                                                Target<Drawable> target, DataSource dataSource, boolean isFirstResource) {
-                                            Log.d("LOADING IMAGE", "Direct Glide load succeeded");
-                                            return false;
-                                        }
-                                    })
                                     .into(mAvatarImage);
                             } catch(Exception e){
-                               Log.e("LOADING IMAGE", "Exception with direct Glide: " + e.getMessage());
-                                ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, callback);
+                                Log.e("LOADING IMAGE", "Exception with direct Glide: " + e.getMessage());
+                                ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, null);
                             }
                         }
 
