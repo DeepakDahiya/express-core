@@ -296,13 +296,13 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                                 Log.e("AVATAR_VIEW", "Width: " + mAvatarImage.getWidth() + 
                                     ", Height: " + mAvatarImage.getHeight() + 
                                     ", Visibility: " + mAvatarImage.getVisibility());
-                                Glide.with(activity)
+                                Glide.with(getContext())
                                     .load("https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg")
                                     .error(R.drawable.btn_toolbar_profile)
                                     .into(mAvatarImage);
                             } catch(Exception e){
                                 Log.e("LOADING IMAGE", "Exception with direct Glide: " + e.getMessage());
-                                ImageLoader.downloadImage(avatar, Glide.with(activity), false, 5, mAvatarImage, null);
+                                ImageLoader.downloadImage(avatar, Glide.with(getContext()), false, 5, mAvatarImage, null);
                             }
                         }
 
