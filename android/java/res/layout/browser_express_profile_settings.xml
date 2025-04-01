@@ -24,7 +24,7 @@
                 android:background="@drawable/profile_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="80dp">
+                android:layout_marginTop="60dp">
 
                 <LinearLayout
                     android:id="@+id/linearLayout"
@@ -64,6 +64,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:textColor="@color/gold_color"
+                            android:layout_marginBottom="32dp"
                             android:drawablePadding="4dp"
                             android:textSize="36sp"
                             app:drawableEndCompat="@drawable/xp"

@@ -31,6 +31,8 @@ import org.chromium.chrome.browser.shields.FilterListServiceFactory;
 import androidx.core.app.NotificationCompat;
 import android.app.PendingIntent;
 import androidx.core.app.NotificationManagerCompat;
+import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
+import org.chromium.chrome.browser.notifications.BraveNotificationBuilder;
 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
@@ -559,22 +561,23 @@ public abstract class BraveActivity extends ChromeActivity
     
     public static void showPersistentNotification() {
         Context context = ContextUtils.getApplicationContext();
-        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_notification)
-            .setContentTitle("Express Browser")
-            .setContentText("Browser is running")
-            .setPriority(NotificationCompat.PRIORITY_LOW)
+        NotificationManagerProxyImpl notificationManager = new NotificationManagerProxyImpl(context);
+
+        NotificationBuilderBase notificationBuilder = new BraveNotificationBuilder(context)
+            .setTitle("Express Browser")
+            .setBody("Browser is running")
+            .setSmallIconId(R.drawable.ic_notification)
+            .setPriority(Notification.PRIORITY_LOW)
             .setOngoing(true)
-            .setCategory(NotificationCompat.CATEGORY_SERVICE);
+            .setCategory(Notification.CATEGORY_SERVICE);
+        
+        NotificationWrapper notification = notificationBuilder.build(new NotificationMetadata(
+                                          NotificationUmaTracker.SystemNotificationType.UNKNOWN,
+                                          "persistent_notification_tag", // Replace with your tag
+                                          3232 // Replace with your notification ID
+                                      ));
 
-        Intent intent = new Intent(context, BraveActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
-            PendingIntent.FLAG_UPDATE_CURRENT);
-        builder.setContentIntent(pendingIntent);
-
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
-        notificationManager.notify(3232, builder.build());
+        notificationManager.notify(notification);
     }
 
     public void enterPip(){
