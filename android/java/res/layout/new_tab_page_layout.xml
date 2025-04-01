@@ -86,7 +86,7 @@
                               android:layout_height="wrap_content"
                               android:text="@string/browser_express_feed_title"
                               android:layout_weight="1"
-                              android:textColor="@color/news_settings_title_color"
+                              android:textColor="@color/tile_text"
                               android:textStyle="bold"
                               android:textSize="18sp"/>
 			</LinearLayout>

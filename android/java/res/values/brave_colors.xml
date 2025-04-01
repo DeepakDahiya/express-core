@@ -228,7 +228,8 @@
     <color name="chip_outline_selected_color">#F8F9FA</color>
     <color name="tab_color">#FF4081</color>
     <color name="wallet_bg">#FFFFFF</color>
-    <color name="wallet_edittext_outline_color">#AEB1C2</color>
+    <!-- <color name="wallet_edittext_outline_color">#AEB1C2</color> -->
+    <color name="wallet_edittext_outline_color">#3B3E4F</color>
     <color name="wallet_warning_box_bg_color">#FFFFFF</color>
     <color name="recovery_phrase_warning_text_color">#868E96</color>
     <color name="brave_action_color">#4C54D2</color>

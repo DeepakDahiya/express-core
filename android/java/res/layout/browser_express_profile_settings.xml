@@ -40,7 +40,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:textColor="@color/news_settings_title_color"
+                        android:textColor="@color/content_color"
                         android:textSize="18sp"
                         android:paddingTop="8dp"
                         android:textStyle="bold" />
@@ -50,7 +50,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center"
-                        android:textColor="@color/news_settings_title_color"
+                        android:textColor="@color/content_color"
                         android:textSize="14sp"
                         android:paddingVertical="8dp" />
 
@@ -131,7 +131,7 @@
                     android:drawablePadding="8dp"
                     app:drawableStartCompat="@drawable/fire"
                     android:gravity="center"
-                    android:textColor="@color/news_settings_title_color"
+                    android:textColor="@color/content_color"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
 
@@ -141,7 +141,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="center"
                     android:text="@string/likes_received"
-                    android:textColor="@color/news_settings_title_color"
+                    android:textColor="@color/content_color"
                     android:textSize="12sp"/>
             </LinearLayout>
 
@@ -165,7 +165,7 @@
                     app:drawableStartCompat="@drawable/gold"
                     android:drawablePadding="8dp"
                     android:gravity="center"
-                    android:textColor="@color/news_settings_title_color"
+                    android:textColor="@color/content_color"
                     android:textSize="18sp"
                     android:textStyle="bold"/>
 
@@ -176,7 +176,7 @@
                     android:gravity="center"
                     android:lineSpacingExtra="6sp"
                     android:text="@string/likes_given"
-                    android:textColor="@color/news_settings_title_color"
+                    android:textColor="@color/content_color"
                     android:textSize="12sp" />
             </LinearLayout>
 
@@ -207,8 +207,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_edit_profile" />
 
         </LinearLayout>
@@ -238,8 +238,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_activity_feed" />
 
         </LinearLayout>
@@ -269,8 +269,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_youtube" />
 
         </LinearLayout>
@@ -300,8 +300,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_notifications" />
 
         </LinearLayout> -->
@@ -331,8 +331,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_settings" />
 
         </LinearLayout> -->
@@ -362,8 +362,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_delete_account" />
 
         </LinearLayout> -->
@@ -393,8 +393,8 @@
                 android:textAllCaps="false"
                 android:background="@android:color/transparent"
                 android:gravity="start|center_vertical"
-                android:textColor="@color/news_settings_title_color"
-                android:drawableTint="@color/news_settings_title_color"
+                android:textColor="@color/content_color"
+                android:drawableTint="@color/content_color"
                 android:text="@string/be_logout" />
 
         </LinearLayout>
@@ -405,7 +405,7 @@
             android:layout_height="wrap_content"
             android:layout_gravity="bottom|center_horizontal"
             android:layout_marginBottom="4dp"
-            android:textColor="@color/news_settings_title_color"
+            android:textColor="@color/content_color"
             app:layout_anchorGravity="bottom"/>
     </LinearLayout>
 </ScrollView>
