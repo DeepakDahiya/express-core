@@ -31,13 +31,13 @@ public class BraveHomeButton extends HomeButton implements TintObserver {
     }
 
     public void setThemeColorProvider(ThemeColorProvider themeColorProvider) {
-        mThemeColorProvider = themeColorProvider;
-        mThemeColorProvider.addTintObserver(this);
+        // mThemeColorProvider = themeColorProvider;
+        // mThemeColorProvider.addTintObserver(this);
     }
 
     @Override
     public void onTintChanged(ColorStateList tint, int brandedColorScheme) {
-        ImageViewCompat.setImageTintList(this, tint);
+        // ImageViewCompat.setImageTintList(this, tint);
     }
 
     public void destroy() {
