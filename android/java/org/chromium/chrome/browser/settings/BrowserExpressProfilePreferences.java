@@ -70,8 +70,6 @@ import org.chromium.chrome.browser.util.TabUtils;
 public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
-    public static final String PREF_SHOW_OPTIN = "show_optin";
-
     private LinearLayout mParentLayout;
     private ImageView mAvatarImage;
     private TextView mUsernameText;
@@ -294,6 +292,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         if(avatar != null && avatar.length() > 0){
                             try{
                                 Log.e("LOADING IMAGE", avatar);
+                                Log.e("AVATAR_VIEW_DEBUG", "mAvatarImage is null: " + (mAvatarImage == null));
                                 Log.e("AVATAR_VIEW", "Width: " + mAvatarImage.getWidth() + 
                                     ", Height: " + mAvatarImage.getHeight() + 
                                     ", Visibility: " + mAvatarImage.getVisibility());
