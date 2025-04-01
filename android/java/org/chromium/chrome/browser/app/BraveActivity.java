@@ -566,23 +566,23 @@ public abstract class BraveActivity extends ChromeActivity
     
     public static void showPersistentNotification() {
         Context context = ContextUtils.getApplicationContext();
-        NotificationManagerProxyImpl notificationManager = new NotificationManagerProxyImpl(context);
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(context, CHANNEL_ID)
+            .setSmallIcon(R.drawable.ic_chrome)
+            .setContentTitle("Express Browser")
+            .setContentText("Browser is running")
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setOngoing(true) // Makes notification persistent
+            .setCategory(NotificationCompat.CATEGORY_SERVICE);
 
-        NotificationBuilderBase notificationBuilder = new BraveNotificationBuilder(context)
-            .setTitle("Express Browser")
-            .setBody("Browser is running")
-            .setSmallIconId(R.drawable.ic_chrome)
-            .setPriority(Notification.PRIORITY_LOW);
-            // .setCategory(Notification.CATEGORY_SERVICE);
-            // .setOngoing(true)
-        
-        NotificationWrapper notification = notificationBuilder.build(new NotificationMetadata(
-                                          NotificationUmaTracker.SystemNotificationType.UNKNOWN,
-                                          "persistent_notification_tag", // Replace with your tag
-                                          3232 // Replace with your notification ID
-                                      ));
+        // Add an intent to open the app when notification is clicked
+        Intent intent = new Intent(context, BraveActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent,
+            PendingIntent.FLAG_IMMUTABLE);
+        builder.setContentIntent(pendingIntent);
 
-        notificationManager.notify(notification);
+        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
+        notificationManager.notify(3232, builder.build());
     }
 
     public void enterPip(){

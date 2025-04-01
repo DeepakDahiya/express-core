@@ -158,7 +158,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
-                // ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
 
                 if (decodedAccessTokenObj.has("name") && !decodedAccessTokenObj.isNull("name")) {
                     mFullNameText.setText(decodedAccessTokenObj.getString("name"));
@@ -290,20 +290,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                         if(avatar != null && avatar.length() > 0){
-                            try{
-                                Log.e("LOADING IMAGE", avatar);
-                                Log.e("AVATAR_VIEW_DEBUG", "mAvatarImage is null: " + (mAvatarImage == null));
-                                Log.e("AVATAR_VIEW", "Width: " + mAvatarImage.getWidth() + 
-                                    ", Height: " + mAvatarImage.getHeight() + 
-                                    ", Visibility: " + mAvatarImage.getVisibility());
-                                Glide.with(getContext())
-                                    .load("https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg")
-                                    .error(R.drawable.btn_toolbar_profile)
-                                    .into(mAvatarImage);
-                            } catch(Exception e){
-                                Log.e("LOADING IMAGE", "Exception with direct Glide: " + e.getMessage());
-                                ImageLoader.downloadImage(avatar, Glide.with(getContext()), false, 5, mAvatarImage, null);
-                            }
+                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
                         }
 
                         if(xp != null && xp.length() > 0){

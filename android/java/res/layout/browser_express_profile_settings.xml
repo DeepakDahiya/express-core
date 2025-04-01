@@ -13,8 +13,8 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="visible"
-        android:paddingHorizontal="10sp"
-        android:paddingVertical="12sp">
+        android:paddingHorizontal="24sp"
+        android:paddingVertical="4sp">
 
         <FrameLayout
             android:layout_width="match_parent"
