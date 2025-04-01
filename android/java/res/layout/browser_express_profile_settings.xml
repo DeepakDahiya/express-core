@@ -13,7 +13,7 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:visibility="visible"
-        android:paddingHorizontal="24sp"
+        android:paddingHorizontal="18sp"
         android:paddingVertical="4sp">
 
         <FrameLayout
@@ -90,8 +90,9 @@
                     android:scaleType="centerCrop"
                     android:layout_marginTop="15dp"
                     android:layout_gravity="center"
+                    android:adjustViewBounds="true"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-                    />
+                    android:background="@drawable/circular_background" />
 
                 <!-- <ImageView
                     android:id="@+id/edit_icon"
