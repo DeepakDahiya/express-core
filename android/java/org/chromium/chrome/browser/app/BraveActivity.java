@@ -571,9 +571,9 @@ public abstract class BraveActivity extends ChromeActivity
         NotificationBuilderBase notificationBuilder = new BraveNotificationBuilder(context)
             .setTitle("Express Browser")
             .setBody("Browser is running")
-            .setSmallIconId(R.drawable.ic_notification)
-            .setPriority(Notification.PRIORITY_LOW)
-            .setCategory(Notification.CATEGORY_SERVICE);
+            .setSmallIconId(R.drawable.ic_chrome)
+            .setPriority(Notification.PRIORITY_LOW);
+            // .setCategory(Notification.CATEGORY_SERVICE);
             // .setOngoing(true)
         
         NotificationWrapper notification = notificationBuilder.build(new NotificationMetadata(
