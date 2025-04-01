@@ -129,8 +129,6 @@
     <!-- Back to chromium color -->
     <color name="ntp_bg_incognito">@color/default_bg_color_dark</color>
 
-    <color name="toolbar_text_box_background_incognito">#3D2742</color>
-
     <color name="compositor_tab_title_bar_text_incognito">@android:color/white</color>
 
     <!-- Incognito NTP Colors. -->
