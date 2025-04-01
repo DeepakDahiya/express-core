@@ -228,6 +228,9 @@ import org.chromium.chrome.browser.notifications.BravePermissionUtils;
 
 import android.widget.EditText;
 import android.widget.ImageButton;
+import android.app.Notification;
+import org.chromium.components.browser_ui.notifications.NotificationWrapper;
+import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 
 /**
  * Brave's extension for ChromeActivity
