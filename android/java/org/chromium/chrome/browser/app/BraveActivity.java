@@ -231,6 +231,8 @@ import android.widget.ImageButton;
 import android.app.Notification;
 import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
+import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
+import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 
 /**
  * Brave's extension for ChromeActivity
