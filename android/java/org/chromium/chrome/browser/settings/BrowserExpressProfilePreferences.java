@@ -294,8 +294,11 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         if(avatar != null && avatar.length() > 0){
                             try{
                                 Log.e("LOADING IMAGE", avatar);
+                                Log.d("AVATAR_VIEW", "Width: " + mAvatarImage.getWidth() + 
+                                    ", Height: " + mAvatarImage.getHeight() + 
+                                    ", Visibility: " + mAvatarImage.getVisibility());
                                 Glide.with(activity)
-                                    .load(avatar)
+                                    .load("https://static.vecteezy.com/system/resources/thumbnails/002/002/403/small/man-with-beard-avatar-character-isolated-icon-free-vector.jpg")
                                     .error(R.drawable.btn_toolbar_profile)
                                     .into(mAvatarImage);
                             } catch(Exception e){
