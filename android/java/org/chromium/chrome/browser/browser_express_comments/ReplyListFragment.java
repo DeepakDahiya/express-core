@@ -143,14 +143,15 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         boolean isReplyAdapter = true;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mTopComments = new ArrayList<Comment>();
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true, false);
+        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, parentFragment, isReplyAdapter, true, false);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
