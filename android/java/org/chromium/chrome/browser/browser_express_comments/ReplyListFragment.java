@@ -143,7 +143,6 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
-        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         boolean isReplyAdapter = true;
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
