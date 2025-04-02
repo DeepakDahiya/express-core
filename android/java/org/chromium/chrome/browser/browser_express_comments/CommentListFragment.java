@@ -136,7 +136,7 @@ public class CommentListFragment extends Fragment {
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         
         boolean isReplyAdapter = false;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);

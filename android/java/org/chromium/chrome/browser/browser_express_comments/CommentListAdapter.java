@@ -57,8 +57,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
     private BrowserExpressCommentsBottomSheetFragment mParentFragment;
     private boolean mIsReplyAdapter;
     private boolean mIsReplyTopComment;
+    private boolean mIsReplyToReplyAdapter;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
+    public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
         mContext = context;
         mCommentList = commentList;
         mMessageEditText = messageEditText;
@@ -66,6 +67,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         mParentFragment = parentFragment;
         mIsReplyAdapter = isReplyAdapter;
         mIsReplyTopComment = isReplyTopComment;
+        mIsReplyToReplyAdapter = isReplyToReplyAdapter;
     }
 
     @Override
@@ -79,7 +81,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         View view;
 
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment);
+        return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment, mIsReplyToReplyAdapter);
     }
 
     // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
@@ -124,14 +126,16 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
         private boolean mIsReplyAdapter;
         private boolean mIsReplyTopComment;
+        private boolean mIsReplyToReplyAdapter;
 
-        CommentHolder(View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment) {
+        CommentHolder(View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
             super(itemView);
 
             mMessageEditText = messageEditText;
             mParentFragment = parentFragment;
             mIsReplyAdapter = isReplyAdapter;
             mIsReplyTopComment = isReplyTopComment;
+            mIsReplyToReplyAdapter = isReplyToReplyAdapter;
 
             mTopCommentRecycler = topCommentRecycler;
             mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
@@ -182,19 +186,17 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(formatNumberCompact(finalVote));
-            if(mIsReplyAdapter == false){
-                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT", "NOT_FOUND");
+            if(mIsReplyToReplyAdapter == false){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
+                if(mIsReplyTopComment){
+                    mActionItemsLayout.setVisibility(View.GONE);
+                }
             }else{
-                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_PARENT", "FOUND");
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "1");
-
             // This is used to make the comment work for post top comments
             if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null){
-                Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "2");
                 mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);
 
@@ -240,14 +242,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 // mAvatarImage.setLayoutParams(params);
             }
                 
-            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), false, 5, mAvatarImage, null);
-
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "3");
+            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
-
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "4");
 
             SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
             SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
@@ -299,14 +297,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             };
 
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "5");
-
             sharedPref.registerOnSharedPreferenceChangeListener(listener);
             
             Vote didVote = comment.getDidVote();
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "6");
             if(didVote != null){
-                Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "7");
                 String type = didVote.getType();
                 didVoteType = type;
                 if(type.equals("up")){
@@ -316,16 +310,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }
 
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "8");
-
             if(comment.getCommentCount() > 0){
-                Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "9");
                 String mReplyButtonText = comment.getCommentCount() + " replies";
                 mReplyButton.setText(mReplyButtonText);
                 mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
             }
-
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "10");
 
             if(mReplyButton != null){
                 mReplyButton.setOnClickListener(new View.OnClickListener() {
@@ -349,7 +338,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                             return;
                                         }
 
-                                        if(!mIsReplyAdapter){
+                                        if(mIsReplyAdapter){
+                                            mParentFragment.openRepliesToReply(comment.getId());
+                                            return;
+                                        }else{
                                             mParentFragment.openReplies(comment.getId());
                                             return;
                                         }

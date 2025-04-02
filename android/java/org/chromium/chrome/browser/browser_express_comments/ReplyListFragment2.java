@@ -51,7 +51,7 @@ import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
-public class ReplyListFragment extends Fragment {
+public class ReplyList2Fragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
@@ -144,13 +144,13 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         boolean isReplyAdapter = true;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false, true);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mTopComments = new ArrayList<Comment>();
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true, false);
+        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);

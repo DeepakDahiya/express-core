@@ -217,6 +217,14 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         loadFragment(replyFragment);
     }
 
+    public void openRepliesToReply(String commentId) {
+        ReplyListFragment2 replyFragment = new ReplyListFragment2();
+        Bundle args = new Bundle();
+        args.putString("comment_id", commentId);
+        replyFragment.setArguments(args);
+        loadFragment(replyFragment);
+    }
+
     public void dismissBottomsheet() {
         dismiss();
     }
