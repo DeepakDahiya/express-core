@@ -341,7 +341,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                         if(mIsReplyAdapter){
                                             mParentFragment.openRepliesToReply(comment.getId());
                                             return;
-                                        }else{
+                                        }else if (!mIsReplyAdapter && !mIsReplyToReplyAdapter){
                                             mParentFragment.openReplies(comment.getId());
                                             return;
                                         }
