@@ -338,13 +338,18 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                             return;
                                         }
 
+                                        Log.e("REPLY_TO_REPLY", "1");
+
                                         if(mIsReplyAdapter){
+                                            Log.e("REPLY_TO_REPLY", "2");
                                             mParentFragment.openRepliesToReply(comment.getId());
                                             return;
                                         }else if (!mIsReplyAdapter && !mIsReplyToReplyAdapter){
+                                            Log.e("REPLY_TO_REPLY", "3");
                                             mParentFragment.openReplies(comment.getId());
                                             return;
                                         }
+                                        Log.e("REPLY_TO_REPLY", "4");
 
                                         JSONObject json = new JSONObject();
                                         json.put("name", comment.getUser().getUsername());

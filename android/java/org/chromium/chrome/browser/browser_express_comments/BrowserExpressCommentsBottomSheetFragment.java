@@ -218,9 +218,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openRepliesToReply(String commentId) {
+        Log.e("OpenRepliesToReply", "commentId: " + commentId);
         ReplyListFragment2 replyFragment = new ReplyListFragment2();
+        Log.e("OpenRepliesToReply", "After replyFragment");
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
+        Log.e("OpenRepliesToReply", "After args");
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
     }
