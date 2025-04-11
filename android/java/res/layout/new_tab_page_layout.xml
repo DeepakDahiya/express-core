@@ -113,8 +113,6 @@
                         android:layout_gravity="center_horizontal"
                         android:orientation="vertical"
                         android:visibility="gone">
-				<!-- Search box -->
-				<include layout="@layout/fake_search_box_layout"/>
 				<!-- Query tiles -->
 				<FrameLayout
                         android:id="@+id/query_tiles"
