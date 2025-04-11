@@ -9,7 +9,7 @@
     android:padding="8dp"
     android:background="@drawable/brave_sync_top_rounded">
   <ImageView
-      android:src="@drawable/btn_brave"
+      android:src="@drawable/be_logo"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center_vertical"
