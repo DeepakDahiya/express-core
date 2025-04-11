@@ -152,6 +152,23 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
+        view.setFocusableInTouchMode(true);
+        view.requestFocus();
+        view.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                Log.e("ROOT_VIEW_KEY", "keyCode: " + keyCode);
+                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
+                    FragmentManager fragmentManager = getChildFragmentManager();
+                    if (fragmentManager.getBackStackEntryCount() > 1) {
+                        openComments();
+                        return true;
+                    }
+                }
+                return false;
+            }
+        });
+
         dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
