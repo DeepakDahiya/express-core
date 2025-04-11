@@ -155,6 +155,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
             @Override
             public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
+                Log.e("BACK BUTTON PRESSED", "keyCode: " + keyCode);
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                     FragmentManager fragmentManager = getChildFragmentManager();
                     if (fragmentManager.getBackStackEntryCount() > 1) {
@@ -166,25 +167,19 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             }
         });
 
-        int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
-                BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
-
-        if (braveDefaultModalCount > 2 && !isFromMenu) {
-        } else {
-        }
-
         ((FragmentActivity) requireActivity()).getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), 
             new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
+                    Log.e("BACK BUTTON PRESSED 2", "START");
                     FragmentManager fragmentManager = getChildFragmentManager();
-                    openComments();
-                    // if (fragmentManager.getBackStackEntryCount() > 1) {
-                    //     openComments();
-                    // } else {
-                    //     this.remove();
-                    //     dismissBottomsheet();
-                    // }
+                    Log.e("BACK BUTTON PRESSED 2", fragmentManager.getBackStackEntryCount() + "");
+                    if (fragmentManager.getBackStackEntryCount() > 1) {
+                        openComments();
+                    } else {
+                        this.remove();
+                        dismissBottomsheet();
+                    }
                 }
             });
     }

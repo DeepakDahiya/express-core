@@ -35,6 +35,8 @@
                               android:layout_height="wrap_content"
                               android:text="@string/browser_express_name"
                               android:layout_gravity="center_horizontal"
+                              android:drawablePadding="8dp"
+                              app:drawableStartCompat="@drawable/be_logo"
                               android:gravity="center"
                               android:textColor="@color/content_color"
                               android:textStyle="bold"
