@@ -48,6 +48,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import android.os.Bundle;
 import androidx.core.content.res.ResourcesCompat;
+import org.chromium.ui.widget.Toast;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -330,13 +332,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
 
                                         String accessToken = activity.getAccessToken();
-                                        if (accessToken == null) {
-                                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                                            activity.showGenerateUsernameBottomSheet();
-                                            // activity.dismissCommentsBottomSheet();
-                                            return;
-                                        }
+                                        // if (accessToken == null) {
+                                        //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                                        //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                                        //     activity.showGenerateUsernameBottomSheet();
+                                        //     return;
+                                        // }
 
                                         Log.e("REPLY_TO_REPLY", "1");
 
@@ -394,13 +395,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     @Override
                     public void onClick(View v) {
                         String accessToken = activity.getAccessToken();
-                        if (accessToken == null) {
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                            activity.showGenerateUsernameBottomSheet();
-                            // activity.dismissCommentsBottomSheet();
-                            return;
-                        }
+                        // if (accessToken == null) {
+                        //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                        //     activity.showGenerateUsernameBottomSheet();
+                        //     return;
+                        // }
 
                         mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
@@ -438,13 +438,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     @Override
                     public void onClick(View v) {
                         String accessToken = activity.getAccessToken();
-                        if (accessToken == null) {
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                            activity.showGenerateUsernameBottomSheet();
-                            // activity.dismissCommentsBottomSheet();
-                            return;
-                        }
+                        // if (accessToken == null) {
+                        //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                        //     activity.showGenerateUsernameBottomSheet();
+                        //     return;
+                        // }
 
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
                         mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
@@ -479,9 +478,19 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback=
             new BrowserExpressAddVoteUtil.AddVoteCallback() {
                 @Override
-                public void addVoteSuccessful() {
-                    // mDownvoteButton.setClickable(true);
-                    // mUpvoteButton.setClickable(true);
+                public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                    if(newAccessToken != null && newAccessToken.length() > 0){
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            activity.setAccessToken(accessToken);
+                            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.setAction(Intent.ACTION_VIEW);
+                            Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+                            startActivity(intent);
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        }
+                    }
                 }
 
                 @Override

@@ -51,6 +51,8 @@ import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
+import android.content.Intent;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -182,26 +184,25 @@ public class CommentListFragment extends Fragment {
                             mSendButton.setClickable(false);
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
-                            if (accessToken == null) {
-                                InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                                activity.showGenerateUsernameBottomSheet();
-                                // parentFragment.dismissBottomsheet();
-                            } else {
-                                String content = mMessageEditText.getText().toString().trim();
-                                if(content.length() > 0){
-                                    String pType = "page";
-                                    String pId = null;
-                                    if(mCommentsFor.equals("post")){
-                                        pType = "post";
-                                        pId = mPostId;
-                                    }
-                                    BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                        new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                                content, pType, mUrl, pId, accessToken, addCommentCallback);
-                                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                    mMessageEditText.setText(R.string.browser_express_empty_text);
+                            // if (accessToken == null) {
+                            //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                            //     activity.showGenerateUsernameBottomSheet();
+                            //     return;
+                            // }
+                            String content = mMessageEditText.getText().toString().trim();
+                            if(content.length() > 0){
+                                String pType = "page";
+                                String pId = null;
+                                if(mCommentsFor.equals("post")){
+                                    pType = "post";
+                                    pId = mPostId;
                                 }
+                                BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                    new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                            content, pType, mUrl, pId, accessToken, addCommentCallback);
+                                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                mMessageEditText.setText(R.string.browser_express_empty_text);
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             // Log.e("Express Browser Access Token", e.getMessage());
@@ -265,7 +266,7 @@ public class CommentListFragment extends Fragment {
     private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
-                public void addCommentSuccessful(Comment comment) {
+                public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
                     mComments.add(0, comment);
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
@@ -289,6 +290,14 @@ public class CommentListFragment extends Fragment {
                         commentCount++;
 
                         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                        if(newAccessToken != null && newAccessToken.length() > 0){
+                            activity.setAccessToken(accessToken);
+                            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.setAction(Intent.ACTION_VIEW);
+                            Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+                            startActivity(intent);
+                        }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         // Log.e("Express Browser Access Token", e.getMessage());
                     }

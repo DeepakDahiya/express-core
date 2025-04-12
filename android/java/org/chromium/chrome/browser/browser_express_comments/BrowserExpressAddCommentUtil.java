@@ -40,7 +40,7 @@ public class BrowserExpressAddCommentUtil {
     private static final String ADD_COMMENT_URL = "https://api.browser.express/v1/comment";
 
     public interface AddCommentCallback {
-        void addCommentSuccessful(Comment comment);
+        void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken);
         void addCommentFailed(String error);
     }
 
@@ -54,6 +54,9 @@ public class BrowserExpressAddCommentUtil {
         private static String mUrl;
         private static String mAccessToken;
         private static Comment mComment;
+
+        private static String mNewAccessToken = "";
+        private static String mNewRefreshToken = "";
 
         public AddCommentWorkerTask(String content, String parentType, String url, String parentId, String accessToken, AddCommentCallback callback) {
             mCallback = callback;
@@ -74,6 +77,11 @@ public class BrowserExpressAddCommentUtil {
             addCommentStatus = status;
         }
 
+        public static void setNewTokens(String accessToken, String refreshToken){
+            mNewAccessToken = accessToken;
+            mNewRefreshToken = refreshToken;
+        }
+
         public static void setErrorMessage(String error){
             mErrorMessage = error;
         }
@@ -89,7 +97,7 @@ public class BrowserExpressAddCommentUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(addCommentStatus){
-                mCallback.addCommentSuccessful(mComment);
+                mCallback.addCommentSuccessful(mComment, mNewAccessToken, mNewRefreshToken);
             }else{
                 mCallback.addCommentFailed(mErrorMessage);
             }
@@ -164,6 +172,10 @@ public class BrowserExpressAddCommentUtil {
                         commentParent,
                         u,
                         v));
+
+                    if(responseObject.has("accessToken")){
+                        AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
+                    }
                 }else{
                     AddCommentWorkerTask.setAddCommentSuccessStatus(false);
                     AddCommentWorkerTask.setErrorMessage(responseObject.getString("error"));

@@ -41,7 +41,7 @@ public class BrowserExpressAddVoteUtil {
     private static final String ADD_POST_VOTE_BASE_URL = "https://api.browser.express/v1/post";
 
     public interface AddVoteCallback {
-        void addVoteSuccessful();
+        void addVoteSuccessful(String newAccessToken, String newRefreshToken);
         void addVoteFailed(String error);
     }
 
@@ -53,6 +53,9 @@ public class BrowserExpressAddVoteUtil {
         private static String mType;
         private static String mAccessToken;
         private static String mResourceType;
+
+        private static String mNewAccessToken = "";
+        private static String mNewRefreshToken = "";
 
         public AddVoteWorkerTask(String commentId, String type, String resourceType, String accessToken, AddVoteCallback callback) {
             mCallback = callback;
@@ -66,6 +69,11 @@ public class BrowserExpressAddVoteUtil {
 
         public static void setAddVoteSuccessStatus(Boolean status){
             addVoteStatus = status;
+        }
+
+        public static void setNewTokens(String accessToken, String refreshToken){
+            mNewAccessToken = accessToken;
+            mNewRefreshToken = refreshToken;
         }
 
         public static void setErrorMessage(String error){
@@ -83,7 +91,7 @@ public class BrowserExpressAddVoteUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(addVoteStatus){
-                mCallback.addVoteSuccessful();
+                mCallback.addVoteSuccessful(mNewAccessToken, mNewRefreshToken);
             }else{
                 mCallback.addVoteFailed(mErrorMessage);
             }
@@ -132,6 +140,9 @@ public class BrowserExpressAddVoteUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     AddVoteWorkerTask.setAddVoteSuccessStatus(true);
+                    if(responseObject.has("accessToken")){
+                        AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
+                    }
                 }else{
                     AddVoteWorkerTask.setAddVoteSuccessStatus(false);
                     AddVoteWorkerTask.setErrorMessage(responseObject.getString("error"));

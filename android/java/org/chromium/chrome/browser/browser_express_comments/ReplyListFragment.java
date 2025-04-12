@@ -50,6 +50,8 @@ import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import android.content.Intent;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 
 public class ReplyListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -173,20 +175,20 @@ public class ReplyListFragment extends Fragment {
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
                             mUrl = activity.getActivityTab().getUrl().getSpec();
-                            if (accessToken == null) {
-                                InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                                activity.showGenerateUsernameBottomSheet();
-                                parentFragment.dismissBottomsheet();
-                            } else {
-                                String content = mMessageEditText.getText().toString().trim();
-                                if(content.length() > 0){
-                                    BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                        new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                                content, "comment", mUrl, mCommentId, accessToken, addCommentCallback);
-                                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                                    mMessageEditText.setText(R.string.browser_express_empty_text);
-                                }
+                            // if (accessToken == null) {
+                            //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
+                            //     activity.showGenerateUsernameBottomSheet();
+                            //     parentFragment.dismissBottomsheet();
+                            //     return;
+                            // }
+                            String content = mMessageEditText.getText().toString().trim();
+                            if(content.length() > 0){
+                                BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                    new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                            content, "comment", mUrl, mCommentId, accessToken, addCommentCallback);
+                                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                mMessageEditText.setText(R.string.browser_express_empty_text);
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Express Browser Access Token", e.getMessage());
@@ -255,11 +257,24 @@ public class ReplyListFragment extends Fragment {
     private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
-                public void addCommentSuccessful(Comment comment) {
+                public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
                     mComments.add(0, comment);
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
+
+                    if(newAccessToken != null && newAccessToken.length() > 0){
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            activity.setAccessToken(accessToken);
+                            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                            intent.setAction(Intent.ACTION_VIEW);
+                            Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+                            startActivity(intent);
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        }
+                    }
                 }
 
                 @Override

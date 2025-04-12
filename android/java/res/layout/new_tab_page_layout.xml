@@ -43,13 +43,17 @@
                               android:textStyle="bold"
                               android:textSize="40sp"/>
 			</LinearLayout>
-			<LinearLayout
+
+                  <include layout="@layout/fake_search_box_layout"/>
+
+                  <LinearLayout
                         android:id="@+id/top_sites_container"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_horizontal"
                         android:visibility="gone"
+                        android:layout_marginTop="12dp"
                         android:paddingHorizontal="8dp"/>
 			<FrameLayout
                         android:id="@+id/logo_holder"
@@ -71,53 +75,7 @@
                               android:layout_marginTop="@dimen/ntp_logo_margin_top"
                               android:layout_marginBottom="23dp" />
 			</FrameLayout>
-                  <view
-                        class="org.chromium.chrome.browser.ntp.search.SearchBoxContainerView"
-                        android:id="@+id/search_box"
-                        android:layout_width="match_parent"
-                        android:layout_height="@dimen/ntp_search_box_height"
-                        android:layout_marginStart="10dp"
-                        android:layout_marginEnd="10dp"
-                        android:layout_marginTop="0dp"
-                        android:layout_marginBottom="@dimen/ntp_search_box_bottom_margin"
-                        android:gravity="center_vertical"
-                        android:background="@drawable/ntp_search_box"
-                        android:orientation="horizontal"
-                        android:paddingStart="@dimen/fake_search_box_lateral_padding" >
 
-                        <!-- TODO(crbug.com/900912): Fix and remove lint ignore -->
-                        <RelativeLayout
-                              android:layout_width="0dp"
-                              android:layout_height="match_parent"
-                              android:layout_marginEnd="12dp"
-                              android:layout_weight="1"
-                              android:gravity="center_vertical">
-                              <EditText
-                                    tools:ignore="Autofill,LabelFor"
-                                    style="@style/TextAppearance.SearchBoxText.NewTabPage"
-                                    android:id="@+id/search_box_text"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:background="@null"
-                                    android:ellipsize="end"
-                                    android:focusableInTouchMode="false"
-                                    android:focusable="false"
-                                    android:inputType="text"
-                                    android:singleLine="true"
-                                    android:hint="@string/omnibox_empty_hint" />
-                        </RelativeLayout>
-                        <org.chromium.ui.widget.ChromeImageView
-                              android:id="@+id/voice_search_button"
-                              style="@style/LocationBarActionButtonPolish"
-                              android:contentDescription="@string/accessibility_toolbar_btn_mic"
-                              android:src="@drawable/btn_mic" />
-                        <org.chromium.ui.widget.ChromeImageView
-                              android:id="@+id/lens_camera_button"
-                              style="@style/LocationBarActionButtonPolish"
-                              android:contentDescription="@string/accessibility_btn_lens_camera"
-                              android:src="@drawable/lens_camera_icon"
-                              android:visibility="gone" />
-                  </view>
 			<View
                         android:id="@+id/no_search_logo_spacer"
                         android:layout_width="match_parent"
@@ -166,7 +124,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:visibility="gone"/>
-
+                        
 				<!-- Single tab card -->
 				<ViewStub
                         android:id="@+id/tab_switcher_module_container_stub"
