@@ -141,10 +141,7 @@ public class BrowserExpressAddVoteUtil {
                 if(responseObject.getBoolean("success")){
                     AddVoteWorkerTask.setAddVoteSuccessStatus(true);
                     Log.e(TAG, responseObject.getString("accessToken"));
-                    if(responseObject.has("accessToken") && responseObject.getString("accessToken") != null && 
-                            !responseObject.getString("accessToken").isEmpty()){
-                        AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
-                    }
+                    AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                 }else{
                     AddVoteWorkerTask.setAddVoteSuccessStatus(false);
                     AddVoteWorkerTask.setErrorMessage(responseObject.getString("error"));
