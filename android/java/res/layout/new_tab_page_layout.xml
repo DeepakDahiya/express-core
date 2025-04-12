@@ -51,7 +51,6 @@
             android:id="@+id/logo_holder"
             android:layout_width="match_parent"
             android:layout_height="wrap_content">
-            <include layout="@layout/logo_view_layout"/>
             <ViewStub
                   android:id="@+id/cryptid_holder"
                   android:layout="@layout/new_tab_page_cryptid_holder"
