@@ -24,78 +24,123 @@
 
 namespace {
 const char16_t k_youtube_background_playback_script[] =
-    u"(function() {"
-    u"  // Script 1: Modifies YouTube configuration flags to enable Picture-in-Picture"
-    u"  const configModificationScript = document.createElement('script');"
-    u"  configModificationScript.textContent = `"
-    u"    // Function to modify the flags if the target object exists"
-    u"    function modifyYtcfgFlags() {"
-    u"      if (!window.ytcfg) {"
-    u"          return;"
-    u"      }"
-    u"      const config = window.ytcfg.get(\"WEB_PLAYER_CONTEXT_CONFIGS\")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH"
-    u"      if (config && config.serializedExperimentFlags) {"
-    u"          let flags = config.serializedExperimentFlags;"
-    u"          // Replace target flags"
-    u"          flags = flags"
-    u"              .replace(\"html5_picture_in_picture_blocking_ontimeupdate=true\", \"html5_picture_in_picture_blocking_ontimeupdate=false\")"
-    u"              .replace(\"html5_picture_in_picture_blocking_onresize=true\", \"html5_picture_in_picture_blocking_onresize=false\")"
-    u"              .replace(\"html5_picture_in_picture_blocking_document_fullscreen=true\", \"html5_picture_in_picture_blocking_document_fullscreen=false\")"
-    u"              .replace(\"html5_picture_in_picture_blocking_standard_api=true\", \"html5_picture_in_picture_blocking_standard_api=false\")"
-    u"              .replace(\"html5_picture_in_picture_logging_onresize=true\", \"html5_picture_in_picture_logging_onresize=false\");"
-    u"          // Assign updated flags back to the config"
-    u"          config.serializedExperimentFlags = flags;"
-    u"          if (configModificationObserver) {"
-    u"              configModificationObserver.disconnect();"
-    u"          }"
-    u"      }"
-    u"    }"
-    u"    // MutationObserver to watch for new <script> elements"
-    u"    const configModificationObserver = new MutationObserver((mutations) => {"
-    u"        for (const mutation of mutations) {"
-    u"            if (mutation.type === \"childList\" && mutation.addedNodes.length > 0) {"
-    u"                mutation.addedNodes.forEach((node) => {"
-    u"                    if (node.tagName === \"SCRIPT\") {"
-    u"                        // Check and modify flags when a new script is added"
-    u"                        modifyYtcfgFlags();"
-    u"                    }"
-    u"                });"
-    u"            }"
-    u"        }"
-    u"    });"
-    u"    configModificationObserver.observe(document.documentElement, { childList: true, subtree: true });"
-    u"  `;"
-    u"  document.head.appendChild(configModificationScript);"
-    u"  configModificationScript.remove();"
-    u""
-    u"  // Script 2: Adds a Picture-in-Picture button to the mobile YouTube interface"
-    u"  const buttonElement = document.createElement('button');"
-    u"  buttonElement.setAttribute('style', `"
-    u"      -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;"
-    u"      background-color: white;"
-    u"      align-self: stretch;"
-    u"      flex: 1;"
-    u"  `);"
-    u"  buttonElement.addEventListener('click', () => {"
-    u"      const videoElement = document.querySelector('video');"
-    u"      videoElement.removeAttribute('disablePictureInPicture');"
-    u"      videoElement.requestPictureInPicture();"
-    u"  });"
-    u"  const buttonObserver = new MutationObserver(() => {"
-    u"      const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    u"      // Check if the button container exists and does NOT contain the button"
-    u"      if(window.location.pathname === '/watch' && buttonContainerElement && !buttonContainerElement.contains(buttonElement)) {"
-    u"          buttonContainerElement.prepend(buttonElement);"
-    u"      }"
-    u"  });"
-    u"  buttonObserver.observe(document.documentElement, { subtree: true, childList: true });"
-    u""
-    u"  // Initial check in case the elements are already present on page load"
-    u"  const initialButtonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    u"  if (window.location.pathname === '/watch' && initialButtonContainerElement && !initialButtonContainerElement.contains(buttonElement)) {"
-    u"      initialButtonContainerElement.prepend(buttonElement);"
-    u"  }"
-    u"})();";
+    uR"(
+    (function() {
+        if (document._addEventListener === undefined) {
+            document._addEventListener = document.addEventListener;
+            document.addEventListener = function(a,b,c) {
+                if(a != 'visibilitychange') {
+                    document._addEventListener(a,b,c);
+                }
+            };
+        }
+    }());
+    // Function to modify the flags if the target object exists.
+    function modifyYtcfgFlags() {
+      if (!window.ytcfg) {
+        return;
+      }
+      const config = window.ytcfg.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH
+      if (config && config.serializedExperimentFlags) {
+        let flags = config.serializedExperimentFlags;
+        // Replace target flags.
+        flags = flags
+          .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
+          .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
+          .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
+          .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
+          .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
+        // Assign updated flags back to config.
+        config.serializedExperimentFlags = flags;
+        if (observer) {
+          observer.disconnect();
+        }
+      }
+    }
+    const observer = new MutationObserver((mutations) => {
+      for (const mutation of mutations) {
+        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+          mutation.addedNodes.forEach((node) => {
+            if (node.tagName === "SCRIPT") {
+              // Check and modify flags when a new script is added.
+              modifyYtcfgFlags();
+            }
+          });
+        }
+      }
+    });
+    observer.observe(document.documentElement, { childList: true, subtree: true });
+    )";
+    // u"(function() {"
+    // u"  const configModificationScript = document.createElement('script');"
+    // u"  configModificationScript.textContent = `"
+    // u"    function modifyYtcfgFlags() {"
+    // u"      if (!window.ytcfg) {"
+    // u"          return;"
+    // u"      }"
+    // u"      const config = window.ytcfg.get(\"WEB_PLAYER_CONTEXT_CONFIGS\")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH"
+    // u"      if (config && config.serializedExperimentFlags) {"
+    // u"          let flags = config.serializedExperimentFlags;"
+    // u"          flags = flags"
+    // u"              .replace(\"html5_picture_in_picture_blocking_ontimeupdate=true\", \"html5_picture_in_picture_blocking_ontimeupdate=false\")"
+    // u"              .replace(\"html5_picture_in_picture_blocking_onresize=true\", \"html5_picture_in_picture_blocking_onresize=false\")"
+    // u"              .replace(\"html5_picture_in_picture_blocking_document_fullscreen=true\", \"html5_picture_in_picture_blocking_document_fullscreen=false\")"
+    // u"              .replace(\"html5_picture_in_picture_blocking_standard_api=true\", \"html5_picture_in_picture_blocking_standard_api=false\")"
+    // u"              .replace(\"html5_picture_in_picture_logging_onresize=true\", \"html5_picture_in_picture_logging_onresize=false\");"
+    // u"          // Assign updated flags back to the config"
+    // u"          config.serializedExperimentFlags = flags;"
+    // u"          if (configModificationObserver) {"
+    // u"              configModificationObserver.disconnect();"
+    // u"          }"
+    // u"      }"
+    // u"    }"
+    // u"    // MutationObserver to watch for new <script> elements"
+    // u"    const configModificationObserver = new MutationObserver((mutations) => {"
+    // u"        for (const mutation of mutations) {"
+    // u"            if (mutation.type === \"childList\" && mutation.addedNodes.length > 0) {"
+    // u"                mutation.addedNodes.forEach((node) => {"
+    // u"                    if (node.tagName === \"SCRIPT\") {"
+    // u"                        // Check and modify flags when a new script is added"
+    // u"                        modifyYtcfgFlags();"
+    // u"                    }"
+    // u"                });"
+    // u"            }"
+    // u"        }"
+    // u"    });"
+    // u"    configModificationObserver.observe(document.documentElement, { childList: true, subtree: true });"
+    // u"  `;"
+    // u"  document.head.appendChild(configModificationScript);"
+    // u"  configModificationScript.remove();"
+    // u""
+    // u"  // Script 2: Adds a Picture-in-Picture button to the mobile YouTube interface"
+    // u"  const buttonElement = document.createElement('button');"
+    // u"  buttonElement.setAttribute('style', `"
+    // u"      -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;"
+    // u"      background-color: white;"
+    // u"      align-self: stretch;"
+    // u"      flex: 1;"
+    // u"  `);"
+    // u"  buttonElement.addEventListener('click', () => {"
+    // u"      const videoElement = document.querySelector('video');"
+    // u"      videoElement.removeAttribute('disablePictureInPicture');"
+    // u"      videoElement.requestPictureInPicture();"
+    // u"  });"
+    // u"  const buttonObserver = new MutationObserver(() => {"
+    // u"      const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
+    // u"      // Check if the button container exists and does NOT contain the button"
+    // u"      if(window.location.pathname === '/watch' && buttonContainerElement && !buttonContainerElement.contains(buttonElement)) {"
+    // u"          buttonContainerElement.prepend(buttonElement);"
+    // u"      }"
+    // u"  });"
+    // u"  buttonObserver.observe(document.documentElement, { subtree: true, childList: true });"
+    // u""
+    // u"  // Initial check in case the elements are already present on page load"
+    // u"  const initialButtonContainerElement = document.querySelector('.mobile-topbar-header-content');"
+    // u"  if (window.location.pathname === '/watch' && initialButtonContainerElement && !initialButtonContainerElement.contains(buttonElement)) {"
+    // u"      initialButtonContainerElement.prepend(buttonElement);"
+    // u"  }"
+    // u"})();";
+    
     // u"(function() { "
     //   u"const buttonElement = document.createElement('button');"
     //   u"buttonElement.setAttribute('style', `    -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;    background-color: white;    align-self: stretch;    flex: 1;`);"

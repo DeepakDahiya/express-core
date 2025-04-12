@@ -184,7 +184,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             }
         });
 
-        ((FragmentActivity) requireActivity()).getOnBackPressedDispatcher().addCallback(getViewLifecycleOwner(), 
+        ((BottomSheetDialog) dialog()).getOnBackPressedDispatcher().addCallback(this, 
             new OnBackPressedCallback(true) {
                 @Override
                 public void handleOnBackPressed() {
