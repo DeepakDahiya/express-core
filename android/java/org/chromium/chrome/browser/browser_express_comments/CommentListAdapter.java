@@ -482,12 +482,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     if(newAccessToken != null && newAccessToken.length() > 0){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
-                            activity.setAccessToken(accessToken);
-                            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                            activity.setAccessToken(newAccessToken);
+                            Intent intent = new Intent(activity, ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             intent.setAction(Intent.ACTION_VIEW);
                             Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
-                            startActivity(intent);
+                            activity.startActivity(intent);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
                     }

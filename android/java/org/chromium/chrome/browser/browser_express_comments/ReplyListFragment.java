@@ -266,7 +266,7 @@ public class ReplyListFragment extends Fragment {
                     if(newAccessToken != null && newAccessToken.length() > 0){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
-                            activity.setAccessToken(accessToken);
+                            activity.setAccessToken(newAccessToken);
                             Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             intent.setAction(Intent.ACTION_VIEW);

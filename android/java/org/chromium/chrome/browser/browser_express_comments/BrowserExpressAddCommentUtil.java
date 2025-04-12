@@ -174,7 +174,7 @@ public class BrowserExpressAddCommentUtil {
                         v));
 
                     if(responseObject.has("accessToken")){
-                        AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
+                        AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                     }
                 }else{
                     AddCommentWorkerTask.setAddCommentSuccessStatus(false);
