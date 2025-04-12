@@ -263,7 +263,7 @@ public class ReplyListFragment2 extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
-                    if(newAccessToken != null && newAccessToken.length() > 0){
+                    if(newAccessToken != null && !newAccessToken.isEmpty()){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             activity.setAccessToken(newAccessToken);

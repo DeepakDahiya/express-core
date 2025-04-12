@@ -480,8 +480,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 @Override
                 public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
                     Log.e("BROWSER_EXPRESS_ADD_VOTE", newAccessToken);
-                    if(newAccessToken != null && newAccessToken.length() > 0){
+                    if(newAccessToken != null && !newAccessToken.isEmpty()){
                         try {
+                            Log.e("BROWSER_EXPRESS_ADD_VOTE", "setting token");
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             activity.setAccessToken(newAccessToken);
                             Intent intent = new Intent(activity, ChromeTabbedActivity.class);
