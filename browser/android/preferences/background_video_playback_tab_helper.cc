@@ -24,7 +24,6 @@
 
 namespace {
 const char16_t k_youtube_background_playback_script[] =
-const char16_t k_youtube_pip_enhancement_script[] =
     u"(function() {"
     u"  // Script 1: Modifies YouTube configuration flags to enable Picture-in-Picture"
     u"  const configModificationScript = document.createElement('script');"
