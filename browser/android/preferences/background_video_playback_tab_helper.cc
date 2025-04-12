@@ -37,7 +37,7 @@ const char16_t k_youtube_background_playback_script[] =
       u"    if(window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;"
       u"    buttonContainerElement.prepend(buttonElement);"
       u"});"
-      u"observer.observe(document.documentElement, { subtree: true, childList: true });";
+      u"observer.observe(document.documentElement, { subtree: true, childList: true });"
     "}());";
 
     // u"(function() {"
