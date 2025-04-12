@@ -1088,8 +1088,7 @@ public class BraveNewTabPageLayout
 
         // Click listener to open website
         tileView.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(topSite.getDestinationUrl()));
-            context.startActivity(intent);
+            TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
         });
 
         return tileView;

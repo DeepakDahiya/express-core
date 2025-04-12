@@ -479,6 +479,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             new BrowserExpressAddVoteUtil.AddVoteCallback() {
                 @Override
                 public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                    Log.e("BROWSER_EXPRESS_ADD_VOTE", newAccessToken);
                     if(newAccessToken != null && newAccessToken.length() > 0){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();

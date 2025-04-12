@@ -140,7 +140,9 @@ public class BrowserExpressAddVoteUtil {
                 JSONObject responseObject = new JSONObject(sb.toString());
                 if(responseObject.getBoolean("success")){
                     AddVoteWorkerTask.setAddVoteSuccessStatus(true);
-                    if(responseObject.has("accessToken")){
+                    Log.e(TAG, responseObject.getString("accessToken"));
+                    if(responseObject.has("accessToken") && responseObject.getString("accessToken") != null && 
+                            !responseObject.getString("accessToken").isEmpty()){
                         AddVoteWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                     }
                 }else{
