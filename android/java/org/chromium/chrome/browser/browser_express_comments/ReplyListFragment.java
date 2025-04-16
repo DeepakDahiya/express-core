@@ -274,6 +274,7 @@ public class ReplyListFragment extends Fragment {
                             Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
                             startActivity(intent);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        } catch (JSONException e) {
                         }
                     }
                 }
