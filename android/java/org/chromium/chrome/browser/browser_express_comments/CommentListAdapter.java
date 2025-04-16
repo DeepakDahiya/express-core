@@ -487,7 +487,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             Log.e("BROWSER_EXPRESS_ADD_VOTE", "setting token");
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             activity.setAccessToken(newAccessToken);
-                            JSONObject decodedAccessTokenObj = this.getDecodedToken(newAccessToken);
+                            JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
                             Intent intent = new Intent(activity, ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             intent.setAction(Intent.ACTION_VIEW);

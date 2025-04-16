@@ -292,7 +292,7 @@ public class CommentListFragment extends Fragment {
                         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                         if(newRefreshToken != null && !newRefreshToken.isEmpty()){
                             activity.setAccessToken(newAccessToken);
-                            JSONObject decodedAccessTokenObj = this.getDecodedToken(newAccessToken);
+                            JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
                             Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             intent.setAction(Intent.ACTION_VIEW);
