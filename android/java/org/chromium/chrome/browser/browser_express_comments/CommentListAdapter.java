@@ -50,6 +50,8 @@ import android.os.Bundle;
 import androidx.core.content.res.ResourcesCompat;
 import org.chromium.ui.widget.Toast;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import android.util.Base64;
+import java.io.UnsupportedEncodingException;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -485,10 +487,12 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             Log.e("BROWSER_EXPRESS_ADD_VOTE", "setting token");
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             activity.setAccessToken(newAccessToken);
+                            JSONObject decodedAccessTokenObj = this.getDecodedToken(newAccessToken);
                             Intent intent = new Intent(activity, ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             intent.setAction(Intent.ACTION_VIEW);
                             Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+                            Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
                             activity.startActivity(intent);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                         }
@@ -510,6 +514,27 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             } else {
                 return String.format(Locale.getDefault(), "%d", number);
             }
+        }
+
+        private JSONObject getDecodedToken(String accessToken){
+            try{
+                String[] split_string = accessToken.split("\\.");
+                String base64EncodedHeader = split_string[0];
+                String base64EncodedBody = split_string[1];
+                String base64EncodedSignature = split_string[2];
+
+                byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+                String decodedString = new String(data, "UTF-8");
+                JSONObject jsonObj = new JSONObject(decodedString.toString());
+                return jsonObj;
+            }catch(JSONException e){
+                Log.e("Express Browser Access Token", e.getMessage());
+                return null;
+            }catch(UnsupportedEncodingException e){
+                Log.e("Express Browser Access Token", e.getMessage());
+                return null;
+            }
+            
         }
     }
 }
