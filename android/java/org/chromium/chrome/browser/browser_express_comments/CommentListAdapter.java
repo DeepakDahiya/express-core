@@ -491,7 +491,6 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                             Intent intent = new Intent(activity, ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                             intent.setAction(Intent.ACTION_VIEW);
-                            Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
                             Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
                             activity.startActivity(intent);
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
