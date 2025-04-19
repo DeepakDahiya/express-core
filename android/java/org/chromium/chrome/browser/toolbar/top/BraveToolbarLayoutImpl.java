@@ -364,6 +364,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             // if (getMenuButtonCoordinator() != null && false) {
             //     getMenuButtonCoordinator().setVisibility(false);
             // }
+            getMenuButtonCoordinator().setVisibility(true);
+            ToggleTabStackButton toggleTabStackButton = findViewById(R.id.tab_switcher_button);
+            if (toggleTabStackButton != null) {
+                toggleTabStackButton.setVisibility(View.VISIBLE);
+                // toggleTabStackButton.setVisibility(isTabSwitcherOnBottom() ? GONE : VISIBLE);
+            }
         }
 
         if (BraveReflectionUtil.EqualTypes(this.getClass(), CustomTabToolbar.class)) {
