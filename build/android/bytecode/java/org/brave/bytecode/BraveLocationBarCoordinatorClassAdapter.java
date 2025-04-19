@@ -16,12 +16,12 @@ public class BraveLocationBarCoordinatorClassAdapter extends BraveClassVisitor {
     public BraveLocationBarCoordinatorClassAdapter(ClassVisitor visitor) {
         super(visitor);
 
-        // redirectConstructor(sLocationBarCoordinator, sBraveLocationBarCoordinator);
+        redirectConstructor(sLocationBarCoordinator, sBraveLocationBarCoordinator);
 
-        // deleteField(sBraveLocationBarCoordinator, "mLocationBarMediator");
-        // makeProtectedField(sLocationBarCoordinator, "mLocationBarMediator");
+        deleteField(sBraveLocationBarCoordinator, "mLocationBarMediator");
+        makeProtectedField(sLocationBarCoordinator, "mLocationBarMediator");
 
-        // deleteField(sBraveLocationBarCoordinator, "mUrlBar");
-        // makeProtectedField(sLocationBarCoordinator, "mUrlBar");
+        deleteField(sBraveLocationBarCoordinator, "mUrlBar");
+        makeProtectedField(sLocationBarCoordinator, "mUrlBar");
     }
 }
