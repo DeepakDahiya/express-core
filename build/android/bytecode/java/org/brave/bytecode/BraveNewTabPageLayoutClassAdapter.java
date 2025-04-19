@@ -16,20 +16,20 @@ public class BraveNewTabPageLayoutClassAdapter extends BraveClassVisitor {
     public BraveNewTabPageLayoutClassAdapter(ClassVisitor visitor) {
         super(visitor);
 
-        deleteField(sBraveNewTabPageLayoutClassName, "mMvTilesContainerLayout");
-        makeProtectedField(sNewTabPageLayoutClassName, "mMvTilesContainerLayout");
+        // deleteField(sBraveNewTabPageLayoutClassName, "mMvTilesContainerLayout");
+        // makeProtectedField(sNewTabPageLayoutClassName, "mMvTilesContainerLayout");
 
-        deleteField(sBraveNewTabPageLayoutClassName, "mLogoCoordinator");
-        makeProtectedField(sNewTabPageLayoutClassName, "mLogoCoordinator");
+        // deleteField(sBraveNewTabPageLayoutClassName, "mLogoCoordinator");
+        // makeProtectedField(sNewTabPageLayoutClassName, "mLogoCoordinator");
 
-        makePublicMethod(sNewTabPageLayoutClassName, "insertSiteSectionView");
-        addMethodAnnotation(
-                sBraveNewTabPageLayoutClassName, "insertSiteSectionView", "Ljava/lang/Override;");
+        // makePublicMethod(sNewTabPageLayoutClassName, "insertSiteSectionView");
+        // addMethodAnnotation(
+        //         sBraveNewTabPageLayoutClassName, "insertSiteSectionView", "Ljava/lang/Override;");
 
-        makePublicMethod(sNewTabPageLayoutClassName, "isScrollableMvtEnabled");
-        addMethodAnnotation(
-                sBraveNewTabPageLayoutClassName, "isScrollableMvtEnabled", "Ljava/lang/Override;");
+        // makePublicMethod(sNewTabPageLayoutClassName, "isScrollableMvtEnabled");
+        // addMethodAnnotation(
+        //         sBraveNewTabPageLayoutClassName, "isScrollableMvtEnabled", "Ljava/lang/Override;");
 
-        changeSuperName(sNewTabPageLayoutClassName, sNewTabPageLayoutSuperClassName);
+        // changeSuperName(sNewTabPageLayoutClassName, sNewTabPageLayoutSuperClassName);
     }
 }

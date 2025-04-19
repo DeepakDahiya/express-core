@@ -18,8 +18,8 @@ public class BraveLocationBarLayoutClassAdapter extends BraveClassVisitor {
     public BraveLocationBarLayoutClassAdapter(ClassVisitor visitor) {
         super(visitor);
 
-        changeSuperName(sLocationBarPhone, sBraveLocationBarLayout);
-        changeSuperName(sLocationBarTablet, sBraveLocationBarLayout);
-        changeSuperName(sSearchActivityLocationBarLayout, sBraveLocationBarLayout);
+        // changeSuperName(sLocationBarPhone, sBraveLocationBarLayout);
+        // changeSuperName(sLocationBarTablet, sBraveLocationBarLayout);
+        // changeSuperName(sSearchActivityLocationBarLayout, sBraveLocationBarLayout);
     }
 }

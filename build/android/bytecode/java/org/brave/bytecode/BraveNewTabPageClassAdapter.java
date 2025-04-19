@@ -14,28 +14,28 @@ public class BraveNewTabPageClassAdapter extends BraveClassVisitor {
     public BraveNewTabPageClassAdapter(ClassVisitor visitor) {
         super(visitor);
 
-        redirectConstructor(sNewTabPageClassName, sBraveNewTabPageClassName);
+        // redirectConstructor(sNewTabPageClassName, sBraveNewTabPageClassName);
 
-        deleteField(sBraveNewTabPageClassName, "mBrowserControlsStateProvider");
-        makeProtectedField(sNewTabPageClassName, "mBrowserControlsStateProvider");
+        // deleteField(sBraveNewTabPageClassName, "mBrowserControlsStateProvider");
+        // makeProtectedField(sNewTabPageClassName, "mBrowserControlsStateProvider");
 
-        deleteField(sBraveNewTabPageClassName, "mNewTabPageLayout");
-        makeProtectedField(sNewTabPageClassName, "mNewTabPageLayout");
+        // deleteField(sBraveNewTabPageClassName, "mNewTabPageLayout");
+        // makeProtectedField(sNewTabPageClassName, "mNewTabPageLayout");
 
-        deleteField(sBraveNewTabPageClassName, "mFeedSurfaceProvider");
-        makeProtectedField(sNewTabPageClassName, "mFeedSurfaceProvider");
+        // deleteField(sBraveNewTabPageClassName, "mFeedSurfaceProvider");
+        // makeProtectedField(sNewTabPageClassName, "mFeedSurfaceProvider");
 
-        deleteField(sBraveNewTabPageClassName, "mToolbarSupplier");
-        makeProtectedField(sNewTabPageClassName, "mToolbarSupplier");
+        // deleteField(sBraveNewTabPageClassName, "mToolbarSupplier");
+        // makeProtectedField(sNewTabPageClassName, "mToolbarSupplier");
 
-        deleteField(sBraveNewTabPageClassName, "mTabModelSelector");
-        makeProtectedField(sNewTabPageClassName, "mTabModelSelector");
+        // deleteField(sBraveNewTabPageClassName, "mTabModelSelector");
+        // makeProtectedField(sNewTabPageClassName, "mTabModelSelector");
 
-        deleteField(sBraveNewTabPageClassName, "mBottomSheetController");
-        makeProtectedField(sNewTabPageClassName, "mBottomSheetController");
+        // deleteField(sBraveNewTabPageClassName, "mBottomSheetController");
+        // makeProtectedField(sNewTabPageClassName, "mBottomSheetController");
 
-        makePublicMethod(sNewTabPageClassName, "updateSearchProviderHasLogo");
-        addMethodAnnotation(
-                sBraveNewTabPageClassName, "updateSearchProviderHasLogo", "Ljava/lang/Override;");
+        // makePublicMethod(sNewTabPageClassName, "updateSearchProviderHasLogo");
+        // addMethodAnnotation(
+        //         sBraveNewTabPageClassName, "updateSearchProviderHasLogo", "Ljava/lang/Override;");
     }
 }
