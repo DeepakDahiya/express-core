@@ -24,53 +24,68 @@
 
 namespace {
 const char16_t k_youtube_background_playback_script[] =
-    uR"(
-    (function() {
-        if (document._addEventListener === undefined) {
-            document._addEventListener = document.addEventListener;
-            document.addEventListener = function(a,b,c) {
-                if(a != 'visibilitychange') {
-                    document._addEventListener(a,b,c);
-                }
-            };
-        }
-    }());
-    // Function to modify the flags if the target object exists.
-    function modifyYtcfgFlags() {
-      if (!window.ytcfg) {
-        return;
-      }
-      const config = window.ytcfg.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH
-      if (config && config.serializedExperimentFlags) {
-        let flags = config.serializedExperimentFlags;
-        // Replace target flags.
-        flags = flags
-          .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
-          .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
-          .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
-          .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
-          .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
-        // Assign updated flags back to config.
-        config.serializedExperimentFlags = flags;
-        if (observer) {
-          observer.disconnect();
-        }
-      }
-    }
-    const observer = new MutationObserver((mutations) => {
-      for (const mutation of mutations) {
-        if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-          mutation.addedNodes.forEach((node) => {
-            if (node.tagName === "SCRIPT") {
-              // Check and modify flags when a new script is added.
-              modifyYtcfgFlags();
-            }
-          });
-        }
-      }
-    });
-    observer.observe(document.documentElement, { childList: true, subtree: true });
-    )";
+    u"(function() { "
+      u"const buttonElement = document.createElement('button');"
+      u"buttonElement.setAttribute('style', `    -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;    background-color: white;    align-self: stretch;    flex: 1;`);"
+      u"buttonElement.addEventListener('click', () => {"
+      u"    const videoElement = document.querySelector('video');"
+      u"    videoElement.removeAttribute('disablePictureInPicture');"
+      u"    videoElement.requestPictureInPicture();"
+      u"});"
+      u"const observer = new MutationObserver(() => {"
+      u"    const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
+      u"    if(window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;"
+      u"    buttonContainerElement.prepend(buttonElement);"
+      u"});"
+      u"observer.observe(document.documentElement, { subtree: true, childList: true });"
+    "}());";
+    // uR"(
+    // (function() {
+    //     if (document._addEventListener === undefined) {
+    //         document._addEventListener = document.addEventListener;
+    //         document.addEventListener = function(a,b,c) {
+    //             if(a != 'visibilitychange') {
+    //                 document._addEventListener(a,b,c);
+    //             }
+    //         };
+    //     }
+    // }());
+    // // Function to modify the flags if the target object exists.
+    // function modifyYtcfgFlags() {
+    //   if (!window.ytcfg) {
+    //     return;
+    //   }
+    //   const config = window.ytcfg.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH
+    //   if (config && config.serializedExperimentFlags) {
+    //     let flags = config.serializedExperimentFlags;
+    //     // Replace target flags.
+    //     flags = flags
+    //       .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
+    //       .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
+    //       .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
+    //       .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
+    //       .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
+    //     // Assign updated flags back to config.
+    //     config.serializedExperimentFlags = flags;
+    //     if (observer) {
+    //       observer.disconnect();
+    //     }
+    //   }
+    // }
+    // const observer = new MutationObserver((mutations) => {
+    //   for (const mutation of mutations) {
+    //     if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
+    //       mutation.addedNodes.forEach((node) => {
+    //         if (node.tagName === "SCRIPT") {
+    //           // Check and modify flags when a new script is added.
+    //           modifyYtcfgFlags();
+    //         }
+    //       });
+    //     }
+    //   }
+    // });
+    // observer.observe(document.documentElement, { childList: true, subtree: true });
+    // )";
     // u"(function() {"
     // u"  const configModificationScript = document.createElement('script');"
     // u"  configModificationScript.textContent = `"
