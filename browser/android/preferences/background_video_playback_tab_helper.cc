@@ -86,7 +86,7 @@ const char16_t k_youtube_background_playback_script[] =
     u"  let max = Math.floor(aMax);"
     u"  return Math.floor(Math.random() * (max - min)) + min;"
     u"}"
-    u"})();"
+    u"})();";
 
     // u"(function() { "
     //   u"const buttonElement = document.createElement('button');"
