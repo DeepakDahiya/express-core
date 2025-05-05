@@ -387,14 +387,14 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    @Override
-    protected void onUserLeaveHint() {
-        super.onUserLeaveHint();
+    // @Override
+    // protected void onUserLeaveHint() {
+    //     super.onUserLeaveHint();
 
-        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
-            enterPip();
-        }
-    }
+    //     if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+    //         enterPip();
+    //     }
+    // }
 
     @Override
     public void onPauseWithNative() {
@@ -409,11 +409,10 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         // Using background music as pip for now
-        // if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
-        //     enterPip();
-        //     return;
-        // }
-
+        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+            new Handler().postDelayed(this::enterPip, 200);
+            return;
+        }
         super.onPauseWithNative();
     }
 
@@ -599,7 +598,6 @@ public abstract class BraveActivity extends ChromeActivity
             Tab tab = getActivityTab();
             if (tab == null) return;
 
-            // Inject HTML5 PiP JS
             tab.getWebContents().evaluateJavaScript(
                 "(function() {" +
                 "   try {" +
@@ -614,8 +612,6 @@ public abstract class BraveActivity extends ChromeActivity
                 "})()",
                 result -> Log.e("BE_PIP", "JS executed with result: " + result)
             );
-
-            // No native Android PiP call needed
         }
     }
 
