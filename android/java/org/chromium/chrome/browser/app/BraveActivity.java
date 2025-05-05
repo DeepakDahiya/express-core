@@ -388,6 +388,15 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
+    protected void onUserLeaveHint() {
+        super.onUserLeaveHint();
+
+        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+            enterPip();
+        }
+    }
+
+    @Override
     public void onPauseWithNative() {
         if (BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
             BraveVpnNativeWorker.getInstance().removeObserver(this);
@@ -400,10 +409,10 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         // Using background music as pip for now
-        if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
-            enterPip();
-            return;
-        }
+        // if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
+        //     enterPip();
+        //     return;
+        // }
 
         super.onPauseWithNative();
     }
@@ -603,7 +612,7 @@ public abstract class BraveActivity extends ChromeActivity
                 "       } else { console.warn('No video element found'); }" +
                 "   } catch(e) { console.error('Error requesting PiP:', e); }" +
                 "})()",
-                null
+                result -> Log.e("BE_PIP", "JS executed with result: " + result)
             );
 
             // No native Android PiP call needed
