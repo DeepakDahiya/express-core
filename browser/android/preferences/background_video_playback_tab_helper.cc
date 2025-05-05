@@ -1,7 +1,7 @@
 /* Copyright (c) 2019 The Brave Authors. All rights reserved.
-* This Source Code Form is subject to the terms of the Mozilla Public
-* License, v. 2.0. If a copy of the MPL was not distributed with this file,
-* You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/browser/android/preferences/background_video_playback_tab_helper.h"
 
@@ -26,7 +26,7 @@ namespace {
 const char16_t k_youtube_background_playback_script[] =
     u"(function() { "
     u"const buttonElement = document.createElement('button');"
-    u"buttonElement.setAttribute('style', `    -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;    background-color: white;    align-self: stretch;    flex: 1;`);"
+    u"buttonElement.setAttribute('style', `  position: fixed; bottom: 20px; right: 20px; z-index: 9999; width: 60px; height: 60px; border-radius: 50%; background-color: gold; border: none; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); background-image: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\"); background-repeat: no-repeat; background-position: center; background-size: 60%; cursor: pointer;`);"
     u"buttonElement.addEventListener('click', () => {"
     u"    const videoElement = document.querySelector('video');"
     u"    videoElement.removeAttribute('disablePictureInPicture');"
