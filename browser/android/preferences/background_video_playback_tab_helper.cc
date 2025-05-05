@@ -270,8 +270,8 @@ bool IsYouTubeDomain(const GURL& url) {
 }
 
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
-  PrefService* prefs =
-      static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
+  // PrefService* prefs =
+  //     static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
 
   // if (!base::FeatureList::IsEnabled(
   //         ::preferences::features::kBraveBackgroundVideoPlayback) &&

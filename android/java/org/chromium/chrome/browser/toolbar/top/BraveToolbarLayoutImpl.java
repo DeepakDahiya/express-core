@@ -556,7 +556,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                 }
 
-                if (url.getSpec().container("youtube.com/watch") || url.getSpec().contains("youtube.com/shorts")) {
+                if (url.getSpec().contains("youtube.com/watch") || url.getSpec().contains("youtube.com/shorts")) {
                     SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                 }else{
                     SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
