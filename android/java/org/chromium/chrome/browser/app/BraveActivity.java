@@ -585,57 +585,83 @@ public abstract class BraveActivity extends ChromeActivity
         notificationManager.notify(3232, builder.build());
     }
 
-    public void enterPip(){
+    public void enterPip() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
-
-            Log.e("BE_PIP", "Before JS");
             Tab tab = getActivityTab();
-            Log.e("BE_PIP", "GOT TAB");
+            if (tab == null) return;
+
+            // Inject HTML5 PiP JS
             tab.getWebContents().evaluateJavaScript(
                 "(function() {" +
-                "   try{" +
+                "   try {" +
                 "       const video = document.querySelector('video');" +
                 "       if (video) {" +
-                "           video.play();" +
-                "           video.requestFullscreen();" +
-                "       }" +
-                "   }catch(e){" +
-                "       console.error(e);" +
-                "   }" +
+                "           video.removeAttribute('disablePictureInPicture');" +
+                "           if (document.pictureInPictureElement !== video) {" +
+                "               video.requestPictureInPicture().catch(console.error);" +
+                "           }" +
+                "       } else { console.warn('No video element found'); }" +
+                "   } catch(e) { console.error('Error requesting PiP:', e); }" +
                 "})()",
                 null
             );
 
-            Log.e("BE_PIP", "AFTER JS");
-
-            try{
-                Thread.sleep(500);
-            }catch(InterruptedException e){
-                Log.e("BE_PIP", e.getMessage());
-            }
-
-            Log.e("BE_PIP", "AFTER SLEEP");
-
-            int left = 0;
-            int top = 480;
-            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
-            int width = windowWidth;
-            float defaultAspectRation = 1.78f; // rect.width() / (float) rect.height() calculate from video but currently hardcoding
-            float videoAspectRatio = MathUtils.clamp(
-                defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
-            int height = (int) (windowWidth / videoAspectRatio);
-            Rect bounds = new Rect(left, top, left + width, top + height);
-
-            Rational ASPECT_RATIO = new Rational(width, height);
-            Log.e("BE_PIP", "BEFORE PIP");
-            var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
-            // builder.setSourceRectHint(bounds);
-            
-            boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
-            Log.e("BE_PIP", "AFTER PIP");
+            // No native Android PiP call needed
         }
     }
+
+
+    // public void enterPip(){
+    //     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+    //         AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+
+    //         Log.e("BE_PIP", "Before JS");
+    //         Tab tab = getActivityTab();
+    //         Log.e("BE_PIP", "GOT TAB");
+    //         tab.getWebContents().evaluateJavaScript(
+    //             "(function() {" +
+    //             "   try{" +
+    //             "       const video = document.querySelector('video');" +
+    //             "       if (video) {" +
+    //             "           video.play();" +
+    //             "           video.requestFullscreen();" +
+    //             "       }" +
+    //             "   }catch(e){" +
+    //             "       console.error(e);" +
+    //             "   }" +
+    //             "})()",
+    //             null
+    //         );
+
+    //         Log.e("BE_PIP", "AFTER JS");
+
+    //         try{
+    //             Thread.sleep(500);
+    //         }catch(InterruptedException e){
+    //             Log.e("BE_PIP", e.getMessage());
+    //         }
+
+    //         Log.e("BE_PIP", "AFTER SLEEP");
+
+    //         int left = 0;
+    //         int top = 480;
+    //         int windowWidth = mActivity.getWindow().getDecorView().getWidth();
+    //         int width = windowWidth;
+    //         float defaultAspectRation = 1.78f; // rect.width() / (float) rect.height() calculate from video but currently hardcoding
+    //         float videoAspectRatio = MathUtils.clamp(
+    //             defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+    //         int height = (int) (windowWidth / videoAspectRatio);
+    //         Rect bounds = new Rect(left, top, left + width, top + height);
+
+    //         Rational ASPECT_RATIO = new Rational(width, height);
+    //         Log.e("BE_PIP", "BEFORE PIP");
+    //         var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
+    //         // builder.setSourceRectHint(bounds);
+            
+    //         boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
+    //         Log.e("BE_PIP", "AFTER PIP");
+    //     }
+    // }
 
     public boolean isInPip(){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
