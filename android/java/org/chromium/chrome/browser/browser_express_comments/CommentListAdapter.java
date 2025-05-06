@@ -696,9 +696,9 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 Glide.with(context).clear(commentImage);
                 commentImage.setImageDrawable(null);
             }
-            if (commentProfilePicture != null) {
-                Glide.with(context).clear(commentProfilePicture);
-                commentProfilePicture.setImageDrawable(null);
+            if (mAvatarImage != null) {
+                Glide.with(context).clear(mAvatarImage);
+                mAvatarImage.setImageDrawable(null);
             }
         }
 
