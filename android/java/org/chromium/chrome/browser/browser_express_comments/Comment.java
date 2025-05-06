@@ -9,10 +9,12 @@ public class Comment{
     private String commentParent;  
     private String pageParent;  
     private String postParent;  
+    private String mediaImageUrl;
+    private String mediaVideoUrl;
     private User user;
     private Vote didVote;
 
-    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote) {  
+    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote, String mediaImageUrl, String mediaVideoUrl) {  
         this._id = _id;  
         this.content = content;
         this.upvoteCount = upvoteCount;
@@ -23,11 +25,21 @@ public class Comment{
         this.commentParent = commentParent;
         this.pageParent = pageParent;
         this.postParent = postParent;
+        this.mediaImageUrl = mediaImageUrl;
+        this.mediaVideoUrl = mediaVideoUrl;
     }  
 
     public String getId() {  
         return this._id;  
     }  
+
+    public String getMediaImageUrl() {  
+        return this.mediaImageUrl;  
+    }
+
+    public String getMediaVideoUrl() {  
+        return this.mediaVideoUrl;  
+    }
 
     public String getCommentParent() {  
         return this.commentParent;  

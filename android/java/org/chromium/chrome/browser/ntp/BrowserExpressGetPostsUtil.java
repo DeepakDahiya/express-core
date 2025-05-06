@@ -220,7 +220,9 @@ public class BrowserExpressGetPostsUtil {
                                     postParent,
                                     commentParent,
                                     commentUserObj,
-                                    commentVote
+                                    commentVote,
+                                    null,
+                                    null
                                 );
                                 newComments.add(tempComment);
                             }

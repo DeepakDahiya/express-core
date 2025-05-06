@@ -196,7 +196,10 @@ public class BrowserExpressGetCommentsUtil {
                                 postParent,
                                 commentParent,
                                 u, 
-                                v));
+                                v,
+                                parentComment.optString("mediaImageUrl", null),
+                                parentComment.optString("mediaVideoUrl", null)
+                            ));
                             Log.e("BROWSER_EXPRESS_RESPONSE", "6");
                         }
                     }
@@ -238,7 +241,10 @@ public class BrowserExpressGetCommentsUtil {
                             postParent,
                             commentParent,
                             u, 
-                            v));
+                            v,
+                            comment.optString("mediaImageUrl", null),
+                            comment.optString("mediaVideoUrl", null)
+                        ));
 
                         Log.e("BROWSER_EXPRESS_RESPONSE", "9");
                     }

@@ -52,6 +52,19 @@ import org.chromium.ui.widget.Toast;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.util.Base64;
 import java.io.UnsupportedEncodingException;
+import androidx.cardview.widget.CardView;
+import android.widget.ProgressBar;
+import androidx.recyclerview.widget.LinearSnapHelper;
+import android.os.Handler;
+import android.os.Looper;
+import com.google.android.exoplayer2.ExoPlayer;
+import com.google.android.exoplayer2.MediaItem;
+import com.google.android.exoplayer2.Player;
+import com.google.android.exoplayer2.ui.StyledPlayerView;
+import com.google.android.exoplayer2.util.Util;
+import android.view.MotionEvent;
+import android.animation.ValueAnimator;
+import android.view.animation.LinearInterpolator;
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -132,6 +145,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         private boolean mIsReplyTopComment;
         private boolean mIsReplyToReplyAdapter;
 
+        ImageView commentImage;
+        CardView commentMediaCard;
+        StyledPlayerView commentVideo;
+        ExoPlayer player;
+        ImageView playPauseIcon;
+        ProgressBar videoProgressBar;
+        ValueAnimator progressAnimator;
+
         CommentHolder(View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
             super(itemView);
 
@@ -153,6 +174,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
             mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
             mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
+
+            commentImage = (ImageView) itemView.findViewById(R.id.comment_image);
+            commentVideo = (StyledPlayerView) itemView.findViewById(R.id.comment_video);
+            commentMediaCard = (CardView) itemView.findViewById(R.id.comment_media_card);
+
+            playPauseIcon = (ImageView) itemView.findViewById(R.id.play_pause_icon);
+            videoProgressBar = (ProgressBar) itemView.findViewById(R.id.video_progress);
 
             mVoteLayout = (LinearLayout) itemView.findViewById(R.id.vote_layout);
             context = itemView.getContext();
@@ -197,6 +225,92 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 }
             }else{
                 mActionItemsLayout.setVisibility(View.GONE);
+            }
+
+            String twitterImageUrl = comment.getMediaImageUrl();
+            String videoUrl = comment.getMediaVideoUrl();
+
+            if(twitterImageUrl != null){
+                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
+                commentMediaCard.setVisibility(View.VISIBLE);
+                commentImage.setVisibility(View.VISIBLE);
+            }
+
+            if(videoUrl != null && !"null".equals(videoUrl)){
+                releasePlayer();
+                player = new ExoPlayer.Builder(context).build();
+
+                commentVideo.setPlayer(player);
+                commentVideo.setUseController(false); // Hide default controls
+                
+                // Create MediaItem
+                MediaItem mediaItem = MediaItem.fromUri(videoUrl);
+                player.setMediaItem(mediaItem);
+                
+                // Set player properties
+                player.setRepeatMode(Player.REPEAT_MODE_ALL);
+                player.setPlayWhenReady(false);
+
+                // Prepare player
+                player.prepare();
+
+                playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
+                playPauseIcon.setVisibility(View.VISIBLE);
+
+                commentVideo.setClickable(true);
+                commentVideo.setFocusable(true);
+
+                View videoParent = (View) commentVideo.getParent();
+                if (videoParent != null) {
+                    videoParent.setClickable(true);
+                    videoParent.setOnClickListener(new View.OnClickListener() {
+                        @Override
+                        public void onClick(View v) {
+                            Log.d("VideoPlayer", "Parent view clicked");
+                            togglePlayPause();
+                        }
+                    });
+                }
+
+                View.OnClickListener videoClickListener = new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        togglePlayPause();
+                    }
+                };
+
+                commentVideo.setOnClickListener(videoClickListener);
+                playPauseIcon.setOnClickListener(videoClickListener);
+
+                commentImage.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int h = commentImage.getHeight();
+                        commentVideo.getLayoutParams().height = h;
+                        commentVideo.requestLayout();
+                    }
+                });
+
+                player.addListener(new Player.Listener() {
+                    @Override
+                    public void onPlaybackStateChanged(int state) {
+                        if (state == Player.STATE_READY) {
+                            commentImage.setVisibility(View.GONE);
+                            commentVideo.setVisibility(View.VISIBLE);
+                            setupProgressBar();
+                        }
+                    }
+                    
+                    @Override
+                    public void onIsPlayingChanged(boolean isPlaying) {
+                        updatePlayPauseIcon(isPlaying);
+                        if (isPlaying) {
+                            startProgressAnimation();
+                        } else {
+                            pauseProgressAnimation();
+                        }
+                    }
+                });
             }
 
             // This is used to make the comment work for post top comments
@@ -289,7 +403,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                         postParent,
                                         commentParent,
                                         u,
-                                        v);
+                                        v,
+                                        null,
+                                        null
+                                    );
                                     mComments.add(0, c);
                                     mCommentAdapter.notifyItemInserted(0);
                                 }
@@ -475,6 +592,119 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                     }
                 });
             }
+        }
+
+        private void togglePlayPause() {
+            if (player != null) {
+                boolean isCurrentlyPlaying = player.isPlaying();
+                player.setPlayWhenReady(!isCurrentlyPlaying);
+                updatePlayPauseUI(!isCurrentlyPlaying);
+            }
+        }
+        
+        private void updatePlayPauseUI(boolean isPlaying) {
+            if (isPlaying) {
+                // Show pause icon briefly when video starts playing
+                playPauseIcon.setImageResource(R.drawable.ic_pause_circle2);
+                playPauseIcon.setVisibility(View.VISIBLE);
+                playPauseIcon.setAlpha(1f);
+                
+                // Fade out after 2 seconds when playing
+                playPauseIcon.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .setStartDelay(2000) // Show for 2 seconds before fading
+                    .withEndAction(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (player != null && player.isPlaying()) {
+                                playPauseIcon.setVisibility(View.GONE);
+                            }
+                            playPauseIcon.setAlpha(1f);
+                        }
+                    })
+                    .start();
+            } else {
+                // Show play icon and keep it visible when paused
+                playPauseIcon.animate().cancel(); // Cancel any ongoing animation
+                playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
+                playPauseIcon.setVisibility(View.VISIBLE);
+                playPauseIcon.setAlpha(1f);
+            }
+        }
+
+        private void setupProgressBar() {
+            if (player != null) {
+                videoProgressBar.setMax(1000); // Use 1000 for smoother progress
+                videoProgressBar.setProgress(0);
+            }
+        }
+
+        private void startProgressAnimation() {
+            if (progressAnimator != null) {
+                progressAnimator.cancel();
+            }
+
+            long duration = player.getDuration();
+            long currentPosition = player.getCurrentPosition();
+            
+            progressAnimator = ValueAnimator.ofInt((int)(currentPosition * 1000 / duration), 1000);
+            progressAnimator.setDuration(duration - currentPosition);
+            progressAnimator.setInterpolator(new LinearInterpolator());
+            progressAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
+                @Override
+                public void onAnimationUpdate(ValueAnimator animation) {
+                    if (videoProgressBar != null) {
+                        int progress = (int) animation.getAnimatedValue();
+                        videoProgressBar.setProgress(progress);
+                    }
+                }
+            });
+            progressAnimator.start();
+        }
+
+        private void pauseProgressAnimation() {
+            if (progressAnimator != null) {
+                progressAnimator.pause();
+            }
+        }
+
+        private void updatePlayPauseIcon(boolean isPlaying) {
+            playPauseIcon.setImageResource(isPlaying ? 
+                R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
+        }
+
+        private void releasePlayer() {
+            if (progressAnimator != null) {
+                progressAnimator.cancel();
+                progressAnimator = null;
+            }
+            if (player != null) {
+                player.release();
+                player = null;
+            }
+            if (playPauseIcon != null) {
+                playPauseIcon.animate().cancel();
+            }
+        }
+
+        // Make sure to release the player when the view is recycled
+        public void onViewRecycled() {
+            releasePlayer();
+
+            if (commentImage != null) {
+                Glide.with(context).clear(commentImage);
+                commentImage.setImageDrawable(null);
+            }
+            if (commentProfilePicture != null) {
+                Glide.with(context).clear(commentProfilePicture);
+                commentProfilePicture.setImageDrawable(null);
+            }
+        }
+
+        // Make sure to release the player when the view is detached
+        public void onViewDetachedFromWindow() {
+            releasePlayer();
         }
 
         private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback=

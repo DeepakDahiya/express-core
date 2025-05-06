@@ -171,7 +171,10 @@ public class BrowserExpressAddCommentUtil {
                         postParent,
                         commentParent,
                         u,
-                        v));
+                        v,
+                        null,
+                        null
+                    ));
 
                     AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                 }else{

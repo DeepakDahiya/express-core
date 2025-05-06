@@ -24,69 +24,122 @@
 
 namespace {
 const char16_t k_youtube_background_playback_script[] =
-    u"(function() { "
-    u"const buttonElement = document.createElement('button');"
-    u"buttonElement.setAttribute('style', `  position: fixed; bottom: 20px; right: 20px; z-index: 9999; width: 60px; height: 60px; border-radius: 50%; background-color: gold; border: none; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); background-image: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\"); background-repeat: no-repeat; background-position: center; background-size: 60%; cursor: pointer;`);"
-    u"buttonElement.addEventListener('click', () => {"
-    u"    const videoElement = document.querySelector('video');"
-    u"    videoElement.removeAttribute('disablePictureInPicture');"
-    u"    videoElement.requestPictureInPicture();"
-    u"});"
-    u"const observer = new MutationObserver(() => {"
-    u"    const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    u"    if(window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;"
-    u"    buttonContainerElement.prepend(buttonElement);"
-    u"});"
-    u"observer.observe(document.documentElement, { subtree: true, childList: true });"
-    u"})(),"
-    u"(function() {"
-    u"'use strict';"
-    u"const IS_YOUTUBE = window.location.hostname.search(/(?:^|.+\\.)youtube\\.com/) > -1 ||"
-    u"                   window.location.hostname.search(/(?:^|.+\\.)youtube-nocookie\\.com/) > -1;"
-    u"const IS_MOBILE_YOUTUBE = window.location.hostname == 'm.youtube.com';"
-    u"const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;"
-    u"const IS_VIMEO = window.location.hostname.search(/(?:^|.+\\.)vimeo\\.com/) > -1;"
-    u"const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;"
-    u"if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {"
-    u"  Object.defineProperties(document,"
-    u"    { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });"
-    u"}"
-    u"window.addEventListener("
-    u"  'visibilitychange', evt => evt.stopImmediatePropagation(), true);"
-    u"if (IS_VIMEO) {"
-    u"  window.addEventListener("
-    u"    'fullscreenchange', evt => evt.stopImmediatePropagation(), true);"
-    u"}"
-    u"if (IS_YOUTUBE) {"
-    u"  loop(pressKey, 60000, 10000);"
-    u"}"
-    u"function pressKey() {"
-    u"  const key = 18;"
-    u"  sendKeyEvent(\"keydown\", key);"
-    u"  sendKeyEvent(\"keyup\", key);"
-    u"}"
-    u"function sendKeyEvent (aEvent, aKey) {"
-    u"  document.dispatchEvent(new KeyboardEvent(aEvent, {"
-    u"    bubbles: true,"
-    u"    cancelable: true,"
-    u"    keyCode: aKey,"
-    u"    which: aKey,"
-    u"  }));"
-    u"}"
-    u"function loop(aCallback, aDelay, aJitter) {"
-    u"  let jitter = getRandomInt(-aJitter/2, aJitter/2);"
-    u"  let delay = Math.max(aDelay + jitter, 0);"
-    u"  window.setTimeout(() => {"
-    u"    aCallback();"
-    u"    loop(aCallback, aDelay, aJitter);"
-    u"  }, delay);"
-    u"}"
-    u"function getRandomInt(aMin, aMax) {"
-    u"  let min = Math.ceil(aMin);"
-    u"  let max = Math.floor(aMax);"
-    u"  return Math.floor(Math.random() * (max - min)) + min;"
-    u"}"
-    u"})();";
+    uR"(
+    (function() {
+      // ---- 1. PiP flag overrides for YouTube mobile ----
+      function modifyYtcfgFlags() {
+        const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
+        if (config && typeof config.serializedExperimentFlags === 'string') {
+          let flags = config.serializedExperimentFlags;
+          flags = flags
+            .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
+            .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
+            .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
+            .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
+            .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
+          config.serializedExperimentFlags = flags;
+        }
+      }
+
+      if (window.ytcfg) {
+        modifyYtcfgFlags();
+      } else {
+        document.addEventListener('load', (event) => {
+          const target = event.target;
+          if (target.tagName === 'SCRIPT' && window.ytcfg) {
+            modifyYtcfgFlags();
+          }
+        }, true);
+      }
+
+      // ---- 2. Floating PiP button for video ----
+      const buttonElement = document.createElement('button');
+      buttonElement.setAttribute('style', `
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        z-index: 9999;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        background-color: gold;
+        border: none;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg");
+        background-repeat: no-repeat;
+        background-position: center;
+        background-size: 60%;
+        cursor: pointer;
+      `);
+      buttonElement.addEventListener('click', () => {
+        const videoElement = document.querySelector('video');
+        if (videoElement) {
+          videoElement.removeAttribute('disablePictureInPicture');
+          videoElement.requestPictureInPicture().catch(console.error);
+        }
+      });
+
+      const observer = new MutationObserver(() => {
+        const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+        if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
+        buttonContainerElement.prepend(buttonElement);
+      });
+      observer.observe(document.documentElement, { subtree: true, childList: true });
+
+      // ---- 3. Visibility and focus hack + auto key pressing ----
+      'use strict';
+      const IS_YOUTUBE = /(?:^|.+\\.)youtube\\.com/.test(window.location.hostname) || /(?:^|.+\\.)youtube-nocookie\\.com/.test(window.location.hostname);
+      const IS_MOBILE_YOUTUBE = window.location.hostname === 'm.youtube.com';
+      const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
+      const IS_VIMEO = /(?:^|.+\\.)vimeo\\.com/.test(window.location.hostname);
+      const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
+
+      if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
+        Object.defineProperties(document, {
+          hidden: { value: false },
+          visibilityState: { value: 'visible' }
+        });
+      }
+
+      window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
+      if (IS_VIMEO) {
+        window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
+      }
+
+      if (IS_YOUTUBE) {
+        loop(pressKey, 60000, 10000);
+      }
+
+      function pressKey() {
+        const key = 18; // Alt key
+        sendKeyEvent("keydown", key);
+        sendKeyEvent("keyup", key);
+      }
+
+      function sendKeyEvent(type, key) {
+        document.dispatchEvent(new KeyboardEvent(type, {
+          bubbles: true,
+          cancelable: true,
+          keyCode: key,
+          which: key
+        }));
+      }
+
+      function loop(callback, delay, jitter) {
+        const actualDelay = Math.max(delay + getRandomInt(-jitter / 2, jitter / 2), 0);
+        setTimeout(() => {
+          callback();
+          loop(callback, delay, jitter);
+        }, actualDelay);
+      }
+
+      function getRandomInt(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min)) + min;
+      }
+    })();
+    )";
 
     // u"(function() { "
     //   u"const buttonElement = document.createElement('button');"
