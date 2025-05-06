@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class BrowserExpressCommentsUtil {
     private static final String TAG = "Claim_Username_Browser_Express";
@@ -118,7 +119,9 @@ public class BrowserExpressCommentsUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            URL url = new URL(CLAIM_USERNAME_URL);
+            String countryCode = Locale.getDefault().getCountry();
+            String searchQuery = "?country=" + countryCode;
+            URL url = new URL(CLAIM_USERNAME_URL + searchQuery);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");

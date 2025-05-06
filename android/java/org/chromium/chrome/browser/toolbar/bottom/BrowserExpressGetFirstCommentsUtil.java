@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class BrowserExpressGetFirstCommentsUtil {
     private static final String TAG = "Get_First_Comments_Browser_Express";
@@ -109,7 +110,8 @@ public class BrowserExpressGetFirstCommentsUtil {
                 pageUrl = URLEncoder.encode(pageUrl, "UTF-8");
             } catch (UnsupportedEncodingException e) {
             }
-            URL url = new URL(GET_FIRST_COMMENTS_URL + "?url=" + pageUrl);
+            String countryCode = Locale.getDefault().getCountry();
+            URL url = new URL(GET_FIRST_COMMENTS_URL + "?url=" + pageUrl + "&country=" + countryCode);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setRequestMethod("GET");

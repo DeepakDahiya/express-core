@@ -9,6 +9,7 @@ import org.json.JSONArray;
 import android.net.Uri;
 import java.util.List;
 import java.util.ArrayList;
+import java.util.Locale;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -102,7 +103,8 @@ public class BrowserExpressGetPostsUtil {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
-            String searchQuery = "?page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+            String countryCode = Locale.getDefault().getCountry();
+            String searchQuery = "?page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage) + "&country=" + countryCode;
             URL url = new URL(GET_POSTS_URL + searchQuery);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);

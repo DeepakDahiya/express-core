@@ -34,6 +34,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class BrowserExpressAddVoteUtil {
     private static final String TAG = "Add_Vote_Browser_Express";
@@ -108,7 +109,9 @@ public class BrowserExpressAddVoteUtil {
             baseUrl = ADD_COMMENT_VOTE_BASE_URL;
         }
         try {
-            URL url = new URL(ADD_COMMENT_VOTE_BASE_URL + "/" + commentId + "/vote");
+            String countryCode = Locale.getDefault().getCountry();
+            String searchQuery = "?country=" + countryCode;
+            URL url = new URL(ADD_COMMENT_VOTE_BASE_URL + "/" + commentId + "/vote" + searchQuery);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setDoOutput(true);

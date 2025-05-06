@@ -41,6 +41,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.util.Locale;
 
 public class BrowserExpressGetCommentsUtil {
     private static final String TAG = "Get_Comments_Browser_Express";
@@ -128,8 +129,8 @@ public class BrowserExpressGetCommentsUtil {
                 } catch (UnsupportedEncodingException e) {
                 }
             }
-
-            searchQuery = searchQuery + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage);
+            String countryCode = Locale.getDefault().getCountry();
+            searchQuery = searchQuery + "&page=" + Integer.toString(page) + "&per_page=" + Integer.toString(perPage) + "&country=" + countryCode;
 
             URL url = new URL(GET_COMMENTS_URL + searchQuery);
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
