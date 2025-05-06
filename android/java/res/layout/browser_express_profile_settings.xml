@@ -214,7 +214,7 @@
 
         </LinearLayout>
 
-        <LinearLayout
+        <!-- <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center_vertical"
@@ -243,7 +243,7 @@
                 android:drawableTint="@color/content_color"
                 android:text="@string/be_activity_feed" />
 
-        </LinearLayout>
+        </LinearLayout> -->
 
         <LinearLayout
             android:layout_width="match_parent"
