@@ -557,6 +557,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 }
 
                 if (url.getSpec().contains("youtube.com/watch") || url.getSpec().contains("youtube.com/shorts")) {
+                    prepareForPip();
                     SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                 }else{
                     SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
@@ -624,6 +625,35 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 }
             }
         };
+    }
+
+    public void prepareForPip() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            try {
+                if (BraveActivity.getBraveActivity() == null) {
+                    return;
+                }
+
+                if (BraveActivity.getBraveActivity().getActivityTab() == null) {
+                    return;
+                }
+
+                BraveActivity.getBraveActivity().getActivityTab().getWebContents().evaluateJavaScript(
+                    "(function() {" +
+                    "   try {" +
+                    "       const video = document.querySelector('video');" +
+                    "       if (video) {" +
+                    "           video.removeAttribute('disablePictureInPicture');" +
+                    "       } else { console.warn('No video element found'); }" +
+                    "   } catch(e) { console.error('Error requesting PiP:', e); }" +
+                    "})()",
+                    result -> Log.e("BE_PIP", "JS executed with result: " + result)
+                );
+
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e(TAG, "onUrlFocusChange " + e);
+            }
+        }
     }
 
     private void showOnBoarding() {
