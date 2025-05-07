@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.Button;
 import android.widget.ImageButton;
 import android.widget.TextView;
@@ -82,6 +83,10 @@ public class ReplyListFragment2 extends Fragment {
     private EditText mMessageEditText;
     private TextView mCommentsText;
 
+    private LinearLayout mParentCommentLayout;
+    private ImageView mArrow1;
+    private ImageView mArrow2;
+
     private ImageView mBackButton;
 
     private Button mLolButton;
@@ -122,6 +127,9 @@ public class ReplyListFragment2 extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
+        mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
+        mArrow1 = view.findViewById(R.id.comment_array1);
+        mArrow2 = view.findViewById(R.id.comment_array2);
         
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
@@ -152,6 +160,10 @@ public class ReplyListFragment2 extends Fragment {
         boolean isReplyAdapter = true;
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false, true);
         mCommentRecycler.setAdapter(mCommentAdapter);
+
+        mParentCommentLayout.setVisibility(View.VISIBLE);
+        mArrow1.setVisibility(View.VISIBLE);
+        mArrow2.setVisibility(View.VISIBLE);
 
         mTopComments = new ArrayList<Comment>();
         mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
@@ -253,7 +265,7 @@ public class ReplyListFragment2 extends Fragment {
                     }
 
                     if(parentComment != null){
-                        mGrandParentComments.add(parentComment);
+                        mGrandParentComments.add(grandParentComment);
                         mGrandParentCommentAdapter.notifyItemRangeInserted(0, 1);
                     }
 

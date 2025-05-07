@@ -52,6 +52,7 @@ import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Intent;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import android.widget.LinearLayout;
 
 public class ReplyListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -87,6 +88,10 @@ public class ReplyListFragment extends Fragment {
     private Button mLoveButton;
     private Button mClapButton;
 
+    private LinearLayout mParentCommentLayout;
+    private ImageView mArrow1;
+    private ImageView mArrow2;
+
     private BottomSheetInputCallback inputCallback;
 
     @Override
@@ -118,6 +123,11 @@ public class ReplyListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
+        mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
+        mArrow1 = view.findViewById(R.id.comment_array1);
+        mArrow2 = view.findViewById(R.id.comment_array2);
+
+        mArrow2.setVisibility(View.VISIBLE);
         
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
