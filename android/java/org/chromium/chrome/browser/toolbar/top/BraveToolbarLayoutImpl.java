@@ -509,9 +509,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 
                     if (accessToken != null) {
                         Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences prefs = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                        SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                         String avatar = prefs.getString("avatar_url", null);
-                        JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                        JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                         if (avatar != null) {
                             ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
                         }else{
@@ -1778,7 +1778,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
                     try {
                         Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences sharedPref = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                        SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                         SharedPreferences.Editor editor = sharedPref.edit();
 
                         if(avatar != null && avatar.length() > 0){

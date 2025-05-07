@@ -158,7 +158,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 mAppVersionText.setText(pInfo.versionName);
 
                 Context context = ContextUtils.getApplicationContext();
-                SharedPreferences prefs = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                 String avatar = prefs.getString("avatar_url", null);
                 String views = prefs.getString("views", "-");
                 String likesGiven = prefs.getString("likes_given", "-");
@@ -306,7 +306,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                         Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences sharedPref = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                        SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                         SharedPreferences.Editor editor = sharedPref.edit();
 
                         if(avatar != null && avatar.length() > 0){

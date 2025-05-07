@@ -113,6 +113,7 @@ import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -328,8 +329,8 @@ public class BraveNewTabPageLayout
     private void setNtpViews() {
         mRecyclerView = findViewById(R.id.recycler_posts);
         
-        mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
-        mShimmerItems = view.findViewById(R.id.shimmer_items);
+        mShimmerLoading = findViewById(R.id.skeleton_shimmer);
+        mShimmerItems = findViewById(R.id.shimmer_items);
         int shimmerSkeletonRows =
                 AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(requireContext(), 50));
         for (int i = 0; i < shimmerSkeletonRows; i++) {
