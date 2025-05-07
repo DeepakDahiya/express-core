@@ -124,8 +124,8 @@ public class ReplyListFragment extends Fragment {
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
-        mArrow1 = view.findViewById(R.id.comment_array1);
-        mArrow2 = view.findViewById(R.id.comment_array2);
+        mArrow1 = view.findViewById(R.id.comment_arrow1);
+        mArrow2 = view.findViewById(R.id.comment_arrow2);
 
         mArrow2.setVisibility(View.VISIBLE);
         

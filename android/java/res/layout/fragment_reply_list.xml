@@ -79,13 +79,13 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/comment_array1"
+                    android:id="@+id/comment_arrow1"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:contentDescription="@null"
                     android:layout_gravity="top"
                     visibility="gone"
-                    app:srcCompat="@drawable/comment_array"/>
+                    app:srcCompat="@drawable/comment_arrow"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/top_comment_recycler"
@@ -102,8 +102,8 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/comment_array1"
-                    android:src="@drawable/comment_array"
+                    android:id="@+id/comment_arrow1"
+                    android:src="@drawable/comment_arrow"
                     android:layout_width="24sp"
                     android:layout_height="24sp"
                     android:layout_marginEnd="4sp"
@@ -130,8 +130,8 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:id="@+id/comment_array2"
-                    android:src="@drawable/comment_array"
+                    android:id="@+id/comment_arrow2"
+                    android:src="@drawable/comment_arrow"
                     android:layout_width="24sp"
                     android:layout_height="24sp"
                     android:layout_marginEnd="4sp"
