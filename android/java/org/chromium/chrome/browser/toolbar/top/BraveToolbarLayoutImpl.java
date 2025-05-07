@@ -305,9 +305,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 // }
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e(TAG, "maybeShowWalletPanel " + e);
-            } catch (JSONException e) {
-                Log.e("Express Browser Access Token", e.getMessage());
-            }
+            } 
+            // catch (JSONException e) {
+            //     Log.e("Express Browser Access Token", e.getMessage());
+            // }
         }
 
         mBraveShieldsHandler = new BraveShieldsHandler(getContext());
