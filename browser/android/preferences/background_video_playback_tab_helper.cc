@@ -94,6 +94,11 @@ const char16_t k_youtube_background_playback_script[] =
       const IS_VIMEO = /(?:^|.+\\.)vimeo\\.com/.test(window.location.hostname);
       const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
 
+      const videoElement = document.querySelector('video');
+      if (videoElement) {
+        videoElement.removeAttribute('disablePictureInPicture');
+      }
+
       if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
         Object.defineProperties(document, {
           hidden: { value: false },
