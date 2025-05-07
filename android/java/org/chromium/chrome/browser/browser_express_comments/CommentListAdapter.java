@@ -360,7 +360,11 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                 // mAvatarImage.setLayoutParams(params);
             }
                 
-            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
+            if(comment.getUser().getAvatar() != null && !comment.getUser().getAvatar().isEmpty()){
+                ImageLoader.downloadImage(comment.getUser().getAvatar(), Glide.with(activity), true, 5, mAvatarImage, null);
+            }else{
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
+            }
 
             bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
             bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
@@ -375,7 +379,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                                 JSONObject commentObject = new JSONObject(activity.getReplyComment().toString());
                                 
                                 JSONObject user = commentObject.getJSONObject("user");
-                                User u = new User(user.getString("_id"), user.getString("username"));
+                                User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
                                 Vote v = null;
                                 String pageParent = null;
                                 String postParent = null;

@@ -53,12 +53,14 @@ import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import android.content.Intent;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.base.ContextUtils;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     public static final String OPEN_KEYBOARD = "open_keyboard";
+    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
@@ -153,8 +155,15 @@ public class CommentListFragment extends Fragment {
             String accessToken = activity.getAccessToken();
             mCommentsText = activity.getCommentCountText();
             if(accessToken != null){
+                Context context = ContextUtils.getApplicationContext();
+                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                String avatar = prefs.getString("avatar_url", null);
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-                inputCallback.updateAvatar("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", activity);
+                if (avatar != null) {
+                    inputCallback.updateAvatar(avatar, activity);
+                }else{
+                    inputCallback.updateAvatar("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", activity);
+                }
             }
 
             if(mOpenKeyboard){
@@ -248,7 +257,7 @@ public class CommentListFragment extends Fragment {
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
-                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
+                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());

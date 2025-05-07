@@ -149,7 +149,7 @@ public class BrowserExpressAddCommentUtil {
 
                     JSONObject comment = responseObject.getJSONObject("comment");
                     JSONObject user = comment.getJSONObject("user");
-                    User u = new User(user.getString("_id"), user.getString("username"));
+                    User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
                     Vote v = null;
                     String pageParent = null;
                     String postParent = null;

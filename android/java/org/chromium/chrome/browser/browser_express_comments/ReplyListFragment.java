@@ -232,13 +232,12 @@ public class ReplyListFragment extends Fragment {
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
-                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
+                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
 
                     if(parentComment != null){
-                        Log.e("SETTING PARENT COMMENT", parentComment.toString());
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);
                     }

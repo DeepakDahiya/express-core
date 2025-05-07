@@ -61,6 +61,7 @@
                 android:id="@+id/top_comment_recycler"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="8sp"
                 android:overScrollMode="never" />
 
             <androidx.recyclerview.widget.RecyclerView

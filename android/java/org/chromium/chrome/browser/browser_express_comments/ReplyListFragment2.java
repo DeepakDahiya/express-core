@@ -69,6 +69,10 @@ public class ReplyListFragment2 extends Fragment {
     private CommentListAdapter mTopCommentAdapter;
     private List<Comment> mTopComments;
 
+    private RecyclerView mGrandParentCommentRecycler;
+    private CommentListAdapter mGrandParentCommentAdapter;
+    private List<Comment> mGrandParentComments;
+
     private String mCommentId;
 
     private ShimmerFrameLayout mShimmerLoading;
@@ -155,6 +159,12 @@ public class ReplyListFragment2 extends Fragment {
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
+        mGrandParentComments = new ArrayList<Comment>();
+        mGrandParentCommentRecycler = (RecyclerView) view.findViewById(R.id.parent_comment_recycler);
+        mGrandParentCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+        mGrandParentCommentAdapter = new CommentListAdapter(requireContext(), mGrandParentComments, mMessageEditText, mGrandParentCommentRecycler, null, isReplyAdapter, true, true);
+        mGrandParentCommentRecycler.setAdapter(mGrandParentCommentAdapter);
+
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("cry"), mMessageEditText);
@@ -232,15 +242,19 @@ public class ReplyListFragment2 extends Fragment {
     private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
-                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment) {
+                public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     int len = mComments.size();
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
 
                     if(parentComment != null){
-                        Log.e("SETTING PARENT COMMENT", parentComment.toString());
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);
+                    }
+
+                    if(parentComment != null){
+                        mGrandParentComments.add(parentComment);
+                        mGrandParentCommentAdapter.notifyItemRangeInserted(0, 1);
                     }
 
                     mShimmerLoading.setVisibility(View.GONE);

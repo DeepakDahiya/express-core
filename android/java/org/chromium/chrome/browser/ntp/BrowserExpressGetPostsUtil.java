@@ -210,7 +210,7 @@ public class BrowserExpressGetPostsUtil {
                                     commentParent = comment.getString("commentParent");
                                 }
 
-                                User commentUserObj = new User(commentUser.getString("_id"), commentUser.getString("username"));
+                                User commentUserObj = new User(commentUser.getString("_id"), commentUser.getString("username"), commentUser.optString("avatar", null));
 
                                 Comment tempComment = new Comment(
                                     comment.getString("_id"),
