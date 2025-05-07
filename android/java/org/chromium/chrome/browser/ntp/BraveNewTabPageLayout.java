@@ -6,6 +6,7 @@
 package org.chromium.chrome.browser.ntp;
 
 import static org.chromium.ui.base.ViewUtils.dpToPx;
+import static org.chromium.ui.base.ViewUtils;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;

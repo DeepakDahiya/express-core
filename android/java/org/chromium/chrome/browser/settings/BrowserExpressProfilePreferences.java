@@ -165,6 +165,9 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String likesGiven = prefs.getString("likes_given", "-");
                 String likesReceived = prefs.getString("likes_received", "-");
 
+                String accessToken = activity.getAccessToken();
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+
                 if (views != null) mViewsText.setText(views);
                 if (likesGiven != null) mLikesGivenText.setText(likesGiven);
                 if (likesReceived != null) mLikesReceivedText.setText(likesReceived);
@@ -173,9 +176,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 } else {
                     ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
                 }
-
-                String accessToken = activity.getAccessToken();
-                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
                 if (decodedAccessTokenObj.has("name") && !decodedAccessTokenObj.isNull("name")) {
                     mFullNameText.setText(decodedAccessTokenObj.getString("name"));
