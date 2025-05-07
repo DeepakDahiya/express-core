@@ -58,11 +58,11 @@
                 android:visibility="gone"
                 android:orientation="horizontal">
 
-                <View
+                <!-- <View
                     android:layout_width="4dp"
                     android:layout_height="match_parent"
                     android:layout_marginEnd="4dp"
-                    android:background="@color/username_color" />
+                    android:background="@color/username_color" /> -->
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/parent_comment_recycler"
@@ -81,9 +81,9 @@
                 <ImageView
                     android:id="@+id/comment_arrow1"
                     android:src="@drawable/comment_arrow"
-                    android:layout_width="24sp"
-                    android:layout_height="24sp"
-                    android:layout_marginEnd="4sp"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
+                    android:layout_marginEnd="2sp"
                     android:scaleType="centerCrop"
                     android:visibility="gone"
                     android:layout_gravity="top"
@@ -94,7 +94,6 @@
                     android:id="@+id/top_comment_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8sp"
                     android:overScrollMode="never" />
 
             </LinearLayout>
@@ -103,15 +102,15 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="top"
-                android:layout_marginStart="12sp"
+                android:layout_marginStart="16sp"
                 android:orientation="horizontal">
 
                 <ImageView
                     android:id="@+id/comment_arrow2"
                     android:src="@drawable/comment_arrow"
-                    android:layout_width="24sp"
-                    android:layout_height="24sp"
-                    android:layout_marginEnd="4sp"
+                    android:layout_width="18sp"
+                    android:layout_height="18sp"
+                    android:layout_marginEnd="2sp"
                     android:layout_gravity="top"
                     android:scaleType="centerCrop"
                     android:visibility="gone"
