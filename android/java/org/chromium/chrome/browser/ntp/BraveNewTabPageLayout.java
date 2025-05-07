@@ -332,9 +332,9 @@ public class BraveNewTabPageLayout
         mShimmerLoading = findViewById(R.id.skeleton_shimmer);
         mShimmerItems = findViewById(R.id.shimmer_items);
         int shimmerSkeletonRows =
-                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(requireContext(), 50));
+                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(getContext(), 50));
         for (int i = 0; i < shimmerSkeletonRows; i++) {
-            inflater.inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+            LayoutInflater.from(getContext()).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
         }
 
         mShimmerLoading.showShimmer(true);

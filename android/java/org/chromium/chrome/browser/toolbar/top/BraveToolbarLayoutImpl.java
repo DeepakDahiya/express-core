@@ -6,6 +6,7 @@
 package org.chromium.chrome.browser.toolbar.top;
 
 import static org.chromium.ui.base.ViewUtils.dpToPx;
+import org.chromium.ui.base.ViewUtils;
 
 import android.animation.Animator;
 import android.animation.ObjectAnimator;
@@ -1776,37 +1777,34 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
-                    try {
-                        Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                        SharedPreferences.Editor editor = sharedPref.edit();
+                    Context context = ContextUtils.getApplicationContext();
+                    SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                    SharedPreferences.Editor editor = sharedPref.edit();
 
-                        if(avatar != null && avatar.length() > 0){
-                            editor.putString("avatar_url", avatar);
-                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
-                        }
-
-                        if(xp != null && xp.length() > 0){
-                            editor.putString("views", xp);
-                        }else{
-                            editor.putString("views", "-");
-                        }
-
-                        if(lg != null && lg.length() > 0){
-                            editor.putString("likes_given", lg);
-                        }else{
-                            editor.putString("likes_given", "-");
-                        }
-
-                        if(lr != null && lr.length() > 0){
-                            editor.putString("likes_received", lr);
-                        }else{
-                            editor.putString("likes_received", "-");
-                        }
-
-                        editor.apply();
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    if(avatar != null && avatar.length() > 0){
+                        editor.putString("avatar_url", avatar);
+                        ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
                     }
+
+                    if(xp != null && xp.length() > 0){
+                        editor.putString("views", xp);
+                    }else{
+                        editor.putString("views", "-");
+                    }
+
+                    if(lg != null && lg.length() > 0){
+                        editor.putString("likes_given", lg);
+                    }else{
+                        editor.putString("likes_given", "-");
+                    }
+
+                    if(lr != null && lr.length() > 0){
+                        editor.putString("likes_received", lr);
+                    }else{
+                        editor.putString("likes_received", "-");
+                    }
+
+                    editor.apply();
                 }
 
                 @Override
