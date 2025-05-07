@@ -27,6 +27,7 @@ import android.widget.TextView;
 import org.chromium.base.task.AsyncTask;
 import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.Target;
+import android.content.Context;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
