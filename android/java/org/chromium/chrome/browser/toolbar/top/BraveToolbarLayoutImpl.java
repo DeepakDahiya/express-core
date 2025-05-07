@@ -5,7 +5,7 @@
 
 package org.chromium.chrome.browser.toolbar.top;
 
-import org.chromium.ui.base.ViewUtils.dpToPx;
+import static org.chromium.ui.base.ViewUtils.dpToPx;
 import org.chromium.ui.base.ViewUtils;
 
 import android.animation.Animator;
