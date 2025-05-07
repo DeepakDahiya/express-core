@@ -97,13 +97,17 @@
                               android:textStyle="bold"
                               android:textSize="18sp"/>
 			</LinearLayout>
-			<ProgressBar
-                        android:id="@+id/feed_progress"
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:visibility="gone"
-                        android:layout_gravity="center"
-                        android:indeterminate="true"/>
+                  <org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout
+                        android:id="@+id/skeleton_shimmer"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <LinearLayout
+                              android:id="@+id/shimmer_items"
+                              android:layout_width="match_parent"
+                              android:layout_height="match_parent"
+                              android:orientation="vertical" />
+                  </org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout>
 			<androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/recycler_posts"
                         android:layout_width="match_parent"

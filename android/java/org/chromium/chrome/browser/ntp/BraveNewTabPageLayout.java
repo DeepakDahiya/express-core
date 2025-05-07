@@ -133,6 +133,7 @@ import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import java.util.Random;
+import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
@@ -202,7 +203,8 @@ public class BraveNewTabPageLayout
     private boolean mIsDisplayNewsFeed;
     private boolean mIsDisplayNewsOptin;
     private boolean mNewsFeedViewedOnce;
-    private ProgressBar mFeedProgress;
+    private ShimmerFrameLayout mShimmerLoading;
+    private ViewGroup mShimmerItems;
 
     private Supplier<Tab> mTabProvider;
 
@@ -325,9 +327,19 @@ public class BraveNewTabPageLayout
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
         mRecyclerView = findViewById(R.id.recycler_posts);
-        mFeedProgress = findViewById(R.id.feed_progress);
+        
+        mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
+        mShimmerItems = view.findViewById(R.id.shimmer_items);
+        int shimmerSkeletonRows =
+                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(requireContext(), 50));
+        for (int i = 0; i < shimmerSkeletonRows; i++) {
+            inflater.inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+        }
+
+        mShimmerLoading.showShimmer(true);
+        AndroidUtils.show(mShimmerItems);
+
         mPosts = new ArrayList<Post>();
-        mFeedProgress.setVisibility(View.VISIBLE);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
@@ -1445,7 +1457,11 @@ public class BraveNewTabPageLayout
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
                     Log.e("BE_GET_POST", "9"); 
-                    mFeedProgress.setVisibility(View.GONE);
+                    
+                    mShimmerLoading.setVisibility(View.GONE);
+                    AndroidUtils.gone(mShimmerItems);
+                    mShimmerLoading.hideShimmer();
+
                     int len = mPosts.size();
                     mPosts.addAll(posts);
                     Log.e("BE_GET_POST", "10"); 

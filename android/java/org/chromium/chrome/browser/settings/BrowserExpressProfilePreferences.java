@@ -70,6 +70,8 @@ import org.chromium.chrome.browser.util.TabUtils;
 public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
                    FragmentSettingsLauncher {
+    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
+
     private LinearLayout mParentLayout;
     private ImageView mAvatarImage;
     private TextView mUsernameText;
@@ -155,11 +157,25 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                 mAppVersionText.setText(pInfo.versionName);
 
+                Context context = ContextUtils.getApplicationContext();
+                SharedPreferences prefs = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                String avatar = prefs.getString("avatar_url", null);
+                String views = prefs.getString("views", "-");
+                String likesGiven = prefs.getString("likes_given", "-");
+                String likesReceived = prefs.getString("likes_received", "-");
+
+                if (views != null) mViewsText.setText(views);
+                if (likesGiven != null) mLikesGivenText.setText(likesGiven);
+                if (likesReceived != null) mLikesReceivedText.setText(likesReceived);
+                if (avatar != null) {
+                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
+                } else {
+                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
+                }
+
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
-                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
-
                 if (decodedAccessTokenObj.has("name") && !decodedAccessTokenObj.isNull("name")) {
                     mFullNameText.setText(decodedAccessTokenObj.getString("name"));
                 } else {
@@ -289,27 +305,40 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         String accessToken = activity.getAccessToken();
                         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
+                        Context context = ContextUtils.getApplicationContext();
+                        SharedPreferences sharedPref = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+
                         if(avatar != null && avatar.length() > 0){
+                            editor.putString("avatar_url", avatar);
                             ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
                         }
 
                         if(xp != null && xp.length() > 0){
                             mViewsText.setText(xp);
+                            editor.putString("views", xp);
                         }else{
                             mViewsText.setText("-");
+                            editor.putString("views", "-");
                         }
 
                         if(lg != null && lg.length() > 0){
                             mLikesGivenText.setText(lg);
+                            editor.putString("likes_given", lg);
                         }else{
                             mLikesGivenText.setText("-");
+                            editor.putString("likes_given", "-");
                         }
 
                         if(lr != null && lr.length() > 0){
                             mLikesReceivedText.setText(lr);
+                            editor.putString("likes_received", lr);
                         }else{
                             mLikesReceivedText.setText("-");
+                            editor.putString("likes_received", "-");
                         }
+
+                        editor.apply();
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }

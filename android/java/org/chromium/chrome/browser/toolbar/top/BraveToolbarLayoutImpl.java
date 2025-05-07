@@ -174,12 +174,14 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
                    BraveRewardsObserver, BraveRewardsNativeWorker.PublisherObserver,
                    ConnectionErrorHandler, PlaylistServiceObserverImplDelegate {
     private static final String TAG = "BraveToolbar";
+    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
 
     private static final int CONNECTION_TIMEOUT = 5000;
     private static final int READ_TIMEOUT = 5000;
@@ -298,7 +300,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 
             //     if (accessToken != null) {
             //         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
-            //         ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
+            //         ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mProfileButton, null);
             //     }
             // } catch (BraveActivity.BraveActivityNotFoundException e) {
             //     Log.e(TAG, "maybeShowWalletPanel " + e);
@@ -460,7 +462,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 String mUrl = url.getSpec();
 
-                if(isValidUrl(mUrl)) {
+                if(isValidUrl(mUrl) && !tab.isIncognito()) {
                     new AsyncTask<TopSite>() {
                         @Override
                         protected TopSite doInBackground() {
@@ -503,12 +505,31 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
+                    String accessToken = activity.getAccessToken();
+                
+                    if (accessToken != null) {
+                        Context context = ContextUtils.getApplicationContext();
+                        SharedPreferences prefs = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                        String avatar = prefs.getString("avatar_url", null);
+                        JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                        if (avatar != null) {
+                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                        }else{
+                            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
+                        }
+
+                        BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                            new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                        workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
 
                     int commentCount = 0;
                     mCommentsText = activity.getCommentCountText();
                     mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
+                } catch (JSONException e) {
+                    Log.e("Express Browser Access Token", e.getMessage());
                 }
 
                 BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
@@ -1750,4 +1771,68 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
             }
         };
+
+    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+            new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
+                @Override
+                public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
+                    try {
+                        Context context = ContextUtils.getApplicationContext();
+                        SharedPreferences sharedPref = mContext.getSharedPreferences(BE_PROFILE_PREF, 0);
+                        SharedPreferences.Editor editor = sharedPref.edit();
+
+                        if(avatar != null && avatar.length() > 0){
+                            editor.putString("avatar_url", avatar);
+                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                        }
+
+                        if(xp != null && xp.length() > 0){
+                            editor.putString("views", xp);
+                        }else{
+                            editor.putString("views", "-");
+                        }
+
+                        if(lg != null && lg.length() > 0){
+                            editor.putString("likes_given", lg);
+                        }else{
+                            editor.putString("likes_given", "-");
+                        }
+
+                        if(lr != null && lr.length() > 0){
+                            editor.putString("likes_received", lr);
+                        }else{
+                            editor.putString("likes_received", "-");
+                        }
+
+                        editor.apply();
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
+                }
+
+                @Override
+                public void getProfileFailed(String error) {
+                    Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
+                }
+
+                private JSONObject getDecodedToken(String accessToken){
+                    try{
+                        String[] split_string = accessToken.split("\\.");
+                        String base64EncodedHeader = split_string[0];
+                        String base64EncodedBody = split_string[1];
+                        String base64EncodedSignature = split_string[2];
+
+                        byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+                        String decodedString = new String(data, "UTF-8");
+                        JSONObject jsonObj = new JSONObject(decodedString.toString());
+                        return jsonObj;
+                    }catch(JSONException e){
+                        Log.e("Express Browser Access Token", e.getMessage());
+                        return null;
+                    }catch(UnsupportedEncodingException e){
+                        Log.e("Express Browser Access Token", e.getMessage());
+                        return null;
+                    }
+                    
+                }
+            };
 }

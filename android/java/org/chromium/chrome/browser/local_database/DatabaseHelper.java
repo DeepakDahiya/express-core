@@ -180,7 +180,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         List<TopSiteTable> topSites = new ArrayList<>();
 
         // Select All Query
-        String selectQuery = "SELECT  * FROM " + TopSiteTable.TABLE_NAME;
+        String selectQuery = "SELECT * FROM " + TopSiteTable.TABLE_NAME + " ORDER BY ID DESC";
 
         SQLiteDatabase db = this.getReadableDatabase();
         Cursor cursor = db.rawQuery(selectQuery, null);
