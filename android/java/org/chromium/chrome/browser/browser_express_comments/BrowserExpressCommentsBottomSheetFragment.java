@@ -113,6 +113,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
+     @Override
+    public void onPause() {
+        super.onPause();
+        CommentListAdapter.VideoPlaybackManager.pauseAllPlayers();
+    }
+
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -204,6 +210,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        CommentListAdapter.VideoPlaybackManager.pauseAllPlayers();
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 

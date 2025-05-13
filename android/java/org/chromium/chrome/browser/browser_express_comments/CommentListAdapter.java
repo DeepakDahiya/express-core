@@ -109,6 +109,102 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         ((CommentHolder) holder).bind(comment);
     }
 
+    public static class VideoPlaybackManager {
+        private static ExoPlayer sCurrentlyPlayingVideo;
+        private static CommentHolder sCurrentlyPlayingHolder;
+        // To keep track of all holders with active players
+        private static final List<CommentHolder> sActiveHolders = new ArrayList<>();
+        private static final String TAG = "VideoPlaybackManager";
+
+        public static synchronized void addActiveHolder(CommentHolder holder) {
+            if (!sActiveHolders.contains(holder)) {
+                sActiveHolders.add(holder);
+                Log.d(TAG, "Added active holder. Count: " + sActiveHolders.size());
+            }
+        }
+
+        public static synchronized void removeActiveHolder(CommentHolder holder) {
+            boolean removed = sActiveHolders.remove(holder);
+            if (removed) {
+                Log.d(TAG, "Removed active holder. Count: " + sActiveHolders.size());
+            }
+            if (sCurrentlyPlayingHolder == holder) {
+                // If the removed holder was the one playing, clear the reference
+                // The player itself should be handled (paused/released) by the holder
+                sCurrentlyPlayingVideo = null;
+                sCurrentlyPlayingHolder = null;
+                Log.d(TAG, "Removed holder was the currently playing one.");
+            }
+        }
+
+        public static synchronized void onVideoPlayRequest(ExoPlayer newPlayer, CommentHolder newHolder) {
+            if (sCurrentlyPlayingVideo != null && sCurrentlyPlayingVideo != newPlayer) {
+                Log.d(TAG, "Pausing previous video for new request.");
+                sCurrentlyPlayingVideo.setPlayWhenReady(false);
+                // The Player.Listener in sCurrentlyPlayingHolder will update its UI
+            }
+            sCurrentlyPlayingVideo = newPlayer;
+            sCurrentlyPlayingHolder = newHolder;
+            if (newPlayer != null) {
+                Log.d(TAG, "Playing new video.");
+                newPlayer.setPlayWhenReady(true);
+                // The Player.Listener in newHolder will update its UI
+            }
+        }
+
+        public static synchronized void onVideoStop(ExoPlayer playerToStop) { // User manually stops/pauses
+            if (playerToStop != null) {
+                playerToStop.setPlayWhenReady(false);
+                Log.d(TAG, "Video stopped/paused by user action.");
+            }
+            if (sCurrentlyPlayingVideo == playerToStop) {
+                sCurrentlyPlayingVideo = null;
+                sCurrentlyPlayingHolder = null;
+            }
+        }
+
+        public static synchronized void pauseCurrentlyPlayingVideo() {
+            if (sCurrentlyPlayingVideo != null) {
+                Log.d(TAG, "Pausing currently playing video.");
+                sCurrentlyPlayingVideo.setPlayWhenReady(false);
+                // UI update via listener
+                sCurrentlyPlayingVideo = null; // Clear since it's no longer "the" playing one
+                sCurrentlyPlayingHolder = null;
+            }
+        }
+
+        public static synchronized void pauseAllPlayers() {
+            Log.d(TAG, "Pausing all " + sActiveHolders.size() + " active players.");
+            // Iterate over a copy in case of concurrent modification, though removeActiveHolder handles sCurrentlyPlayingHolder
+            List<CommentHolder> holdersToPause = new ArrayList<>(sActiveHolders);
+            for (CommentHolder holder : holdersToPause) {
+                if (holder.player != null && holder.player.isPlaying()) {
+                    holder.player.setPlayWhenReady(false);
+                    // UI update via listener in holder
+                }
+            }
+            // Ensure the main reference is also cleared if it was playing
+            if (sCurrentlyPlayingVideo != null) {
+                 sCurrentlyPlayingVideo.setPlayWhenReady(false); // Should be covered by loop if holder is in sActiveHolders
+                 sCurrentlyPlayingVideo = null;
+                 sCurrentlyPlayingHolder = null;
+            }
+        }
+        
+        public static synchronized CommentHolder getCurrentlyPlayingHolder() {
+            return sCurrentlyPlayingHolder;
+        }
+
+        // Call this when a player instance is actually released to ensure it's no longer considered current
+        public static synchronized void clearCurrentlyPlayingVideoIfMatches(ExoPlayer player) {
+            if (sCurrentlyPlayingVideo == player) {
+                sCurrentlyPlayingVideo = null;
+                sCurrentlyPlayingHolder = null;
+                Log.d(TAG, "Cleared currently playing video reference as it matched released player.");
+            }
+        }
+    }
+
     private class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
         TextView contentText;
@@ -240,8 +336,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             }
 
             if(videoUrl != null && !"null".equals(videoUrl)){
-                releasePlayer();
+                if (player != null) { 
+                    releasePlayer();
+                }
+
                 player = new ExoPlayer.Builder(context).build();
+
+                VideoPlaybackManager.addActiveHolder(this);
 
                 commentVideo.setPlayer(player);
                 commentVideo.setUseController(false); // Hide default controls
@@ -314,6 +415,10 @@ public class CommentListAdapter extends RecyclerView.Adapter {
                         }
                     }
                 });
+            } else {
+                if (player != null) {
+                    releasePlayer();
+                }
             }
 
             // This is used to make the comment work for post top comments
@@ -603,10 +708,17 @@ public class CommentListAdapter extends RecyclerView.Adapter {
 
         private void togglePlayPause() {
             if (player != null) {
-                boolean isCurrentlyPlaying = player.isPlaying();
-                player.setPlayWhenReady(!isCurrentlyPlaying);
-                updatePlayPauseUI(!isCurrentlyPlaying);
+                if (!player.isPlaying()) { // If about to play
+                    VideoPlaybackManager.onVideoPlayRequest(player, this);
+                } else { // If aboutToPause (user manually pauses)
+                    VideoPlaybackManager.onVideoStop(player);
+                }
             }
+            // if (player != null) {
+            //     boolean isCurrentlyPlaying = player.isPlaying();
+            //     player.setPlayWhenReady(!isCurrentlyPlaying);
+            //     updatePlayPauseUI(!isCurrentlyPlaying);
+            // }
         }
         
         private void updatePlayPauseUI(boolean isPlaying) {
@@ -682,11 +794,13 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         }
 
         private void releasePlayer() {
+            VideoPlaybackManager.removeActiveHolder(this); // Remove from manager first
             if (progressAnimator != null) {
                 progressAnimator.cancel();
                 progressAnimator = null;
             }
             if (player != null) {
+                VideoPlaybackManager.clearCurrentlyPlayingVideoIfMatches(player);
                 player.release();
                 player = null;
             }
@@ -706,6 +820,14 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             if (mAvatarImage != null) {
                 Glide.with(context).clear(mAvatarImage);
                 mAvatarImage.setImageDrawable(null);
+            }
+        }
+
+         @Override
+        public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
+            super.onViewRecycled(holder);
+            if (holder instanceof CommentHolder) {
+                ((CommentHolder) holder).onViewRecycled(); // Call our custom logic
             }
         }
 

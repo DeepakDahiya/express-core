@@ -89,6 +89,8 @@ public class CommentListFragment extends Fragment {
 
     private BottomSheetInputCallback inputCallback;
 
+    private RecyclerView.OnScrollListener videoScrollListener;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -225,7 +227,90 @@ public class CommentListFragment extends Fragment {
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         } catch(Exception ex){
         }
+
+        setupVideoScrollListener(mCommentRecycler);
         return view;
+    }
+
+     private void setupVideoScrollListener(RecyclerView recyclerView) {
+        if (videoScrollListener != null) {
+            recyclerView.removeOnScrollListener(videoScrollListener);
+        }
+        videoScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                checkAndPauseInvisibleVideos(recyclerView);
+            }
+        };
+        recyclerView.addOnScrollListener(videoScrollListener);
+    }
+
+     private void checkAndPauseInvisibleVideos(RecyclerView recyclerView) {
+        CommentListAdapter.CommentHolder currentPlayingHolder = CommentListAdapter.VideoPlaybackManager.getCurrentlyPlayingHolder();
+        if (currentPlayingHolder != null && currentPlayingHolder.player != null && currentPlayingHolder.player.isPlaying()) {
+            
+            LinearLayoutManager layoutManager = null;
+            if (recyclerView.getLayoutManager() instanceof LinearLayoutManager) {
+                 layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+            }
+            if (layoutManager == null) return;
+
+            int holderPosition = currentPlayingHolder.getBindingAdapterPosition();
+            if (holderPosition == RecyclerView.NO_POSITION) {
+                CommentListAdapter.VideoPlaybackManager.pauseCurrentlyPlayingVideo();
+                return;
+            }
+
+            int firstVisible = layoutManager.findFirstVisibleItemPosition();
+            int lastVisible = layoutManager.findLastVisibleItemPosition();
+
+            if (holderPosition < firstVisible || holderPosition > lastVisible) {
+                Log.d("VideoScroll", "Pausing video (holder fully out of view): " + holderPosition);
+                CommentListAdapter.VideoPlaybackManager.pauseCurrentlyPlayingVideo();
+            } else {
+                // Holder is in visible range, check how much of the video view itself is visible
+                if (currentPlayingHolder.commentVideo != null && !isViewMostlyVisible(currentPlayingHolder.commentVideo, recyclerView)) {
+                    Log.d("VideoScroll", "Pausing video (partially out of view): " + holderPosition);
+                    CommentListAdapter.VideoPlaybackManager.pauseCurrentlyPlayingVideo();
+                }
+            }
+        }
+    }
+
+    private boolean isViewMostlyVisible(View view, RecyclerView recyclerView) {
+        if (view == null || !view.isShown() || view.getHeight() == 0 || view.getWidth() == 0) {
+            return false;
+        }
+
+        Rect viewRect = new Rect();
+        if (!view.getGlobalVisibleRect(viewRect)) { // if not visible on screen at all
+            return false;
+        }
+
+        Rect recyclerRect = new Rect();
+        recyclerView.getGlobalVisibleRect(recyclerRect); // Visible part of RecyclerView on screen
+
+        if (!Rect.intersects(viewRect, recyclerRect)) { // No intersection
+            return false;
+        }
+
+        // Calculate the height of the intersection
+        int visibleHeight = Math.min(viewRect.bottom, recyclerRect.bottom) - Math.max(viewRect.top, recyclerRect.top);
+        
+        float visibilityThreshold = 0.5f; // 50% of video height must be visible
+        return visibleHeight >= view.getHeight() * visibilityThreshold;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        if (mCommentRecycler != null && videoScrollListener != null) {
+            mCommentRecycler.removeOnScrollListener(videoScrollListener);
+            videoScrollListener = null;
+        }
+        // Individual players are released by CommentHolder's onViewRecycled/onViewDetachedFromWindow.
+        // Global pause for fragment destruction is handled by BrowserExpressCommentsBottomSheetFragment's lifecycle.
     }
 
     public static CommentListFragment newInstance(String postId, String commentsFor, Boolean openKeyboard) {
