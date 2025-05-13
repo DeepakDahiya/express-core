@@ -272,6 +272,10 @@ public class ReplyListFragment extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
+                    mMessageEditText.clearFocus();
+                    InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+
                     if(newRefreshToken != null && !newRefreshToken.isEmpty()){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();

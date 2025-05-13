@@ -280,6 +280,11 @@ public class CommentListFragment extends Fragment {
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
+
+                    mMessageEditText.clearFocus();
+                    InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                    imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         // Updating comment count for bottom toolbar
