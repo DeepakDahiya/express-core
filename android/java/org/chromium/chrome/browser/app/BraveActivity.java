@@ -619,54 +619,54 @@ public abstract class BraveActivity extends ChromeActivity
 
 
     public void enterPip(){
-        // if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-        //     AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
 
-        //     // Tab tab = getActivityTab();
-        //     // tab.getWebContents().evaluateJavaScript(
-        //     //     "(function() {" +
-        //     //     "   try{" +
-        //     //     "       const video = document.querySelector('video');" +
-        //     //     "       if (video) {" +
-        //     //     "           video.play();" +
-        //     //     "           video.requestFullscreen();" +
-        //     //     "       }" +
-        //     //     "   }catch(e){" +
-        //     //     "       console.error(e);" +
-        //     //     "   }" +
-        //     //     "})()",
-        //     //     null
-        //     // );
+            // Tab tab = getActivityTab();
+            // tab.getWebContents().evaluateJavaScript(
+            //     "(function() {" +
+            //     "   try{" +
+            //     "       const video = document.querySelector('video');" +
+            //     "       if (video) {" +
+            //     "           video.play();" +
+            //     "           video.requestFullscreen();" +
+            //     "       }" +
+            //     "   }catch(e){" +
+            //     "       console.error(e);" +
+            //     "   }" +
+            //     "})()",
+            //     null
+            // );
 
 
-        //     // try{
-        //     //     Thread.sleep(500);
-        //     // }catch(InterruptedException e){
-        //     //     Log.e("BE_PIP", e.getMessage());
-        //     // }
+            // try{
+            //     Thread.sleep(500);
+            // }catch(InterruptedException e){
+            //     Log.e("BE_PIP", e.getMessage());
+            // }
 
-        //     int left = 0;
-        //     int top = 480;
-        //     int windowWidth = mActivity.getWindow().getDecorView().getWidth();
-        //     int width = windowWidth;
-        //     float defaultAspectRation = 1.78f; // rect.width() / (float) rect.height() calculate from video but currently hardcoding
-        //     float videoAspectRatio = MathUtils.clamp(
-        //         defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
-        //     int height = (int) (windowWidth / videoAspectRatio);
-        //     Rect bounds = new Rect(left, top, left + width, top + height);
+            int left = 0;
+            int top = 480;
+            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
+            int width = windowWidth;
+            float defaultAspectRation = 1.78f; // rect.width() / (float) rect.height() calculate from video but currently hardcoding
+            float videoAspectRatio = MathUtils.clamp(
+                defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+            int height = (int) (windowWidth / videoAspectRatio);
+            Rect bounds = new Rect(left, top, left + width, top + height);
 
-        //     Rational ASPECT_RATIO = new Rational(width, height);
-        //     Log.e("BE_PIP", "BEFORE PIP");
-        //     var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
-        //     // builder.setSourceRectHint(bounds);
+            Rational ASPECT_RATIO = new Rational(width, height);
+            Log.e("BE_PIP", "BEFORE PIP");
+            var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
+            // builder.setSourceRectHint(bounds);
             
-        //     // boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
-        //     new Handler(Looper.getMainLooper()).postDelayed(() -> {
-        //         boolean success = mActivity.enterPictureInPictureMode(builder.build());
-        //         Log.e("BE_PIP", "Success: " + success);
-        //     }, 500);
-        //     Log.e("BE_PIP", "AFTER PIP");
-        // }
+            // boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                boolean success = mActivity.enterPictureInPictureMode(builder.build());
+                Log.e("BE_PIP", "Success: " + success);
+            }, 500);
+            Log.e("BE_PIP", "AFTER PIP");
+        }
     }
 
     public boolean isInPip(){
