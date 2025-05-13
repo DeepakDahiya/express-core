@@ -27,30 +27,30 @@ const char16_t k_youtube_background_playback_script[] =
     uR"(
     (function() {
       // ---- 1. PiP flag overrides for YouTube mobile ----
-      // function modifyYtcfgFlags() {
-      //   const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
-      //   if (config && typeof config.serializedExperimentFlags === 'string') {
-      //     let flags = config.serializedExperimentFlags;
-      //     flags = flags
-      //       .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
-      //       .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
-      //       .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
-      //       .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
-      //       .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
-      //     config.serializedExperimentFlags = flags;
-      //   }
-      // }
+      function modifyYtcfgFlags() {
+        const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
+        if (config && typeof config.serializedExperimentFlags === 'string') {
+          let flags = config.serializedExperimentFlags;
+          flags = flags
+            .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
+            .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
+            .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
+            .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
+            .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
+          config.serializedExperimentFlags = flags;
+        }
+      }
 
-      // if (window.ytcfg) {
-      //   modifyYtcfgFlags();
-      // } else {
-      //   document.addEventListener('load', (event) => {
-      //     const target = event.target;
-      //     if (target.tagName === 'SCRIPT' && window.ytcfg) {
-      //       modifyYtcfgFlags();
-      //     }
-      //   }, true);
-      // }
+      if (window.ytcfg) {
+        modifyYtcfgFlags();
+      } else {
+        document.addEventListener('load', (event) => {
+          const target = event.target;
+          if (target.tagName === 'SCRIPT' && window.ytcfg) {
+            modifyYtcfgFlags();
+          }
+        }, true);
+      }
 
       (function() {
         if (document._addEventListener === undefined) {

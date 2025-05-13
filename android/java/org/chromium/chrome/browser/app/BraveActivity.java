@@ -660,11 +660,8 @@ public abstract class BraveActivity extends ChromeActivity
             var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
             // builder.setSourceRectHint(bounds);
             
-            // boolean mMinimized = mActivity.enterPictureInPictureMode(builder.build());
-            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                boolean success = mActivity.enterPictureInPictureMode(builder.build());
-                Log.e("BE_PIP", "Success: " + success);
-            }, 500);
+            boolean success = mActivity.enterPictureInPictureMode(builder.build());
+            Log.e("BE_PIP", "Success: " + success);
             Log.e("BE_PIP", "AFTER PIP");
         }
     }
