@@ -65,6 +65,7 @@ import com.google.android.exoplayer2.util.Util;
 import android.view.MotionEvent;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
+import androidx.annotation.NonNull; 
 
 public class CommentListAdapter extends RecyclerView.Adapter {
     private Context mContext;
