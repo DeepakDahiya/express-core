@@ -281,9 +281,6 @@ public abstract class BraveActivity extends ChromeActivity
 
     public static final int APP_OPEN_COUNT_FOR_WIDGET_PROMO = 25;
 
-    private static final float MIN_ASPECT_RATIO = 1f / 2.39f; // From your previous code
-    private static final float MAX_ASPECT_RATIO = 2.39f;   // From your previous code
-
     private boolean mIsInPipMode = false; // Track PiP state
 
     /**
