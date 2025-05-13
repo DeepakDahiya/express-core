@@ -233,7 +233,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             Log.e("BROWSER_EXPRESS_COMMENT", "mediaImageUrl: " + twitterImageUrl);
             Log.e("BROWSER_EXPRESS_COMMENT", "videoUrl: " + videoUrl);
 
-            if(twitterImageUrl != null){
+            if(twitterImageUrl != null && !"null".equals(twitterImageUrl)){
                 ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
                 commentMediaCard.setVisibility(View.VISIBLE);
                 commentImage.setVisibility(View.VISIBLE);
