@@ -539,7 +539,8 @@ public abstract class BraveActivity extends ChromeActivity
             }
         }
     }
-
+    
+    @RequiresApi(api = android.os.Build.VERSION_CODES.O)
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
         super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
