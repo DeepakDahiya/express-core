@@ -34,7 +34,7 @@ import androidx.core.app.NotificationManagerCompat;
 import org.chromium.components.browser_ui.notifications.NotificationManagerProxyImpl;
 import org.chromium.chrome.browser.notifications.BraveNotificationBuilder;
 import android.os.Looper;
-
+import androidx.annotation.RequiresApi; 
 import androidx.annotation.MainThread;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -539,7 +539,7 @@ public abstract class BraveActivity extends ChromeActivity
             }
         }
     }
-    
+
     @RequiresApi(api = android.os.Build.VERSION_CODES.O)
     @Override
     public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
