@@ -272,14 +272,15 @@ public class ReplyListFragment extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
-                    mMessageEditText.clearFocus();
-                    InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                    imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
-
                     if(newRefreshToken != null && !newRefreshToken.isEmpty()){
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             activity.setAccessToken(newAccessToken);
+
+                            mMessageEditText.clearFocus();
+                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                            imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+
                             JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
                             Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
                             intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
