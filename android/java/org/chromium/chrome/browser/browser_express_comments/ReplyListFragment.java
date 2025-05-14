@@ -241,8 +241,11 @@ public class ReplyListFragment extends Fragment {
         recyclerView.addOnScrollListener(videoScrollListener);
     }
 
-     private void checkAndPauseInvisibleVideos(RecyclerView recyclerView) {
-        CommentListAdapter.CommentHolder currentPlayingHolder = CommentListAdapter.VideoPlaybackManager.getCurrentlyPlayingHolder();
+    private void checkAndPauseInvisibleVideos(RecyclerView recyclerView) {
+        if (mCommentAdapter == null) return;
+        CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
+        CommentListAdapter.CommentHolder currentPlayingHolder = manager.getCurrentlyPlayingHolder();
+
         if (currentPlayingHolder != null && currentPlayingHolder.player != null && currentPlayingHolder.player.isPlaying()) {
             
             LinearLayoutManager layoutManager = null;
@@ -253,7 +256,7 @@ public class ReplyListFragment extends Fragment {
 
             int holderPosition = currentPlayingHolder.getBindingAdapterPosition();
             if (holderPosition == RecyclerView.NO_POSITION) {
-                CommentListAdapter.VideoPlaybackManager.pauseCurrentlyPlayingVideo();
+                manager.pauseCurrentlyPlayingVideo();
                 return;
             }
 
@@ -262,12 +265,12 @@ public class ReplyListFragment extends Fragment {
 
             if (holderPosition < firstVisible || holderPosition > lastVisible) {
                 Log.d("VideoScroll", "Pausing video (holder fully out of view): " + holderPosition);
-                CommentListAdapter.VideoPlaybackManager.pauseCurrentlyPlayingVideo();
+                manager.pauseCurrentlyPlayingVideo();
             } else {
                 // Holder is in visible range, check how much of the video view itself is visible
                 if (currentPlayingHolder.commentVideo != null && !isViewMostlyVisible(currentPlayingHolder.commentVideo, recyclerView)) {
                     Log.d("VideoScroll", "Pausing video (partially out of view): " + holderPosition);
-                    CommentListAdapter.VideoPlaybackManager.pauseCurrentlyPlayingVideo();
+                    manager.pauseCurrentlyPlayingVideo();
                 }
             }
         }
@@ -304,8 +307,33 @@ public class ReplyListFragment extends Fragment {
             mCommentRecycler.removeOnScrollListener(videoScrollListener);
             videoScrollListener = null;
         }
-        // Individual players are released by CommentHolder's onViewRecycled/onViewDetachedFromWindow.
-        // Global pause for fragment destruction is handled by BrowserExpressCommentsBottomSheetFragment's lifecycle.
+
+        if (mCommentAdapter != null) {
+            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
+            if (manager != null) {
+                manager.releaseAllResources();
+            }
+        }
+        mCommentAdapter = null;
+        mCommentRecycler = null;
+    }
+
+    public void pauseAllVideosInList() {
+        if (mCommentAdapter != null) {
+            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
+            if (manager != null) {
+                manager.pauseAllPlayers();
+            }
+        }
+    }
+
+    public void releaseVideoManagerResources() { // Renamed for clarity from previous suggestion
+        if (mCommentAdapter != null) {
+            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
+            if (manager != null) {
+                manager.releaseAllResources();
+            }
+        }
     }
 
     private void setOnClickForEmoji(Button emojiButton, EditText editText){ {

@@ -76,6 +76,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private boolean mIsReplyAdapter;
     private boolean mIsReplyTopComment;
     private boolean mIsReplyToReplyAdapter;
+    private final VideoPlaybackManager videoPlaybackManager;
 
     public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
         mContext = context;
@@ -86,6 +87,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         mIsReplyAdapter = isReplyAdapter;
         mIsReplyTopComment = isReplyTopComment;
         mIsReplyToReplyAdapter = isReplyToReplyAdapter;
+        videoPlaybackManager = new VideoPlaybackManager();
+    }
+
+    public VideoPlaybackManager getVideoPlaybackManager() {
+        return videoPlaybackManager;
     }
 
     @Override
@@ -98,7 +104,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     public CommentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment, mIsReplyToReplyAdapter);
+        return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment, mIsReplyToReplyAdapter, videoPlaybackManager);
     }
 
     @Override
@@ -238,7 +244,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         ValueAnimator progressAnimator;
         private Context context; // Should be initialized from itemView.getContext()
 
-        CommentHolder(@NonNull View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
+        private final VideoPlaybackManager mVideoManagerInstance;
+
+        CommentHolder(@NonNull View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, VideoPlaybackManager videoManager) {
             super(itemView);
             this.context = itemView.getContext(); // Initialize context
 
@@ -248,6 +256,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             mIsReplyAdapter = isReplyAdapter;
             mIsReplyTopComment = isReplyTopComment;
             mIsReplyToReplyAdapter = isReplyToReplyAdapter;
+
+            mVideoManagerInstance = videoManager; // Store the instance
 
             mAvatarImage = itemView.findViewById(R.id.avatar_image);
             usernameText = itemView.findViewById(R.id.username);
@@ -349,7 +359,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 // Make sure context is not null for ExoPlayer
                 if (this.context != null) {
                     player = new ExoPlayer.Builder(this.context).build();
-                    VideoPlaybackManager.addActiveHolder(this);
+                    mVideoManagerInstance.addActiveHolder(this);
 
                     commentVideo.setPlayer(player);
                     commentVideo.setUseController(false);
@@ -716,9 +726,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private void togglePlayPause() {
             if (player != null) {
                 if (!player.isPlaying()) {
-                    VideoPlaybackManager.onVideoPlayRequest(player, this);
+                    mVideoManagerInstance.onVideoPlayRequest(player, this);
                 } else {
-                    VideoPlaybackManager.onVideoStop(player);
+                    mVideoManagerInstance.onVideoStop(player);
                 }
             }
         }
@@ -799,13 +809,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         // }
 
         private void releasePlayer() {
-            VideoPlaybackManager.removeActiveHolder(this);
+            mVideoManagerInstance.removeActiveHolder(this);
             if (progressAnimator != null) {
                 progressAnimator.cancel();
                 progressAnimator = null;
             }
             if (player != null) {
-                VideoPlaybackManager.clearCurrentlyPlayingVideoIfMatches(player);
+                mVideoManagerInstance.clearCurrentlyPlayingVideoIfMatches(player);
                 player.release();
                 player = null;
             }
