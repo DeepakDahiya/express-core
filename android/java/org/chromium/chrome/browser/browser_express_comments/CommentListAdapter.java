@@ -368,6 +368,15 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 releasePlayer(); // Release existing player before creating a new one or if no video
             }
 
+            if (twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty() && activity != null) {
+                commentMediaCard.setVisibility(View.VISIBLE);
+                commentImage.setVisibility(View.VISIBLE);
+                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
+                // Ensure video player related views are hidden if only image
+                commentVideo.setVisibility(View.GONE);
+                playPauseIcon.setVisibility(View.GONE);
+            }
+
             if (videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) {
                 commentMediaCard.setVisibility(View.VISIBLE); // Show card if there's video
                 // player = new ExoPlayer.Builder(context).build(); // Use 'this.context'
@@ -394,13 +403,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     View.OnClickListener videoClickListener = v -> togglePlayPause();
                     commentVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
-
-                    // If there's an image URL, load it as a placeholder until video is ready
-                    // otherwise, the video area might be blank or show previous frame
-                    if (twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty() && activity != null) {
-                        commentImage.setVisibility(View.VISIBLE); // Show image placeholder
-                        ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
-                    }
 
 
                     player.addListener(new Player.Listener() {
@@ -435,16 +437,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                      Log.e("CommentHolder.bind", "Context is null, cannot initialize ExoPlayer.");
                 }
 
-            } else if (twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty() && activity != null) {
-                commentMediaCard.setVisibility(View.VISIBLE);
-                commentImage.setVisibility(View.VISIBLE);
-                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
-                // Ensure video player related views are hidden if only image
-                commentVideo.setVisibility(View.GONE);
-                playPauseIcon.setVisibility(View.GONE);
-                videoProgressBar.setVisibility(View.GONE);
-            } else {
-                commentMediaCard.setVisibility(View.GONE); // No media
             }
 
 
