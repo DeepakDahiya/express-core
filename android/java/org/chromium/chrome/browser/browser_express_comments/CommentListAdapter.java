@@ -107,20 +107,22 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment);
     }
 
-    public static class VideoPlaybackManager {
-        private static ExoPlayer sCurrentlyPlayingVideo;
-        private static CommentHolder sCurrentlyPlayingHolder;
-        private static final List<CommentHolder> sActiveHolders = new ArrayList<>();
-        private static final String TAG = "VideoPlaybackManager";
+    public class VideoPlaybackManager {
+        private ExoPlayer sCurrentlyPlayingVideo;
+        private CommentHolder sCurrentlyPlayingHolder;
+        private final List<CommentHolder> sActiveHolders = new ArrayList<>();
+        private final String TAG = "VideoPlaybackManager";
 
-        public static synchronized void addActiveHolder(CommentHolder holder) {
+        public VideoPlaybackManager() {}
+
+        public synchronized void addActiveHolder(CommentHolder holder) {
             if (!sActiveHolders.contains(holder)) {
                 sActiveHolders.add(holder);
                 Log.d(TAG, "Added active holder. Count: " + sActiveHolders.size());
             }
         }
 
-        public static synchronized void removeActiveHolder(CommentHolder holder) {
+        public synchronized void removeActiveHolder(CommentHolder holder) {
             boolean removed = sActiveHolders.remove(holder);
             if (removed) {
                 Log.d(TAG, "Removed active holder. Count: " + sActiveHolders.size());
@@ -132,7 +134,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        public static synchronized void onVideoPlayRequest(ExoPlayer newPlayer, CommentHolder newHolder) {
+        public synchronized void onVideoPlayRequest(ExoPlayer newPlayer, CommentHolder newHolder) {
             if (sCurrentlyPlayingVideo != null && sCurrentlyPlayingVideo != newPlayer) {
                 Log.d(TAG, "Pausing previous video for new request.");
                 sCurrentlyPlayingVideo.setPlayWhenReady(false);
@@ -145,7 +147,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        public static synchronized void onVideoStop(ExoPlayer playerToStop) { // User manually stops/pauses
+        public synchronized void onVideoStop(ExoPlayer playerToStop) { // User manually stops/pauses
             if (playerToStop != null) {
                 playerToStop.setPlayWhenReady(false);
                 Log.d(TAG, "Video stopped/paused by user action.");
@@ -156,7 +158,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        public static synchronized void pauseCurrentlyPlayingVideo() {
+        public synchronized void pauseCurrentlyPlayingVideo() {
             if (sCurrentlyPlayingVideo != null) {
                 Log.d(TAG, "Pausing currently playing video.");
                 sCurrentlyPlayingVideo.setPlayWhenReady(false);
@@ -165,7 +167,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        public static synchronized void pauseAllPlayers() {
+        public synchronized void pauseAllPlayers() {
             Log.d(TAG, "Pausing all " + sActiveHolders.size() + " active players.");
             List<CommentHolder> holdersToPause = new ArrayList<>(sActiveHolders);
             for (CommentHolder holder : holdersToPause) {
@@ -180,11 +182,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
         
-        public static synchronized CommentHolder getCurrentlyPlayingHolder() {
+        public synchronized CommentHolder getCurrentlyPlayingHolder() {
             return sCurrentlyPlayingHolder;
         }
 
-        public static synchronized void clearCurrentlyPlayingVideoIfMatches(ExoPlayer player) {
+        public synchronized void clearCurrentlyPlayingVideoIfMatches(ExoPlayer player) {
             if (sCurrentlyPlayingVideo == player) {
                 sCurrentlyPlayingVideo = null;
                 sCurrentlyPlayingHolder = null;
