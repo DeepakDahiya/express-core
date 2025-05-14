@@ -371,19 +371,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 commentImage.setVisibility(View.VISIBLE);
                 ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, new ImageLoader.Callback() {
                     @Override
-                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
-                        // This is Glide's failure callback
-                        Log.e("ImageLoader", "Glide load failed for: " + twitterImageUrl, e);
-                        // Optionally set a fixed height or default placeholder if image load fails
-                        // commentImage.post(() -> { setFixedOrMinHeightForMediaViews(); });
-                        return false; // Return false to allow Glide to handle setting an error placeholder if configured
+                    public boolean onLoadFailed() {
+                        return false;
                     }
 
                     @Override
-                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
-                        // This is Glide's success callback. 'resource' is the loaded Bitmap.
-                        // The bitmap is already set on the target (commentImage) by Glide at this point.
-
+                    public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
                         if (resource != null && commentVideo != null && commentImage != null) {
                             commentImage.post(() -> {
                                 if (commentVideo != null && commentImage.getHeight() > 0 && hasVideo) { // Check hasVideo here too
@@ -395,7 +388,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                                 }
                             });
                         }
-                        return false; // Return false so Glide can continue processing (e.g., transition animations)
+                        return false;
                     }
                 });
             }
