@@ -536,9 +536,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     String mReplyButtonText = comment.getCommentCount() + " replies";
                     mReplyButton.setText(mReplyButtonText);
                     mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
-                } else {
-                    mReplyButton.setText(context.getString(R.string.browser_express_comment_reply)); // Default text e.g. "Reply"
-                    mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.default_text_color_light)); // Or your default reply button color
                 }
             }
 
