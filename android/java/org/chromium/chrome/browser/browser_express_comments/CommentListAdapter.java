@@ -113,128 +113,106 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment);
     }
 
-    public class VideoPlaybackManager {
-        private ExoPlayer sCurrentlyPlayingVideo;
-        private CommentHolder sCurrentlyPlayingHolder;
-        private final List<CommentHolder> sActiveHolders = new ArrayList<>();
-        private final String TAG = "VideoPlaybackManager";
+    public class VideoPlaybackManager { // This is your INSTANCE-BASED manager
+        // Instance fields for the manager
+        private ExoPlayer mCurrentlyPlayingVideo;
+        private CommentHolder mCurrentlyPlayingHolder;
+        private final List<CommentHolder> mActiveHolders = new ArrayList<>(); // Ensure this is defined
+        private static final String TAG = "VideoPlaybackManagerInst"; // Or your preferred tag
 
+        // Constructor (can be empty or initialize things if needed)
         public VideoPlaybackManager() {}
 
         public synchronized void addActiveHolder(CommentHolder holder) {
-            if (!sActiveHolders.contains(holder)) {
-                sActiveHolders.add(holder);
-                Log.d(TAG, "Added active holder. Count: " + sActiveHolders.size());
+            if (!mActiveHolders.contains(holder)) {
+                mActiveHolders.add(holder);
+                Log.d(TAG, "Added active holder. Count: " + mActiveHolders.size());
             }
         }
 
         public synchronized void removeActiveHolder(CommentHolder holder) {
-            boolean removed = sActiveHolders.remove(holder);
+            boolean removed = mActiveHolders.remove(holder);
             if (removed) {
-                Log.d(TAG, "Removed active holder. Count: " + sActiveHolders.size());
+                Log.d(TAG, "Removed active holder. Count: " + mActiveHolders.size());
             }
-            if (sCurrentlyPlayingHolder == holder) {
-                sCurrentlyPlayingVideo = null;
-                sCurrentlyPlayingHolder = null;
+            if (mCurrentlyPlayingHolder == holder) {
+                mCurrentlyPlayingVideo = null;
+                mCurrentlyPlayingHolder = null;
                 Log.d(TAG, "Removed holder was the currently playing one.");
             }
         }
 
         public synchronized void onVideoPlayRequest(ExoPlayer newPlayer, CommentHolder newHolder) {
-            if (sCurrentlyPlayingVideo != null && sCurrentlyPlayingVideo != newPlayer) {
+            if (mCurrentlyPlayingVideo != null && mCurrentlyPlayingVideo != newPlayer && mCurrentlyPlayingHolder != newHolder) {
                 Log.d(TAG, "Pausing previous video for new request.");
-                sCurrentlyPlayingVideo.setPlayWhenReady(false);
+                mCurrentlyPlayingVideo.setPlayWhenReady(false);
+                if (mCurrentlyPlayingHolder != null && mCurrentlyPlayingHolder.playPauseIcon != null) {
+                    mCurrentlyPlayingHolder.updatePlayPauseIcon(false);
+                }
             }
-            sCurrentlyPlayingVideo = newPlayer;
-            sCurrentlyPlayingHolder = newHolder;
+            mCurrentlyPlayingVideo = newPlayer;
+            mCurrentlyPlayingHolder = newHolder;
             if (newPlayer != null) {
                 Log.d(TAG, "Playing new video.");
                 newPlayer.setPlayWhenReady(true);
             }
         }
 
-        public synchronized void onVideoStop(ExoPlayer playerToStop) { // User manually stops/pauses
+        public synchronized void onVideoStop(ExoPlayer playerToStop) {
             if (playerToStop != null) {
                 playerToStop.setPlayWhenReady(false);
                 Log.d(TAG, "Video stopped/paused by user action.");
             }
-            if (sCurrentlyPlayingVideo == playerToStop) {
-                sCurrentlyPlayingVideo = null;
-                sCurrentlyPlayingHolder = null;
-            }
+            // No need to null out mCurrentlyPlayingVideo/Holder here if it's just a pause
         }
 
         public synchronized void pauseCurrentlyPlayingVideo() {
-            if (sCurrentlyPlayingVideo != null) {
-                Log.d(TAG, "Pausing currently playing video.");
-                sCurrentlyPlayingVideo.setPlayWhenReady(false);
-                sCurrentlyPlayingVideo = null; // Clear since it's no longer "the" playing one
-                sCurrentlyPlayingHolder = null;
+            if (mCurrentlyPlayingVideo != null) {
+                Log.d(TAG, "Pausing currently playing video (manager request).");
+                mCurrentlyPlayingVideo.setPlayWhenReady(false);
             }
         }
 
+        // THIS IS THE SINGLE DEFINITION OF pauseAllPlayers
         public synchronized void pauseAllPlayers() {
-            Log.d(TAG, "Pausing all " + sActiveHolders.size() + " active players.");
-            List<CommentHolder> holdersToPause = new ArrayList<>(sActiveHolders);
+            Log.d(TAG, "Pausing all " + mActiveHolders.size() + " active players (manager instance).");
+            List<CommentHolder> holdersToPause = new ArrayList<>(mActiveHolders); // Use instance field
             for (CommentHolder holder : holdersToPause) {
                 if (holder.player != null && holder.player.isPlaying()) {
                     holder.player.setPlayWhenReady(false);
                 }
-            }
-            if (sCurrentlyPlayingVideo != null) {
-                 sCurrentlyPlayingVideo.setPlayWhenReady(false);
-                 sCurrentlyPlayingVideo = null;
-                 sCurrentlyPlayingHolder = null;
             }
         }
         
         public synchronized CommentHolder getCurrentlyPlayingHolder() {
-            return sCurrentlyPlayingHolder;
+            return mCurrentlyPlayingHolder;
         }
 
         public synchronized void clearCurrentlyPlayingVideoIfMatches(ExoPlayer player) {
-            if (sCurrentlyPlayingVideo == player) {
-                sCurrentlyPlayingVideo = null;
-                sCurrentlyPlayingHolder = null;
+            if (mCurrentlyPlayingVideo == player) {
+                mCurrentlyPlayingVideo = null;
+                mCurrentlyPlayingHolder = null;
                 Log.d(TAG, "Cleared currently playing video reference as it matched released player.");
             }
         }
 
+        // THIS IS THE SINGLE DEFINITION OF releaseAllResources
         public synchronized void releaseAllResources() {
             Log.d(TAG, "Releasing all resources in VideoPlaybackManager instance.");
-            pauseAllPlayers(); // Ensure all are paused first
+            pauseAllPlayers(); // Call the existing pauseAllPlayers method
 
-            // Iterate over a copy to avoid ConcurrentModificationException if removeActiveHolder modifies mActiveHolders
-            List<CommentHolder> holdersToRelease = new ArrayList<>(mActiveHolders);
+            List<CommentHolder> holdersToRelease = new ArrayList<>(mActiveHolders); // Use instance field
             for (CommentHolder holder : holdersToRelease) {
-                // The holder.releasePlayer() method is responsible for releasing its own ExoPlayer instance
-                // and should also call mVideoManagerInstance.removeActiveHolder(this)
-                // and mVideoManagerInstance.clearCurrentlyPlayingVideoIfMatches(player).
-                // So, by calling holder.releasePlayer(), these manager methods get invoked indirectly.
-                if (holder != null) { // Add null check for safety
-                    holder.releasePlayer();
+                if (holder != null) {
+                    holder.releasePlayer(); // This will call removeActiveHolder and clearCurrentlyPlayingVideoIfMatches
                 }
             }
-            mActiveHolders.clear(); // Should be empty now if holders deregistered correctly
+            mActiveHolders.clear(); // Use instance field
 
-            // These should already be null if the holders' releasePlayer called clearCurrentlyPlayingVideoIfMatches
-            mCurrentlyPlayingVideo = null;
-            mCurrentlyPlayingHolder = null;
-            Log.d(TAG, "All resources released. Active holders: " + mActiveHolders.size());
-        }
-
-        public synchronized void pauseAllPlayers() {
-            Log.d(TAG, "Pausing all " + mActiveHolders.size() + " active players (manager instance).");
-            // Iterate over a copy in case of concurrent modification, though removeActiveHolder handles sCurrentlyPlayingHolder
-            List<CommentHolder> holdersToPause = new ArrayList<>(mActiveHolders);
-            for (CommentHolder holder : holdersToPause) {
-                if (holder.player != null && holder.player.isPlaying()) {
-                    holder.player.setPlayWhenReady(false);
-                    // UI update via listener in holder
-                }
-            }
-            // This also effectively pauses mCurrentlyPlayingVideo if it's in activeHolders
-            // and its holder.player was the same instance.
+            // These should be null if holders called clearCurrentlyPlayingVideoIfMatches
+            mCurrentlyPlayingVideo = null; // Use instance field
+            mCurrentlyPlayingHolder = null; // Use instance field
+            Log.d(TAG, "All resources released. Active holders: " + mActiveHolders.size()); // Use instance field
         }
     }
 
