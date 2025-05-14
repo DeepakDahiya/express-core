@@ -72,6 +72,8 @@ public class CommentListFragment extends Fragment {
     private String mPostId;
     private Boolean mOpenKeyboard = false;
 
+    private LinearLayoutManager mLayoutManager;
+
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
@@ -92,6 +94,17 @@ public class CommentListFragment extends Fragment {
 
     private RecyclerView.OnScrollListener videoScrollListener;
 
+    private static final String KEY_SCROLL_POSITION = "comment_list_scroll_position";
+    private int mSavedScrollPosition = RecyclerView.NO_POSITION; // Or 0 as default
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            mSavedScrollPosition = savedInstanceState.getInt(KEY_SCROLL_POSITION, RecyclerView.NO_POSITION);
+        }
+    }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -100,6 +113,18 @@ public class CommentListFragment extends Fragment {
             inputCallback = (BottomSheetInputCallback) parentFragment;
         } else {
             Log.e("Reply List Fragment", "Parent fragment must implement BottomSheetInputCallback");
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mLayoutManager != null && mCommentRecycler != null) {
+            int currentPosition = mLayoutManager.findFirstVisibleItemPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                outState.putInt(KEY_SCROLL_POSITION, currentPosition);
+                Log.d("ScrollSave", "Saving scroll position: " + currentPosition);
+            }
         }
     }
 
@@ -138,6 +163,8 @@ public class CommentListFragment extends Fragment {
         mComments = new ArrayList<Comment>();
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
+        mLayoutManager = new LinearLayoutManager(requireContext());
+        mCommentRecycler.setLayoutManager(mLayoutManager);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
@@ -322,6 +349,16 @@ public class CommentListFragment extends Fragment {
         }
         mCommentAdapter = null;
         mCommentRecycler = null;
+
+        if (mLayoutManager != null) {
+            int currentPosition = mLayoutManager.findFirstVisibleItemPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                mSavedScrollPosition = currentPosition; // Save to member variable
+                Log.d("ScrollSave", "onDestroyView - Saving scroll position to member: " + mSavedScrollPosition);
+            }
+        }
+
+        mLayoutManager = null;
     }
 
     public void pauseAllVideosInList() {
@@ -378,6 +415,11 @@ public class CommentListFragment extends Fragment {
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
+
+                    if (mSavedScrollPosition != RecyclerView.NO_POSITION) {
+                        mLayoutManager.scrollToPositionWithOffset(mSavedScrollPosition, 0);
+                        mSavedScrollPosition = RecyclerView.NO_POSITION;
+                    }
                 }
 
                 @Override
