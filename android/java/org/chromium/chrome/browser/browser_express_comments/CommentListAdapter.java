@@ -368,13 +368,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 releasePlayer(); // Release existing player before creating a new one or if no video
             }
 
-            if (twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty() && activity != null) {
+            if (twitterImageUrl != null && !"null".equals(twitterImageUrl)) {
                 commentMediaCard.setVisibility(View.VISIBLE);
                 commentImage.setVisibility(View.VISIBLE);
                 ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
-                // Ensure video player related views are hidden if only image
-                commentVideo.setVisibility(View.GONE);
-                playPauseIcon.setVisibility(View.GONE);
             }
 
             if (videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) {
@@ -404,6 +401,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     commentVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
 
+                    commentImage.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            int h = commentImage.getHeight();
+                            commentVideo.getLayoutParams().height = h;
+                            commentVideo.requestLayout();
+                        }
+                    });
 
                     player.addListener(new Player.Listener() {
                         @Override
