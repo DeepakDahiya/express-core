@@ -199,6 +199,43 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 Log.d(TAG, "Cleared currently playing video reference as it matched released player.");
             }
         }
+
+        public synchronized void releaseAllResources() {
+            Log.d(TAG, "Releasing all resources in VideoPlaybackManager instance.");
+            pauseAllPlayers(); // Ensure all are paused first
+
+            // Iterate over a copy to avoid ConcurrentModificationException if removeActiveHolder modifies mActiveHolders
+            List<CommentHolder> holdersToRelease = new ArrayList<>(mActiveHolders);
+            for (CommentHolder holder : holdersToRelease) {
+                // The holder.releasePlayer() method is responsible for releasing its own ExoPlayer instance
+                // and should also call mVideoManagerInstance.removeActiveHolder(this)
+                // and mVideoManagerInstance.clearCurrentlyPlayingVideoIfMatches(player).
+                // So, by calling holder.releasePlayer(), these manager methods get invoked indirectly.
+                if (holder != null) { // Add null check for safety
+                    holder.releasePlayer();
+                }
+            }
+            mActiveHolders.clear(); // Should be empty now if holders deregistered correctly
+
+            // These should already be null if the holders' releasePlayer called clearCurrentlyPlayingVideoIfMatches
+            mCurrentlyPlayingVideo = null;
+            mCurrentlyPlayingHolder = null;
+            Log.d(TAG, "All resources released. Active holders: " + mActiveHolders.size());
+        }
+
+        public synchronized void pauseAllPlayers() {
+            Log.d(TAG, "Pausing all " + mActiveHolders.size() + " active players (manager instance).");
+            // Iterate over a copy in case of concurrent modification, though removeActiveHolder handles sCurrentlyPlayingHolder
+            List<CommentHolder> holdersToPause = new ArrayList<>(mActiveHolders);
+            for (CommentHolder holder : holdersToPause) {
+                if (holder.player != null && holder.player.isPlaying()) {
+                    holder.player.setPlayWhenReady(false);
+                    // UI update via listener in holder
+                }
+            }
+            // This also effectively pauses mCurrentlyPlayingVideo if it's in activeHolders
+            // and its holder.player was the same instance.
+        }
     }
 
     public static class CommentHolder extends RecyclerView.ViewHolder {
