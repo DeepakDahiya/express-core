@@ -353,9 +353,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             String twitterImageUrl = comment.getMediaImageUrl();
             String videoUrl = comment.getMediaVideoUrl();
 
-            Log.d("BROWSER_EXPRESS_COMMENT", "mediaImageUrl: " + twitterImageUrl); // Use Log.d for debug
-            Log.d("BROWSER_EXPRESS_COMMENT", "videoUrl: " + videoUrl);
-
             // Reset visibility before setting
             commentMediaCard.setVisibility(View.GONE);
             commentImage.setVisibility(View.GONE);
@@ -371,7 +368,30 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (twitterImageUrl != null && !"null".equals(twitterImageUrl)) {
                 commentMediaCard.setVisibility(View.VISIBLE);
                 commentImage.setVisibility(View.VISIBLE);
-                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
+                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, new ImageLoader.Callback() {
+                    @Override
+                    public void onImageLoaded(Bitmap bitmap) {
+                        if (bitmap != null && commentVideo != null && commentImage != null) { // Check for nulls
+                            // Set video height based on loaded image placeholder, only if video is present
+                            // This ensures the video player view has a determined size before it loads.
+                            // Ensure this runs on the UI thread if ImageLoader callback is not.
+                            commentImage.post(() -> { // Ensure UI operation
+                                if (commentVideo != null && commentImage.getHeight() > 0) {
+                                    ViewGroup.LayoutParams videoParams = commentVideo.getLayoutParams();
+                                    videoParams.height = commentImage.getHeight(); // Use placeholder height
+                                    commentVideo.setLayoutParams(videoParams);
+                                    commentVideo.requestLayout();
+                                    Log.d("VideoHeight", "Set video height to image placeholder: " + commentImage.getHeight());
+                                }
+                            });
+                        }
+                    }
+                    @Override
+                    public void onImageFailed() {
+                        // Optionally set a fixed height or default placeholder if image load fails
+                        // commentImage.post(() -> { setFixedOrMinHeightForMediaViews(); });
+                    }
+                });
             }
 
             if (videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) {
@@ -385,7 +405,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     commentVideo.setPlayer(player);
                     commentVideo.setUseController(false);
 
-                    MediaItem mediaItem = MediaItem.fromUri(videoUrl);
+                    MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(videoUrl);
+                    mediaItemBuilder.setMediaMetadata(new MediaMetadata.Builder()
+                        .setArtworkUri(Uri.parse(twitterImageUrl))
+                        .build());
+                    MediaItem mediaItem = mediaItemBuilder.build();
                     player.setMediaItem(mediaItem);
                     player.setRepeatMode(Player.REPEAT_MODE_ALL); // Or REPEAT_MODE_OFF if you don't want looping by default
                     player.setPlayWhenReady(false); // Important: start paused
@@ -849,7 +873,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (commentImage != null && context != null) {
                 Glide.with(context).clear(commentImage);
                 commentImage.setImageDrawable(null);
-                commentImage.setVisibility(View.GONE); // Ensure it's hidden
+                commentImage.setVisibility(View.VISIBLE); // Ensure it's hidden
             }
             if (mAvatarImage != null && context != null) {
                 Glide.with(context).clear(mAvatarImage);

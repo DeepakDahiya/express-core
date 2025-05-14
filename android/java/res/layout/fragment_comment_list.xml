@@ -3,6 +3,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:clipChildren="true"
+    android:clipToPadding="true"
     android:orientation="vertical">
 
     <androidx.appcompat.widget.Toolbar
@@ -38,6 +40,8 @@
         android:id="@+id/recycler_comments"
         android:layout_width="match_parent"
         android:layout_weight="1"
+        android:clipChildren="true"
+        android:clipToPadding="true"
         android:layout_height="0dp"/>
 
 </LinearLayout>

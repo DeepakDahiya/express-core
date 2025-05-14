@@ -55,6 +55,8 @@
                 android:id="@+id/parent_comment_container"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="true"
+                android:clipToPadding="true"
                 android:visibility="gone"
                 android:orientation="horizontal">
 
@@ -68,6 +70,8 @@
                     android:id="@+id/parent_comment_recycler"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="true"
+                    android:clipToPadding="true"
                     android:overScrollMode="never" />
             
             </LinearLayout>
@@ -76,6 +80,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="top"
+                android:clipChildren="true"
+                android:clipToPadding="true"
                 android:orientation="horizontal">
 
                 <ImageView
@@ -93,6 +99,8 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/top_comment_recycler"
                     android:layout_width="match_parent"
+                    android:clipChildren="true"
+                    android:clipToPadding="true"
                     android:layout_height="wrap_content"
                     android:overScrollMode="never" />
 
@@ -102,6 +110,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="top"
+                android:clipChildren="true"
+                android:clipToPadding="true"
                 android:layout_marginStart="16sp"
                 android:orientation="horizontal">
 
@@ -120,6 +130,8 @@
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/recycler_replies"
                     android:layout_width="0dp"
+                    android:clipChildren="true"
+                    android:clipToPadding="true"
                     android:layout_weight="1"
                     android:layout_height="wrap_content"
                     android:overScrollMode="never" />
