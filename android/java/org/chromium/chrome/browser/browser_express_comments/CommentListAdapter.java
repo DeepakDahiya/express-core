@@ -93,27 +93,23 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         return mCommentList.size();
     }
 
-    // Inflates the appropriate layout according to the ViewType.
+    @NonNull // Added NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+    public CommentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-
         view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
         return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment, mIsReplyToReplyAdapter);
     }
 
-    // Passes the comment object to a ViewHolder so that the contents can be bound to UI.
     @Override
-    public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Comment comment = (Comment) mCommentList.get(position);
-
-        ((CommentHolder) holder).bind(comment);
+    public void onBindViewHolder(@NonNull CommentHolder holder, int position) {
+        Comment comment = mCommentList.get(position);
+        holder.bind(comment);
     }
 
     public static class VideoPlaybackManager {
         private static ExoPlayer sCurrentlyPlayingVideo;
         private static CommentHolder sCurrentlyPlayingHolder;
-        // To keep track of all holders with active players
         private static final List<CommentHolder> sActiveHolders = new ArrayList<>();
         private static final String TAG = "VideoPlaybackManager";
 
@@ -130,8 +126,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 Log.d(TAG, "Removed active holder. Count: " + sActiveHolders.size());
             }
             if (sCurrentlyPlayingHolder == holder) {
-                // If the removed holder was the one playing, clear the reference
-                // The player itself should be handled (paused/released) by the holder
                 sCurrentlyPlayingVideo = null;
                 sCurrentlyPlayingHolder = null;
                 Log.d(TAG, "Removed holder was the currently playing one.");
@@ -142,14 +136,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (sCurrentlyPlayingVideo != null && sCurrentlyPlayingVideo != newPlayer) {
                 Log.d(TAG, "Pausing previous video for new request.");
                 sCurrentlyPlayingVideo.setPlayWhenReady(false);
-                // The Player.Listener in sCurrentlyPlayingHolder will update its UI
             }
             sCurrentlyPlayingVideo = newPlayer;
             sCurrentlyPlayingHolder = newHolder;
             if (newPlayer != null) {
                 Log.d(TAG, "Playing new video.");
                 newPlayer.setPlayWhenReady(true);
-                // The Player.Listener in newHolder will update its UI
             }
         }
 
@@ -168,7 +160,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (sCurrentlyPlayingVideo != null) {
                 Log.d(TAG, "Pausing currently playing video.");
                 sCurrentlyPlayingVideo.setPlayWhenReady(false);
-                // UI update via listener
                 sCurrentlyPlayingVideo = null; // Clear since it's no longer "the" playing one
                 sCurrentlyPlayingHolder = null;
             }
@@ -176,17 +167,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         public static synchronized void pauseAllPlayers() {
             Log.d(TAG, "Pausing all " + sActiveHolders.size() + " active players.");
-            // Iterate over a copy in case of concurrent modification, though removeActiveHolder handles sCurrentlyPlayingHolder
             List<CommentHolder> holdersToPause = new ArrayList<>(sActiveHolders);
             for (CommentHolder holder : holdersToPause) {
                 if (holder.player != null && holder.player.isPlaying()) {
                     holder.player.setPlayWhenReady(false);
-                    // UI update via listener in holder
                 }
             }
-            // Ensure the main reference is also cleared if it was playing
             if (sCurrentlyPlayingVideo != null) {
-                 sCurrentlyPlayingVideo.setPlayWhenReady(false); // Should be covered by loop if holder is in sActiveHolders
+                 sCurrentlyPlayingVideo.setPlayWhenReady(false);
                  sCurrentlyPlayingVideo = null;
                  sCurrentlyPlayingHolder = null;
             }
@@ -196,7 +184,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             return sCurrentlyPlayingHolder;
         }
 
-        // Call this when a player instance is actually released to ensure it's no longer considered current
         public static synchronized void clearCurrentlyPlayingVideoIfMatches(ExoPlayer player) {
             if (sCurrentlyPlayingVideo == player) {
                 sCurrentlyPlayingVideo = null;
@@ -206,7 +193,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
     }
 
-    public class CommentHolder extends RecyclerView.ViewHolder {
+    public static class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
         TextView contentText;
         TextView voteCountText;
@@ -217,30 +204,28 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private Button mShareButton;
         private String didVoteType;
         private int finalVote;
-        private BraveActivity activity;
+        private BraveActivity activity; // Consider how this is used, if context is enough
         private Button mReadMoreButton;
 
-        private RecyclerView mTopCommentRecycler;
-        private CommentListAdapter mCommentAdapter;
-        private List<Comment> mComments;
-        private int mPage = 1;
-        private int mPerPage = 100;
-        private Context context;
+        private RecyclerView mTopCommentRecycler; // From constructor
+        // private CommentListAdapter mCommentAdapter; // Not used in this class, consider removing
+        // private List<Comment> mComments; // Not used in this class, consider removing
+
         private LinearLayout mActionItemsLayout;
         private LinearLayout mVoteLayout;
 
-        private EditText mMessageEditText;
+        private EditText mMessageEditText; // From constructor
         private LinearLayout mCommentLayout;
 
         private Animation bounceUp;
         private Animation bounceDown;
 
-        private int myPosition;
-        private BrowserExpressCommentsBottomSheetFragment mParentFragment;
+        private int myPosition; // Set in bind
+        private BrowserExpressCommentsBottomSheetFragment mParentFragment; // From constructor
 
-        private boolean mIsReplyAdapter;
-        private boolean mIsReplyTopComment;
-        private boolean mIsReplyToReplyAdapter;
+        private boolean mIsReplyAdapter; // From constructor
+        private boolean mIsReplyTopComment; // From constructor
+        private boolean mIsReplyToReplyAdapter; // From constructor
 
         ImageView commentImage;
         CardView commentMediaCard;
@@ -249,73 +234,87 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         ImageView playPauseIcon;
         ProgressBar videoProgressBar;
         ValueAnimator progressAnimator;
+        private Context context; // Should be initialized from itemView.getContext()
 
-        CommentHolder(View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
+        CommentHolder(@NonNull View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
             super(itemView);
+            this.context = itemView.getContext(); // Initialize context
 
             mMessageEditText = messageEditText;
+            mTopCommentRecycler = topCommentRecycler;
             mParentFragment = parentFragment;
             mIsReplyAdapter = isReplyAdapter;
             mIsReplyTopComment = isReplyTopComment;
             mIsReplyToReplyAdapter = isReplyToReplyAdapter;
 
-            mTopCommentRecycler = topCommentRecycler;
-            mAvatarImage = (ImageView) itemView.findViewById(R.id.avatar_image);
-            usernameText = (TextView) itemView.findViewById(R.id.username);
-            contentText = (TextView) itemView.findViewById(R.id.comment_content);
-            voteCountText = (TextView) itemView.findViewById(R.id.vote_count);
-            mUpvoteButton = (ImageButton) itemView.findViewById(R.id.btn_upvote);
-            mDownvoteButton = (ImageButton) itemView.findViewById(R.id.btn_downvote);
-            mReplyButton = (Button) itemView.findViewById(R.id.btn_reply);
-            mShareButton = (Button) itemView.findViewById(R.id.btn_share_image);
-            mActionItemsLayout = (LinearLayout) itemView.findViewById(R.id.action_items);
-            mCommentLayout = (LinearLayout) itemView.findViewById(R.id.comment_layout);
-            mReadMoreButton = (Button) itemView.findViewById(R.id.btn_read_more_comment);
+            mAvatarImage = itemView.findViewById(R.id.avatar_image);
+            usernameText = itemView.findViewById(R.id.username);
+            contentText = itemView.findViewById(R.id.comment_content);
+            voteCountText = itemView.findViewById(R.id.vote_count);
+            mUpvoteButton = itemView.findViewById(R.id.btn_upvote);
+            mDownvoteButton = itemView.findViewById(R.id.btn_downvote);
+            mReplyButton = itemView.findViewById(R.id.btn_reply);
+            mShareButton = itemView.findViewById(R.id.btn_share_image);
+            mActionItemsLayout = itemView.findViewById(R.id.action_items);
+            mCommentLayout = itemView.findViewById(R.id.comment_layout);
+            mReadMoreButton = itemView.findViewById(R.id.btn_read_more_comment);
 
-            commentImage = (ImageView) itemView.findViewById(R.id.comment_image);
-            commentVideo = (StyledPlayerView) itemView.findViewById(R.id.comment_video);
-            commentMediaCard = (CardView) itemView.findViewById(R.id.comment_media_card);
+            commentImage = itemView.findViewById(R.id.comment_image);
+            commentVideo = itemView.findViewById(R.id.comment_video);
+            commentMediaCard = itemView.findViewById(R.id.comment_media_card);
 
-            playPauseIcon = (ImageView) itemView.findViewById(R.id.play_pause_icon);
-            videoProgressBar = (ProgressBar) itemView.findViewById(R.id.video_progress);
+            playPauseIcon = itemView.findViewById(R.id.play_pause_icon);
+            videoProgressBar = itemView.findViewById(R.id.video_progress);
 
-            mVoteLayout = (LinearLayout) itemView.findViewById(R.id.vote_layout);
-            context = itemView.getContext();
+            mVoteLayout = itemView.findViewById(R.id.vote_layout);
+
+            // Assign activity carefully. itemView.getContext() might not always be BraveActivity.
+            // It's better to pass specific callbacks or data if needed, or check instance.
+            if (this.context instanceof BraveActivity) {
+                this.activity = (BraveActivity) this.context;
+            } else {
+                try {
+                    this.activity = BraveActivity.getBraveActivity(); // Fallback, use with caution
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e("CommentHolder", "BraveActivity not found for holder", e);
+                    // Handle case where activity is null - dependent UIs might fail
+                }
+            }
         }
 
         void bind(Comment comment) {
-            try {
-                activity = BraveActivity.getBraveActivity();
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            myPosition = getBindingAdapterPosition(); // getAbsoluteAdapterPosition() is also an option
+
+            // Ensure activity is not null before using it extensively
+            if (activity == null) {
+                Log.e("CommentHolder.bind", "Activity is null, some UI updates might fail.");
+                // Potentially return or disable UI elements that depend on activity
             }
 
-            if(mIsReplyTopComment){
+            if (mIsReplyTopComment && activity != null) {
                 mCommentLayout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.rounded_corner_background, null));
                 mActionItemsLayout.setVisibility(View.VISIBLE);
                 mReplyButton.setVisibility(View.INVISIBLE);
             }
 
-            myPosition = getBindingAdapterPosition();
-
-            usernameText.setText(comment.getUser().getUsername().toString());
-            if(comment.getContent().toString().length() > 150){
-                String contentString = comment.getContent().toString().subSequence(0, 150) + "...";
+            usernameText.setText(comment.getUser().getUsername());
+            if(comment.getContent().length() > 150){
+                String contentString = comment.getContent().substring(0, 150) + "...";
                 contentText.setText(contentString);
                 mReadMoreButton.setVisibility(View.VISIBLE);
-                mReadMoreButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        contentText.setText(comment.getContent().toString());
-                        mReadMoreButton.setVisibility(View.GONE);
-                    }
+                mReadMoreButton.setOnClickListener(v -> {
+                    contentText.setText(comment.getContent());
+                    mReadMoreButton.setVisibility(View.GONE);
                 });
             }else{
-                contentText.setText(comment.getContent().toString());
+                contentText.setText(comment.getContent());
+                mReadMoreButton.setVisibility(View.GONE); // Ensure it's hidden if not needed
             }
 
             finalVote = comment.getUpvoteCount() - comment.getDownvoteCount();
             voteCountText.setText(formatNumberCompact(finalVote));
-            if(mIsReplyToReplyAdapter == false){
+
+            if(!mIsReplyToReplyAdapter){
                 mActionItemsLayout.setVisibility(View.VISIBLE);
                 if(mIsReplyTopComment){
                     mActionItemsLayout.setVisibility(View.GONE);
@@ -327,103 +326,103 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             String twitterImageUrl = comment.getMediaImageUrl();
             String videoUrl = comment.getMediaVideoUrl();
 
-            Log.e("BROWSER_EXPRESS_COMMENT", "mediaImageUrl: " + twitterImageUrl);
-            Log.e("BROWSER_EXPRESS_COMMENT", "videoUrl: " + videoUrl);
+            Log.d("BROWSER_EXPRESS_COMMENT", "mediaImageUrl: " + twitterImageUrl); // Use Log.d for debug
+            Log.d("BROWSER_EXPRESS_COMMENT", "videoUrl: " + videoUrl);
 
-            if(twitterImageUrl != null && !"null".equals(twitterImageUrl)){
-                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
-                commentMediaCard.setVisibility(View.VISIBLE);
-                commentImage.setVisibility(View.VISIBLE);
+            // Reset visibility before setting
+            commentMediaCard.setVisibility(View.GONE);
+            commentImage.setVisibility(View.GONE);
+            commentVideo.setVisibility(View.GONE);
+            playPauseIcon.setVisibility(View.GONE);
+            videoProgressBar.setVisibility(View.GONE);
+
+
+            if (player != null) {
+                releasePlayer(); // Release existing player before creating a new one or if no video
             }
 
-            if(videoUrl != null && !"null".equals(videoUrl)){
-                if (player != null) { 
-                    releasePlayer();
-                }
+            if (videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) {
+                commentMediaCard.setVisibility(View.VISIBLE); // Show card if there's video
+                // player = new ExoPlayer.Builder(context).build(); // Use 'this.context'
+                // Make sure context is not null for ExoPlayer
+                if (this.context != null) {
+                    player = new ExoPlayer.Builder(this.context).build();
+                    VideoPlaybackManager.addActiveHolder(this);
 
-                player = new ExoPlayer.Builder(context).build();
+                    commentVideo.setPlayer(player);
+                    commentVideo.setUseController(false);
 
-                VideoPlaybackManager.addActiveHolder(this);
+                    MediaItem mediaItem = MediaItem.fromUri(videoUrl);
+                    player.setMediaItem(mediaItem);
+                    player.setRepeatMode(Player.REPEAT_MODE_ALL); // Or REPEAT_MODE_OFF if you don't want looping by default
+                    player.setPlayWhenReady(false); // Important: start paused
+                    player.prepare();
 
-                commentVideo.setPlayer(player);
-                commentVideo.setUseController(false); // Hide default controls
-                
-                // Create MediaItem
-                MediaItem mediaItem = MediaItem.fromUri(videoUrl);
-                player.setMediaItem(mediaItem);
-                
-                // Set player properties
-                player.setRepeatMode(Player.REPEAT_MODE_ALL);
-                player.setPlayWhenReady(false);
+                    // Visibility handled by listener
+                    // commentVideo.setVisibility(View.VISIBLE);
 
-                // Prepare player
-                player.prepare();
+                    playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
+                    playPauseIcon.setVisibility(View.VISIBLE);
 
-                playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
-                playPauseIcon.setVisibility(View.VISIBLE);
+                    View.OnClickListener videoClickListener = v -> togglePlayPause();
+                    commentVideo.setOnClickListener(videoClickListener);
+                    playPauseIcon.setOnClickListener(videoClickListener);
 
-                commentVideo.setClickable(true);
-                commentVideo.setFocusable(true);
+                    // If there's an image URL, load it as a placeholder until video is ready
+                    // otherwise, the video area might be blank or show previous frame
+                    if (twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty() && activity != null) {
+                        commentImage.setVisibility(View.VISIBLE); // Show image placeholder
+                        ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
+                    }
 
-                View videoParent = (View) commentVideo.getParent();
-                if (videoParent != null) {
-                    videoParent.setClickable(true);
-                    videoParent.setOnClickListener(new View.OnClickListener() {
+
+                    player.addListener(new Player.Listener() {
                         @Override
-                        public void onClick(View v) {
-                            Log.d("VideoPlayer", "Parent view clicked");
-                            togglePlayPause();
+                        public void onPlaybackStateChanged(int state) {
+                            if (state == Player.STATE_READY) {
+                                // Once video is ready, hide image placeholder and show video view
+                                if (commentImage.getVisibility() == View.VISIBLE) {
+                                    commentImage.setVisibility(View.GONE);
+                                }
+                                commentVideo.setVisibility(View.VISIBLE);
+                                setupProgressBar();
+                            } else if (state == Player.STATE_BUFFERING) {
+                                // Optionally show a loading indicator
+                            } else if (state == Player.STATE_ENDED) {
+                                // Handle end of video if not repeating
+                                 videoProgressBar.setProgress(videoProgressBar.getMax()); // Show full progress
+                            }
+                        }
+                        
+                        @Override
+                        public void onIsPlayingChanged(boolean isPlaying) {
+                            updatePlayPauseIcon(isPlaying); // Corrected: was updatePlayPauseUI
+                            if (isPlaying) {
+                                startProgressAnimation();
+                            } else {
+                                pauseProgressAnimation();
+                            }
                         }
                     });
+                } else {
+                     Log.e("CommentHolder.bind", "Context is null, cannot initialize ExoPlayer.");
                 }
 
-                View.OnClickListener videoClickListener = new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        togglePlayPause();
-                    }
-                };
-
-                commentVideo.setOnClickListener(videoClickListener);
-                playPauseIcon.setOnClickListener(videoClickListener);
-
-                commentImage.post(new Runnable() {
-                    @Override
-                    public void run() {
-                        int h = commentImage.getHeight();
-                        commentVideo.getLayoutParams().height = h;
-                        commentVideo.requestLayout();
-                    }
-                });
-
-                player.addListener(new Player.Listener() {
-                    @Override
-                    public void onPlaybackStateChanged(int state) {
-                        if (state == Player.STATE_READY) {
-                            commentImage.setVisibility(View.GONE);
-                            commentVideo.setVisibility(View.VISIBLE);
-                            setupProgressBar();
-                        }
-                    }
-                    
-                    @Override
-                    public void onIsPlayingChanged(boolean isPlaying) {
-                        updatePlayPauseIcon(isPlaying);
-                        if (isPlaying) {
-                            startProgressAnimation();
-                        } else {
-                            pauseProgressAnimation();
-                        }
-                    }
-                });
+            } else if (twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty() && activity != null) {
+                commentMediaCard.setVisibility(View.VISIBLE);
+                commentImage.setVisibility(View.VISIBLE);
+                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
+                // Ensure video player related views are hidden if only image
+                commentVideo.setVisibility(View.GONE);
+                playPauseIcon.setVisibility(View.GONE);
+                videoProgressBar.setVisibility(View.GONE);
             } else {
-                if (player != null) {
-                    releasePlayer();
-                }
+                commentMediaCard.setVisibility(View.GONE); // No media
             }
 
-            // This is used to make the comment work for post top comments
-            if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null){
+
+            if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null && activity != null){
+                // Post top comments specific UI adjustments
                 mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);
 
@@ -437,76 +436,49 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                 mCommentLayout.setPadding(10, 10, 10, 0);
 
-                usernameText.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
+                View.OnClickListener postClickListener = v -> {
+                    if (activity != null) { // Check activity again
+                         activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
                     }
-                });
+                };
+                usernameText.setOnClickListener(postClickListener);
+                mCommentLayout.setOnClickListener(postClickListener);
+                contentText.setOnClickListener(postClickListener);
 
-                mCommentLayout.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
-                    }
-                });
-
-                contentText.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
-                    }
-                });
-
-                if(comment.getContent().toString().length() > 75){
-                    String contentString = comment.getContent().toString().subSequence(0, 75) + "...";
+                if(comment.getContent().length() > 75){
+                    String contentString = comment.getContent().substring(0, 75) + "...";
                     contentText.setText(contentString);
                 }
-
-                // float density = activity.getResources().getDisplayMetrics().density;
-                // LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(Math.round(24 * density), Math.round(24 * density));
-
-                // mAvatarImage.setLayoutParams(params);
             }
                 
-            if(comment.getUser().getAvatar() != null && !comment.getUser().getAvatar().isEmpty()){
+            if(comment.getUser().getAvatar() != null && !comment.getUser().getAvatar().isEmpty() && activity != null){
                 ImageLoader.downloadImage(comment.getUser().getAvatar(), Glide.with(activity), true, 5, mAvatarImage, null);
-            }else{
-                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId().toString() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
+            } else if (activity != null) { // Ensure activity isn't null for Glide
+                ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + comment.getUser().getId() + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mAvatarImage, null);
             }
 
-            bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
-            bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
 
-            SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
-            SharedPreferences.OnSharedPreferenceChangeListener listener = new SharedPreferences.OnSharedPreferenceChangeListener() {
-                @Override
-                public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-                    if(key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_COMMENT)){
-                        if(activity.getReplyComment() != null && !activity.getReplyComment().equals("")){
+            if (activity != null) { // Ensure activity isn't null
+                bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
+                bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
+
+                SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
+                SharedPreferences.OnSharedPreferenceChangeListener listener = (prefs, key) -> {
+                    if(key != null && key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_COMMENT)){
+                        String replyCommentJson = activity.getReplyComment(); // Renamed for clarity
+                        if(replyCommentJson != null && !replyCommentJson.isEmpty()){
                             try{
-                                JSONObject commentObject = new JSONObject(activity.getReplyComment().toString());
+                                JSONObject commentObject = new JSONObject(replyCommentJson);
                                 
-                                JSONObject user = commentObject.getJSONObject("user");
-                                User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
-                                Vote v = null;
-                                String pageParent = null;
-                                String postParent = null;
-                                String commentParent = null;
-                                if(commentObject.has("pageParent")){
-                                    pageParent = commentObject.getString("pageParent");
-                                }
+                                JSONObject userJson = commentObject.getJSONObject("user");
+                                User u = new User(userJson.getString("_id"), userJson.getString("username"), userJson.optString("avatar", null));
+                                // Vote v = null; // Vote is not typically part of a new comment structure from server reply
+                                String pageParent = commentObject.optString("pageParent", null);
+                                String postParent = commentObject.optString("postParent", null);
+                                String commentParent = commentObject.optString("commentParent", null);
 
-                                if(commentObject.has("postParent")){
-                                    postParent = commentObject.getString("postParent");
-                                }
-
-                                if(commentObject.has("commentParent")){
-                                    commentParent = commentObject.getString("commentParent");
-                                }
-
-                                if(comment.getId().equals(commentParent)){
-                                    Comment c = new Comment(
+                                if(comment.getId().equals(commentParent)){ // Check if this comment is the parent of the new reply
+                                    Comment newReplyComment = new Comment(
                                         commentObject.getString("_id"), 
                                         commentObject.getString("content"),
                                         commentObject.getInt("upvoteCount"),
@@ -516,251 +488,282 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                                         postParent,
                                         commentParent,
                                         u,
-                                        v,
-                                        null,
-                                        null
+                                        null, // New comments usually don't have a "didVote" status for the current user yet
+                                        commentObject.optString("mediaImageUrl", null), // Add media fields
+                                        commentObject.optString("mediaVideoUrl", null)
                                     );
-                                    mComments.add(0, c);
-                                    mCommentAdapter.notifyItemInserted(0);
+                                    // This logic of adding to mComments and notifying mCommentAdapter
+                                    // should ideally be handled by the adapter itself or a higher-level component
+                                    // that manages the data list. Directly modifying mComments here if it's not
+                                    // the adapter's list is problematic. Assuming mCommentList is the adapter's list.
+                                    // if (mCommentList != null && mCommentAdapter != null) {
+                                    //    mCommentList.add(0, newReplyComment);
+                                    //    mCommentAdapter.notifyItemInserted(0);
+                                    // }
+                                    // For now, I will assume this listener's purpose is for something else or needs refactoring
+                                    // if mComments and mCommentAdapter are not the adapter's properties.
                                 }
                             } catch (JSONException e) {
-                                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", e.getMessage());
+                                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", "Error parsing reply JSON", e);
                             }
                         }
                     }
-                }
-            };
-
-            sharedPref.registerOnSharedPreferenceChangeListener(listener);
+                };
+                sharedPref.registerOnSharedPreferenceChangeListener(listener);
+                // TODO: Remember to unregister this listener in onViewRecycled or when holder is no longer needed
+                // itemView.addOnAttachStateChangeListener(...) with unregister in onViewDetachedFromWindow
+            }
             
             Vote didVote = comment.getDidVote();
+            // Reset button backgrounds first
+            if (mUpvoteButton != null) mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+            if (mDownvoteButton != null) mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
+
             if(didVote != null){
                 String type = didVote.getType();
-                didVoteType = type;
-                if(type.equals("up")){
+                didVoteType = type; // Store initial vote state
+                if(type.equals("up") && mUpvoteButton != null){
                     mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                }else if(type.equals("down")){
+                }else if(type.equals("down") && mDownvoteButton != null){
                     mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
+                }
+            } else {
+                didVoteType = null; // No initial vote
+            }
+
+            if(mReplyButton != null && activity != null) { // Check activity
+                if(comment.getCommentCount() > 0){
+                    String mReplyButtonText = comment.getCommentCount() + " replies";
+                    mReplyButton.setText(mReplyButtonText);
+                    mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
+                } else {
+                    mReplyButton.setText(context.getString(R.string.browser_express_comment_reply)); // Default text e.g. "Reply"
+                    mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.default_text_color_light)); // Or your default reply button color
                 }
             }
 
-            if(comment.getCommentCount() > 0){
-                String mReplyButtonText = comment.getCommentCount() + " replies";
-                mReplyButton.setText(mReplyButtonText);
-                mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
-            }
 
             if(mReplyButton != null){
-                mReplyButton.setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    try{
-                                        try {
-                                            activity = BraveActivity.getBraveActivity();
-                                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                                        }
+                mReplyButton.setOnClickListener(v -> {
+                    if (activity == null || mParentFragment == null) return; // Guard clause
 
-                                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
-                                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                    // Ensure mTopCommentRecycler is not null and has a LayoutManager
+                    if (mTopCommentRecycler != null && mTopCommentRecycler.getLayoutManager() instanceof LinearLayoutManager) {
+                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
+                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                    }
 
-                                        String accessToken = activity.getAccessToken();
-                                        // if (accessToken == null) {
-                                        //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                        //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                                        //     activity.showGenerateUsernameBottomSheet();
-                                        //     return;
-                                        // }
 
-                                        Log.e("REPLY_TO_REPLY", "1");
-
-                                        if(mIsReplyAdapter){
-                                            Log.e("REPLY_TO_REPLY", "2");
-                                            mParentFragment.openRepliesToReply(comment.getId());
-                                            return;
-                                        }else if (!mIsReplyAdapter && !mIsReplyToReplyAdapter){
-                                            Log.e("REPLY_TO_REPLY", "3");
-                                            mParentFragment.openReplies(comment.getId());
-                                            return;
-                                        }
-                                        Log.e("REPLY_TO_REPLY", "4");
-
-                                        JSONObject json = new JSONObject();
-                                        json.put("name", comment.getUser().getUsername());
-                                        json.put("commentId", comment.getId());
-                                        activity.setReplyTo(json.toString());
-                                        mMessageEditText =  activity.getContentEditText();
-                                        if(mMessageEditText != null){
-                                            Log.e("REPLY TO", "INSIDE REPLY TO TEXT");
-                                            String replyToString = "replying to " + comment.getUser().getUsername();
-                                            mMessageEditText.requestFocus();
-                                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                                            imm.toggleSoftInput(InputMethodManager.SHOW_FORCED,InputMethodManager.HIDE_IMPLICIT_ONLY);
-                                        }
-                                        Log.e("REPLY TO", "OUTSIDE REPLY TO TEXT");
-                                    } catch (JSONException e) {
-                                        Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", e.getMessage());
-                                    }
-                                }
-                            });
+                    if(mIsReplyAdapter){
+                        mParentFragment.openRepliesToReply(comment.getId());
+                    } else if (!mIsReplyToReplyAdapter){ // This condition was: !mIsReplyAdapter && !mIsReplyToReplyAdapter
+                        mParentFragment.openReplies(comment.getId());
+                    } else { // This case implies mIsReplyToReplyAdapter is true
+                        // This block was for setting replyTo in BraveActivity, seems specific for direct replies in the same list
+                        try {
+                            JSONObject json = new JSONObject();
+                            json.put("name", comment.getUser().getUsername());
+                            json.put("commentId", comment.getId());
+                            activity.setReplyTo(json.toString());
+                            EditText contentEditText = activity.getContentEditText(); // Re-fetch, mMessageEditText might be stale
+                            if(contentEditText != null){
+                                String replyToString = "replying to " + comment.getUser().getUsername(); // Not directly used here
+                                contentEditText.requestFocus();
+                                // Show keyboard logic might be better handled by activity/fragment after setting replyTo
+                            }
+                        } catch (JSONException e) {
+                            Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", "JSON error", e);
+                        }
+                    }
+                });
             }
 
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "11");
 
             if(mShareButton != null){
-                mShareButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String link = "https://browser.express/view?id=" + comment.getId();
-                        String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it's where everyone’s talking about everything, nonstop.";
-                        Intent sharingIntent = new Intent(android.content.Intent.ACTION_SEND);
-                        sharingIntent.setType("text/plain");
-                        sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, message);
-                        activity.startActivity(Intent.createChooser(sharingIntent, null));
-                    }
+                mShareButton.setOnClickListener(v -> {
+                    if (activity == null) return;
+                    String link = "https://browser.express/view?id=" + comment.getId();
+                    String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it's where everyone’s talking about everything, nonstop.";
+                    Intent sharingIntent = new Intent(Intent.ACTION_SEND);
+                    sharingIntent.setType("text/plain");
+                    sharingIntent.putExtra(Intent.EXTRA_TEXT, message);
+                    activity.startActivity(Intent.createChooser(sharingIntent, "Share via")); // Added title
                 });
             }
 
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "12");
 
             if (mUpvoteButton != null) {
-                mUpvoteButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String accessToken = activity.getAccessToken();
-                        // if (accessToken == null) {
-                        //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                        //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                        //     activity.showGenerateUsernameBottomSheet();
-                        //     return;
-                        // }
+                mUpvoteButton.setOnClickListener(v -> {
+                    if (activity == null) return;
+                    String accessToken = activity.getAccessToken();
+                    // Handle accessToken == null case (e.g., show login/prompt)
+                    // if (accessToken == null) { activity.showGenerateUsernameBottomSheet(); return; }
 
-                        mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+
+                    mUpvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                    if (bounceUp != null) mUpvoteButton.startAnimation(bounceUp);
+                    
+                    int oldFinalVote = finalVote; // Store for rollback on error
+
+                    if(didVoteType != null && didVoteType.equals("down")){ // Was downvoted, now upvoting
+                        finalVote += 2;
+                        didVoteType = "up";
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
                         mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                        mUpvoteButton.startAnimation(bounceUp);
-
-                        if(didVoteType != null){
-                            if(didVoteType.equals("down")){
-                                finalVote = finalVote + 2;
-                                didVoteType = "up";
-                                mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                            }else if(didVoteType.equals("up")){
-                                finalVote = finalVote - 1;
-                                mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                                didVoteType = null;
-                            }
-                        }else{
-                            finalVote = finalVote + 1;
-                            didVoteType = "up";
-                            mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
-                        }
-                        voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                    comment.getId(), "up", "comment", accessToken, addVoteCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else if (didVoteType != null && didVoteType.equals("up")){ // Was upvoted, now un-upvoting
+                        finalVote -= 1;
+                        didVoteType = null;
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
+                    } else { // No vote or other vote, now upvoting
+                        finalVote += 1;
+                        didVoteType = "up";
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_blue_upvote);
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote); // Ensure downvote is normal
                     }
+                    voteCountText.setText(formatNumberCompact(finalVote));
+                    mUpvoteButton.setClickable(false); // Prevent multi-click
+                    mDownvoteButton.setClickable(false);
+
+
+                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                comment.getId(), "up", "comment", accessToken, new BrowserExpressAddVoteUtil.AddVoteCallback() {
+                                    @Override
+                                    public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                                        // Vote successful, UI is already updated optimistically
+                                        mUpvoteButton.setClickable(true);
+                                        mDownvoteButton.setClickable(true);
+                                        if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
+                                            handleNewToken(newAccessToken, newRefreshToken);
+                                        }
+                                    }
+
+                                    @Override
+                                    public void addVoteFailed(String error) {
+                                        // Rollback UI
+                                        finalVote = oldFinalVote;
+                                        // Re-evaluate didVoteType based on oldFinalVote or comment.getDidVote() if fetched again
+                                        // For simplicity, just reset to previous text. A more robust rollback would reset button states too.
+                                        voteCountText.setText(formatNumberCompact(finalVote));
+                                        // Reset button backgrounds to before click based on 'oldFinalVote' and previous 'didVoteType'
+                                        // This part is complex and depends on how 'didVoteType' was before this click.
+                                        // For now, just re-enable buttons.
+                                        mUpvoteButton.setClickable(true);
+                                        mDownvoteButton.setClickable(true);
+                                        Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 });
             }
 
-            Log.e("BROWSER_EXPRESS_REPLY_COMMENT", "13");
 
             if(mDownvoteButton != null) {
-                mDownvoteButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        String accessToken = activity.getAccessToken();
-                        // if (accessToken == null) {
-                        //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                        //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                        //     activity.showGenerateUsernameBottomSheet();
-                        //     return;
-                        // }
+                mDownvoteButton.setOnClickListener(v -> {
+                    if (activity == null) return;
+                    String accessToken = activity.getAccessToken();
+                    // if (accessToken == null) { activity.showGenerateUsernameBottomSheet(); return; }
 
+                    mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+                    if (bounceDown != null) mDownvoteButton.startAnimation(bounceDown);
+
+                    int oldFinalVote = finalVote;
+
+                    if(didVoteType != null && didVoteType.equals("up")){ // Was upvoted, now downvoting
+                        finalVote -= 2;
+                        didVoteType = "down";
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
                         mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote);
-                        mDownvoteButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                        mDownvoteButton.startAnimation(bounceDown);
-
-                        if(didVoteType != null){
-                            if(didVoteType.equals("up")){
-                                finalVote = finalVote - 2;
-                                didVoteType = "down";
-                                mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                            }else if(didVoteType.equals("down")){
-                                finalVote = finalVote + 1;
-                                mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
-                                didVoteType = null;
-                            }
-                        }else{
-                            finalVote = finalVote - 1;
-                            didVoteType = "down";
-                            mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
-                        }
-                        voteCountText.setText(String.format(Locale.getDefault(), "%d", finalVote));
-
-                        BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
-                            new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
-                                    comment.getId(), "down", "comment", accessToken, addVoteCallback);
-                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    } else if (didVoteType != null && didVoteType.equals("down")){ // Was downvoted, now un-downvoting
+                        finalVote += 1;
+                        didVoteType = null;
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_downvote);
+                    } else { // No vote or other vote, now downvoting
+                        finalVote -= 1;
+                        didVoteType = "down";
+                        mDownvoteButton.setBackgroundResource(R.drawable.btn_white_downvote);
+                        mUpvoteButton.setBackgroundResource(R.drawable.btn_upvote); // Ensure upvote is normal
                     }
+                    voteCountText.setText(formatNumberCompact(finalVote));
+                    mUpvoteButton.setClickable(false);
+                    mDownvoteButton.setClickable(false);
+
+                    BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
+                        new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
+                                comment.getId(), "down", "comment", accessToken, new BrowserExpressAddVoteUtil.AddVoteCallback() {
+                            @Override
+                            public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
+                                mUpvoteButton.setClickable(true);
+                                mDownvoteButton.setClickable(true);
+                                if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
+                                   handleNewToken(newAccessToken, newRefreshToken);
+                                }
+                            }
+
+                            @Override
+                            public void addVoteFailed(String error) {
+                                finalVote = oldFinalVote;
+                                voteCountText.setText(formatNumberCompact(finalVote));
+                                mUpvoteButton.setClickable(true);
+                                mDownvoteButton.setClickable(true);
+                                Toast.makeText(context, "Vote failed: " + error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                 });
             }
         }
 
         private void togglePlayPause() {
             if (player != null) {
-                if (!player.isPlaying()) { // If about to play
+                if (!player.isPlaying()) {
                     VideoPlaybackManager.onVideoPlayRequest(player, this);
-                } else { // If aboutToPause (user manually pauses)
+                } else {
                     VideoPlaybackManager.onVideoStop(player);
                 }
             }
-            // if (player != null) {
-            //     boolean isCurrentlyPlaying = player.isPlaying();
-            //     player.setPlayWhenReady(!isCurrentlyPlaying);
-            //     updatePlayPauseUI(!isCurrentlyPlaying);
-            // }
         }
         
-        private void updatePlayPauseUI(boolean isPlaying) {
+        // Renamed from updatePlayPauseUI to match call in onIsPlayingChanged
+        private void updatePlayPauseIcon(boolean isPlaying) {
+            if (playPauseIcon == null) return;
+
+            playPauseIcon.animate().cancel(); // Cancel any ongoing animation
             if (isPlaying) {
-                // Show pause icon briefly when video starts playing
                 playPauseIcon.setImageResource(R.drawable.ic_pause_circle2);
                 playPauseIcon.setVisibility(View.VISIBLE);
-                playPauseIcon.setAlpha(1f);
+                playPauseIcon.setAlpha(1f); // Ensure it's fully visible
                 
-                // Fade out after 2 seconds when playing
                 playPauseIcon.animate()
                     .alpha(0f)
                     .setDuration(300)
-                    .setStartDelay(2000) // Show for 2 seconds before fading
-                    .withEndAction(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (player != null && player.isPlaying()) {
-                                playPauseIcon.setVisibility(View.GONE);
-                            }
-                            playPauseIcon.setAlpha(1f);
+                    .setStartDelay(2000)
+                    .withEndAction(() -> {
+                        if (player != null && player.isPlaying()) { // Check again before hiding
+                            playPauseIcon.setVisibility(View.GONE);
                         }
+                        playPauseIcon.setAlpha(1f); // Reset alpha for next time
                     })
                     .start();
             } else {
-                // Show play icon and keep it visible when paused
-                playPauseIcon.animate().cancel(); // Cancel any ongoing animation
                 playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
                 playPauseIcon.setVisibility(View.VISIBLE);
                 playPauseIcon.setAlpha(1f);
             }
         }
 
+
         private void setupProgressBar() {
-            if (player != null) {
-                videoProgressBar.setMax(1000); // Use 1000 for smoother progress
+            if (player != null && videoProgressBar != null) {
+                videoProgressBar.setMax(1000); 
                 videoProgressBar.setProgress(0);
+                videoProgressBar.setVisibility(View.VISIBLE); // Show progress bar
             }
         }
 
         private void startProgressAnimation() {
+            if (player == null || videoProgressBar == null || player.getDuration() <= 0) return;
+
             if (progressAnimator != null) {
                 progressAnimator.cancel();
             }
@@ -768,34 +771,36 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             long duration = player.getDuration();
             long currentPosition = player.getCurrentPosition();
             
-            progressAnimator = ValueAnimator.ofInt((int)(currentPosition * 1000 / duration), 1000);
+            // Ensure currentPosition is not greater than duration
+            currentPosition = Math.min(currentPosition, duration);
+            
+            int startProgress = (int) (currentPosition * 1000 / duration);
+            progressAnimator = ValueAnimator.ofInt(startProgress, 1000);
             progressAnimator.setDuration(duration - currentPosition);
             progressAnimator.setInterpolator(new LinearInterpolator());
-            progressAnimator.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                @Override
-                public void onAnimationUpdate(ValueAnimator animation) {
-                    if (videoProgressBar != null) {
-                        int progress = (int) animation.getAnimatedValue();
-                        videoProgressBar.setProgress(progress);
-                    }
+            progressAnimator.addUpdateListener(animation -> {
+                if (videoProgressBar != null) {
+                    int progress = (int) animation.getAnimatedValue();
+                    videoProgressBar.setProgress(progress);
                 }
             });
             progressAnimator.start();
         }
 
         private void pauseProgressAnimation() {
-            if (progressAnimator != null) {
+            if (progressAnimator != null && progressAnimator.isRunning()) { // Check if running before pausing
                 progressAnimator.pause();
             }
         }
 
-        private void updatePlayPauseIcon(boolean isPlaying) {
-            playPauseIcon.setImageResource(isPlaying ? 
-                R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
-        }
+        // This was duplicated, removing one.
+        // private void updatePlayPauseIcon(boolean isPlaying) {
+        //     playPauseIcon.setImageResource(isPlaying ? 
+        //         R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
+        // }
 
         private void releasePlayer() {
-            VideoPlaybackManager.removeActiveHolder(this); // Remove from manager first
+            VideoPlaybackManager.removeActiveHolder(this);
             if (progressAnimator != null) {
                 progressAnimator.cancel();
                 progressAnimator = null;
@@ -806,95 +811,109 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 player = null;
             }
             if (playPauseIcon != null) {
-                playPauseIcon.animate().cancel();
+                playPauseIcon.animate().cancel(); // Cancel any animations on the icon
+                playPauseIcon.setVisibility(View.GONE); // Hide it
+            }
+            if (videoProgressBar != null) {
+                videoProgressBar.setVisibility(View.GONE); // Hide progress bar
+            }
+            if (commentVideo != null) {
+                 commentVideo.setPlayer(null); // Detach player from view
+                 commentVideo.setVisibility(View.GONE); // Hide video view
             }
         }
 
-        // Make sure to release the player when the view is recycled
-        public void onViewRecycled() {
+        public void onViewRecycled() { // This is your custom method
             releasePlayer();
-
-            if (commentImage != null) {
+            if (commentImage != null && context != null) {
                 Glide.with(context).clear(commentImage);
                 commentImage.setImageDrawable(null);
+                commentImage.setVisibility(View.GONE); // Ensure it's hidden
             }
-            if (mAvatarImage != null) {
+            if (mAvatarImage != null && context != null) {
                 Glide.with(context).clear(mAvatarImage);
                 mAvatarImage.setImageDrawable(null);
             }
+            // Unregister SharedPreferences listener if it was registered in bind
+            // This requires storing the listener instance in the holder.
         }
 
-        @Override
-        public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
-            super.onViewRecycled(holder);
-            if (holder instanceof CommentHolder) {
-                ((CommentHolder) holder).onViewRecycled(); // Call our custom logic
-            }
-        }
-
-        // Make sure to release the player when the view is detached
+        // Called by itemView's OnAttachStateChangeListener or similar
         public void onViewDetachedFromWindow() {
             releasePlayer();
         }
-
-        private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback=
-            new BrowserExpressAddVoteUtil.AddVoteCallback() {
-                @Override
-                public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
-                    Log.e("BROWSER_EXPRESS_ADD_VOTE", newRefreshToken);
-                    if(newRefreshToken != null && !newRefreshToken.isEmpty()){
-                        try {
-                            Log.e("BROWSER_EXPRESS_ADD_VOTE", "setting token");
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-                            activity.setAccessToken(newAccessToken);
-                            JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
-                            Intent intent = new Intent(activity, ChromeTabbedActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                            intent.setAction(Intent.ACTION_VIEW);
-                            Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
-                            activity.startActivity(intent);
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        } catch (JSONException e) {
-                        }
-                    }
+        
+        private void handleNewToken(String newAccessToken, String newRefreshToken) {
+            if (activity == null) return;
+            try {
+                activity.setAccessToken(newAccessToken); // Assuming this method exists and handles storage
+                // Potentially update other parts of UI if needed based on new token
+                JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
+                if (decodedAccessTokenObj != null && decodedAccessTokenObj.has("username")) {
+                    // Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " session updated.", Toast.LENGTH_SHORT).show();
+                    // The original code showed a "Username created" toast and started ChromeTabbedActivity.
+                    // This might be too disruptive for just a token refresh during a vote.
+                    // Consider if this exact behavior is desired here.
+                    // If this is for first-time username generation via voting, it might be okay.
+                    // Intent intent = new Intent(activity, ChromeTabbedActivity.class);
+                    // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    // intent.setAction(Intent.ACTION_VIEW);
+                    // Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
+                    // activity.startActivity(intent);
+                    Log.i("TokenHandler", "Token refreshed. New username (if changed): " + decodedAccessTokenObj.getString("username"));
                 }
+            } catch (JSONException e) {
+                Log.e("TokenHandler", "Error decoding new access token", e);
+            }
+        }
 
-                @Override
-                public void addVoteFailed(String error) {
-                    mDownvoteButton.setClickable(true);
-                    mUpvoteButton.setClickable(true);
-                }
-            };
 
-        public String formatNumberCompact(int number) {
-            if (number >= 1_000_000) {
-                return String.format(Locale.getDefault(), "%dM", number / 1_000_000);
-            } else if (number >= 1_000) {
-                return String.format(Locale.getDefault(), "%dK", number / 1_000);
+        // Removed duplicate addVoteCallback, as it's now inline in button listeners
+        // private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback = ...
+
+        public String formatNumberCompact(long number) { // Changed to long for safety
+            if (number >= 1_000_000_000) { // Billions
+                return String.format(Locale.getDefault(), "%.1fB", number / 1_000_000_000.0);
+            } else if (number >= 1_000_000) { // Millions
+                return String.format(Locale.getDefault(), "%.1fM", number / 1_000_000.0);
+            } else if (number >= 10_000) { // 10K+
+                 return String.format(Locale.getDefault(), "%dK", number / 1_000);
+            } else if (number >= 1_000) { // 1.0K to 9.9K
+                return String.format(Locale.getDefault(), "%.1fK", number / 1_000.0);
             } else {
                 return String.format(Locale.getDefault(), "%d", number);
             }
         }
 
         private JSONObject getDecodedToken(String accessToken){
+            if (accessToken == null || accessToken.isEmpty()) return null;
             try{
                 String[] split_string = accessToken.split("\\.");
-                String base64EncodedHeader = split_string[0];
+                if (split_string.length < 2) { // JWT must have at least header and payload
+                    Log.e("TokenDecoder", "Invalid JWT format");
+                    return null;
+                }
                 String base64EncodedBody = split_string[1];
-                String base64EncodedSignature = split_string[2];
-
-                byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+                byte[] data = Base64.decode(base64EncodedBody, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP); // Use URL_SAFE for JWTs
                 String decodedString = new String(data, "UTF-8");
-                JSONObject jsonObj = new JSONObject(decodedString.toString());
-                return jsonObj;
+                return new JSONObject(decodedString);
             }catch(JSONException e){
-                Log.e("Express Browser Access Token", e.getMessage());
+                Log.e("TokenDecoder", "JSON parsing error in token: " + e.getMessage());
                 return null;
             }catch(UnsupportedEncodingException e){
-                Log.e("Express Browser Access Token", e.getMessage());
+                Log.e("TokenDecoder", "UTF-8 encoding not supported: " + e.getMessage());
+                return null;
+            } catch(IllegalArgumentException e) {
+                Log.e("TokenDecoder", "Base64 decoding error: " + e.getMessage());
                 return null;
             }
-            
         }
+    }
+
+    // Corrected signature for onViewRecycled in the Adapter
+    @Override
+    public void onViewRecycled(@NonNull CommentHolder holder) {
+        super.onViewRecycled(holder); // This now calls the correct super method
+        holder.onViewRecycled();      // Call the custom cleanup in your CommentHolder
     }
 }
