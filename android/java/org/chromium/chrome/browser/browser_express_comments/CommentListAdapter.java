@@ -67,6 +67,7 @@ import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
 import androidx.annotation.NonNull; 
 import com.google.android.exoplayer2.MediaMetadata;
+import com.bumptech.glide.request.target.Target;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
@@ -379,7 +380,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
                         if (resource != null && commentVideo != null && commentImage != null) {
                             commentImage.post(() -> {
-                                if (commentVideo != null && commentImage.getHeight() > 0 && hasVideo) { // Check hasVideo here too
+                                if (commentVideo != null && commentImage.getHeight() > 0 && videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) { // Check hasVideo here too
                                     ViewGroup.LayoutParams videoParams = commentVideo.getLayoutParams();
                                     videoParams.height = commentImage.getHeight();
                                     commentVideo.setLayoutParams(videoParams);
