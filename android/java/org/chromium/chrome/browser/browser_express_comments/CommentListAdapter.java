@@ -67,7 +67,7 @@ import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
 import androidx.annotation.NonNull; 
 
-public class CommentListAdapter extends RecyclerView.Adapter {
+public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
     private List<Comment> mCommentList;
     private EditText mMessageEditText;
@@ -206,7 +206,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
         }
     }
 
-    private class CommentHolder extends RecyclerView.ViewHolder {
+    public class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
         TextView contentText;
         TextView voteCountText;
@@ -824,7 +824,7 @@ public class CommentListAdapter extends RecyclerView.Adapter {
             }
         }
 
-         @Override
+        @Override
         public void onViewRecycled(@NonNull RecyclerView.ViewHolder holder) {
             super.onViewRecycled(holder);
             if (holder instanceof CommentHolder) {
