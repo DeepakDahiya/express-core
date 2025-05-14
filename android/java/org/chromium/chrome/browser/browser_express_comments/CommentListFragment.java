@@ -54,6 +54,7 @@ import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import android.content.Intent;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.base.ContextUtils;
+import android.graphics.Rect;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";

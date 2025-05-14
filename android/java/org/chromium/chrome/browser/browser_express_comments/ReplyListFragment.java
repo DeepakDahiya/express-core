@@ -53,6 +53,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Intent;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.widget.LinearLayout;
+import android.graphics.Rect;
 
 public class ReplyListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
