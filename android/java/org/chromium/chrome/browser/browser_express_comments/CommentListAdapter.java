@@ -66,6 +66,7 @@ import android.view.MotionEvent;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
 import androidx.annotation.NonNull; 
+import com.google.android.exoplayer2.MediaMetadata;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
@@ -370,26 +371,31 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 commentImage.setVisibility(View.VISIBLE);
                 ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, new ImageLoader.Callback() {
                     @Override
-                    public void onImageLoaded(Bitmap bitmap) {
-                        if (bitmap != null && commentVideo != null && commentImage != null) { // Check for nulls
-                            // Set video height based on loaded image placeholder, only if video is present
-                            // This ensures the video player view has a determined size before it loads.
-                            // Ensure this runs on the UI thread if ImageLoader callback is not.
-                            commentImage.post(() -> { // Ensure UI operation
-                                if (commentVideo != null && commentImage.getHeight() > 0) {
+                    public boolean onLoadFailed(@Nullable GlideException e, Object model, Target<Bitmap> target, boolean isFirstResource) {
+                        // This is Glide's failure callback
+                        Log.e("ImageLoader", "Glide load failed for: " + twitterImageUrl, e);
+                        // Optionally set a fixed height or default placeholder if image load fails
+                        // commentImage.post(() -> { setFixedOrMinHeightForMediaViews(); });
+                        return false; // Return false to allow Glide to handle setting an error placeholder if configured
+                    }
+
+                    @Override
+                    public boolean onResourceReady(Bitmap resource, Object model, Target<Bitmap> target, DataSource dataSource, boolean isFirstResource) {
+                        // This is Glide's success callback. 'resource' is the loaded Bitmap.
+                        // The bitmap is already set on the target (commentImage) by Glide at this point.
+
+                        if (resource != null && commentVideo != null && commentImage != null) {
+                            commentImage.post(() -> {
+                                if (commentVideo != null && commentImage.getHeight() > 0 && hasVideo) { // Check hasVideo here too
                                     ViewGroup.LayoutParams videoParams = commentVideo.getLayoutParams();
-                                    videoParams.height = commentImage.getHeight(); // Use placeholder height
+                                    videoParams.height = commentImage.getHeight();
                                     commentVideo.setLayoutParams(videoParams);
                                     commentVideo.requestLayout();
                                     Log.d("VideoHeight", "Set video height to image placeholder: " + commentImage.getHeight());
                                 }
                             });
                         }
-                    }
-                    @Override
-                    public void onImageFailed() {
-                        // Optionally set a fixed height or default placeholder if image load fails
-                        // commentImage.post(() -> { setFixedOrMinHeightForMediaViews(); });
+                        return false; // Return false so Glide can continue processing (e.g., transition animations)
                     }
                 });
             }
