@@ -536,23 +536,14 @@ public class CommentListFragment extends Fragment {
 
         if (position != -1) {
             final int finalPosition = position;
-            mCommentRecycler.post(new Runnable() {
-                @Override
-                public void run() {
-                    if (mLayoutManager != null) {
-                        mLayoutManager.scrollToPositionWithOffset(finalPosition, 0);
-
-                        // Optional: Highlight the item briefly
-                        View itemView = mLayoutManager.findViewByPosition(finalPosition);
-                        if (itemView != null) {
-                            itemView.setBackgroundColor(Color.YELLOW); // Example highlight
-                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                itemView.setBackgroundColor(Color.TRANSPARENT); // Or original color
-                            }, 1000);
-                        }
-                    }
-                }
-            });
+            mLayoutManager.scrollToPositionWithOffset(finalPosition, 0);
+            View itemView = mLayoutManager.findViewByPosition(finalPosition);
+            if (itemView != null) {
+                itemView.setBackgroundColor(Color.YELLOW); // Example highlight
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    itemView.setBackgroundColor(Color.TRANSPARENT); // Or original color
+                }, 1000);
+            }
         } else {
             Log.w("CommentListScroll", "Comment ID not found in list: " + commentId);
         }
