@@ -452,7 +452,7 @@ public class ReplyListFragment2 extends Fragment {
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
                     int len = mComments.size();
                     mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+                    mCommentAdapter.notifyItemRangeInserted(len, comments.size());
 
                     if(parentComment != null){
                         mTopComments.add(parentComment);
