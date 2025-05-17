@@ -98,6 +98,9 @@ public class ReplyListFragment extends Fragment {
 
     private NestedScrollView mNestedScrollView;
     private NestedScrollView.OnScrollChangeListener videoNestedScrollListener;
+
+    private boolean mShouldScrollToLastParent = false;
+    private String mTargetScrollCommentId = null;
     
     private RecyclerView.OnScrollListener videoScrollListener;
 
@@ -109,6 +112,22 @@ public class ReplyListFragment extends Fragment {
             inputCallback = (BottomSheetInputCallback) parentFragment;
         } else {
             Log.e("Reply List Fragment", "Parent fragment must implement BottomSheetInputCallback");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+        if (parentSheet != null) {
+            String targetId = parentSheet.getLastOpenedRepliesToRepliesForCommentId();
+            if (targetId != null && mComments != null && !mComments.isEmpty()) {
+                scrollToCommentId(targetId);
+                parentSheet.clearLastOpenedRepliesToRepliesForCommentId();
+            } else if (targetId != null) {
+                mShouldScrollToLastParent = true;
+                mTargetScrollCommentId = targetId;
+            }
         }
     }
 
@@ -436,6 +455,16 @@ public class ReplyListFragment extends Fragment {
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
+
+                    if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
+                        scrollToCommentId(mTargetScrollCommentId);
+                        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+                        if (parentSheet != null) {
+                            parentSheet.clearLastOpenedRepliesToRepliesForCommentId();
+                        }
+                        mShouldScrollToLastParent = false; // Reset flag
+                        mTargetScrollCommentId = null;
+                    }
                 }
 
                 @Override
@@ -479,6 +508,56 @@ public class ReplyListFragment extends Fragment {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
+
+    private void scrollToReplyId(String commentId) {
+        if (commentId == null || mComments == null || mComments.isEmpty() || mCommentRecycler == null || mNestedScrollView == null) {
+            return;
+        }
+
+        final LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+        if (layoutManager == null) return;
+
+        int position = -1;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (mComments.get(i).getId().equals(commentId)) {
+                position = i;
+                break;
+            }
+        }
+
+        if (position != -1) {
+            final int finalPosition = position;
+            mCommentRecycler.post(new Runnable() {
+                @Override
+                public void run() {
+                    layoutManager.scrollToPositionWithOffset(finalPosition, 0);
+
+                    mCommentRecycler.post(new Runnable() { // Post again to wait for the RV scroll
+                        @Override
+                        public void run() {
+                            View itemView = layoutManager.findViewByPosition(finalPosition);
+                            if (itemView != null && mNestedScrollView != null) {
+                                int[] recyclerViewLocation = new int[2];
+                                mCommentRecycler.getLocationInWindow(recyclerViewLocation); // screen location
+
+                                int[] nestedScrollViewLocation = new int[2];
+                                mNestedScrollView.getLocationInWindow(nestedScrollViewLocation); // screen location
+
+                                int scrollToY = (recyclerViewLocation[1] - nestedScrollViewLocation[1]) + mNestedScrollView.getScrollY();
+
+                                mNestedScrollView.smoothScrollTo(0, scrollToY);
+                                Log.d("ReplyListScroll", "Scrolled NestedScrollView for reply ID: " + commentId + " to Y: " + scrollToY);
+                            } else {
+                                Log.w("ReplyListScroll", "ItemView or NestedScrollView null after RV scroll for reply ID: " + commentId);
+                            }
+                        }
+                    });
+                }
+            });
+        } else {
+            Log.w("ReplyListScroll", "Reply ID not found in list: " + commentId);
+        }
+    }
 
     private JSONObject getDecodedToken(String accessToken){
         try{

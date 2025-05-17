@@ -94,6 +94,9 @@ public class CommentListFragment extends Fragment {
 
     private RecyclerView.OnScrollListener videoScrollListener;
 
+    private boolean mShouldScrollToLastParent = false;
+    private String mTargetScrollCommentId = null;
+
     private static final String KEY_SCROLL_POSITION = "comment_list_scroll_position";
     private int mSavedScrollPosition = RecyclerView.NO_POSITION; // Or 0 as default
 
@@ -113,6 +116,22 @@ public class CommentListFragment extends Fragment {
             inputCallback = (BottomSheetInputCallback) parentFragment;
         } else {
             Log.e("Reply List Fragment", "Parent fragment must implement BottomSheetInputCallback");
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+        if (parentSheet != null) {
+            String targetId = parentSheet.getLastOpenedRepliesForCommentId();
+            if (targetId != null && mComments != null && !mComments.isEmpty()) {
+                scrollToCommentId(targetId);
+                parentSheet.clearLastOpenedRepliesForCommentId();
+            } else if (targetId != null) {
+                mShouldScrollToLastParent = true;
+                mTargetScrollCommentId = targetId;
+            }
         }
     }
 
@@ -420,6 +439,16 @@ public class CommentListFragment extends Fragment {
                         mLayoutManager.scrollToPositionWithOffset(mSavedScrollPosition, 0);
                         mSavedScrollPosition = RecyclerView.NO_POSITION;
                     }
+
+                    if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
+                        scrollToCommentId(mTargetScrollCommentId);
+                        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+                        if (parentSheet != null) {
+                            parentSheet.clearLastOpenedRepliesForCommentId();
+                        }
+                        mShouldScrollToLastParent = false; // Reset flag
+                        mTargetScrollCommentId = null;
+                    }
                 }
 
                 @Override
@@ -480,6 +509,43 @@ public class CommentListFragment extends Fragment {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
+
+    private void scrollToCommentId(String commentId) {
+        if (commentId == null || mComments == null || mComments.isEmpty() || mCommentRecycler == null || mLayoutManager == null) {
+            return;
+        }
+
+        int position = -1;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (mComments.get(i).getId().equals(commentId)) {
+                position = i;
+                break;
+            }
+        }
+
+        if (position != -1) {
+            final int finalPosition = position;
+            mCommentRecycler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (mLayoutManager != null) {
+                        mLayoutManager.scrollToPositionWithOffset(finalPosition, 0);
+
+                        // Optional: Highlight the item briefly
+                        View itemView = mLayoutManager.findViewByPosition(finalPosition);
+                        if (itemView != null) {
+                            itemView.setBackgroundColor(Color.YELLOW); // Example highlight
+                            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                itemView.setBackgroundColor(Color.TRANSPARENT); // Or original color
+                            }, 1000);
+                        }
+                    }
+                }
+            });
+        } else {
+            Log.w("CommentListScroll", "Comment ID not found in list: " + commentId);
+        }
+    }
 
     private JSONObject getDecodedToken(String accessToken){
         try{

@@ -86,6 +86,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private ImageView mAvatarImage;
 
+    private String mLastOpenedRepliesForCommentId = null;
+    private String mLastOpenedRepliesToRepliesForCommentId = null;
+
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =
                 new BrowserExpressCommentsBottomSheetFragment();
@@ -289,6 +292,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openReplies(String commentId) {
+        mLastOpenedRepliesForCommentId = commentId;
+        mLastOpenedRepliesToRepliesForCommentId = null;
         ReplyListFragment replyFragment = new ReplyListFragment();
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
@@ -297,12 +302,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openRepliesToReply(String commentId) {
-        Log.e("OpenRepliesToReply", "commentId: " + commentId);
+        mLastOpenedRepliesToRepliesForCommentId = commentId;
         ReplyListFragment2 replyFragment = new ReplyListFragment2();
-        Log.e("OpenRepliesToReply", "After replyFragment");
         Bundle args = new Bundle();
         args.putString("comment_id", commentId);
-        Log.e("OpenRepliesToReply", "After args");
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
     }
@@ -312,6 +315,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
+        mLastOpenedRepliesToRepliesForCommentId = null;
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();
     }
@@ -343,6 +347,24 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             case "clap": return mClapButton;
             default: return null;
         }
+    }
+
+    @Nullable
+    public String getLastOpenedRepliesToRepliesForCommentId() {
+        return mLastOpenedRepliesForCommentId;
+    }
+
+    public void clearLastOpenedRepliesToRepliesForCommentId() {
+        mLastOpenedRepliesForCommentId = null;
+    }
+
+    @Nullable
+    public String getLastOpenedRepliesForCommentId() {
+        return mLastOpenedRepliesForCommentId;
+    }
+
+    public void clearLastOpenedRepliesForCommentId() {
+        mLastOpenedRepliesForCommentId = null;
     }
 
     @Override
