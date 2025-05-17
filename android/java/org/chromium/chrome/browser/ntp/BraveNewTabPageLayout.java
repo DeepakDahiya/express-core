@@ -1467,7 +1467,7 @@ public class BraveNewTabPageLayout
                     int len = mPosts.size();
                     mPosts.addAll(posts);
                     Log.e("BE_GET_POST", "10"); 
-                    mPostAdapter.notifyItemRangeInserted(len-1, posts.size());
+                    mPostAdapter.notifyItemRangeInserted(len, posts.size());
                 }
 
                 @Override

@@ -225,7 +225,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
             if (len > 0 ) {
                 mTopCommentsRecycler.setVisibility(View.VISIBLE);
                 mComments.addAll(comments);
-                mCommentAdapter.notifyItemRangeInserted(len-1, comments.size());
+                mCommentAdapter.notifyItemRangeInserted(len, comments.size());
             }
 
             Log.e("BE_GET_POST", "11.5"); 
