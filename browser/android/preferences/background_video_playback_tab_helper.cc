@@ -101,7 +101,7 @@ const char16_t k_youtube_background_playback_script[] =
         background-color: ${originalStyles.backgroundColor};
         border: none;
         box-shadow: ${originalStyles.boxShadow};
-        background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/regular/picture-in-picture-regular.svg");
+        background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg");
         background-repeat: no-repeat;
         background-position: center;
         background-size: 55%;
