@@ -405,33 +405,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
 
             if (hasImage) {
-                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, new ImageLoader.Callback() {
-                    @Override
-                    public boolean onLoadFailed() {
-                        return false;
-                    }
-
-                    @Override
-                    public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
-                        if (hasVideo) {
-                            commentImage.post(() -> {
-                                if (commentVideo == null || commentImage == null) return;
-                                int h = commentImage.getHeight();
-                                if (h > 0) {
-                                    ViewGroup.LayoutParams videoParams = commentVideo.getLayoutParams();
-                                    videoParams.height = h;
-                                    commentVideo.setLayoutParams(videoParams);
-                                    commentVideo.requestLayout();
-                                    Log.d("VideoHeight", "Set video height to image placeholder: " + h);
-                                } else {
-                                    Log.w("VideoHeight", "Image resource ready but height is 0. Falling back for video.");
-                                    setVideoHeightToAspectRatio(commentVideo);
-                                }
-                            });
-                        }
-                        return false;
-                    }
-                });
+                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
             }
 
             if (hasVideo) {
@@ -902,11 +876,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (commentVideo != null) {
                 commentVideo.setPlayer(null); // Detach player from view
                 commentVideo.setVisibility(View.GONE); // Hide video view
-                ViewGroup.LayoutParams params = commentVideo.getLayoutParams();
-                if (params != null) {
-                    params.height = ViewGroup.LayoutParams.WRAP_CONTENT; // Or specific initial value
-                    commentVideo.setLayoutParams(params);
-                }
+                // ViewGroup.LayoutParams params = commentVideo.getLayoutParams();
+                // if (params != null) {
+                //     params.height = ViewGroup.LayoutParams.WRAP_CONTENT; // Or specific initial value
+                //     commentVideo.setLayoutParams(params);
+                // }
             }
         }
 
