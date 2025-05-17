@@ -102,7 +102,6 @@
                         android:layout_width="64dp"
                         android:layout_height="64dp"
                         android:alpha="0.8"
-                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                         android:visibility="gone"
                         app:layout_constraintBottom_toBottomOf="@id/comment_video"
                         app:layout_constraintEnd_toEndOf="@id/comment_video"
