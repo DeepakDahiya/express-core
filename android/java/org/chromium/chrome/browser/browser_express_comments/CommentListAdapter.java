@@ -68,6 +68,7 @@ import android.view.animation.LinearInterpolator;
 import androidx.annotation.NonNull; 
 import com.google.android.exoplayer2.MediaMetadata;
 import com.bumptech.glide.request.target.Target;
+import android.util.TypedValue;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
