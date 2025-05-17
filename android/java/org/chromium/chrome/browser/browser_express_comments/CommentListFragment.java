@@ -443,7 +443,10 @@ public class CommentListFragment extends Fragment {
                         mSavedScrollPosition = RecyclerView.NO_POSITION;
                     }
 
+                    Log.e("CommentListScroll", "mSavedScrollPosition: " + mSavedScrollPosition);
+
                     if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
+                        Log.e("CommentListScroll", "Scrolling to last parent comment ID: " + mTargetScrollCommentId);
                         scrollToCommentId(mTargetScrollCommentId);
                         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
                         if (parentFragment != null) {
@@ -514,9 +517,12 @@ public class CommentListFragment extends Fragment {
             };
 
     private void scrollToCommentId(String commentId) {
+        Log.e("CommentListScroll", "Scrolling to comment ID: " + commentId);
         if (commentId == null || mComments == null || mComments.isEmpty() || mCommentRecycler == null || mLayoutManager == null) {
             return;
         }
+
+        Log.e("CommentListScroll", "mComments size: " + mComments.size());
 
         int position = -1;
         for (int i = 0; i < mComments.size(); i++) {
@@ -525,6 +531,8 @@ public class CommentListFragment extends Fragment {
                 break;
             }
         }
+
+        Log.e("CommentListScroll", "Found comment ID at position: " + position);
 
         if (position != -1) {
             final int finalPosition = position;
