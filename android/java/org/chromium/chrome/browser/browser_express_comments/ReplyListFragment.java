@@ -55,6 +55,9 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.widget.LinearLayout;
 import android.graphics.Rect;
 import androidx.core.widget.NestedScrollView;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 
 public class ReplyListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -482,24 +485,29 @@ public class ReplyListFragment extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
-                    if(newRefreshToken != null && !newRefreshToken.isEmpty()){
-                        try {
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-                            activity.setAccessToken(newAccessToken);
+                    try{
+                        BraveActivity activity = BraveActivity.getBraveActivity();
 
-                            mMessageEditText.clearFocus();
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+                        mMessageEditText.clearFocus();
+                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
-                            JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
-                            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                            intent.setAction(Intent.ACTION_VIEW);
-                            Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
-                            startActivity(intent);
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        } catch (JSONException e) {
+
+                        if(newRefreshToken != null && !newRefreshToken.isEmpty()){
+                            try {
+                                activity.setAccessToken(newAccessToken);
+
+                                JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
+                                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                intent.setAction(Intent.ACTION_VIEW);
+                                Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
+                                startActivity(intent);
+                            } catch (JSONException e) {
+                            }
                         }
+
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
 
@@ -546,7 +554,10 @@ public class ReplyListFragment extends Fragment {
                                 int scrollToY = (recyclerViewLocation[1] - nestedScrollViewLocation[1]) + mNestedScrollView.getScrollY();
 
                                 mNestedScrollView.smoothScrollTo(0, scrollToY);
-                                Log.d("ReplyListScroll", "Scrolled NestedScrollView for reply ID: " + commentId + " to Y: " + scrollToY);
+                                itemView.setBackgroundColor(Color.YELLOW);
+                                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                    itemView.setBackgroundColor(Color.TRANSPARENT);
+                                }, 1000);
                             } else {
                                 Log.w("ReplyListScroll", "ItemView or NestedScrollView null after RV scroll for reply ID: " + commentId);
                             }

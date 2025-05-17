@@ -484,24 +484,29 @@ public class ReplyListFragment2 extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
-                    if(newRefreshToken != null && !newRefreshToken.isEmpty()){
-                        try {
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-                            activity.setAccessToken(newAccessToken);
+                    try{
+                        BraveActivity activity = BraveActivity.getBraveActivity();
 
-                            mMessageEditText.clearFocus();
-                            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+                        mMessageEditText.clearFocus();
+                        InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                        imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
-                            JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
-                            Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                            intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                            intent.setAction(Intent.ACTION_VIEW);
-                            Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
-                            startActivity(intent);
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        } catch (JSONException e) {
+
+                        if(newRefreshToken != null && !newRefreshToken.isEmpty()){
+                            try {
+                                activity.setAccessToken(newAccessToken);
+
+                                JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
+                                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                intent.setAction(Intent.ACTION_VIEW);
+                                Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
+                                startActivity(intent);
+                            } catch (JSONException e) {
+                            }
                         }
+
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
 

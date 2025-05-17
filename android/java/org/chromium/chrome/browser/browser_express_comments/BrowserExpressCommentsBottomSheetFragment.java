@@ -351,11 +351,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Nullable
     public String getLastOpenedRepliesToRepliesForCommentId() {
-        return mLastOpenedRepliesForCommentId;
+        return mLastOpenedRepliesToRepliesForCommentId;
     }
 
     public void clearLastOpenedRepliesToRepliesForCommentId() {
-        mLastOpenedRepliesForCommentId = null;
+        mLastOpenedRepliesToRepliesForCommentId = null;
     }
 
     @Nullable
