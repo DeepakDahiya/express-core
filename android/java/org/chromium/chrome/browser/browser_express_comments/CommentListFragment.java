@@ -55,6 +55,9 @@ import android.content.Intent;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.base.ContextUtils;
 import android.graphics.Rect;
+import android.graphics.Color;
+import android.os.Handler;
+import android.os.Looper;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
