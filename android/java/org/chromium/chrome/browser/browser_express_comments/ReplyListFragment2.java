@@ -100,6 +100,8 @@ public class ReplyListFragment2 extends Fragment {
 
     private BottomSheetInputCallback inputCallback;
 
+    private NestedScrollView mNestedScrollView;
+    private NestedScrollView.OnScrollChangeListener videoNestedScrollListener;
     private RecyclerView.OnScrollListener videoScrollListener;
 
     @Override
@@ -134,6 +136,8 @@ public class ReplyListFragment2 extends Fragment {
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
         mArrow1 = view.findViewById(R.id.comment_arrow1);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
+
+        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
         
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
@@ -237,6 +241,7 @@ public class ReplyListFragment2 extends Fragment {
         }
 
         setupVideoScrollListener(mCommentRecycler);
+        setupVideoScrollListenerForNestedView(mNestedScrollView);
         return view;
     }
 

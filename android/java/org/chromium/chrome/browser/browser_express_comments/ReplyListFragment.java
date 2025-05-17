@@ -242,10 +242,6 @@ public class ReplyListFragment extends Fragment {
         videoNestedScrollListener = new NestedScrollView.OnScrollChangeListener() {
             @Override
             public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                // Check videos in mGrandParentCommentRecycler (if it exists and has an adapter)
-                if (mGrandParentCommentAdapter != null && mGrandParentCommentRecycler != null) {
-                    checkAndPauseInvisibleVideosInSpecificAdapter(mGrandParentCommentAdapter, v);
-                }
                 // Check videos in mTopCommentRecycler
                 if (mTopCommentAdapter != null && mTopCommentRecycler != null) {
                     checkAndPauseInvisibleVideosInSpecificAdapter(mTopCommentAdapter, v);
