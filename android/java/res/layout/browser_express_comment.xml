@@ -94,7 +94,8 @@
                         app:layout_constraintEnd_toEndOf="@id/comment_video"
                         android:src="@drawable/loading_image"
                         android:visibility="gone"
-                        android:scaleType="centerCrop"/>
+                        android:scaleType="centerCrop"
+                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
                     <ImageView
                         android:id="@+id/play_pause_icon"
@@ -106,7 +107,8 @@
                         app:layout_constraintBottom_toBottomOf="@id/comment_video"
                         app:layout_constraintEnd_toEndOf="@id/comment_video"
                         app:layout_constraintStart_toStartOf="@id/comment_video"
-                        app:layout_constraintTop_toTopOf="@id/comment_video" />
+                        app:layout_constraintTop_toTopOf="@id/comment_video"
+                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
                     <ProgressBar
                         android:id="@+id/video_progress"
