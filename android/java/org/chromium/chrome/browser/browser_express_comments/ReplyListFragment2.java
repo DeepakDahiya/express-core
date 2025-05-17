@@ -239,6 +239,66 @@ public class ReplyListFragment2 extends Fragment {
         return view;
     }
 
+    private void setupVideoScrollListenerForNestedView(NestedScrollView nestedScrollView) {
+        if (nestedScrollView == null) return; // Guard against null NestedScrollView
+
+        // nestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) null); // Do this in onDestroyView
+
+        videoNestedScrollListener = new NestedScrollView.OnScrollChangeListener() {
+            @Override
+            public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                // Check videos in mGrandParentCommentRecycler (if it exists and has an adapter)
+                if (mGrandParentCommentAdapter != null && mGrandParentCommentRecycler != null) {
+                    checkAndPauseInvisibleVideosInSpecificAdapter(mGrandParentCommentAdapter, v);
+                }
+                // Check videos in mTopCommentRecycler
+                if (mTopCommentAdapter != null && mTopCommentRecycler != null) {
+                    checkAndPauseInvisibleVideosInSpecificAdapter(mTopCommentAdapter, v);
+                }
+                // Check videos in mCommentRecycler (replies)
+                if (mCommentAdapter != null && mCommentRecycler != null) {
+                    checkAndPauseInvisibleVideosInSpecificAdapter(mCommentAdapter, v);
+                }
+            }
+        };
+        nestedScrollView.setOnScrollChangeListener(videoNestedScrollListener);
+    }
+
+    private void checkAndPauseInvisibleVideosInSpecificAdapter(CommentListAdapter adapter, View parentScrollableView) {
+        if (adapter == null) return;
+        CommentListAdapter.VideoPlaybackManager manager = adapter.getVideoPlaybackManager();
+        CommentListAdapter.CommentHolder currentPlayingHolder = manager.getCurrentlyPlayingHolder();
+
+        if (currentPlayingHolder != null && currentPlayingHolder.player != null && currentPlayingHolder.player.isPlaying()) {
+            if (currentPlayingHolder.commentVideo != null && !isViewMostlyVisible(currentPlayingHolder.commentVideo, parentScrollableView)) {
+                manager.pauseCurrentlyPlayingVideo();
+            }
+        }
+    }
+
+    private boolean isViewMostlyVisible(View childView, View parentScrollableView) {
+        if (childView == null || !childView.isShown() || childView.getHeight() == 0 || childView.getWidth() == 0) {
+            return false;
+        }
+        if (parentScrollableView == null) return false; // Added guard for parent
+
+        Rect viewRect = new Rect();
+        if (!childView.getGlobalVisibleRect(viewRect)) {
+            return false;
+        }
+
+        Rect parentRect = new Rect();
+        parentScrollableView.getGlobalVisibleRect(parentRect);
+
+        if (!Rect.intersects(viewRect, parentRect)) {
+            return false;
+        }
+
+        int visibleHeight = Math.min(viewRect.bottom, parentRect.bottom) - Math.max(viewRect.top, parentRect.top);
+        float visibilityThreshold = 0.5f;
+        return visibleHeight >= childView.getHeight() * visibilityThreshold;
+    }
+
      private void setupVideoScrollListener(RecyclerView recyclerView) {
         if (videoScrollListener != null) {
             recyclerView.removeOnScrollListener(videoScrollListener);
@@ -315,36 +375,52 @@ public class ReplyListFragment2 extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (mCommentRecycler != null && videoScrollListener != null) {
-            mCommentRecycler.removeOnScrollListener(videoScrollListener);
-            videoScrollListener = null;
+        if (mNestedScrollView != null) {
+            mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) null);
         }
-        
-        if (mCommentAdapter != null) {
-            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-            if (manager != null) {
-                manager.releaseAllResources();
-            }
+        videoNestedScrollListener = null;
+        mNestedScrollView = null;
+
+        // Release resources for all adapters
+        if (mCommentAdapter != null && mCommentAdapter.getVideoPlaybackManager() != null) {
+            mCommentAdapter.getVideoPlaybackManager().releaseAllResources();
         }
+        if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
+            mTopCommentAdapter.getVideoPlaybackManager().releaseAllResources();
+        }
+        if (mGrandParentCommentAdapter != null && mGrandParentCommentAdapter.getVideoPlaybackManager() != null) {
+            mGrandParentCommentAdapter.getVideoPlaybackManager().releaseAllResources();
+        }
+
         mCommentAdapter = null;
         mCommentRecycler = null;
+        mTopCommentAdapter = null;
+        mTopCommentRecycler = null;
+        mGrandParentCommentAdapter = null;
+        mGrandParentCommentRecycler = null;
     }
 
     public void pauseAllVideosInList() {
-        if (mCommentAdapter != null) {
-            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-            if (manager != null) {
-                manager.pauseAllPlayers();
-            }
+        if (mCommentAdapter != null && mCommentAdapter.getVideoPlaybackManager() != null) {
+            mCommentAdapter.getVideoPlaybackManager().pauseAllPlayers();
+        }
+        if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
+            mTopCommentAdapter.getVideoPlaybackManager().pauseAllPlayers();
+        }
+        if (mGrandParentCommentAdapter != null && mGrandParentCommentAdapter.getVideoPlaybackManager() != null) {
+            mGrandParentCommentAdapter.getVideoPlaybackManager().pauseAllPlayers();
         }
     }
 
     public void releaseVideoManagerResources() { // Renamed for clarity from previous suggestion
-        if (mCommentAdapter != null) {
-            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-            if (manager != null) {
-                manager.releaseAllResources();
-            }
+        if (mCommentAdapter != null && mCommentAdapter.getVideoPlaybackManager() != null) {
+            mCommentAdapter.getVideoPlaybackManager().releaseAllResources();
+        }
+        if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
+            mTopCommentAdapter.getVideoPlaybackManager().releaseAllResources();
+        }
+        if (mGrandParentCommentAdapter != null && mGrandParentCommentAdapter.getVideoPlaybackManager() != null) {
+            mGrandParentCommentAdapter.getVideoPlaybackManager().releaseAllResources();
         }
     }
 
