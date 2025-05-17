@@ -554,10 +554,20 @@ public class ReplyListFragment extends Fragment {
                                 int scrollToY = (recyclerViewLocation[1] - nestedScrollViewLocation[1]) + mNestedScrollView.getScrollY();
 
                                 mNestedScrollView.smoothScrollTo(0, scrollToY);
-                                itemView.setBackgroundColor(Color.YELLOW);
                                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                    itemView.setBackgroundColor(Color.TRANSPARENT);
-                                }, 1000);
+                                    if (itemView.isAttachedToWindow() && itemView.getGlobalVisibleRect(new Rect())) {
+                                        Log.e("ReplyListScroll", "Delayed Highlight: Applying YELLOW to itemView.");
+                                        itemView.setBackgroundColor(Color.YELLOW);
+                                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                                            if (itemView.isAttachedToWindow()) {
+                                                Log.d("ReplyListScroll", "Delayed Highlight: Removing highlight.");
+                                                itemView.setBackgroundColor(Color.TRANSPARENT);
+                                            }
+                                        }, 1000);
+                                    } else {
+                                        Log.e("ReplyListScroll", "Delayed Highlight: ItemView no longer valid or visible.");
+                                    }
+                                }, 3000);
                             } else {
                                 Log.w("ReplyListScroll", "ItemView or NestedScrollView null after RV scroll for reply ID: " + commentId);
                             }
