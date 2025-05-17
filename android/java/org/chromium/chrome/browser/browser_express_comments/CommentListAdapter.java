@@ -311,6 +311,30 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
+        private void setVideoHeightToAspectRatio(final StyledPlayerView videoView) {
+            if (videoView == null || videoView.getContext() == null) return;
+            videoView.post(new Runnable() {
+                @Override
+                public void run() {
+                    int viewWidth = videoView.getWidth();
+                    ViewGroup.LayoutParams params = videoView.getLayoutParams();
+                    if (viewWidth > 0) {
+                        // Calculate height for a 16:9 aspect ratio
+                        params.height = (int) (viewWidth * (9.0 / 16.0));
+                    } else {
+                        // Fallback to a fixed DP height if width is not available (e.g., 200dp)
+                        params.height = (int) TypedValue.applyDimension(
+                                TypedValue.COMPLEX_UNIT_DIP, 200,
+                                videoView.getContext().getResources().getDisplayMetrics());
+                        Log.w("VideoHeight", "VideoView width was 0, used fixed DP for height.");
+                    }
+                    videoView.setLayoutParams(params);
+                    videoView.requestLayout();
+                    Log.d("VideoHeight", "Set video height to aspect ratio or default: " + params.height);
+                }
+            });
+        }
+
         void bind(Comment comment) {
             myPosition = getBindingAdapterPosition(); // getAbsoluteAdapterPosition() is also an option
 
@@ -357,19 +381,29 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             // Reset visibility before setting
             commentMediaCard.setVisibility(View.GONE);
+            commentImage.setImageDrawable(null);
             commentImage.setVisibility(View.GONE);
             commentVideo.setVisibility(View.GONE);
             playPauseIcon.setVisibility(View.GONE);
             videoProgressBar.setVisibility(View.GONE);
+            if (commentVideo != null) {
+                commentVideo.setPlayer(null);
+            }
 
 
             if (player != null) {
                 releasePlayer(); // Release existing player before creating a new one or if no video
             }
 
-            if (twitterImageUrl != null && !"null".equals(twitterImageUrl)) {
+            boolean hasImage = twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty();
+            boolean hasVideo = videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty();
+
+            if (hasImage || hasVideo) {
                 commentMediaCard.setVisibility(View.VISIBLE);
                 commentImage.setVisibility(View.VISIBLE);
+            }
+
+            if (hasImage) {
                 ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, new ImageLoader.Callback() {
                     @Override
                     public boolean onLoadFailed() {
@@ -378,14 +412,19 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                     @Override
                     public boolean onResourceReady(Drawable resource, Target<Drawable> target) {
-                        if (resource != null && commentVideo != null && commentImage != null) {
+                        if (hasVideo) {
                             commentImage.post(() -> {
-                                if (commentVideo != null && commentImage.getHeight() > 0 && videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) { // Check hasVideo here too
+                                if (commentVideo == null || commentImage == null) return;
+                                int h = commentImage.getHeight();
+                                if (h > 0) {
                                     ViewGroup.LayoutParams videoParams = commentVideo.getLayoutParams();
-                                    videoParams.height = commentImage.getHeight();
+                                    videoParams.height = h;
                                     commentVideo.setLayoutParams(videoParams);
                                     commentVideo.requestLayout();
-                                    Log.d("VideoHeight", "Set video height to image placeholder: " + commentImage.getHeight());
+                                    Log.d("VideoHeight", "Set video height to image placeholder: " + h);
+                                } else {
+                                    Log.w("VideoHeight", "Image resource ready but height is 0. Falling back for video.");
+                                    setVideoHeightToAspectRatio(commentVideo);
                                 }
                             });
                         }
@@ -394,10 +433,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 });
             }
 
-            if (videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty()) {
-                commentMediaCard.setVisibility(View.VISIBLE); // Show card if there's video
-                // player = new ExoPlayer.Builder(context).build(); // Use 'this.context'
-                // Make sure context is not null for ExoPlayer
+            if (hasVideo) {
                 if (this.context != null) {
                     player = new ExoPlayer.Builder(this.context).build();
                     mVideoManagerInstance.addActiveHolder(this);
@@ -863,8 +899,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 videoProgressBar.setVisibility(View.GONE); // Hide progress bar
             }
             if (commentVideo != null) {
-                 commentVideo.setPlayer(null); // Detach player from view
-                 commentVideo.setVisibility(View.GONE); // Hide video view
+                commentVideo.setPlayer(null); // Detach player from view
+                commentVideo.setVisibility(View.GONE); // Hide video view
+                ViewGroup.LayoutParams params = commentVideo.getLayoutParams();
+                if (params != null) {
+                    params.height = ViewGroup.LayoutParams.WRAP_CONTENT; // Or specific initial value
+                    commentVideo.setLayoutParams(params);
+                }
             }
         }
 
@@ -873,7 +914,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (commentImage != null && context != null) {
                 Glide.with(context).clear(commentImage);
                 commentImage.setImageDrawable(null);
-                commentImage.setVisibility(View.VISIBLE); // Ensure it's hidden
             }
             if (mAvatarImage != null && context != null) {
                 Glide.with(context).clear(mAvatarImage);
