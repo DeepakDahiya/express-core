@@ -119,11 +119,11 @@ public class ReplyListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-        if (parentSheet != null) {
-            String targetId = parentSheet.getLastOpenedRepliesToRepliesForCommentId();
+        if (parentFragment != null) {
+            String targetId = parentFragment.getLastOpenedRepliesToRepliesForCommentId();
             if (targetId != null && mComments != null && !mComments.isEmpty()) {
                 scrollToCommentId(targetId);
-                parentSheet.clearLastOpenedRepliesToRepliesForCommentId();
+                parentFragment.clearLastOpenedRepliesToRepliesForCommentId();
             } else if (targetId != null) {
                 mShouldScrollToLastParent = true;
                 mTargetScrollCommentId = targetId;
@@ -459,8 +459,8 @@ public class ReplyListFragment extends Fragment {
                     if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
                         scrollToCommentId(mTargetScrollCommentId);
                         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-                        if (parentSheet != null) {
-                            parentSheet.clearLastOpenedRepliesToRepliesForCommentId();
+                        if (parentFragment != null) {
+                            parentFragment.clearLastOpenedRepliesToRepliesForCommentId();
                         }
                         mShouldScrollToLastParent = false; // Reset flag
                         mTargetScrollCommentId = null;
@@ -509,7 +509,7 @@ public class ReplyListFragment extends Fragment {
                 }
             };
 
-    private void scrollToReplyId(String commentId) {
+    private void scrollToCommentId(String commentId) {
         if (commentId == null || mComments == null || mComments.isEmpty() || mCommentRecycler == null || mNestedScrollView == null) {
             return;
         }

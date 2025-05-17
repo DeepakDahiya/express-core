@@ -123,11 +123,11 @@ public class CommentListFragment extends Fragment {
     public void onResume() {
         super.onResume();
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-        if (parentSheet != null) {
-            String targetId = parentSheet.getLastOpenedRepliesForCommentId();
+        if (parentFragment != null) {
+            String targetId = parentFragment.getLastOpenedRepliesForCommentId();
             if (targetId != null && mComments != null && !mComments.isEmpty()) {
                 scrollToCommentId(targetId);
-                parentSheet.clearLastOpenedRepliesForCommentId();
+                parentFragment.clearLastOpenedRepliesForCommentId();
             } else if (targetId != null) {
                 mShouldScrollToLastParent = true;
                 mTargetScrollCommentId = targetId;
@@ -443,8 +443,8 @@ public class CommentListFragment extends Fragment {
                     if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
                         scrollToCommentId(mTargetScrollCommentId);
                         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-                        if (parentSheet != null) {
-                            parentSheet.clearLastOpenedRepliesForCommentId();
+                        if (parentFragment != null) {
+                            parentFragment.clearLastOpenedRepliesForCommentId();
                         }
                         mShouldScrollToLastParent = false; // Reset flag
                         mTargetScrollCommentId = null;
