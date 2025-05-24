@@ -465,7 +465,7 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
   content::RenderFrameHost::AllowInjectingJavaScript();
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-        kYoutubeBackgroundPlayback, base::NullCallback());
+        k_youtube_background_playback_script, base::NullCallback());
   }
 }
 
