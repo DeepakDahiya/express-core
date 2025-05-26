@@ -44,12 +44,12 @@ import androidx.fragment.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.widget.FrameLayout;
 import android.widget.Toast;
-
+import android.net.Uri;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.app.BraveActivity;
-
+import android.content.Intent;
 import com.google.android.material.bottomsheet.BottomSheetBehavior;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
