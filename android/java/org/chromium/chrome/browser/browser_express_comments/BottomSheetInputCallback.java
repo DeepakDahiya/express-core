@@ -62,4 +62,8 @@ public interface BottomSheetInputCallback {
     ImageButton getSendButton();
     Button getEmojiButton(String type);
     void updateAvatar(String avatarUrl, BraveActivity activity);
+
+    @Nullable
+    Uri getSelectedMediaUri();
+    void clearSelectedMedia();
 }

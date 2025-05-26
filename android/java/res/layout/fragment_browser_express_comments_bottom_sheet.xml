@@ -4,7 +4,7 @@
      License, v. 2.0. If a copy of the MPL was not distributed with this file,
      You can obtain one at https://mozilla.org/MPL/2.0/.
 -->
-<LinearLayout 
+<LinearLayout
     android:id="@+id/comment_bottomsheet_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -137,10 +137,46 @@
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
 
-        <RelativeLayout
+        <FrameLayout
+            android:id="@+id/attachment_preview_container"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/comment_attachment_preview_border"
+            android:padding="2dp">
+
+            <ImageView
+                android:id="@+id/attachment_preview_image"
+                android:layout_width="100dp"
+                android:layout_height="100dp"
+                android:scaleType="centerCrop"
+                tools:src="@tools:sample/avatars"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+            <ImageButton
+                android:id="@+id/button_remove_attachment"
+                android:layout_width="28dp"
+                android:layout_height="28dp"
+                android:src="@drawable/ic_close_24dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:padding="4dp"
+                android:layout_gravity="top|end"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+        </FrameLayout>
+
+        <LinearLayout
+            android:id="@+id/input_bar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:padding="5sp">
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingTop="5sp"
+            android:paddingBottom="5sp"
+            android:paddingStart="0sp"
+            android:paddingEnd="0sp">
 
             <ImageView
                 android:id="@+id/avatar_image"
@@ -148,17 +184,15 @@
                 android:layout_width="24sp"
                 android:layout_height="24sp"
                 android:scaleType="centerCrop"
-                android:layout_gravity="center"
                 android:adjustViewBounds="true"
+                android:layout_marginEnd="8dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
             <EditText
-                android:layout_marginStart="54dp"
                 android:id="@+id/comment_content_input"
-                android:layout_width="match_parent"
+                android:layout_width="0dp"
+                android:layout_weight="1"
                 android:layout_height="wrap_content"
-                android:layout_centerVertical="true"
-                android:layout_toStartOf="@+id/button_send"
                 android:inputType="textImeMultiLine|textMultiLine"
                 android:paddingEnd="18dp"
                 android:paddingStart="18dp"
@@ -170,19 +204,27 @@
                 android:textColorHint="@color/brave_theme_hint_text"
                 android:hint="@string/type_your_comment"
                 android:background="@drawable/rounded_edittext"
+                android:layout_marginEnd="8dp"
                 tools:ignore="Autofill" />
+
+            <ImageButton
+                android:id="@+id/button_attach"
+                style="@style/ToolbarButton"
+                android:src="@drawable/ic_attach_file_24dp"
+                android:layout_width="28sp"
+                android:layout_height="28sp"
+                android:padding="2dp"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="8dp"
+                android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
             <ImageButton android:id="@+id/button_send"
                 style="@style/ToolbarButton"
                 android:background="@drawable/send"
-                android:layout_gravity="center"
-                android:layout_centerVertical="true"
-                android:layout_alignParentEnd="true"
-                android:layout_marginStart="8sp"
-                android:visibility="visible"
                 android:layout_width="28sp"
                 android:layout_height="28sp"
+                android:visibility="visible"
                 android:contentDescription="@string/send_comment" />
-        </RelativeLayout>
+        </LinearLayout>
     </LinearLayout>
 </LinearLayout>

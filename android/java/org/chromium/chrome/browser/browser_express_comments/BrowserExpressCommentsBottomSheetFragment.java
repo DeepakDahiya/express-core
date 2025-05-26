@@ -42,6 +42,8 @@ import androidx.annotation.Nullable;
 import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.FragmentActivity;
 import android.view.KeyEvent;
+import android.widget.FrameLayout;
+import android.widget.Toast;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -64,6 +66,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     public static final String OPEN_KEYBOARD = "open_keyboard";
+    private static final int PICK_MEDIA_REQUEST = 1001;
+
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
@@ -71,6 +75,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mPostId;
     private Boolean mOpenKeyboard = false;
     private ProgressBar mCommentProgress;
+
+    private ImageButton mAttachButton;
+    private FrameLayout mAttachmentPreviewContainer;
+    private ImageView mAttachmentPreviewImage;
+    private ImageButton mRemoveAttachmentButton;
+    private Uri mSelectedMediaUri;
 
     private ImageButton mSendButton;
     private EditText mMessageEditText;
@@ -139,6 +149,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
+
+        mAttachButton = view.findViewById(R.id.button_attach);
+        mAttachmentPreviewContainer = view.findViewById(R.id.attachment_preview_container);
+        mAttachmentPreviewImage = view.findViewById(R.id.attachment_preview_image);
+        mRemoveAttachmentButton = view.findViewById(R.id.button_remove_attachment);
+
+        setupAttachmentListeners();
 
         return view;
     }
@@ -381,4 +398,62 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
+    private void setupAttachmentListeners() {
+        mAttachButton.setOnClickListener(v -> openMediaPicker());
+        mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
+    }
+
+    private void openMediaPicker() {
+        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
+        intent.setType("*/*"); // Allows picking any file type initially
+        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
+        try {
+            startActivityForResult(Intent.createChooser(intent, getString(R.string.select_media_title)), PICK_MEDIA_REQUEST);
+        } catch (android.content.ActivityNotFoundException ex) {
+            if (getContext() != null) {
+                Toast.makeText(getContext(), R.string.file_manager_not_found, Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    private void removeAttachment() {
+        mSelectedMediaUri = null;
+        if (mAttachmentPreviewImage != null) {
+            mAttachmentPreviewImage.setImageDrawable(null); // Or a placeholder
+        }
+        if (mAttachmentPreviewContainer != null) {
+            mAttachmentPreviewContainer.setVisibility(View.GONE);
+        }
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
+            if (data != null && data.getData() != null) {
+                mSelectedMediaUri = data.getData();
+                if (getContext() != null && mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
+                    Glide.with(getContext())
+                            .load(mSelectedMediaUri)
+                            .placeholder(R.drawable.ic_image_placeholder_24dp) // Add a placeholder drawable
+                            .error(R.drawable.ic_error_placeholder_24dp)       // Add an error drawable
+                            .into(mAttachmentPreviewImage);
+                    mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                }
+            } else {
+                removeAttachment(); // Clear if data is null
+            }
+        }
+    }
+
+    @Override
+    @Nullable
+    public Uri getSelectedMediaUri() {
+        return mSelectedMediaUri;
+    }
+
+    @Override
+    public void clearSelectedMedia() {
+        removeAttachment();
+    }
 }

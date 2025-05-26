@@ -295,7 +295,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mProfileButton.setOnLongClickListener(this);
             BraveTouchUtils.ensureMinTouchTarget(mProfileButton);
 
-            mProfileButton.post(this::fetchAndUpdateProfileImage);
+            // mProfileButton.post(this::fetchAndUpdateProfileImage);
         }
 
         mBraveShieldsHandler = new BraveShieldsHandler(getContext());
@@ -1185,6 +1185,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             // Helps Brave News know how to behave on home button action
             try {
                 BraveActivity.getBraveActivity().setComesFromNewTab(true);
+                fetchAndUpdateProfileImage();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e(TAG, "HomeButton click " + e);
             }

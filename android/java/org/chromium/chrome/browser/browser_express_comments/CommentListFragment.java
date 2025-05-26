@@ -58,6 +58,7 @@ import android.graphics.Rect;
 import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
+import android.net.Uri;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -252,10 +253,15 @@ public class CommentListFragment extends Fragment {
                             //     return;
                             // }
                             String content = mMessageEditText.getText().toString().trim();
-                            if(content.length() > 0){
+                            Uri mediaUri = null;
+                            if (inputCallback != null) {
+                                mediaUri = inputCallback.getSelectedMediaUri();
+                            }
+
+                            if (content.length() > 0 || mediaUri != null) {
                                 String pType = "page";
                                 String pId = null;
-                                if(mCommentsFor.equals("post")){
+                                if (mCommentsFor.equals("post")) {
                                     pType = "post";
                                     pId = mPostId;
                                 }
