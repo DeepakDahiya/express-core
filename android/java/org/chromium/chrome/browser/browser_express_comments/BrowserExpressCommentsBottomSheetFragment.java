@@ -43,7 +43,7 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.fragment.app.FragmentActivity;
 import android.view.KeyEvent;
 import android.widget.FrameLayout;
-import android.widget.Toast;
+import android.app.Activity;
 import android.net.Uri;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
