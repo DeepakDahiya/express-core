@@ -435,6 +435,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     View.OnClickListener videoClickListener = v -> togglePlayPause();
                     commentVideo.setOnClickListener(videoClickListener);
                     playPauseIcon.setOnClickListener(videoClickListener);
+                    commentMediaCard.setOnClickListener(videoClickListener);
 
                     commentImage.post(new Runnable() {
                         @Override
@@ -790,17 +791,17 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 playPauseIcon.setVisibility(View.VISIBLE);
                 playPauseIcon.setAlpha(1f); // Ensure it's fully visible
                 
-                // playPauseIcon.animate()
-                //     .alpha(0f)
-                //     .setDuration(300)
-                //     .setStartDelay(2000)
-                //     .withEndAction(() -> {
-                //         if (player != null && player.isPlaying()) { // Check again before hiding
-                //             playPauseIcon.setVisibility(View.GONE);
-                //         }
-                //         playPauseIcon.setAlpha(1f); // Reset alpha for next time
-                //     })
-                //     .start();
+                playPauseIcon.animate()
+                    .alpha(0f)
+                    .setDuration(300)
+                    .setStartDelay(2000)
+                    .withEndAction(() -> {
+                        if (player != null && player.isPlaying()) { // Check again before hiding
+                            playPauseIcon.setVisibility(View.GONE);
+                        }
+                        playPauseIcon.setAlpha(1f); // Reset alpha for next time
+                    })
+                    .start();
             } else {
                 playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
                 playPauseIcon.setVisibility(View.VISIBLE);
