@@ -461,7 +461,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             mSelectedMediaUri = processedImageUri;
                             mSelectedMediaType = "image";
                             if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
-                                Glide.with(BrowserExpressCommentsBottomSheetFragment.this)
+                                Glide.with(getContext())
                                         .load(mSelectedMediaUri)
                                         .placeholder(R.drawable.ic_image_placeholder_24dp)
                                         .error(R.drawable.ic_error_placeholder_24dp)
@@ -473,7 +473,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                             mSelectedMediaUri = originalUri; 
                             mSelectedMediaType = "image";
                             if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
-                                Glide.with(BrowserExpressCommentsBottomSheetFragment.this)
+                                Glide.with(getContext())
                                         .load(originalUri)
                                         .placeholder(R.drawable.ic_image_placeholder_24dp)
                                         .error(R.drawable.ic_error_placeholder_24dp)
