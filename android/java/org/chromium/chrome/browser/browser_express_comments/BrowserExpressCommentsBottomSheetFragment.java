@@ -67,6 +67,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String POST_ID = "post_id";
     public static final String OPEN_KEYBOARD = "open_keyboard";
     private static final int PICK_MEDIA_REQUEST = 1001;
+    private static final int MAX_IMAGE_DIMENSION = 1920;
+    private static final int IMAGE_COMPRESSION_QUALITY = 80;
 
     private int mPage = 1;
     private int mPerPage = 100;
@@ -81,6 +83,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private ImageView mAttachmentPreviewImage;
     private ImageButton mRemoveAttachmentButton;
     private Uri mSelectedMediaUri;
+    private String mSelectedMediaType;
 
     private ImageButton mSendButton;
     private EditText mMessageEditText;
@@ -418,6 +421,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private void removeAttachment() {
         mSelectedMediaUri = null;
+        mSelectedMediaType = null;
         if (mAttachmentPreviewImage != null) {
             mAttachmentPreviewImage.setImageDrawable(null); // Or a placeholder
         }
@@ -431,18 +435,74 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         super.onActivityResult(requestCode, resultCode, data);
         if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
             if (data != null && data.getData() != null) {
-                mSelectedMediaUri = data.getData();
-                if (getContext() != null && mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
-                    Glide.with(getContext())
-                            .load(mSelectedMediaUri)
-                            .placeholder(R.drawable.ic_image_placeholder_24dp) // Add a placeholder drawable
-                            .error(R.drawable.ic_error_placeholder_24dp)       // Add an error drawable
-                            .into(mAttachmentPreviewImage);
-                    mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
-                }
+                Uri originalUri = data.getData();
+                processSelectedMedia(originalUri); // New method to handle processing
             } else {
-                removeAttachment(); // Clear if data is null
+                removeAttachment();
             }
+        }
+    }
+
+    private void processSelectedMedia(Uri originalUri) {
+        if (getContext() == null) {
+            removeAttachment();
+            return;
+        }
+
+        ContentResolver contentResolver = getContext().getContentResolver();
+        String mimeType = contentResolver.getType(originalUri);
+
+        if (mimeType != null && mimeType.startsWith("image/")) {
+            ImageProcessor.processImage(getContext(), originalUri,
+                new ImageProcessor.ProcessImageCallback() {
+                    @Override
+                    public void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType) {
+                        if (processedImageUri != null) {
+                            mSelectedMediaUri = processedImageUri;
+                            mSelectedMediaType = "image";
+                            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
+                                Glide.with(BrowserExpressCommentsBottomSheetFragment.this)
+                                        .load(mSelectedMediaUri)
+                                        .placeholder(R.drawable.ic_image_placeholder_24dp)
+                                        .error(R.drawable.ic_error_placeholder_24dp)
+                                        .into(mAttachmentPreviewImage);
+                                mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                            }
+                        } else {
+                            Log.e("CommentBottomSheet", "Image processing failed.");
+                            mSelectedMediaUri = originalUri; 
+                            mSelectedMediaType = "image";
+                            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
+                                Glide.with(BrowserExpressCommentsBottomSheetFragment.this)
+                                        .load(originalUri)
+                                        .placeholder(R.drawable.ic_image_placeholder_24dp)
+                                        .error(R.drawable.ic_error_placeholder_24dp)
+                                        .into(mAttachmentPreviewImage);
+                                mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                            }
+                            if(getContext() != null) {
+                                Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show(); // Use string resource
+                            }
+                        }
+                    }
+                });
+        } else if (mimeType != null && mimeType.startsWith("video/")) {
+            mSelectedMediaUri = originalUri;
+            mSelectedMediaType = "video";
+            if (getContext() != null && mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
+                Glide.with(getContext())
+                        .load(mSelectedMediaUri)
+                        .placeholder(R.drawable.ic_image_placeholder_24dp)
+                        .error(R.drawable.ic_error_placeholder_24dp)
+                        .into(mAttachmentPreviewImage);
+                mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+            }
+        } else {
+            Log.w("CommentBottomSheet", "Unsupported media type: " + mimeType);
+             if(getContext() != null) {
+                Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show(); // Use string resource
+            }
+            removeAttachment();
         }
     }
 
@@ -450,6 +510,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Nullable
     public Uri getSelectedMediaUri() {
         return mSelectedMediaUri;
+    }
+
+    @Override
+    @Nullable
+    public String getSelectedMediaType() {
+        return mSelectedMediaType;
     }
 
     @Override

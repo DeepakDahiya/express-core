@@ -35,10 +35,12 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
+import android.net.Uri;
 
 public class BrowserExpressAddCommentUtil {
     private static final String TAG = "Add_Comment_Browser_Express";
     private static final String ADD_COMMENT_URL = "https://api.browser.express/v1/comment";
+    private static final String ADD_COMMENT_URL_WITH_ATTACHMENT = "https://api.browser.express/v1/comment/with-media";
 
     public interface AddCommentCallback {
         void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken);
@@ -47,19 +49,21 @@ public class BrowserExpressAddCommentUtil {
 
     public static class AddCommentWorkerTask extends AsyncTask<Void> {
         private AddCommentCallback mCallback;
-        private static Boolean addCommentStatus;
-        private static String mErrorMessage;
-        private static String mContent;
-        private static String mParentType;
-        private static String mParentId;
-        private static String mUrl;
-        private static String mAccessToken;
-        private static Comment mComment;
+        private Boolean addCommentStatus;
+        private String mErrorMessage;
+        private String mContent;
+        private String mParentType;
+        private String mParentId;
+        private String mUrl;
+        private String mAccessToken;
+        private Comment mComment;
+        private Uri mMediaUri;
+        private String mMediaType;
 
-        private static String mNewAccessToken = "";
-        private static String mNewRefreshToken = "";
+        private String mNewAccessToken = "";
+        private String mNewRefreshToken = "";
 
-        public AddCommentWorkerTask(String content, String parentType, String url, String parentId, String accessToken, AddCommentCallback callback) {
+        public AddCommentWorkerTask(String content, String parentType, String url, String parentId, Uri mediaUri, String mediaType, String accessToken, AddCommentCallback callback) {
             mCallback = callback;
             addCommentStatus = false;
             mErrorMessage = "";
@@ -68,6 +72,8 @@ public class BrowserExpressAddCommentUtil {
             mParentId = parentId;
             mUrl = url;
             mAccessToken = accessToken;
+            mMediaUri = mediaUri;
+            mMediaType = mediaType;
         }
 
         public static void setComment(Comment comment){
@@ -89,7 +95,7 @@ public class BrowserExpressAddCommentUtil {
 
         @Override
         protected Void doInBackground() {
-            sendAddCommentRequest(mContent, mParentType, mParentId, mUrl, mAccessToken, mCallback);
+            sendAddCommentRequest(mContent, mParentType, mParentId, mUrl, mMediaUri, mMediaType, mAccessToken, mCallback);
             return null;
         }
 
@@ -105,33 +111,107 @@ public class BrowserExpressAddCommentUtil {
         }
     }
 
-    private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl, String accessToken, AddCommentCallback callback) {
+    private static String getMimeType(Context context, Uri uri) {
+        String mimeType;
+        if (ContentResolver.SCHEME_CONTENT.equals(uri.getScheme())) {
+            ContentResolver cr = context.getContentResolver();
+            mimeType = cr.getType(uri);
+        } else {
+            String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
+            mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
+                    fileExtension.toLowerCase());
+        }
+        return mimeType == null ? "application/octet-stream" : mimeType; // Default MIME type
+    }
+
+    private static void addFormField(OutputStream outputStream, String boundary, String name, String value) throws IOException {
+        outputStream.write(("--" + boundary + LINE_FEED).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(("Content-Disposition: form-data; name=\"" + name + "\"" + LINE_FEED).getBytes(StandardCharsets.UTF_8));
+        outputStream.write(("Content-Type: text/plain; charset=UTF-8" + LINE_FEED).getBytes(StandardCharsets.UTF_8)); // Specify charset for text
+        outputStream.write(LINE_FEED.getBytes(StandardCharsets.UTF_8));
+        outputStream.write(value.getBytes(StandardCharsets.UTF_8));
+        outputStream.write(LINE_FEED.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl, Uri mediaUri, String mediaType, String accessToken, AddCommentCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
+        String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
+        String LINE_FEED = "\r\n";
+        Context context = ContextUtils.getApplicationContext();
+
         try {
             String countryCode = Locale.getDefault().getCountry();
             String searchQuery = "?country=" + countryCode;
-            URL url = new URL(ADD_COMMENT_URL + searchQuery);
+            URL url = null;
+            if (mediaUri != null) {
+                url = new URL(ADD_COMMENT_URL_WITH_ATTACHMENT + searchQuery);
+            } else {
+                url = new URL(ADD_COMMENT_URL + searchQuery);
+            }
             urlConnection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
             urlConnection.setDoOutput(true);
             urlConnection.setRequestMethod("POST");
             urlConnection.setUseCaches(false);
-            urlConnection.setRequestProperty ("Authorization", accessToken);
-            // urlConnection.setRequestProperty ("x-refresh", refreshToken);
-            urlConnection.setRequestProperty("Content-Type", "application/json");
-            urlConnection.connect();
+            if (accessToken != null && !accessToken.isEmpty()) {
+                urlConnection.setRequestProperty("Authorization", accessToken);
+            }
 
-            JSONObject jsonParam = new JSONObject();
-            jsonParam.put("content", content);
-            jsonParam.put("platform", "Android");
-            jsonParam.put("parentType", parentType);
-            jsonParam.put("parentId", parentId);
-            jsonParam.put("url", pageUrl);
+            if (mediaUri != null) {
+                urlConnection.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
+            } else {
+                urlConnection.setRequestProperty("Content-Type", "application/json");
+            }
 
             OutputStream outputStream = urlConnection.getOutputStream();
-            byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
-            outputStream.write(input, 0, input.length);
+
+            if (mediaUri != null) {
+                // Multipart request
+                addFormField(outputStream, boundary, "content", content);
+                addFormField(outputStream, boundary, "platform", "Android");
+                addFormField(outputStream, boundary, "parentType", parentType);
+                addFormField(outputStream, boundary, "parentId", parentId);
+                addFormField(outputStream, boundary, "url", pageUrl);
+                addFormField(outputStream, boundary, "mediaType", mediaType);
+
+                String mimeType = getMimeType(context, mediaUri);
+                String fileName = "media_" + System.currentTimeMillis() + "." + MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType);
+                if(MimeTypeMap.getSingleton().getExtensionFromMimeType(mimeType) == null) { // fallback if extension not found
+                    String path = mediaUri.getPath();
+                    if (path != null) {
+                        fileName = path.substring(path.lastIndexOf('/') + 1);
+                    } else {
+                         fileName = "media_" + System.currentTimeMillis(); // generic filename
+                    }
+                }
+
+                outputStream.write(("--" + boundary + LINE_FEED).getBytes(StandardCharsets.UTF_8));
+                outputStream.write(("Content-Disposition: form-data; name=\"reports\"; filename=\"" + fileName + "\"" + LINE_FEED).getBytes(StandardCharsets.UTF_8));
+                outputStream.write(("Content-Type: " + mimeType + LINE_FEED + LINE_FEED).getBytes(StandardCharsets.UTF_8));
+
+                InputStream fileInputStream = context.getContentResolver().openInputStream(mediaUri);
+                byte[] buffer = new byte[4096];
+                int bytesRead;
+                while ((bytesRead = fileInputStream.read(buffer)) != -1) {
+                    outputStream.write(buffer, 0, bytesRead);
+                }
+                fileInputStream.close();
+                outputStream.write(LINE_FEED.getBytes(StandardCharsets.UTF_8));
+
+                outputStream.write(("--" + boundary + "--" + LINE_FEED).getBytes(StandardCharsets.UTF_8));
+
+            } else {
+                JSONObject jsonParam = new JSONObject();
+                jsonParam.put("content", content);
+                jsonParam.put("platform", "Android");
+                jsonParam.put("parentType", parentType);
+                jsonParam.put("parentId", parentId);
+                jsonParam.put("url", pageUrl);
+                byte[] input = jsonParam.toString().getBytes(StandardCharsets.UTF_8.name());
+                outputStream.write(input, 0, input.length);
+            }
+
             outputStream.flush();
             outputStream.close();
 
@@ -175,8 +255,8 @@ public class BrowserExpressAddCommentUtil {
                         commentParent,
                         u,
                         v,
-                        null,
-                        null
+                        comment.optString("mediaImageUrl", null),
+                        comment.optString("mediaVideoUrl", null)
                     ));
 
                     AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));

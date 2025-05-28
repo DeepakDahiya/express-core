@@ -4196,6 +4196,12 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_TYPE_YOUR_COMMENT" desc="Brave wallet password hint text">
       Add a comment
     </message>
+    <message name="IDS_IMAGE_PROCESSING_FAILED" desc="Brave wallet password hint text">
+      Could not process image.
+    </message>
+    <message name="IDS_UNSUPPORTED_FILE_TYPE" desc="Brave wallet password hint text">
+      Unsupported file type.
+    </message>
     <message name="IDS_CONFIRM_PASSWORD" desc="Brave wallet password hint text">
       Confirm password
     </message>

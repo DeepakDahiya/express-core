@@ -55,6 +55,7 @@ import android.content.Intent;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.graphics.Rect;
 import androidx.core.widget.NestedScrollView;
+import android.net.Uri;
 
 public class ReplyListFragment2 extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -213,10 +214,17 @@ public class ReplyListFragment2 extends Fragment {
                             //     return;
                             // }
                             String content = mMessageEditText.getText().toString().trim();
-                            if(content.length() > 0){
+                            Uri mediaUri = null;
+                            String mediaType = null;
+                            if (inputCallback != null) {
+                                mediaUri = inputCallback.getSelectedMediaUri();
+                                mediaType = inputCallback.getSelectedMediaType();
+                            }
+
+                            if (content.length() > 0 || mediaUri != null) {
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                            content, "comment", mUrl, mCommentId, accessToken, addCommentCallback);
+                                            content, "comment", mUrl, mCommentId, mediaUri, mediaType, accessToken, addCommentCallback);
                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
                             }

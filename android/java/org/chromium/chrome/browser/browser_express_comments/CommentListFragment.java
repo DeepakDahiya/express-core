@@ -254,8 +254,10 @@ public class CommentListFragment extends Fragment {
                             // }
                             String content = mMessageEditText.getText().toString().trim();
                             Uri mediaUri = null;
+                            String mediaType = null;
                             if (inputCallback != null) {
                                 mediaUri = inputCallback.getSelectedMediaUri();
+                                mediaType = inputCallback.getSelectedMediaType();
                             }
 
                             if (content.length() > 0 || mediaUri != null) {
@@ -267,7 +269,7 @@ public class CommentListFragment extends Fragment {
                                 }
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                            content, pType, mUrl, pId, accessToken, addCommentCallback);
+                                            content, pType, mUrl, pId, mediaUri, mediaType, accessToken, addCommentCallback);
                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
                             }

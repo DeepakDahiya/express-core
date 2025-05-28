@@ -65,5 +65,7 @@ public interface BottomSheetInputCallback {
 
     @Nullable
     Uri getSelectedMediaUri();
+    @Nullable
+    String getSelectedMediaType();
     void clearSelectedMedia();
 }
