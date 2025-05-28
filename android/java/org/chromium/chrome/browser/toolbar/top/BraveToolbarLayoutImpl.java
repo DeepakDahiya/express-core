@@ -176,7 +176,6 @@ import java.net.HttpURLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
-import android.view.ViewTreeObserver;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
@@ -297,31 +296,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             BraveTouchUtils.ensureMinTouchTarget(mProfileButton);
 
             // mProfileButton.post(this::fetchAndUpdateProfileImage);
-
-            final ViewTreeObserver.OnGlobalLayoutListener layoutListener = new ViewTreeObserver.OnGlobalLayoutListener() {
-                boolean alreadyRun = false; // Ensures this runs only once per listener instance
-
-                @Override
-                public void onGlobalLayout() {
-                    // Check if not already run, button exists, and has been laid out
-                    if (!alreadyRun && mProfileButton != null && (mProfileButton.getWidth() > 0 || mProfileButton.getHeight() > 0)) {
-                        alreadyRun = true; // Mark as run
-
-                        // Remove the listener to prevent multiple calls
-                        // Check if ViewTreeObserver is still alive before removing
-                        if (mProfileButton.getViewTreeObserver().isAlive()) {
-                            mProfileButton.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                        }
-                        
-                        Log.d(TAG, "onGlobalLayout: Profile button laid out. Fetching initial profile image.");
-                        fetchAndUpdateProfileImage();
-                    } else if (alreadyRun && mProfileButton != null && mProfileButton.getViewTreeObserver().isAlive()) {
-                        // Fallback: if alreadyRun is true but listener somehow persists, remove it.
-                        mProfileButton.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    }
-                }
-            };
-            mProfileButton.getViewTreeObserver().addOnGlobalLayoutListener(layoutListener);
         }
 
         mBraveShieldsHandler = new BraveShieldsHandler(getContext());
