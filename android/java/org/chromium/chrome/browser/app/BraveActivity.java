@@ -384,8 +384,10 @@ public abstract class BraveActivity extends ChromeActivity
             BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
         }
 
-        if(!NotificationManagerCompat.from(this).areNotificationsEnabled()){
+        int notificationRequestCount = SharedPreferencesManager.getInstance().readInt("NOTIFICATION_REQUEST_COUNT");
+        if(!NotificationManagerCompat.from(this).areNotificationsEnabled() && notificationRequestCount < 3){
             this.showNotificationRationale();
+            SharedPreferencesManager.getInstance().writeInt("NOTIFICATION_REQUEST_COUNT", notificationRequestCount + 1);
             // BravePermissionUtils.requestPermission(this);
         }
     }

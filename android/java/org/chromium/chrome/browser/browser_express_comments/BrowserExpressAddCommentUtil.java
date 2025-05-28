@@ -296,36 +296,45 @@ public class BrowserExpressAddCommentUtil {
 
             if (HttpResult >= HttpURLConnection.HTTP_OK && HttpResult < HttpURLConnection.HTTP_MULT_CHOICE) {
                 JSONObject responseObject = new JSONObject(responseString);
-                if (responseObject.optBoolean("success", false)) {
-                    JSONObject commentJson = responseObject.optJSONObject("comment");
-                     if (commentJson == null) {
-                        AddCommentWorkerTask.setErrorMessage("Server success, but comment object missing.");
-                        return;
-                    }
-                    JSONObject userJson = commentJson.optJSONObject("user");
-                     if (userJson == null) {
-                        AddCommentWorkerTask.setErrorMessage("Server success, but user in comment missing.");
-                        return;
-                    }
-                    User u = new User(userJson.optString("_id"), userJson.optString("username"), userJson.optString("avatar", null));
-                    Comment parsedComment = new Comment(
-                        commentJson.optString("_id"),
-                        commentJson.optString("content"),
-                        commentJson.optInt("upvoteCount"),
-                        commentJson.optInt("downvoteCount"),
-                        commentJson.optInt("commentCount"),
-                        commentJson.optString("pageParent", null),
-                        commentJson.optString("postParent", null),
-                        commentJson.optString("commentParent", null),
-                        u, null,
-                        commentJson.optString("mediaUrl", null), // Assuming API returns mediaUrl
-                        commentJson.optString("mediaType", null)); // Assuming API returns mediaType
-
-                    AddCommentWorkerTask.setComment(parsedComment);
-                    AddCommentWorkerTask.setNewTokens(responseObject.optString("accessToken", ""), responseObject.optString("refreshToken", ""));
+                if(responseObject.getBoolean("success")){
                     AddCommentWorkerTask.setAddCommentSuccessStatus(true);
-                } else {
-                    AddCommentWorkerTask.setErrorMessage(responseObject.optString("error", "Unknown server error (success was false)."));
+
+                    JSONObject comment = responseObject.getJSONObject("comment");
+                    JSONObject user = comment.getJSONObject("user");
+                    User u = new User(user.getString("_id"), user.getString("username"), user.optString("avatar", null));
+                    Vote v = null;
+                    String pageParent = null;
+                    String postParent = null;
+                    String commentParent = null;
+                    if(comment.has("pageParent")){
+                        pageParent = comment.getString("pageParent");
+                    }
+                    if(comment.has("postParent")){
+                        postParent = comment.getString("postParent");
+                    }
+
+                    if(comment.has("commentParent")){
+                        commentParent = comment.getString("commentParent");
+                    }
+                    AddCommentWorkerTask.setComment(new Comment(
+                        comment.getString("_id"), 
+                        comment.getString("content"),
+                        comment.getInt("upvoteCount"),
+                        comment.getInt("downvoteCount"),
+                        comment.getInt("commentCount"),
+                        pageParent, 
+                        postParent,
+                        commentParent,
+                        u,
+                        v,
+                        comment.optString("mediaImageUrl", null),
+                        comment.optString("mediaVideoUrl", null)
+                    ));
+
+                    AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
+                }else{
+                    AddCommentWorkerTask.setAddCommentSuccessStatus(false);
+                    AddCommentWorkerTask.setErrorMessage(responseObject.getString("error"));
                 }
             } else {
                 Log.e(TAG, "HTTP Error: " + HttpResult + " Response: " + responseString);
