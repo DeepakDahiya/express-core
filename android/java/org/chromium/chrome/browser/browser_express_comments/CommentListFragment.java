@@ -267,6 +267,7 @@ public class CommentListFragment extends Fragment {
                                     pType = "post";
                                     pId = mPostId;
                                 }
+                                Log.e("Express Browser Add Comment", "Content: " + content + ", Type: " + pType + ", URL: " + mUrl + ", Post ID: " + pId + ", Media URI: " + mediaUri + ", Media Type: " + mediaType);
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
                                             content, pType, mUrl, pId, mediaUri, mediaType, accessToken, addCommentCallback);
@@ -489,6 +490,8 @@ public class CommentListFragment extends Fragment {
                         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
 
+                        inputCallback.clearSelectedMedia();
+
                         String currentText = mCommentsText.getText().toString();
                         int commentCount = 0;
                         try {
@@ -520,7 +523,7 @@ public class CommentListFragment extends Fragment {
 
                 @Override
                 public void addCommentFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                    Log.e("Express Browser LOGIN", error);
                 }
             };
 
