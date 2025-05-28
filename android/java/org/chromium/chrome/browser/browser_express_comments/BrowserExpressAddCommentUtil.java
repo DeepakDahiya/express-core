@@ -29,6 +29,7 @@ import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpr
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
@@ -36,6 +37,8 @@ import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 import android.net.Uri;
+import android.webkit.MimeTypeMap;
+import android.content.ContentResolver;
 
 public class BrowserExpressAddCommentUtil {
     private static final String TAG = "Add_Comment_Browser_Express";
@@ -61,8 +64,8 @@ public class BrowserExpressAddCommentUtil {
         private static Uri mMediaUri;
         private static String mMediaType;
 
-        private String mNewAccessToken = "";
-        private String mNewRefreshToken = "";
+        private static String mNewAccessToken = "";
+        private static String mNewRefreshToken = "";
 
         public AddCommentWorkerTask(String content, String parentType, String url, String parentId, Uri mediaUri, String mediaType, String accessToken, AddCommentCallback callback) {
             mCallback = callback;
@@ -120,7 +123,7 @@ public class BrowserExpressAddCommentUtil {
         } else {
             String fileExtension = MimeTypeMap.getFileExtensionFromUrl(uri.toString());
             mimeType = MimeTypeMap.getSingleton().getMimeTypeFromExtension(
-                    fileExtension.toLowerCase());
+                    fileExtension.toLowerCase(Locale.getDefault()));
         }
         return mimeType == null ? "application/octet-stream" : mimeType; // Default MIME type
     }
