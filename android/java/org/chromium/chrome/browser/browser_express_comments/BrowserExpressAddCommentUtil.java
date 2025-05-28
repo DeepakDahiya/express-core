@@ -53,7 +53,7 @@ public class BrowserExpressAddCommentUtil {
 
     public static class AddCommentWorkerTask extends AsyncTask<Void> {
         private AddCommentCallback mCallback;
-        private Boolean addCommentStatus;
+        private static Boolean addCommentStatus;
         private static String mErrorMessage;
         private static String mContent;
         private static String mParentType;
