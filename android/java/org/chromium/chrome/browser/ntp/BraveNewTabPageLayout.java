@@ -136,6 +136,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import java.util.Random;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
+import org.chromium.ui.widget.Toast;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 
 public class BraveNewTabPageLayout
