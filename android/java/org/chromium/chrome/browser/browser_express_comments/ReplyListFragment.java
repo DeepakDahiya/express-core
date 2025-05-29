@@ -155,6 +155,8 @@ public class ReplyListFragment extends Fragment {
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
 
+        mParentCommentLayout.setVisibility(View.VISIBLE);
+
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mArrow2.setVisibility(View.VISIBLE);
