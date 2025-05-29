@@ -457,31 +457,101 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 new ImageProcessor.ProcessImageCallback() {
                     @Override
                     public void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType) {
+                        if (!isAdded() || getContext() == null || mAttachmentPreviewImage == null || mAttachmentPreviewContainer == null) {
+                            return; // Fragment not attached or views are null
+                        }
+
                         if (processedImageUri != null) {
                             mSelectedMediaUri = processedImageUri;
                             mSelectedMediaType = "image";
-                            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
-                                Glide.with(getContext())
-                                        .load(mSelectedMediaUri)
-                                        .placeholder(R.drawable.ic_image_placeholder_24dp)
-                                        .error(R.drawable.ic_error_placeholder_24dp)
-                                        .into(mAttachmentPreviewImage);
-                                mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
-                            }
+
+                            Glide.with(getContext())
+                                    .asBitmap()
+                                    .load(mSelectedMediaUri)
+                                    .placeholder(R.drawable.ic_image_placeholder_24dp)
+                                    .error(R.drawable.ic_error_placeholder_24dp)
+                                    .into(new CustomTarget<Bitmap>() {
+                                        @Override
+                                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                                            if (!isAdded() || mAttachmentPreviewImage == null) return;
+
+                                            int screenWidth = getResources().getDisplayMetrics().widthPixels;
+                                            int parentActualWidth = ((View)mAttachmentPreviewContainer.getParent()).getWidth();
+                                            int containerPaddingHorizontal = mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight();
+                                            int availableWidth = parentActualWidth > 0 ? parentActualWidth - containerPaddingHorizontal
+                                                                  : screenWidth - (int) (getResources().getDisplayMetrics().density * 40);
+
+
+                                            int imageWidth = resource.getWidth();
+                                            int imageHeight = resource.getHeight();
+                                            float aspectRatio = (imageHeight == 0) ? 1.0f : (float) imageWidth / (float) imageHeight;
+
+
+                                            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+
+                                            if (aspectRatio > 1) { // Horizontal image
+                                                params.width = availableWidth;
+                                                params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.75f) : (int) (availableWidth / aspectRatio) ;
+                                            } else { // Vertical or square image
+                                                params.width = availableWidth / 2;
+                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/2) * 1.33f) : (int) ((availableWidth / 2) / aspectRatio) ;
+                                            }
+
+                                            int maxPreviewHeight = (int) (250 * getResources().getDisplayMetrics().density);
+                                            if (params.height > maxPreviewHeight) {
+                                                params.height = maxPreviewHeight;
+                                                if (aspectRatio != 0) {
+                                                    params.width = (int) (maxPreviewHeight * aspectRatio);
+                                                } else {
+                                                    params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
+                                                }
+
+                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : availableWidth / 2;
+                                                if (params.width > maxWidthForOrientation ) {
+                                                     params.width = maxWidthForOrientation;
+                                                }
+                                            }
+                                            
+                                            mAttachmentPreviewImage.setLayoutParams(params);
+                                            mAttachmentPreviewImage.setImageBitmap(resource);
+                                        }
+
+                                        @Override
+                                        public void onLoadCleared(@Nullable Drawable placeholder) {
+                                            if (mAttachmentPreviewImage != null) {
+                                                mAttachmentPreviewImage.setImageDrawable(placeholder);
+                                            }
+                                        }
+
+                                        @Override
+                                        public void onLoadFailed(@Nullable Drawable errorDrawable) {
+                                             if (!isAdded() || mAttachmentPreviewImage == null || getContext() == null) return;
+                                            mAttachmentPreviewImage.setImageDrawable(errorDrawable);
+                                            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+                                            params.width = (int) (100 * getResources().getDisplayMetrics().density);
+                                            params.height = (int) (100 * getResources().getDisplayMetrics().density);
+                                            mAttachmentPreviewImage.setLayoutParams(params);
+                                        }
+                                    });
+                            mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                         } else {
                             Log.e("CommentBottomSheet", "Image processing failed.");
-                            mSelectedMediaUri = originalUri; 
+                            mSelectedMediaUri = originalUri;
                             mSelectedMediaType = "image";
-                            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
+                            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
                                 Glide.with(getContext())
                                         .load(originalUri)
                                         .placeholder(R.drawable.ic_image_placeholder_24dp)
                                         .error(R.drawable.ic_error_placeholder_24dp)
                                         .into(mAttachmentPreviewImage);
+                                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+                                params.width = (int) (100 * getResources().getDisplayMetrics().density);
+                                params.height = (int) (100 * getResources().getDisplayMetrics().density);
+                                mAttachmentPreviewImage.setLayoutParams(params);
                                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                             }
                             if(getContext() != null) {
-                                Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show(); // Use string resource
+                                Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show();
                             }
                         }
                     }
@@ -489,18 +559,29 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } else if (mimeType != null && mimeType.startsWith("video/")) {
             mSelectedMediaUri = originalUri;
             mSelectedMediaType = "video";
-            if (getContext() != null && mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null) {
+            if (mAttachmentPreviewImage != null && mAttachmentPreviewContainer != null && getContext() != null) {
                 Glide.with(getContext())
                         .load(mSelectedMediaUri)
                         .placeholder(R.drawable.ic_image_placeholder_24dp)
                         .error(R.drawable.ic_error_placeholder_24dp)
                         .into(mAttachmentPreviewImage);
+
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+                int videoThumbWidth = (int) ((getResources().getDisplayMetrics().widthPixels - (getResources().getDisplayMetrics().density * 40))/2);
+                if (((View)mAttachmentPreviewContainer.getParent()).getWidth() > 0) {
+                    videoThumbWidth = (((View)mAttachmentPreviewContainer.getParent()).getWidth() - (mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight())) / 2;
+                }
+
+                params.width = videoThumbWidth;
+                params.height = (int) (videoThumbWidth * (9.0/16.0));
+                mAttachmentPreviewImage.setLayoutParams(params);
+
                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
             }
         } else {
             Log.w("CommentBottomSheet", "Unsupported media type: " + mimeType);
              if(getContext() != null) {
-                Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show(); // Use string resource
+                Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show();
             }
             removeAttachment();
         }

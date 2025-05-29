@@ -139,21 +139,26 @@
 
         <FrameLayout
             android:id="@+id/attachment_preview_container"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:layout_gravity="center_horizontal"
+            android:layout_gravity="start"
             android:layout_marginTop="8dp"
             android:layout_marginBottom="8dp"
-            android:background="@drawable/comment_attachment_preview_border"
             android:padding="2dp">
 
             <ImageView
                 android:id="@+id/attachment_preview_image"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:scaleType="centerCrop"
-                tools:src="@tools:sample/avatars"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:maxWidth="300dp"
+                android:maxHeight="200dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitCenter"
+                tools:src="@tools:sample/backgrounds/scenic"
+                android:background="@drawable/comment_attachment_preview_border"
+                android:padding="1dp"
+                android:layout_gravity="start"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
             <ImageButton
@@ -210,7 +215,7 @@
             <ImageButton
                 android:id="@+id/button_attach"
                 style="@style/ToolbarButton"
-                android:src="@drawable/ic_attach_file_24dp"
+                android:src="@drawable/attach"
                 android:layout_width="28sp"
                 android:layout_height="28sp"
                 android:padding="2dp"

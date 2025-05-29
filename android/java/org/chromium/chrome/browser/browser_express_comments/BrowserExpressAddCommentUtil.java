@@ -316,6 +316,8 @@ public class BrowserExpressAddCommentUtil {
                     if(comment.has("commentParent")){
                         commentParent = comment.getString("commentParent");
                     }
+
+                    Log.e(TAG, comment.toString());
                     AddCommentWorkerTask.setComment(new Comment(
                         comment.getString("_id"), 
                         comment.getString("content"),

@@ -73,10 +73,6 @@ public class ReplyListFragment2 extends Fragment {
     private CommentListAdapter mTopCommentAdapter;
     private List<Comment> mTopComments;
 
-    private RecyclerView mGrandParentCommentRecycler;
-    private CommentListAdapter mGrandParentCommentAdapter;
-    private List<Comment> mGrandParentComments;
-
     private String mCommentId;
 
     private ShimmerFrameLayout mShimmerLoading;
@@ -87,7 +83,6 @@ public class ReplyListFragment2 extends Fragment {
     private TextView mCommentsText;
 
     private LinearLayout mParentCommentLayout;
-    private ImageView mArrow1;
     private ImageView mArrow2;
 
     private ImageView mBackButton;
@@ -135,7 +130,6 @@ public class ReplyListFragment2 extends Fragment {
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
-        mArrow1 = view.findViewById(R.id.comment_arrow1);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
 
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
@@ -171,7 +165,6 @@ public class ReplyListFragment2 extends Fragment {
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mParentCommentLayout.setVisibility(View.VISIBLE);
-        mArrow1.setVisibility(View.VISIBLE);
         mArrow2.setVisibility(View.VISIBLE);
 
         mTopComments = new ArrayList<Comment>();
@@ -179,12 +172,6 @@ public class ReplyListFragment2 extends Fragment {
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
-
-        mGrandParentComments = new ArrayList<Comment>();
-        mGrandParentCommentRecycler = (RecyclerView) view.findViewById(R.id.parent_comment_recycler);
-        mGrandParentCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mGrandParentCommentAdapter = new CommentListAdapter(requireContext(), mGrandParentComments, mMessageEditText, mGrandParentCommentRecycler, null, isReplyAdapter, true, true);
-        mGrandParentCommentRecycler.setAdapter(mGrandParentCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
@@ -227,6 +214,9 @@ public class ReplyListFragment2 extends Fragment {
                                             content, "comment", mUrl, mCommentId, mediaUri, mediaType, accessToken, addCommentCallback);
                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
+                                if (inputCallback != null) {
+                                    inputCallback.clearSelectedMedia();
+                                }
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Express Browser Access Token", e.getMessage());
@@ -261,11 +251,6 @@ public class ReplyListFragment2 extends Fragment {
         videoNestedScrollListener = new NestedScrollView.OnScrollChangeListener() {
             @Override
             public void onScrollChange(@NonNull NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
-                // Check videos in mGrandParentCommentRecycler (if it exists and has an adapter)
-                if (mGrandParentCommentAdapter != null && mGrandParentCommentRecycler != null) {
-                    checkAndPauseInvisibleVideosInSpecificAdapter(mGrandParentCommentAdapter, v);
-                }
-                // Check videos in mTopCommentRecycler
                 if (mTopCommentAdapter != null && mTopCommentRecycler != null) {
                     checkAndPauseInvisibleVideosInSpecificAdapter(mTopCommentAdapter, v);
                 }
@@ -402,16 +387,10 @@ public class ReplyListFragment2 extends Fragment {
         if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
             mTopCommentAdapter.getVideoPlaybackManager().releaseAllResources();
         }
-        if (mGrandParentCommentAdapter != null && mGrandParentCommentAdapter.getVideoPlaybackManager() != null) {
-            mGrandParentCommentAdapter.getVideoPlaybackManager().releaseAllResources();
-        }
-
         mCommentAdapter = null;
         mCommentRecycler = null;
         mTopCommentAdapter = null;
         mTopCommentRecycler = null;
-        mGrandParentCommentAdapter = null;
-        mGrandParentCommentRecycler = null;
     }
 
     public void pauseAllVideosInList() {
@@ -421,9 +400,6 @@ public class ReplyListFragment2 extends Fragment {
         if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
             mTopCommentAdapter.getVideoPlaybackManager().pauseAllPlayers();
         }
-        if (mGrandParentCommentAdapter != null && mGrandParentCommentAdapter.getVideoPlaybackManager() != null) {
-            mGrandParentCommentAdapter.getVideoPlaybackManager().pauseAllPlayers();
-        }
     }
 
     public void releaseVideoManagerResources() { // Renamed for clarity from previous suggestion
@@ -432,9 +408,6 @@ public class ReplyListFragment2 extends Fragment {
         }
         if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
             mTopCommentAdapter.getVideoPlaybackManager().releaseAllResources();
-        }
-        if (mGrandParentCommentAdapter != null && mGrandParentCommentAdapter.getVideoPlaybackManager() != null) {
-            mGrandParentCommentAdapter.getVideoPlaybackManager().releaseAllResources();
         }
     }
 
@@ -465,11 +438,6 @@ public class ReplyListFragment2 extends Fragment {
                     if(parentComment != null){
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);
-                    }
-
-                    if(parentComment != null){
-                        mGrandParentComments.add(grandParentComment);
-                        mGrandParentCommentAdapter.notifyItemRangeInserted(0, 1);
                     }
 
                     mShimmerLoading.setVisibility(View.GONE);

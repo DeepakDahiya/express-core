@@ -273,6 +273,9 @@ public class CommentListFragment extends Fragment {
                                             content, pType, mUrl, pId, mediaUri, mediaType, accessToken, addCommentCallback);
                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
+                                if (inputCallback != null) {
+                                    inputCallback.clearSelectedMedia();
+                                }
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             // Log.e("Express Browser Access Token", e.getMessage());
@@ -489,8 +492,6 @@ public class CommentListFragment extends Fragment {
                         mMessageEditText.clearFocus();
                         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
-
-                        inputCallback.clearSelectedMedia();
 
                         String currentText = mCommentsText.getText().toString();
                         int commentCount = 0;

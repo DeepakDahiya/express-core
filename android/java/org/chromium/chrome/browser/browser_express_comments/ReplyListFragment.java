@@ -95,7 +95,6 @@ public class ReplyListFragment extends Fragment {
     private Button mClapButton;
 
     private LinearLayout mParentCommentLayout;
-    private ImageView mArrow1;
     private ImageView mArrow2;
 
     private BottomSheetInputCallback inputCallback;
@@ -154,7 +153,6 @@ public class ReplyListFragment extends Fragment {
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
-        mArrow1 = view.findViewById(R.id.comment_arrow1);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
 
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
@@ -239,6 +237,9 @@ public class ReplyListFragment extends Fragment {
                                             content, "comment", mUrl, mCommentId, mediaUri, mediaType, accessToken, addCommentCallback);
                                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 mMessageEditText.setText(R.string.browser_express_empty_text);
+                                if (inputCallback != null) {
+                                    inputCallback.clearSelectedMedia();
+                                }
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
                             Log.e("Express Browser Access Token", e.getMessage());
@@ -500,7 +501,6 @@ public class ReplyListFragment extends Fragment {
                         mMessageEditText.clearFocus();
                         InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                         imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
-
 
                         if(newRefreshToken != null && !newRefreshToken.isEmpty()){
                             try {
