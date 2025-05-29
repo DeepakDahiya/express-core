@@ -92,6 +92,9 @@ public class CommentListFragment extends Fragment {
     private EditText mMessageEditText;
     private TextView mCommentsText;
 
+    private ImageView mBackButton;
+    private TextView mToolbarTitle;
+
     private ImageView mAvatarImage;
 
     private BottomSheetInputCallback inputCallback;
@@ -154,7 +157,7 @@ public class CommentListFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_comment_list, container, false);
+        View view = inflater.inflate(R.layout.fragment_reply_list, container, false);
 
         if (getArguments() != null) {
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
@@ -171,6 +174,12 @@ public class CommentListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
+
+        mBackButton = view.findViewById(R.id.back_button);
+        mBackButton.setVisibility(View.GONE);
+
+        mToolbarTitle = view.findViewById(R.id.be_toolbar_title);
+        mToolbarTitle.setText(R.string.comments);
 
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);

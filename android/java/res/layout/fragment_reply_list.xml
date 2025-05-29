@@ -20,6 +20,7 @@
             app:srcCompat="@drawable/ic_back"/>
 
         <TextView
+            android:id="@+id/be_toolbar_title"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
@@ -52,6 +53,14 @@
                     android:orientation="vertical" />
             </org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout>
 
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_comments"
+                android:layout_width="match_parent"
+                android:layout_weight="1"
+                android:clipChildren="true"
+                android:clipToPadding="false"
+                android:layout_height="0dp"/>
+
             <LinearLayout
                 android:id="@+id/parent_comment_container"
                 android:layout_width="match_parent"
@@ -69,14 +78,6 @@
                     android:layout_height="wrap_content"
                     android:overScrollMode="never" />
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/parent_comment_recycler"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:clipChildren="true"
-                    android:clipToPadding="true"
-                    android:overScrollMode="never" />
-            
             </LinearLayout>
 
             <LinearLayout
