@@ -32,6 +32,7 @@ import android.util.Base64;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.LinearLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
 import androidx.fragment.app.FragmentManager;
