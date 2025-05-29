@@ -438,17 +438,25 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        try {
-            BraveActivity activity = BraveActivity.getBraveActivity();
-            mMessageEditText.requestFocus();
-            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-            imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-        } 
         if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
             if (data != null && data.getData() != null) {
                 Uri originalUri = data.getData();
                 processSelectedMedia(originalUri); // New method to handle processing
+
+                if (mMessageEditText != null) { // Ensure EditText is not null
+                    mMessageEditText.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            if (getContext() == null || !isAdded()) return; // Guard
+
+                            mMessageEditText.requestFocus();
+                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            if (imm != null) {
+                                imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
+                            }
+                        }
+                    });
+                }
             } else {
                 removeAttachment();
             }

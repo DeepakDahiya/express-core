@@ -136,6 +136,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import java.util.Random;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
+import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
 
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
@@ -368,6 +369,12 @@ public class BraveNewTabPageLayout
         }
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
+        if(accessToken == null){
+            BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
+                    new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
+                            claimUsernameCallback);
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
             new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
         workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
@@ -1473,6 +1480,24 @@ public class BraveNewTabPageLayout
                 @Override
                 public void getPostsFailed(String error) {
                     Log.e("BE_GET_POST", error);
+                }
+            };
+
+    private BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
+            new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
+                @Override
+                public void claimUsernameSuccessful(String accessToken, String refreshToken) {
+                    try {
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        activity.setAccessToken(accessToken);
+                        Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    }
+                }
+
+                @Override
+                public void claimUsernameFailed(String error) {
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
 }
