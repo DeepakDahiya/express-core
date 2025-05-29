@@ -93,6 +93,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private ImageButton mSendButton;
     private EditText mMessageEditText;
 
+    private LinearLayout mReactionContainer;
     private Button mLolButton;
     private Button mHeartButton;
     private Button mCryButton;
@@ -151,6 +152,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mSendButton = view.findViewById(R.id.button_send);
         mAvatarImage = view.findViewById(R.id.avatar_image);
 
+        mReactionContainer = view.findViewById(R.id.reaction_buttons_container);
         mLolButton = view.findViewById(R.id.lol_button);
         mHeartButton = view.findViewById(R.id.heart_button);
         mCryButton = view.findViewById(R.id.cry_button);
@@ -425,6 +427,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void removeAttachment() {
+        mReactionContainer.setVisibility(View.VISIBLE);
         mSelectedMediaUri = null;
         mSelectedMediaType = null;
         if (mAttachmentPreviewImage != null) {
@@ -442,20 +445,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             if (data != null && data.getData() != null) {
                 Uri originalUri = data.getData();
                 processSelectedMedia(originalUri); // New method to handle processing
+                mReactionContainer.setVisibility(View.GONE);
 
                 if (mMessageEditText != null) { // Ensure EditText is not null
-                    mMessageEditText.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            if (getContext() == null || !isAdded()) return; // Guard
+                    mMessageEditText.setFocuable();
 
+                    mMessageEditText.postDelayed(() -> {
+                        if (getContext() != null && isAdded() && mMessageEditText != null) {
                             mMessageEditText.requestFocus();
                             InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
                             if (imm != null) {
                                 imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
                             }
                         }
-                    });
+                    }, 300);
                 }
             } else {
                 removeAttachment();

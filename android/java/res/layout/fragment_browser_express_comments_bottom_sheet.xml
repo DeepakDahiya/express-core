@@ -41,6 +41,7 @@
         android:background="@drawable/sheet_button_top_border">
 
         <LinearLayout
+            android:id="@+id/reaction_buttons_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
