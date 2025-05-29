@@ -164,11 +164,11 @@
 
             <ImageButton
                 android:id="@+id/button_remove_attachment"
+                style="@style/ToolbarButton"
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:src="@drawable/close"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:padding="4dp"
+                android:padding="2dp"
                 android:layout_gravity="top|end"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </FrameLayout>
@@ -219,9 +219,6 @@
                 android:src="@drawable/attach"
                 android:layout_width="28sp"
                 android:layout_height="28sp"
-                android:padding="2dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:layout_marginEnd="8dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
             <ImageButton android:id="@+id/button_send"
