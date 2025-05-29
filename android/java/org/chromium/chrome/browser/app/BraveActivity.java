@@ -2740,11 +2740,4 @@ public abstract class BraveActivity extends ChromeActivity
             }
         }
     }
-
-    private final InstallStateUpdatedListener mInstallStateUpdatedListener =
-        installState -> {
-            if (installState.installStatus() == InstallStatus.DOWNLOADED) {
-                completeUpdateSnackbar();
-            }
-        };
 }
