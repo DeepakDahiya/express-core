@@ -449,7 +449,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 mReactionContainer.setVisibility(View.GONE);
 
                 if (mMessageEditText != null) { // Ensure EditText is not null
-                    mMessageEditText.setFocuable();
+                    mMessageEditText.setEnabled(true);
 
                     mMessageEditText.postDelayed(() -> {
                         if (getContext() != null && isAdded() && mMessageEditText != null) {
