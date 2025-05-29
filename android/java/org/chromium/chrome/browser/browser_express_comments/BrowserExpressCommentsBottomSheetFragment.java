@@ -438,9 +438,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        mMessageEditText.requestFocus();
-        InputMethodManager imm = (InputMethodManager)getActivity().getSystemService(Context.INPUT_METHOD_SERVICE);
-        imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            mMessageEditText.requestFocus();
+            InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        } 
         if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
             if (data != null && data.getData() != null) {
                 Uri originalUri = data.getData();
