@@ -384,12 +384,6 @@ public abstract class BraveActivity extends ChromeActivity
         executeInitSafeBrowsing(0);
         showPersistentNotification();
 
-        if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
-            BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
-        }else{
-            BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
-        }
-
         int notificationRequestCount = SharedPreferencesManager.getInstance().readInt("NOTIFICATION_REQUEST_COUNT");
         if(!NotificationManagerCompat.from(this).areNotificationsEnabled() && notificationRequestCount < 3){
             this.showNotificationRationale();
@@ -1079,6 +1073,12 @@ public abstract class BraveActivity extends ChromeActivity
             openBraveWallet(false,
                     intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY_SETUP, false),
                     intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY_RESTORE, false));
+        }
+
+        if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
+            BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
+        }else{
+            BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
         }
     }
 
@@ -2218,6 +2218,7 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showCommentsBottomSheetFromPost(String postId, String username, String content, String avatarUrl, Boolean openKeyboard) {
+        Log.e("BraveActivity", "showCommentsBottomSheetFromPost: " + postId + ", " + username + ", " + content + ", " + avatarUrl + ", " + openKeyboard);
         try {
             if(mBottomSheetCommentsDialog == null){
                 BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =

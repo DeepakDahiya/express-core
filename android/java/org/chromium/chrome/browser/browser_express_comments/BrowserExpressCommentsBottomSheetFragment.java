@@ -197,18 +197,61 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenHeight = displayMetrics.heightPixels;
+        // DisplayMetrics displayMetrics = new DisplayMetrics();
+        // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        // int screenHeight = displayMetrics.heightPixels;
 
-        int defaultHeight = (int) (screenHeight * 0.8);
+        // int defaultHeight = (int) (screenHeight * 0.8);
 
-        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        BottomSheetBehavior behavior = dialog.getBehavior();
+        // BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+        // BottomSheetBehavior behavior = dialog.getBehavior();
 
-        behavior.setMaxHeight(defaultHeight);
+        // behavior.setMaxHeight(defaultHeight);
 
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        // behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+
+        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (view.getViewTreeObserver().isAlive()) {
+                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                }
+
+                BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+                if (dialog == null) {
+                    Log.e("BottomSheet", "Dialog is null in onGlobalLayout.");
+                    return;
+                }
+
+                FrameLayout bottomSheetInternal = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+                if (bottomSheetInternal == null) {
+                    Log.e("BottomSheet", "design_bottom_sheet FrameLayout not found in onGlobalLayout.");
+                    return;
+                }
+
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheetInternal);
+
+                DisplayMetrics displayMetrics = new DisplayMetrics();
+                if (getActivity() == null || getActivity().getWindowManager() == null) {
+                    Log.e("BottomSheet", "Activity or WindowManager is null in onGlobalLayout.");
+                    return;
+                }
+                getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                int screenHeight = displayMetrics.heightPixels;
+                int defaultHeight = (int) (screenHeight * 0.8);
+                Log.d("BottomSheet", "onGlobalLayout: Calculated defaultHeight: " + defaultHeight);
+
+                behavior.setPeekHeight(defaultHeight);
+                behavior.setMaxHeight(defaultHeight);
+
+                if (behavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                    Log.d("BottomSheet", "onGlobalLayout: Set state to EXPANDED.");
+                } else {
+                    Log.d("BottomSheet", "onGlobalLayout: State was already EXPANDED.");
+                }
+            }
+        });
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -260,6 +303,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
             });
         try{
+            Log.e("BottomSheetFragment", "onViewCreated: Post ID: " + mPostId);
+            Log.e("BottomSheetFragment", "onViewCreated: Post Username: " + mPostUsernameString);
+            Log.e("BottomSheetFragment", "onViewCreated: Post Content: " + mPostContentString);
+            Log.e("BottomSheetFragment", "onViewCreated: Post Avatar URL: " + mPostAvatarString);
             BraveActivity activity = BraveActivity.getBraveActivity();
             ImageLoader.downloadImage(mPostAvatarString, Glide.with(activity), false, 5, mPostAvatar, null);
             mPostUsername.setText(mPostUsernameString);
