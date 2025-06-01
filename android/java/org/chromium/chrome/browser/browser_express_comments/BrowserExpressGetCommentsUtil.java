@@ -201,7 +201,7 @@ public class BrowserExpressGetCommentsUtil {
                                 null,
                                 null,
                                 null
-                            );
+                            ));
                         }
                     }
 
