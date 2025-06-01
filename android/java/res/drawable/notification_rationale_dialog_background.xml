@@ -7,6 +7,6 @@
 
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
-    <solid android:color="@color/notification_rationale_dialog_card_bg_color" />
+    <solid android:color="@color/be_background_black" />
     <corners android:radius="16dp" />
 </shape>
