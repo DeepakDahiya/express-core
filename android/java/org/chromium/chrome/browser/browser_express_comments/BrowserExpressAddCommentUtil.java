@@ -333,8 +333,8 @@ public class BrowserExpressAddCommentUtil {
                         comment.optString("mediaVideoUrl", null),
                         null,
                         null,
-                        null,
-                    ));
+                        null
+                    );
 
                     AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));
                 }else{

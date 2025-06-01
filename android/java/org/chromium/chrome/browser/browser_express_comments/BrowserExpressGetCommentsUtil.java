@@ -200,8 +200,8 @@ public class BrowserExpressGetCommentsUtil {
                                 parentComment.optString("mediaVideoUrl", null),
                                 null,
                                 null,
-                                null,
-                            ));
+                                null
+                            );
                         }
                     }
 
