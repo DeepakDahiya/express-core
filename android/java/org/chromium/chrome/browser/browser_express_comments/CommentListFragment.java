@@ -25,7 +25,6 @@ import android.util.Base64;
 import java.io.UnsupportedEncodingException;
 import java.util.Locale;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import android.widget.LinearLayout;
 import androidx.recyclerview.widget.RecyclerView;
 import android.widget.EditText;
 import androidx.fragment.app.FragmentManager;
@@ -65,10 +64,6 @@ public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
-    public static final String POST_USERNAME = "post_username";
-    public static final String POST_CONTENT = "post_content";
-    public static final String POST_AVATAR_URL = "post_avatar_url";
-
     public static final String OPEN_KEYBOARD = "open_keyboard";
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
     private RecyclerView mCommentRecycler;
@@ -80,15 +75,6 @@ public class CommentListFragment extends Fragment {
     private String mCommentsFor;
     private String mPostId;
     private Boolean mOpenKeyboard = false;
-
-    private LinearLayout mPostInfoContainer;
-    private String mPostAvatarString;
-    private String mPostUsernameString;
-    private String mPostContentString;
-
-    private ImageView mPostAvatar;
-    private TextView mPostUsername;
-    private TextView mPostContent;
 
     private LinearLayoutManager mLayoutManager;
 
@@ -436,14 +422,11 @@ public class CommentListFragment extends Fragment {
         }
     }
 
-    public static CommentListFragment newInstance(String postId, String username, String content, String avatarUrl, String commentsFor, Boolean openKeyboard) {
+    public static CommentListFragment newInstance(String postId, String commentsFor, Boolean openKeyboard) {
         CommentListFragment fragment = new CommentListFragment();
         Bundle args = new Bundle();
         args.putString(COMMENTS_FOR, commentsFor);
         args.putString(POST_ID, postId);
-        args.putString(POST_USERNAME, username);
-        args.putString(POST_CONTENT, content);
-        args.putString(POST_AVATAR_URL, avatarUrl);
         args.putBoolean(OPEN_KEYBOARD, openKeyboard);
         fragment.setArguments(args);
         return fragment;
