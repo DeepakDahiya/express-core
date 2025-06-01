@@ -694,7 +694,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                 params.width = availableWidth;
                                                 params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.75f) : (int) (availableWidth / aspectRatio) ;
                                             } else { // Vertical or square image
-                                                params.width = (int) availableWidth/1.1;
+                                                params.width = (int) (availableWidth / 1.1);
                                                 params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.1) * 1.33f) : (int) ((availableWidth / 1.1) / aspectRatio) ;
                                             }
 
@@ -707,7 +707,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                     params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
                                                 }
 
-                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : (int) availableWidth / 1.1;
+                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : (int)(availableWidth / 1.1);
                                                 if (params.width > maxWidthForOrientation ) {
                                                      params.width = maxWidthForOrientation;
                                                 }
