@@ -448,22 +448,37 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 processSelectedMedia(originalUri); // New method to handle processing
                 mReactionContainer.setVisibility(View.GONE);
 
-                if (mMessageEditText != null) { // Ensure EditText is not null
-                    mMessageEditText.setEnabled(true);
-
-                    mMessageEditText.postDelayed(() -> {
-                        if (getContext() != null && isAdded() && mMessageEditText != null) {
-                            mMessageEditText.requestFocus();
-                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
-                            if (imm != null) {
-                                imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_IMPLICIT);
-                            }
-                        }
-                    }, 300);
-                }
+                showKeyboardWithFocus();
             } else {
                 removeAttachment();
             }
+        }
+    }
+
+    private void showKeyboardWithFocus() {
+        if (mMessageEditText != null && getContext() != null && isAdded()) {
+            mMessageEditText.post(() -> {
+                if (getContext() != null && isAdded() && mMessageEditText != null) {
+                    mMessageEditText.clearFocus();
+                    mMessageEditText.requestFocus();
+                    
+                    if (mMessageEditText.getText() != null) {
+                        mMessageEditText.setSelection(mMessageEditText.getText().length());
+                    }
+                    
+                    mMessageEditText.postDelayed(() -> {
+                        if (getContext() != null && isAdded() && mMessageEditText != null && mMessageEditText.hasFocus()) {
+                            InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+                            if (imm != null) {
+                                boolean keyboardShown = imm.showSoftInput(mMessageEditText, InputMethodManager.SHOW_FORCED);
+                                if (!keyboardShown) {
+                                    imm.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_IMPLICIT_ONLY);
+                                }
+                            }
+                        }
+                    }, 500); // Increased delay to 500ms
+                }
+            });
         }
     }
 
@@ -538,6 +553,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                             
                                             mAttachmentPreviewImage.setLayoutParams(params);
                                             mAttachmentPreviewImage.setImageBitmap(resource);
+
+                                            mAttachmentPreviewImage.post(() -> {
+                                                showKeyboardWithFocus();
+                                            });
                                         }
 
                                         @Override
