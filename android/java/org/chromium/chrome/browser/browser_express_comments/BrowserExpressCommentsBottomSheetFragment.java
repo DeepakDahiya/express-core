@@ -66,6 +66,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import android.view.ViewTreeObserver;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -218,18 +219,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
 
                 BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-                if (dialog == null) {
-                    Log.e("BottomSheet", "Dialog is null in onGlobalLayout.");
-                    return;
-                }
+                // if (dialog == null) {
+                //     Log.e("BottomSheet", "Dialog is null in onGlobalLayout.");
+                //     return;
+                // }
 
-                FrameLayout bottomSheetInternal = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-                if (bottomSheetInternal == null) {
-                    Log.e("BottomSheet", "design_bottom_sheet FrameLayout not found in onGlobalLayout.");
-                    return;
-                }
+                // FrameLayout bottomSheetInternal = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+                // if (bottomSheetInternal == null) {
+                //     Log.e("BottomSheet", "design_bottom_sheet FrameLayout not found in onGlobalLayout.");
+                //     return;
+                // }
 
-                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheetInternal);
+                // BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheetInternal);
+
+                BottomSheetBehavior behavior = dialog.getBehavior();
 
                 DisplayMetrics displayMetrics = new DisplayMetrics();
                 if (getActivity() == null || getActivity().getWindowManager() == null) {
