@@ -9,12 +9,15 @@ public class Comment{
     private String commentParent;  
     private String pageParent;  
     private String postParent;  
+    private String postContent;
+    private String postUsername;
+    private String postAvatarUrl;
     private String mediaImageUrl;
     private String mediaVideoUrl;
     private User user;
     private Vote didVote;
 
-    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote, String mediaImageUrl, String mediaVideoUrl) {  
+    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote, String mediaImageUrl, String mediaVideoUrl, String postContent, String postUsername, String postAvatarUrl) {  
         this._id = _id;  
         this.content = content;
         this.upvoteCount = upvoteCount;
@@ -27,6 +30,9 @@ public class Comment{
         this.postParent = postParent;
         this.mediaImageUrl = mediaImageUrl;
         this.mediaVideoUrl = mediaVideoUrl;
+        this.postContent = postContent;
+        this.postUsername = postUsername;
+        this.postAvatarUrl = postAvatarUrl;
     }  
 
     public String getId() {  
@@ -51,6 +57,18 @@ public class Comment{
 
     public String getPostParent() {  
         return this.postParent;  
+    }
+
+    public String getPostContent() {  
+        return this.postContent;  
+    }
+
+    public String getPostUsername() {  
+        return this.postUsername;  
+    }
+
+    public String getPostAvatarUrl() {  
+        return this.postAvatarUrl;  
     }
 
     public User getUser() {  

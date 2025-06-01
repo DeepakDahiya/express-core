@@ -498,7 +498,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                 View.OnClickListener postClickListener = v -> {
                     if (activity != null) { // Check activity again
-                         activity.showCommentsBottomSheetFromPost(comment.getPostParent(), false);
+                         activity.showCommentsBottomSheetFromPost(comment.getPostParent(), comment.getPostUsername(), comment.getPostContent(), comment.getPostAvatarUrl(), false);
                     }
                 };
                 usernameText.setOnClickListener(postClickListener);
@@ -550,7 +550,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                                         u,
                                         null, // New comments usually don't have a "didVote" status for the current user yet
                                         commentObject.optString("mediaImageUrl", null), // Add media fields
-                                        commentObject.optString("mediaVideoUrl", null)
+                                        commentObject.optString("mediaVideoUrl", null),
+                                        null,
+                                        null,
+                                        null
                                     );
                                     // This logic of adding to mComments and notifying mCommentAdapter
                                     // should ideally be handled by the adapter itself or a higher-level component

@@ -330,7 +330,10 @@ public class BrowserExpressAddCommentUtil {
                         u,
                         v,
                         comment.optString("mediaImageUrl", null),
-                        comment.optString("mediaVideoUrl", null)
+                        comment.optString("mediaVideoUrl", null),
+                        null,
+                        null,
+                        null,
                     ));
 
                     AddCommentWorkerTask.setNewTokens(responseObject.getString("accessToken"), responseObject.getString("refreshToken"));

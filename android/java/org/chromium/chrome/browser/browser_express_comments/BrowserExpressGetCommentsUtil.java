@@ -197,7 +197,10 @@ public class BrowserExpressGetCommentsUtil {
                                 u, 
                                 v,
                                 parentComment.optString("mediaImageUrl", null),
-                                parentComment.optString("mediaVideoUrl", null)
+                                parentComment.optString("mediaVideoUrl", null),
+                                null,
+                                null,
+                                null,
                             ));
                         }
                     }
@@ -238,7 +241,10 @@ public class BrowserExpressGetCommentsUtil {
                                 u, 
                                 v,
                                 parentComment.optString("mediaImageUrl", null),
-                                parentComment.optString("mediaVideoUrl", null)
+                                parentComment.optString("mediaVideoUrl", null),
+                                null,
+                                null,
+                                null
                             ));
                         }
                     }
@@ -279,7 +285,10 @@ public class BrowserExpressGetCommentsUtil {
                             u, 
                             v,
                             comment.optString("mediaImageUrl", null),
-                            comment.optString("mediaVideoUrl", null)
+                            comment.optString("mediaVideoUrl", null),
+                            null,
+                            null,
+                            null
                         ));
 
                     }

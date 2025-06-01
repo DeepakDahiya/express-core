@@ -131,6 +131,9 @@ public class BrowserExpressGetPostsUtil {
                     JSONArray postsArray = responseObject.getJSONArray("posts");
                     List<Post> posts = new ArrayList<Post>();
                     Log.e("BE_GET_POST", "2");
+                    String postAvatarUrl = null;
+                    String postContent = null;
+                    String postUsername = null;
                     for (int i = 0; i < postsArray.length(); i++) {
                         JSONObject post = postsArray.getJSONObject(i);
                         JSONObject didVote = post.optJSONObject("didVote");
@@ -165,6 +168,10 @@ public class BrowserExpressGetPostsUtil {
                                 media != null ? media.getInt("height") : 0,
                                 media != null ? media.getInt("width") : 0
                             );
+
+                            postAvatarUrl = author.getString("profilePicture");
+                            postContent = tsp.getString("content");
+                            postUsername = author.getString("username");
                         }
                         Log.e("BE_GET_POST", "3");
                         Post tempPost = new Post(
@@ -224,7 +231,10 @@ public class BrowserExpressGetPostsUtil {
                                     commentUserObj,
                                     commentVote,
                                     null,
-                                    null
+                                    null,
+                                    postContent,
+                                    postUsername,
+                                    postAvatarUrl
                                 );
                                 newComments.add(tempComment);
                             }

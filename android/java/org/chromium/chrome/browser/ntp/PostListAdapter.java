@@ -251,15 +251,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
             myPosition = getBindingAdapterPosition();
 
             String postType = post.getType().toString();
+            SubPost subPost = post.getSubPost();
+            String name = subPost.getAuthorName();
+            String username = "@" + subPost.getAuthorUsername();
+            String content = subPost.getContent();
+            String profilePicUrl = subPost.getAuthorProfilePicture();
+            Boolean verified = subPost.getAuthorVerified();
 
             if (postType.equals(TWITTER_TYPE) || postType.equals(INSTAGRAM_TYPE)) {
                 twitterPostLayout.setVisibility(View.VISIBLE);
-                SubPost subPost = post.getSubPost();
-                String name = subPost.getAuthorName();
-                String username = "@" + subPost.getAuthorUsername();
-                String content = subPost.getContent();
-                String profilePicUrl = subPost.getAuthorProfilePicture();
-                Boolean verified = subPost.getAuthorVerified();
 
                 String twitterImageUrl = subPost.getMediaImageUrl();
                 String videoUrl = subPost.getMediaVideoUrl();
@@ -286,7 +286,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                     }
                 });
 
@@ -295,7 +295,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                        activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                        activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                     }
                 });
                 
@@ -434,7 +434,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                            activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                         }
                     }
                 });
@@ -447,7 +447,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                            activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                         }
                     }
                 });
@@ -460,7 +460,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                            activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                         }
                     }
                 });
@@ -474,7 +474,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                            activity.showCommentsBottomSheetFromPost(post.getId(), true);
+                            activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, true);
                         }
                     }
                 });
@@ -497,7 +497,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mCommentButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                    activity.showCommentsBottomSheetFromPost(post.getId(), false);
+                    activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                 }
             });
             }catch(Exception ex){
