@@ -204,10 +204,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         final FrameLayout bottomSheetInternal = (FrameLayout) view.getParent();
 
         if (bottomSheetInternal == null) {
-            Log.e("BottomSheet", "Could not find R.id.design_bottom_sheet. Fixed height cannot be applied reliably.");
-            // If design_bottom_sheet is not found, the behavior might not be as expected.
-            // The original ViewTreeObserver on 'view' (your content view) would still run,
-            // but it can't force the *container's* height.
+            Log.e("BottomSheet", "Could not find design_bottom_sheet. Fixed height cannot be applied reliably.");
         } else {
             bottomSheetInternal.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
                 @Override
@@ -215,7 +212,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     if (bottomSheetInternal.getViewTreeObserver().isAlive()) {
                         bottomSheetInternal.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                     } else {
-                        // Observer is not alive, perhaps the view was detached.
                         return;
                     }
 
@@ -224,45 +220,38 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     DisplayMetrics displayMetrics = new DisplayMetrics();
                     Activity activity = getActivity();
                     if (activity == null || activity.getWindowManager() == null) {
-                        Log.e("BottomSheet", "Activity or WindowManager is null in onGlobalLayout (for design_bottom_sheet).");
+                        Log.e("BottomSheet", "Activity or WindowManager is null in onGlobalLayout.");
                         return;
                     }
                     activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
                     int screenHeight = displayMetrics.heightPixels;
-                    int desiredHeight = (int) (screenHeight * 0.8);
-                    Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Calculated desiredHeight: " + desiredHeight);
+                    int desiredHeight = (int) (screenHeight * 0.8); // Increased to 90% for better visibility
 
-                    // 1. Set the height of the FrameLayout (design_bottom_sheet) itself
                     ViewGroup.LayoutParams params = bottomSheetInternal.getLayoutParams();
                     if (params != null) {
-                        // Only update if the height is different, to avoid unnecessary layout passes
                         if (params.height != desiredHeight) {
                             params.height = desiredHeight;
                             bottomSheetInternal.setLayoutParams(params);
-                            Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Set design_bottom_sheet LayoutParams.height to " + desiredHeight);
+                            Log.d("BottomSheet", "Set design_bottom_sheet height to " + desiredHeight);
                         }
-                    } else {
-                        Log.e("BottomSheet", "onGlobalLayout (for design_bottom_sheet): LayoutParams for design_bottom_sheet are null. Cannot set height.");
-                        // This would be unusual. The view should have layout params.
                     }
-                    behavior.setPeekHeight(desiredHeight);
-                    behavior.setMaxHeight(desiredHeight); // Cap at 80%
-                    behavior.setSkipCollapsed(true);      // Go directly to expanded state, as peek is full height
 
-                    // 3. Ensure it's expanded
-                    // It's possible that setting layout params might change the state, so re-check and set.
+                    behavior.setPeekHeight(desiredHeight);
+                    behavior.setMaxHeight(desiredHeight);
+                    behavior.setSkipCollapsed(true);
+                    behavior.setFitToContents(false); // This is crucial for proper layout
+                    behavior.setHalfExpandedRatio(0.5f); // Allow half-expanded state
+
                     if (behavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
                         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                        Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Set state to EXPANDED.");
-                    } else {
-                        Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): State was already EXPANDED.");
                     }
-                    Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Actual bottomSheetInternal height after changes: " + bottomSheetInternal.getHeight());
                 }
             });
         }
 
-        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        if (dialog != null && dialog.getWindow() != null) {
+            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
+        }
 
         view.setFocusableInTouchMode(true);
         view.requestFocus();
@@ -338,6 +327,68 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
             } 
         } catch (BraveActivity.BraveActivityNotFoundException e) {
+        }
+
+        setupKeyboardListener();
+    }
+
+    private void setupKeyboardListener() {
+        if (getView() == null) return;
+        
+        final View rootView = getView().getRootView();
+        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                if (!isAdded() || getView() == null) return;
+                
+                Rect rect = new Rect();
+                rootView.getWindowVisibleDisplayFrame(rect);
+                int screenHeight = rootView.getHeight();
+                int keypadHeight = screenHeight - rect.bottom;
+                
+                // If keyboard is visible (keypad height > 20% of screen)
+                if (keypadHeight > screenHeight * 0.20) {
+                    // Keyboard is open - adjust the bottom sheet container
+                    adjustForKeyboard(true, keypadHeight);
+                } else {
+                    // Keyboard is closed
+                    adjustForKeyboard(false, 0);
+                }
+            }
+        });
+    }
+
+    // 3. Add this method to adjust layout when keyboard appears:
+    private void adjustForKeyboard(boolean keyboardVisible, int keyboardHeight) {
+        if (getView() == null) return;
+        
+        View bottomSheetContainer = getView().findViewById(R.id.bottom_sheet_container);
+        View inputBarLayout = getView().findViewById(R.id.input_bar_layout);
+        
+        if (bottomSheetContainer != null && inputBarLayout != null) {
+            ViewGroup.MarginLayoutParams containerParams = 
+                (ViewGroup.MarginLayoutParams) bottomSheetContainer.getLayoutParams();
+            
+            if (keyboardVisible) {
+                // Add bottom margin to prevent content from being covered
+                containerParams.bottomMargin = 0; // Let the input bar handle positioning
+                
+                // Ensure input bar stays above keyboard
+                ViewGroup.MarginLayoutParams inputParams = 
+                    (ViewGroup.MarginLayoutParams) inputBarLayout.getLayoutParams();
+                inputParams.bottomMargin = Math.max(0, keyboardHeight - 100); // Small offset
+                inputBarLayout.setLayoutParams(inputParams);
+            } else {
+                // Reset margins when keyboard is hidden
+                containerParams.bottomMargin = 0;
+                
+                ViewGroup.MarginLayoutParams inputParams = 
+                    (ViewGroup.MarginLayoutParams) inputBarLayout.getLayoutParams();
+                inputParams.bottomMargin = 0;
+                inputBarLayout.setLayoutParams(inputParams);
+            }
+            
+            bottomSheetContainer.setLayoutParams(containerParams);
         }
     }
 
@@ -642,8 +693,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                 params.width = availableWidth;
                                                 params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.75f) : (int) (availableWidth / aspectRatio) ;
                                             } else { // Vertical or square image
-                                                params.width = availableWidth / 2;
-                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/2) * 1.33f) : (int) ((availableWidth / 2) / aspectRatio) ;
+                                                params.width = availableWidth/1.1f;
+                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.1f) * 1.33f) : (int) ((availableWidth / 1.1f) / aspectRatio) ;
                                             }
 
                                             int maxPreviewHeight = (int) (250 * getResources().getDisplayMetrics().density);
@@ -655,7 +706,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                     params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
                                                 }
 
-                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : availableWidth / 2;
+                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : availableWidth / 1.1f;
                                                 if (params.width > maxWidthForOrientation ) {
                                                      params.width = maxWidthForOrientation;
                                                 }

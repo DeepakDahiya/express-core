@@ -1,9 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Copyright (c) 2022 The Brave Authors. All rights reserved.
-     This Source Code Form is subject to the terms of the Mozilla Public
-     License, v. 2.0. If a copy of the MPL was not distributed with this file,
-     You can obtain one at https://mozilla.org/MPL/2.0/.
--->
 <LinearLayout
     android:id="@+id/comment_bottomsheet_layout"
     xmlns:android="http://schemas.android.com/apk/res/android"
@@ -16,6 +11,7 @@
     android:orientation="vertical"
     app:behavior_fitToContents="false"
     android:background="@color/be_background_black"
+    android:fitsSystemWindows="true"
     tools:context=".BrowserExpressCommentsBottomSheetFragment">
 
     <View
@@ -24,29 +20,36 @@
         android:layout_height="4dp"
         android:layout_gravity="center"
         android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"
         android:background="@color/content_color"/>
 
+    <!-- Main content container that will hold the fragments -->
     <FrameLayout
         android:id="@+id/bottom_sheet_container"
         android:layout_width="match_parent"
         android:layout_weight="1"
-        android:layout_height="0dp" />
+        android:layout_height="0dp"
+        android:layout_marginBottom="8dp" />
 
+    <!-- Fixed bottom section for input and reactions -->
     <LinearLayout
         android:id="@+id/sheet_button"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="5sp"
+        android:padding="5dp"
         android:orientation="vertical"
-        android:background="@drawable/sheet_button_top_border">
+        android:background="@drawable/sheet_button_top_border"
+        android:elevation="4dp">
 
+        <!-- Reaction buttons container -->
         <LinearLayout
             android:id="@+id/reaction_buttons_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:padding="5sp"
-            android:weightSum="6">
+            android:padding="5dp"
+            android:weightSum="6"
+            android:visibility="visible">
 
             <Button
                 android:id="@+id/lol_button"
@@ -58,7 +61,7 @@
                 android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="0dp"
                 android:paddingHorizontal="0dp"
                 android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
@@ -73,7 +76,7 @@
                 android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="0dp"
                 android:paddingHorizontal="0dp"
                 android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
@@ -88,7 +91,7 @@
                 android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="0dp"
                 android:paddingHorizontal="0dp"
                 android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
@@ -103,7 +106,7 @@
                 android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="0dp"
                 android:paddingHorizontal="0dp"
                 android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
@@ -118,7 +121,7 @@
                 android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="0dp"
                 android:paddingHorizontal="0dp"
                 android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
@@ -133,11 +136,13 @@
                 android:textSize="20sp"
                 android:minWidth="0dp"
                 android:minHeight="0dp"
-                android:paddingVertical="0sp"
+                android:paddingVertical="0dp"
                 android:paddingHorizontal="0dp"
                 android:layout_weight="1"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </LinearLayout>
+
+        <!-- Post info container - shown when replying to specific post -->
         <LinearLayout
             android:id="@+id/post_info_container"
             android:layout_width="match_parent"
@@ -145,21 +150,24 @@
             android:orientation="vertical"
             android:visibility="gone"
             android:layout_marginBottom="8dp"
-            android:padding="4sp">
+            android:padding="4dp">
+            
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+                
                 <ImageView
                     android:id="@+id/post_avatar"
                     android:src="@drawable/btn_toolbar_profile"
                     android:layout_width="30dp"
                     android:layout_height="30dp"
                     android:scaleType="centerCrop"
-                    android:layout_gravity="center"
-                    android:layout_marginEnd="8sp"
+                    android:layout_marginEnd="8dp"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
                     android:adjustViewBounds="true" />
+                    
                 <TextView
                     android:id="@+id/post_username"
                     android:layout_width="wrap_content"
@@ -178,9 +186,12 @@
                 android:layout_marginTop="6dp"
                 android:layout_marginBottom="6dp"
                 android:textColor="@color/content_color"
-                android:textSize="13sp" />
+                android:textSize="13sp"
+                android:maxLines="3"
+                android:ellipsize="end" />
         </LinearLayout>
 
+        <!-- Attachment preview container -->
         <FrameLayout
             android:id="@+id/attachment_preview_container"
             android:layout_width="match_parent"
@@ -214,22 +225,24 @@
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
         </FrameLayout>
 
+        <!-- Input bar - this will stay at bottom -->
         <LinearLayout
             android:id="@+id/input_bar_layout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:paddingTop="5sp"
-            android:paddingBottom="5sp"
-            android:paddingStart="0sp"
-            android:paddingEnd="0sp">
+            android:paddingTop="5dp"
+            android:paddingBottom="5dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="0dp"
+            android:background="@color/be_background_black">
 
             <ImageView
                 android:id="@+id/avatar_image"
                 android:src="@drawable/btn_toolbar_profile"
-                android:layout_width="24sp"
-                android:layout_height="24sp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:scaleType="centerCrop"
                 android:adjustViewBounds="true"
                 android:layout_marginEnd="8dp"
@@ -252,22 +265,24 @@
                 android:hint="@string/type_your_comment"
                 android:background="@drawable/rounded_edittext"
                 android:layout_marginEnd="8dp"
+                android:imeOptions="actionDone"
                 tools:ignore="Autofill" />
 
             <ImageButton
                 android:id="@+id/button_attach"
                 style="@style/ToolbarButton"
                 android:src="@drawable/attach"
-                android:layout_width="20sp"
-                android:layout_height="20sp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:layout_marginEnd="4dp"
                 android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
-            <ImageButton android:id="@+id/button_send"
+            <ImageButton 
+                android:id="@+id/button_send"
                 style="@style/ToolbarButton"
                 android:background="@drawable/send"
-                android:layout_width="20sp"
-                android:layout_height="20sp"
+                android:layout_width="20dp"
+                android:layout_height="20dp"
                 android:visibility="visible"
                 android:contentDescription="@string/send_comment" />
         </LinearLayout>
