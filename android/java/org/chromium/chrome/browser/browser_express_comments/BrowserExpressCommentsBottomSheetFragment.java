@@ -67,6 +67,7 @@ import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import android.view.ViewTreeObserver;
+import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -198,63 +199,68 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        // DisplayMetrics displayMetrics = new DisplayMetrics();
-        // getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        // int screenHeight = displayMetrics.heightPixels;
-
-        // int defaultHeight = (int) (screenHeight * 0.8);
-
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        // BottomSheetBehavior behavior = dialog.getBehavior();
 
-        // behavior.setMaxHeight(defaultHeight);
+        final FrameLayout bottomSheetInternal = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
 
-        // behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+        if (bottomSheetInternal == null) {
+            Log.e("BottomSheet", "Could not find R.id.design_bottom_sheet. Fixed height cannot be applied reliably.");
+            // If design_bottom_sheet is not found, the behavior might not be as expected.
+            // The original ViewTreeObserver on 'view' (your content view) would still run,
+            // but it can't force the *container's* height.
+        } else {
+            bottomSheetInternal.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+                @Override
+                public void onGlobalLayout() {
+                    if (bottomSheetInternal.getViewTreeObserver().isAlive()) {
+                        bottomSheetInternal.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    } else {
+                        // Observer is not alive, perhaps the view was detached.
+                        return;
+                    }
 
-        view.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (view.getViewTreeObserver().isAlive()) {
-                    view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+                    BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheetInternal);
+
+                    DisplayMetrics displayMetrics = new DisplayMetrics();
+                    Activity activity = getActivity();
+                    if (activity == null || activity.getWindowManager() == null) {
+                        Log.e("BottomSheet", "Activity or WindowManager is null in onGlobalLayout (for design_bottom_sheet).");
+                        return;
+                    }
+                    activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+                    int screenHeight = displayMetrics.heightPixels;
+                    int desiredHeight = (int) (screenHeight * 0.8);
+                    Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Calculated desiredHeight: " + desiredHeight);
+
+                    // 1. Set the height of the FrameLayout (design_bottom_sheet) itself
+                    ViewGroup.LayoutParams params = bottomSheetInternal.getLayoutParams();
+                    if (params != null) {
+                        // Only update if the height is different, to avoid unnecessary layout passes
+                        if (params.height != desiredHeight) {
+                            params.height = desiredHeight;
+                            bottomSheetInternal.setLayoutParams(params);
+                            Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Set design_bottom_sheet LayoutParams.height to " + desiredHeight);
+                        }
+                    } else {
+                        Log.e("BottomSheet", "onGlobalLayout (for design_bottom_sheet): LayoutParams for design_bottom_sheet are null. Cannot set height.");
+                        // This would be unusual. The view should have layout params.
+                    }
+                    behavior.setPeekHeight(desiredHeight);
+                    behavior.setMaxHeight(desiredHeight); // Cap at 80%
+                    behavior.setSkipCollapsed(true);      // Go directly to expanded state, as peek is full height
+
+                    // 3. Ensure it's expanded
+                    // It's possible that setting layout params might change the state, so re-check and set.
+                    if (behavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
+                        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                        Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Set state to EXPANDED.");
+                    } else {
+                        Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): State was already EXPANDED.");
+                    }
+                    Log.d("BottomSheet", "onGlobalLayout (for design_bottom_sheet): Actual bottomSheetInternal height after changes: " + bottomSheetInternal.getHeight());
                 }
-
-                // BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-                // if (dialog == null) {
-                //     Log.e("BottomSheet", "Dialog is null in onGlobalLayout.");
-                //     return;
-                // }
-
-                // FrameLayout bottomSheetInternal = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
-                // if (bottomSheetInternal == null) {
-                //     Log.e("BottomSheet", "design_bottom_sheet FrameLayout not found in onGlobalLayout.");
-                //     return;
-                // }
-
-                // BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheetInternal);
-
-                BottomSheetBehavior behavior = dialog.getBehavior();
-
-                DisplayMetrics displayMetrics = new DisplayMetrics();
-                if (getActivity() == null || getActivity().getWindowManager() == null) {
-                    Log.e("BottomSheet", "Activity or WindowManager is null in onGlobalLayout.");
-                    return;
-                }
-                getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                int screenHeight = displayMetrics.heightPixels;
-                int defaultHeight = (int) (screenHeight * 0.8);
-                Log.d("BottomSheet", "onGlobalLayout: Calculated defaultHeight: " + defaultHeight);
-
-                behavior.setPeekHeight(defaultHeight);
-                behavior.setMaxHeight(defaultHeight);
-
-                if (behavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                    behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    Log.d("BottomSheet", "onGlobalLayout: Set state to EXPANDED.");
-                } else {
-                    Log.d("BottomSheet", "onGlobalLayout: State was already EXPANDED.");
-                }
-            }
-        });
+            });
+        }
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
@@ -311,14 +317,26 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             Log.e("BottomSheetFragment", "onViewCreated: Post Content: " + mPostContentString);
             Log.e("BottomSheetFragment", "onViewCreated: Post Avatar URL: " + mPostAvatarString);
             BraveActivity activity = BraveActivity.getBraveActivity();
-            ImageLoader.downloadImage(mPostAvatarString, Glide.with(activity), false, 5, mPostAvatar, null);
-            mPostUsername.setText(mPostUsernameString);
-            if(mPostContentString.toString().length() > 75){
-                String contentString = mPostContentString.toString().subSequence(0, 75) + "...";
-                mPostContent.setText(contentString);
-            }else{
-                mPostContent.setText(mPostContentString.toString());
+            if(activity == null) {
+                Log.e("BottomSheetFragment", "BraveActivity is null in onViewCreated.");
+                return;
             }
+            if(mAvatarImage != null && mPostAvatarString != null && !mPostAvatarString.isEmpty()) {
+                ImageLoader.downloadImage(mPostAvatarString, Glide.with(activity), false, 5, mPostAvatar, null);
+            }
+
+            if(mPostUsernameString != null && !mPostUsernameString.isEmpty()) {
+                mPostUsername.setText(mPostUsernameString);
+            }
+
+            if(mPostContentString != null && !mPostContentString.isEmpty()) {
+                if(mPostContentString.toString().length() > 75){
+                    String contentString = mPostContentString.toString().subSequence(0, 75) + "...";
+                    mPostContent.setText(contentString);
+                }else{
+                    mPostContent.setText(mPostContentString.toString());
+                }
+            } 
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
     }
