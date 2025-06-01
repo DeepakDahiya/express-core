@@ -201,7 +201,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         super.onViewCreated(view, savedInstanceState);
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
 
-        final FrameLayout bottomSheetInternal = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+        final FrameLayout bottomSheetInternal = (FrameLayout) view.getParent();
 
         if (bottomSheetInternal == null) {
             Log.e("BottomSheet", "Could not find R.id.design_bottom_sheet. Fixed height cannot be applied reliably.");
