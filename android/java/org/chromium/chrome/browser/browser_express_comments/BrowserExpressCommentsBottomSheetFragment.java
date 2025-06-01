@@ -204,7 +204,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         // int defaultHeight = (int) (screenHeight * 0.8);
 
-        // BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
         // BottomSheetBehavior behavior = dialog.getBehavior();
 
         // behavior.setMaxHeight(defaultHeight);
@@ -218,7 +218,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     view.getViewTreeObserver().removeOnGlobalLayoutListener(this);
                 }
 
-                BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+                // BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
                 // if (dialog == null) {
                 //     Log.e("BottomSheet", "Dialog is null in onGlobalLayout.");
                 //     return;
