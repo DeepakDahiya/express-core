@@ -94,6 +94,8 @@ public class ReplyListFragment2 extends Fragment {
     private Button mLoveButton;
     private Button mClapButton;
 
+    private LinearLayout mEmptyContainer;
+
     private BottomSheetInputCallback inputCallback;
 
     private NestedScrollView mNestedScrollView;
@@ -131,6 +133,8 @@ public class ReplyListFragment2 extends Fragment {
         mClapButton = view.findViewById(R.id.clap_button);
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
+
+        mEmptyContainer = view.findViewById(R.id.empty_container);
 
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
         
@@ -179,6 +183,12 @@ public class ReplyListFragment2 extends Fragment {
         this.setOnClickForEmoji(inputCallback.getEmojiButton("fire"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("love"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("clap"), mMessageEditText);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenHeight = displayMetrics.heightPixels;
+
+        mEmptyContainer.getLayoutParams().height = (int)(screenHeight * 0.7);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();

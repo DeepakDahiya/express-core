@@ -66,9 +66,6 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
-import android.view.ViewTreeObserver;
-import android.graphics.Rect;
-import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -200,59 +197,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenHeight = displayMetrics.heightPixels;
+
+        int defaultHeight = (int) (screenHeight * 0.8);
+
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
+        BottomSheetBehavior behavior = dialog.getBehavior();
 
-        final FrameLayout bottomSheetInternal = (FrameLayout) view.getParent();
+        behavior.setMaxHeight(defaultHeight);
 
-        if (bottomSheetInternal == null) {
-            Log.e("BottomSheet", "Could not find design_bottom_sheet. Fixed height cannot be applied reliably.");
-        } else {
-            bottomSheetInternal.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-                @Override
-                public void onGlobalLayout() {
-                    if (bottomSheetInternal.getViewTreeObserver().isAlive()) {
-                        bottomSheetInternal.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    } else {
-                        return;
-                    }
+        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
-                    BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheetInternal);
-
-                    DisplayMetrics displayMetrics = new DisplayMetrics();
-                    Activity activity = getActivity();
-                    if (activity == null || activity.getWindowManager() == null) {
-                        Log.e("BottomSheet", "Activity or WindowManager is null in onGlobalLayout.");
-                        return;
-                    }
-                    activity.getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-                    int screenHeight = displayMetrics.heightPixels;
-                    int desiredHeight = (int) (screenHeight * 0.8); // Increased to 90% for better visibility
-
-                    ViewGroup.LayoutParams params = bottomSheetInternal.getLayoutParams();
-                    if (params != null) {
-                        if (params.height != desiredHeight) {
-                            params.height = desiredHeight;
-                            bottomSheetInternal.setLayoutParams(params);
-                            Log.d("BottomSheet", "Set design_bottom_sheet height to " + desiredHeight);
-                        }
-                    }
-
-                    behavior.setPeekHeight(desiredHeight);
-                    behavior.setMaxHeight(desiredHeight);
-                    behavior.setSkipCollapsed(true);
-                    behavior.setFitToContents(false); // This is crucial for proper layout
-                    behavior.setHalfExpandedRatio(0.5f); // Allow half-expanded state
-
-                    if (behavior.getState() != BottomSheetBehavior.STATE_EXPANDED) {
-                        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                    }
-                }
-            });
-        }
-
-        if (dialog != null && dialog.getWindow() != null) {
-            dialog.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        }
+        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         view.setFocusableInTouchMode(true);
         view.requestFocus();
@@ -302,10 +260,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
             });
         try{
-            Log.e("BottomSheetFragment", "onViewCreated: Post ID: " + mPostId);
-            Log.e("BottomSheetFragment", "onViewCreated: Post Username: " + mPostUsernameString);
-            Log.e("BottomSheetFragment", "onViewCreated: Post Content: " + mPostContentString);
-            Log.e("BottomSheetFragment", "onViewCreated: Post Avatar URL: " + mPostAvatarString);
             BraveActivity activity = BraveActivity.getBraveActivity();
             if(activity == null) {
                 Log.e("BottomSheetFragment", "BraveActivity is null in onViewCreated.");
@@ -328,68 +282,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 }
             } 
         } catch (BraveActivity.BraveActivityNotFoundException e) {
-        }
-
-        setupKeyboardListener();
-    }
-
-    private void setupKeyboardListener() {
-        if (getView() == null) return;
-        
-        final View rootView = getView().getRootView();
-        rootView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
-            @Override
-            public void onGlobalLayout() {
-                if (!isAdded() || getView() == null) return;
-                
-                Rect rect = new Rect();
-                rootView.getWindowVisibleDisplayFrame(rect);
-                int screenHeight = rootView.getHeight();
-                int keypadHeight = screenHeight - rect.bottom;
-                
-                // If keyboard is visible (keypad height > 20% of screen)
-                if (keypadHeight > screenHeight * 0.20) {
-                    // Keyboard is open - adjust the bottom sheet container
-                    adjustForKeyboard(true, keypadHeight);
-                } else {
-                    // Keyboard is closed
-                    adjustForKeyboard(false, 0);
-                }
-            }
-        });
-    }
-
-    // 3. Add this method to adjust layout when keyboard appears:
-    private void adjustForKeyboard(boolean keyboardVisible, int keyboardHeight) {
-        if (getView() == null) return;
-        
-        View bottomSheetContainer = getView().findViewById(R.id.bottom_sheet_container);
-        View inputBarLayout = getView().findViewById(R.id.input_bar_layout);
-        
-        if (bottomSheetContainer != null && inputBarLayout != null) {
-            ViewGroup.MarginLayoutParams containerParams = 
-                (ViewGroup.MarginLayoutParams) bottomSheetContainer.getLayoutParams();
-            
-            if (keyboardVisible) {
-                // Add bottom margin to prevent content from being covered
-                containerParams.bottomMargin = 0; // Let the input bar handle positioning
-                
-                // Ensure input bar stays above keyboard
-                ViewGroup.MarginLayoutParams inputParams = 
-                    (ViewGroup.MarginLayoutParams) inputBarLayout.getLayoutParams();
-                inputParams.bottomMargin = Math.max(0, keyboardHeight - 100); // Small offset
-                inputBarLayout.setLayoutParams(inputParams);
-            } else {
-                // Reset margins when keyboard is hidden
-                containerParams.bottomMargin = 0;
-                
-                ViewGroup.MarginLayoutParams inputParams = 
-                    (ViewGroup.MarginLayoutParams) inputBarLayout.getLayoutParams();
-                inputParams.bottomMargin = 0;
-                inputBarLayout.setLayoutParams(inputParams);
-            }
-            
-            bottomSheetContainer.setLayoutParams(containerParams);
         }
     }
 

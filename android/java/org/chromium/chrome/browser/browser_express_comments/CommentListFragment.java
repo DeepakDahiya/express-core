@@ -97,6 +97,8 @@ public class CommentListFragment extends Fragment {
 
     private ImageView mAvatarImage;
 
+    private LinearLayout mEmptyContainer;
+
     private BottomSheetInputCallback inputCallback;
 
     private RecyclerView.OnScrollListener videoScrollListener;
@@ -175,6 +177,8 @@ public class CommentListFragment extends Fragment {
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
 
+        mEmptyContainer = view.findViewById(R.id.empty_container);
+
         mBackButton = view.findViewById(R.id.back_button);
         mBackButton.setVisibility(View.GONE);
 
@@ -211,6 +215,10 @@ public class CommentListFragment extends Fragment {
         this.setOnClickForEmoji(inputCallback.getEmojiButton("fire"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("love"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("clap"), mMessageEditText);
+
+        DisplayMetrics displayMetrics = new DisplayMetrics();
+        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
+        int screenHeight = displayMetrics.heightPixels;
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();

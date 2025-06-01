@@ -112,6 +112,13 @@
 
             </LinearLayout>
 
+            <LinearLayout
+                android:id="@+id/empty_container"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible"
+                android:orientation="horizontal">
+
         </LinearLayout>
 	</androidx.core.widget.NestedScrollView>
 
