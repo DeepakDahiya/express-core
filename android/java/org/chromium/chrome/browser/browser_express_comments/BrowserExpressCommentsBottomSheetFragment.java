@@ -67,6 +67,7 @@ import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import android.view.ViewTreeObserver;
+import android.graphics.Rect;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
@@ -693,8 +694,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                 params.width = availableWidth;
                                                 params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.75f) : (int) (availableWidth / aspectRatio) ;
                                             } else { // Vertical or square image
-                                                params.width = availableWidth/1.1f;
-                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.1f) * 1.33f) : (int) ((availableWidth / 1.1f) / aspectRatio) ;
+                                                params.width = availableWidth/1.1;
+                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.1) * 1.33f) : (int) ((availableWidth / 1.1) / aspectRatio) ;
                                             }
 
                                             int maxPreviewHeight = (int) (250 * getResources().getDisplayMetrics().density);
@@ -706,7 +707,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                                                     params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
                                                 }
 
-                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : availableWidth / 1.1f;
+                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : availableWidth / 1.1;
                                                 if (params.width > maxWidthForOrientation ) {
                                                      params.width = maxWidthForOrientation;
                                                 }
