@@ -221,7 +221,9 @@ public class BraveToolbarManager extends ToolbarManager {
         HomepageManager.getInstance().addListener(mBraveHomepageStateListener);
 
         Tab currentTab = ((BraveActivity) mActivity).getActivityTab();
+        Log.d(TAG, "BraveToolbarManager: currentTab = " + currentTab);
         if (currentTab != null) {
+            Log.d(TAG, "BraveToolbarManager: currentTab URL = " + currentTab.getUrl());
             if (currentTab == null) {
                 mIsCurrentPageNtpOrHome = false;
                 setBottomToolbarVisible(true);
@@ -229,6 +231,7 @@ public class BraveToolbarManager extends ToolbarManager {
             }
             GURL currentGurl = currentTab.getUrl();
             boolean isNtp = UrlUtilities.isNTPUrl(currentGurl);
+            Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
 
             mIsCurrentPageNtpOrHome = isNtp;
             setBottomToolbarVisible(!isNtp);
