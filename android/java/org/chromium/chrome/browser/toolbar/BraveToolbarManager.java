@@ -258,9 +258,16 @@ public class BraveToolbarManager extends ToolbarManager {
         if (selector != null) {
             Tab currentTab = selector.getCurrentTab();
             if (currentTab != null) {
-                mTabModelSelectorTabObserver.updateToolbarForTab(currentTab);
-            } else {
-                mTabModelSelectorTabObserver.updateToolbarForTab(null);
+                if (currentTab == null) {
+                    mIsCurrentPageNtpOrHome = false;
+                    setBottomToolbarVisible(true);
+                    return;
+                }
+                GURL currentGurl = currentTab.getUrl();
+                boolean isNtp = UrlUtilities.isNTPUrl(currentGurl);
+
+                mIsCurrentPageNtpOrHome = isNtp;
+                setBottomToolbarVisible(!isNtp);
             }
         }
     }
