@@ -255,12 +255,6 @@ public class BraveToolbarManager extends ToolbarManager {
                 super.onUrlUpdated(tab);
                 updateToolbarForTab(tab);
             }
-
-            @Override
-            public void onActivityTabChanged(Tab tab, boolean hint) {
-                 super.onActivityTabChanged(tab, hint);
-                 updateToolbarForTab(tab);
-            }
         };
     }
 
