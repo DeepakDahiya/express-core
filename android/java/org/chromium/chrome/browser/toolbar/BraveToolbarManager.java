@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.Callback;
 import org.chromium.base.CallbackController;
-import org.chromium.base.Log; // Import Log
+import org.chromium.base.Log;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
 import org.chromium.base.supplier.OneshotSupplier;
@@ -77,7 +77,6 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.url.GURL;
-// import org.chromium.url.mojom.Url; // Not used, can be removed
 
 import java.util.List;
 
@@ -101,8 +100,6 @@ public class BraveToolbarManager extends ToolbarManager {
     private ObservableSupplier<BookmarkModel> mBookmarkModelSupplier;
     private LayoutManagerImpl mLayoutManager;
     private ObservableSupplierImpl<Boolean> mOverlayPanelVisibilitySupplier;
-    // mTabModelSelector is inherited from ToolbarManager if it's protected or public
-    // If it's private in ToolbarManager, you'll need mLocalTabModelSelector as in previous suggestion
     private IncognitoStateProvider mIncognitoStateProvider;
     private TabCountProvider mTabCountProvider;
     private TabGroupUi mTabGroupUi;
@@ -201,7 +198,7 @@ public class BraveToolbarManager extends ToolbarManager {
                     initializeTabObserver(selector);
                     if (mPassedTabModelSelectorSupplier != null && mTabModelSelectorSupplierObserver != null) {
                         mPassedTabModelSelectorSupplier.removeObserver(mTabModelSelectorSupplierObserver);
-                         mTabModelSelectorSupplierObserver = null; // Avoid removing multiple times
+                         mTabModelSelectorSupplierObserver = null;
                     }
                 }
             };
@@ -229,12 +226,26 @@ public class BraveToolbarManager extends ToolbarManager {
             mTabModelSelectorTabObserver.destroy();
         }
         mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
+            private void updateToolbarForTab(Tab tab) {
+                if (tab == null) {
+                    mIsCurrentPageNtpOrHome = false;
+                    setBottomToolbarVisible(true);
+                    return;
+                }
+                GURL currentGurl = tab.getUrl();
+                // Prefer using GURL overload if UrlUtilities.isNTPUrl supports it,
+                // otherwise use .getSpec()
+                boolean isNtp = UrlUtilities.isNTPUrl(currentGurl);
+
+                mIsCurrentPageNtpOrHome = isNtp;
+                setBottomToolbarVisible(!isNtp);
+            }
+
             @Override
             public void onPageLoadStarted(Tab tab, GURL url) {
                 super.onPageLoadStarted(tab, url);
-                String mUrlSpec = url.getSpec();
-                boolean isNtp = UrlUtilities.isNTPUrl(mUrlSpec) ||
-                                (HomepageManager.isHomepageEnabled() && HomepageManager.getInstance().isHomepageUrl(url));
+                // Prefer using GURL overload if UrlUtilities.isNTPUrl supports it
+                boolean isNtp = UrlUtilities.isNTPUrl(url);
                 mIsCurrentPageNtpOrHome = isNtp;
                 setBottomToolbarVisible(!isNtp);
             }
@@ -242,27 +253,13 @@ public class BraveToolbarManager extends ToolbarManager {
             @Override
             public void onUrlUpdated(Tab tab) {
                 super.onUrlUpdated(tab);
-                GURL currentGurl = tab.getUrl();
-                String mUrlSpec = currentGurl.getSpec();
-                boolean isNtp = UrlUtilities.isNTPUrl(mUrlSpec) ||
-                                (HomepageManager.isHomepageEnabled() && HomepageManager.getInstance().isHomepageUrl(currentGurl));
-                mIsCurrentPageNtpOrHome = isNtp;
-                setBottomToolbarVisible(!isNtp);
+                updateToolbarForTab(tab);
             }
 
             @Override
-            public void onTabSelected(Tab tab) {
-                super.onTabSelected(tab);
-                if (tab != null && !tab.isFrozen() && !tab.isLoading()) {
-                     GURL currentGurl = tab.getUrl();
-                     String mUrlSpec = currentGurl.getSpec();
-                     boolean isNtp = UrlUtilities.isNTPUrl(mUrlSpec) ||
-                                     (HomepageManager.isHomepageEnabled() && HomepageManager.getInstance().isHomepageUrl(currentGurl));
-                     mIsCurrentPageNtpOrHome = isNtp;
-                     setBottomToolbarVisible(!isNtp);
-                } else if (tab == null) {
-                    setBottomToolbarVisible(true);
-                }
+            public void onActivityTabChanged(Tab tab, boolean hint) {
+                 super.onActivityTabChanged(tab, hint);
+                 updateToolbarForTab(tab);
             }
         };
     }
@@ -285,7 +282,6 @@ public class BraveToolbarManager extends ToolbarManager {
             mBottomControls =
                     (BraveScrollingBottomViewResourceFrameLayout) bottomControlsStub.inflate();
 
-            // Use mLocalTabModelSelector which should be populated by now
             TabModelSelector currentSelector = mLocalTabModelSelector != null ? mLocalTabModelSelector : mPassedTabModelSelectorSupplier.get();
 
             mTabGroupUi = TabManagementDelegateProvider.getDelegate().createTabGroupUi(mActivity,
@@ -316,8 +312,6 @@ public class BraveToolbarManager extends ToolbarManager {
         }
     }
 
-    // REMOVED the setTabModelSelector method as it's not overriding a superclass method
-    // and the observer is initialized using the supplier in the constructor.
 
     @Override
     public void initializeWithNative(LayoutManagerImpl layoutManager,
@@ -327,7 +321,6 @@ public class BraveToolbarManager extends ToolbarManager {
         super.initializeWithNative(layoutManager, tabSwitcherClickHandler, newTabClickHandler,
                 bookmarkClickHandler, customTabsBackClickHandler, showStartSurfaceSupplier);
 
-        // Ensure mLocalTabModelSelector is used if ToolbarManager's mTabModelSelector is private
         TabModelSelector currentSelector = mLocalTabModelSelector != null ? mLocalTabModelSelector : mPassedTabModelSelectorSupplier.get();
 
         if (isToolbarPhone() && BottomToolbarConfiguration.isBottomToolbarEnabled()) {
@@ -362,10 +355,13 @@ public class BraveToolbarManager extends ToolbarManager {
 
     @Override
     public void destroy() {
-        HomepageManager.getInstance().removeListener(mBraveHomepageStateListener);
+        if (mBraveHomepageStateListener != null && HomepageManager.getInstance() != null) {
+            HomepageManager.getInstance().removeListener(mBraveHomepageStateListener);
+            mBraveHomepageStateListener = null;
+        }
         if (mLayoutStateProvider != null && mLayoutStateObserver != null) {
             mLayoutStateProvider.removeObserver(mLayoutStateObserver);
-            mLayoutStateProvider = null; // Or just mLayoutStateObserver = null;
+            mLayoutStateObserver = null;
         }
         if (mTabModelSelectorTabObserver != null) {
             mTabModelSelectorTabObserver.destroy();
@@ -409,16 +405,10 @@ public class BraveToolbarManager extends ToolbarManager {
     }
 
     protected void updateReloadState(boolean tabCrashed) {
-        // This was assert(false), if it's truly not needed, can be empty or log.
-        // If it's an abstract method in parent that MUST be overridden, it needs an implementation.
-        // Assuming it's not abstract and was meant as a placeholder.
     }
 
     private void setBottomToolbarVisible(boolean visible) {
         mIsBottomToolbarVisible = visible;
-        // boolean isMenuFromBottom =
-        //         mIsBottomToolbarVisible && BottomToolbarConfiguration.isBottomToolbarEnabled();
-        // BraveMenuButtonCoordinator.setMenuFromBottom(isMenuFromBottom); // Re-evaluate this line's logic
 
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomToolbarVisibilityChanged(visible);
@@ -441,6 +431,7 @@ public class BraveToolbarManager extends ToolbarManager {
     }
 
     private boolean isToolbarPhone() {
+        if (mToolbar == null) return false; // Guard against mToolbar being null
         return mToolbar instanceof BraveTopToolbarCoordinator
                 && ((BraveTopToolbarCoordinator) mToolbar).isToolbarPhone();
     }
@@ -449,8 +440,6 @@ public class BraveToolbarManager extends ToolbarManager {
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             return ((BraveTopToolbarCoordinator) mToolbar).getConstraintsProxy();
         }
-        // Removed assert false to prevent crashes if this path is legitimately hit,
-        // though it indicates a potential logic error or unexpected state.
         Log.w(TAG, "getConstraintsProxy called with unexpected toolbar type.");
         return null;
     }
