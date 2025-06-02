@@ -220,7 +220,7 @@ public class BraveToolbarManager extends ToolbarManager {
         };
         HomepageManager.getInstance().addListener(mBraveHomepageStateListener);
 
-        Tab currentTab = mActivity.getActivityTab();
+        Tab currentTab = ((BraveActivity) mActivity).getActivityTab();
         if (currentTab != null) {
             if (currentTab == null) {
                 mIsCurrentPageNtpOrHome = false;
