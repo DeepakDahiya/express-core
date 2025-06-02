@@ -219,6 +219,20 @@ public class BraveToolbarManager extends ToolbarManager {
             }
         };
         HomepageManager.getInstance().addListener(mBraveHomepageStateListener);
+
+        Tab currentTab = mActivity.getActivityTab();
+        if (currentTab != null) {
+            if (currentTab == null) {
+                mIsCurrentPageNtpOrHome = false;
+                setBottomToolbarVisible(true);
+                return;
+            }
+            GURL currentGurl = currentTab.getUrl();
+            boolean isNtp = UrlUtilities.isNTPUrl(currentGurl);
+
+            mIsCurrentPageNtpOrHome = isNtp;
+            setBottomToolbarVisible(!isNtp);
+        }
     }
 
     private void initializeTabObserver(TabModelSelector selector) {
