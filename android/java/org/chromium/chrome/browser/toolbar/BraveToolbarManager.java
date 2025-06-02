@@ -75,6 +75,8 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.url.GURL;
+import org.chromium.url.mojom.Url;
 
 import java.util.List;
 
@@ -267,7 +269,7 @@ public class BraveToolbarManager extends ToolbarManager {
 
             @Override
             public void onUrlUpdated(Tab tab) {
-                String mUrl = url.getSpec();
+                String mUrl = tab.getUrl().getSpec();
                 if(UrlUtilities.isNTPUrl(mUrl)){
                     mIsCurrentPageNtpOrHome = true;
                     setBottomToolbarVisible(false);
