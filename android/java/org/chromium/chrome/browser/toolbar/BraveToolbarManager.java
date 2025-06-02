@@ -233,8 +233,6 @@ public class BraveToolbarManager extends ToolbarManager {
                     return;
                 }
                 GURL currentGurl = tab.getUrl();
-                // Prefer using GURL overload if UrlUtilities.isNTPUrl supports it,
-                // otherwise use .getSpec()
                 boolean isNtp = UrlUtilities.isNTPUrl(currentGurl);
 
                 mIsCurrentPageNtpOrHome = isNtp;
@@ -256,6 +254,15 @@ public class BraveToolbarManager extends ToolbarManager {
                 updateToolbarForTab(tab);
             }
         };
+
+        if (selector != null) {
+            Tab currentTab = selector.getCurrentTab();
+            if (currentTab != null) {
+                mTabModelSelectorTabObserver.updateToolbarForTab(currentTab);
+            } else {
+                mTabModelSelectorTabObserver.updateToolbarForTab(null);
+            }
+        }
     }
 
 
