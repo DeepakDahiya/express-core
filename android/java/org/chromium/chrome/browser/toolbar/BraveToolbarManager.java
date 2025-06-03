@@ -235,6 +235,8 @@ public class BraveToolbarManager extends ToolbarManager {
 
             mIsCurrentPageNtpOrHome = isNtp;
             setBottomToolbarVisible(!isNtp);
+        }else{
+            setBottomToolbarVisible(false);
         }
     }
 
@@ -434,6 +436,26 @@ public class BraveToolbarManager extends ToolbarManager {
 
     private void setBottomToolbarVisible(boolean visible) {
         mIsBottomToolbarVisible = visible;
+
+        Tab currentTab = mLocationBarModel.getTab();
+        if (currentTab != null) {
+            Log.d(TAG, "BraveToolbarManager: currentTab URL = " + currentTab.getUrl());
+            if (currentTab == null) {
+                mIsCurrentPageNtpOrHome = false;
+                setBottomToolbarVisible(true);
+                return;
+            }
+            GURL currentGurl = currentTab.getUrl();
+            boolean isNtp = UrlUtilities.isNTPUrl(currentGurl);
+            Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
+
+            mIsCurrentPageNtpOrHome = isNtp;
+            mIsBottomToolbarVisible = !isNtp;
+            visible = !isNtp;
+        }else{
+            mIsBottomToolbarVisible = false;
+            visible = false;
+        }
 
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomToolbarVisibilityChanged(visible);
