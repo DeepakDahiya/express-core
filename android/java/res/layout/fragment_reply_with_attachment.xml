@@ -138,9 +138,10 @@
             <FrameLayout
                 android:id="@+id/media_preview_container"
                 android:layout_width="match_parent"
-                android:layout_height="200dp"
+                android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:layout_marginStart="16dp"
+                android:visibility="gone"
                 android:layout_marginEnd="16dp">
 
                 <ImageView
@@ -170,7 +171,6 @@
                     android:src="@drawable/close"
                     android:layout_gravity="top|end"
                     android:layout_margin="8dp"
-                    android:visibility="gone"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </FrameLayout>
 
@@ -219,7 +219,8 @@
                     android:minWidth="0dp"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    style="?android:attr/borderlessButtonStyle"/>
+                    android:backgroundTint="@null"
+                    app:backgroundTint="@null"/>
 
             </LinearLayout>
 

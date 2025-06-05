@@ -486,6 +486,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                                         }
                                     });
                             mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                            mRemoveAttachmentButton.setVisibility(View.GONE);
                         } else {
                             Log.e("CommentBottomSheet", "Image processing failed.");
                             mSelectedMediaUri = originalUri;
@@ -501,6 +502,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                                 params.height = (int) (100 * getResources().getDisplayMetrics().density);
                                 mAttachmentPreviewImage.setLayoutParams(params);
                                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                                mRemoveAttachmentButton.setVisibility(View.VISIBLE);
                             }
                             if(getContext() != null) {
                                 Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show();
@@ -529,6 +531,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                 mAttachmentPreviewImage.setLayoutParams(params);
 
                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
+                mVideoPlayButton.setVisibility(View.VISIBLE);
+                mRemoveAttachmentButton.setVisibility(View.GONE);
             }
         } else {
             Log.w("CommentBottomSheet", "Unsupported media type: " + mimeType);
