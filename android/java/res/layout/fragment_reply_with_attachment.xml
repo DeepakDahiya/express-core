@@ -34,36 +34,11 @@
             android:minWidth="0dp"
             android:textSize="14sp"/>
 
-        <!-- Added for layout balance, similar to previous versions -->
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/post_button_top"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/post"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:background="@drawable/rounded_button_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:minHeight="0dp"
-            android:minWidth="0dp"
-            android:textSize="14sp"
-            android:textStyle="bold"
-            android:backgroundTint="@null"
-            app:backgroundTint="@null" />
-
     </LinearLayout>
 
     <LinearLayout
         android:id="@+id/attachment_button_container"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:gravity="center_vertical"
@@ -122,7 +97,7 @@
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:orientation="vertical">
 
             <androidx.constraintlayout.widget.ConstraintLayout
