@@ -67,14 +67,15 @@ import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
-public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
+import org.chromium.base.ContextUtils;
+
+public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends BottomSheetDialogFragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
     public static final String POST_USERNAME = "post_username";
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
-    public static final String OPEN_KEYBOARD = "open_keyboard";
     private static final int PICK_MEDIA_REQUEST = 1001;
     private static final int MAX_IMAGE_DIMENSION = 1920;
     private static final int IMAGE_COMPRESSION_QUALITY = 80;
@@ -90,35 +91,27 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mPostUsernameString;
     private String mPostContentString;
 
-    private LinearLayout mPostInfoContainer;
+    private Button mCancelButton;
+    private Button mPostButton;
+
     private ImageView mPostAvatar;
     private TextView mPostUsername;
     private TextView mPostContent;
 
-    private Boolean mOpenKeyboard = false;
     private ProgressBar mCommentProgress;
 
     private ImageButton mAttachButton;
     private FrameLayout mAttachmentPreviewContainer;
     private ImageView mAttachmentPreviewImage;
     private ImageButton mRemoveAttachmentButton;
+    private ImageView mVideoPlayButton;
     private Uri mSelectedMediaUri;
     private String mSelectedMediaType;
 
-    private ImageButton mSendButton;
+    private ImageView mAvatarImage;
     private EditText mMessageEditText;
 
-    private LinearLayout mReactionContainer;
-    private Button mLolButton;
-    private Button mHeartButton;
-    private Button mCryButton;
-    private Button mFireButton;
-    private Button mLoveButton;
-    private Button mClapButton;
-
     private boolean isFromMenu;
-
-    private ImageView mAvatarImage;
 
     private String mLastOpenedRepliesForCommentId = null;
     private String mLastOpenedRepliesToRepliesForCommentId = null;
@@ -144,16 +137,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             mPostUsernameString = getArguments().getString(POST_USERNAME);
             mPostContentString = getArguments().getString(POST_CONTENT);
             mPostAvatarString = getArguments().getString(POST_AVATAR_URL);
-            String tempOpenKeyboard = getArguments().getString(OPEN_KEYBOARD);
-            if (tempOpenKeyboard != null && tempOpenKeyboard.equals("true")) {
-                mOpenKeyboard = true;
-            } else {
-                mOpenKeyboard = false;
-            }
         }
     }
 
-     @Override
+    @Override
     public void onPause() {
         super.onPause();
         pauseAllVideoPlaybackInActiveLists();
@@ -163,33 +150,27 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(
-                R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
-        loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
-        mIsCommentPage = true;
+                R.layout.fragment_reply_with_attachment, container, false);
 
         mMessageEditText = view.findViewById(R.id.comment_content_input);
-        mSendButton = view.findViewById(R.id.button_send);
         mAvatarImage = view.findViewById(R.id.avatar_image);
 
-        mReactionContainer = view.findViewById(R.id.reaction_buttons_container);
-        mLolButton = view.findViewById(R.id.lol_button);
-        mHeartButton = view.findViewById(R.id.heart_button);
-        mCryButton = view.findViewById(R.id.cry_button);
-        mFireButton = view.findViewById(R.id.fire_button);
-        mLoveButton = view.findViewById(R.id.love_button);
-        mClapButton = view.findViewById(R.id.clap_button);
-
-        mPostInfoContainer = view.findViewById(R.id.post_info_container);
         mPostAvatar = view.findViewById(R.id.post_avatar);
         mPostUsername = view.findViewById(R.id.post_username);
         mPostContent = view.findViewById(R.id.post_content);
 
+        mCancelButton = view.findViewById(R.id.cancel_button);
+        mPostButton = view.findViewById(R.id.post_button);
+
         mAttachButton = view.findViewById(R.id.button_attach);
-        mAttachmentPreviewContainer = view.findViewById(R.id.attachment_preview_container);
+        mAttachmentPreviewContainer = view.findViewById(R.id.media_preview_container);
         mAttachmentPreviewImage = view.findViewById(R.id.attachment_preview_image);
         mRemoveAttachmentButton = view.findViewById(R.id.button_remove_attachment);
+        mVideoPlayButton = view.findViewById(R.id.video_play_button);
 
         setupAttachmentListeners();
+
+        showKeyboardWithFocus();
 
         return view;
     }
@@ -201,7 +182,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
-        int defaultHeight = (int) (screenHeight * 0.8);
+        int defaultHeight = (int)screenHeight;
 
         BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
         BottomSheetBehavior behavior = dialog.getBehavior();
@@ -214,58 +195,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         view.setFocusableInTouchMode(true);
         view.requestFocus();
-        view.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                Log.e("ROOT_VIEW_KEY", "keyCode: " + keyCode);
-                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-                    FragmentManager fragmentManager = getChildFragmentManager();
-                    if (fragmentManager.getBackStackEntryCount() > 1) {
-                        openComments();
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-
-        dialog.setOnKeyListener(new DialogInterface.OnKeyListener() {
-            @Override
-            public boolean onKey(DialogInterface dialog, int keyCode, KeyEvent event) {
-                Log.e("BACK BUTTON PRESSED", "keyCode: " + keyCode);
-                if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
-                    FragmentManager fragmentManager = getChildFragmentManager();
-                    if (fragmentManager.getBackStackEntryCount() > 1) {
-                        openComments();
-                        return true;
-                    }
-                }
-                return false;
-            }
-        });
-
-        ((BottomSheetDialog) dialog).getOnBackPressedDispatcher().addCallback(this, 
-            new OnBackPressedCallback(true) {
-                @Override
-                public void handleOnBackPressed() {
-                    Log.e("BACK BUTTON PRESSED 2", "START");
-                    FragmentManager fragmentManager = getChildFragmentManager();
-                    Log.e("BACK BUTTON PRESSED 2", fragmentManager.getBackStackEntryCount() + "");
-                    if (fragmentManager.getBackStackEntryCount() > 1) {
-                        openComments();
-                    } else {
-                        this.remove();
-                        dismissBottomsheet();
-                    }
-                }
-            });
         try{
             BraveActivity activity = BraveActivity.getBraveActivity();
             if(activity == null) {
                 Log.e("BottomSheetFragment", "BraveActivity is null in onViewCreated.");
                 return;
             }
-            if(mAvatarImage != null && mPostAvatarString != null && !mPostAvatarString.isEmpty()) {
+            if(mPostAvatar != null && mPostAvatarString != null && !mPostAvatarString.isEmpty()) {
                 ImageLoader.downloadImage(mPostAvatarString, Glide.with(activity), false, 5, mPostAvatar, null);
             }
 
@@ -281,28 +217,31 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     mPostContent.setText(mPostContentString.toString());
                 }
             } 
+
+            
+            String accessToken = activity.getAccessToken();
+            mCommentsText = activity.getCommentCountText();
+            if(accessToken != null){
+                Context context = ContextUtils.getApplicationContext();
+                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                String avatar = prefs.getString("avatar_url", null);
+                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                if (avatar != null) {
+                    updateAvatar(avatar, activity);
+                }else{
+                    updateAvatar("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", activity);
+                }
+            }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
+
+        mCancelButton.setOnClickListener(v -> dismissBottomsheet());
     }
 
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         pauseAllVideoPlaybackInActiveLists();
-    }
-
-    private void loadFragment(Fragment fragment) {
-        FragmentManager fragmentManager = getChildFragmentManager();
-        FragmentTransaction transaction = fragmentManager.beginTransaction();
-
-        transaction.setCustomAnimations(
-            R.anim.slide_in_right,  // enter
-            R.anim.slide_out_left,  // exit
-            R.anim.slide_in_left,   // popEnter
-            R.anim.slide_out_right  // popExit
-        );
-
-        transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
     }
 
     private void pauseAllVideoPlaybackInActiveLists() {
@@ -366,103 +305,23 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
-    public void openReplies(String commentId) {
-        mLastOpenedRepliesForCommentId = commentId;
-        mLastOpenedRepliesToRepliesForCommentId = null;
-        ReplyListFragment replyFragment = new ReplyListFragment();
-        Bundle args = new Bundle();
-        args.putString("comment_id", commentId);
-        replyFragment.setArguments(args);
-        loadFragment(replyFragment);
-        mIsCommentPage = false;
-    }
-
-    public void openRepliesToReply(String commentId) {
-        mLastOpenedRepliesToRepliesForCommentId = commentId;
-        ReplyListFragment2 replyFragment = new ReplyListFragment2();
-        Bundle args = new Bundle();
-        args.putString("comment_id", commentId);
-        replyFragment.setArguments(args);
-        loadFragment(replyFragment);
-        mIsCommentPage = false;
-    }
-
     public void dismissBottomsheet() {
         dismiss();
     }
 
-    public void openComments() {
-        mLastOpenedRepliesToRepliesForCommentId = null;
-        FragmentManager fragmentManager = getChildFragmentManager();
-        fragmentManager.popBackStack();
-        mIsCommentPage = true;
-    }
-
-    @Override
-    public EditText getInputEditText() {
-        return mMessageEditText;
-    }
-
-    @Override
-    public ImageButton getSendButton() {
-        return mSendButton;
-    }
-
-    @Override
-    public void setInputEnabled(boolean enabled) {
-        if (mMessageEditText != null) mMessageEditText.setEnabled(enabled);
-        if (mSendButton != null) mSendButton.setEnabled(enabled);
-    }
-
-    @Override
-    public Button getEmojiButton(String type) {
-        switch(type) {
-            case "lol": return mLolButton;
-            case "heart": return mHeartButton;
-            case "cry": return mCryButton;
-            case "fire": return mFireButton;
-            case "love": return mLoveButton;
-            case "clap": return mClapButton;
-            default: return null;
-        }
-    }
-
-    @Nullable
-    public String getLastOpenedRepliesToRepliesForCommentId() {
-        return mLastOpenedRepliesToRepliesForCommentId;
-    }
-
-    public void clearLastOpenedRepliesToRepliesForCommentId() {
-        mLastOpenedRepliesToRepliesForCommentId = null;
-    }
-
-    @Nullable
-    public String getLastOpenedRepliesForCommentId() {
-        return mLastOpenedRepliesForCommentId;
-    }
-
-    public void clearLastOpenedRepliesForCommentId() {
-        mLastOpenedRepliesForCommentId = null;
-    }
-
-    @Override
     public void updateAvatar(String avatarUrl, BraveActivity activity) {
-        if (mAvatarImage != null && getContext() != null) {
-            ImageLoader.downloadImage(
-                avatarUrl,
-                Glide.with(activity),
-                false,
-                5,
-                mAvatarImage,
-                null
-            );
-        }
+        ImageLoader.downloadImage(
+            avatarUrl,
+            Glide.with(activity),
+            false,
+            5,
+            mAvatarImage,
+            null
+        );
     }
 
     private void setupAttachmentListeners() {
-        mAttachButton.setOnClickListener(v -> {
-            showReplyWithAttachmentBottomSheet(mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post");
-        });
+        mAttachButton.setOnClickListener(v -> openMediaPicker());
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
     }
 
@@ -480,8 +339,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void removeAttachment() {
-        mReactionContainer.setVisibility(View.VISIBLE);
-        mPostInfoContainer.setVisibility(View.GONE);
         mSelectedMediaUri = null;
         mSelectedMediaType = null;
         if (mAttachmentPreviewImage != null) {
@@ -498,12 +355,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
             if (data != null && data.getData() != null) {
                 Uri originalUri = data.getData();
-                processSelectedMedia(originalUri); // New method to handle processing
-                mReactionContainer.setVisibility(View.GONE);
-                if(mIsCommentPage && mPostInfoContainer != null) {
-                    mPostInfoContainer.setVisibility(View.VISIBLE);
-                }
-                
+                processSelectedMedia(originalUri);
                 showKeyboardWithFocus();
             } else {
                 removeAttachment();
@@ -684,22 +536,5 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             }
             removeAttachment();
         }
-    }
-
-    @Override
-    @Nullable
-    public Uri getSelectedMediaUri() {
-        return mSelectedMediaUri;
-    }
-
-    @Override
-    @Nullable
-    public String getSelectedMediaType() {
-        return mSelectedMediaType;
-    }
-
-    @Override
-    public void clearSelectedMedia() {
-        removeAttachment();
     }
 }

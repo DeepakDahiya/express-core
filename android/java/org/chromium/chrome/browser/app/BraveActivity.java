@@ -344,6 +344,7 @@ public abstract class BraveActivity extends ChromeActivity
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
     private BrowserExpressUpdateApkBottomSheetFragment mBottomSheetUpdateApkDialog;
     private BrowserExpressCommentsBottomSheetFragment mBottomSheetCommentsDialog;
+    private BrowserExpressReplyWithAttachmentBottomSheetFragment mBottomSheetReplyWithAttachmentDialog;
 
     private FilterListAndroidHandler mFilterListAndroidHandler;
 
@@ -2244,6 +2245,36 @@ public abstract class BraveActivity extends ChromeActivity
                 fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
                 mBottomSheetCommentsDialog.setArguments(fragmentBundle);
                 mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        }
+    }
+
+    public void showReplyWithAttachmentBottomSheet(String postId, String username, String content, String avatarUrl, String type) {
+        Log.e("BraveActivity", "showCommentsBottomSheetFromPost: " + postId + ", " + username + ", " + content + ", " + avatarUrl + ", " + openKeyboard);
+        try {
+            if(mBottomSheetReplyWithAttachmentDialog == null){
+                BrowserExpressReplyWithAttachmentBottomSheetFragment bottomSheetDialog =
+                        BrowserExpressReplyWithAttachmentBottomSheetFragment.newInstance(true);
+                
+                Bundle fragmentBundle = new Bundle();
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.COMMENTS_FOR, type);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_ID, postId);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
+                bottomSheetDialog.setArguments(fragmentBundle);
+                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
+                mBottomSheetReplyWithAttachmentDialog = bottomSheetDialog;
+            }else{
+                Bundle fragmentBundle = new Bundle();
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.COMMENTS_FOR, type);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_ID, postId);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
+                fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
+                mBottomSheetReplyWithAttachmentDialog.setArguments(fragmentBundle);
+                mBottomSheetReplyWithAttachmentDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         }
