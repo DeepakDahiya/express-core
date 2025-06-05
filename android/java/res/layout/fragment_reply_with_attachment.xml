@@ -159,7 +159,7 @@
             android:layout_height="64dp"
             android:src="@android:drawable/ic_media_play"
             android:layout_gravity="center"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:visibility="gone" />
 
         <ImageButton

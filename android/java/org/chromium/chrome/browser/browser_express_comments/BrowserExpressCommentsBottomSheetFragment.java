@@ -461,7 +461,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private void setupAttachmentListeners() {
         mAttachButton.setOnClickListener(v -> {
-            showReplyWithAttachmentBottomSheet(mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post");
+            try{
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                activity.showReplyWithAttachmentBottomSheet(mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post");
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
         });
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
     }

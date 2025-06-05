@@ -79,6 +79,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     private static final int PICK_MEDIA_REQUEST = 1001;
     private static final int MAX_IMAGE_DIMENSION = 1920;
     private static final int IMAGE_COMPRESSION_QUALITY = 80;
+    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
 
     private Boolean mIsCommentPage = false;
 
@@ -116,9 +117,9 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     private String mLastOpenedRepliesForCommentId = null;
     private String mLastOpenedRepliesToRepliesForCommentId = null;
 
-    public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
-        final BrowserExpressCommentsBottomSheetFragment fragment =
-                new BrowserExpressCommentsBottomSheetFragment();
+    public static BrowserExpressReplyWithAttachmentBottomSheetFragment newInstance(boolean isFromMenu) {
+        final BrowserExpressReplyWithAttachmentBottomSheetFragment fragment =
+                new BrowserExpressReplyWithAttachmentBottomSheetFragment();
         final Bundle args = new Bundle();
         args.putBoolean(IS_FROM_MENU, isFromMenu);
         fragment.setArguments(args);
@@ -220,7 +221,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
 
             
             String accessToken = activity.getAccessToken();
-            mCommentsText = activity.getCommentCountText();
             if(accessToken != null){
                 Context context = ContextUtils.getApplicationContext();
                 SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
@@ -535,6 +535,26 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                 Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show();
             }
             removeAttachment();
+        }
+    }
+
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            // Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            // Log.e("Express Browser Access Token", e.getMessage());
+            return null;
         }
     }
 }

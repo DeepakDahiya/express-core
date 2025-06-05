@@ -2252,10 +2252,9 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showReplyWithAttachmentBottomSheet(String postId, String username, String content, String avatarUrl, String type) {
-        Log.e("BraveActivity", "showCommentsBottomSheetFromPost: " + postId + ", " + username + ", " + content + ", " + avatarUrl + ", " + openKeyboard);
         try {
             if(mBottomSheetReplyWithAttachmentDialog == null){
-                BrowserExpressReplyWithAttachmentBottomSheetFragment bottomSheetDialog =
+                BrowserExpressReplyWithAttachmentBottomSheetFragment bottomSheetDialog2 =
                         BrowserExpressReplyWithAttachmentBottomSheetFragment.newInstance(true);
                 
                 Bundle fragmentBundle = new Bundle();
@@ -2264,9 +2263,9 @@ public abstract class BraveActivity extends ChromeActivity
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
-                bottomSheetDialog.setArguments(fragmentBundle);
-                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
-                mBottomSheetReplyWithAttachmentDialog = bottomSheetDialog;
+                bottomSheetDialog2.setArguments(fragmentBundle);
+                bottomSheetDialog2.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
+                mBottomSheetReplyWithAttachmentDialog = bottomSheetDialog2;
             }else{
                 Bundle fragmentBundle = new Bundle();
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.COMMENTS_FOR, type);
