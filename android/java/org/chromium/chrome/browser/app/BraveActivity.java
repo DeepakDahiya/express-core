@@ -2251,7 +2251,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    public void showReplyWithAttachmentBottomSheet(String postId, String username, String content, String avatarUrl, String type) {
+    public void showReplyWithAttachmentBottomSheet(String postId, String username, String content, String avatarUrl, String type, Uri attachmentUri) {
         try {
             if(mBottomSheetReplyWithAttachmentDialog == null){
                 BrowserExpressReplyWithAttachmentBottomSheetFragment bottomSheetDialog2 =
@@ -2263,6 +2263,7 @@ public abstract class BraveActivity extends ChromeActivity
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
+                fragmentBundle.putParcelable(BrowserExpressReplyWithAttachmentBottomSheetFragment.ATTACHMENT_URI, attachmentUri);
                 bottomSheetDialog2.setArguments(fragmentBundle);
                 bottomSheetDialog2.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
                 mBottomSheetReplyWithAttachmentDialog = bottomSheetDialog2;
@@ -2273,6 +2274,7 @@ public abstract class BraveActivity extends ChromeActivity
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
                 fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
+                fragmentBundle.putParcelable(BrowserExpressReplyWithAttachmentBottomSheetFragment.ATTACHMENT_URI, attachmentUri);
                 mBottomSheetReplyWithAttachmentDialog.setArguments(fragmentBundle);
                 mBottomSheetReplyWithAttachmentDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
             }

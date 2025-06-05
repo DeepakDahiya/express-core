@@ -76,6 +76,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     public static final String POST_USERNAME = "post_username";
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
+    public static final String ATTACHMENT_URI = "attachment_uri";
     private static final int PICK_MEDIA_REQUEST = 1001;
     private static final int MAX_IMAGE_DIMENSION = 1920;
     private static final int IMAGE_COMPRESSION_QUALITY = 80;
@@ -109,6 +110,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     private Uri mSelectedMediaUri;
     private String mSelectedMediaType;
 
+    private Uri mTempSelectedMediaUri;
+
     private ImageView mAvatarImage;
     private EditText mMessageEditText;
 
@@ -138,6 +141,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
             mPostUsernameString = getArguments().getString(POST_USERNAME);
             mPostContentString = getArguments().getString(POST_CONTENT);
             mPostAvatarString = getArguments().getString(POST_AVATAR_URL);
+            mTempSelectedMediaUri = getArguments().getParcelable(ATTACHMENT_URI);
         }
     }
 
@@ -172,6 +176,13 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
         setupAttachmentListeners();
 
         showKeyboardWithFocus();
+
+        if (mTempSelectedMediaUri != null) {
+            processSelectedMedia(mTempSelectedMediaUri);
+        } else {
+            mAttachmentPreviewContainer.setVisibility(View.GONE);
+            mRemoveAttachmentButton.setVisibility(View.GONE);
+        }
 
         return view;
     }
@@ -501,7 +512,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                                         }
                                     });
                             mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
-                            mRemoveAttachmentButton.setVisibility(View.GONE);
+                            mRemoveAttachmentButton.setVisibility(View.VISIBLE);
                         } else {
                             Log.e("CommentBottomSheet", "Image processing failed.");
                             mSelectedMediaUri = originalUri;
@@ -535,15 +546,15 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                         .error(R.drawable.ic_error_placeholder_24dp)
                         .into(mAttachmentPreviewImage);
 
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
-                int videoThumbWidth = (int) ((getResources().getDisplayMetrics().widthPixels - (getResources().getDisplayMetrics().density * 40))/2);
-                if (((View)mAttachmentPreviewContainer.getParent()).getWidth() > 0) {
-                    videoThumbWidth = (((View)mAttachmentPreviewContainer.getParent()).getWidth() - (mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight())) / 2;
-                }
+                // FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+                // int videoThumbWidth = (int) ((getResources().getDisplayMetrics().widthPixels - (getResources().getDisplayMetrics().density * 40))/2);
+                // if (((View)mAttachmentPreviewContainer.getParent()).getWidth() > 0) {
+                //     videoThumbWidth = (((View)mAttachmentPreviewContainer.getParent()).getWidth() - (mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight())) / 1.1;
+                // }
 
-                params.width = videoThumbWidth;
-                params.height = (int) (videoThumbWidth * (9.0/16.0));
-                mAttachmentPreviewImage.setLayoutParams(params);
+                // params.width = videoThumbWidth;
+                // params.height = (int) (videoThumbWidth * (9.0/16.0));
+                // mAttachmentPreviewImage.setLayoutParams(params);
 
                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                 mVideoPlayButton.setVisibility(View.VISIBLE);

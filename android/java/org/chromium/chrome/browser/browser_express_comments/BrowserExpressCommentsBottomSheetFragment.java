@@ -460,13 +460,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void setupAttachmentListeners() {
-        mAttachButton.setOnClickListener(v -> {
-            try{
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                activity.showReplyWithAttachmentBottomSheet(mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post");
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }
-        });
+        mAttachButton.setOnClickListener(v -> openMediaPicker());
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
     }
 
@@ -502,13 +496,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
             if (data != null && data.getData() != null) {
                 Uri originalUri = data.getData();
-                processSelectedMedia(originalUri); // New method to handle processing
-                mReactionContainer.setVisibility(View.GONE);
-                if(mIsCommentPage && mPostInfoContainer != null) {
-                    mPostInfoContainer.setVisibility(View.VISIBLE);
+
+                try{
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    activity.showReplyWithAttachmentBottomSheet(mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post", originalUri);
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
                 }
+
+                // processSelectedMedia(originalUri); // New method to handle processing
+                // mReactionContainer.setVisibility(View.GONE);
+                // if(mIsCommentPage && mPostInfoContainer != null) {
+                //     mPostInfoContainer.setVisibility(View.VISIBLE);
+                // }
                 
-                showKeyboardWithFocus();
+                // showKeyboardWithFocus();
             } else {
                 removeAttachment();
             }
