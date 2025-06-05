@@ -9,6 +9,7 @@ package org.chromium.chrome.browser.browser_express_comments;
 
 import android.content.DialogInterface;
 import android.os.Bundle;
+import android.app.Dialog;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
