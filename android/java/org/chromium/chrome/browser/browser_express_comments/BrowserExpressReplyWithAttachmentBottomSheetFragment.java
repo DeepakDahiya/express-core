@@ -439,26 +439,26 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
 
                                             if (aspectRatio > 1) { // Horizontal image
                                                 params.width = availableWidth;
-                                                params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.75f) : (int) (availableWidth / aspectRatio) ;
+                                                params.height = (aspectRatio == 0) ? (int) (availableWidth * 0.9f) : (int) (availableWidth / aspectRatio) ;
                                             } else { // Vertical or square image
-                                                params.width = (int) (availableWidth / 1.1);
-                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.1) * 1.33f) : (int) ((availableWidth / 1.1) / aspectRatio) ;
+                                                params.width = (int) (availableWidth / 1.05);
+                                                params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.05) * 1.33f) : (int) ((availableWidth / 1.05) / aspectRatio) ;
                                             }
 
-                                            int maxPreviewHeight = (int) (250 * getResources().getDisplayMetrics().density);
-                                            if (params.height > maxPreviewHeight) {
-                                                params.height = maxPreviewHeight;
-                                                if (aspectRatio != 0) {
-                                                    params.width = (int) (maxPreviewHeight * aspectRatio);
-                                                } else {
-                                                    params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
-                                                }
+                                            // int maxPreviewHeight = (int) (250 * getResources().getDisplayMetrics().density);
+                                            // if (params.height > maxPreviewHeight) {
+                                            //     params.height = maxPreviewHeight;
+                                            //     if (aspectRatio != 0) {
+                                            //         params.width = (int) (maxPreviewHeight * aspectRatio);
+                                            //     } else {
+                                            //         params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
+                                            //     }
 
-                                                int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : (int)(availableWidth / 1.1);
-                                                if (params.width > maxWidthForOrientation ) {
-                                                     params.width = maxWidthForOrientation;
-                                                }
-                                            }
+                                            //     int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : (int)(availableWidth / 1.1);
+                                            //     if (params.width > maxWidthForOrientation ) {
+                                            //          params.width = maxWidthForOrientation;
+                                            //     }
+                                            // }
                                             
                                             mAttachmentPreviewImage.setLayoutParams(params);
                                             mAttachmentPreviewImage.setImageBitmap(resource);

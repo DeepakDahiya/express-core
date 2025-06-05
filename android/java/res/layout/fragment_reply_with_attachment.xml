@@ -8,6 +8,31 @@
     android:background="@color/be_background_black"
     tools:context=".BrowserExpressReplyWithAttachmentBottomSheetFragment">
 
+    <LinearLayout
+        android:id="@+id/top_action_bar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp">
+
+        <Button
+            android:id="@+id/cancel_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/brave_cancel"
+            android:padding="8dp"
+            android:textAllCaps="false"
+            android:background="@android:color/transparent"
+            android:textColor="@color/username_color"
+            android:drawableTint="@color/username_color"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:textSize="14sp"/>
+
+    </LinearLayout>
+
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
@@ -21,31 +46,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <LinearLayout
-                android:id="@+id/top_action_bar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp">
-
-                <Button
-                    android:id="@+id/cancel_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/brave_cancel"
-                    android:padding="8dp"
-                    android:textAllCaps="false"
-                    android:background="@android:color/transparent"
-                    android:textColor="@color/username_color"
-                    android:drawableTint="@color/username_color"
-                    android:minHeight="0dp"
-                    android:minWidth="0dp"
-                    android:textSize="14sp"/>
-
-            </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
                 android:id="@+id/reply_to_container"
@@ -171,61 +171,63 @@
                     android:src="@drawable/close"
                     android:layout_gravity="top|end"
                     android:layout_margin="8dp"
+                    android:visibility="visible"
                     android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
             </FrameLayout>
 
-            <LinearLayout
-                android:id="@+id/attachment_button_container"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingTop="8dp"
-                android:paddingBottom="8dp"
-                android:background="@drawable/sheet_button_top_border"
-                app:layout_constraintBottom_toBottomOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent">
-
-                <ImageButton
-                    android:id="@+id/button_attach"
-                    style="@style/ToolbarButton"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
-                    android:src="@drawable/attach"
-                    android:layout_marginEnd="16dp"
-                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-                <View
-                    android:layout_width="0dp"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" />
-
-                <Button
-                    android:id="@+id/post_button"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="@string/post"
-                    android:textAllCaps="false"
-                    android:textColor="@android:color/white"
-                    android:background="@drawable/rounded_button_background"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp"
-                    android:paddingTop="4dp"
-                    android:paddingBottom="4dp"
-                    android:minHeight="0dp"
-                    android:minWidth="0dp"
-                    android:textSize="14sp"
-                    android:textStyle="bold"
-                    android:backgroundTint="@null"
-                    app:backgroundTint="@null"/>
-
-            </LinearLayout>
 
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/attachment_button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:background="@drawable/sheet_button_top_border"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <ImageButton
+            android:id="@+id/button_attach"
+            style="@style/ToolbarButton"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/attach"
+            android:layout_marginEnd="16dp"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+        <View
+            android:layout_width="0dp"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <Button
+            android:id="@+id/post_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/post"
+            android:textAllCaps="false"
+            android:textColor="@android:color/white"
+            android:background="@drawable/rounded_button_background"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:paddingTop="4dp"
+            android:paddingBottom="4dp"
+            android:minHeight="0dp"
+            android:minWidth="0dp"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:backgroundTint="@null"
+            app:backgroundTint="@null"/>
+
+    </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
