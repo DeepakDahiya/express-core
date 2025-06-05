@@ -68,8 +68,9 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
 import org.chromium.base.ContextUtils;
+import androidx.fragment.app.DialogFragment;
 
-public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends BottomSheetDialogFragment {
+public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
@@ -190,30 +191,10 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     @Override
     public void onStart() {
         super.onStart();
-        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        if (dialog != null) {
-            FrameLayout bottomSheet = dialog.findViewById(R.id.design_bottom_sheet);
-            if (bottomSheet != null) {
-                ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
-                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
-                bottomSheet.setLayoutParams(layoutParams);
 
-                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
-                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-                behavior.setPeekHeight(0);
-                behavior.setSkipCollapsed(true);
-                behavior.setHideable(false);
-            }
-        }
-        
-        if (getDialog() != null && getDialog().getWindow() != null) {
-            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-        }
-
-        View view = getView();
-        if (view != null) {
-            view.setFocusableInTouchMode(true);
-            view.requestFocus();
+        Dialog dialog = getDialog();
+        if (dialog != null && dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
         }
     }
 
@@ -546,19 +527,10 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                         .error(R.drawable.ic_error_placeholder_24dp)
                         .into(mAttachmentPreviewImage);
 
-                // FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
-                // int videoThumbWidth = (int) ((getResources().getDisplayMetrics().widthPixels - (getResources().getDisplayMetrics().density * 40))/2);
-                // if (((View)mAttachmentPreviewContainer.getParent()).getWidth() > 0) {
-                //     videoThumbWidth = (((View)mAttachmentPreviewContainer.getParent()).getWidth() - (mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight())) / 1.1;
-                // }
-
-                // params.width = videoThumbWidth;
-                // params.height = (int) (videoThumbWidth * (9.0/16.0));
-                // mAttachmentPreviewImage.setLayoutParams(params);
 
                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                 mVideoPlayButton.setVisibility(View.VISIBLE);
-                mRemoveAttachmentButton.setVisibility(View.GONE);
+                mRemoveAttachmentButton.setVisibility(View.VISIBLE);
             }
         } else {
             Log.w("CommentBottomSheet", "Unsupported media type: " + mimeType);
