@@ -8,214 +8,247 @@
     android:background="@color/be_background_black"
     tools:context=".BrowserExpressReplyWithAttachmentBottomSheetFragment">
 
-    <LinearLayout
-        android:id="@+id/top_action_bar"
-        android:layout_width="0dp"
-        android:layout_height="?attr/actionBarSize"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <Button
-            android:id="@+id/cancel_button"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/brave_cancel"
-            android:padding="8dp"
-            android:textAllCaps="false"
-            android:background="@android:color/transparent"
-            android:textColor="@color/content_color"
-            android:drawableTint="@color/content_color"
-            android:paddingBottom="8dp"
-            android:minHeight="0dp"
-            android:minWidth="0dp"
-            android:textSize="14sp"/>
-
-    </LinearLayout>
-
-     <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/reply_to_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:visibility="visible"
-        app:layout_constraintTop_toBottomOf="@id/top_action_bar"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageView
-            android:id="@+id/post_avatar"
-            android:src="@drawable/btn_toolbar_profile"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-            app:layout_constraintTop_toTopOf="parent"
-            android:scaleType="centerCrop"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <TextView
-            android:id="@+id/post_username"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:textStyle="bold"
-            android:textColor="@color/username_color"
-            android:textSize="14sp"
-            android:layout_marginStart="8dp"
-            app:layout_constraintTop_toTopOf="@id/post_avatar"
-            app:layout_constraintStart_toEndOf="@id/post_avatar" />
-
-        <TextView
-            android:id="@+id/post_content"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:textColor="@color/content_color"
-            android:textSize="13sp"
-            app:layout_constraintTop_toBottomOf="@id/post_avatar"
-            app:layout_constraintStart_toStartOf="@id/post_username"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-        <View
-            android:id="@+id/vertical_line"
-            android:layout_width="1dp"
-            android:layout_height="0dp"
-            android:background="@android:color/darker_gray"
-            android:layout_marginStart="18dp"
-            android:layout_marginTop="8dp"
-            app:layout_constraintTop_toBottomOf="@id/post_avatar"
-            app:layout_constraintBottom_toBottomOf="@id/post_content"
-            app:layout_constraintStart_toStartOf="@id/post_avatar" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/reply_input_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:paddingStart="20dp"
-        android:paddingEnd="16dp"
-        android:paddingTop="8dp"
-        android:paddingBottom="8dp"
-        app:layout_constraintTop_toBottomOf="@id/reply_to_container"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageView
-            android:id="@+id/avatar_image"
-            android:src="@drawable/btn_toolbar_profile"
-            android:layout_width="30dp"
-            android:layout_height="30dp"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-
-        <EditText
-            android:id="@+id/comment_content_input"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:inputType="textImeMultiLine|textMultiLine"
-            android:hint="@string/type_your_comment"
-            android:background="@android:color/transparent"
-            android:textColor="@color/wallet_text_color"
-            android:textColorHint="@color/brave_theme_hint_text"
-            android:textSize="14sp"
-            android:minHeight="48dp"
-            android:gravity="top|start"
-            android:layout_marginStart="8dp"
-            tools:ignore="Autofill"
-            app:layout_constraintTop_toTopOf="@id/avatar_image"
-            app:layout_constraintStart_toEndOf="@id/avatar_image"
-            app:layout_constraintEnd_toEndOf="parent" />
-
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <FrameLayout
-        android:id="@+id/media_preview_container"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintTop_toBottomOf="@id/reply_input_container"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
-
-        <ImageView
-            android:id="@+id/attachment_preview_image"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            tools:src="@tools:sample/backgrounds/scenic"
-            android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-        <ImageView
-            android:id="@+id/video_play_button"
-            android:layout_width="64dp"
-            android:layout_height="64dp"
-            android:src="@android:drawable/ic_media_play"
-            android:layout_gravity="center"
-            app:tint="@android:color/white"
-            android:visibility="gone"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
-        <ImageButton
-            android:id="@+id/button_remove_attachment"
-            style="@style/ToolbarButton"
-            android:layout_width="16dp"
-            android:layout_height="16dp"
-            android:src="@drawable/close"
-            android:layout_gravity="top|end"
-            android:layout_margin="8dp"
-            android:visibility="visible"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
-    </FrameLayout>
-
-    <LinearLayout
-        android:id="@+id/attachment_button_container"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:padding="16dp"
-        android:background="@drawable/sheet_button_top_border"
+        android:fillViewport="true"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageButton
-            android:id="@+id/button_attach"
-            style="@style/ToolbarButton"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:src="@drawable/attach"
-            android:layout_marginEnd="16dp"
-            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-        
-        <View
-            android:layout_width="0dp"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
-
-        <Button
-            android:id="@+id/post_button"
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="@string/post"
-            android:textAllCaps="false"
-            android:textColor="@android:color/white"
-            android:background="@drawable/rounded_button_background"
-            android:paddingStart="16dp"
-            android:paddingEnd="16dp"
-            android:paddingTop="4dp"
-            android:paddingBottom="4dp"
-            android:minHeight="0dp"
-            android:minWidth="0dp"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:orientation="vertical">
 
-    </LinearLayout>
+            <LinearLayout
+                android:id="@+id/top_action_bar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
+
+                <Button
+                    android:id="@+id/cancel_button"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/brave_cancel"
+                    android:padding="8dp"
+                    android:textAllCaps="false"
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/username_color"
+                    android:drawableTint="@color/username_color"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:textSize="14sp"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/post_button_top"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/post"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/rounded_button_background"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/reply_to_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:visibility="visible">
+
+                <ImageView
+                    android:id="@+id/post_avatar"
+                    android:src="@drawable/btn_toolbar_profile"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                    app:layout_constraintTop_toTopOf="parent"
+                    android:scaleType="centerCrop"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <TextView
+                    android:id="@+id/post_username"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textColor="@color/username_color"
+                    android:textSize="14sp"
+                    android:layout_marginStart="8dp"
+                    app:layout_constraintTop_toTopOf="@id/post_avatar"
+                    app:layout_constraintStart_toEndOf="@id/post_avatar" />
+
+                <TextView
+                    android:id="@+id/post_content"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:textColor="@color/content_color"
+                    android:textSize="13sp"
+                    app:layout_constraintTop_toBottomOf="@id/post_avatar"
+                    app:layout_constraintStart_toStartOf="@id/post_username"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <View
+                    android:id="@+id/vertical_line"
+                    android:layout_width="1dp"
+                    android:layout_height="0dp"
+                    android:background="@android:color/darker_gray"
+                    android:layout_marginStart="18dp"
+                    android:layout_marginTop="8dp"
+                    app:layout_constraintTop_toBottomOf="@id/post_avatar"
+                    app:layout_constraintBottom_toBottomOf="@id/post_content"
+                    app:layout_constraintStart_toStartOf="@id/post_avatar" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/reply_input_container"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingStart="20dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp">
+
+                <ImageView
+                    android:id="@+id/avatar_image"
+                    android:src="@drawable/btn_toolbar_profile"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent" />
+
+                <EditText
+                    android:id="@+id/comment_content_input"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:inputType="textImeMultiLine|textMultiLine"
+                    android:hint="@string/type_your_comment"
+                    android:background="@android:color/transparent"
+                    android:textColor="@color/wallet_text_color"
+                    android:textColorHint="@color/brave_theme_hint_text"
+                    android:textSize="14sp"
+                    android:minHeight="48dp"
+                    android:gravity="top|start"
+                    android:layout_marginStart="8dp"
+                    tools:ignore="Autofill"
+                    app:layout_constraintTop_toTopOf="@id/avatar_image"
+                    app:layout_constraintStart_toEndOf="@id/avatar_image"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+
+            <FrameLayout
+                android:id="@+id/media_preview_container"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp">
+
+                <ImageView
+                    android:id="@+id/attachment_preview_image"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    tools:src="@tools:sample/backgrounds/scenic"
+                    android:visibility="visible"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+                <ImageView
+                    android:id="@+id/video_play_button"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
+                    android:src="@android:drawable/ic_media_play"
+                    android:layout_gravity="center"
+                    app:tint="@android:color/white"
+                    android:visibility="gone"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+                <ImageButton
+                    android:id="@+id/button_remove_attachment"
+                    style="@style/ToolbarButton"
+                    android:layout_width="16dp"
+                    android:layout_height="16dp"
+                    android:src="@drawable/close"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="8dp"
+                    android:visibility="gone"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/attachment_button_container"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="8dp"
+                android:background="@drawable/sheet_button_top_border"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                style="?android:attr/borderlessButtonStyle">
+
+                <ImageButton
+                    android:id="@+id/button_attach"
+                    style="@style/ToolbarButton"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:src="@drawable/attach"
+                    android:layout_marginEnd="16dp"
+                    android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="1" />
+
+                <Button
+                    android:id="@+id/post_button_bottom"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/post"
+                    android:textAllCaps="false"
+                    android:textColor="@android:color/white"
+                    android:background="@drawable/rounded_button_background"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingTop="4dp"
+                    android:paddingBottom="4dp"
+                    android:minHeight="0dp"
+                    android:minWidth="0dp"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    style="?android:attr/borderlessButtonStyle"/>
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
 </androidx.constraintlayout.widget.ConstraintLayout>
