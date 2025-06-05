@@ -233,6 +233,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
                 }
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
+        } catch (JSONException e) {
         }
 
         mCancelButton.setOnClickListener(v -> dismissBottomsheet());
