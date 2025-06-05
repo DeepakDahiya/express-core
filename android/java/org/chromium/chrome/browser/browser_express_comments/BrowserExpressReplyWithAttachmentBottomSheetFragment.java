@@ -177,27 +177,38 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        Dialog dialog = getDialog();
+        if (dialog != null) {
+            FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            if (bottomSheet != null) {
+                ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
+                layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
+                bottomSheet.setLayoutParams(layoutParams);
+
+                BottomSheetBehavior<FrameLayout> behavior = BottomSheetBehavior.from(bottomSheet);
+                behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
+                behavior.setPeekHeight(0);
+                behavior.setSkipCollapsed(true);
+                behavior.setHideable(false);
+            }
+        }
+        
+        if (getDialog() != null && getDialog().getWindow() != null) {
+            getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        }
+
+        View view = getView();
+        if (view != null) {
+            view.setFocusableInTouchMode(true);
+            view.requestFocus();
+        }
+    }
+
+    @Override
     public void onViewCreated(View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
-        int screenHeight = displayMetrics.heightPixels;
-
-        int defaultHeight = (int)screenHeight;
-
-        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
-        BottomSheetBehavior behavior = dialog.getBehavior();
-
-        behavior.setMaxHeight(defaultHeight);
-
-        behavior.setPeekHeight(defaultHeight * 2/3); // Set initial visible height
-        behavior.setHideable(false); // Prevent complete hiding
-        behavior.setSkipCollapsed(true); // Skip collapsed state
-
-        behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
-
-        getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
-
         view.setFocusableInTouchMode(true);
         view.requestFocus();
         try{
