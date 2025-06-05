@@ -179,9 +179,9 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
     @Override
     public void onStart() {
         super.onStart();
-        Dialog dialog = getDialog();
+        BottomSheetDialog dialog = (BottomSheetDialog) getDialog();
         if (dialog != null) {
-            FrameLayout bottomSheet = dialog.findViewById(com.google.android.material.R.id.design_bottom_sheet);
+            FrameLayout bottomSheet = dialog.findViewById(R.id.design_bottom_sheet);
             if (bottomSheet != null) {
                 ViewGroup.LayoutParams layoutParams = bottomSheet.getLayoutParams();
                 layoutParams.height = ViewGroup.LayoutParams.MATCH_PARENT;
