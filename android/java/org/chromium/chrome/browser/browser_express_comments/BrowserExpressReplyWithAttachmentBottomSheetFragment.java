@@ -190,6 +190,10 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Bottom
 
         behavior.setMaxHeight(defaultHeight);
 
+        behavior.setPeekHeight(defaultHeight * 2/3); // Set initial visible height
+        behavior.setHideable(false); // Prevent complete hiding
+        behavior.setSkipCollapsed(true); // Skip collapsed state
+
         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
