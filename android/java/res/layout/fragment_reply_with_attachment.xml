@@ -188,8 +188,9 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
-        <ImageView
+        <ImageButton
             android:id="@+id/button_attach"
+            style="@style/ToolbarButton"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/attach"
