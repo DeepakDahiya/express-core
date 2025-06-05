@@ -169,6 +169,7 @@ import org.chromium.chrome.browser.set_default_browser.BraveSetDefaultBrowserUti
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressGenerateUsernameBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_update_apk.BrowserExpressUpdateApkBottomSheetFragment;
 import org.chromium.chrome.browser.browser_express_comments.BrowserExpressCommentsBottomSheetFragment;
+import org.chromium.chrome.browser.browser_express_comments.BrowserExpressReplyWithAttachmentBottomSheetFragment;
 import org.chromium.chrome.browser.set_default_browser.OnBraveSetDefaultBrowserListener;
 import org.chromium.chrome.browser.settings.BraveNewsPreferencesV2;
 import org.chromium.chrome.browser.settings.BrowserExpressProfilePreferences;
