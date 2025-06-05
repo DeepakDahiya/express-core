@@ -125,6 +125,7 @@
             android:minHeight="48dp"
             android:gravity="top|start"
             android:layout_marginStart="8dp"
+            tools:ignore="Autofill"
             app:layout_constraintTop_toTopOf="@id/avatar_image"
             app:layout_constraintStart_toEndOf="@id/avatar_image"
             app:layout_constraintEnd_toEndOf="parent" />
@@ -160,7 +161,8 @@
             android:src="@android:drawable/ic_media_play"
             android:layout_gravity="center"
             app:tint="@android:color/white"
-            android:visibility="gone" />
+            android:visibility="gone"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
         <ImageButton
             android:id="@+id/button_remove_attachment"
@@ -170,7 +172,7 @@
             android:layout_margin="8dp"
             android:background="@drawable/circular_background"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
-            android:tint="@android:color/white"
+            app:tint="@android:color/white"
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
     </FrameLayout>
