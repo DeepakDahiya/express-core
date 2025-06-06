@@ -49,7 +49,7 @@ public class MediaViewerFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(DialogFragment.STYLE_NO_FRAME, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
+        setStyle(STYLE_NO_FRAME, R.style.Theme_Black_NoTitleBar_Fullscreen);
         if (getArguments() != null) {
             mMediaUri = getArguments().getParcelable(ARG_MEDIA_URI);
             mMediaType = getArguments().getString(ARG_MEDIA_TYPE);
@@ -66,29 +66,29 @@ public class MediaViewerFragment extends DialogFragment {
 
         closeButton.setOnClickListener(v -> dismiss());
 
-        if (mMediaUri != null && "image".equals(mMediaType)) {
-             mImageView.setVisibility(View.VISIBLE);
-             mPlayerView.setVisibility(View.GONE);
-             Glide.with(this).load(mMediaUri).fitCenter().into(mImageView);
-        } else {
-             mImageView.setVisibility(View.GONE);
-             mPlayerView.setVisibility(View.VISIBLE);
-        }
+        // if (mMediaUri != null && "image".equals(mMediaType)) {
+        //      mImageView.setVisibility(View.VISIBLE);
+        //      mPlayerView.setVisibility(View.GONE);
+        //      Glide.with(this).load(mMediaUri).fitCenter().into(mImageView);
+        // } else {
+        //      mImageView.setVisibility(View.GONE);
+        //      mPlayerView.setVisibility(View.VISIBLE);
+        // }
 
         return view;
     }
 
     private void initializePlayer() {
-        if (mPlayer == null && getContext() != null && "video".equals(mMediaType)) {
-            mPlayer = new ExoPlayer.Builder(getContext()).build();
-            mPlayerView.setPlayer(mPlayer);
+        // if (mPlayer == null && getContext() != null && "video".equals(mMediaType)) {
+        //     mPlayer = new ExoPlayer.Builder(getContext()).build();
+        //     mPlayerView.setPlayer(mPlayer);
 
-            MediaItem mediaItem = MediaItem.fromUri(mMediaUri);
-            mPlayer.setMediaItem(mediaItem);
-            mPlayer.setPlayWhenReady(mPlayWhenReady);
-            mPlayer.seekTo(mCurrentWindow, mPlaybackPosition);
-            mPlayer.prepare();
-        }
+        //     MediaItem mediaItem = MediaItem.fromUri(mMediaUri);
+        //     mPlayer.setMediaItem(mediaItem);
+        //     mPlayer.setPlayWhenReady(mPlayWhenReady);
+        //     mPlayer.seekTo(mCurrentWindow, mPlaybackPosition);
+        //     mPlayer.prepare();
+        // }
     }
 
     private void releasePlayer() {
@@ -128,15 +128,15 @@ public class MediaViewerFragment extends DialogFragment {
         releasePlayer();
     }
 
-    @Override
-    public Dialog onCreateDialog(Bundle savedInstanceState) {
-        Dialog dialog = super.onCreateDialog(savedInstanceState);
-        dialog.setOnShowListener(dialogInterface -> {
-            if (dialog.getWindow() != null) {
-                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-            }
-        });
-        return dialog;
-    }
+    // @Override
+    // public Dialog onCreateDialog(Bundle savedInstanceState) {
+    //     Dialog dialog = super.onCreateDialog(savedInstanceState);
+    //     dialog.setOnShowListener(dialogInterface -> {
+    //         if (dialog.getWindow() != null) {
+    //             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+    //             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+    //         }
+    //     });
+    //     return dialog;
+    // }
 }
