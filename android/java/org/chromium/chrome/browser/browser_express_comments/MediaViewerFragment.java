@@ -29,10 +29,13 @@ public class MediaViewerFragment extends DialogFragment {
     private Uri mMediaUri;
     private String mMediaType;
 
-    // ExoPlayer related variables
     private ExoPlayer mPlayer;
     private PlayerView mPlayerView;
     private ImageView mImageView;
+    private boolean mPlayWhenReady = true;
+    private long mPlaybackPosition = 0L;
+    private int mCurrentWindow = 0;
+
 
     public static MediaViewerFragment newInstance(Uri mediaUri, String mediaType) {
         MediaViewerFragment fragment = new MediaViewerFragment();
@@ -58,73 +61,76 @@ public class MediaViewerFragment extends DialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_media_viewer, container, false);
         mImageView = view.findViewById(R.id.fullscreen_image_view);
-        mPlayerView = view.findViewById(R.id.fullscreen_player_view); // Updated ID
+        mPlayerView = view.findViewById(R.id.fullscreen_player_view);
         ImageButton closeButton = view.findViewById(R.id.close_button_fullscreen);
 
         closeButton.setOnClickListener(v -> dismiss());
+
+        if (mMediaUri != null && "image".equals(mMediaType)) {
+             mImageView.setVisibility(View.VISIBLE);
+             mPlayerView.setVisibility(View.GONE);
+             Glide.with(this).load(mMediaUri).fitCenter().into(mImageView);
+        } else {
+             mImageView.setVisibility(View.GONE);
+             mPlayerView.setVisibility(View.VISIBLE);
+        }
 
         return view;
     }
 
     private void initializePlayer() {
-        if (mPlayer == null) {
+        if (mPlayer == null && getContext() != null && "video".equals(mMediaType)) {
             mPlayer = new ExoPlayer.Builder(getContext()).build();
             mPlayerView.setPlayer(mPlayer);
 
-            // Create a MediaItem and set it to the player
             MediaItem mediaItem = MediaItem.fromUri(mMediaUri);
             mPlayer.setMediaItem(mediaItem);
-
-            // Prepare the player
-            mPlayer.setPlayWhenReady(true); // Autoplay when ready
+            mPlayer.setPlayWhenReady(mPlayWhenReady);
+            mPlayer.seekTo(mCurrentWindow, mPlaybackPosition);
             mPlayer.prepare();
         }
     }
 
     private void releasePlayer() {
         if (mPlayer != null) {
+            mPlayWhenReady = mPlayer.getPlayWhenReady();
+            mPlaybackPosition = mPlayer.getCurrentPosition();
+            mCurrentWindow = mPlayer.getCurrentWindowIndex();
             mPlayer.release();
             mPlayer = null;
         }
     }
 
     @Override
-    public void onStart() {
-        super.onStart();
-        if (mMediaUri != null && mMediaType != null) {
-            if ("image".equals(mMediaType)) {
-                mImageView.setVisibility(View.VISIBLE);
-                mPlayerView.setVisibility(View.GONE);
-                Glide.with(this)
-                     .load(mMediaUri)
-                     .fitCenter()
-                     .into(mImageView);
-            } else if ("video".equals(mMediaType)) {
-                mImageView.setVisibility(View.GONE);
-                mPlayerView.setVisibility(View.VISIBLE);
-                initializePlayer();
-            }
+    public void onResume() {
+        super.onResume();
+        // Initialize player in onResume for API level 24+
+        if (mPlayer == null) {
+            initializePlayer();
         }
     }
 
     @Override
+    public void onPause() {
+        super.onPause();
+        releasePlayer();
+    }
+    
+    @Override
     public void onStop() {
         super.onStop();
-        // Release the player when the view is not visible
         releasePlayer();
     }
     
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        // A final safety check to release the player
         releasePlayer();
     }
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
         Dialog dialog = super.onCreateDialog(savedInstanceState);
-        // Make the dialog fill the screen
         dialog.setOnShowListener(dialogInterface -> {
             if (dialog.getWindow() != null) {
                 dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
