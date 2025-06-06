@@ -49,7 +49,7 @@ public class MediaViewerFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NO_FRAME, R.style.Theme_Black_NoTitleBar_Fullscreen);
+        setStyle(STYLE_NO_FRAME, R.style.AppSetDefaultBottomSheetDialogTheme);
         if (getArguments() != null) {
             mMediaUri = getArguments().getParcelable(ARG_MEDIA_URI);
             mMediaType = getArguments().getString(ARG_MEDIA_TYPE);
