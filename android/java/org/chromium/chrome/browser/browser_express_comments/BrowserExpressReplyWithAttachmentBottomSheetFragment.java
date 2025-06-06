@@ -532,6 +532,15 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         .error(R.drawable.ic_error_placeholder_24dp)
                         .into(mAttachmentPreviewImage);
 
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+                int videoThumbWidth = (int) (getResources().getDisplayMetrics().widthPixels - (getResources().getDisplayMetrics().density * 40));
+                if (((View)mAttachmentPreviewContainer.getParent()).getWidth() > 0) {
+                    videoThumbWidth = (((View)mAttachmentPreviewContainer.getParent()).getWidth() - (mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight())) / 2;
+                }
+
+                params.width = videoThumbWidth;
+                params.height = (int) (videoThumbWidth * (9.0/16.0));
+                mAttachmentPreviewImage.setLayoutParams(params);
 
                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                 mVideoPlayButton.setVisibility(View.VISIBLE);
@@ -552,8 +561,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             return;
         }
 
-        // MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType);
-        // viewerFragment.show(getParentFragmentManager(), MediaViewerFragment.class.getSimpleName());
+        MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType);
+        viewerFragment.show(getParentFragmentManager(), MediaViewerFragment.class.getSimpleName());
     }
 
     private JSONObject getDecodedToken(String accessToken){
