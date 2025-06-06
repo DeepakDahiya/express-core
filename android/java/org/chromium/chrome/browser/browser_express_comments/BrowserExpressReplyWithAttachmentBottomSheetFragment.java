@@ -332,6 +332,10 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     private void setupAttachmentListeners() {
         mAttachButton.setOnClickListener(v -> openMediaPicker());
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
+
+        View.OnClickListener fullscreenListener = v -> showMediaFullscreen();
+        mAttachmentPreviewImage.setOnClickListener(fullscreenListener);
+        mVideoPlayButton.setOnClickListener(fullscreenListener);
     }
 
     private void openMediaPicker() {
@@ -540,6 +544,16 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             }
             removeAttachment();
         }
+    }
+
+    private void showMediaFullscreen() {
+        if (mSelectedMediaUri == null || mSelectedMediaType == null || getParentFragmentManager() == null) {
+            Log.w("ReplyWithAttachment", "Cannot open fullscreen viewer, media URI or type is null.");
+            return;
+        }
+
+        MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType);
+        viewerFragment.show(getParentFragmentManager(), MediaViewerFragment.class.getSimpleName());
     }
 
     private JSONObject getDecodedToken(String accessToken){
