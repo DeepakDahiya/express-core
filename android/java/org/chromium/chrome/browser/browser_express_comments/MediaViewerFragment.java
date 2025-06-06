@@ -66,14 +66,14 @@ public class MediaViewerFragment extends DialogFragment {
 
         closeButton.setOnClickListener(v -> dismiss());
 
-        // if (mMediaUri != null && "image".equals(mMediaType)) {
-        //      mImageView.setVisibility(View.VISIBLE);
-        //      mPlayerView.setVisibility(View.GONE);
-        //      Glide.with(this).load(mMediaUri).fitCenter().into(mImageView);
-        // } else {
-        //      mImageView.setVisibility(View.GONE);
-        //      mPlayerView.setVisibility(View.VISIBLE);
-        // }
+        if (mMediaUri != null && "image".equals(mMediaType)) {
+             mImageView.setVisibility(View.VISIBLE);
+             mPlayerView.setVisibility(View.GONE);
+             Glide.with(this).load(mMediaUri).fitCenter().into(mImageView);
+        } else {
+             mImageView.setVisibility(View.GONE);
+             mPlayerView.setVisibility(View.VISIBLE);
+        }
 
         return view;
     }
