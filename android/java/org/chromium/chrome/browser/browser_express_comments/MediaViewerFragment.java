@@ -21,6 +21,7 @@ import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.ui.PlayerView;
 
 import org.chromium.chrome.browser.app.BraveActivity;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 import org.chromium.chrome.R;
 
