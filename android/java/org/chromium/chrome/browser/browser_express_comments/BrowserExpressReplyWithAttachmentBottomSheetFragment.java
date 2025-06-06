@@ -552,8 +552,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             return;
         }
 
-        MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType);
-        viewerFragment.show(getParentFragmentManager(), MediaViewerFragment.class.getSimpleName());
+        // MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType);
+        // viewerFragment.show(getParentFragmentManager(), MediaViewerFragment.class.getSimpleName());
     }
 
     private JSONObject getDecodedToken(String accessToken){
