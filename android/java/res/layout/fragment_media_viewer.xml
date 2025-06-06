@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:scaleType="fitCenter"
         android:visibility="gone"
-        android:contentDescription="@string/fullscreen_image_preview" />
+        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
     <com.google.android.exoplayer2.ui.PlayerView
         android:id="@+id/fullscreen_player_view"
@@ -31,6 +31,6 @@
         android:layout_gravity="top|start"
         android:layout_margin="16dp"
         app:tint="@android:color/white"
-        android:contentDescription="@string/close_button" />
+        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
 </FrameLayout>
