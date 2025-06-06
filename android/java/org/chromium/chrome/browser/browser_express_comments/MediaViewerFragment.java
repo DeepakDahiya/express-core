@@ -20,6 +20,8 @@ import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.ui.PlayerView;
 
+import org.chromium.chrome.browser.app.BraveActivity;
+
 import org.chromium.chrome.R;
 
 public class MediaViewerFragment extends DialogFragment {
@@ -67,9 +69,13 @@ public class MediaViewerFragment extends DialogFragment {
         closeButton.setOnClickListener(v -> dismiss());
 
         if (mMediaUri != null && "image".equals(mMediaType)) {
-             mImageView.setVisibility(View.VISIBLE);
-             mPlayerView.setVisibility(View.GONE);
-             Glide.with(this).load(mMediaUri).fitCenter().into(mImageView);
+            mImageView.setVisibility(View.VISIBLE);
+            mPlayerView.setVisibility(View.GONE);
+            try{
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                ImageLoader.downloadImage(mMediaUri, Glide.with(activity), false, 5, mImageView, null);
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
         } else {
              mImageView.setVisibility(View.GONE);
              mPlayerView.setVisibility(View.VISIBLE);
@@ -79,16 +85,16 @@ public class MediaViewerFragment extends DialogFragment {
     }
 
     private void initializePlayer() {
-        // if (mPlayer == null && getContext() != null && "video".equals(mMediaType)) {
-        //     mPlayer = new ExoPlayer.Builder(getContext()).build();
-        //     mPlayerView.setPlayer(mPlayer);
+        if (mPlayer == null && getContext() != null && "video".equals(mMediaType)) {
+            mPlayer = new ExoPlayer.Builder(getContext()).build();
+            mPlayerView.setPlayer(mPlayer);
 
-        //     MediaItem mediaItem = MediaItem.fromUri(mMediaUri);
-        //     mPlayer.setMediaItem(mediaItem);
-        //     mPlayer.setPlayWhenReady(mPlayWhenReady);
-        //     mPlayer.seekTo(mCurrentWindow, mPlaybackPosition);
-        //     mPlayer.prepare();
-        // }
+            MediaItem mediaItem = MediaItem.fromUri(mMediaUri);
+            mPlayer.setMediaItem(mediaItem);
+            mPlayer.setPlayWhenReady(mPlayWhenReady);
+            mPlayer.seekTo(mCurrentWindow, mPlaybackPosition);
+            mPlayer.prepare();
+        }
     }
 
     private void releasePlayer() {
