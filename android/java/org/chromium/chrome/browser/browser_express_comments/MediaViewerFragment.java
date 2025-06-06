@@ -74,7 +74,7 @@ public class MediaViewerFragment extends DialogFragment {
             mPlayerView.setVisibility(View.GONE);
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();
-                ImageLoader.downloadImage(mMediaUri, Glide.with(activity), false, 5, mImageView, null);
+                ImageLoader.downloadImage(mMediaUri.toString(), Glide.with(activity), false, 5, mImageView, null);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
         } else {
