@@ -65,11 +65,11 @@ public class UploadService extends IntentService {
             // This is a blocking call to your existing network utility.
             // Replace with your actual network upload logic. For this example, we assume
             // BrowserExpressAddCommentUtil.uploadSynchronously is a new method you create.
-            Comment realComment = BrowserExpressAddCommentUtil.uploadSynchronously(content, pType, url, pId, mediaUri, mediaType, accessToken);
+            BrowserExpressAddCommentUtil.CommentResult realComment = BrowserExpressAddCommentUtil.uploadSynchronously(content, pType, url, pId, mediaUri, mediaType, accessToken);
             
             Intent successIntent = new Intent(BROADCAST_UPLOAD_COMPLETE);
             successIntent.putExtra(EXTRA_TEMP_ID, tempId);
-            successIntent.putExtra(EXTRA_REAL_COMMENT_JSON, new Gson().toJson(realComment));
+            successIntent.putExtra(EXTRA_REAL_COMMENT_JSON, new Gson().toJson(realComment.comment));
             LocalBroadcastManager.getInstance(this).sendBroadcast(successIntent);
         } catch (Exception e) {
             Intent failureIntent = new Intent(BROADCAST_UPLOAD_FAILED);

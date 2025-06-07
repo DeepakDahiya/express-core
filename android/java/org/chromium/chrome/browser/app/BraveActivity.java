@@ -2253,27 +2253,23 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showReplyWithAttachmentBottomSheet(Fragment targetFragment, String postId, String username, String content, String avatarUrl, String type, Uri attachmentUri) {
-        try {
-            BrowserExpressReplyWithAttachmentBottomSheetFragment bottomSheetDialog2 =
-                    BrowserExpressReplyWithAttachmentBottomSheetFragment.newInstance(true);
-            
-            Bundle fragmentBundle = new Bundle();
-            fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.COMMENTS_FOR, type);
-            fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_ID, postId);
-            fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
-            fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
-            fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
-            fragmentBundle.putParcelable(BrowserExpressReplyWithAttachmentBottomSheetFragment.ATTACHMENT_URI, attachmentUri);
-            bottomSheetDialog2.setArguments(fragmentBundle);
+        BrowserExpressReplyWithAttachmentBottomSheetFragment bottomSheetDialog2 =
+                BrowserExpressReplyWithAttachmentBottomSheetFragment.newInstance(true);
+        
+        Bundle fragmentBundle = new Bundle();
+        fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.COMMENTS_FOR, type);
+        fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_ID, postId);
+        fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_USERNAME, username);
+        fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_CONTENT, content);
+        fragmentBundle.putString(BrowserExpressReplyWithAttachmentBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
+        fragmentBundle.putParcelable(BrowserExpressReplyWithAttachmentBottomSheetFragment.ATTACHMENT_URI, attachmentUri);
+        bottomSheetDialog2.setArguments(fragmentBundle);
 
-            if (targetFragment != null) {
-                bottomSheetDialog2.setTargetFragment(targetFragment, 0);
-            }
-
-            bottomSheetDialog2.show(getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e("BraveActivity", "Failed to show reply sheet", e);
+        if (targetFragment != null) {
+            bottomSheetDialog2.setTargetFragment(targetFragment, 0);
         }
+
+        bottomSheetDialog2.show(getSupportFragmentManager(), "BrowserExpressReplyWithAttachmentBottomSheetFragment");
     }
 
     public void showCommentsBottomSheet() {
