@@ -754,13 +754,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
         if (currentFragment instanceof CommentListFragment) {
             Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to CommentListFragment");
-            ((CommentListFragment) currentFragment).addNewComment(newComment);
+            ((CommentListFragment) currentFragment).addNewComment(optimisticComment);
         } else if (currentFragment instanceof ReplyListFragment) {
             Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment");
-            ((ReplyListFragment) currentFragment).addNewComment(newComment);
+            ((ReplyListFragment) currentFragment).addNewComment(optimisticComment);
         } else if (currentFragment instanceof ReplyListFragment2) {
             Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment2");
-            ((ReplyListFragment2) currentFragment).addNewComment(newComment);
+            ((ReplyListFragment2) currentFragment).addNewComment(optimisticComment);
         }
 
         Intent uploadIntent = new Intent(getContext(), UploadService.class);
