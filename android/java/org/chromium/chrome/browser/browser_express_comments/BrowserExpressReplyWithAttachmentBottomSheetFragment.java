@@ -134,7 +134,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     }
 
     public interface OnCommentPostedListener {
-        void onCommentPosted(Comment optimisticComment);
+        void onCommentPostRequested(String postId, String type, Comment optimisticComment, Uri mediaUri, String mediaType, String accessToken);
         void onCommentPostSucceeded(String tempId, Comment realComment);
         void onCommentPostFailed(String tempId, String errorMessage);
     }
@@ -311,19 +311,15 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         if (mCommentPostedListener != null) {
                             Log.e("ReplyWithAttachment", "Posting optimistic comment: " + optimisticComment.getId());
                             mCommentPostedListener.onCommentPosted(optimisticComment);
+                            mCommentPostedListener.onCommentPostRequested(
+                                mPostId,
+                                mCommentsFor.equals("post") ? "post" : "comment",
+                                optimisticComment,
+                                mSelectedMediaUri,
+                                mSelectedMediaType,
+                                accessToken
+                            );
                         }
-
-                        Intent serviceIntent = new Intent(getContext(), UploadService.class);
-                        serviceIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
-                        serviceIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
-                        serviceIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, content);
-                        serviceIntent.putExtra(UploadService.EXTRA_COMMENT_TYPE, mCommentsFor.equals("post") ? "post" : "comment");
-                        serviceIntent.putExtra(UploadService.EXTRA_POST_ID, mPostId);
-                        serviceIntent.putExtra(UploadService.EXTRA_MEDIA_URI, mSelectedMediaUri);
-                        serviceIntent.putExtra(UploadService.EXTRA_MEDIA_TYPE, mSelectedMediaType);
-                        serviceIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
-                        
-                        UploadService.enqueueWork(getContext(), serviceIntent);
 
                         dismiss();
 

@@ -129,6 +129,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mLastOpenedRepliesForCommentId = null;
     private String mLastOpenedRepliesToRepliesForCommentId = null;
 
+    private android.content.BroadcastReceiver mUploadReceiver;
+
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressCommentsBottomSheetFragment fragment =
                 new BrowserExpressCommentsBottomSheetFragment();
@@ -136,6 +138,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         args.putBoolean(IS_FROM_MENU, isFromMenu);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerUploadReceiver();
     }
 
     @Override
@@ -166,10 +174,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
-     @Override
+    @Override
     public void onPause() {
         super.onPause();
         pauseAllVideoPlaybackInActiveLists();
+        if (mUploadReceiver != null && getContext() != null) {
+            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mUploadReceiver);
+        }
     }
 
     @Override
@@ -705,11 +716,42 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
-    @Override
-    public void onCommentPosted(Comment newComment) {
-        Log.e("BrowserExpressCommentsBottomSheetFragment", "onCommentPosted called with newComment: " + newComment);
-        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
+    private void registerUploadReceiver() {
+        if (getContext() == null) return;
 
+        mUploadReceiver = new android.content.BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (action == null) return;
+                
+                String tempId = intent.getStringExtra(UploadService.EXTRA_TEMP_ID);
+                if (tempId == null) return;
+
+                if (UploadService.BROADCAST_UPLOAD_COMPLETE.equals(action)) {
+                    String realCommentJson = intent.getStringExtra(UploadService.EXTRA_REAL_COMMENT_JSON);
+                    if (realCommentJson != null) {
+                        Comment realComment = new com.google.gson.Gson().fromJson(realCommentJson, Comment.class);
+                        // Forward the success call
+                        onCommentPostSucceeded(tempId, realComment);
+                    }
+                } else if (UploadService.BROADCAST_UPLOAD_FAILED.equals(action)) {
+                    String errorMessage = intent.getStringExtra("error_message");
+                    // Forward the failure call
+                    onCommentPostFailed(tempId, errorMessage);
+                }
+            }
+        };
+
+        android.content.IntentFilter filter = new android.content.IntentFilter();
+        filter.addAction(UploadService.BROADCAST_UPLOAD_COMPLETE);
+        filter.addAction(UploadService.BROADCAST_UPLOAD_FAILED);
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).registerReceiver(mUploadReceiver, filter);
+    }
+
+    @Override
+    public void onCommentPostRequested(String postId, String type, Comment optimisticComment, Uri mediaUri, String mediaType, String accessToken) {
+        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
         if (currentFragment instanceof CommentListFragment) {
             Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to CommentListFragment");
             ((CommentListFragment) currentFragment).addNewComment(newComment);
@@ -719,6 +761,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         } else if (currentFragment instanceof ReplyListFragment2) {
             Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment2");
             ((ReplyListFragment2) currentFragment).addNewComment(newComment);
+        }
+
+        Intent uploadIntent = new Intent(getContext(), UploadService.class);
+        uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
+        uploadIntent.putExtra(UploadService.EXTRA_TEMP_ID, optimisticComment.getId());
+        uploadIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, optimisticComment.getContent());
+        uploadIntent.putExtra(UploadService.EXTRA_POST_ID, postId);
+        uploadIntent.putExtra(UploadService.EXTRA_MEDIA_URI, mediaUri);
+        uploadIntent.putExtra(UploadService.EXTRA_MEDIA_TYPE, mediaType);
+        uploadIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
+        uploadIntent.putExtra(UploadService.EXTRA_COMMENT_TYPE, type);
+        
+        if (getContext() != null) {
+            UploadService.enqueueWork(getContext(), uploadIntent);
         }
     }
 
