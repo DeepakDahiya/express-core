@@ -22,7 +22,8 @@ import com.google.android.exoplayer2.ui.PlayerView;
 
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
-
+import android.content.Context;
+import android.content.DialogInterface;
 import org.chromium.chrome.R;
 
 public class MediaViewerFragment extends DialogFragment {

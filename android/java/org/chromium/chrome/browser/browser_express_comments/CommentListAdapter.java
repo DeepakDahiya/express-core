@@ -555,16 +555,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                                         null,
                                         null
                                     );
-                                    // This logic of adding to mComments and notifying mCommentAdapter
-                                    // should ideally be handled by the adapter itself or a higher-level component
-                                    // that manages the data list. Directly modifying mComments here if it's not
-                                    // the adapter's list is problematic. Assuming mCommentList is the adapter's list.
-                                    // if (mCommentList != null && mCommentAdapter != null) {
-                                    //    mCommentList.add(0, newReplyComment);
-                                    //    mCommentAdapter.notifyItemInserted(0);
-                                    // }
-                                    // For now, I will assume this listener's purpose is for something else or needs refactoring
-                                    // if mComments and mCommentAdapter are not the adapter's properties.
                                 }
                             } catch (JSONException e) {
                                 Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", "Error parsing reply JSON", e);
@@ -573,8 +563,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     }
                 };
                 sharedPref.registerOnSharedPreferenceChangeListener(listener);
-                // TODO: Remember to unregister this listener in onViewRecycled or when holder is no longer needed
-                // itemView.addOnAttachStateChangeListener(...) with unregister in onViewDetachedFromWindow
             }
             
             Vote didVote = comment.getDidVote();
@@ -853,12 +841,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        // This was duplicated, removing one.
-        // private void updatePlayPauseIcon(boolean isPlaying) {
-        //     playPauseIcon.setImageResource(isPlaying ? 
-        //         R.drawable.ic_pause_circle2 : R.drawable.ic_play_circle2);
-        // }
-
         private void releasePlayer() {
             mVideoManagerInstance.removeActiveHolder(this);
             if (progressAnimator != null) {
@@ -880,11 +862,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (commentVideo != null) {
                 commentVideo.setPlayer(null); // Detach player from view
                 commentVideo.setVisibility(View.GONE); // Hide video view
-                // ViewGroup.LayoutParams params = commentVideo.getLayoutParams();
-                // if (params != null) {
-                //     params.height = ViewGroup.LayoutParams.WRAP_CONTENT; // Or specific initial value
-                //     commentVideo.setLayoutParams(params);
-                // }
             }
         }
 
@@ -898,11 +875,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 Glide.with(context).clear(mAvatarImage);
                 mAvatarImage.setImageDrawable(null);
             }
-            // Unregister SharedPreferences listener if it was registered in bind
-            // This requires storing the listener instance in the holder.
         }
 
-        // Called by itemView's OnAttachStateChangeListener or similar
         public void onViewDetachedFromWindow() {
             releasePlayer();
         }
@@ -914,16 +888,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 // Potentially update other parts of UI if needed based on new token
                 JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
                 if (decodedAccessTokenObj != null && decodedAccessTokenObj.has("username")) {
-                    // Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " session updated.", Toast.LENGTH_SHORT).show();
-                    // The original code showed a "Username created" toast and started ChromeTabbedActivity.
-                    // This might be too disruptive for just a token refresh during a vote.
-                    // Consider if this exact behavior is desired here.
-                    // If this is for first-time username generation via voting, it might be okay.
-                    // Intent intent = new Intent(activity, ChromeTabbedActivity.class);
-                    // intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    // intent.setAction(Intent.ACTION_VIEW);
-                    // Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
-                    // activity.startActivity(intent);
                     Log.i("TokenHandler", "Token refreshed. New username (if changed): " + decodedAccessTokenObj.getString("username"));
                 }
             } catch (JSONException e) {
@@ -931,9 +895,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-
-        // Removed duplicate addVoteCallback, as it's now inline in button listeners
-        // private BrowserExpressAddVoteUtil.AddVoteCallback addVoteCallback = ...
 
         public String formatNumberCompact(long number) { // Changed to long for safety
             if (number >= 1_000_000_000) { // Billions
@@ -974,7 +935,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
     }
 
-    // Corrected signature for onViewRecycled in the Adapter
     @Override
     public void onViewRecycled(@NonNull CommentHolder holder) {
         super.onViewRecycled(holder); // This now calls the correct super method

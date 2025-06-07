@@ -70,8 +70,9 @@ import com.bumptech.glide.request.transition.Transition;
 
 import org.chromium.base.ContextUtils;
 import androidx.fragment.app.DialogFragment;
+import android.media.MediaMetadataRetriever;
 
-public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment {
+public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
@@ -457,21 +458,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                                 params.height = (aspectRatio == 0) ? (int) ((availableWidth/1.05) * 1.33f) : (int) ((availableWidth / 1.05) / aspectRatio) ;
                                             }
 
-                                            // int maxPreviewHeight = (int) (250 * getResources().getDisplayMetrics().density);
-                                            // if (params.height > maxPreviewHeight) {
-                                            //     params.height = maxPreviewHeight;
-                                            //     if (aspectRatio != 0) {
-                                            //         params.width = (int) (maxPreviewHeight * aspectRatio);
-                                            //     } else {
-                                            //         params.width = (int) (maxPreviewHeight * 0.75f); // Default if aspect ratio is bad
-                                            //     }
-
-                                            //     int maxWidthForOrientation = (aspectRatio > 1 || aspectRatio == 0) ? availableWidth : (int)(availableWidth / 1.1);
-                                            //     if (params.width > maxWidthForOrientation ) {
-                                            //          params.width = maxWidthForOrientation;
-                                            //     }
-                                            // }
-                                            
                                             mAttachmentPreviewImage.setLayoutParams(params);
                                             mAttachmentPreviewImage.setImageBitmap(resource);
 
@@ -532,15 +518,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         .error(R.drawable.ic_error_placeholder_24dp)
                         .into(mAttachmentPreviewImage);
 
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
-                int videoThumbWidth = (int) (getResources().getDisplayMetrics().widthPixels - (getResources().getDisplayMetrics().density * 40));
-                if (((View)mAttachmentPreviewContainer.getParent()).getWidth() > 0) {
-                    videoThumbWidth = (((View)mAttachmentPreviewContainer.getParent()).getWidth() - (mAttachmentPreviewContainer.getPaddingLeft() + mAttachmentPreviewContainer.getPaddingRight())) / 2;
-                }
-
-                params.width = videoThumbWidth;
-                params.height = (int) (videoThumbWidth * (9.0/16.0));
-                mAttachmentPreviewImage.setLayoutParams(params);
+                setVideoPreviewSize(mSelectedMediaUri);
 
                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                 mVideoPlayButton.setVisibility(View.VISIBLE);
@@ -579,6 +557,56 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         if (imm != null) {
             imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
         }
+    }
+
+    private void setVideoPreviewSize(Uri videoUri) {
+        if (getContext() == null || mAttachmentPreviewImage == null || mAttachmentPreviewContainer == null) {
+            return;
+        }
+
+        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+        int videoWidth = 0;
+        int videoHeight = 0;
+        try {
+            retriever.setDataSource(getContext(), videoUri);
+            String widthStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+            String heightStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+            if (widthStr != null && heightStr != null) {
+                videoWidth = Integer.parseInt(widthStr);
+                videoHeight = Integer.parseInt(heightStr);
+            }
+        } catch (Exception e) {
+            Log.e("CommentBottomSheet", "Failed to retrieve video metadata", e);
+            videoWidth = 16;
+            videoHeight = 9;
+        } finally {
+            try {
+                retriever.release();
+            } catch (Exception e) {
+                 Log.e("CommentBottomSheet", "Failed to release MediaMetadataRetriever", e);
+            }
+        }
+        
+        if (videoWidth <= 0 || videoHeight <= 0) {
+            videoWidth = 16;
+            videoHeight = 9;
+        }
+
+        View parentView = (View) mAttachmentPreviewContainer.getParent();
+        int availableWidth = 0;
+        if (parentView != null && parentView.getWidth() > 0) {
+            availableWidth = parentView.getWidth() - mAttachmentPreviewContainer.getPaddingLeft() - mAttachmentPreviewContainer.getPaddingRight();
+        } else {
+             availableWidth = getResources().getDisplayMetrics().widthPixels - (int)(getResources().getDisplayMetrics().density * 40);
+        }
+
+        float aspectRatio = (float) videoHeight / (float) videoWidth;
+        int calculatedHeight = (int) (availableWidth * aspectRatio);
+
+        FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mAttachmentPreviewImage.getLayoutParams();
+        params.width = availableWidth;
+        params.height = calculatedHeight;
+        mAttachmentPreviewImage.setLayoutParams(params);
     }
 
     private JSONObject getDecodedToken(String accessToken){
