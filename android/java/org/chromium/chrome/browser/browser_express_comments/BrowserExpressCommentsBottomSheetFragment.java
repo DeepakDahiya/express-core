@@ -751,18 +751,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onCommentPostRequested(String postId, String type, Comment optimisticComment, Uri mediaUri, String mediaType, String accessToken) {
-        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
-        if (currentFragment instanceof CommentListFragment) {
-            Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to CommentListFragment");
-            ((CommentListFragment) currentFragment).addNewComment(optimisticComment);
-        } else if (currentFragment instanceof ReplyListFragment) {
-            Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment");
-            ((ReplyListFragment) currentFragment).addNewComment(optimisticComment);
-        } else if (currentFragment instanceof ReplyListFragment2) {
-            Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment2");
-            ((ReplyListFragment2) currentFragment).addNewComment(optimisticComment);
-        }
-
         Intent uploadIntent = new Intent(getContext(), UploadService.class);
         uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
         uploadIntent.putExtra(UploadService.EXTRA_TEMP_ID, optimisticComment.getId());
@@ -775,6 +763,24 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         
         if (getContext() != null) {
             UploadService.enqueueWork(getContext(), uploadIntent);
+        }
+
+        FragmentManager fm = getChildFragmentManager();
+        List<Fragment> fragments = fm.getFragments();
+
+        for (Fragment fragment : fragments) {
+            if (fragment != null && fragment.isAdded() && fragment.getView() != null) {
+                if (fragment instanceof CommentListFragment) {
+                    Log.d("BottomSheetFragment", "Pausing videos in CommentListFragment");
+                    ((CommentListFragment) fragment).addNewComment(optimisticComment);
+                } else if (fragment instanceof ReplyListFragment) {
+                    Log.d("BottomSheetFragment", "Pausing videos in ReplyListFragment");
+                    ((ReplyListFragment) fragment).addNewComment(optimisticComment);
+                } else if (fragment instanceof ReplyListFragment2) {
+                    Log.d("BottomSheetFragment", "Pausing videos in ReplyListFragment2");
+                    ((ReplyListFragment2) fragment).addNewComment(optimisticComment);
+                }
+            }
         }
     }
 
