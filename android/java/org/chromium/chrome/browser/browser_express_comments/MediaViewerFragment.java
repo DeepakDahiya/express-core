@@ -52,7 +52,7 @@ public class MediaViewerFragment extends DialogFragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setStyle(STYLE_NO_FRAME, R.style.AppSetDefaultBottomSheetDialogTheme);
+        setStyle(DialogFragment.STYLE_NO_FRAME, android.R.style.Theme_Black_NoTitleBar_Fullscreen);
         if (getArguments() != null) {
             mMediaUri = getArguments().getParcelable(ARG_MEDIA_URI);
             mMediaType = getArguments().getString(ARG_MEDIA_TYPE);
@@ -72,11 +72,10 @@ public class MediaViewerFragment extends DialogFragment {
         if (mMediaUri != null && "image".equals(mMediaType)) {
             mImageView.setVisibility(View.VISIBLE);
             mPlayerView.setVisibility(View.GONE);
-            try{
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                ImageLoader.downloadImage(mMediaUri.toString(), Glide.with(activity), false, 5, mImageView, null);
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }
+            Glide.with(getContext())
+                 .load(mMediaUri)
+                 .fitCenter()
+                 .into(mImageView);
         } else {
              mImageView.setVisibility(View.GONE);
              mPlayerView.setVisibility(View.VISIBLE);
