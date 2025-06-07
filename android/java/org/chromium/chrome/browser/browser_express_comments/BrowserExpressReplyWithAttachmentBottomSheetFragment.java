@@ -310,7 +310,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
 
                         if (mCommentPostedListener != null) {
                             Log.e("ReplyWithAttachment", "Posting optimistic comment: " + optimisticComment.getId());
-                            mCommentPostedListener.onCommentPosted(optimisticComment);
                             mCommentPostedListener.onCommentPostRequested(
                                 mPostId,
                                 mCommentsFor.equals("post") ? "post" : "comment",
@@ -697,44 +696,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         params.height = calculatedHeight;
         mAttachmentPreviewImage.setLayoutParams(params);
     }
-
-    private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
-            new BrowserExpressAddCommentUtil.AddCommentCallback() {
-                @Override
-                public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
-                    try{
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        if(newRefreshToken != null && !newRefreshToken.isEmpty()){
-                            try {
-                                activity.setAccessToken(newAccessToken);
-
-                                JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
-                                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                intent.setAction(Intent.ACTION_VIEW);
-                                Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
-                                startActivity(intent);
-                            } catch (JSONException e) {
-                            }
-                        }
-
-                        if (mCommentPostedListener != null) {
-                            mCommentPostedListener.onCommentPosted(comment);
-                        }
-
-                        dismiss();
-
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    } finally {
-                        dismiss();
-                    }
-                }
-
-                @Override
-                public void addCommentFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
-                }
-            };
 
     private JSONObject getDecodedToken(String accessToken){
         try{
