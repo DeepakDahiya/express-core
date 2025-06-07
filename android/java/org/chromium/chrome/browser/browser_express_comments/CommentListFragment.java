@@ -612,7 +612,6 @@ public class CommentListFragment extends Fragment {
                 mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 // Log.e("Express Browser Access Token", e.getMessage());
-            } catch (JSONException e) {
             }
         }
     }
