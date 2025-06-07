@@ -68,4 +68,6 @@ public interface BottomSheetInputCallback {
     @Nullable
     String getSelectedMediaType();
     void clearSelectedMedia();
+    void setPostStuff(String postId, String postUsername, String postContent, String postAvatarUrl, String type);
+    void resetPostStuff();
 }

@@ -309,6 +309,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         optimisticComment.setUploadStatus(Comment.UploadStatus.POSTING);
 
                         if (mCommentPostedListener != null) {
+                            Log.e("ReplyWithAttachment", "Posting optimistic comment: " + optimisticComment.getId());
                             mCommentPostedListener.onCommentPosted(optimisticComment);
                         }
 

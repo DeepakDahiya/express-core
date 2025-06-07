@@ -487,6 +487,7 @@ public class ReplyListFragment2 extends Fragment {
                     if(parentComment != null){
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);
+                        inputCallback.setPostStuff(parentComment.getId(), parentComment.getUser().getUsername(), parentComment.getContent(), parentComment.getUser().getAvatar(), "comment");
                     }
 
                     mShimmerLoading.setVisibility(View.GONE);

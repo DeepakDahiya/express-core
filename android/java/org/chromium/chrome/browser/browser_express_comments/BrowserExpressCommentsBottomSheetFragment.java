@@ -90,6 +90,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mPostUsernameString;
     private String mPostContentString;
 
+    private String mTempPostId;
+    private String mTempPostAvatarString;
+    private String mTempPostUsernameString;
+    private String mTempPostContentString;
+    private String mTempType;
+
     private LinearLayout mPostInfoContainer;
     private ImageView mPostAvatar;
     private TextView mPostUsername;
@@ -144,6 +150,13 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             mPostUsernameString = getArguments().getString(POST_USERNAME);
             mPostContentString = getArguments().getString(POST_CONTENT);
             mPostAvatarString = getArguments().getString(POST_AVATAR_URL);
+
+            mTempPostId = mPostId;
+            mTempPostUsernameString = mPostUsernameString;
+            mTempPostContentString = mPostContentString;
+            mTempPostAvatarString = mPostAvatarString;
+            mTempType = "post";
+
             String tempOpenKeyboard = getArguments().getString(OPEN_KEYBOARD);
             if (tempOpenKeyboard != null && tempOpenKeyboard.equals("true")) {
                 mOpenKeyboard = true;
@@ -499,17 +512,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 try{
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    activity.showReplyWithAttachmentBottomSheet(this, mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post", originalUri);
+                    hideKeyboard();
+                    activity.showReplyWithAttachmentBottomSheet(this, mTempPostId, mTempPostUsernameString, mTempPostContentString, mTempPostAvatarString, mTempType, originalUri);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                 }
-
-                // processSelectedMedia(originalUri); // New method to handle processing
-                // mReactionContainer.setVisibility(View.GONE);
-                // if(mIsCommentPage && mPostInfoContainer != null) {
-                //     mPostInfoContainer.setVisibility(View.VISIBLE);
-                // }
-                
-                // showKeyboardWithFocus();
             } else {
                 removeAttachment();
             }
@@ -540,6 +546,14 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     }, 500); // Increased delay to 500ms
                 }
             });
+        }
+    }
+
+    private void hideKeyboard() {
+        if (getContext() == null || getView() == null) return;
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
         }
     }
 
@@ -693,13 +707,17 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onCommentPosted(Comment newComment) {
+        Log.e("BrowserExpressCommentsBottomSheetFragment", "onCommentPosted called with newComment: " + newComment);
         Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
 
         if (currentFragment instanceof CommentListFragment) {
+            Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to CommentListFragment");
             ((CommentListFragment) currentFragment).addNewComment(newComment);
         } else if (currentFragment instanceof ReplyListFragment) {
+            Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment");
             ((ReplyListFragment) currentFragment).addNewComment(newComment);
         } else if (currentFragment instanceof ReplyListFragment2) {
+            Log.e("BrowserExpressCommentsBottomSheetFragment", "Adding new comment to ReplyListFragment2");
             ((ReplyListFragment2) currentFragment).addNewComment(newComment);
         }
     }
@@ -736,6 +754,24 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Nullable
     public Uri getSelectedMediaUri() {
         return mSelectedMediaUri;
+    }
+
+    @Override
+    public void setPostStuff(String postId, String postUsername, String postContent, String postAvatarUrl, String type) {
+        mTempPostId = postId;
+        mTempPostUsernameString = postUsername;
+        mTempPostContentString = postContent;
+        mTempPostAvatarString = postAvatarUrl;
+        mTempType = type;
+    }
+
+    @Override
+    public void resetPostStuff() {
+        mTempPostId = mPostId;
+        mTempPostUsernameString = mPostUsernameString;
+        mTempPostContentString = mPostContentString;
+        mTempPostAvatarString = mPostAvatarString;
+        mTempType = "post";
     }
 
     @Override
