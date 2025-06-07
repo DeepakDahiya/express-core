@@ -485,7 +485,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                     });
                             mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                             mRemoveAttachmentButton.setVisibility(View.VISIBLE);
-                            mVideoPlayButton.setVisibility(View.GONE);
                         } else {
                             Log.e("CommentBottomSheet", "Image processing failed.");
                             mSelectedMediaUri = originalUri;

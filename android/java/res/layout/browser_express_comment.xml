@@ -116,18 +116,6 @@
                         app:layout_constraintEnd_toEndOf="@id/media_aspect_ratio_spacer"
                         android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
-                    <ImageButton
-                        android:id="@+id/video_mute_button"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_margin="8dp"
-                        android:background="@drawable/volume_off"
-                        android:backgroundTint="@android:color/black"
-                        android:visibility="gone"
-                        app:layout_constraintBottom_toBottomOf="@id/comment_video"
-                        app:layout_constraintStart_toStartOf="@id/comment_video"
-                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
-
                     <ProgressBar
                         android:id="@+id/video_progress"
                         style="@style/Widget.AppCompat.ProgressBar.Horizontal"

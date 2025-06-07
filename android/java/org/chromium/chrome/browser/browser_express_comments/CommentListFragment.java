@@ -312,21 +312,19 @@ public class CommentListFragment extends Fragment {
         return view;
     }
 
-    private void setupVideoScrollListener(RecyclerView recyclerView) {
-    if (videoScrollListener != null) {
-        recyclerView.removeOnScrollListener(videoScrollListener);
-    }
-    videoScrollListener = new RecyclerView.OnScrollListener() {
-        @Override
-        public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-            if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                playVideoInCenterOfScreen();
-            }
+     private void setupVideoScrollListener(RecyclerView recyclerView) {
+        if (videoScrollListener != null) {
+            recyclerView.removeOnScrollListener(videoScrollListener);
         }
-    };
-    recyclerView.addOnScrollListener(videoScrollListener);
-}
+        videoScrollListener = new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                checkAndPauseInvisibleVideos(recyclerView);
+            }
+        };
+        recyclerView.addOnScrollListener(videoScrollListener);
+    }
 
     private void checkAndPauseInvisibleVideos(RecyclerView recyclerView) {
         if (mCommentAdapter == null) return;
@@ -360,46 +358,6 @@ public class CommentListFragment extends Fragment {
                     manager.pauseCurrentlyPlayingVideo();
                 }
             }
-        }
-    }
-
-    private void playVideoInCenterOfScreen() {
-        if (mCommentAdapter == null || mLayoutManager == null || mCommentRecycler == null) return;
-
-        int firstVisible = mLayoutManager.findFirstVisibleItemPosition();
-        int lastVisible = mLayoutManager.findLastVisibleItemPosition();
-        if (firstVisible == RecyclerView.NO_POSITION) return;
-
-        CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-        CommentListAdapter.CommentHolder bestHolder = null;
-        int maxVisibility = 0;
-
-        for (int i = firstVisible; i <= lastVisible; i++) {
-            View itemView = mLayoutManager.findViewByPosition(i);
-            if (itemView != null) {
-                RecyclerView.ViewHolder vh = mCommentRecycler.getChildViewHolder(itemView);
-                if (vh instanceof CommentListAdapter.CommentHolder) {
-                    CommentListAdapter.CommentHolder holder = (CommentListAdapter.CommentHolder) vh;
-                    // Check if this holder actually has a video player ready and visible
-                    if (holder.player != null && holder.commentVideo.getVisibility() == View.VISIBLE) {
-                        Rect visibleRect = new Rect();
-                        holder.commentVideo.getGlobalVisibleRect(visibleRect);
-                        int height = holder.commentVideo.getHeight();
-                        if (height > 0 && visibleRect.height() > maxVisibility) {
-                            maxVisibility = visibleRect.height();
-                            bestHolder = holder;
-                        }
-                    }
-                }
-            }
-        }
-        
-        // Play the most visible video if it's at least 65% visible on screen
-        float visibilityThreshold = 0.65f;
-        if (bestHolder != null && bestHolder.commentVideo.getHeight() > 0 && maxVisibility >= bestHolder.commentVideo.getHeight() * visibilityThreshold) {
-            manager.playVideo(bestHolder);
-        } else {
-            manager.pauseCurrentlyPlayingVideo();
         }
     }
 
