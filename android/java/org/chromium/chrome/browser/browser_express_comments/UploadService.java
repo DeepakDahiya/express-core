@@ -69,7 +69,7 @@ public class UploadService extends IntentService {
             
             Intent successIntent = new Intent(BROADCAST_UPLOAD_COMPLETE);
             successIntent.putExtra(EXTRA_TEMP_ID, tempId);
-            successIntent.putExtra(EXTRA_REAL_COMMENT_JSON, new Gson().toJson(realComment.comment));
+            successIntent.putExtra(EXTRA_REAL_COMMENT_JSON, new Gson().toJson(realComment.getComment()));
             LocalBroadcastManager.getInstance(this).sendBroadcast(successIntent);
         } catch (Exception e) {
             Intent failureIntent = new Intent(BROADCAST_UPLOAD_FAILED);
