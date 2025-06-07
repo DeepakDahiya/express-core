@@ -561,8 +561,24 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             return;
         }
 
-        MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType);
+        MediaViewerFragment viewerFragment = MediaViewerFragment.newInstance(mSelectedMediaUri, mSelectedMediaType, true);
+        hideKeyboard();
         viewerFragment.show(getParentFragmentManager(), MediaViewerFragment.class.getSimpleName());
+    }
+
+    @Override
+    public void onViewerDismissed(boolean shouldShowKeyboard) {
+        if (shouldShowKeyboard) {
+            showKeyboardWithFocus();
+        }
+    }
+
+    private void hideKeyboard() {
+        if (getContext() == null || getView() == null) return;
+        InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
+        if (imm != null) {
+            imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
+        }
     }
 
     private JSONObject getDecodedToken(String accessToken){

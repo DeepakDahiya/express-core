@@ -28,9 +28,16 @@ import org.chromium.chrome.R;
 public class MediaViewerFragment extends DialogFragment {
     private static final String ARG_MEDIA_URI = "media_uri";
     private static final String ARG_MEDIA_TYPE = "media_type";
+    private static final String ARG_SHOW_KEYBOARD_ON_CLOSE = "show_keyboard_on_close";
+
+    public interface OnViewerDismissedListener {
+        void onViewerDismissed(boolean shouldShowKeyboard);
+    }
 
     private Uri mMediaUri;
     private String mMediaType;
+    private boolean mShowKeyboardOnClose;
+    private OnViewerDismissedListener mDismissListener;
 
     private ExoPlayer mPlayer;
     private PlayerView mPlayerView;
@@ -39,14 +46,24 @@ public class MediaViewerFragment extends DialogFragment {
     private long mPlaybackPosition = 0L;
     private int mCurrentWindow = 0;
 
-
-    public static MediaViewerFragment newInstance(Uri mediaUri, String mediaType) {
+    public static MediaViewerFragment newInstance(Uri mediaUri, String mediaType, boolean showKeyboardOnClose) {
         MediaViewerFragment fragment = new MediaViewerFragment();
         Bundle args = new Bundle();
         args.putParcelable(ARG_MEDIA_URI, mediaUri);
         args.putString(ARG_MEDIA_TYPE, mediaType);
+        args.putBoolean(ARG_SHOW_KEYBOARD_ON_CLOSE, showKeyboardOnClose);
         fragment.setArguments(args);
         return fragment;
+    }
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnViewerDismissedListener) {
+            mDismissListener = (OnViewerDismissedListener) getParentFragment();
+        } else {
+            Log.w("MediaViewerFragment", "Parent fragment does not implement OnViewerDismissedListener");
+        }
     }
 
     @Override
@@ -56,6 +73,7 @@ public class MediaViewerFragment extends DialogFragment {
         if (getArguments() != null) {
             mMediaUri = getArguments().getParcelable(ARG_MEDIA_URI);
             mMediaType = getArguments().getString(ARG_MEDIA_TYPE);
+            mShowKeyboardOnClose = getArguments().getBoolean(ARG_SHOW_KEYBOARD_ON_CLOSE, false);
         }
     }
 
@@ -82,6 +100,14 @@ public class MediaViewerFragment extends DialogFragment {
         }
 
         return view;
+    }
+
+    @Override
+    public void onDismiss(@NonNull DialogInterface dialog) {
+        super.onDismiss(dialog);
+        if (mDismissListener != null) {
+            mDismissListener.onViewerDismissed(mShowKeyboardOnClose);
+        }
     }
 
     private void initializePlayer() {
@@ -134,15 +160,15 @@ public class MediaViewerFragment extends DialogFragment {
         releasePlayer();
     }
 
-    // @Override
-    // public Dialog onCreateDialog(Bundle savedInstanceState) {
-    //     Dialog dialog = super.onCreateDialog(savedInstanceState);
-    //     dialog.setOnShowListener(dialogInterface -> {
-    //         if (dialog.getWindow() != null) {
-    //             dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-    //             dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
-    //         }
-    //     });
-    //     return dialog;
-    // }
+    @Override
+    public Dialog onCreateDialog(Bundle savedInstanceState) {
+        Dialog dialog = super.onCreateDialog(savedInstanceState);
+        dialog.setOnShowListener(dialogInterface -> {
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
+                dialog.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+            }
+        });
+        return dialog;
+    }
 }
