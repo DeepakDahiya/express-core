@@ -43,8 +43,6 @@ public class UploadService extends IntentService {
 
     @Override
     protected void onHandleIntent(@Nullable Intent intent) {
-        if (intent == null || !ACTION_UPLOAD_COMMENT.equals(intent.getAction())) return;
-
         String tempId = intent.getStringExtra(EXTRA_TEMP_ID);
         String content = intent.getStringExtra(EXTRA_COMMENT_CONTENT);
         String pType = intent.getStringExtra(EXTRA_COMMENT_TYPE);
