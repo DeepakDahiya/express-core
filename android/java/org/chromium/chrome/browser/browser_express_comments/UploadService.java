@@ -55,7 +55,7 @@ public class UploadService extends JobIntentService {
     protected void onHandleWork(@NonNull Intent intent) {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
             .setContentTitle("Posting Comment")
-            .setSmallIcon(R.drawable.ic_file_upload_24dp)
+            .setSmallIcon(R.drawable.ic_chrome)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .build();
         startForeground(NOTIFICATION_ID, notification);
