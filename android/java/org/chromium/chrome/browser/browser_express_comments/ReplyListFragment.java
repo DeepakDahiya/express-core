@@ -556,7 +556,6 @@ public class ReplyListFragment extends Fragment {
                 imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 // Log.e("Express Browser Access Token", e.getMessage());
-            } catch (JSONException e) {
             }
         }
     }
