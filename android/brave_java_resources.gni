@@ -150,6 +150,8 @@ brave_java_resources = [
   "java/res/drawable-night-nodpi/widget_preview.png",
   "java/res/drawable-nodpi/gold.png",
   "java/res/drawable-nodpi/attach.png",
+  "java/res/drawable-nodpi/volume_off.png",
+  "java/res/drawable-nodpi/volume_on.png",
   "java/res/drawable-nodpi/close.png",
   "java/res/drawable-nodpi/xp.png",
   "java/res/drawable-nodpi/fire.png",

@@ -1,14 +1,14 @@
 package org.chromium.chrome.browser.browser_express_comments;
 
-public class Comment{  
-    private String _id;  
-    private String content;  
-    private int upvoteCount;  
-    private int downvoteCount;  
-    private int commentCount;  
-    private String commentParent;  
-    private String pageParent;  
-    private String postParent;  
+public class Comment {
+    private String _id;
+    private String content;
+    private int upvoteCount;
+    private int downvoteCount;
+    private int commentCount;
+    private String commentParent;
+    private String pageParent;
+    private String postParent;
     private String postContent;
     private String postUsername;
     private String postAvatarUrl;
@@ -16,9 +16,11 @@ public class Comment{
     private String mediaVideoUrl;
     private User user;
     private Vote didVote;
+    private int mediaWidth = 0;
+    private int mediaHeight = 0;
 
-    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote, String mediaImageUrl, String mediaVideoUrl, String postContent, String postUsername, String postAvatarUrl) {  
-        this._id = _id;  
+    public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote, String mediaImageUrl, String mediaVideoUrl, String postContent, String postUsername, String postAvatarUrl) {
+        this._id = _id;
         this.content = content;
         this.upvoteCount = upvoteCount;
         this.downvoteCount = downvoteCount;
@@ -33,65 +35,27 @@ public class Comment{
         this.postContent = postContent;
         this.postUsername = postUsername;
         this.postAvatarUrl = postAvatarUrl;
-    }  
-
-    public String getId() {  
-        return this._id;  
-    }  
-
-    public String getMediaImageUrl() {  
-        return this.mediaImageUrl;  
     }
 
-    public String getMediaVideoUrl() {  
-        return this.mediaVideoUrl;  
-    }
+    public String getId() { return this._id; }
+    public String getMediaImageUrl() { return this.mediaImageUrl; }
+    public String getMediaVideoUrl() { return this.mediaVideoUrl; }
+    public String getCommentParent() { return this.commentParent; }
+    public String getPageParent() { return this.pageParent; }
+    public String getPostParent() { return this.postParent; }
+    public String getPostContent() { return this.postContent; }
+    public String getPostUsername() { return this.postUsername; }
+    public String getPostAvatarUrl() { return this.postAvatarUrl; }
+    public User getUser() { return this.user; }
+    public Vote getDidVote() { return this.didVote; }
+    public String getContent() { return this.content; }
+    public int getUpvoteCount() { return this.upvoteCount; }
+    public int getDownvoteCount() { return this.downvoteCount; }
+    public int getCommentCount() { return this.commentCount; }
 
-    public String getCommentParent() {  
-        return this.commentParent;  
-    }
-
-    public String getPageParent() {  
-        return this.pageParent;  
-    }
-
-    public String getPostParent() {  
-        return this.postParent;  
-    }
-
-    public String getPostContent() {  
-        return this.postContent;  
-    }
-
-    public String getPostUsername() {  
-        return this.postUsername;  
-    }
-
-    public String getPostAvatarUrl() {  
-        return this.postAvatarUrl;  
-    }
-
-    public User getUser() {  
-        return this.user;  
-    }  
-
-    public Vote getDidVote() {  
-        return this.didVote;  
-    }  
-
-    public String getContent() {  
-        return this.content;  
-    }  
-
-    public int getUpvoteCount() {  
-        return this.upvoteCount;  
-    }  
-
-    public int getDownvoteCount() {  
-        return this.downvoteCount;  
-    }  
-
-    public int getCommentCount() {  
-        return this.commentCount;  
-    }  
-}  
+    public int getMediaWidth() { return mediaWidth; }
+    public void setMediaWidth(int width) { this.mediaWidth = width; }
+    public int getMediaHeight() { return mediaHeight; }
+    public void setMediaHeight(int height) { this.mediaHeight = height; }
+    public boolean hasCachedDimensions() { return mediaWidth > 0 && mediaHeight > 0; }
+}

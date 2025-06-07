@@ -81,6 +81,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private boolean mIsReplyToReplyAdapter;
     private final VideoPlaybackManager videoPlaybackManager;
 
+    interface DimensionCallback {
+        void onDimensionsReady(int position, int width, int height);
+    }
+    private final DimensionCallback mDimensionCallback;
+
     public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
         mContext = context;
         mCommentList = commentList;
@@ -91,6 +96,15 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         mIsReplyTopComment = isReplyTopComment;
         mIsReplyToReplyAdapter = isReplyToReplyAdapter;
         videoPlaybackManager = new VideoPlaybackManager();
+
+        mDimensionCallback = (position, width, height) -> {
+            if (position >= 0 && position < mCommentList.size()) {
+                Comment comment = mCommentList.get(position);
+                comment.setMediaWidth(width);
+                comment.setMediaHeight(height);
+                notifyItemChanged(position);
+            }
+        };
     }
 
     public VideoPlaybackManager getVideoPlaybackManager() {
@@ -116,106 +130,80 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment);
     }
 
-    public class VideoPlaybackManager { // This is your INSTANCE-BASED manager
-        // Instance fields for the manager
-        private ExoPlayer mCurrentlyPlayingVideo;
+    public class VideoPlaybackManager {
         private CommentHolder mCurrentlyPlayingHolder;
-        private final List<CommentHolder> mActiveHolders = new ArrayList<>(); // Ensure this is defined
-        private static final String TAG = "VideoPlaybackManagerInst"; // Or your preferred tag
 
-        // Constructor (can be empty or initialize things if needed)
-        public VideoPlaybackManager() {}
-
-        public synchronized void addActiveHolder(CommentHolder holder) {
-            if (!mActiveHolders.contains(holder)) {
-                mActiveHolders.add(holder);
-                Log.d(TAG, "Added active holder. Count: " + mActiveHolders.size());
+        public void playVideo(CommentHolder holderToPlay) {
+            if (holderToPlay == mCurrentlyPlayingHolder) {
+                // Already playing or preparing to play this one.
+                return;
             }
+            // Stop the previously playing video.
+            if (mCurrentlyPlayingHolder != null) {
+                mCurrentlyPlayingHolder.stopPlayback();
+            }
+            // Start the new one.
+            holderToPlay.startPlayback();
+            mCurrentlyPlayingHolder = holderToPlay;
         }
 
-        public synchronized void removeActiveHolder(CommentHolder holder) {
-            boolean removed = mActiveHolders.remove(holder);
-            if (removed) {
-                Log.d(TAG, "Removed active holder. Count: " + mActiveHolders.size());
-            }
-            if (mCurrentlyPlayingHolder == holder) {
-                mCurrentlyPlayingVideo = null;
+        public void pauseCurrentlyPlayingVideo() {
+            if (mCurrentlyPlayingHolder != null) {
+                mCurrentlyPlayingHolder.stopPlayback();
                 mCurrentlyPlayingHolder = null;
-                Log.d(TAG, "Removed holder was the currently playing one.");
             }
         }
 
-        public synchronized void onVideoPlayRequest(ExoPlayer newPlayer, CommentHolder newHolder) {
-            if (mCurrentlyPlayingVideo != null && mCurrentlyPlayingVideo != newPlayer && mCurrentlyPlayingHolder != newHolder) {
-                Log.d(TAG, "Pausing previous video for new request.");
-                mCurrentlyPlayingVideo.setPlayWhenReady(false);
-                if (mCurrentlyPlayingHolder != null && mCurrentlyPlayingHolder.playPauseIcon != null) {
-                    mCurrentlyPlayingHolder.updatePlayPauseIcon(false);
-                }
-            }
-            mCurrentlyPlayingVideo = newPlayer;
-            mCurrentlyPlayingHolder = newHolder;
-            if (newPlayer != null) {
-                Log.d(TAG, "Playing new video.");
-                newPlayer.setPlayWhenReady(true);
-            }
-        }
-
-        public synchronized void onVideoStop(ExoPlayer playerToStop) {
-            if (playerToStop != null) {
-                playerToStop.setPlayWhenReady(false);
-                Log.d(TAG, "Video stopped/paused by user action.");
-            }
-            // No need to null out mCurrentlyPlayingVideo/Holder here if it's just a pause
-        }
-
-        public synchronized void pauseCurrentlyPlayingVideo() {
-            if (mCurrentlyPlayingVideo != null) {
-                Log.d(TAG, "Pausing currently playing video (manager request).");
-                mCurrentlyPlayingVideo.setPlayWhenReady(false);
-            }
-        }
-
-        // THIS IS THE SINGLE DEFINITION OF pauseAllPlayers
-        public synchronized void pauseAllPlayers() {
-            Log.d(TAG, "Pausing all " + mActiveHolders.size() + " active players (manager instance).");
-            List<CommentHolder> holdersToPause = new ArrayList<>(mActiveHolders); // Use instance field
-            for (CommentHolder holder : holdersToPause) {
-                if (holder.player != null && holder.player.isPlaying()) {
-                    holder.player.setPlayWhenReady(false);
-                }
+        public void releaseAllResources() {
+            if (mCurrentlyPlayingHolder != null) {
+                mCurrentlyPlayingHolder.releasePlayer();
+                mCurrentlyPlayingHolder = null;
             }
         }
         
-        public synchronized CommentHolder getCurrentlyPlayingHolder() {
+        public CommentHolder getCurrentlyPlayingHolder() {
             return mCurrentlyPlayingHolder;
         }
+    }
 
-        public synchronized void clearCurrentlyPlayingVideoIfMatches(ExoPlayer player) {
-            if (mCurrentlyPlayingVideo == player) {
-                mCurrentlyPlayingVideo = null;
-                mCurrentlyPlayingHolder = null;
-                Log.d(TAG, "Cleared currently playing video reference as it matched released player.");
-            }
+    private static class VideoDimensionTask extends AsyncTask<Void, Void, int[]> {
+        private final Context mContext;
+        private final String mVideoUrl;
+        private final int mPosition;
+        private final DimensionCallback mCallback;
+
+        VideoDimensionTask(Context context, String videoUrl, int position, DimensionCallback callback) {
+            this.mContext = context.getApplicationContext();
+            this.mVideoUrl = videoUrl;
+            this.mPosition = position;
+            this.mCallback = callback;
         }
 
-        // THIS IS THE SINGLE DEFINITION OF releaseAllResources
-        public synchronized void releaseAllResources() {
-            Log.d(TAG, "Releasing all resources in VideoPlaybackManager instance.");
-            pauseAllPlayers(); // Call the existing pauseAllPlayers method
-
-            List<CommentHolder> holdersToRelease = new ArrayList<>(mActiveHolders); // Use instance field
-            for (CommentHolder holder : holdersToRelease) {
-                if (holder != null) {
-                    holder.releasePlayer(); // This will call removeActiveHolder and clearCurrentlyPlayingVideoIfMatches
+        @Override
+        protected int[] doInBackground(Void... voids) {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            int[] dimensions = new int[]{0, 0};
+            try {
+                retriever.setDataSource(mVideoUrl, new HashMap<>());
+                String widthStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+                String heightStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+                if (widthStr != null && heightStr != null) {
+                    dimensions[0] = Integer.parseInt(widthStr);
+                    dimensions[1] = Integer.parseInt(heightStr);
                 }
+            } catch (Exception e) {
+                Log.e("VideoDimensionTask", "Failed to get video dimensions", e);
+            } finally {
+                try { retriever.release(); } catch (IOException e) { /* ignore */ }
             }
-            mActiveHolders.clear(); // Use instance field
+            return dimensions;
+        }
 
-            // These should be null if holders called clearCurrentlyPlayingVideoIfMatches
-            mCurrentlyPlayingVideo = null; // Use instance field
-            mCurrentlyPlayingHolder = null; // Use instance field
-            Log.d(TAG, "All resources released. Active holders: " + mActiveHolders.size()); // Use instance field
+        @Override
+        protected void onPostExecute(int[] dimensions) {
+            if (mCallback != null && dimensions[0] > 0 && dimensions[1] > 0) {
+                mCallback.onDimensionsReady(mPosition, dimensions[0], dimensions[1]);
+            }
         }
     }
 
@@ -257,10 +245,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         CardView commentMediaCard;
         StyledPlayerView commentVideo;
         ExoPlayer player;
+        ImageButton muteButton;
         ImageView playPauseIcon;
         ProgressBar videoProgressBar;
         ValueAnimator progressAnimator;
         private Context context; // Should be initialized from itemView.getContext()
+
+        private ConstraintLayout mediaContainer;
+        private Space mediaAspectRatioSpacer;
 
         private final VideoPlaybackManager mVideoManagerInstance;
 
@@ -295,9 +287,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             playPauseIcon = itemView.findViewById(R.id.play_pause_icon);
             videoProgressBar = itemView.findViewById(R.id.video_progress);
+            muteButton = itemView.findViewById(R.id.video_mute_button);
 
             mVoteLayout = itemView.findViewById(R.id.vote_layout);
 
+            mediaAspectRatioSpacer = itemView.findViewById(R.id.media_aspect_ratio_spacer);
+            mediaContainer = (ConstraintLayout) mediaAspectRatioSpacer.getParent();
             // Assign activity carefully. itemView.getContext() might not always be BraveActivity.
             // It's better to pass specific callbacks or data if needed, or check instance.
             if (this.context instanceof BraveActivity) {
@@ -309,6 +304,23 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     Log.e("CommentHolder", "BraveActivity not found for holder", e);
                     // Handle case where activity is null - dependent UIs might fail
                 }
+            }
+        }
+
+        private void bindMediaContent(Comment comment) {
+            String imageUrl = comment.getMediaImageUrl();
+            String videoUrl = comment.getMediaVideoUrl();
+            
+            if (videoUrl != null && !videoUrl.isEmpty()) {
+                commentImage.setVisibility(View.GONE);
+                commentVideo.setVisibility(View.VISIBLE);
+                muteButton.setVisibility(View.VISIBLE);
+                initializePlayer(Uri.parse(videoUrl));
+            } else if (imageUrl != null && !imageUrl.isEmpty()) {
+                commentImage.setVisibility(View.VISIBLE);
+                commentVideo.setVisibility(View.GONE);
+                muteButton.setVisibility(View.GONE);
+                Glide.with(context).load(imageUrl).into(commentImage);
             }
         }
 
@@ -380,106 +392,33 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             String twitterImageUrl = comment.getMediaImageUrl();
             String videoUrl = comment.getMediaVideoUrl();
 
-            // Reset visibility before setting
+            releasePlayer();
             commentMediaCard.setVisibility(View.GONE);
-            commentImage.setImageDrawable(null);
             commentImage.setVisibility(View.GONE);
             commentVideo.setVisibility(View.GONE);
-            playPauseIcon.setVisibility(View.GONE);
-            videoProgressBar.setVisibility(View.GONE);
-            if (commentVideo != null) {
-                commentVideo.setPlayer(null);
-            }
+            muteButton.setVisibility(View.GONE);
 
+            String imageUrl = comment.getMediaImageUrl();
+            String videoUrl = comment.getMediaVideoUrl();
+            boolean hasMedia = (imageUrl != null && !imageUrl.isEmpty()) || (videoUrl != null && !videoUrl.isEmpty());
 
-            if (player != null) {
-                releasePlayer(); // Release existing player before creating a new one or if no video
-            }
-
-            boolean hasImage = twitterImageUrl != null && !"null".equals(twitterImageUrl) && !twitterImageUrl.isEmpty();
-            boolean hasVideo = videoUrl != null && !"null".equals(videoUrl) && !videoUrl.isEmpty();
-
-            if (hasImage || hasVideo) {
+            if (hasMedia) {
                 commentMediaCard.setVisibility(View.VISIBLE);
-                commentImage.setVisibility(View.VISIBLE);
-            }
-
-            if (hasImage) {
-                ImageLoader.downloadImage(twitterImageUrl, Glide.with(activity), false, 5, commentImage, null);
-            }
-
-            if (hasVideo) {
-                if (this.context != null) {
-                    player = new ExoPlayer.Builder(this.context).build();
-                    mVideoManagerInstance.addActiveHolder(this);
-
-                    commentVideo.setPlayer(player);
-                    commentVideo.setUseController(false);
-
-                    MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(videoUrl);
-                    mediaItemBuilder.setMediaMetadata(new MediaMetadata.Builder()
-                        .setArtworkUri(Uri.parse(twitterImageUrl))
-                        .build());
-                    MediaItem mediaItem = mediaItemBuilder.build();
-                    player.setMediaItem(mediaItem);
-                    player.setRepeatMode(Player.REPEAT_MODE_ALL); // Or REPEAT_MODE_OFF if you don't want looping by default
-                    player.setPlayWhenReady(false); // Important: start paused
-                    player.prepare();
-
-                    // Visibility handled by listener
-                    // commentVideo.setVisibility(View.VISIBLE);
-
-                    playPauseIcon.setImageResource(R.drawable.ic_play_circle2);
-                    playPauseIcon.setVisibility(View.VISIBLE);
-
-                    View.OnClickListener videoClickListener = v -> togglePlayPause();
-                    commentVideo.setOnClickListener(videoClickListener);
-                    playPauseIcon.setOnClickListener(videoClickListener);
-                    commentMediaCard.setOnClickListener(videoClickListener);
-
-                    commentImage.post(new Runnable() {
-                        @Override
-                        public void run() {
-                            int h = commentImage.getHeight();
-                            commentVideo.getLayoutParams().height = h;
-                            commentVideo.requestLayout();
-                        }
-                    });
-
-                    player.addListener(new Player.Listener() {
-                        @Override
-                        public void onPlaybackStateChanged(int state) {
-                            if (state == Player.STATE_READY) {
-                                // Once video is ready, hide image placeholder and show video view
-                                if (commentImage.getVisibility() == View.VISIBLE) {
-                                    commentImage.setVisibility(View.GONE);
-                                }
-                                commentVideo.setVisibility(View.VISIBLE);
-                                setupProgressBar();
-                            } else if (state == Player.STATE_BUFFERING) {
-                                // Optionally show a loading indicator
-                            } else if (state == Player.STATE_ENDED) {
-                                // Handle end of video if not repeating
-                                 videoProgressBar.setProgress(videoProgressBar.getMax()); // Show full progress
-                            }
-                        }
-                        
-                        @Override
-                        public void onIsPlayingChanged(boolean isPlaying) {
-                            updatePlayPauseIcon(isPlaying); // Corrected: was updatePlayPauseUI
-                            if (isPlaying) {
-                                startProgressAnimation();
-                            } else {
-                                pauseProgressAnimation();
-                            }
-                        }
-                    });
+                
+                String url = videoUrl != null ? videoUrl : imageUrl;
+                String type = videoUrl != null ? "video" : "image";
+                commentMediaCard.setOnClickListener(v -> openFullScreenViewer(Uri.parse(url), type));
+                
+                if (comment.hasCachedDimensions()) {
+                    setAspectRatio(comment.getMediaWidth(), comment.getMediaHeight());
+                    bindMediaContent(comment);
                 } else {
-                     Log.e("CommentHolder.bind", "Context is null, cannot initialize ExoPlayer.");
+                    setAspectRatio(16, 9);
+                    commentImage.setVisibility(View.VISIBLE);
+                    commentImage.setImageResource(R.drawable.image_placeholder); // Ensure you have a placeholder drawable
+                    calculateAndCacheDimensions(comment, position);
                 }
-
             }
-
 
             if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null && activity != null){
                 // Post top comments specific UI adjustments
@@ -865,17 +804,95 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        public void onViewRecycled() { // This is your custom method
+        private void openFullScreenViewer(Uri mediaUri, String mediaType) {
+            if (mParentFragment != null && mParentFragment.isAdded()) {
+                mVideoPlaybackManager.pauseCurrentlyPlayingVideo();
+                MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
+                viewer.show(mParentFragment.getChildFragmentManager(), "MediaViewer");
+            }
+        }
+
+        private void calculateAndCacheDimensions(Comment comment, int position) {
+            String imageUrl = comment.getMediaImageUrl();
+            String videoUrl = comment.getMediaVideoUrl();
+
+            if (videoUrl != null && !videoUrl.isEmpty()) {
+                new VideoDimensionTask(context, videoUrl, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } else if (imageUrl != null && !imageUrl.isEmpty()) {
+                Glide.with(context).asBitmap().load(imageUrl).into(new CustomTarget<Bitmap>() {
+                    @Override
+                    public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                        if (getBindingAdapterPosition() == position) {
+                            mDimensionCallback.onDimensionsReady(position, resource.getWidth(), resource.getHeight());
+                        }
+                    }
+                    @Override public void onLoadCleared(@Nullable Drawable placeholder) {}
+                });
+            }
+        }
+
+        private void setAspectRatio(int width, int height) {
+            if (width > 0 && height > 0) {
+                ConstraintSet constraintSet = new ConstraintSet();
+                constraintSet.clone(mediaContainer);
+                constraintSet.setDimensionRatio(mediaAspectRatioSpacer.getId(), String.format(Locale.US, "H,%d:%d", width, height));
+                constraintSet.applyTo(mediaContainer);
+            }
+        }
+
+        private void initializePlayer(Uri videoUri) {
+            if (player == null) {
+                player = new ExoPlayer.Builder(context).build();
+                commentVideo.setPlayer(player);
+                commentVideo.setUseController(false);
+                player.setRepeatMode(Player.REPEAT_MODE_ONE);
+                muteButton.setOnClickListener(v -> {
+                    if (player.getVolume() > 0) {
+                        player.setVolume(0f);
+                        muteButton.setBackgroundResource(R.drawable.volume_off);
+                    } else {
+                        player.setVolume(1f);
+                        muteButton.setBackgroundResource(R.drawable.volume_on);
+                    }
+                });
+            }
+            player.setVolume(0f);
+            muteButton.setBackgroundResource(R.drawable.volume_off);
+            player.setMediaItem(MediaItem.fromUri(videoUri));
+            player.prepare();
+        }
+
+        public void startPlayback() { if (player != null) player.setPlayWhenReady(true); }
+        public void stopPlayback() { if (player != null) player.setPlayWhenReady(false); }
+
+        // Replace your existing releasePlayer() with this one
+        private void releasePlayer() {
+            if (player != null) {
+                stopPlayback();
+                player.release();
+                player = null;
+            }
+        }
+
+        // Replace your existing onViewRecycled() with this one
+        public void onViewRecycled() {
             releasePlayer();
             if (commentImage != null && context != null) {
                 Glide.with(context).clear(commentImage);
-                commentImage.setImageDrawable(null);
-            }
-            if (mAvatarImage != null && context != null) {
-                Glide.with(context).clear(mAvatarImage);
-                mAvatarImage.setImageDrawable(null);
             }
         }
+
+        // public void onViewRecycled() { // This is your custom method
+        //     releasePlayer();
+        //     if (commentImage != null && context != null) {
+        //         Glide.with(context).clear(commentImage);
+        //         commentImage.setImageDrawable(null);
+        //     }
+        //     if (mAvatarImage != null && context != null) {
+        //         Glide.with(context).clear(mAvatarImage);
+        //         mAvatarImage.setImageDrawable(null);
+        //     }
+        // }
 
         public void onViewDetachedFromWindow() {
             releasePlayer();
