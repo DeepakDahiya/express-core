@@ -311,7 +311,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         if (mCommentPostedListener != null) {
                             mCommentPostedListener.onCommentPosted(optimisticComment);
                         }
-                        dismiss();
 
                         Intent uploadIntent = new Intent(getActivity(), UploadService.class);
                         uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
@@ -324,6 +323,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         uploadIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
                         
                         androidx.core.content.ContextCompat.startForegroundService(getActivity(), uploadIntent);
+
+                        dismiss();
 
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         if (mCommentPostedListener != null) {
