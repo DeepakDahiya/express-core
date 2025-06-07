@@ -753,6 +753,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public void onCommentPostRequested(String postId, String type, Comment optimisticComment, Uri mediaUri, String mediaType, String accessToken) {
         Intent uploadIntent = new Intent(getContext(), UploadService.class);
         uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
+
+        if (mediaUri != null) {
+            uploadIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+            getContext().grantUriPermission(getContext().getPackageName(), mediaUri, Intent.FLAG_GRANT_READ_URI_PERMISSION);
+        }
+
         uploadIntent.putExtra(UploadService.EXTRA_TEMP_ID, optimisticComment.getId());
         uploadIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, optimisticComment.getContent());
         uploadIntent.putExtra(UploadService.EXTRA_POST_ID, postId);
@@ -786,25 +792,43 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     @Override
     public void onCommentPostSucceeded(String tempId, Comment realComment) {
-        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
-        if (currentFragment instanceof CommentListFragment) {
-            ((CommentListFragment) currentFragment).updateTemporaryComment(tempId, realComment);
-        } else if (currentFragment instanceof ReplyListFragment) {
-            ((ReplyListFragment) currentFragment).updateTemporaryComment(tempId, realComment);
-        } else if (currentFragment instanceof ReplyListFragment2) {
-            ((ReplyListFragment2) currentFragment).updateTemporaryComment(tempId, realComment);
+        FragmentManager fm = getChildFragmentManager();
+        List<Fragment> fragments = fm.getFragments();
+
+        for (Fragment fragment : fragments) {
+            if (fragment != null && fragment.isAdded() && fragment.getView() != null) {
+                if (fragment instanceof CommentListFragment) {
+                    Log.d("BottomSheetFragment", "onCommentPostSucceeded in CommentListFragment");
+                    ((CommentListFragment) fragment).updateTemporaryComment(tempId, realComment);
+                } else if (fragment instanceof ReplyListFragment) {
+                    Log.d("BottomSheetFragment", "onCommentPostSucceeded in ReplyListFragment");
+                    ((ReplyListFragment) fragment).updateTemporaryComment(tempId, realComment);
+                } else if (fragment instanceof ReplyListFragment2) {
+                    Log.d("BottomSheetFragment", "onCommentPostSucceeded in ReplyListFragment2");
+                    ((ReplyListFragment2) fragment).updateTemporaryComment(tempId, realComment);
+                }
+            }
         }
     }
 
     @Override
     public void onCommentPostFailed(String tempId, String errorMessage) {
-        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
-        if (currentFragment instanceof CommentListFragment) {
-            ((CommentListFragment) currentFragment).markCommentAsFailed(tempId);
-        } else if (currentFragment instanceof ReplyListFragment) {
-            ((ReplyListFragment) currentFragment).markCommentAsFailed(tempId);
-        } else if (currentFragment instanceof ReplyListFragment2) {
-            ((ReplyListFragment2) currentFragment).markCommentAsFailed(tempId);
+        FragmentManager fm = getChildFragmentManager();
+        List<Fragment> fragments = fm.getFragments();
+
+        for (Fragment fragment : fragments) {
+            if (fragment != null && fragment.isAdded() && fragment.getView() != null) {
+                if (fragment instanceof CommentListFragment) {
+                    Log.d("BottomSheetFragment", "onCommentPostFailed in CommentListFragment");
+                    ((CommentListFragment) fragment).markCommentAsFailed(tempId);
+                } else if (fragment instanceof ReplyListFragment) {
+                    Log.d("BottomSheetFragment", "onCommentPostFailed in ReplyListFragment");
+                    ((ReplyListFragment) fragment).markCommentAsFailed(tempId);
+                } else if (fragment instanceof ReplyListFragment2) {
+                    Log.d("BottomSheetFragment", "onCommentPostFailed in ReplyListFragment2");
+                    ((ReplyListFragment2) fragment).markCommentAsFailed(tempId);
+                }
+            }
         }
 
         if (getContext() != null) {
