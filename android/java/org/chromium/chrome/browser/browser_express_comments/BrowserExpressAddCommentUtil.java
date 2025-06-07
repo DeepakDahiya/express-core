@@ -368,4 +368,40 @@ public class BrowserExpressAddCommentUtil {
             }
         }
     }
+
+    public static CommentResult uploadSynchronously(String content, String pType, String url, String pId, Uri mediaUri, String mediaType, String accessToken) throws Exception {
+        sendAddCommentRequest(content, pType, pId, url, mediaUri, mediaType, accessToken, null);
+
+        if (AddCommentWorkerTask.addCommentStatus != null && AddCommentWorkerTask.addCommentStatus) {
+            // Success case
+            return new CommentResult(
+                AddCommentWorkerTask.mComment,
+                AddCommentWorkerTask.mNewAccessToken,
+                AddCommentWorkerTask.mNewRefreshToken
+            );
+        } else {
+            // Failure case
+            String errorMessage = AddCommentWorkerTask.mErrorMessage;
+            if (errorMessage == null || errorMessage.isEmpty()) {
+                errorMessage = "An unknown error occurred during upload.";
+            }
+            throw new Exception(errorMessage);
+        }
+    }
+
+    public static class CommentResult {
+        private final Comment comment;
+        private final String newAccessToken;
+        private final String newRefreshToken;
+
+        public CommentResult(Comment comment, String newAccessToken, String newRefreshToken) {
+            this.comment = comment;
+            this.newAccessToken = newAccessToken;
+            this.newRefreshToken = newRefreshToken;
+        }
+
+        public Comment getComment() { return comment; }
+        public String getNewAccessToken() { return newAccessToken; }
+        public String getNewRefreshToken() { return newRefreshToken; }
+    }
 }

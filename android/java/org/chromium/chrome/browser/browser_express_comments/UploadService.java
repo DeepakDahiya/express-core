@@ -57,7 +57,7 @@ public class UploadService extends IntentService {
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Posting Comment")
                 .setContentText("Your comment is being uploaded...")
-                .setSmallIcon(R.drawable.ic_file_upload_24dp)
+                .setSmallIcon(R.drawable.ic_chrome)
                 .build();
         startForeground(NOTIFICATION_ID, notification);
 

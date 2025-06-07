@@ -270,6 +270,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
+                    String tempId = "temp_" + java.util.UUID.randomUUID().toString();
                     try {
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
@@ -280,25 +281,17 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                             mPostButton.setEnabled(true);
                             return;
                         }
-
-                        User currentUser = getCurrentUser();
-                        if (currentUser == null) {
-                            Toast.makeText(getContext(), "Error: User information not available.", Toast.LENGTH_SHORT).show();
-                            mPostButton.setEnabled(true);
-                            return;
-                        }
-
-                        String tempId = "temp_" + java.util.UUID.randomUUID().toString();
+                        
                         String tempPostParent = mCommentsFor.equals("post") ? mPostId : null;
                         String tempCommentParent = mCommentsFor.equals("comment") ? mPostId : null;
 
                         User user = null;
                         if(accessToken != null) {
-                            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                            JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                             SharedPreferences prefs = activity.getSharedPreferences(BE_PROFILE_PREF, 0);
                             String avatar = prefs.getString("avatar_url", null);
                             user = new User(decodedAccessTokenObj.getString("_id"), decodedAccessTokenObj.getString("username"), avatar != null ? avatar :"https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
-                        } else if (currentUser != null) {
+                        } else {
                             user = new User(tempId, "guest user", "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + tempId + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
                         }
 

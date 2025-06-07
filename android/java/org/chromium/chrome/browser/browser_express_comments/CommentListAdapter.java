@@ -310,15 +310,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     // Handle case where activity is null - dependent UIs might fail
                 }
             }
-
-            Comment.UploadStatus status = comment.getUploadStatus();
-            if (status == Comment.UploadStatus.POSTING) {
-                itemView.setAlpha(0.5f);
-            } else if (status == Comment.UploadStatus.FAILED) {
-                itemView.setAlpha(1.0f);
-            } else {
-                itemView.setAlpha(1.0f);
-            }
         }
 
         private void setVideoHeightToAspectRatio(final StyledPlayerView videoView) {
@@ -352,6 +343,15 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (activity == null) {
                 Log.e("CommentHolder.bind", "Activity is null, some UI updates might fail.");
                 // Potentially return or disable UI elements that depend on activity
+            }
+
+            Comment.UploadStatus status = comment.getUploadStatus();
+            if (status == Comment.UploadStatus.POSTING) {
+                mCommentLayout.setAlpha(0.5f);
+            } else if (status == Comment.UploadStatus.FAILED) {
+                mCommentLayout.setAlpha(1.0f);
+            } else {
+                mCommentLayout.setAlpha(1.0f);
             }
 
             if (mIsReplyTopComment && activity != null) {
