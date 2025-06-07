@@ -19,7 +19,6 @@ import org.chromium.chrome.R;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
-import org.chromium.chrome.browser.browser_express_comments.UploadWorker;
 
 public class UploadService extends JobIntentService {
     public static final String ACTION_UPLOAD_COMMENT = "org.chromium.chrome.browser.browser_express_comments.action.UPLOAD_COMMENT";
