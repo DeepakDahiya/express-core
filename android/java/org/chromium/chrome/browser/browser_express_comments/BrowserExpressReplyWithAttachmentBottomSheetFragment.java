@@ -313,7 +313,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         }
                         dismiss();
 
-                        Intent uploadIntent = new Intent(getContext(), UploadService.class);
+                        Intent uploadIntent = new Intent(getActivity(), UploadService.class);
                         uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
                         uploadIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
                         uploadIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, content);
@@ -323,7 +323,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                         uploadIntent.putExtra(UploadService.EXTRA_MEDIA_TYPE, mSelectedMediaType);
                         uploadIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
                         
-                        androidx.core.content.ContextCompat.startForegroundService(getContext(), uploadIntent);
+                        androidx.core.content.ContextCompat.startForegroundService(getActivity(), uploadIntent);
 
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         if (mCommentPostedListener != null) {
