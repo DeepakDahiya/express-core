@@ -17,6 +17,10 @@ public class Comment{
     private User user;
     private Vote didVote;
 
+    public enum UploadStatus { PENDING, POSTING, SUCCEEDED, FAILED }
+
+    private UploadStatus uploadStatus = UploadStatus.SUCCEEDED;
+
     public Comment(String _id, String content, int upvoteCount, int downvoteCount, int commentCount, String pageParent, String postParent, String commentParent, User user, Vote vote, String mediaImageUrl, String mediaVideoUrl, String postContent, String postUsername, String postAvatarUrl) {  
         this._id = _id;  
         this.content = content;
@@ -34,6 +38,9 @@ public class Comment{
         this.postUsername = postUsername;
         this.postAvatarUrl = postAvatarUrl;
     }  
+
+    public UploadStatus getUploadStatus() { return uploadStatus; }
+    public void setUploadStatus(UploadStatus status) { this.uploadStatus = status; }
 
     public String getId() {  
         return this._id;  

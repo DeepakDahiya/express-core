@@ -499,7 +499,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 try{
                     BraveActivity activity = BraveActivity.getBraveActivity();
-                    activity.showReplyWithAttachmentBottomSheet(mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post", originalUri);
+                    activity.showReplyWithAttachmentBottomSheet(this, mPostId, mPostUsernameString, mPostContentString, mPostAvatarString, "post", originalUri);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                 }
 
@@ -701,6 +701,34 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             ((ReplyListFragment) currentFragment).addNewComment(newComment);
         } else if (currentFragment instanceof ReplyListFragment2) {
             ((ReplyListFragment2) currentFragment).addNewComment(newComment);
+        }
+    }
+
+    @Override
+    public void onCommentPostSucceeded(String tempId, Comment realComment) {
+        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
+        if (currentFragment instanceof CommentListFragment) {
+            ((CommentListFragment) currentFragment).updateTemporaryComment(tempId, realComment);
+        } else if (currentFragment instanceof ReplyListFragment) {
+            ((ReplyListFragment) currentFragment).updateTemporaryComment(tempId, realComment);
+        } else if (currentFragment instanceof ReplyListFragment2) {
+            ((ReplyListFragment2) currentFragment).updateTemporaryComment(tempId, realComment);
+        }
+    }
+
+    @Override
+    public void onCommentPostFailed(String tempId, String errorMessage) {
+        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
+        if (currentFragment instanceof CommentListFragment) {
+            ((CommentListFragment) currentFragment).markCommentAsFailed(tempId);
+        } else if (currentFragment instanceof ReplyListFragment) {
+            ((ReplyListFragment) currentFragment).markCommentAsFailed(tempId);
+        } else if (currentFragment instanceof ReplyListFragment2) {
+            ((ReplyListFragment2) currentFragment).markCommentAsFailed(tempId);
+        }
+
+        if (getContext() != null) {
+            Toast.makeText(getContext(), "Failed to post: " + errorMessage, Toast.LENGTH_LONG).show();
         }
     }
 

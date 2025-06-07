@@ -310,6 +310,15 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     // Handle case where activity is null - dependent UIs might fail
                 }
             }
+
+            Comment.UploadStatus status = comment.getUploadStatus();
+            if (status == Comment.UploadStatus.POSTING) {
+                itemView.setAlpha(0.5f);
+            } else if (status == Comment.UploadStatus.FAILED) {
+                itemView.setAlpha(1.0f);
+            } else {
+                itemView.setAlpha(1.0f);
+            }
         }
 
         private void setVideoHeightToAspectRatio(final StyledPlayerView videoView) {

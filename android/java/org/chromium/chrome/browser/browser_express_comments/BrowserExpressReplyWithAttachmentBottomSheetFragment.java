@@ -134,7 +134,9 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     }
 
     public interface OnCommentPostedListener {
-        void onCommentPosted(Comment newComment);
+        void onCommentPosted(Comment optimisticComment);
+        void onCommentPostSucceeded(String tempId, Comment realComment);
+        void onCommentPostFailed(String tempId, String errorMessage);
     }
 
     private OnCommentPostedListener mCommentPostedListener;
@@ -269,32 +271,75 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             public void onClick(View v) {
                 if (getActivity() != null) {
                     try {
-                        mPostButton.setClickable(false);
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
-                        String content = mMessageEditText.getText().toString().trim();
-                        Uri mediaUri = mSelectedMediaUri;
-                        String mediaType = mSelectedMediaType;
 
-                        if (content.length() > 0 || mediaUri != null) {
-                            String pType = "page";
-                            String pId = null;
-                            if (mCommentsFor.equals("post")) {
-                                pType = "post";
-                                pId = mPostId;
-                            }
-                            Log.e("Express Browser Add Comment", "Content: " + content + ", Type: " + pType + ", URL: " + mUrl + ", Post ID: " + pId + ", Media URI: " + mediaUri + ", Media Type: " + mediaType);
-                            BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
-                                new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
-                                        content, pType, mUrl, pId, mediaUri, mediaType, accessToken, addCommentCallback);
-                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                            mMessageEditText.setText(R.string.browser_express_empty_text);
-                            removeAttachment();
+                        mPostButton.setEnabled(false);
+                        String content = mMessageEditText.getText().toString().trim();
+                        if (content.isEmpty() && mSelectedMediaUri == null) {
+                            mPostButton.setEnabled(true);
+                            return;
                         }
+
+                        User currentUser = getCurrentUser();
+                        if (currentUser == null) {
+                            Toast.makeText(getContext(), "Error: User information not available.", Toast.LENGTH_SHORT).show();
+                            mPostButton.setEnabled(true);
+                            return;
+                        }
+
+                        String tempId = "temp_" + java.util.UUID.randomUUID().toString();
+                        String tempPostParent = mCommentsFor.equals("post") ? mPostId : null;
+                        String tempCommentParent = mCommentsFor.equals("comment") ? mPostId : null;
+
+                        User user = null;
+                        if(accessToken != null) {
+                            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                            SharedPreferences prefs = activity.getSharedPreferences(BE_PROFILE_PREF, 0);
+                            String avatar = prefs.getString("avatar_url", null);
+                            user = new User(decodedAccessTokenObj.getString("_id"), decodedAccessTokenObj.getString("username"), avatar != null ? avatar :"https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
+                        } else if (currentUser != null) {
+                            user = new User(tempId, "guest user", "https://api.dicebear.com/9.x/fun-emoji/png?seed=" + tempId + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile");
+                        }
+
+                        Comment optimisticComment = new Comment(
+                            tempId,
+                            content,
+                            0, 0, 0, null, 
+                            tempPostParent, tempCommentParent,
+                            user,
+                            null,
+                            ("image".equals(mSelectedMediaType)) ? mSelectedMediaUri.toString() : null,
+                            ("video".equals(mSelectedMediaType)) ? mSelectedMediaUri.toString() : null,
+                            null, null, null
+                        );
+                        optimisticComment.setUploadStatus(Comment.UploadStatus.POSTING);
+
+                        if (mCommentPostedListener != null) {
+                            mCommentPostedListener.onCommentPosted(optimisticComment);
+                        }
+                        dismiss();
+
+                        Intent uploadIntent = new Intent(getContext(), UploadService.class);
+                        uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
+                        uploadIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
+                        uploadIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, content);
+                        uploadIntent.putExtra(UploadService.EXTRA_COMMENT_TYPE, "post_reply");
+                        uploadIntent.putExtra(UploadService.EXTRA_POST_ID, mPostId);
+                        uploadIntent.putExtra(UploadService.EXTRA_MEDIA_URI, mSelectedMediaUri);
+                        uploadIntent.putExtra(UploadService.EXTRA_MEDIA_TYPE, mSelectedMediaType);
+                        uploadIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
+                        
+                        androidx.core.content.ContextCompat.startForegroundService(getContext(), uploadIntent);
+
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        // Log.e("Express Browser Access Token", e.getMessage());
-                    }finally{
-                        mPostButton.setClickable(true);
+                        if (mCommentPostedListener != null) {
+                            mCommentPostedListener.onCommentPostFailed(tempId, "Activity not found.");
+                        }
+                    } catch (JSONException e) {
+                        if (mCommentPostedListener != null) {
+                            mCommentPostedListener.onCommentPostFailed(tempId, "Activity not found.");
+                        }
                     }
                 }
             }

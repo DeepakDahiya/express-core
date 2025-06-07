@@ -98,6 +98,8 @@ public class ReplyListFragment2 extends Fragment {
 
     private BottomSheetInputCallback inputCallback;
 
+    private android.content.BroadcastReceiver mUploadReceiver;
+
     private NestedScrollView mNestedScrollView;
     private NestedScrollView.OnScrollChangeListener videoNestedScrollListener;
     private RecyclerView.OnScrollListener videoScrollListener;
@@ -111,6 +113,43 @@ public class ReplyListFragment2 extends Fragment {
         } else {
             Log.e("Reply List Fragment", "Parent fragment must implement BottomSheetInputCallback");
         }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        registerUploadReceiver();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mUploadReceiver != null && getContext() != null) {
+            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mUploadReceiver);
+        }
+    }
+
+    private void registerUploadReceiver() {
+        if (getContext() == null) return;
+        mUploadReceiver = new android.content.BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (UploadService.BROADCAST_UPLOAD_COMPLETE.equals(action)) {
+                    String tempId = intent.getStringExtra(UploadService.EXTRA_TEMP_ID);
+                    String realCommentJson = intent.getStringExtra(UploadService.EXTRA_REAL_COMMENT_JSON);
+                    Comment realComment = new com.google.gson.Gson().fromJson(realCommentJson, Comment.class);
+                    updateTemporaryComment(tempId, realComment);
+                } else if (UploadService.BROADCAST_UPLOAD_FAILED.equals(action)) {
+                    String tempId = intent.getStringExtra(UploadService.EXTRA_TEMP_ID);
+                    markCommentAsFailed(tempId);
+                }
+            }
+        };
+        android.content.IntentFilter filter = new android.content.IntentFilter();
+        filter.addAction(UploadService.BROADCAST_UPLOAD_COMPLETE);
+        filter.addAction(UploadService.BROADCAST_UPLOAD_FAILED);
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).registerReceiver(mUploadReceiver, filter);
     }
 
     @Nullable
@@ -520,6 +559,28 @@ public class ReplyListFragment2 extends Fragment {
                 imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 // Log.e("Express Browser Access Token", e.getMessage());
+            }
+        }
+    }
+
+    public void updateTemporaryComment(String tempId, Comment realComment) {
+        if (mComments == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (mComments.get(i).getId().equals(tempId)) {
+                mComments.set(i, realComment);
+                mCommentAdapter.notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    public void markCommentAsFailed(String tempId) {
+        if (mComments == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (mComments.get(i).getId().equals(tempId)) {
+                mComments.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
+                mCommentAdapter.notifyItemChanged(i);
+                return;
             }
         }
     }

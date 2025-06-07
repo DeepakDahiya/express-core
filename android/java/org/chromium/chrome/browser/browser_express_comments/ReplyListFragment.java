@@ -109,6 +109,8 @@ public class ReplyListFragment extends Fragment {
     
     private RecyclerView.OnScrollListener videoScrollListener;
 
+    private android.content.BroadcastReceiver mUploadReceiver;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -123,6 +125,7 @@ public class ReplyListFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
+        registerUploadReceiver();
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         if (parentFragment != null) {
             String targetId = parentFragment.getLastOpenedRepliesToRepliesForCommentId();
@@ -134,6 +137,37 @@ public class ReplyListFragment extends Fragment {
                 mTargetScrollCommentId = targetId;
             }
         }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mUploadReceiver != null && getContext() != null) {
+            androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mUploadReceiver);
+        }
+    }
+
+    private void registerUploadReceiver() {
+        if (getContext() == null) return;
+        mUploadReceiver = new android.content.BroadcastReceiver() {
+            @Override
+            public void onReceive(Context context, Intent intent) {
+                String action = intent.getAction();
+                if (UploadService.BROADCAST_UPLOAD_COMPLETE.equals(action)) {
+                    String tempId = intent.getStringExtra(UploadService.EXTRA_TEMP_ID);
+                    String realCommentJson = intent.getStringExtra(UploadService.EXTRA_REAL_COMMENT_JSON);
+                    Comment realComment = new com.google.gson.Gson().fromJson(realCommentJson, Comment.class);
+                    updateTemporaryComment(tempId, realComment);
+                } else if (UploadService.BROADCAST_UPLOAD_FAILED.equals(action)) {
+                    String tempId = intent.getStringExtra(UploadService.EXTRA_TEMP_ID);
+                    markCommentAsFailed(tempId);
+                }
+            }
+        };
+        android.content.IntentFilter filter = new android.content.IntentFilter();
+        filter.addAction(UploadService.BROADCAST_UPLOAD_COMPLETE);
+        filter.addAction(UploadService.BROADCAST_UPLOAD_FAILED);
+        androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).registerReceiver(mUploadReceiver, filter);
     }
 
     @Nullable
@@ -620,6 +654,28 @@ public class ReplyListFragment extends Fragment {
             });
         } else {
             Log.w("ReplyListScroll", "Reply ID not found in list: " + commentId);
+        }
+    }
+
+    public void updateTemporaryComment(String tempId, Comment realComment) {
+        if (mComments == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (mComments.get(i).getId().equals(tempId)) {
+                mComments.set(i, realComment);
+                mCommentAdapter.notifyItemChanged(i);
+                return;
+            }
+        }
+    }
+
+    public void markCommentAsFailed(String tempId) {
+        if (mComments == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mComments.size(); i++) {
+            if (mComments.get(i).getId().equals(tempId)) {
+                mComments.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
+                mCommentAdapter.notifyItemChanged(i);
+                return;
+            }
         }
     }
 
