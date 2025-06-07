@@ -196,6 +196,11 @@
     android:exported="false"/>
 
 <service
+    android:name="org.chromium.chrome.browser.browser_express_comments.UploadService"
+    android:foregroundServiceType="dataSync"
+    android:exported="false" />
+
+<service
     android:name="org.chromium.chrome.browser.vpn.wireguard.WireguardService"
     android:foregroundServiceType="dataSync"
     android:exported="false">
