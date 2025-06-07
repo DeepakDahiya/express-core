@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.content.Context;
 import android.content.DialogInterface;
 import org.chromium.chrome.R;
+import org.chromium.base.Log;
 
 public class MediaViewerFragment extends DialogFragment {
     private static final String ARG_MEDIA_URI = "media_uri";
