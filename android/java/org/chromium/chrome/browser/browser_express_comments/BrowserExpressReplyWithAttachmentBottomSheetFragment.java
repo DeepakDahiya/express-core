@@ -71,6 +71,7 @@ import com.bumptech.glide.request.transition.Transition;
 import org.chromium.base.ContextUtils;
 import androidx.fragment.app.DialogFragment;
 import android.media.MediaMetadataRetriever;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 
 public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -268,16 +269,12 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             public void onClick(View v) {
                 if (getActivity() != null) {
                     try {
-                        mSendButton.setClickable(false);
+                        mPostButton.setClickable(false);
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         String accessToken = activity.getAccessToken();
                         String content = mMessageEditText.getText().toString().trim();
-                        Uri mediaUri = null;
-                        String mediaType = null;
-                        if (inputCallback != null) {
-                            mediaUri = inputCallback.getSelectedMediaUri();
-                            mediaType = inputCallback.getSelectedMediaType();
-                        }
+                        Uri mediaUri = mSelectedMediaUri;
+                        String mediaType = mSelectedMediaType;
 
                         if (content.length() > 0 || mediaUri != null) {
                             String pType = "page";
@@ -292,14 +289,12 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                         content, pType, mUrl, pId, mediaUri, mediaType, accessToken, addCommentCallback);
                             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                             mMessageEditText.setText(R.string.browser_express_empty_text);
-                            if (inputCallback != null) {
-                                inputCallback.clearSelectedMedia();
-                            }
+                            removeAttachment();
                         }
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                         // Log.e("Express Browser Access Token", e.getMessage());
                     }finally{
-                        mSendButton.setClickable(true);
+                        mPostButton.setClickable(true);
                     }
                 }
             }
