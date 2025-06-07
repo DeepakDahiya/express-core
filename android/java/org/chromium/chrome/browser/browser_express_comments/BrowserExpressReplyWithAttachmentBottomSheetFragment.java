@@ -312,17 +312,17 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                             mCommentPostedListener.onCommentPosted(optimisticComment);
                         }
 
-                        Intent uploadIntent = new Intent(getActivity(), UploadService.class);
-                        uploadIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
-                        uploadIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
-                        uploadIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, content);
-                        uploadIntent.putExtra(UploadService.EXTRA_COMMENT_TYPE, "post_reply");
-                        uploadIntent.putExtra(UploadService.EXTRA_POST_ID, mPostId);
-                        uploadIntent.putExtra(UploadService.EXTRA_MEDIA_URI, mSelectedMediaUri);
-                        uploadIntent.putExtra(UploadService.EXTRA_MEDIA_TYPE, mSelectedMediaType);
-                        uploadIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
+                        Intent serviceIntent = new Intent(getContext(), UploadService.class);
+                        serviceIntent.setAction(UploadService.ACTION_UPLOAD_COMMENT);
+                        serviceIntent.putExtra(UploadService.EXTRA_TEMP_ID, tempId);
+                        serviceIntent.putExtra(UploadService.EXTRA_COMMENT_CONTENT, content);
+                        serviceIntent.putExtra(UploadService.EXTRA_COMMENT_TYPE, mCommentsFor.equals("post") ? "post" : "comment");
+                        serviceIntent.putExtra(UploadService.EXTRA_POST_ID, mPostId);
+                        serviceIntent.putExtra(UploadService.EXTRA_MEDIA_URI, mSelectedMediaUri);
+                        serviceIntent.putExtra(UploadService.EXTRA_MEDIA_TYPE, mSelectedMediaType);
+                        serviceIntent.putExtra(UploadService.EXTRA_ACCESS_TOKEN, accessToken);
                         
-                        androidx.core.content.ContextCompat.startForegroundService(getActivity(), uploadIntent);
+                        UploadService.enqueueWork(getContext(), serviceIntent);
 
                         dismiss();
 
