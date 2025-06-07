@@ -67,7 +67,7 @@ import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 
-public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback {
+public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback, BrowserExpressReplyWithAttachmentBottomSheetFragment.OnCommentPostedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
     public static final String POST_ID = "post_id";
@@ -688,6 +688,19 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 Toast.makeText(getContext(), R.string.unsupported_file_type, Toast.LENGTH_SHORT).show();
             }
             removeAttachment();
+        }
+    }
+
+    @Override
+    public void onCommentPosted(Comment newComment) {
+        Fragment currentFragment = getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
+
+        if (currentFragment instanceof CommentListFragment) {
+            ((CommentListFragment) currentFragment).addNewComment(newComment);
+        } else if (currentFragment instanceof ReplyListFragment) {
+            ((ReplyListFragment) currentFragment).addNewComment(newComment);
+        } else if (currentFragment instanceof ReplyListFragment2) {
+            ((ReplyListFragment2) currentFragment).addNewComment(newComment);
         }
     }
 

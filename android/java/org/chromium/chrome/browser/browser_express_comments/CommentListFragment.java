@@ -579,6 +579,44 @@ public class CommentListFragment extends Fragment {
         }
     }
 
+    public void addNewComment(Comment newComment) {
+        if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
+            mComments.add(0, newComment);
+
+            mCommentAdapter.notifyItemRangeInserted(0, 1);
+            LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(0, 0);
+
+            try{
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                // Updating comment count for bottom toolbar
+                mCommentsText = activity.getCommentCountText();
+
+                mMessageEditText.clearFocus();
+                InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+
+                String currentText = mCommentsText.getText().toString();
+                int commentCount = 0;
+                try {
+                    String[] parts = currentText.split(" ");
+                    if (parts.length > 0) {
+                        commentCount = Integer.parseInt(parts[0]);
+                    }
+                } catch (NumberFormatException e) {
+                }
+
+                // Increment the comment count
+                commentCount++;
+
+                mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                // Log.e("Express Browser Access Token", e.getMessage());
+            } catch (JSONException e) {
+            }
+        }
+    }
+
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");

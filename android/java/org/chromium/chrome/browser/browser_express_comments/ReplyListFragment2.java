@@ -502,6 +502,29 @@ public class ReplyListFragment2 extends Fragment {
                 }
             };
 
+    public void addNewComment(Comment newComment) {
+        if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
+            mComments.add(0, newComment);
+
+            mCommentAdapter.notifyItemRangeInserted(0, 1);
+            LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
+            layoutManager.scrollToPositionWithOffset(0, 0);
+
+            try{
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                // Updating comment count for bottom toolbar
+                mCommentsText = activity.getCommentCountText();
+
+                mMessageEditText.clearFocus();
+                InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
+                imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                // Log.e("Express Browser Access Token", e.getMessage());
+            } catch (JSONException e) {
+            }
+        }
+    }
+
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");

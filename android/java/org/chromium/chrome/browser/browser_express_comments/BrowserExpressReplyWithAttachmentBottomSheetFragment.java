@@ -132,6 +132,22 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         return fragment;
     }
 
+    public interface OnCommentPostedListener {
+        void onCommentPosted(Comment newComment);
+    }
+
+    private OnCommentPostedListener mCommentPostedListener;
+
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        if (getParentFragment() instanceof OnCommentPostedListener) {
+            mCommentPostedListener = (OnCommentPostedListener) getParentFragment();
+        } else {
+            Log.e("ReplyWithAttachment", "Parent fragment must implement OnCommentPostedListener");
+        }
+    }
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -246,6 +262,48 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         }
 
         mCancelButton.setOnClickListener(v -> dismissBottomsheet());
+
+        mPostButton.setOnClickListener((new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (getActivity() != null) {
+                    try {
+                        mSendButton.setClickable(false);
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        String accessToken = activity.getAccessToken();
+                        String content = mMessageEditText.getText().toString().trim();
+                        Uri mediaUri = null;
+                        String mediaType = null;
+                        if (inputCallback != null) {
+                            mediaUri = inputCallback.getSelectedMediaUri();
+                            mediaType = inputCallback.getSelectedMediaType();
+                        }
+
+                        if (content.length() > 0 || mediaUri != null) {
+                            String pType = "page";
+                            String pId = null;
+                            if (mCommentsFor.equals("post")) {
+                                pType = "post";
+                                pId = mPostId;
+                            }
+                            Log.e("Express Browser Add Comment", "Content: " + content + ", Type: " + pType + ", URL: " + mUrl + ", Post ID: " + pId + ", Media URI: " + mediaUri + ", Media Type: " + mediaType);
+                            BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
+                                new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
+                                        content, pType, mUrl, pId, mediaUri, mediaType, accessToken, addCommentCallback);
+                            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                            mMessageEditText.setText(R.string.browser_express_empty_text);
+                            if (inputCallback != null) {
+                                inputCallback.clearSelectedMedia();
+                            }
+                        }
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                        // Log.e("Express Browser Access Token", e.getMessage());
+                    }finally{
+                        mSendButton.setClickable(true);
+                    }
+                }
+            }
+        }));
     }
 
     @Override
@@ -608,6 +666,44 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         params.height = calculatedHeight;
         mAttachmentPreviewImage.setLayoutParams(params);
     }
+
+    private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
+            new BrowserExpressAddCommentUtil.AddCommentCallback() {
+                @Override
+                public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
+                    try{
+                        BraveActivity activity = BraveActivity.getBraveActivity();
+                        if(newRefreshToken != null && !newRefreshToken.isEmpty()){
+                            try {
+                                activity.setAccessToken(newAccessToken);
+
+                                JSONObject decodedAccessTokenObj = getDecodedToken(newAccessToken);
+                                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                                intent.setAction(Intent.ACTION_VIEW);
+                                Toast.makeText(activity, "Username " + decodedAccessTokenObj.getString("username") + " created. You can edit this in Profile.", Toast.LENGTH_SHORT).show();
+                                startActivity(intent);
+                            } catch (JSONException e) {
+                            }
+                        }
+
+                        if (mCommentPostedListener != null) {
+                            mCommentPostedListener.onCommentPosted(comment);
+                        }
+
+                        dismiss();
+
+                    } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    } finally {
+                        dismiss();
+                    }
+                }
+
+                @Override
+                public void addCommentFailed(String error) {
+                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
+                }
+            };
 
     private JSONObject getDecodedToken(String accessToken){
         try{
