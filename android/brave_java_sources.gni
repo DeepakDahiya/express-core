@@ -360,7 +360,6 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/BrowserExpressAddVoteUtil.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/Comment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/UploadService.java",
-  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/UploadWorker.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/User.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/ImageProcessor.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/Vote.java",

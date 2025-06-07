@@ -12,7 +12,7 @@ import androidx.work.Constraints;
 import androidx.work.Data;
 import androidx.work.NetworkType;
 import androidx.work.OneTimeWorkRequest;
-import androidx.work.WorkManager;
+// import androidx.work.WorkManager;
 import com.google.gson.Gson;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
@@ -81,7 +81,7 @@ public class UploadService extends JobIntentService {
             LocalBroadcastManager.getInstance(this).sendBroadcast(successIntent);
         } catch (Exception e) {
             Log.e("UploadService", "Upload failed for tempId: " + tempId + ". Scheduling retry...", e);
-            scheduleRetryWithWorkManager(intent);
+            // scheduleRetryWithWorkManager(intent);
             
             Intent failureIntent = new Intent(BROADCAST_UPLOAD_FAILED);
             failureIntent.putExtra(EXTRA_TEMP_ID, tempId);
@@ -92,27 +92,27 @@ public class UploadService extends JobIntentService {
         }
     }
 
-    private void scheduleRetryWithWorkManager(Intent originalIntent) {
-        Data.Builder dataBuilder = new Data.Builder();
-        dataBuilder.putString("EXTRA_TEMP_ID", originalIntent.getStringExtra("EXTRA_TEMP_ID"));
-        dataBuilder.putString("EXTRA_COMMENT_CONTENT", originalIntent.getStringExtra("EXTRA_COMMENT_CONTENT"));
-        dataBuilder.putString("EXTRA_COMMENT_TYPE", originalIntent.getStringExtra("EXTRA_COMMENT_TYPE"));
-        dataBuilder.putString("EXTRA_URL", originalIntent.getStringExtra("EXTRA_URL"));
-        dataBuilder.putString("EXTRA_POST_ID", originalIntent.getStringExtra("EXTRA_POST_ID"));
-        dataBuilder.putString("EXTRA_MEDIA_TYPE", originalIntent.getStringExtra("EXTRA_MEDIA_TYPE"));
-        dataBuilder.putString("EXTRA_ACCESS_TOKEN", originalIntent.getStringExtra("EXTRA_ACCESS_TOKEN"));
-        Uri mediaUri = originalIntent.getParcelableExtra("EXTRA_MEDIA_URI");
-        if (mediaUri != null) {
-            dataBuilder.putString("EXTRA_MEDIA_URI", mediaUri.toString());
-        }
+    // private void scheduleRetryWithWorkManager(Intent originalIntent) {
+    //     Data.Builder dataBuilder = new Data.Builder();
+    //     dataBuilder.putString("EXTRA_TEMP_ID", originalIntent.getStringExtra("EXTRA_TEMP_ID"));
+    //     dataBuilder.putString("EXTRA_COMMENT_CONTENT", originalIntent.getStringExtra("EXTRA_COMMENT_CONTENT"));
+    //     dataBuilder.putString("EXTRA_COMMENT_TYPE", originalIntent.getStringExtra("EXTRA_COMMENT_TYPE"));
+    //     dataBuilder.putString("EXTRA_URL", originalIntent.getStringExtra("EXTRA_URL"));
+    //     dataBuilder.putString("EXTRA_POST_ID", originalIntent.getStringExtra("EXTRA_POST_ID"));
+    //     dataBuilder.putString("EXTRA_MEDIA_TYPE", originalIntent.getStringExtra("EXTRA_MEDIA_TYPE"));
+    //     dataBuilder.putString("EXTRA_ACCESS_TOKEN", originalIntent.getStringExtra("EXTRA_ACCESS_TOKEN"));
+    //     Uri mediaUri = originalIntent.getParcelableExtra("EXTRA_MEDIA_URI");
+    //     if (mediaUri != null) {
+    //         dataBuilder.putString("EXTRA_MEDIA_URI", mediaUri.toString());
+    //     }
 
-        OneTimeWorkRequest retryWork = new OneTimeWorkRequest.Builder(UploadWorker.class)
-            .setInputData(dataBuilder.build())
-            .setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
-            .build();
+    //     OneTimeWorkRequest retryWork = new OneTimeWorkRequest.Builder(UploadWorker.class)
+    //         .setInputData(dataBuilder.build())
+    //         .setConstraints(new Constraints.Builder().setRequiredNetworkType(NetworkType.CONNECTED).build())
+    //         .build();
 
-        WorkManager.getInstance(this).enqueue(retryWork);
-    }
+    //     WorkManager.getInstance(this).enqueue(retryWork);
+    // }
     
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
