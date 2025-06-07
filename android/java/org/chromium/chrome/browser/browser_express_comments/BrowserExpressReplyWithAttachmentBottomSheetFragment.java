@@ -144,10 +144,20 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
-        if (getParentFragment() instanceof OnCommentPostedListener) {
+        // Prioritize the target fragment, which is the reliable way to get the listener.
+        if (getTargetFragment() instanceof OnCommentPostedListener) {
+            mCommentPostedListener = (OnCommentPostedListener) getTargetFragment();
+        } 
+        // Fallback to parent, though targetFragment is preferred.
+        else if (getParentFragment() instanceof OnCommentPostedListener) {
             mCommentPostedListener = (OnCommentPostedListener) getParentFragment();
-        } else {
-            Log.e("ReplyWithAttachment", "Parent fragment must implement OnCommentPostedListener");
+        } 
+        // Final fallback to the hosting activity.
+        else if (context instanceof OnCommentPostedListener) {
+            mCommentPostedListener = (OnCommentPostedListener) context;
+        } 
+        else {
+            Log.e("ReplyWithAttachment", "The host fragment or activity must implement OnCommentPostedListener");
         }
     }
 
