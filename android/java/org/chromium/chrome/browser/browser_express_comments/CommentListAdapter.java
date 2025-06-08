@@ -76,6 +76,7 @@ import androidx.constraintlayout.widget.ConstraintSet;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import java.util.concurrent.Executor;
+import androidx.annotation.Nullable;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
@@ -136,7 +137,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment, position);
     }
 
-    private static class VideoDimensionTask extends AsyncTask<int[]> {
+    private class VideoDimensionTask extends AsyncTask<int[]> {
         private final Context mContext;
         private final Uri mMediaUri;
         private final int mPosition;
@@ -392,7 +393,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 } else {
                     setAspectRatio(16, 9);
                     commentImage.setVisibility(View.VISIBLE);
-                    // commentImage.setImageResource(R.drawable.image_placeholder);
                     calculateAndCacheDimensions(comment, position, mediaUri, mediaType);
                 }
             }
@@ -697,7 +697,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private void calculateAndCacheDimensions(Comment comment, int position, Uri mediaUri, String mediaType) {
             if ("video".equals(mediaType)) {
-                new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).execute();
+                new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 Glide.with(context).asBitmap().load(mediaUri).into(new CustomTarget<Bitmap>() {
                     @Override public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
