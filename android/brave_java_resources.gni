@@ -434,6 +434,7 @@ brave_java_resources = [
   "java/res/drawable/circle_shimmer.xml",
   "java/res/drawable/circular_background_edit_icon.xml",
   "java/res/drawable/circular_background.xml",
+  "java/res/drawable/circular_button_background.xml",
   "java/res/drawable/circular_progress.xml",
   "java/res/drawable/country_spinner_background.xml",
   "java/res/drawable/crypto_wallet_blue_button.xml",

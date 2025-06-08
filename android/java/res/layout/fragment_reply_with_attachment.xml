@@ -219,8 +219,11 @@
                 <ImageButton
                     android:id="@+id/button_remove_attachment"
                     style="@style/ToolbarButton"
-                    android:layout_width="16dp"
-                    android:layout_height="16dp"
+                    app:tint="@android:color/white"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:padding="6dp"
+                    android:background="@drawable/circular_button_background"
                     android:src="@drawable/close"
                     android:layout_gravity="top|end"
                     android:layout_margin="8dp"

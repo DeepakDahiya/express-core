@@ -589,6 +589,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                     });
                             mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                             mRemoveAttachmentButton.setVisibility(View.VISIBLE);
+                            mVideoPlayButton.setVisibility(View.GONE);
                         } else {
                             Log.e("CommentBottomSheet", "Image processing failed.");
                             mSelectedMediaUri = originalUri;
@@ -605,6 +606,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                                 mAttachmentPreviewImage.setLayoutParams(params);
                                 mAttachmentPreviewContainer.setVisibility(View.VISIBLE);
                                 mRemoveAttachmentButton.setVisibility(View.VISIBLE);
+                                mVideoPlayButton.setVisibility(View.GONE);
                             }
                             if(getContext() != null) {
                                 Toast.makeText(getContext(), R.string.image_processing_failed, Toast.LENGTH_SHORT).show();
