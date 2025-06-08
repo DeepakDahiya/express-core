@@ -155,7 +155,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             int[] dimensions = new int[]{0, 0};
             try {
-                retriever.setDataSource(mContext, mMediaUri);
+                retriever.setDataSource(mMediaUri.toString(), new java.util.HashMap<String, String>());
+                
                 String width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
                 String height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
                 if (width != null && height != null) {
@@ -163,7 +164,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     dimensions[1] = Integer.parseInt(height);
                 }
             } catch (Exception e) {
-                Log.e("VideoDimensionTask", "Failed to get dimensions", e);
+                Log.e("cr_VideoDimensionTask", "Failed to get dimensions for " + mMediaUri.toString(), e);
             } finally {
                 try { retriever.release(); } catch (Exception e) {}
             }
