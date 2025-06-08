@@ -438,7 +438,7 @@ public class CommentListFragment extends Fragment {
         if (mCommentAdapter != null) {
             CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
             if (manager != null) {
-                manager.pauseAllPlayers();
+                manager.pauseCurrentlyPlayingVideo();
             }
         }
     }

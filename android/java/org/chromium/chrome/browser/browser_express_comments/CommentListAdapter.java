@@ -69,8 +69,13 @@ import androidx.annotation.NonNull;
 import com.google.android.exoplayer2.MediaMetadata;
 import com.bumptech.glide.request.target.Target;
 import android.util.TypedValue;
+import android.media.MediaMetadataRetriever;
 import android.widget.Space;
 import androidx.constraintlayout.widget.ConstraintLayout;
+import androidx.constraintlayout.widget.ConstraintSet;
+import com.bumptech.glide.request.target.CustomTarget;
+import com.bumptech.glide.request.transition.Transition;
+import java.util.concurrent.Executor;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
@@ -131,7 +136,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment, position);
     }
 
-    private static class VideoDimensionTask extends AsyncTask<Void, Void, int[]> {
+    private static class VideoDimensionTask extends AsyncTask<int[]> {
         private final Context mContext;
         private final Uri mMediaUri;
         private final int mPosition;
@@ -145,7 +150,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
 
         @Override
-        protected int[] doInBackground(Void... voids) {
+        protected int[] doInBackground() {
             MediaMetadataRetriever retriever = new MediaMetadataRetriever();
             int[] dimensions = new int[]{0, 0};
             try {
@@ -363,7 +368,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 
-            releasePlayer();
             commentMediaCard.setVisibility(View.GONE);
             commentImage.setVisibility(View.GONE);
             commentVideo.setVisibility(View.GONE);
@@ -388,7 +392,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 } else {
                     setAspectRatio(16, 9);
                     commentImage.setVisibility(View.VISIBLE);
-                    commentImage.setImageResource(R.drawable.image_placeholder);
+                    // commentImage.setImageResource(R.drawable.image_placeholder);
                     calculateAndCacheDimensions(comment, position, mediaUri, mediaType);
                 }
             }
@@ -677,14 +681,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         public void startPlayback() { if (player != null) player.setPlayWhenReady(true); }
         public void stopPlayback() { if (player != null) player.setPlayWhenReady(false); }
 
-        private void openFullScreenViewer(Uri mediaUri, String mediaType) {
-            if (mParentFragment != null && mParentFragment.isAdded()) {
-                videoPlaybackManager.pauseCurrentlyPlayingVideo();
-                MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
-                viewer.show(mParentFragment.getChildFragmentManager(), MediaViewerFragment.class.getSimpleName());
-            }
-        }
-
         private void bindMediaContent(Uri mediaUri, String mediaType) {
             if ("video".equals(mediaType)) {
                 commentImage.setVisibility(View.GONE);
@@ -701,7 +697,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private void calculateAndCacheDimensions(Comment comment, int position, Uri mediaUri, String mediaType) {
             if ("video".equals(mediaType)) {
-                new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).execute();
             } else {
                 Glide.with(context).asBitmap().load(mediaUri).into(new CustomTarget<Bitmap>() {
                     @Override public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
@@ -754,46 +750,17 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             player.prepare();
         }
 
-        private void releasePlayer() {
-            mVideoManagerInstance.removeActiveHolder(this);
-            if (progressAnimator != null) {
-                progressAnimator.cancel();
-                progressAnimator = null;
-            }
+        public void onViewRecycled() { // This is your custom method
             if (player != null) {
-                mVideoManagerInstance.clearCurrentlyPlayingVideoIfMatches(player);
+                player.stop();
                 player.release();
                 player = null;
             }
-            if (playPauseIcon != null) {
-                playPauseIcon.animate().cancel(); // Cancel any animations on the icon
-                playPauseIcon.setVisibility(View.GONE); // Hide it
-            }
-            if (videoProgressBar != null) {
-                videoProgressBar.setVisibility(View.GONE); // Hide progress bar
-            }
-            if (commentVideo != null) {
-                commentVideo.setPlayer(null); // Detach player from view
-                commentVideo.setVisibility(View.GONE); // Hide video view
-            }
-        }
-
-        public void onViewRecycled() { // This is your custom method
-            releasePlayer();
             if (commentImage != null && context != null) {
                 Glide.with(context).clear(commentImage);
-                commentImage.setImageDrawable(null);
-            }
-            if (mAvatarImage != null && context != null) {
-                Glide.with(context).clear(mAvatarImage);
-                mAvatarImage.setImageDrawable(null);
             }
         }
 
-        public void onViewDetachedFromWindow() {
-            releasePlayer();
-        }
-        
         private void handleNewToken(String newAccessToken, String newRefreshToken) {
             if (activity == null) return;
             try {
@@ -845,6 +812,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 Log.e("TokenDecoder", "Base64 decoding error: " + e.getMessage());
                 return null;
             }
+        }
+    }
+
+    private void openFullScreenViewer(Uri mediaUri, String mediaType) {
+        if (mParentFragment != null && mParentFragment.isAdded()) {
+            videoPlaybackManager.pauseCurrentlyPlayingVideo();
+            MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
+            viewer.show(mParentFragment.getChildFragmentManager(), MediaViewerFragment.class.getSimpleName());
         }
     }
 

@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.ChromeTabbedActivity;
 import android.graphics.Rect;
 import androidx.core.widget.NestedScrollView;
 import android.net.Uri;
+import android.os.Handler;
 
 public class ReplyListFragment2 extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -103,6 +104,8 @@ public class ReplyListFragment2 extends Fragment {
     private NestedScrollView mNestedScrollView;
     private NestedScrollView.OnScrollChangeListener videoNestedScrollListener;
     private RecyclerView.OnScrollListener videoScrollListener;
+
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
 
     @Override
     public void onAttach(@NonNull Context context) {
