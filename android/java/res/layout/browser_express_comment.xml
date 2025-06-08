@@ -162,7 +162,7 @@
                         tools:visibility="visible"
                         app:layout_constraintBottom_toBottomOf="parent"
                         app:layout_constraintEnd_toEndOf="parent"
-                        android:contentDescription="@string/mute_unmute_video" />
+                        android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </androidx.cardview.widget.CardView>
