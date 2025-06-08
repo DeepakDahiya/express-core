@@ -111,6 +111,8 @@ public class ReplyListFragment extends Fragment {
 
     private android.content.BroadcastReceiver mUploadReceiver;
 
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);

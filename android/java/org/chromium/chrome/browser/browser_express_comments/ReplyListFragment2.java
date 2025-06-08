@@ -57,6 +57,7 @@ import android.graphics.Rect;
 import androidx.core.widget.NestedScrollView;
 import android.net.Uri;
 import android.os.Handler;
+import android.os.Looper;
 
 public class ReplyListFragment2 extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
