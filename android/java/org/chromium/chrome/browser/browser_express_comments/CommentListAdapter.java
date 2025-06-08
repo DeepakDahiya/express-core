@@ -233,6 +233,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private BraveActivity activity; // Consider how this is used, if context is enough
         private Button mReadMoreButton;
 
+        private ProgressBar mPostingProgressBar;
+        private TextView mFailedTextView;
+
         private RecyclerView mTopCommentRecycler; // From constructor
         // private CommentListAdapter mCommentAdapter; // Not used in this class, consider removing
         // private List<Comment> mComments; // Not used in this class, consider removing
@@ -296,6 +299,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             playPauseIcon = itemView.findViewById(R.id.play_pause_icon);
             videoProgressBar = itemView.findViewById(R.id.video_progress);
 
+            mPostingProgressBar = itemView.findViewById(R.id.posting_progress_bar);
+            mFailedTextView = itemView.findViewById(R.id.failed_text_view);
+
             mVoteLayout = itemView.findViewById(R.id.vote_layout);
 
             // Assign activity carefully. itemView.getContext() might not always be BraveActivity.
@@ -346,12 +352,22 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
 
             Comment.UploadStatus status = comment.getUploadStatus();
+            mCommentLayout.setAlpha(1.0f);
+            mPostingProgressBar.setVisibility(View.GONE);
+            mFailedTextView.setVisibility(View.GONE);
+            mUpvoteButton.setEnabled(true);
+            mDownvoteButton.setEnabled(true);
+            mReplyButton.setEnabled(true);
+
             if (status == Comment.UploadStatus.POSTING) {
-                mCommentLayout.setAlpha(0.5f);
+                mCommentLayout.setAlpha(0.6f);
+                mPostingProgressBar.setVisibility(View.VISIBLE);
+                // Disable actions on the optimistic item
+                mUpvoteButton.setEnabled(false);
+                mDownvoteButton.setEnabled(false);
+                mReplyButton.setEnabled(false);
             } else if (status == Comment.UploadStatus.FAILED) {
-                mCommentLayout.setAlpha(1.0f);
-            } else {
-                mCommentLayout.setAlpha(1.0f);
+                mFailedTextView.setVisibility(View.VISIBLE);
             }
 
             if (mIsReplyTopComment && activity != null) {

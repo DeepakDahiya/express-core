@@ -111,6 +111,8 @@ public class ReplyListFragment extends Fragment {
 
     private android.content.BroadcastReceiver mUploadReceiver;
 
+    private androidx.core.widget.NestedScrollView mNestedScrollView;
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -192,6 +194,8 @@ public class ReplyListFragment extends Fragment {
         mArrow2 = view.findViewById(R.id.comment_arrow2);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
+
+        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mParentCommentLayout.setVisibility(View.VISIBLE);
 
@@ -542,6 +546,10 @@ public class ReplyListFragment extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
+                    if (mNestedScrollView != null) {
+                        mNestedScrollView.smoothScrollTo(0, 0);
+                    }
+
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
 
@@ -580,6 +588,10 @@ public class ReplyListFragment extends Fragment {
             mCommentAdapter.notifyItemRangeInserted(0, 1);
             LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
             layoutManager.scrollToPositionWithOffset(0, 0);
+
+            if (mNestedScrollView != null) {
+                mNestedScrollView.smoothScrollTo(0, 0);
+            }
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();

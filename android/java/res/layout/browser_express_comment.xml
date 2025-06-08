@@ -43,6 +43,28 @@
                 android:layout_height="wrap_content"
                 android:layout_marginVertical="4sp"
                 android:textSize="14sp" />
+
+            <ProgressBar
+                android:id="@+id/posting_progress_bar"
+                style="?android:attr/progressBarStyleHorizontal"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:indeterminate="true"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
+            <TextView
+                android:id="@+id/failed_text_view"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="@string/post_failed"
+                android:textColor="@android:color/holo_red_dark"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <Button
                 android:id="@+id/btn_read_more_comment"
                 android:layout_width="wrap_content"

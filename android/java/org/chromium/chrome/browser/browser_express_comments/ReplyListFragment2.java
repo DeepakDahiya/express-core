@@ -94,6 +94,8 @@ public class ReplyListFragment2 extends Fragment {
     private Button mLoveButton;
     private Button mClapButton;
 
+    private androidx.core.widget.NestedScrollView mNestedScrollView;
+
     private LinearLayout mEmptyContainer;
 
     private BottomSheetInputCallback inputCallback;
@@ -172,6 +174,8 @@ public class ReplyListFragment2 extends Fragment {
         mClapButton = view.findViewById(R.id.clap_button);
         mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
+
+        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
@@ -509,6 +513,9 @@ public class ReplyListFragment2 extends Fragment {
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
+                    if (mNestedScrollView != null) {
+                        mNestedScrollView.smoothScrollTo(0, 0);
+                    }
 
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
@@ -549,6 +556,10 @@ public class ReplyListFragment2 extends Fragment {
             mCommentAdapter.notifyItemRangeInserted(0, 1);
             LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
             layoutManager.scrollToPositionWithOffset(0, 0);
+
+            if (mNestedScrollView != null) {
+                mNestedScrollView.smoothScrollTo(0, 0);
+            }
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();

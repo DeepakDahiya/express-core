@@ -542,6 +542,10 @@ public class CommentListFragment extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
+                    if (mNestedScrollView != null) {
+                        mNestedScrollView.smoothScrollTo(0, 0);
+                    }
+
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         // Updating comment count for bottom toolbar
