@@ -112,6 +112,8 @@ public class CommentListFragment extends Fragment {
     private static final String KEY_SCROLL_POSITION = "comment_list_scroll_position";
     private int mSavedScrollPosition = RecyclerView.NO_POSITION; // Or 0 as default
 
+    private androidx.core.widget.NestedScrollView mNestedScrollView;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -211,6 +213,8 @@ public class CommentListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
+
+        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
@@ -622,6 +626,10 @@ public class CommentListFragment extends Fragment {
         mCommentAdapter.notifyItemRangeInserted(0, 1);
         LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
         layoutManager.scrollToPositionWithOffset(0, 0);
+
+        if (mNestedScrollView != null) {
+            mNestedScrollView.smoothScrollTo(0, 0);
+        }
 
         try{
             BraveActivity activity = BraveActivity.getBraveActivity();
