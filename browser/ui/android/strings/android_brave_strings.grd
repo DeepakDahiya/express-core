@@ -4113,9 +4113,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_BROWSER_EXPRESS_LOGIN_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Welcome Back!
     </message>
-    <message name="IDS_SELECT_MEDIA_TITLE" desc="Sign in with Brave Wallet Request ID label">
-      Select Picture or Video
-    </message>
     <message name="IDS_BROWSER_EXPRESS_NO_COMMENTS_TITLE" desc="Sign in with Brave Wallet Request ID label">
       No Comments!
     </message>
