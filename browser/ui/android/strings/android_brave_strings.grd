@@ -4272,6 +4272,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_POST" desc="Text for in app update snackbar">
       Post
     </message>
+    <message name="IDS_POST_FAILED" desc="Text for in app update snackbar">
+      Failed to post, try again.
+    </message>
     <!-- <message name="IDS_BROWSER_EXPRESS_SEPARATOR_DOT" desc="Sign in with Brave Wallet Request ID label">
       \u2022
     </message> -->
