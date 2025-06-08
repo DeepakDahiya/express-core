@@ -4116,9 +4116,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_SELECT_MEDIA_TITLE" desc="Sign in with Brave Wallet Request ID label">
       Select Picture or Video
     </message>
-    <message name="IDS_FILE_MANAGER_NOT_FOUND" desc="Sign in with Brave Wallet Request ID label">
-      Please install a File Manager.
-    </message>
     <message name="IDS_BROWSER_EXPRESS_NO_COMMENTS_TITLE" desc="Sign in with Brave Wallet Request ID label">
       No Comments!
     </message>
