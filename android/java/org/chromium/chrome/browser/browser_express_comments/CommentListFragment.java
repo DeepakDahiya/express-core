@@ -89,7 +89,7 @@ public class CommentListFragment extends Fragment {
     private Button mLoveButton;
     private Button mClapButton;
 
-    private ImageButton mSendButton;
+    private Button mSendButton;
     private EditText mMessageEditText;
     private TextView mCommentsText;
 

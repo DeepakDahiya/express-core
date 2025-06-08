@@ -81,7 +81,7 @@ public class ReplyListFragment extends Fragment {
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
-    private ImageButton mSendButton;
+    private Button mSendButton;
     private EditText mMessageEditText;
     private TextView mCommentsText;
 

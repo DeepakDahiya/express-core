@@ -450,7 +450,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     @Override
-    public ImageButton getSendButton() {
+    public Button getSendButton() {
         return mSendButton;
     }
 
