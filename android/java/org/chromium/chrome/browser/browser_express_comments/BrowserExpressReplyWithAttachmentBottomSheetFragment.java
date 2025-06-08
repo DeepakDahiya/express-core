@@ -73,6 +73,8 @@ import androidx.fragment.app.DialogFragment;
 import android.media.MediaMetadataRetriever;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 
+import android.view.HapticFeedbackConstants;
+
 public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
@@ -429,7 +431,10 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     }
 
     private void setupAttachmentListeners() {
-        mAttachButton.setOnClickListener(v -> openMediaPicker());
+        mAttachButton.setOnClickListener(v -> {
+            mAttachButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+            openMediaPicker();
+        });
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
 
         View.OnClickListener fullscreenListener = v -> showMediaFullscreen();

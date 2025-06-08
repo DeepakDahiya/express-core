@@ -66,6 +66,7 @@ import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import android.view.HapticFeedbackConstants;
 
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback, BrowserExpressReplyWithAttachmentBottomSheetFragment.OnCommentPostedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -111,7 +112,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private Uri mSelectedMediaUri;
     private String mSelectedMediaType;
 
-    private ImageButton mSendButton;
+    private Button mSendButton;
     private EditText mMessageEditText;
 
     private LinearLayout mReactionContainer;
@@ -121,6 +122,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private Button mFireButton;
     private Button mLoveButton;
     private Button mClapButton;
+
+    private LinearLayout mAttachmentButtonContainer;
 
     private boolean isFromMenu;
 
@@ -213,6 +216,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         mAttachmentPreviewImage = view.findViewById(R.id.attachment_preview_image);
         mRemoveAttachmentButton = view.findViewById(R.id.button_remove_attachment);
 
+        mAttachmentButtonContainer = view.findViewById(R.id.attachment_button_container);
+
         setupAttachmentListeners();
 
         return view;
@@ -235,6 +240,23 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         behavior.setState(BottomSheetBehavior.STATE_EXPANDED);
 
         getDialog().getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+
+        if (mMessageEditText != null && mAttachmentButtonContainer != null) {
+            mAttachmentButtonContainer.setVisibility(View.GONE);
+
+            mMessageEditText.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+                @Override
+                public void onFocusChange(View v, boolean hasFocus) {
+                    if (hasFocus) {
+                        mAttachmentButtonContainer.setVisibility(View.VISIBLE);
+                        // mReactionContainer.setVisibility(View.GONE);
+                    } else {
+                        mAttachmentButtonContainer.setVisibility(View.GONE);
+                        // mReactionContainer.setVisibility(View.VISIBLE);
+                    }
+                }
+            });
+        }
 
         view.setFocusableInTouchMode(true);
         view.requestFocus();
@@ -484,7 +506,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void setupAttachmentListeners() {
-        mAttachButton.setOnClickListener(v -> openMediaPicker());
+        mAttachButton.setOnClickListener(v -> {
+            mAttachButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
+            openMediaPicker();
+        });
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
     }
 
@@ -523,6 +548,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
                 try{
                     BraveActivity activity = BraveActivity.getBraveActivity();
+                    if (mMessageEditText != null) {
+                        mMessageEditText.clearFocus();
+                    }
                     hideKeyboard();
                     activity.showReplyWithAttachmentBottomSheet(this, mTempPostId, mTempPostUsernameString, mTempPostContentString, mTempPostAvatarString, mTempType, originalUri);
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
