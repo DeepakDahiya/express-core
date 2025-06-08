@@ -381,10 +381,19 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             if (hasMedia) {
                 commentMediaCard.setVisibility(View.VISIBLE);
+
+                String urlString;
+                String mediaType;
+
+                if (videoUrl != null && !videoUrl.isEmpty()) {
+                    urlString = videoUrl;
+                    mediaType = "video";
+                } else {
+                    urlString = imageUrl;
+                    mediaType = "image";
+                }
                 
-                String urlString = videoUrl != null ? videoUrl : imageUrl;
                 Uri mediaUri = Uri.parse(urlString);
-                String mediaType = (videoUrl != null && !videoUrl.isEmpty()) ? "video" : "image";
                 
                 commentMediaCard.setOnClickListener(v -> openFullScreenViewer(mediaUri, mediaType));
 
@@ -687,6 +696,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 commentImage.setVisibility(View.GONE);
                 commentVideo.setVisibility(View.VISIBLE);
                 muteButton.setVisibility(View.VISIBLE);
+                if (mVideoManagerInstance != null) {
+                    mVideoManagerInstance.playVideo(this);
+                }
                 initializePlayer(mediaUri);
             } else {
                 commentVideo.setVisibility(View.GONE);
