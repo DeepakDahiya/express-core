@@ -202,7 +202,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
     }
     
-    public static class CommentHolder extends RecyclerView.ViewHolder {
+    public class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
         TextView contentText;
         TextView voteCountText;
