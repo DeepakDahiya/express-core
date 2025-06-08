@@ -68,6 +68,9 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import android.view.HapticFeedbackConstants;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+
 public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialogFragment implements BottomSheetInputCallback, BrowserExpressReplyWithAttachmentBottomSheetFragment.OnCommentPostedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
     public static final String COMMENTS_FOR = "comments_for";
@@ -76,7 +79,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
     public static final String OPEN_KEYBOARD = "open_keyboard";
-    private static final int PICK_MEDIA_REQUEST = 1001;
     private static final int MAX_IMAGE_DIMENSION = 1920;
     private static final int IMAGE_COMPRESSION_QUALITY = 80;
 
@@ -132,6 +134,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private String mLastOpenedRepliesForCommentId = null;
     private String mLastOpenedRepliesToRepliesForCommentId = null;
 
+    private ActivityResultLauncher<String[]> mMediaPickerLauncher;
+
     private android.content.BroadcastReceiver mUploadReceiver;
 
     public static BrowserExpressCommentsBottomSheetFragment newInstance(boolean isFromMenu) {
@@ -174,6 +178,35 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             } else {
                 mOpenKeyboard = false;
             }
+
+            mMediaPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.OpenDocument(),
+                uri -> {
+                    if (uri != null) {
+                        // This is the new callback, containing the logic from your old onActivityResult
+                        try {
+                            // Grant persistent read permissions for the service. This is a robust way to handle it.
+                            final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                            if (getContext() != null) {
+                                getContext().getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                            }
+
+                            if (mMessageEditText != null) {
+                                mMessageEditText.clearFocus();
+                            }
+                            hideKeyboard();
+
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            activity.showReplyWithAttachmentBottomSheet(this, mTempPostId, mTempPostUsernameString, mTempPostContentString, mTempPostAvatarString, mTempType, uri);
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e("CommentsSheet", "Failed to get BraveActivity to show reply sheet", e);
+                        } catch (SecurityException e) {
+                            Log.e("CommentsSheet", "Failed to take persistent URI permission", e);
+                            Toast.makeText(getContext(), "Could not get access to the selected file.", Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                }
+            );
         }
     }
 
@@ -514,16 +547,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void openMediaPicker() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*"); // Allows picking any file type initially
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
-        try {
-            startActivityForResult(Intent.createChooser(intent, getString(R.string.select_media_title)), PICK_MEDIA_REQUEST);
-        } catch (android.content.ActivityNotFoundException ex) {
-            if (getContext() != null) {
-                Toast.makeText(getContext(), R.string.file_manager_not_found, Toast.LENGTH_SHORT).show();
-            }
-        }
+        mMediaPickerLauncher.launch(new String[]{"image/*", "video/*"});
     }
 
     private void removeAttachment() {
@@ -536,28 +560,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
         if (mAttachmentPreviewContainer != null) {
             mAttachmentPreviewContainer.setVisibility(View.GONE);
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
-            if (data != null && data.getData() != null) {
-                Uri originalUri = data.getData();
-
-                try{
-                    BraveActivity activity = BraveActivity.getBraveActivity();
-                    if (mMessageEditText != null) {
-                        mMessageEditText.clearFocus();
-                    }
-                    hideKeyboard();
-                    activity.showReplyWithAttachmentBottomSheet(this, mTempPostId, mTempPostUsernameString, mTempPostContentString, mTempPostAvatarString, mTempType, originalUri);
-                } catch (BraveActivity.BraveActivityNotFoundException e) {
-                }
-            } else {
-                removeAttachment();
-            }
         }
     }
 

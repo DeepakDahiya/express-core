@@ -74,6 +74,8 @@ import android.media.MediaMetadataRetriever;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 
 import android.view.HapticFeedbackConstants;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends DialogFragment implements MediaViewerFragment.OnViewerDismissedListener {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -83,7 +85,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
     public static final String ATTACHMENT_URI = "attachment_uri";
-    private static final int PICK_MEDIA_REQUEST = 1001;
     private static final int MAX_IMAGE_DIMENSION = 1920;
     private static final int IMAGE_COMPRESSION_QUALITY = 80;
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
@@ -125,6 +126,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
 
     private String mLastOpenedRepliesForCommentId = null;
     private String mLastOpenedRepliesToRepliesForCommentId = null;
+
+    private ActivityResultLauncher<String[]> mMediaPickerLauncher;
 
     public static BrowserExpressReplyWithAttachmentBottomSheetFragment newInstance(boolean isFromMenu) {
         final BrowserExpressReplyWithAttachmentBottomSheetFragment fragment =
@@ -176,6 +179,27 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             mPostContentString = getArguments().getString(POST_CONTENT);
             mPostAvatarString = getArguments().getString(POST_AVATAR_URL);
             mTempSelectedMediaUri = getArguments().getParcelable(ATTACHMENT_URI);
+
+            mMediaPickerLauncher = registerForActivityResult(
+                new ActivityResultContracts.OpenDocument(),
+                uri -> {
+                    if (uri != null) {
+                        // Grant persistent read permissions for the service if needed.
+                        try {
+                            final int takeFlags = Intent.FLAG_GRANT_READ_URI_PERMISSION;
+                            if (getContext() != null) {
+                                getContext().getContentResolver().takePersistableUriPermission(uri, takeFlags);
+                            }
+                        } catch (SecurityException e) {
+                            Log.e("ReplySheet", "Failed to take persistent URI permission", e);
+                        }
+                        
+                        // The logic from your old onActivityResult goes here.
+                        processSelectedMedia(uri);
+                        showKeyboardWithFocus();
+                    }
+                }
+            );
         }
     }
 
@@ -438,21 +462,12 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         mRemoveAttachmentButton.setOnClickListener(v -> removeAttachment());
 
         View.OnClickListener fullscreenListener = v -> showMediaFullscreen();
-        mAttachmentPreviewImage.setOnClickListener(fullscreenListener);
+        mAttachmentPreviewContainer.setOnClickListener(fullscreenListener);
         mVideoPlayButton.setOnClickListener(fullscreenListener);
     }
 
     private void openMediaPicker() {
-        Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
-        intent.setType("*/*"); // Allows picking any file type initially
-        intent.putExtra(Intent.EXTRA_MIME_TYPES, new String[]{"image/*", "video/*"});
-        try {
-            startActivityForResult(Intent.createChooser(intent, getString(R.string.select_media_title)), PICK_MEDIA_REQUEST);
-        } catch (android.content.ActivityNotFoundException ex) {
-            if (getContext() != null) {
-                Toast.makeText(getContext(), R.string.file_manager_not_found, Toast.LENGTH_SHORT).show();
-            }
-        }
+        mMediaPickerLauncher.launch(new String[]{"image/*", "video/*"});
     }
 
     private void removeAttachment() {
@@ -463,20 +478,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         }
         if (mAttachmentPreviewContainer != null) {
             mAttachmentPreviewContainer.setVisibility(View.GONE);
-        }
-    }
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_MEDIA_REQUEST && resultCode == Activity.RESULT_OK) {
-            if (data != null && data.getData() != null) {
-                Uri originalUri = data.getData();
-                processSelectedMedia(originalUri);
-                showKeyboardWithFocus();
-            } else {
-                removeAttachment();
-            }
         }
     }
 
