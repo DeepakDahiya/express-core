@@ -425,11 +425,17 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     commentVideo.setPlayer(player);
                     commentVideo.setUseController(false);
 
-                    MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(videoUrl);
-                    mediaItemBuilder.setMediaMetadata(new MediaMetadata.Builder()
-                        .setArtworkUri(Uri.parse(twitterImageUrl))
-                        .build());
-                    MediaItem mediaItem = mediaItemBuilder.build();
+                    MediaItem mediaItem = null;
+
+                    if(videoUrl.contains("http")){
+                        MediaItem.Builder mediaItemBuilder = new MediaItem.Builder().setUri(videoUrl);
+                        mediaItemBuilder.setMediaMetadata(new MediaMetadata.Builder()
+                            .setArtworkUri(Uri.parse(twitterImageUrl))
+                            .build());
+                        mediaItem = mediaItemBuilder.build();
+                    } else {
+                        mediaItem = MediaItem.fromUri(videoUrl);
+                    }
                     player.setMediaItem(mediaItem);
                     player.setRepeatMode(Player.REPEAT_MODE_ALL); // Or REPEAT_MODE_OFF if you don't want looping by default
                     player.setPlayWhenReady(false); // Important: start paused
