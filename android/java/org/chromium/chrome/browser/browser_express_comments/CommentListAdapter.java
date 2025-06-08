@@ -447,48 +447,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if (activity != null) { // Ensure activity isn't null
                 bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
                 bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
-
-                SharedPreferences sharedPref = activity.getSharedPreferencesForReplyComment();
-                SharedPreferences.OnSharedPreferenceChangeListener listener = (prefs, key) -> {
-                    if(key != null && key.equals(BraveActivity.BROWSER_EXPRESS_REPLY_COMMENT)){
-                        String replyCommentJson = activity.getReplyComment(); // Renamed for clarity
-                        if(replyCommentJson != null && !replyCommentJson.isEmpty()){
-                            try{
-                                JSONObject commentObject = new JSONObject(replyCommentJson);
-                                
-                                JSONObject userJson = commentObject.getJSONObject("user");
-                                User u = new User(userJson.getString("_id"), userJson.getString("username"), userJson.optString("avatar", null));
-                                // Vote v = null; // Vote is not typically part of a new comment structure from server reply
-                                String pageParent = commentObject.optString("pageParent", null);
-                                String postParent = commentObject.optString("postParent", null);
-                                String commentParent = commentObject.optString("commentParent", null);
-
-                                if(comment.getId().equals(commentParent)){ // Check if this comment is the parent of the new reply
-                                    Comment newReplyComment = new Comment(
-                                        commentObject.getString("_id"), 
-                                        commentObject.getString("content"),
-                                        commentObject.getInt("upvoteCount"),
-                                        commentObject.getInt("downvoteCount"),
-                                        commentObject.getInt("commentCount"),
-                                        pageParent, 
-                                        postParent,
-                                        commentParent,
-                                        u,
-                                        null, // New comments usually don't have a "didVote" status for the current user yet
-                                        commentObject.optString("mediaImageUrl", null), // Add media fields
-                                        commentObject.optString("mediaVideoUrl", null),
-                                        null,
-                                        null,
-                                        null
-                                    );
-                                }
-                            } catch (JSONException e) {
-                                Log.e("BROWSER_EXPRESS_REPLY_COMMENT_EXTRACT", "Error parsing reply JSON", e);
-                            }
-                        }
-                    }
-                };
-                sharedPref.registerOnSharedPreferenceChangeListener(listener);
             }
             
             Vote didVote = comment.getDidVote();
@@ -510,9 +468,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             if(mReplyButton != null && activity != null) { // Check activity
                 if(comment.getCommentCount() > 0){
-                    String mReplyButtonText = comment.getCommentCount() + " replies";
+                    String mReplyButtonText = comment.getCommentCount() == 1
+                            ? "1 reply"
+                            : comment.getCommentCount() + " replies";
                     mReplyButton.setText(mReplyButtonText);
                     mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
+                } else {
+                    mReplyButton.setText("Reply"); 
                 }
             }
 
@@ -701,6 +663,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 }
                 initializePlayer(mediaUri);
             } else {
+                if (mVideoManagerInstance != null && mVideoManagerInstance.mCurrentlyPlayingHolder == this) {
+                    mVideoManagerInstance.pauseCurrentlyPlayingVideo();
+                }
                 commentVideo.setVisibility(View.GONE);
                 muteButton.setVisibility(View.GONE);
                 commentImage.setVisibility(View.VISIBLE);
