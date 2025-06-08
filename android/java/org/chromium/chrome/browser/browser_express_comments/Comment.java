@@ -17,6 +17,9 @@ public class Comment{
     private User user;
     private Vote didVote;
 
+    private int mediaWidth = 0;
+    private int mediaHeight = 0;
+
     public enum UploadStatus { PENDING, POSTING, SUCCEEDED, FAILED }
 
     private UploadStatus uploadStatus = UploadStatus.SUCCEEDED;
@@ -41,6 +44,12 @@ public class Comment{
 
     public UploadStatus getUploadStatus() { return uploadStatus; }
     public void setUploadStatus(UploadStatus status) { this.uploadStatus = status; }
+
+    public int getMediaWidth() { return mediaWidth; }
+    public void setMediaWidth(int width) { this.mediaWidth = width; }
+    public int getMediaHeight() { return mediaHeight; }
+    public void setMediaHeight(int height) { this.mediaHeight = height; }
+    public boolean hasCachedDimensions() { return mediaWidth > 0 && mediaHeight > 0; }
 
     public String getId() {  
         return this._id;  

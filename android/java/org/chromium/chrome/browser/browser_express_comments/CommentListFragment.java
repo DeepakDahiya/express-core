@@ -352,77 +352,58 @@ public class CommentListFragment extends Fragment {
         return view;
     }
 
-     private void setupVideoScrollListener(RecyclerView recyclerView) {
+    private void setupVideoScrollListener(RecyclerView recyclerView) {
         if (videoScrollListener != null) {
             recyclerView.removeOnScrollListener(videoScrollListener);
         }
         videoScrollListener = new RecyclerView.OnScrollListener() {
             @Override
-            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                super.onScrolled(recyclerView, dx, dy);
-                checkAndPauseInvisibleVideos(recyclerView);
+            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                super.onScrollStateChanged(recyclerView, newState);
+                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                    playVideoInCenterOfScreen();
+                }
             }
         };
         recyclerView.addOnScrollListener(videoScrollListener);
     }
 
-    private void checkAndPauseInvisibleVideos(RecyclerView recyclerView) {
-        if (mCommentAdapter == null) return;
+    private void playVideoInCenterOfScreen() {
+        if (mCommentAdapter == null || mLayoutManager == null || mCommentRecycler == null) return;
+        
+        int firstVisiblePosition = mLayoutManager.findFirstVisibleItemPosition();
+        int lastVisiblePosition = mLayoutManager.findLastVisibleItemPosition();
+
+        if (firstVisiblePosition == RecyclerView.NO_POSITION) return;
+
         CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-        CommentListAdapter.CommentHolder currentPlayingHolder = manager.getCurrentlyPlayingHolder();
+        CommentListAdapter.CommentHolder bestHolder = null;
+        int maxVisibility = 0;
 
-        if (currentPlayingHolder != null && currentPlayingHolder.player != null && currentPlayingHolder.player.isPlaying()) {
-            
-            LinearLayoutManager layoutManager = null;
-            if (recyclerView.getLayoutManager() instanceof LinearLayoutManager) {
-                 layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-            }
-            if (layoutManager == null) return;
+        for (int i = firstVisiblePosition; i <= lastVisiblePosition; i++) {
+            RecyclerView.ViewHolder vh = mCommentRecycler.findViewHolderForAdapterPosition(i);
+            if (vh instanceof CommentListAdapter.CommentHolder) {
+                CommentListAdapter.CommentHolder holder = (CommentListAdapter.CommentHolder) vh;
+                if (holder.player != null) {
+                    Rect rect = new Rect();
+                    int viewHeight = holder.commentVideo.getHeight();
+                    holder.commentVideo.getGlobalVisibleRect(rect);
+                    int visibleHeight = rect.height();
 
-            int holderPosition = currentPlayingHolder.getBindingAdapterPosition();
-            if (holderPosition == RecyclerView.NO_POSITION) {
-                manager.pauseCurrentlyPlayingVideo();
-                return;
-            }
-
-            int firstVisible = layoutManager.findFirstVisibleItemPosition();
-            int lastVisible = layoutManager.findLastVisibleItemPosition();
-
-            if (holderPosition < firstVisible || holderPosition > lastVisible) {
-                Log.d("VideoScroll", "Pausing video (holder fully out of view): " + holderPosition);
-                manager.pauseCurrentlyPlayingVideo();
-            } else {
-                // Holder is in visible range, check how much of the video view itself is visible
-                if (currentPlayingHolder.commentVideo != null && !isViewMostlyVisible(currentPlayingHolder.commentVideo, recyclerView)) {
-                    Log.d("VideoScroll", "Pausing video (partially out of view): " + holderPosition);
-                    manager.pauseCurrentlyPlayingVideo();
+                    if (viewHeight > 0 && visibleHeight > maxVisibility) {
+                        maxVisibility = visibleHeight;
+                        bestHolder = holder;
+                    }
                 }
             }
         }
-    }
-
-    private boolean isViewMostlyVisible(View view, RecyclerView recyclerView) {
-        if (view == null || !view.isShown() || view.getHeight() == 0 || view.getWidth() == 0) {
-            return false;
-        }
-
-        Rect viewRect = new Rect();
-        if (!view.getGlobalVisibleRect(viewRect)) { // if not visible on screen at all
-            return false;
-        }
-
-        Rect recyclerRect = new Rect();
-        recyclerView.getGlobalVisibleRect(recyclerRect); // Visible part of RecyclerView on screen
-
-        if (!Rect.intersects(viewRect, recyclerRect)) { // No intersection
-            return false;
-        }
-
-        // Calculate the height of the intersection
-        int visibleHeight = Math.min(viewRect.bottom, recyclerRect.bottom) - Math.max(viewRect.top, recyclerRect.top);
         
-        float visibilityThreshold = 0.5f; // 50% of video height must be visible
-        return visibleHeight >= view.getHeight() * visibilityThreshold;
+        // Play the video only if it's more than 65% visible.
+        if (bestHolder != null && maxVisibility > bestHolder.commentVideo.getHeight() * 0.65) {
+            manager.playVideo(bestHolder);
+        } else {
+            manager.pauseCurrentlyPlayingVideo();
+        }
     }
 
     @Override
