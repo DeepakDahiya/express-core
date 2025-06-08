@@ -94,8 +94,6 @@ public class ReplyListFragment2 extends Fragment {
     private Button mLoveButton;
     private Button mClapButton;
 
-    private androidx.core.widget.NestedScrollView mNestedScrollView;
-
     private LinearLayout mEmptyContainer;
 
     private BottomSheetInputCallback inputCallback;
@@ -179,8 +177,6 @@ public class ReplyListFragment2 extends Fragment {
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
-        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
-        
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
         mBackButton = view.findViewById(R.id.back_button);

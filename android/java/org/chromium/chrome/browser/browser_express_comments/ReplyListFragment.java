@@ -111,8 +111,6 @@ public class ReplyListFragment extends Fragment {
 
     private android.content.BroadcastReceiver mUploadReceiver;
 
-    private androidx.core.widget.NestedScrollView mNestedScrollView;
-
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -198,8 +196,6 @@ public class ReplyListFragment extends Fragment {
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mParentCommentLayout.setVisibility(View.VISIBLE);
-
-        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mArrow2.setVisibility(View.VISIBLE);
         
