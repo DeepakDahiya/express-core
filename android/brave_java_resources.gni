@@ -165,7 +165,6 @@ brave_java_resources = [
   "java/res/drawable-nodpi/comment_arrow.png",
   "java/res/drawable-nodpi/edit_profile.png",
   "java/res/drawable-nodpi/comments.png",
-  "java/res/drawable-nodpi/send.png",
   "java/res/drawable-nodpi/loading_image.png",
   "java/res/drawable-nodpi/edit_image.png",
   "java/res/drawable-nodpi/btn_toolbar_profile.png",
