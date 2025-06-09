@@ -43,11 +43,12 @@ public class BraveSetDefaultBrowserUtils {
     public static boolean isBraveSetAsDefaultBrowser(Context context) {
         Intent browserIntent =
                 new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.HTTP_URL_PREFIX));
-        ResolveInfo resolveInfo = context.getPackageManager().resolveActivity(
-                browserIntent, supportsDefault() ? PackageManager.MATCH_DEFAULT_ONLY : 0);
-        if (resolveInfo == null || resolveInfo.activityInfo == null
-                || resolveInfo.activityInfo.packageName == null
-                || ContextUtils.getApplicationContext() == null) {
+        ResolveInfo resolveInfo =
+                context.getPackageManager()
+                        .resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+        if (resolveInfo == null
+                || resolveInfo.activityInfo == null
+                || resolveInfo.activityInfo.packageName == null) {
             return false;
         }
 

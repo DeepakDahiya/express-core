@@ -351,6 +351,7 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
                     ContextCompat.getDrawable(mContext, R.drawable.new_tab_icon));
             mHomeButton.setEnabled(true);
         } else {
+            mHomeButton.setVisibility(View.VISIBLE);
             mHomeButton.setImageDrawable(
                     ContextCompat.getDrawable(mContext, R.drawable.btn_toolbar_home));
         }

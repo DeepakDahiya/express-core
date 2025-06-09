@@ -333,6 +333,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mCommentLayout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.rounded_corner_background, null));
                 mActionItemsLayout.setVisibility(View.VISIBLE);
                 mReplyButton.setVisibility(View.INVISIBLE);
+            } else if (mIsReplyAdapter || isReplyToReplyAdapter){
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mCommentLayout.getLayoutParams();
+                int margin20dp = (int) (20 * context.getResources().getDisplayMetrics().density);
+                params.setMarginStart(margin20dp);
+                mCommentLayout.setLayoutParams(params);
             }
 
             usernameText.setText(comment.getUser().getUsername());
@@ -359,13 +364,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 }
             }else{
                 mActionItemsLayout.setVisibility(View.GONE);
-            }
-
-            if(mIsReplyAdapter){
-                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mCommentLayout.getLayoutParams();
-                int margin20dp = (int) (40 * context.getResources().getDisplayMetrics().density);
-                params.setMarginStart(margin20dp);
-                mCommentLayout.setLayoutParams(params);
             }
 
             mHasVideo = false;
