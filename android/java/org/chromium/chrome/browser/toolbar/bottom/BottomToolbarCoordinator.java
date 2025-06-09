@@ -290,6 +290,9 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
             mTabSwitcherModeCoordinator.showToolbarOnTop(!isVisible, true);
         }
         mBrowsingModeCoordinator.onVisibilityChanged(isVisible);
+        if(isVisible){
+            mHomeButton.setVisibility(View.VISIBLE);
+        }
     }
 
     /**
