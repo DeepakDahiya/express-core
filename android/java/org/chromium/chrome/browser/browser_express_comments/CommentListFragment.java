@@ -114,6 +114,9 @@ public class CommentListFragment extends Fragment {
 
     private androidx.core.widget.NestedScrollView mNestedScrollView;
 
+    private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mVideoCheckRunnable = this::checkAndPlayMostVisibleVideo;
+
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -153,6 +156,7 @@ public class CommentListFragment extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
         if (mUploadReceiver != null && getContext() != null) {
             androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mUploadReceiver);
         }
@@ -348,24 +352,75 @@ public class CommentListFragment extends Fragment {
         } catch(Exception ex){
         }
 
-        setupVideoScrollListener(mCommentRecycler);
+        setupScrollListener();
         return view;
     }
 
-    private void setupVideoScrollListener(RecyclerView recyclerView) {
-        if (videoScrollListener != null) {
-            recyclerView.removeOnScrollListener(videoScrollListener);
+    private void setupScrollListener() {
+        if (mCommentRecycler != null) {
+            mCommentRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                    super.onScrolled(recyclerView, dx, dy);
+                    scheduleVideoCheck();
+                }
+                
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        scheduleVideoCheck();
+                    }
+                }
+            });
         }
-        videoScrollListener = new RecyclerView.OnScrollListener() {
-            @Override
-            public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
-                super.onScrollStateChanged(recyclerView, newState);
-                if (newState == RecyclerView.SCROLL_STATE_IDLE) {
-                    playVideoInCenterOfScreen();
+    }
+
+    private void scheduleVideoCheck() {
+        mHandler.removeCallbacks(mVideoCheckRunnable);
+        mHandler.postDelayed(mVideoCheckRunnable, 100);
+    }
+    
+    private void checkAndPlayMostVisibleVideo() {
+        if (mCommentRecycler == null || mLayoutManager == null) return;
+        
+        int firstVisible = mLayoutManager.findFirstVisibleItemPosition();
+        int lastVisible = mLayoutManager.findLastVisibleItemPosition();
+        
+        if (firstVisible == RecyclerView.NO_POSITION) return;
+        
+        CommentListAdapter.CommentHolder bestHolder = null;
+        float bestVisibilityPercentage = 0f;
+        
+        for (int i = firstVisible; i <= lastVisible; i++) {
+            RecyclerView.ViewHolder vh = mCommentRecycler.findViewHolderForAdapterPosition(i);
+            if (vh instanceof CommentListAdapter.CommentHolder) {
+                CommentListAdapter.CommentHolder holder = (CommentListAdapter.CommentHolder) vh;
+                if (holder.hasVideo()) {
+                    float visibility = getVisibilityPercentage(holder.commentVideo);
+                    if (visibility > bestVisibilityPercentage && visibility > 0.6f) {
+                        bestVisibilityPercentage = visibility;
+                        bestHolder = holder;
+                    }
                 }
             }
-        };
-        recyclerView.addOnScrollListener(videoScrollListener);
+        }
+        
+        GlobalVideoPlaybackManager.getInstance().playVideo(bestHolder);
+    }
+
+    private float getVisibilityPercentage(View view) {
+        if (view == null) return 0f;
+        
+        Rect rect = new Rect();
+        boolean isVisible = view.getGlobalVisibleRect(rect);
+        
+        if (!isVisible) return 0f;
+        
+        int visibleArea = rect.width() * rect.height();
+        int totalArea = view.getWidth() * view.getHeight();
+        
+        return totalArea > 0 ? (float) visibleArea / totalArea : 0f;
     }
 
     private void playVideoInCenterOfScreen() {
@@ -409,6 +464,10 @@ public class CommentListFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+
+        mHandler.removeCallbacks(mVideoCheckRunnable);
+        GlobalVideoPlaybackManager.getInstance().releaseAllResources();
+
         if (mCommentRecycler != null && videoScrollListener != null) {
             mCommentRecycler.removeOnScrollListener(videoScrollListener);
             videoScrollListener = null;

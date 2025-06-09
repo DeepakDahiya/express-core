@@ -213,7 +213,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onPause() {
         super.onPause();
-        pauseAllVideoPlaybackInActiveLists();
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
         if (mUploadReceiver != null && getContext() != null) {
             androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mUploadReceiver);
         }
@@ -367,10 +367,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
-        pauseAllVideoPlaybackInActiveLists();
+        GlobalVideoPlaybackManager.getInstance().releaseAllResources();
     }
 
     private void loadFragment(Fragment fragment) {
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
         FragmentManager fragmentManager = getChildFragmentManager();
         FragmentTransaction transaction = fragmentManager.beginTransaction();
 
@@ -471,6 +472,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
         mLastOpenedRepliesToRepliesForCommentId = null;
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();

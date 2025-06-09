@@ -371,6 +371,7 @@ brave_java_sources = [
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/CommentListFragment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/ReplyListFragment.java",
   "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/ReplyListFragment2.java",
+  "../../brave/android/java/org/chromium/chrome/browser/browser_express_comments/GlobalVideoPlaybackManager.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/AppearancePreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BackgroundImagesPreferences.java",
   "../../brave/android/java/org/chromium/chrome/browser/settings/BraveDialogPreference.java",

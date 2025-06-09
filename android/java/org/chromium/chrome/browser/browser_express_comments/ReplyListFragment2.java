@@ -106,6 +106,7 @@ public class ReplyListFragment2 extends Fragment {
     private RecyclerView.OnScrollListener videoScrollListener;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
+    private final Runnable mVideoCheckRunnable = this::checkAndPlayMostVisibleVideo;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -127,6 +128,7 @@ public class ReplyListFragment2 extends Fragment {
     @Override
     public void onPause() {
         super.onPause();
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
         if (mUploadReceiver != null && getContext() != null) {
             androidx.localbroadcastmanager.content.LocalBroadcastManager.getInstance(getContext()).unregisterReceiver(mUploadReceiver);
         }
@@ -288,20 +290,79 @@ public class ReplyListFragment2 extends Fragment {
             Log.e("Express Browser Access Token", ex.getMessage());
         }
 
-        setupVideoScrollListener();
+        setupScrollListener();
         return view;
     }
 
-    private void setupVideoScrollListener() {
-        if (mNestedScrollView == null) return;
+    private void setupScrollListener() {
+        if (mNestedScrollView != null) {
+            mNestedScrollView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+                scheduleVideoCheck();
+            });
+        }
+    }
+    
+    private void scheduleVideoCheck() {
+        mHandler.removeCallbacks(mVideoCheckRunnable);
+        mHandler.postDelayed(mVideoCheckRunnable, 150);
+    }
+
+    private void checkAndPlayMostVisibleVideo() {
+        List<CommentListAdapter.CommentHolder> allVideoHolders = new ArrayList<>();
         
-        videoNestedScrollListener = (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-            // This is a lambda for NestedScrollView.OnScrollChangeListener
-            // Remove any pending check and schedule a new one. This is debouncing.
-            mHandler.removeCallbacksAndMessages(null);
-            mHandler.postDelayed(this::playTopmostVisibleVideo, 150); // 150ms delay
-        };
-        mNestedScrollView.setOnScrollChangeListener(videoNestedScrollListener);
+        // Collect video holders from both RecyclerViews
+        if (mTopCommentRecycler != null) {
+            collectVideoHolders(mTopCommentRecycler, allVideoHolders);
+        }
+        if (mCommentRecycler != null) {
+            collectVideoHolders(mCommentRecycler, allVideoHolders);
+        }
+        
+        CommentListAdapter.CommentHolder bestHolder = null;
+        float bestVisibilityPercentage = 0f;
+        
+        for (CommentListAdapter.CommentHolder holder : allVideoHolders) {
+            if (holder.hasVideo()) {
+                float visibility = getVisibilityPercentage(holder.commentVideo);
+                if (visibility > bestVisibilityPercentage && visibility > 0.6f) {
+                    bestVisibilityPercentage = visibility;
+                    bestHolder = holder;
+                }
+            }
+        }
+        
+        GlobalVideoPlaybackManager.getInstance().playVideo(bestHolder);
+    }
+
+    private void collectVideoHolders(RecyclerView recyclerView, List<CommentListAdapter.CommentHolder> holders) {
+        if (recyclerView == null || recyclerView.getLayoutManager() == null) return;
+        
+        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+        int first = layoutManager.findFirstVisibleItemPosition();
+        int last = layoutManager.findLastVisibleItemPosition();
+        
+        if (first == RecyclerView.NO_POSITION) return;
+        
+        for (int i = first; i <= last; i++) {
+            RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(i);
+            if (vh instanceof CommentListAdapter.CommentHolder) {
+                holders.add((CommentListAdapter.CommentHolder) vh);
+            }
+        }
+    }
+    
+    private float getVisibilityPercentage(View view) {
+        if (view == null) return 0f;
+        
+        Rect rect = new Rect();
+        boolean isVisible = view.getGlobalVisibleRect(rect);
+        
+        if (!isVisible) return 0f;
+        
+        int visibleArea = rect.width() * rect.height();
+        int totalArea = view.getWidth() * view.getHeight();
+        
+        return totalArea > 0 ? (float) visibleArea / totalArea : 0f;
     }
 
     private void playTopmostVisibleVideo() {
@@ -354,6 +415,9 @@ public class ReplyListFragment2 extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
+        mHandler.removeCallbacks(mVideoCheckRunnable);
+        GlobalVideoPlaybackManager.getInstance().releaseAllResources();
+
         if (mNestedScrollView != null) {
             mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) null);
         }
