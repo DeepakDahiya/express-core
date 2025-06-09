@@ -107,6 +107,9 @@ public class ReplyListFragment extends Fragment {
 
     private LinearLayoutManager mLayoutManager;
 
+    private static final String KEY_SCROLL_POSITION = "comment_list_scroll_position";
+    private int mSavedScrollPosition = RecyclerView.NO_POSITION; // Or 0 as default
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);
@@ -115,6 +118,26 @@ public class ReplyListFragment extends Fragment {
             inputCallback = (BottomSheetInputCallback) parentFragment;
         } else {
             Log.e("Reply List Fragment", "Parent fragment must implement BottomSheetInputCallback");
+        }
+    }
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (savedInstanceState != null) {
+            mSavedScrollPosition = savedInstanceState.getInt(KEY_SCROLL_POSITION, RecyclerView.NO_POSITION);
+        }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (mLayoutManager != null && mCommentRecycler != null) {
+            int currentPosition = mLayoutManager.findFirstVisibleItemPosition();
+            if (currentPosition != RecyclerView.NO_POSITION) {
+                outState.putInt(KEY_SCROLL_POSITION, currentPosition);
+                Log.d("ScrollSave", "Saving scroll position: " + currentPosition);
+            }
         }
     }
 
@@ -409,6 +432,23 @@ public class ReplyListFragment extends Fragment {
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
+
+                    if (mSavedScrollPosition != RecyclerView.NO_POSITION) {
+                        mLayoutManager.scrollToPositionWithOffset(mSavedScrollPosition, 0);
+                        mSavedScrollPosition = RecyclerView.NO_POSITION;
+                    }
+
+
+                    if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
+                        Log.e("CommentListScroll", "Scrolling to last parent comment ID: " + mTargetScrollCommentId);
+                        scrollToCommentId(mTargetScrollCommentId);
+                        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+                        if (parentFragment != null) {
+                            parentFragment.clearLastOpenedRepliesForCommentId();
+                        }
+                        mShouldScrollToLastParent = false; // Reset flag
+                        mTargetScrollCommentId = null;
+                    }
                 }
 
                 @Override
