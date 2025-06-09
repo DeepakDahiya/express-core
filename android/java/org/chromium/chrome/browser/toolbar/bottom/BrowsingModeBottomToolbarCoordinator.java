@@ -153,7 +153,6 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCommentsButton.setOnClickListener(commentsClickHandler);
             mCommentsText.setOnClickListener(commentsClickHandler);
             BraveTouchUtils.ensureMinTouchTarget(mCommentsButton);
-            mBraveHomeButton.setVisibility(View.VISIBLE);
              // SETTING HEIGHT AND WIDTH MATCHING COMMENT BUTTON
            
             mCommentsButton.post(new Runnable() {

@@ -2467,6 +2467,10 @@ public abstract class BraveActivity extends ChromeActivity
         return findViewById(R.id.comments_button1);
     }
 
+    public TextView getBottomHomeButton() {
+        return findViewById(R.id.bottom_home_button);
+    }
+
     public EditText getContentEditText() {
         return findViewById(R.id.comment_content);
     }

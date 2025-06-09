@@ -457,6 +457,15 @@ public class BraveToolbarManager extends ToolbarManager {
             visible = false;
         }
 
+        if (visible) {
+            if (mBottomControlsCoordinatorSupplier != null
+                    && mBottomControlsCoordinatorSupplier.get()
+                                    instanceof BraveBottomControlsCoordinator) {
+                ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
+                        .updateHomeButtonState();
+            }
+        }
+
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomToolbarVisibilityChanged(visible);
         }
@@ -466,18 +475,6 @@ public class BraveToolbarManager extends ToolbarManager {
         if (mBottomControlsCoordinatorSupplier != null && mBottomControlsCoordinatorSupplier.get() instanceof BraveBottomControlsCoordinator) {
             ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
                     .setBottomToolbarVisible(visible);
-        }
-
-        if (visible) {
-            if (mBottomControls != null) {
-                mBottomControls.post(() -> {
-                    if (mBottomControlsCoordinatorSupplier != null
-                            && mBottomControlsCoordinatorSupplier.get() instanceof BraveBottomControlsCoordinator) {
-                        ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
-                                .updateHomeButtonState();
-                    }
-                });
-            }
         }
     }
 

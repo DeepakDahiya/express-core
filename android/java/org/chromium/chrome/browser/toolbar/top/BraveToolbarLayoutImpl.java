@@ -176,6 +176,7 @@ import java.net.HttpURLConnection;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
+import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
@@ -216,6 +217,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private int mCurrentToolbarColor;
 
     private TextView mCommentsText;
+    private BraveHomeButton mBottomHomeButton;
 
     private boolean mIsPublisherVerified;
     private boolean mIsNotificationPosted;
@@ -544,7 +546,11 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                     int commentCount = 0;
                     mCommentsText = activity.getCommentCountText();
+                    mBottomHomeButton = activity.getBottomHomeButton();
                     mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    if(mBottomHomeButton != null) {
+                        mBottomHomeButton.setVisibility(View.VISIBLE);
+                    }
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
                 } catch (JSONException e) {

@@ -187,10 +187,8 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
                     BrowsingModeBottomToolbarCoordinator browsingModeCoordinator =
                             (BrowsingModeBottomToolbarCoordinator) mBrowsingModeCoordinator;
                     browsingModeCoordinator.getSearchAccelerator().setVisibility(View.GONE);
-                    if (mScrollingBottomView != null && mScrollingBottomView.getVisibility() == View.VISIBLE) {
-                        if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
-                            browsingModeCoordinator.getHomeButton().setVisibility(View.INVISIBLE);
-                        }
+                    if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+                        browsingModeCoordinator.getHomeButton().setVisibility(View.INVISIBLE);
                     }
                     if (BottomToolbarVariationManager.isBookmarkButtonOnBottom()) {
                         browsingModeCoordinator.getBookmarkButton().setVisibility(View.INVISIBLE);
@@ -213,10 +211,8 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
                     BrowsingModeBottomToolbarCoordinator browsingModeCoordinator =
                             (BrowsingModeBottomToolbarCoordinator) mBrowsingModeCoordinator;
                     browsingModeCoordinator.getSearchAccelerator().setVisibility(View.GONE);
-                    if (mScrollingBottomView != null && mScrollingBottomView.getVisibility() == View.VISIBLE) {
-                        if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
-                            browsingModeCoordinator.getHomeButton().setVisibility(View.VISIBLE);
-                        }
+                    if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+                        browsingModeCoordinator.getHomeButton().setVisibility(View.VISIBLE);
                     }
                     if (BottomToolbarVariationManager.isBookmarkButtonOnBottom()) {
                         browsingModeCoordinator.getBookmarkButton().setVisibility(View.VISIBLE);
@@ -290,9 +286,6 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
             mTabSwitcherModeCoordinator.showToolbarOnTop(!isVisible, true);
         }
         mBrowsingModeCoordinator.onVisibilityChanged(isVisible);
-        if(isVisible){
-            mHomeButton.setVisibility(View.VISIBLE);
-        }
     }
 
     /**
@@ -357,7 +350,6 @@ class BottomToolbarCoordinator implements View.OnLongClickListener  {
             mHomeButton.setImageDrawable(
                     ContextCompat.getDrawable(mContext, R.drawable.new_tab_icon));
             mHomeButton.setEnabled(true);
-            mHomeButton.setVisibility(View.VISIBLE); 
         } else {
             mHomeButton.setVisibility(View.VISIBLE);
             mHomeButton.setImageDrawable(
