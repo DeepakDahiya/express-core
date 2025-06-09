@@ -487,33 +487,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mReplyButton.setOnClickListener(v -> {
                     if (activity == null || mParentFragment == null) return; // Guard clause
 
-                    // Ensure mTopCommentRecycler is not null and has a LayoutManager
-                    if (mTopCommentRecycler != null && mTopCommentRecycler.getLayoutManager() instanceof LinearLayoutManager) {
-                        LinearLayoutManager layoutManager = (LinearLayoutManager) mTopCommentRecycler.getLayoutManager();
-                        layoutManager.scrollToPositionWithOffset(myPosition, 0);
-                    }
-
+                    mLayoutManager.scrollToPositionWithOffset(myPosition, 0);
 
                     if(mIsReplyAdapter){
                         mParentFragment.openRepliesToReply(comment.getId());
                     } else if (!mIsReplyToReplyAdapter){ // This condition was: !mIsReplyAdapter && !mIsReplyToReplyAdapter
                         mParentFragment.openReplies(comment.getId());
-                    } else { // This case implies mIsReplyToReplyAdapter is true
-                        // This block was for setting replyTo in BraveActivity, seems specific for direct replies in the same list
-                        try {
-                            JSONObject json = new JSONObject();
-                            json.put("name", comment.getUser().getUsername());
-                            json.put("commentId", comment.getId());
-                            activity.setReplyTo(json.toString());
-                            EditText contentEditText = activity.getContentEditText(); // Re-fetch, mMessageEditText might be stale
-                            if(contentEditText != null){
-                                String replyToString = "replying to " + comment.getUser().getUsername(); // Not directly used here
-                                contentEditText.requestFocus();
-                                // Show keyboard logic might be better handled by activity/fragment after setting replyTo
-                            }
-                        } catch (JSONException e) {
-                            Log.e("BROWSER_EXPRESS_REPLY_TO_CLICK", "JSON error", e);
-                        }
                     }
                 });
             }
