@@ -145,9 +145,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     }
 
     @Override
-    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull CommentListAdapter.CommentHolder holder, int position) {
         Comment comment = mCommentList.get(position);
-        ((CommentHolder) holder).bind(comment, position);
+        holder.bind(comment, position);
     }
 
     private class VideoDimensionTask extends AsyncTask<int[]> {
