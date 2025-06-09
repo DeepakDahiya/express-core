@@ -312,7 +312,7 @@ public class ReplyListFragment extends Fragment {
 
     private void setupScrollListener() {
         if (mNestedScrollView != null) {
-            mNestedScrollView.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
                 scheduleVideoCheck();
             });
         }
@@ -381,53 +381,6 @@ public class ReplyListFragment extends Fragment {
         return totalArea > 0 ? (float) visibleArea / totalArea : 0f;
     }
 
-    private void playTopmostVisibleVideo() {
-        if (getView() == null) return;
-
-        List<CommentListAdapter.CommentHolder> visibleVideoHolders = new ArrayList<>();
-        if (mTopCommentRecycler != null) findVisibleVideoHoldersIn(mTopCommentRecycler, visibleVideoHolders);
-        if (mCommentRecycler != null) findVisibleVideoHoldersIn(mCommentRecycler, visibleVideoHolders);
-
-        CommentListAdapter.CommentHolder bestHolder = null;
-        int topLocation = Integer.MAX_VALUE;
-
-        for (CommentListAdapter.CommentHolder holder : visibleVideoHolders) {
-            Rect rect = new Rect();
-            holder.commentVideo.getGlobalVisibleRect(rect);
-            if (rect.top >= 0 && rect.top < topLocation && rect.height() > holder.commentVideo.getHeight() * 0.65) {
-                topLocation = rect.top;
-                bestHolder = holder;
-            }
-        }
-        
-        // Correctly command both managers. Only one will find a match.
-        if (mTopCommentAdapter != null) {
-            mTopCommentAdapter.getVideoPlaybackManager().playVideo(bestHolder);
-        }
-        if (mCommentAdapter != null) {
-            mCommentAdapter.getVideoPlaybackManager().playVideo(bestHolder);
-        }
-    }
-
-    private void findVisibleVideoHoldersIn(RecyclerView recyclerView, List<CommentListAdapter.CommentHolder> holders) {
-        if (recyclerView == null || recyclerView.getLayoutManager() == null) return;
-        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        int first = layoutManager.findFirstVisibleItemPosition();
-        int last = layoutManager.findLastVisibleItemPosition();
-        if (first == RecyclerView.NO_POSITION) return;
-
-        for (int i = first; i <= last; i++) {
-            RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(i);
-            if (vh instanceof CommentListAdapter.CommentHolder) {
-                CommentListAdapter.CommentHolder holder = (CommentListAdapter.CommentHolder) vh;
-                // Add to list if it has an active player (meaning it's a video)
-                if (holder.player != null) {
-                    holders.add(holder);
-                }
-            }
-        }
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -439,13 +392,6 @@ public class ReplyListFragment extends Fragment {
             mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) null);
         }
         mHandler.removeCallbacksAndMessages(null);
-
-        if (mCommentAdapter != null && mCommentAdapter.getVideoPlaybackManager() != null) {
-            mCommentAdapter.getVideoPlaybackManager().releaseAllResources();
-        }
-        if (mTopCommentAdapter != null && mTopCommentAdapter.getVideoPlaybackManager() != null) {
-            mTopCommentAdapter.getVideoPlaybackManager().releaseAllResources();
-        }
 
         mNestedScrollView = null;
         mCommentAdapter = null;

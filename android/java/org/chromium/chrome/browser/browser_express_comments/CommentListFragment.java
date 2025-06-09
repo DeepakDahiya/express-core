@@ -423,44 +423,6 @@ public class CommentListFragment extends Fragment {
         return totalArea > 0 ? (float) visibleArea / totalArea : 0f;
     }
 
-    private void playVideoInCenterOfScreen() {
-        if (mCommentAdapter == null || mLayoutManager == null || mCommentRecycler == null) return;
-        
-        int firstVisiblePosition = mLayoutManager.findFirstVisibleItemPosition();
-        int lastVisiblePosition = mLayoutManager.findLastVisibleItemPosition();
-
-        if (firstVisiblePosition == RecyclerView.NO_POSITION) return;
-
-        CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-        CommentListAdapter.CommentHolder bestHolder = null;
-        int maxVisibility = 0;
-
-        for (int i = firstVisiblePosition; i <= lastVisiblePosition; i++) {
-            RecyclerView.ViewHolder vh = mCommentRecycler.findViewHolderForAdapterPosition(i);
-            if (vh instanceof CommentListAdapter.CommentHolder) {
-                CommentListAdapter.CommentHolder holder = (CommentListAdapter.CommentHolder) vh;
-                if (holder.player != null) {
-                    Rect rect = new Rect();
-                    int viewHeight = holder.commentVideo.getHeight();
-                    holder.commentVideo.getGlobalVisibleRect(rect);
-                    int visibleHeight = rect.height();
-
-                    if (viewHeight > 0 && visibleHeight > maxVisibility) {
-                        maxVisibility = visibleHeight;
-                        bestHolder = holder;
-                    }
-                }
-            }
-        }
-        
-        // Play the video only if it's more than 65% visible.
-        if (bestHolder != null && maxVisibility > bestHolder.commentVideo.getHeight() * 0.65) {
-            manager.playVideo(bestHolder);
-        } else {
-            manager.pauseCurrentlyPlayingVideo();
-        }
-    }
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();
@@ -473,12 +435,6 @@ public class CommentListFragment extends Fragment {
             videoScrollListener = null;
         }
 
-        if (mCommentAdapter != null) {
-            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-            if (manager != null) {
-                manager.releaseAllResources();
-            }
-        }
         mCommentAdapter = null;
         mCommentRecycler = null;
 
@@ -491,24 +447,6 @@ public class CommentListFragment extends Fragment {
         }
 
         mLayoutManager = null;
-    }
-
-    public void pauseAllVideosInList() {
-        if (mCommentAdapter != null) {
-            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-            if (manager != null) {
-                manager.pauseCurrentlyPlayingVideo();
-            }
-        }
-    }
-
-    public void releaseVideoManagerResources() { // Renamed for clarity from previous suggestion
-        if (mCommentAdapter != null) {
-            CommentListAdapter.VideoPlaybackManager manager = mCommentAdapter.getVideoPlaybackManager();
-            if (manager != null) {
-                manager.releaseAllResources();
-            }
-        }
     }
 
     public static CommentListFragment newInstance(String postId, String commentsFor, Boolean openKeyboard) {

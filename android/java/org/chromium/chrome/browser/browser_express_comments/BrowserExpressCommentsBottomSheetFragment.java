@@ -386,64 +386,11 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     private void pauseAllVideoPlaybackInActiveLists() {
-        Log.d("BottomSheetFragment", "Attempting to pause videos in active lists.");
-        FragmentManager fm = getChildFragmentManager();
-        List<Fragment> fragments = fm.getFragments();
-        if (fragments.isEmpty()) {
-            // This can happen if called very early or after all fragments are removed.
-            // Check the fragment currently in the container
-            Fragment currentFragmentInContainer = fm.findFragmentById(R.id.bottom_sheet_container);
-            if (currentFragmentInContainer != null) {
-                fragments = new ArrayList<>();
-                fragments.add(currentFragmentInContainer);
-            } else {
-                 Log.d("BottomSheetFragment", "No child fragments found to pause videos.");
-                return;
-            }
-        }
-
-        for (Fragment fragment : fragments) {
-            if (fragment != null && fragment.isAdded() && fragment.getView() != null) {
-                if (fragment instanceof CommentListFragment) {
-                    Log.d("BottomSheetFragment", "Pausing videos in CommentListFragment");
-                    ((CommentListFragment) fragment).pauseAllVideosInList();
-                } else if (fragment instanceof ReplyListFragment) {
-                    Log.d("BottomSheetFragment", "Pausing videos in ReplyListFragment");
-                    ((ReplyListFragment) fragment).pauseAllVideosInList();
-                } else if (fragment instanceof ReplyListFragment2) {
-                    Log.d("BottomSheetFragment", "Pausing videos in ReplyListFragment2");
-                    ((ReplyListFragment2) fragment).pauseAllVideosInList();
-                }
-                // Add other list fragment types if you have more
-            }
-        }
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
     }
 
     private void releaseAllVideoPlaybackResourcesInActiveLists() {
-        Log.d("BottomSheetFragment", "Attempting to release video resources in active lists.");
-        FragmentManager fm = getChildFragmentManager();
-        List<Fragment> fragments = fm.getFragments();
-         if (fragments.isEmpty()) {
-            Fragment currentFragmentInContainer = fm.findFragmentById(R.id.bottom_sheet_container);
-            if (currentFragmentInContainer != null) {
-                fragments = new ArrayList<>();
-                fragments.add(currentFragmentInContainer);
-            } else {
-                return;
-            }
-        }
-
-        for (Fragment fragment : fragments) {
-            if (fragment != null && fragment.isAdded()) { // No need for getView() if just releasing data
-                if (fragment instanceof CommentListFragment) {
-                    ((CommentListFragment) fragment).releaseVideoManagerResources();
-                } else if (fragment instanceof ReplyListFragment) {
-                    ((ReplyListFragment) fragment).releaseVideoManagerResources();
-                } else if (fragment instanceof ReplyListFragment2) {
-                    ((ReplyListFragment2) fragment).releaseVideoManagerResources();
-                }
-            }
-        }
+        GlobalVideoPlaybackManager.getInstance().releaseAllResources();
     }
 
     public void openReplies(String commentId) {

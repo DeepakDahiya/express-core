@@ -641,12 +641,14 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private void bindMediaContent(Uri mediaUri, String mediaType) {
             if ("video".equals(mediaType)) {
+                mHasVideo = true; // Add this line
                 commentImage.setVisibility(View.GONE);
                 commentVideo.setVisibility(View.VISIBLE);
                 muteButton.setVisibility(View.VISIBLE);
                 
                 initializePlayer(mediaUri);
             } else {
+                mHasVideo = false; // Add this line
                 GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
 
                 commentVideo.setVisibility(View.GONE);
