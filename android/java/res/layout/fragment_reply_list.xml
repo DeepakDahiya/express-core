@@ -61,6 +61,7 @@
             android:layout_marginStart="16dp"
             android:src="@drawable/comment_arrow"
             android:visibility="gone"
+            android:contentDescription="@null"
             tools:visibility="visible"/>
         
         <LinearLayout

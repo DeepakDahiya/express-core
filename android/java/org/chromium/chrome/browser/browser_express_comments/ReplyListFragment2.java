@@ -397,7 +397,7 @@ public class ReplyListFragment2 extends Fragment {
                     }
                     mCombinedList.addAll(comments); // Add all replies
 
-                    mCommentAdapter.notifyDataSetChanged();
+                    mCommentAdapter.notifyItemRangeInserted(0, comments.size());
 
                     positionReplyDivider();
 

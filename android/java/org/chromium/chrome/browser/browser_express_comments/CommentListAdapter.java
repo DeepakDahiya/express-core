@@ -133,7 +133,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
     @NonNull // Added NonNull
     @Override
-    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public CommentListAdapter.CommentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
         if (viewType == VIEW_TYPE_TOP_COMMENT) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
