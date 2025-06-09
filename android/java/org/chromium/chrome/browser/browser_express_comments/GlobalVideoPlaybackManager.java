@@ -3,12 +3,26 @@ package org.chromium.chrome.browser.browser_express_comments;
 public class GlobalVideoPlaybackManager {
     private static GlobalVideoPlaybackManager instance;
     private CommentListAdapter.CommentHolder mCurrentlyPlayingHolder;
+    private CommentListAdapter.CommentHolder mHolderToResume;
     
     public static GlobalVideoPlaybackManager getInstance() {
         if (instance == null) {
             instance = new GlobalVideoPlaybackManager();
         }
         return instance;
+    }
+
+    public void setHolderToResume(CommentListAdapter.CommentHolder holder) {
+        mHolderToResume = holder;
+    }
+
+    public void resumePlaybackIfPossible() {
+        if (mHolderToResume != null) {
+            if (mHolderToResume.itemView.isAttachedToWindow()) {
+                mHolderToResume.startPlayback();
+                mHolderToResume = null; 
+            }
+        }
     }
     
     public void playVideo(CommentListAdapter.CommentHolder holderToPlay) {

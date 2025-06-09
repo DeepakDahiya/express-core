@@ -363,7 +363,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             if(mIsReplyAdapter){
                 ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mCommentLayout.getLayoutParams();
-                int margin20dp = (int) (20 * context.getResources().getDisplayMetrics().density);
+                int margin20dp = (int) (40 * context.getResources().getDisplayMetrics().density);
                 params.setMarginStart(margin20dp);
                 mCommentLayout.setLayoutParams(params);
             }
@@ -827,8 +827,20 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        GlobalVideoPlaybackManager.getInstance().resumePlaybackIfPossible();
+    }
+
     private void openFullScreenViewer(Uri mediaUri, String mediaType) {
         if (mParentFragment != null && mParentFragment.isAdded()) {
+            CommentHolder currentHolder = GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder();
+        
+            if (currentHolder != null) {
+                GlobalVideoPlaybackManager.getInstance().setHolderToResume(currentHolder);
+            }
+
             GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
 
             MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);

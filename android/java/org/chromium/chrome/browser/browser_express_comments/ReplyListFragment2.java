@@ -197,7 +197,8 @@ public class ReplyListFragment2 extends Fragment {
         mCombinedList = new ArrayList<Comment>();
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-        mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+        mLayoutManager = new LinearLayoutManager(requireContext());
+        mCommentRecycler.setLayoutManager(mLayoutManager);
 
         mCommentAdapter = new CommentListAdapter(requireContext(), mCombinedList, mMessageEditText, parentFragment, true, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
