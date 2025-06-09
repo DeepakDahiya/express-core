@@ -199,7 +199,7 @@ public class ReplyListFragment2 extends Fragment {
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                parentFragment.openReplies(mCombinedList.get(0).getId());
+                parentFragment.openComments(false);
             }
         });
 

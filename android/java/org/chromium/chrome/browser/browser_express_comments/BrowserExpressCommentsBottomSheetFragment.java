@@ -82,8 +82,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private static final int MAX_IMAGE_DIMENSION = 1920;
     private static final int IMAGE_COMPRESSION_QUALITY = 80;
 
-    private Boolean mIsCommentPage = false;
-
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
@@ -226,7 +224,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         View view = inflater.inflate(
                 R.layout.fragment_browser_express_comments_bottom_sheet, container, false);
         loadFragment(CommentListFragment.newInstance(mPostId, mCommentsFor, mOpenKeyboard));
-        mIsCommentPage = true;
 
         mMessageEditText = view.findViewById(R.id.comment_content_input);
         mSendButton = view.findViewById(R.id.button_send);
@@ -300,6 +297,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 Log.e("ROOT_VIEW_KEY", "keyCode: " + keyCode);
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                     FragmentManager fragmentManager = getChildFragmentManager();
+                    if (fragmentManager.getBackStackEntryCount() > 2) {
+                        openComments(false);
+                        return true;
+                    }
                     if (fragmentManager.getBackStackEntryCount() > 1) {
                         openComments();
                         return true;
@@ -315,6 +316,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 Log.e("BACK BUTTON PRESSED", "keyCode: " + keyCode);
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                     FragmentManager fragmentManager = getChildFragmentManager();
+                    if (fragmentManager.getBackStackEntryCount() > 2) {
+                        openComments(false);
+                        return true;
+                    }
                     if (fragmentManager.getBackStackEntryCount() > 1) {
                         openComments();
                         return true;
@@ -331,7 +336,9 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     Log.e("BACK BUTTON PRESSED 2", "START");
                     FragmentManager fragmentManager = getChildFragmentManager();
                     Log.e("BACK BUTTON PRESSED 2", fragmentManager.getBackStackEntryCount() + "");
-                    if (fragmentManager.getBackStackEntryCount() > 1) {
+                    if (fragmentManager.getBackStackEntryCount() > 2) {
+                        openComments(false);
+                    } else if (fragmentManager.getBackStackEntryCount() > 1) {
                         openComments();
                     } else {
                         this.remove();
@@ -402,7 +409,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         args.putString("comment_id", commentId);
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
-        mIsCommentPage = false;
     }
 
     public void openRepliesToReply(String commentId) {
@@ -412,7 +418,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         args.putString("comment_id", commentId);
         replyFragment.setArguments(args);
         loadFragment(replyFragment);
-        mIsCommentPage = false;
     }
 
     public void dismissBottomsheet() {
@@ -420,11 +425,16 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     }
 
     public void openComments() {
+        openComments(true);
+    }
+
+    public void openComments(Boolean clearLastOpenedReplies) {
+        if(clearLastOpenedReplies) {
+            mLastOpenedRepliesToRepliesForCommentId = null;
+        }
         GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
-        mLastOpenedRepliesToRepliesForCommentId = null;
         FragmentManager fragmentManager = getChildFragmentManager();
         fragmentManager.popBackStack();
-        mIsCommentPage = true;
     }
 
     @Override
