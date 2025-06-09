@@ -822,6 +822,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
     private void openFullScreenViewer(Uri mediaUri, String mediaType) {
         if (mParentFragment != null && mParentFragment.isAdded()) {
+            GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
+            
             MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
             viewer.show(mParentFragment.getChildFragmentManager(), MediaViewerFragment.class.getSimpleName());
         }

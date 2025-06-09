@@ -649,6 +649,10 @@ public class CommentListFragment extends Fragment {
         }
     }
 
+    public void triggerVideoVisibilityCheck() {
+        scheduleVideoCheck();
+    }
+
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");

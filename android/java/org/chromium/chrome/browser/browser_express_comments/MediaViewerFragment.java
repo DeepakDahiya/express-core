@@ -77,6 +77,8 @@ public class MediaViewerFragment extends DialogFragment {
             mMediaType = getArguments().getString(ARG_MEDIA_TYPE);
             mShowKeyboardOnClose = getArguments().getBoolean(ARG_SHOW_KEYBOARD_ON_CLOSE, false);
         }
+
+        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
     }
 
     @Nullable
@@ -107,8 +109,35 @@ public class MediaViewerFragment extends DialogFragment {
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
+        
+        if (getView() != null) {
+            getView().postDelayed(() -> {
+                triggerVideoVisibilityCheck();
+            }, 100);
+        }
+        
         if (mDismissListener != null) {
             mDismissListener.onViewerDismissed(mShowKeyboardOnClose);
+        }
+    }
+
+    private void triggerVideoVisibilityCheck() {
+        if (getParentFragment() instanceof BrowserExpressCommentsBottomSheetFragment) {
+            BrowserExpressCommentsBottomSheetFragment parentFragment = 
+                (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
+            
+            if (parentFragment.getChildFragmentManager() != null) {
+                androidx.fragment.app.Fragment activeFragment = 
+                    parentFragment.getChildFragmentManager().findFragmentById(R.id.bottom_sheet_container);
+                
+                if (activeFragment instanceof CommentListFragment) {
+                    ((CommentListFragment) activeFragment).triggerVideoVisibilityCheck();
+                } else if (activeFragment instanceof ReplyListFragment) {
+                    ((ReplyListFragment) activeFragment).triggerVideoVisibilityCheck();
+                } else if (activeFragment instanceof ReplyListFragment2) {
+                    ((ReplyListFragment2) activeFragment).triggerVideoVisibilityCheck();
+                }
+            }
         }
     }
 
@@ -138,7 +167,6 @@ public class MediaViewerFragment extends DialogFragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Initialize player in onResume for API level 24+
         if (mPlayer == null) {
             initializePlayer();
         }
