@@ -385,7 +385,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             String imageUrl = comment.getMediaImageUrl();
             String videoUrl = comment.getMediaVideoUrl();
-            boolean hasMedia = (imageUrl != null && !imageUrl.isEmpty()) || (videoUrl != null && !videoUrl.isEmpty());
+
+            boolean hasImage = imageUrl != null && !imageUrl.isEmpty() && !imageUrl.equals("null");
+            boolean hasVideo = videoUrl != null && !videoUrl.isEmpty() && !videoUrl.equals("null");
+            boolean hasMedia = hasImage || hasVideo;
 
             if (hasMedia) {
                 commentMediaCard.setVisibility(View.VISIBLE);
@@ -394,7 +397,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 String mediaType;
 
                 // Prioritize video over image if both exist
-                if (videoUrl != null && !videoUrl.isEmpty()) {
+                if (hasVideo) {
                     urlString = videoUrl;
                     mediaType = "video";
                 } else {
@@ -409,14 +412,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 setAspectRatio(16, 9);
                 bindMediaContent(mediaUri, mediaType);
 
-                // if (comment.hasCachedDimensions()) {
-                //     setAspectRatio(comment.getMediaWidth(), comment.getMediaHeight());
-                //     bindMediaContent(mediaUri, mediaType);
-                // } else {
-                //     // Set default aspect ratio while loading
-                //     setAspectRatio(16, 9);
-                //     calculateAndCacheDimensions(comment, position, mediaUri, mediaType);
-                // }
             }
 
             if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null && activity != null){
@@ -731,10 +726,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             player = new ExoPlayer.Builder(context).build();
             commentVideo.setPlayer(player);
             commentVideo.setUseController(false);
-            player.setRepeatMode(Player.REPEAT_MODE_ONE);
+            player.setRepeatMode(Player.REPEAT_MODE_ALL);
 
-            player.setPlayWhenReady(true); // Start playback automatically
-            
             // Set up mute button
             muteButton.setOnClickListener(v -> {
                 if (player != null) {
