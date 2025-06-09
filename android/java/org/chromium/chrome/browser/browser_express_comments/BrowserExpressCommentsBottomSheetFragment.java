@@ -150,6 +150,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     @Override
     public void onResume() {
         super.onResume();
+        GlobalVideoPlaybackManager.getInstance().resumePlaybackIfPossible();
         registerUploadReceiver();
     }
 
