@@ -107,8 +107,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         mDimensionCallback = (position, width, height) -> {
             if (position >= 0 && position < mCommentList.size()) {
-                mCommentList.get(position).setMediaWidth(width);
-                mCommentList.get(position).setMediaHeight(height);
+                Comment comment = mCommentList.get(position);
+                comment.setMediaWidth(width);
+                comment.setMediaHeight(height);
+                
                 notifyItemChanged(position);
             }
         };
@@ -375,6 +377,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             commentVideo.setVisibility(View.GONE);
             muteButton.setVisibility(View.GONE);
 
+            if (player != null) {
+                player.stop();
+                player.release();
+                player = null;
+            }
+
             String imageUrl = comment.getMediaImageUrl();
             String videoUrl = comment.getMediaVideoUrl();
             boolean hasMedia = (imageUrl != null && !imageUrl.isEmpty()) || (videoUrl != null && !videoUrl.isEmpty());
@@ -385,6 +393,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 String urlString;
                 String mediaType;
 
+                // Prioritize video over image if both exist
                 if (videoUrl != null && !videoUrl.isEmpty()) {
                     urlString = videoUrl;
                     mediaType = "video";
@@ -401,12 +410,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     setAspectRatio(comment.getMediaWidth(), comment.getMediaHeight());
                     bindMediaContent(mediaUri, mediaType);
                 } else {
+                    // Set default aspect ratio while loading
                     setAspectRatio(16, 9);
-                    commentImage.setVisibility(View.VISIBLE);
                     calculateAndCacheDimensions(comment, position, mediaUri, mediaType);
                 }
             }
-            
+
             if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null && activity != null){
                 // Post top comments specific UI adjustments
                 mVoteLayout.setVisibility(View.GONE);
@@ -659,18 +668,29 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 commentImage.setVisibility(View.GONE);
                 commentVideo.setVisibility(View.VISIBLE);
                 muteButton.setVisibility(View.VISIBLE);
+                
+                initializePlayer(mediaUri);
+                
+                // Auto-play video through VideoPlaybackManager
                 if (mVideoManagerInstance != null) {
                     mVideoManagerInstance.playVideo(this);
                 }
-                initializePlayer(mediaUri);
             } else {
+                // Stop any video playback if switching to image
                 if (mVideoManagerInstance != null && mVideoManagerInstance.mCurrentlyPlayingHolder == this) {
                     mVideoManagerInstance.pauseCurrentlyPlayingVideo();
                 }
+                
                 commentVideo.setVisibility(View.GONE);
                 muteButton.setVisibility(View.GONE);
                 commentImage.setVisibility(View.VISIBLE);
-                Glide.with(context).load(mediaUri).into(commentImage);
+                
+                // Load image with Glide
+                Glide.with(getContext())
+                    .load(mediaUri)
+                    .placeholder(R.drawable.placeholder_image) // Add a placeholder
+                    .error(R.drawable.error_image) // Add error image
+                    .into(commentImage);
             }
         }
 
@@ -678,14 +698,20 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if ("video".equals(mediaType)) {
                 new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
-                Glide.with(context).asBitmap().load(mediaUri).into(new CustomTarget<Bitmap>() {
-                    @Override public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                        if (getBindingAdapterPosition() == position) {
-                            mDimensionCallback.onDimensionsReady(position, resource.getWidth(), resource.getHeight());
+                // For images, load with Glide to get dimensions
+                Glide.with(getContext())
+                    .asBitmap()
+                    .load(mediaUri)
+                    .into(new CustomTarget<Bitmap>() {
+                        @Override 
+                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+                            if (getBindingAdapterPosition() == position) {
+                                mDimensionCallback.onDimensionsReady(position, resource.getWidth(), resource.getHeight());
+                            }
                         }
-                    }
-                    @Override public void onLoadCleared(@Nullable Drawable placeholder) {}
-                });
+                        @Override 
+                        public void onLoadCleared(@Nullable Drawable placeholder) {}
+                    });
             }
         }
 
@@ -699,25 +725,34 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
 
         private void initializePlayer(Uri videoUri) {
-            if (player == null) {
-                player = new ExoPlayer.Builder(context).build();
-                commentVideo.setPlayer(player);
-                commentVideo.setUseController(false);
-                player.setRepeatMode(Player.REPEAT_MODE_ONE);
-                muteButton.setOnClickListener(v -> {
-                    if (player != null && player.getVolume() > 0) {
+            if (player != null) {
+                player.stop();
+                player.release();
+            }
+            
+            player = new ExoPlayer.Builder(context).build();
+            commentVideo.setPlayer(player);
+            commentVideo.setUseController(false);
+            player.setRepeatMode(Player.REPEAT_MODE_ONE);
+            
+            // Set up mute button
+            muteButton.setOnClickListener(v -> {
+                if (player != null) {
+                    if (player.getVolume() > 0) {
                         player.setVolume(0f);
                         muteButton.setImageResource(R.drawable.volume_off);
-                    } else if (player != null) {
+                    } else {
                         player.setVolume(1f);
                         muteButton.setImageResource(R.drawable.volume_on);
                     }
-                });
-            }
+                }
+            });
+            
+            // Start muted
             player.setVolume(0f);
             muteButton.setImageResource(R.drawable.volume_off);
             
-            // Your excellent suggested fix is implemented here:
+            // Prepare media
             MediaItem mediaItem;
             String urlString = videoUri.toString();
             if (urlString.startsWith("http")) {
@@ -725,6 +760,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             } else {
                 mediaItem = MediaItem.fromUri(videoUri);
             }
+            
             player.setMediaItem(mediaItem);
             player.prepare();
         }
