@@ -174,14 +174,6 @@ public class ReplyListFragment2 extends Fragment {
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-
-        mBackButton = view.findViewById(R.id.back_button);
-        mBackButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                parentFragment.openReplies();
-            }
-        });
         
         mShimmerLoading = view.findViewById(R.id.skeleton_shimmer);
         mShimmerItems = view.findViewById(R.id.shimmer_items);
@@ -202,6 +194,14 @@ public class ReplyListFragment2 extends Fragment {
 
         mCommentAdapter = new CommentListAdapter(requireContext(), mCombinedList, mMessageEditText, parentFragment, true, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
+
+        mBackButton = view.findViewById(R.id.back_button);
+        mBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                parentFragment.openReplies(mCombinedList.get(0).getId());
+            }
+        });
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
