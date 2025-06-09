@@ -54,16 +54,6 @@
             android:clipToPadding="false"
             android:paddingBottom="8dp"/>
 
-        <ImageView
-            android:id="@+id/comment_arrow_divider"
-            android:layout_width="18dp"
-            android:layout_height="18dp"
-            android:layout_marginStart="16dp"
-            android:src="@drawable/comment_arrow"
-            android:visibility="gone"
-            android:contentDescription="@null"
-            tools:visibility="visible"/>
-        
         <LinearLayout
             android:id="@+id/empty_container"
             android:layout_width="match_parent"

@@ -94,8 +94,6 @@ public class ReplyListFragment2 extends Fragment {
 
     private BottomSheetInputCallback inputCallback;
 
-    private ImageView mReplyDivider;
-
     private LinearLayoutManager mLayoutManager;
 
     private android.content.BroadcastReceiver mUploadReceiver;
@@ -172,7 +170,6 @@ public class ReplyListFragment2 extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
-        mReplyDivider = view.findViewById(R.id.comment_arrow_divider);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
@@ -399,8 +396,6 @@ public class ReplyListFragment2 extends Fragment {
 
                     mCommentAdapter.notifyItemRangeInserted(0, comments.size());
 
-                    positionReplyDivider();
-
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
@@ -412,29 +407,6 @@ public class ReplyListFragment2 extends Fragment {
                 }
             };
 
-    private void positionReplyDivider() {
-        if (mCombinedList.size() <= 1) {
-            mReplyDivider.setVisibility(View.GONE);
-            return;
-        }
-
-        mCommentRecycler.post(() -> {
-            RecyclerView.ViewHolder holder = mCommentRecycler.findViewHolderForAdapterPosition(0);
-            if (holder != null) {
-                View topCommentView = holder.itemView;
-                int topCommentBottom = topCommentView.getBottom();
-                
-                // Position the divider right below the first item.
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mReplyDivider.getLayoutParams();
-                params.topMargin = topCommentBottom;
-                mReplyDivider.setLayoutParams(params);
-                mReplyDivider.setVisibility(View.VISIBLE);
-            } else {
-                mReplyDivider.setVisibility(View.GONE);
-            }
-        });
-    }
-
     private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
@@ -443,8 +415,6 @@ public class ReplyListFragment2 extends Fragment {
                     mCommentAdapter.notifyItemInserted(1);
                     mLayoutManager.scrollToPositionWithOffset(0, 0); // Scroll to top
                     
-                    positionReplyDivider(); // Reposition the divider
-
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
 
@@ -482,7 +452,6 @@ public class ReplyListFragment2 extends Fragment {
             mCombinedList.add(1, newComment);
             mCommentAdapter.notifyItemInserted(1);
             mLayoutManager.scrollToPositionWithOffset(0, 0);
-            positionReplyDivider();
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();

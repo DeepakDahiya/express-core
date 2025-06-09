@@ -105,8 +105,6 @@ public class ReplyListFragment extends Fragment {
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Runnable mVideoCheckRunnable = this::checkAndPlayMostVisibleVideo;
 
-    private ImageView mReplyDivider;
-
     private LinearLayoutManager mLayoutManager;
 
     @Override
@@ -187,7 +185,6 @@ public class ReplyListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
-        mReplyDivider = view.findViewById(R.id.comment_arrow_divider);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
@@ -247,13 +244,6 @@ public class ReplyListFragment extends Fragment {
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
                             mUrl = activity.getActivityTab().getUrl().getSpec();
-                            // if (accessToken == null) {
-                            //     InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
-                            //     imm.toggleSoftInput(InputMethodManager.HIDE_IMPLICIT_ONLY, 0);
-                            //     activity.showGenerateUsernameBottomSheet();
-                            //     parentFragment.dismissBottomsheet();
-                            //     return;
-                            // }
                             String content = mMessageEditText.getText().toString().trim();
 
                             Uri mediaUri = null;
@@ -416,21 +406,9 @@ public class ReplyListFragment extends Fragment {
 
                     mCommentAdapter.notifyItemRangeInserted(0, comments.size());
 
-                    positionReplyDivider();
-
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
-
-                    if (mShouldScrollToLastParent && mTargetScrollCommentId != null) {
-                        scrollToCommentId(mTargetScrollCommentId);
-                        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-                        if (parentFragment != null) {
-                            parentFragment.clearLastOpenedRepliesToRepliesForCommentId();
-                        }
-                        mShouldScrollToLastParent = false; // Reset flag
-                        mTargetScrollCommentId = null;
-                    }
                 }
 
                 @Override
@@ -438,29 +416,6 @@ public class ReplyListFragment extends Fragment {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
-
-    private void positionReplyDivider() {
-        if (mCombinedList.size() <= 1) {
-            mReplyDivider.setVisibility(View.GONE);
-            return;
-        }
-
-        mCommentRecycler.post(() -> {
-            RecyclerView.ViewHolder holder = mCommentRecycler.findViewHolderForAdapterPosition(0);
-            if (holder != null) {
-                View topCommentView = holder.itemView;
-                int topCommentBottom = topCommentView.getBottom();
-                
-                // Position the divider right below the first item.
-                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mReplyDivider.getLayoutParams();
-                params.topMargin = topCommentBottom;
-                mReplyDivider.setLayoutParams(params);
-                mReplyDivider.setVisibility(View.VISIBLE);
-            } else {
-                mReplyDivider.setVisibility(View.GONE);
-            }
-        });
-    }
 
     private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
@@ -470,8 +425,6 @@ public class ReplyListFragment extends Fragment {
                     mCommentAdapter.notifyItemInserted(1);
                     mLayoutManager.scrollToPositionWithOffset(0, 0); // Scroll to top
                     
-                    positionReplyDivider(); // Reposition the divider
-
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
 
@@ -508,7 +461,6 @@ public class ReplyListFragment extends Fragment {
             mCombinedList.add(1, newComment);
             mCommentAdapter.notifyItemInserted(1);
             mLayoutManager.scrollToPositionWithOffset(0, 0);
-            positionReplyDivider();
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();

@@ -361,6 +361,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mActionItemsLayout.setVisibility(View.GONE);
             }
 
+            if(mIsReplyAdapter){
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mCommentLayout.getLayoutParams();
+                int margin20dp = (int) (20 * context.getResources().getDisplayMetrics().density);
+                params.setMarginStart(margin20dp);
+                mCommentLayout.setLayoutParams(params);
+            }
+
             mHasVideo = false;
             mIsVideoInitialized = false;
             commentMediaCard.setVisibility(View.GONE);
@@ -823,7 +830,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private void openFullScreenViewer(Uri mediaUri, String mediaType) {
         if (mParentFragment != null && mParentFragment.isAdded()) {
             GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
-            
+
             MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
             viewer.show(mParentFragment.getChildFragmentManager(), MediaViewerFragment.class.getSimpleName());
         }

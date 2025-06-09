@@ -164,7 +164,6 @@ brave_java_resources = [
   "java/res/drawable-nodpi/dylan_malval_sea_min.webp",
   "java/res/drawable-nodpi/eth.png",
   "java/res/drawable-nodpi/youtube.png",
-  "java/res/drawable-nodpi/comment_arrow.png",
   "java/res/drawable-nodpi/edit_profile.png",
   "java/res/drawable-nodpi/comments.png",
   "java/res/drawable-nodpi/loading_image.png",
