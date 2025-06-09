@@ -686,10 +686,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 commentImage.setVisibility(View.VISIBLE);
                 
                 // Load image with Glide
-                Glide.with(getContext())
+                Glide.with(context)
                     .load(mediaUri)
-                    .placeholder(R.drawable.placeholder_image) // Add a placeholder
-                    .error(R.drawable.error_image) // Add error image
                     .into(commentImage);
             }
         }
@@ -699,7 +697,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } else {
                 // For images, load with Glide to get dimensions
-                Glide.with(getContext())
+                Glide.with(context)
                     .asBitmap()
                     .load(mediaUri)
                     .into(new CustomTarget<Bitmap>() {
