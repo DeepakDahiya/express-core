@@ -137,10 +137,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         View view;
         if (viewType == VIEW_TYPE_TOP_COMMENT) {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-            return new CommentHolder(view, mMessageEditText, null, mParentFragment, mIsReplyAdapter, true, mIsReplyToReplyAdapter, viewType);
+            return new CommentHolder(view, mMessageEditText, mParentFragment, mIsReplyAdapter, true, mIsReplyToReplyAdapter, viewType);
         } else {
             view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-            return new CommentHolder(view, mMessageEditText, null, mParentFragment, mIsReplyAdapter, false, mIsReplyToReplyAdapter, viewType);
+            return new CommentHolder(view, mMessageEditText, mParentFragment, mIsReplyAdapter, false, mIsReplyToReplyAdapter, viewType);
         }
     }
 
@@ -209,7 +209,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private ProgressBar mPostingProgressBar;
         private TextView mFailedTextView;
 
-        private RecyclerView mTopCommentRecycler; // From constructor
         // private CommentListAdapter mCommentAdapter; // Not used in this class, consider removing
         // private List<Comment> mComments; // Not used in this class, consider removing
 
@@ -247,7 +246,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private final int mViewType;
 
-        CommentHolder(@NonNull View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
+        CommentHolder(@NonNull View itemView, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
             super(itemView);
             this.context = itemView.getContext(); // Initialize context
 
@@ -410,7 +409,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             }
 
-            if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null && activity != null){
+            if(mMessageEditText == null && mParentFragment == null && activity != null){
                 // Post top comments specific UI adjustments
                 mVoteLayout.setVisibility(View.GONE);
                 mActionItemsLayout.setVisibility(View.GONE);

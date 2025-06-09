@@ -481,9 +481,6 @@ public class ReplyListFragment extends Fragment {
             return;
         }
 
-        final LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-        if (layoutManager == null) return;
-
         int position = -1;
         for (int i = 0; i < mCombinedList.size(); i++) {
             if (mCombinedList.get(i).getId().equals(commentId)) {
@@ -494,12 +491,14 @@ public class ReplyListFragment extends Fragment {
 
         if (position != -1) {
             final int finalPosition = position;
-            mCommentRecycler.post(new Runnable() {
-                @Override
-                public void run() {
-                    layoutManager.scrollToPositionWithOffset(finalPosition, 0);
-                }
-            });
+            mLayoutManager.scrollToPositionWithOffset(finalPosition, 0);
+            View itemView = mLayoutManager.findViewByPosition(finalPosition);
+            if (itemView != null) {
+                itemView.setBackgroundColor(Color.YELLOW); // Example highlight
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    itemView.setBackgroundColor(Color.TRANSPARENT); // Or original color
+                }, 1000);
+            }
         } else {
             Log.w("ReplyListScroll", "Reply ID not found in list: " + commentId);
         }
