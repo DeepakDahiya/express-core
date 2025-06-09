@@ -406,14 +406,17 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 
                 commentMediaCard.setOnClickListener(v -> openFullScreenViewer(mediaUri, mediaType));
 
-                if (comment.hasCachedDimensions()) {
-                    setAspectRatio(comment.getMediaWidth(), comment.getMediaHeight());
-                    bindMediaContent(mediaUri, mediaType);
-                } else {
-                    // Set default aspect ratio while loading
-                    setAspectRatio(16, 9);
-                    calculateAndCacheDimensions(comment, position, mediaUri, mediaType);
-                }
+                setAspectRatio(16, 9);
+                bindMediaContent(mediaUri, mediaType);
+
+                // if (comment.hasCachedDimensions()) {
+                //     setAspectRatio(comment.getMediaWidth(), comment.getMediaHeight());
+                //     bindMediaContent(mediaUri, mediaType);
+                // } else {
+                //     // Set default aspect ratio while loading
+                //     setAspectRatio(16, 9);
+                //     calculateAndCacheDimensions(comment, position, mediaUri, mediaType);
+                // }
             }
 
             if(mMessageEditText == null && mParentFragment == null && mTopCommentRecycler == null && activity != null){
@@ -684,11 +687,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 commentVideo.setVisibility(View.GONE);
                 muteButton.setVisibility(View.GONE);
                 commentImage.setVisibility(View.VISIBLE);
-                
-                // Load image with Glide
-                Glide.with(context)
-                    .load(mediaUri)
-                    .into(commentImage);
+
+                ImageLoader.downloadImage(mediaUri.toString(), Glide.with(activity), false, 5, commentImage, null);
             }
         }
 
@@ -732,6 +732,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             commentVideo.setPlayer(player);
             commentVideo.setUseController(false);
             player.setRepeatMode(Player.REPEAT_MODE_ONE);
+
+            player.setPlayWhenReady(true); // Start playback automatically
             
             // Set up mute button
             muteButton.setOnClickListener(v -> {
