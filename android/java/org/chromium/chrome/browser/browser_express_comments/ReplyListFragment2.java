@@ -58,6 +58,7 @@ import androidx.core.widget.NestedScrollView;
 import android.net.Uri;
 import android.os.Handler;
 import android.os.Looper;
+import android.widget.FrameLayout;
 
 public class ReplyListFragment2 extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -200,7 +201,6 @@ public class ReplyListFragment2 extends Fragment {
 
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
         mCommentAdapter = new CommentListAdapter(requireContext(), mCombinedList, mMessageEditText, parentFragment, true, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
@@ -368,8 +368,6 @@ public class ReplyListFragment2 extends Fragment {
 
         mCommentAdapter = null;
         mCommentRecycler = null;
-        mTopCommentAdapter = null;
-        mTopCommentRecycler = null;
     }
 
     private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
