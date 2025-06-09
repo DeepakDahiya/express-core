@@ -80,13 +80,14 @@ import androidx.annotation.Nullable;
 import android.graphics.Rect;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
+    private static final int VIEW_TYPE_TOP_COMMENT = 1;
+    private static final int VIEW_TYPE_REPLY_COMMENT = 2;
+
     private Context mContext;
     private List<Comment> mCommentList;
     private EditText mMessageEditText;
-    private RecyclerView mTopCommentRecycler;
     private BrowserExpressCommentsBottomSheetFragment mParentFragment;
     private boolean mIsReplyAdapter;
-    private boolean mIsReplyTopComment;
     private boolean mIsReplyToReplyAdapter;
 
     private RecyclerView mRecyclerView;
@@ -96,14 +97,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     }
     private final DimensionCallback mDimensionCallback;
 
-    public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
+    public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyToReplyAdapter) {
         mContext = context;
         mCommentList = commentList;
         mMessageEditText = messageEditText;
-        mTopCommentRecycler = topCommentRecycler;
         mParentFragment = parentFragment;
         mIsReplyAdapter = isReplyAdapter;
-        mIsReplyTopComment = isReplyTopComment;
         mIsReplyToReplyAdapter = isReplyToReplyAdapter;
 
         mDimensionCallback = (position, width, height) -> {
@@ -118,22 +117,37 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     }
 
     @Override
+    public int getItemViewType(int position) {
+        // In a reply list, the first item (position 0) is always the main comment we are replying to.
+        if (position == 0 && mIsReplyAdapter) {
+            return VIEW_TYPE_TOP_COMMENT;
+        }
+        // All other items are standard replies.
+        return VIEW_TYPE_REPLY_COMMENT;
+    }
+
+    @Override
     public int getItemCount() {
         return mCommentList.size();
     }
 
     @NonNull // Added NonNull
     @Override
-    public CommentHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view;
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
-        return new CommentHolder(view, mMessageEditText, mTopCommentRecycler, mParentFragment, mIsReplyAdapter, mIsReplyTopComment, mIsReplyToReplyAdapter);
+        if (viewType == VIEW_TYPE_TOP_COMMENT) {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
+            return new CommentHolder(view, mMessageEditText, null, mParentFragment, mIsReplyAdapter, true, mIsReplyToReplyAdapter, viewType);
+        } else {
+            view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_comment, parent, false);
+            return new CommentHolder(view, mMessageEditText, null, mParentFragment, mIsReplyAdapter, false, mIsReplyToReplyAdapter, viewType);
+        }
     }
 
     @Override
-    public void onBindViewHolder(@NonNull CommentHolder holder, int position) {
+    public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
         Comment comment = mCommentList.get(position);
-        holder.bind(comment, position);
+        ((CommentHolder) holder).bind(comment, position);
     }
 
     private class VideoDimensionTask extends AsyncTask<int[]> {
@@ -231,16 +245,19 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private boolean mHasVideo = false;
         private boolean mIsVideoInitialized = false;
 
-        CommentHolder(@NonNull View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter) {
+        private final int mViewType;
+
+        CommentHolder(@NonNull View itemView, EditText messageEditText, RecyclerView topCommentRecycler, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
             super(itemView);
             this.context = itemView.getContext(); // Initialize context
 
             mMessageEditText = messageEditText;
-            mTopCommentRecycler = topCommentRecycler;
             mParentFragment = parentFragment;
             mIsReplyAdapter = isReplyAdapter;
             mIsReplyTopComment = isReplyTopComment;
             mIsReplyToReplyAdapter = isReplyToReplyAdapter;
+
+            mViewType = viewType;
 
             mAvatarImage = itemView.findViewById(R.id.avatar_image);
             usernameText = itemView.findViewById(R.id.username);

@@ -67,14 +67,10 @@ public class ReplyListFragment extends Fragment {
     public static final String COMMENT_ID = "comment_id";
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
-    private List<Comment> mComments;
+    private List<Comment> mCombinedList;
     private int mPage = 1;
     private int mPerPage = 100;
     private String mUrl;
-
-    private RecyclerView mTopCommentRecycler;
-    private CommentListAdapter mTopCommentAdapter;
-    private List<Comment> mTopComments;
 
     private String mCommentId;
 
@@ -96,12 +92,7 @@ public class ReplyListFragment extends Fragment {
 
     private LinearLayout mEmptyContainer;
 
-    private ImageView mArrow2;
-
     private BottomSheetInputCallback inputCallback;
-
-    private NestedScrollView mNestedScrollView;
-    private NestedScrollView.OnScrollChangeListener videoNestedScrollListener;
 
     private boolean mShouldScrollToLastParent = false;
     private String mTargetScrollCommentId = null;
@@ -112,6 +103,10 @@ public class ReplyListFragment extends Fragment {
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Runnable mVideoCheckRunnable = this::checkAndPlayMostVisibleVideo;
+
+    private ImageView mReplyDivider;
+
+    private LinearLayoutManager mLayoutManager;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -191,7 +186,7 @@ public class ReplyListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
-        mArrow2 = view.findViewById(R.id.comment_arrow2);
+        mReplyDivider = view.findViewById(R.id.comment_arrow2);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
@@ -220,20 +215,15 @@ public class ReplyListFragment extends Fragment {
         mShimmerLoading.showShimmer(true);
         AndroidUtils.show(mShimmerItems);
 
-        mComments = new ArrayList<Comment>();
+        mCombinedList = new ArrayList<Comment>();
 
-        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_replies);
+        mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
+        BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
-        boolean isReplyAdapter = true;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false, false);
+        mCommentAdapter = new CommentListAdapter(requireContext(), mCombinedList, mMessageEditText, parentFragment, true, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
-        mTopComments = new ArrayList<Comment>();
-        mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
-        mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
-        mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, parentFragment, isReplyAdapter, true, false);
-        mTopCommentRecycler.setAdapter(mTopCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
         this.setOnClickForEmoji(inputCallback.getEmojiButton("heart"), mMessageEditText);
@@ -311,9 +301,15 @@ public class ReplyListFragment extends Fragment {
     }
 
     private void setupScrollListener() {
-        if (mNestedScrollView != null) {
-            mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) (v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
-                scheduleVideoCheck();
+        if (mCommentRecycler != null) {
+            mCommentRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                @Override
+                public void onScrollStateChanged(@NonNull RecyclerView recyclerView, int newState) {
+                    super.onScrollStateChanged(recyclerView, newState);
+                    if (newState == RecyclerView.SCROLL_STATE_IDLE) {
+                        scheduleVideoCheck();
+                    }
+                }
             });
         }
     }
@@ -324,25 +320,26 @@ public class ReplyListFragment extends Fragment {
     }
 
     private void checkAndPlayMostVisibleVideo() {
-        List<CommentListAdapter.CommentHolder> allVideoHolders = new ArrayList<>();
-        
-        // Collect video holders from both RecyclerViews
-        if (mTopCommentRecycler != null) {
-            collectVideoHolders(mTopCommentRecycler, allVideoHolders);
-        }
-        if (mCommentRecycler != null) {
-            collectVideoHolders(mCommentRecycler, allVideoHolders);
-        }
+        if (mCommentRecycler == null || mLayoutManager == null) return;
+
+        int firstVisible = mLayoutManager.findFirstVisibleItemPosition();
+        int lastVisible = mLayoutManager.findLastVisibleItemPosition();
+
+        if (firstVisible == RecyclerView.NO_POSITION) return;
         
         CommentListAdapter.CommentHolder bestHolder = null;
         float bestVisibilityPercentage = 0f;
         
-        for (CommentListAdapter.CommentHolder holder : allVideoHolders) {
-            if (holder.hasVideo()) {
-                float visibility = getVisibilityPercentage(holder.commentVideo);
-                if (visibility > bestVisibilityPercentage && visibility > 0.6f) {
-                    bestVisibilityPercentage = visibility;
-                    bestHolder = holder;
+        for (int i = firstVisible; i <= lastVisible; i++) {
+            RecyclerView.ViewHolder vh = mCommentRecycler.findViewHolderForAdapterPosition(i);
+            if (vh instanceof CommentListAdapter.CommentHolder) {
+                CommentListAdapter.CommentHolder holder = (CommentListAdapter.CommentHolder) vh;
+                if (holder.hasVideo()) {
+                    float visibility = getVisibilityPercentage(holder.commentVideo);
+                    if (visibility > bestVisibilityPercentage && visibility > 0.6f) { // 60% visibility threshold
+                        bestVisibilityPercentage = visibility;
+                        bestHolder = holder;
+                    }
                 }
             }
         }
@@ -420,21 +417,16 @@ public class ReplyListFragment extends Fragment {
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
-                    int len = mComments.size();
-                    mComments.addAll(comments);
-                    mCommentAdapter.notifyItemRangeInserted(len, comments.size());
-
-                    if(mComments.isEmpty()) {
-                        mArrow2.setVisibility(View.INVISIBLE);
-                    } else {
-                        mArrow2.setVisibility(View.VISIBLE);
-                    }
-
-                    if(parentComment != null){
-                        mTopComments.add(parentComment);
-                        mTopCommentAdapter.notifyItemRangeInserted(0, 1);
+                    mCombinedList.clear();
+                    if (parentComment != null) {
+                        mCombinedList.add(parentComment);
                         inputCallback.setPostStuff(parentComment.getId(), parentComment.getUser().getUsername(), parentComment.getContent(), parentComment.getUser().getAvatar(), "comment");
                     }
+                    mCombinedList.addAll(comments); // Add all replies
+
+                    mCommentAdapter.notifyDataSetChanged();
+
+                    positionReplyDivider();
 
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
@@ -457,20 +449,38 @@ public class ReplyListFragment extends Fragment {
                 }
             };
 
+    private void positionReplyDivider() {
+        if (mCombinedList.size() <= 1) {
+            mReplyDivider.setVisibility(View.GONE);
+            return;
+        }
+
+        mCommentRecycler.post(() -> {
+            RecyclerView.ViewHolder holder = mCommentRecycler.findViewHolderForAdapterPosition(0);
+            if (holder != null) {
+                View topCommentView = holder.itemView;
+                int topCommentBottom = topCommentView.getBottom();
+                
+                // Position the divider right below the first item.
+                FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) mReplyDivider.getLayoutParams();
+                params.topMargin = topCommentBottom;
+                mReplyDivider.setLayoutParams(params);
+                mReplyDivider.setVisibility(View.VISIBLE);
+            } else {
+                mReplyDivider.setVisibility(View.GONE);
+            }
+        });
+    }
+
     private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
-                    mComments.add(0, comment);
-                    mCommentAdapter.notifyItemRangeInserted(0, 1);
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-                    layoutManager.scrollToPositionWithOffset(0, 0);
-
-                    mArrow2.setVisibility(View.VISIBLE);
-
-                    if (mNestedScrollView != null) {
-                        mNestedScrollView.smoothScrollTo(0, 0);
-                    }
+                    mCombinedList.add(1, comment);
+                    mCommentAdapter.notifyItemInserted(1);
+                    mLayoutManager.scrollToPositionWithOffset(0, 0); // Scroll to top
+                    
+                    positionReplyDivider(); // Reposition the divider
 
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
@@ -505,17 +515,10 @@ public class ReplyListFragment extends Fragment {
 
     public void addNewComment(Comment newComment) {
         if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
-            mComments.add(0, newComment);
-
-            mArrow2.setVisibility(View.VISIBLE);
-
-            mCommentAdapter.notifyItemRangeInserted(0, 1);
-            LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
-            layoutManager.scrollToPositionWithOffset(0, 0);
-
-            if (mNestedScrollView != null) {
-                mNestedScrollView.smoothScrollTo(0, 0);
-            }
+            mCombinedList.add(1, newComment);
+            mCommentAdapter.notifyItemInserted(1);
+            mLayoutManager.scrollToPositionWithOffset(0, 0);
+            positionReplyDivider();
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();
@@ -595,10 +598,10 @@ public class ReplyListFragment extends Fragment {
     }
 
     public void updateTemporaryComment(String tempId, Comment realComment) {
-        if (mComments == null || mCommentAdapter == null) return;
-        for (int i = 0; i < mComments.size(); i++) {
-            if (mComments.get(i).getId().equals(tempId)) {
-                mComments.set(i, realComment);
+        if (mCombinedList == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mCombinedList.size(); i++) {
+            if (mCombinedList.get(i).getId().equals(tempId)) {
+                mCombinedList.set(i, realComment);
                 mCommentAdapter.notifyItemChanged(i);
                 return;
             }
