@@ -457,6 +457,15 @@ public class BraveToolbarManager extends ToolbarManager {
             visible = false;
         }
 
+        if (visible) {
+            if (mBottomControlsCoordinatorSupplier != null
+                    && mBottomControlsCoordinatorSupplier.get()
+                                    instanceof BraveBottomControlsCoordinator) {
+                ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
+                        .updateHomeButtonState();
+            }
+        }
+
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomToolbarVisibilityChanged(visible);
         }
