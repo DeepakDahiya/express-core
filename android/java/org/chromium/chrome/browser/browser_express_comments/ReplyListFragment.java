@@ -126,7 +126,7 @@ public class ReplyListFragment extends Fragment {
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         if (parentFragment != null) {
             String targetId = parentFragment.getLastOpenedRepliesToRepliesForCommentId();
-            if (targetId != null && mComments != null && !mComments.isEmpty()) {
+            if (targetId != null && mCombinedList != null && !mCombinedList.isEmpty()) {
                 scrollToCommentId(targetId);
                 parentFragment.clearLastOpenedRepliesToRepliesForCommentId();
             } else if (targetId != null) {
@@ -189,8 +189,6 @@ public class ReplyListFragment extends Fragment {
         mReplyDivider = view.findViewById(R.id.comment_arrow2);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
-
-        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
 
         mArrow2.setVisibility(View.VISIBLE);
         
@@ -385,12 +383,8 @@ public class ReplyListFragment extends Fragment {
         mHandler.removeCallbacks(mVideoCheckRunnable);
         GlobalVideoPlaybackManager.getInstance().releaseAllResources();
 
-        if (mNestedScrollView != null) {
-            mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) null);
-        }
         mHandler.removeCallbacksAndMessages(null);
 
-        mNestedScrollView = null;
         mCommentAdapter = null;
         mCommentRecycler = null;
         mTopCommentAdapter = null;
@@ -514,7 +508,7 @@ public class ReplyListFragment extends Fragment {
             };
 
     public void addNewComment(Comment newComment) {
-        if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
+        if (mCombinedList != null && mCommentAdapter != null && mCommentRecycler != null) {
             mCombinedList.add(1, newComment);
             mCommentAdapter.notifyItemInserted(1);
             mLayoutManager.scrollToPositionWithOffset(0, 0);
@@ -535,7 +529,7 @@ public class ReplyListFragment extends Fragment {
     }
 
     private void scrollToCommentId(String commentId) {
-        if (commentId == null || mComments == null || mComments.isEmpty() || mCommentRecycler == null || mNestedScrollView == null) {
+        if (commentId == null || mCombinedList == null || mCombinedList.isEmpty() || mCommentRecycler == null) {
             return;
         }
 
@@ -543,8 +537,8 @@ public class ReplyListFragment extends Fragment {
         if (layoutManager == null) return;
 
         int position = -1;
-        for (int i = 0; i < mComments.size(); i++) {
-            if (mComments.get(i).getId().equals(commentId)) {
+        for (int i = 0; i < mCombinedList.size(); i++) {
+            if (mCombinedList.get(i).getId().equals(commentId)) {
                 position = i;
                 break;
             }
@@ -556,40 +550,6 @@ public class ReplyListFragment extends Fragment {
                 @Override
                 public void run() {
                     layoutManager.scrollToPositionWithOffset(finalPosition, 0);
-
-                    mCommentRecycler.post(new Runnable() { // Post again to wait for the RV scroll
-                        @Override
-                        public void run() {
-                            View itemView = layoutManager.findViewByPosition(finalPosition);
-                            if (itemView != null && mNestedScrollView != null) {
-                                int[] recyclerViewLocation = new int[2];
-                                mCommentRecycler.getLocationInWindow(recyclerViewLocation); // screen location
-
-                                int[] nestedScrollViewLocation = new int[2];
-                                mNestedScrollView.getLocationInWindow(nestedScrollViewLocation); // screen location
-
-                                int scrollToY = (recyclerViewLocation[1] - nestedScrollViewLocation[1]) + mNestedScrollView.getScrollY();
-
-                                mNestedScrollView.smoothScrollTo(0, scrollToY);
-                                new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                    if (itemView.isAttachedToWindow() && itemView.getGlobalVisibleRect(new Rect())) {
-                                        Log.e("ReplyListScroll", "Delayed Highlight: Applying YELLOW to itemView.");
-                                        itemView.setBackgroundColor(Color.YELLOW);
-                                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                                            if (itemView.isAttachedToWindow()) {
-                                                Log.d("ReplyListScroll", "Delayed Highlight: Removing highlight.");
-                                                itemView.setBackgroundColor(Color.TRANSPARENT);
-                                            }
-                                        }, 1000);
-                                    } else {
-                                        Log.e("ReplyListScroll", "Delayed Highlight: ItemView no longer valid or visible.");
-                                    }
-                                }, 3000);
-                            } else {
-                                Log.w("ReplyListScroll", "ItemView or NestedScrollView null after RV scroll for reply ID: " + commentId);
-                            }
-                        }
-                    });
                 }
             });
         } else {
@@ -609,10 +569,10 @@ public class ReplyListFragment extends Fragment {
     }
 
     public void markCommentAsFailed(String tempId) {
-        if (mComments == null || mCommentAdapter == null) return;
-        for (int i = 0; i < mComments.size(); i++) {
-            if (mComments.get(i).getId().equals(tempId)) {
-                mComments.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
+        if (mCombinedList == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mCombinedList.size(); i++) {
+            if (mCombinedList.get(i).getId().equals(tempId)) {
+                mCombinedList.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
                 mCommentAdapter.notifyItemChanged(i);
                 return;
             }

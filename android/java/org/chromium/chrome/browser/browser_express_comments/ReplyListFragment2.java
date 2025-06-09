@@ -173,8 +173,6 @@ public class ReplyListFragment2 extends Fragment {
         mClapButton = view.findViewById(R.id.clap_button);
         mReplyDivider = view.findViewById(R.id.comment_arrow2);
 
-        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
-
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
@@ -366,12 +364,8 @@ public class ReplyListFragment2 extends Fragment {
         mHandler.removeCallbacks(mVideoCheckRunnable);
         GlobalVideoPlaybackManager.getInstance().releaseAllResources();
 
-        if (mNestedScrollView != null) {
-            mNestedScrollView.setOnScrollChangeListener((NestedScrollView.OnScrollChangeListener) null);
-        }
         mHandler.removeCallbacksAndMessages(null);
 
-        mNestedScrollView = null;
         mCommentAdapter = null;
         mCommentRecycler = null;
         mTopCommentAdapter = null;
@@ -486,7 +480,7 @@ public class ReplyListFragment2 extends Fragment {
             };
 
     public void addNewComment(Comment newComment) {
-        if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
+        if (mCombinedList != null && mCommentAdapter != null && mCommentRecycler != null) {
             mCombinedList.add(1, newComment);
             mCommentAdapter.notifyItemInserted(1);
             mLayoutManager.scrollToPositionWithOffset(0, 0);
@@ -518,10 +512,10 @@ public class ReplyListFragment2 extends Fragment {
     }
 
     public void markCommentAsFailed(String tempId) {
-        if (mComments == null || mCommentAdapter == null) return;
-        for (int i = 0; i < mComments.size(); i++) {
-            if (mComments.get(i).getId().equals(tempId)) {
-                mComments.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
+        if (mCombinedList == null || mCommentAdapter == null) return;
+        for (int i = 0; i < mCombinedList.size(); i++) {
+            if (mCombinedList.get(i).getId().equals(tempId)) {
+                mCombinedList.get(i).setUploadStatus(Comment.UploadStatus.FAILED);
                 mCommentAdapter.notifyItemChanged(i);
                 return;
             }
