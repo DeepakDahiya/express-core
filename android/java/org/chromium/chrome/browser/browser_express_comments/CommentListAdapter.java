@@ -827,12 +827,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        GlobalVideoPlaybackManager.getInstance().resumePlaybackIfPossible();
-    }
-
     private void openFullScreenViewer(Uri mediaUri, String mediaType) {
         if (mParentFragment != null && mParentFragment.isAdded()) {
             CommentHolder currentHolder = GlobalVideoPlaybackManager.getInstance().getCurrentlyPlayingHolder();

@@ -216,6 +216,12 @@ public class EditVisibleAssetsBottomSheetDialogFragment extends BottomSheetDialo
     }
 
     @Override
+    public void onResume() {
+        super.onResume();
+        GlobalVideoPlaybackManager.getInstance().resumePlaybackIfPossible();
+    }
+
+    @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);
         if (mDismissListener != null) {
