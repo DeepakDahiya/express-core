@@ -84,7 +84,6 @@ public class ReplyListFragment2 extends Fragment {
     private EditText mMessageEditText;
     private TextView mCommentsText;
 
-    private LinearLayout mParentCommentLayout;
     private ImageView mArrow2;
 
     private ImageView mBackButton;
@@ -174,7 +173,6 @@ public class ReplyListFragment2 extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
-        mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
 
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
@@ -211,11 +209,10 @@ public class ReplyListFragment2 extends Fragment {
         mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, null, isReplyAdapter, false, true);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
-        mParentCommentLayout.setVisibility(View.VISIBLE);
         mArrow2.setVisibility(View.VISIBLE);
 
         mTopComments = new ArrayList<Comment>();
-        mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
+        mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, null, isReplyAdapter, true, true);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
@@ -418,6 +415,12 @@ public class ReplyListFragment2 extends Fragment {
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len, comments.size());
 
+                    if(mComments.isEmpty()) {
+                        mArrow2.setVisibility(View.INVISIBLE);
+                    } else {
+                        mArrow2.setVisibility(View.VISIBLE);
+                    }
+
                     if(parentComment != null){
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);
@@ -446,6 +449,8 @@ public class ReplyListFragment2 extends Fragment {
                     if (mNestedScrollView != null) {
                         mNestedScrollView.smoothScrollTo(0, 0);
                     }
+
+                    mArrow2.setVisibility(View.VISIBLE);
 
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
@@ -482,6 +487,8 @@ public class ReplyListFragment2 extends Fragment {
     public void addNewComment(Comment newComment) {
         if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
             mComments.add(0, newComment);
+
+            mArrow2.setVisibility(View.VISIBLE);
 
             mCommentAdapter.notifyItemRangeInserted(0, 1);
             LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();

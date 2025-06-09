@@ -77,6 +77,7 @@ import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
 import java.util.concurrent.Executor;
 import androidx.annotation.Nullable;
+import android.graphics.Rect;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private Context mContext;
@@ -88,6 +89,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private boolean mIsReplyTopComment;
     private boolean mIsReplyToReplyAdapter;
     private final VideoPlaybackManager videoPlaybackManager;
+
+    private RecyclerView mRecyclerView;
 
     interface DimensionCallback {
         void onDimensionsReady(int position, int width, int height);

@@ -96,7 +96,6 @@ public class ReplyListFragment extends Fragment {
 
     private LinearLayout mEmptyContainer;
 
-    private LinearLayout mParentCommentLayout;
     private ImageView mArrow2;
 
     private BottomSheetInputCallback inputCallback;
@@ -190,14 +189,11 @@ public class ReplyListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
-        mParentCommentLayout = view.findViewById(R.id.parent_comment_container);
         mArrow2 = view.findViewById(R.id.comment_arrow2);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
         mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
-
-        mParentCommentLayout.setVisibility(View.VISIBLE);
 
         mArrow2.setVisibility(View.VISIBLE);
         
@@ -232,7 +228,7 @@ public class ReplyListFragment extends Fragment {
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         mTopComments = new ArrayList<Comment>();
-        mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.top_comment_recycler);
+        mTopCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mTopCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         mTopCommentAdapter = new CommentListAdapter(requireContext(), mTopComments, mMessageEditText, mTopCommentRecycler, parentFragment, isReplyAdapter, true, false);
         mTopCommentRecycler.setAdapter(mTopCommentAdapter);
@@ -435,6 +431,12 @@ public class ReplyListFragment extends Fragment {
                     mComments.addAll(comments);
                     mCommentAdapter.notifyItemRangeInserted(len, comments.size());
 
+                    if(mComments.isEmpty()) {
+                        mArrow2.setVisibility(View.INVISIBLE);
+                    } else {
+                        mArrow2.setVisibility(View.VISIBLE);
+                    }
+
                     if(parentComment != null){
                         mTopComments.add(parentComment);
                         mTopCommentAdapter.notifyItemRangeInserted(0, 1);
@@ -470,6 +472,8 @@ public class ReplyListFragment extends Fragment {
                     mCommentAdapter.notifyItemRangeInserted(0, 1);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
+
+                    mArrow2.setVisibility(View.VISIBLE);
 
                     if (mNestedScrollView != null) {
                         mNestedScrollView.smoothScrollTo(0, 0);
@@ -509,6 +513,8 @@ public class ReplyListFragment extends Fragment {
     public void addNewComment(Comment newComment) {
         if (mComments != null && mCommentAdapter != null && mCommentRecycler != null) {
             mComments.add(0, newComment);
+
+            mArrow2.setVisibility(View.VISIBLE);
 
             mCommentAdapter.notifyItemRangeInserted(0, 1);
             LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
