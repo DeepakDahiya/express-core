@@ -333,7 +333,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mCommentLayout.setBackground(ResourcesCompat.getDrawable(activity.getResources(), R.drawable.rounded_corner_background, null));
                 mActionItemsLayout.setVisibility(View.VISIBLE);
                 mReplyButton.setVisibility(View.INVISIBLE);
-            } else if (mIsReplyAdapter || isReplyToReplyAdapter){
+            } else if (mIsReplyAdapter || mIsReplyToReplyAdapter){
                 ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mCommentLayout.getLayoutParams();
                 int margin20dp = (int) (20 * context.getResources().getDisplayMetrics().density);
                 params.setMarginStart(margin20dp);
