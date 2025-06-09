@@ -112,8 +112,6 @@ public class CommentListFragment extends Fragment {
     private static final String KEY_SCROLL_POSITION = "comment_list_scroll_position";
     private int mSavedScrollPosition = RecyclerView.NO_POSITION; // Or 0 as default
 
-    private androidx.core.widget.NestedScrollView mNestedScrollView;
-
     private final Handler mHandler = new Handler(Looper.getMainLooper());
     private final Runnable mVideoCheckRunnable = this::checkAndPlayMostVisibleVideo;
 
@@ -218,8 +216,6 @@ public class CommentListFragment extends Fragment {
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
 
-        mNestedScrollView = view.findViewById(R.id.reply_list_nested_scroll_view);
-
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
         mBackButton = view.findViewById(R.id.back_button);
@@ -244,12 +240,10 @@ public class CommentListFragment extends Fragment {
         mCommentRecycler = (RecyclerView) view.findViewById(R.id.recycler_comments);
         mLayoutManager = new LinearLayoutManager(requireContext());
         mCommentRecycler.setLayoutManager(mLayoutManager);
-        mCommentRecycler.setLayoutManager(new LinearLayoutManager(requireContext()));
 
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
-        
-        boolean isReplyAdapter = false;
-        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, mCommentRecycler, parentFragment, isReplyAdapter, false, false);
+
+        mCommentAdapter = new CommentListAdapter(requireContext(), mComments, mMessageEditText, parentFragment, false, false);
         mCommentRecycler.setAdapter(mCommentAdapter);
 
         this.setOnClickForEmoji(inputCallback.getEmojiButton("lol"), mMessageEditText);
@@ -520,10 +514,6 @@ public class CommentListFragment extends Fragment {
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(0, 0);
 
-                    if (mNestedScrollView != null) {
-                        mNestedScrollView.smoothScrollTo(0, 0);
-                    }
-
                     try{
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         // Updating comment count for bottom toolbar
@@ -608,10 +598,6 @@ public class CommentListFragment extends Fragment {
         mCommentAdapter.notifyItemRangeInserted(0, 1);
         LinearLayoutManager layoutManager = (LinearLayoutManager) mCommentRecycler.getLayoutManager();
         layoutManager.scrollToPositionWithOffset(0, 0);
-
-        if (mNestedScrollView != null) {
-            mNestedScrollView.smoothScrollTo(0, 0);
-        }
 
         try{
             BraveActivity activity = BraveActivity.getBraveActivity();

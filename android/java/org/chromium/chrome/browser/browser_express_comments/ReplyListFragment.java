@@ -187,12 +187,10 @@ public class ReplyListFragment extends Fragment {
         mFireButton = view.findViewById(R.id.fire_button);
         mLoveButton = view.findViewById(R.id.love_button);
         mClapButton = view.findViewById(R.id.clap_button);
-        mReplyDivider = view.findViewById(R.id.comment_arrow2);
+        mReplyDivider = view.findViewById(R.id.comment_arrow_divider);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
-        mArrow2.setVisibility(View.VISIBLE);
-        
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
 
         mBackButton = view.findViewById(R.id.back_button);
