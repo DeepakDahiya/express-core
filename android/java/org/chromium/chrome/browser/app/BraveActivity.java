@@ -248,6 +248,7 @@ import org.chromium.components.browser_ui.notifications.NotificationWrapper;
 import org.chromium.components.browser_ui.notifications.NotificationMetadata;
 import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
+import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 
 /**
  * Brave's extension for ChromeActivity
@@ -2467,7 +2468,7 @@ public abstract class BraveActivity extends ChromeActivity
         return findViewById(R.id.comments_button1);
     }
 
-    public TextView getBottomHomeButton() {
+    public BraveHomeButton getBottomHomeButton() {
         return findViewById(R.id.bottom_home_button);
     }
 
