@@ -486,8 +486,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 mReplyButton.setOnClickListener(v -> {
                     if (activity == null || mParentFragment == null) return; // Guard clause
 
-                    mLayoutManager.scrollToPositionWithOffset(myPosition, 0);
-
                     if(mIsReplyAdapter){
                         mParentFragment.openRepliesToReply(comment.getId());
                     } else if (!mIsReplyToReplyAdapter){ // This condition was: !mIsReplyAdapter && !mIsReplyToReplyAdapter
