@@ -82,6 +82,7 @@ import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesU
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
+import android.widget.ImageButton;
 
 import java.util.List;
 
