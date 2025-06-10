@@ -83,6 +83,9 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import org.json.JSONException;
 import org.json.JSONObject;
 import android.widget.ImageButton;
+import android.content.Context;
+import org.chromium.base.ContextUtils;
+import com.bumptech.glide.Glide;
 
 import java.util.List;
 
@@ -504,9 +507,9 @@ public class BraveToolbarManager extends ToolbarManager {
                 String avatar = prefs.getString("avatar_url", null);
                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                 if (avatar != null) {
-                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                    ImageLoader.downloadImage(avatar, Glide.with(activity), true, 5, mProfileButton, null);
                 }else{
-                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
+                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mProfileButton, null);
                 }
 
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
@@ -551,7 +554,7 @@ public class BraveToolbarManager extends ToolbarManager {
 
                     if(avatar != null && avatar.length() > 0){
                         editor.putString("avatar_url", avatar);
-                        ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                        ImageLoader.downloadImage(avatar, Glide.with(context), true, 5, mProfileButton, null);
                     }
 
                     if(xp != null && xp.length() > 0){
