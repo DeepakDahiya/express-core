@@ -2793,6 +2793,8 @@ public abstract class BraveActivity extends ChromeActivity
                 @Override
                 public void getLatestApkSuccessful(String version, String url, String updateType,
                         String releaseNotes, String releaseNotesUrl) {
+
+                    Log.e(TAG, "API call successful. Version: " + version + ", Type: " + updateType);
                     
                     String currentVersion = getCurrentAppVersion();
                     handleVersionComparison(currentVersion, version, updateType, releaseNotes, url);
@@ -2808,21 +2810,24 @@ public abstract class BraveActivity extends ChromeActivity
                 }
             };
         
-        private void handleVersionComparison(String currentVersion, String latestVersion, 
+        private void handleVersionComparison(String currentVersion, String latestVersion,
                 String updateType, String releaseNotes, String downloadUrl) {
-            
+
             VersionDifference diff = compareVersions(currentVersion, latestVersion);
-            
-            // Check if backend specifies force update
-            boolean isForceUpdate = "forced".equalsIgnoreCase(updateType) || 
-                                "critical".equalsIgnoreCase(updateType);
-            
+            Log.e(TAG, "Version difference type: " + diff.type);
+
+            boolean isForceUpdate = "forced".equalsIgnoreCase(updateType) ||
+                            "critical".equalsIgnoreCase(updateType);
+            Log.e(TAG, "Is force update? " + isForceUpdate);
+
             if (isForceUpdate || diff.type == DifferenceType.MAJOR_MINOR_DIFFERENCE) {
+                Log.e(TAG, "Showing FORCE update dialog.");
                 showForceUpdateDialog(latestVersion, releaseNotes, downloadUrl);
             } else if (diff.type == DifferenceType.PATCH_DIFFERENCE) {
+                Log.e(TAG, "Showing OPTIONAL update dialog.");
                 showOptionalUpdateDialog(latestVersion, releaseNotes, downloadUrl);
             } else {
-                Log.d("CustomUpdateManager", "App is up to date");
+                Log.e(TAG, "App is up to date. No dialog needed.");
                 updateLastCheckTime();
             }
         }
@@ -2901,12 +2906,13 @@ public abstract class BraveActivity extends ChromeActivity
         }
         
         private boolean shouldCheckForUpdate() {
-            long lastCheck = SharedPreferencesManager.getInstance()
-                .readLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, 0);
-            long now = System.currentTimeMillis();
-            long checkInterval = 6 * 60 * 60 * 1000; // 24 hours
+            return true
+            // long lastCheck = SharedPreferencesManager.getInstance()
+            //     .readLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, 0);
+            // long now = System.currentTimeMillis();
+            // long checkInterval = 6 * 60 * 60 * 1000; // 24 hours
             
-            return (now - lastCheck) > checkInterval;
+            // return (now - lastCheck) > checkInterval;
         }
         
         private void updateLastCheckTime() {
