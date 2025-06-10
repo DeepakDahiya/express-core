@@ -53,16 +53,23 @@ public class BraveSetDefaultBrowserUtils {
 
     @RequiresApi(api = Build.VERSION_CODES.Q)
     private static boolean isDefaultBrowserWithRoleManager(Context context) {
-        RoleManager roleManager = (RoleManager) context.getSystemService(Context.ROLE_SERVICE);
-        if (roleManager == null || !roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER)) {
+        try {
+            RoleManager roleManager = (RoleManager) context.getSystemService(Context.ROLE_SERVICE);
+            if (roleManager == null) {
+                return false;
+            }
+
+            String roleBrowser = "android.app.role.BROWSER";
+
+            Method isRoleHeldMethod = roleManager.getClass().getMethod("isRoleHeld", String.class);
+
+            Boolean isHeld = (Boolean) isRoleHeldMethod.invoke(roleManager, roleBrowser);
+            return isHeld != null && isHeld;
+
+        } catch (Exception e) {
+            Log.e(TAG, "Failed to check default browser role via reflection", e);
             return false;
         }
-
-        List<String> roleHolders = roleManager.getRoleHolders(RoleManager.ROLE_BROWSER);
-        // Check if any of the Brave variants are the default browser
-        return roleHolders.contains(BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME)
-                || roleHolders.contains(BraveConstants.BRAVE_BETA_PACKAGE_NAME)
-                || roleHolders.contains(BraveConstants.BRAVE_NIGHTLY_PACKAGE_NAME);
     }
 
     @SuppressWarnings("deprecation") // Needed for resolveActivity on older APIs

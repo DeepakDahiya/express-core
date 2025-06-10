@@ -20,7 +20,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_update_available"
             android:layout_marginEnd="16dp"
-            android:contentDescription="Update Available" />
+            android:contentDescription="@string/update_dialog_title_available" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -32,7 +32,7 @@
                 android:id="@+id/update_title"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Update Available"
+                android:text="@string/update_dialog_title_available"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 android:textColor="@color/update_dialog_title_color"/>
@@ -41,13 +41,11 @@
                 android:id="@+id/update_subtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Express Browser"
+                android:text="@string/update_dialog_subtitle"
                 android:textSize="14sp"
                 android:textColor="@color/update_dialog_subtitle_color"
                 android:layout_marginTop="4dp" />
-
         </LinearLayout>
-
     </LinearLayout>
 
     <!-- Divider -->
@@ -73,7 +71,6 @@
                 android:id="@+id/update_version"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Version 2.1.0"
                 android:textSize="16sp"
                 android:textStyle="bold"
                 android:textColor="@color/update_dialog_version_color"
@@ -83,7 +80,7 @@
                 android:id="@+id/update_message"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="This update includes important security fixes and performance improvements."
+                android:text="@string/update_dialog_message_default"
                 android:textSize="14sp"
                 android:textColor="@color/update_dialog_message_color"
                 android:lineSpacingExtra="4dp"/>
@@ -104,19 +101,16 @@
                     android:layout_height="16dp"
                     android:src="@drawable/ic_security_shield"
                     android:layout_marginEnd="6dp"
-                    android:contentDescription="Security Update" />
+                    android:contentDescription="@string/update_dialog_security_badge" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Security Update"
+                    android:text="@string/update_dialog_security_badge"
                     android:textSize="12sp"
                     android:textColor="@color/security_badge_text_color"/>
-
             </LinearLayout>
-
         </LinearLayout>
-
     </ScrollView>
 
     <!-- Action Buttons -->
@@ -132,7 +126,7 @@
             style="@style/UpdateDialogButtonSecondary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Later"
+            android:text="@string/update_dialog_button_later"
             android:layout_marginEnd="8dp"
             android:minWidth="80dp" />
 
@@ -141,9 +135,7 @@
             style="@style/UpdateDialogButtonPrimary"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Update"
+            android:text="@string/update_dialog_button_update"
             android:minWidth="100dp" />
-
     </LinearLayout>
-
 </LinearLayout>

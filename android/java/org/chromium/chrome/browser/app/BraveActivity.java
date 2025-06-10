@@ -46,6 +46,7 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
+import android.widget.Button;
 
 import com.brave.playlist.util.ConstantUtils;
 import com.brave.playlist.util.PlaylistPreferenceUtils;
@@ -2859,17 +2860,19 @@ public abstract class BraveActivity extends ChromeActivity
             Button laterButton = dialogView.findViewById(R.id.btn_later);
             Button updateButton = dialogView.findViewById(R.id.btn_update);
             View securityBadge = dialogView.findViewById(R.id.security_badge_container);
-            
-            // Configure content
+
             if (isForced) {
-                titleView.setText("Critical Update Required");
+                titleView.setText(R.string.update_dialog_title_critical);
                 securityBadge.setVisibility(View.VISIBLE);
             } else {
-                titleView.setText("Update Available");
+                titleView.setText(R.string.update_dialog_title_available);
                 securityBadge.setVisibility(View.GONE);
             }
+
+            versionView.setText(
+                context.getString(R.string.update_dialog_version_format, version)
+            );
             
-            versionView.setText("Version " + version);
             messageView.setText(releaseNotes != null ? releaseNotes : 
                 (isForced ? "This update contains important security fixes and must be installed." 
                         : "This update includes improvements and bug fixes."));

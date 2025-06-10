@@ -4266,6 +4266,30 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_POST_FAILED" desc="Text for in app update snackbar">
       Failed to post, try again.
     </message>
+    <message name="IDS_UPDATE_DIALOG_TITLE_CRITICAL" desc="Title for the update dialog when the update is mandatory.">
+      Critical Update Required
+    </message>
+    <message name="IDS_UPDATE_DIALOG_TITLE_AVAILABLE" desc="Title for the update dialog when the update is optional. Also used as a content description for the update icon.">
+      Update Available
+    </message>
+    <message name="IDS_UPDATE_DIALOG_SUBTITLE" desc="Subtitle for the update dialog, usually the app name.">
+      Express Browser
+    </message>
+    <message name="IDS_UPDATE_DIALOG_MESSAGE_DEFAULT" desc="The default body text for the update dialog explaining the benefits of the update.">
+      This update includes important security fixes and performance improvements.
+    </message>
+    <message name="IDS_UPDATE_DIALOG_SECURITY_BADGE" desc="Text and content description for a small badge indicating a security update.">
+      Security Update
+    </message>
+    <message name="IDS_UPDATE_DIALOG_BUTTON_LATER" desc="Button text for dismissing the optional update dialog to decide later.">
+      Later
+    </message>
+    <message name="IDS_UPDATE_DIALOG_BUTTON_UPDATE" desc="Button text for initiating the app update.">
+      Update
+    </message>
+    <message name="IDS_UPDATE_DIALOG_VERSION_FORMAT" desc="Format string for displaying the version number in the update dialog. The placeholder will be replaced by the actual version string (e.g., '2.1.0').">
+      Version <ph name="VERSION_NUMBER">$1s</ph>
+    </message>
     <!-- <message name="IDS_BROWSER_EXPRESS_SEPARATOR_DOT" desc="Sign in with Brave Wallet Request ID label">
       \u2022
     </message> -->
