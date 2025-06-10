@@ -218,6 +218,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     private TextView mCommentsText;
     private BraveHomeButton mBottomHomeButton;
+    private ImageButton mBeHomeButton;
 
     private boolean mIsPublisherVerified;
     private boolean mIsNotificationPosted;
@@ -277,6 +278,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
 
         mCommentsText = findViewById(R.id.comments_button1);
+        mBeHomeButton = findViewById(R.id.be_home_button);
 
         mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
         mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
@@ -480,6 +482,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 mBraveShieldsHandler.clearBraveShieldsCount(tab.getId());
                 dismissShieldsTooltip();
                 hidePlaylistButton();
+
+                if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
+                    mBeHomeButton.setVisibility(View.GONE);
+                } else {
+                    mBeHomeButton.setVisibility(View.VISIBLE);
+                }
 
                 String mUrl = url.getSpec();
 

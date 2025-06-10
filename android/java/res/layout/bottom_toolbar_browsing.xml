@@ -25,6 +25,15 @@
         android:orientation="vertical"
         android:padding="2dp">
 
+        <ImageButton 
+            android:id="@+id/be_home_button"
+            android:background="@drawable/btn_toolbar_home"
+            android:layout_height="17sp"
+            android:layout_width="17sp"
+            android:layout_gravity="center"
+            android:visibility="gone"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
+
         <org.chromium.chrome.browser.toolbar.BraveHomeButton
             android:id="@+id/bottom_home_button"
             app:tint="@color/content_color"

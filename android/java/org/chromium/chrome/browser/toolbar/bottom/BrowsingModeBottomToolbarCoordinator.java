@@ -55,6 +55,7 @@ public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
 
     private ImageButton mCommentsButton;
+    private ImageButton mBeHomeButton;
     private TextView mBraveHomeText;
     private TextView mCommentsText;
     private int w;
@@ -115,12 +116,14 @@ public class BrowsingModeBottomToolbarCoordinator {
         mBraveHomeText = mToolbarRoot.findViewById(R.id.bottom_home_text);
         mCommentsButton = mToolbarRoot.findViewById(R.id.comments_button);
         mCommentsText = mToolbarRoot.findViewById(R.id.comments_button1);
+        mBeHomeButton = mToolbarRoot.findViewById(R.id.be_home_button);
         int commentCount = 0;
         mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
         mCommentsText.setTextSize(10);
         mBraveHomeText.setTextSize(10);
         mBraveHomeButton.setOnClickListener(homeButtonListener);
         mBraveHomeText.setOnClickListener(homeButtonListener);
+        mBeHomeButton.setOnClickListener(homeButtonListener);
 
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
@@ -184,6 +187,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
             mBraveHomeButton.setVisibility(View.VISIBLE);
             mBraveHomeText.setVisibility(View.VISIBLE);
+            mBeHomeButton.setVisibility(View.VISIBLE);
         }
 
         if (BottomToolbarVariationManager.isTabSwitcherOnBottom()) {
