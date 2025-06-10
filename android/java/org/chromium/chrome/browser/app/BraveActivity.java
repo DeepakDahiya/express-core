@@ -250,6 +250,9 @@ import org.chromium.chrome.browser.notifications.NotificationBuilderBase;
 import org.chromium.chrome.browser.notifications.NotificationUmaTracker;
 import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 
+import android.content.ActivityNotFoundException;
+import android.content.pm.PackageInfo;
+
 /**
  * Brave's extension for ChromeActivity
  */
