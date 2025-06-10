@@ -28,8 +28,8 @@
         <ImageButton 
             android:id="@+id/be_home_button"
             android:background="@drawable/home"
-            android:layout_height="17sp"
-            android:layout_width="17sp"
+            android:layout_height="20sp"
+            android:layout_width="20sp"
             android:layout_gravity="center"
             android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />

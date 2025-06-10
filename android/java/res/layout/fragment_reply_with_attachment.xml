@@ -57,7 +57,6 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/attach"
-            android:layout_marginEnd="16dp"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet"/>
 
         <View

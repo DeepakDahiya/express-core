@@ -370,13 +370,13 @@ public abstract class BraveActivity extends ChromeActivity
             BraveSearchEngineUtils.updateActiveDSE(profile);
         }
 
-        if (mNativeInitialized) {
-            BraveToolbarLayoutImpl layout = getBraveToolbarLayout();
-            if (layout == null || !layout.isWalletIconVisible()) {
-                return;
-            }
-            updateWalletBadgeVisibility();
-        }
+        // if (mNativeInitialized) {
+        //     BraveToolbarLayoutImpl layout = getBraveToolbarLayout();
+        //     if (layout == null || !layout.isWalletIconVisible()) {
+        //         return;
+        //     }
+        //     updateWalletBadgeVisibility();
+        // }
 
         BraveSafeBrowsingApiHandler.getInstance().setDelegate(
                 BraveActivityJni.get().getSafeBrowsingApiKey(), this);
@@ -1332,9 +1332,9 @@ public abstract class BraveActivity extends ChromeActivity
             // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_10);
             // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_30);
             // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DAY_35);
-            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_1);
-            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_2);
-            // RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_3);
+            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_1);
+            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_2);
+            RetentionNotificationUtil.scheduleNotification(this, RetentionNotificationUtil.DEFAULT_BROWSER_3);
             // OnboardingPrefManager.getInstance().setOneTimeNotificationStarted(true);
         }
 
@@ -1825,7 +1825,7 @@ public abstract class BraveActivity extends ChromeActivity
         Intent notifIntent = getIntent();
         if (notifIntent != null && notifIntent.getStringExtra(RetentionNotificationUtil.NOTIFICATION_TYPE) != null) {
             String notificationType = notifIntent.getStringExtra(RetentionNotificationUtil.NOTIFICATION_TYPE);
-            // switch (notificationType) {
+            switch (notificationType) {
             //     case RetentionNotificationUtil.HOUR_3:
             //     case RetentionNotificationUtil.HOUR_24:
             //     case RetentionNotificationUtil.EVERY_SUNDAY:
@@ -1848,17 +1848,17 @@ public abstract class BraveActivity extends ChromeActivity
             //     case RetentionNotificationUtil.DORMANT_USERS_DAY_40:
             //         showDormantUsersEngagementDialog(notificationType);
             //         break;
-            //     case RetentionNotificationUtil.DEFAULT_BROWSER_1:
-            //     case RetentionNotificationUtil.DEFAULT_BROWSER_2:
-            //     case RetentionNotificationUtil.DEFAULT_BROWSER_3:
-            //         if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)
-            //                 && !BraveSetDefaultBrowserUtils.isBraveDefaultDontAsk()) {
-            //             mIsSetDefaultBrowserNotification = true;
-            //             BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(
-            //                     BraveActivity.this, false);
-            //         }
-            //         break;
-            // }
+                case RetentionNotificationUtil.DEFAULT_BROWSER_1:
+                case RetentionNotificationUtil.DEFAULT_BROWSER_2:
+                case RetentionNotificationUtil.DEFAULT_BROWSER_3:
+                    if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)
+                            && !BraveSetDefaultBrowserUtils.isBraveDefaultDontAsk()) {
+                        mIsSetDefaultBrowserNotification = true;
+                        BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(
+                                BraveActivity.this, false);
+                    }
+                    break;
+            }
         }
     }
 
