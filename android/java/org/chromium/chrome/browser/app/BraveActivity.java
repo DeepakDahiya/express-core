@@ -252,6 +252,7 @@ import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 
 import android.content.ActivityNotFoundException;
 import android.content.pm.PackageInfo;
+import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil;
 
 /**
  * Brave's extension for ChromeActivity
