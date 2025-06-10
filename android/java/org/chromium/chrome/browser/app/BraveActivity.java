@@ -2776,6 +2776,7 @@ public abstract class BraveActivity extends ChromeActivity
     // Add this inner class at the end of BraveActivity, before the @NativeMethods interface
     private class CustomUpdateManager {
         private static final String PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=";
+        private static final String TAG = "CustomUpdateManager";
         
         public void checkForCustomUpdate() {
             if (!shouldCheckForUpdate()) {
