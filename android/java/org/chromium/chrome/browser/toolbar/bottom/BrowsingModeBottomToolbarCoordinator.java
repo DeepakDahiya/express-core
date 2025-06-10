@@ -133,10 +133,6 @@ public class BrowsingModeBottomToolbarCoordinator {
                 new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
                         mUrl, getFirstCommentsCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-            BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask getLatestApkWorkerTask =
-                new BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask(getLatestApkCallback);
-            getLatestApkWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         } catch (BraveActivity.BraveActivityNotFoundException e) {
             Log.e("Express Browser Access Token", e.getMessage());
         }
@@ -365,33 +361,6 @@ public class BrowsingModeBottomToolbarCoordinator {
 
                 @Override
                 public void getFirstCommentsFailed(String error) {
-                    Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
-                }
-            };
-
-    private BrowserExpressGetLatestApkUtil.GetLatestApkCallback getLatestApkCallback=
-            new BrowserExpressGetLatestApkUtil.GetLatestApkCallback() {
-                @Override
-                public void getLatestApkSuccessful(String version, String url) {
-                    try {
-                        BraveActivity activity = BraveActivity.getBraveActivity();
-                        PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
-                        int currentVersion = Integer.parseInt(pInfo.versionName.replace(".",""));
-                        int newVersion = Integer.parseInt(version.replace(".",""));
-                        if(newVersion > currentVersion){
-                            TabUtils.openUrlInSameTab(url);
-                        }
-                    } catch (BraveActivity.BraveActivityNotFoundException e) {
-                        Log.e(TAG, "BookmarkButton click " + e);
-                    } catch (NameNotFoundException e) {
-
-                    } catch (Exception ex) {
-
-                    }
-                }
-
-                @Override
-                public void getLatestApkFailed(String error) {
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };

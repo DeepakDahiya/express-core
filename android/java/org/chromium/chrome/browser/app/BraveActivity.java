@@ -1430,6 +1430,22 @@ public abstract class BraveActivity extends ChromeActivity
                                 BravePreferenceKeys.BRAVE_IN_APP_UPDATE_TIMING, 0)) {
             checkAppUpdate();
         }
+
+        mCustomUpdateManager = new CustomUpdateManager();
+        checkForCustomUpdates();
+    }
+
+    private void checkForCustomUpdates() {
+        // Check on app start and periodically
+        int appOpenCount = SharedPreferencesManager.getInstance()
+            .readInt(BravePreferenceKeys.BRAVE_APP_OPEN_COUNT);
+        
+        // Check immediately on first install, then every 5th app open
+        if (appOpenCount == 1 || appOpenCount % 5 == 0) {
+            if (mCustomUpdateManager != null) {
+                mCustomUpdateManager.checkForCustomUpdate();
+            }
+        }
     }
 
     private void setInAppUpdateTiming() {
@@ -2735,6 +2751,212 @@ public abstract class BraveActivity extends ChromeActivity
                         : getResources().getDimensionPixelSize(R.dimen.bottom_controls_height);
                 sheetContainer.setLayoutParams(params);
             }
+        }
+    }
+
+    // Add this after your existing member variables
+private CustomUpdateManager mCustomUpdateManager;
+
+    // Add this inner class at the end of BraveActivity, before the @NativeMethods interface
+    private class CustomUpdateManager {
+        private static final String PLAY_STORE_URL = "https://play.google.com/store/apps/details?id=";
+        
+        public void checkForCustomUpdate() {
+            if (!shouldCheckForUpdate()) {
+                return;
+            }
+            
+            // Use your existing API call
+            BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask getLatestApkWorkerTask =
+                new BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask(getLatestApkCallback);
+            getLatestApkWorkerTask.execute();
+        }
+        
+        private BrowserExpressGetLatestApkUtil.GetLatestApkCallback getLatestApkCallback = 
+            new BrowserExpressGetLatestApkUtil.GetLatestApkCallback() {
+                @Override
+                public void getLatestApkSuccessful(String version, String url, String updateType,
+                        String releaseNotes, String releaseNotesUrl) {
+                    
+                    String currentVersion = getCurrentAppVersion();
+                    handleVersionComparison(currentVersion, version, updateType, releaseNotes, url);
+                }
+                
+                @Override
+                public void getLatestApkFailed(String error) {
+                    Log.e("CustomUpdateManager", "Failed to fetch latest version: " + error);
+                    // Fallback to Google's update system
+                    if (ENABLE_IN_APP_UPDATE && mAppUpdateManager != null) {
+                        checkAppUpdate();
+                    }
+                }
+            };
+        
+        private void handleVersionComparison(String currentVersion, String latestVersion, 
+                String updateType, String releaseNotes, String downloadUrl) {
+            
+            VersionDifference diff = compareVersions(currentVersion, latestVersion);
+            
+            // Check if backend specifies force update
+            boolean isForceUpdate = "force".equalsIgnoreCase(updateType) || 
+                                "critical".equalsIgnoreCase(updateType);
+            
+            if (isForceUpdate || diff.type == DifferenceType.MAJOR_MINOR_DIFFERENCE) {
+                showForceUpdateDialog(latestVersion, releaseNotes, downloadUrl);
+            } else if (diff.type == DifferenceType.PATCH_DIFFERENCE) {
+                showOptionalUpdateDialog(latestVersion, releaseNotes, downloadUrl);
+            } else {
+                Log.d("CustomUpdateManager", "App is up to date");
+                updateLastCheckTime();
+            }
+        }
+        
+        private void showForceUpdateDialog(String version, String releaseNotes, String downloadUrl) {
+            runOnUiThread(() -> {
+                AlertDialog dialog = new AlertDialog.Builder(BraveActivity.this, R.style.BraveWalletAlertDialogTheme)
+                    .setTitle("Critical Update Required")
+                    .setMessage("Version " + version + " is now available.\n\n" + 
+                            (releaseNotes != null ? releaseNotes : "This update contains important security fixes."))
+                    .setCancelable(false)
+                    .setPositiveButton("Update Now", (d, which) -> {
+                        redirectToUpdate(downloadUrl);
+                    })
+                    .create();
+                
+                dialog.show();
+            });
+        }
+        
+        private void showOptionalUpdateDialog(String version, String releaseNotes, String downloadUrl) {
+            runOnUiThread(() -> {
+                AlertDialog dialog = new AlertDialog.Builder(BraveActivity.this, R.style.BraveWalletAlertDialogTheme)
+                    .setTitle("Update Available")
+                    .setMessage("Version " + version + " is now available.\n\n" + 
+                            (releaseNotes != null ? releaseNotes : "This update includes improvements and bug fixes."))
+                    .setPositiveButton("Update", (d, which) -> {
+                        redirectToUpdate(downloadUrl);
+                    })
+                    .setNegativeButton("Later", (d, which) -> {
+                        d.dismiss();
+                        setNextUpdateCheckTime();
+                    })
+                    .create();
+                
+                dialog.show();
+            });
+        }
+        
+        private void redirectToUpdate(String downloadUrl) {
+            try {
+                Intent intent = new Intent(Intent.ACTION_VIEW);
+                
+                if (downloadUrl != null && !downloadUrl.isEmpty()) {
+                    intent.setData(Uri.parse(downloadUrl));
+                } else {
+                    intent.setData(Uri.parse(PLAY_STORE_URL + getPackageName()));
+                }
+                
+                intent.setPackage("com.android.vending");
+                startActivity(intent);
+                
+            } catch (Exception e) {
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    String url = downloadUrl != null && !downloadUrl.isEmpty() ? 
+                        downloadUrl : PLAY_STORE_URL + getPackageName();
+                    intent.setData(Uri.parse(url));
+                    startActivity(intent);
+                } catch (Exception ex) {
+                    Log.e("CustomUpdateManager", "Failed to open update URL", ex);
+                    Toast.makeText(BraveActivity.this, "Please update the app from Play Store", Toast.LENGTH_LONG).show();
+                }
+            }
+        }
+        
+        private String getCurrentAppVersion() {
+            try {
+                PackageInfo packageInfo = getPackageManager()
+                    .getPackageInfo(getPackageName(), 0);
+                return packageInfo.versionName;
+            } catch (PackageManager.NameNotFoundException e) {
+                Log.e("CustomUpdateManager", "Failed to get app version", e);
+                return "1.0.0";
+            }
+        }
+        
+        private boolean shouldCheckForUpdate() {
+            long lastCheck = SharedPreferencesManager.getInstance()
+                .readLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, 0);
+            long now = System.currentTimeMillis();
+            long checkInterval = 24 * 60 * 60 * 1000; // 24 hours
+            
+            return (now - lastCheck) > checkInterval;
+        }
+        
+        private void updateLastCheckTime() {
+            SharedPreferencesManager.getInstance()
+                .writeLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, System.currentTimeMillis());
+        }
+        
+        private void setNextUpdateCheckTime() {
+            // Set next check for 3 days later for optional updates
+            long nextCheck = System.currentTimeMillis() + (3 * 24 * 60 * 60 * 1000);
+            SharedPreferencesManager.getInstance()
+                .writeLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, nextCheck);
+        }
+        
+        // Version comparison logic
+        private enum DifferenceType {
+            UP_TO_DATE,
+            PATCH_DIFFERENCE,
+            MAJOR_MINOR_DIFFERENCE
+        }
+        
+        private class VersionDifference {
+            public DifferenceType type;
+            public String currentVersion;
+            public String latestVersion;
+        }
+        
+        private VersionDifference compareVersions(String current, String latest) {
+            VersionDifference diff = new VersionDifference();
+            diff.currentVersion = current;
+            diff.latestVersion = latest;
+            
+            try {
+                String[] currentParts = current.split("\\.");
+                String[] latestParts = latest.split("\\.");
+                
+                int currentMajor = Integer.parseInt(currentParts[0]);
+                int currentMinor = Integer.parseInt(currentParts[1]);
+                int currentPatch = currentParts.length > 2 ? Integer.parseInt(currentParts[2]) : 0;
+                
+                int latestMajor = Integer.parseInt(latestParts[0]);
+                int latestMinor = Integer.parseInt(latestParts[1]);
+                int latestPatch = latestParts.length > 2 ? Integer.parseInt(latestParts[2]) : 0;
+                
+                // Check major.minor differences
+                if (latestMajor > currentMajor || 
+                    (latestMajor == currentMajor && latestMinor > currentMinor)) {
+                    diff.type = DifferenceType.MAJOR_MINOR_DIFFERENCE;
+                }
+                // Check patch differences
+                else if (latestMajor == currentMajor && 
+                        latestMinor == currentMinor && 
+                        latestPatch > currentPatch) {
+                    diff.type = DifferenceType.PATCH_DIFFERENCE;
+                }
+                // Up to date
+                else {
+                    diff.type = DifferenceType.UP_TO_DATE;
+                }
+                
+            } catch (Exception e) {
+                Log.e("VersionComparator", "Error comparing versions", e);
+                diff.type = DifferenceType.UP_TO_DATE; // Safe fallback
+            }
+            
+            return diff;
         }
     }
 }

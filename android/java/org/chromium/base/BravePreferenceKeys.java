@@ -67,4 +67,5 @@ public final class BravePreferenceKeys {
     public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET =
             "org.chromium.chrome.browser.Browser_Express_Custom_List_Set";
     public static final String BRAVE_IN_APP_UPDATE_TIMING = "in_app_update_timing";
+    public static final String BRAVE_CUSTOM_UPDATE_LAST_CHECK = "brave_custom_update_last_check";
 }

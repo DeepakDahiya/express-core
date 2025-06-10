@@ -46,7 +46,8 @@ public class BrowserExpressGetLatestApkUtil {
     private static final String KEY = "fc91c3a9-1a2e-4555-aef2-a62d64397c88";
 
     public interface GetLatestApkCallback {
-        void getLatestApkSuccessful(String version, String url);
+        void getLatestApkSuccessful(String version, String url, String updateType,
+                                    String releaseNotes, String releaseNotesUrl);
         void getLatestApkFailed(String error);
     }
 
@@ -56,6 +57,9 @@ public class BrowserExpressGetLatestApkUtil {
         private static String mErrorMessage;
         private static String mVersion;
         private static String mUrl;
+        private static String mUpdateType;
+        private static String mReleaseNotes;
+        private static String mReleaseNotesUrl;
 
         public GetLatestApkWorkerTask(GetLatestApkCallback callback) {
             mCallback = callback;
@@ -63,11 +67,17 @@ public class BrowserExpressGetLatestApkUtil {
             mErrorMessage = "";
             mVersion = "";
             mUrl = "";
+            mUpdateType = "";
+            mReleaseNotes = "";
+            mReleaseNotesUrl = "";
         }
 
-        public static void setDetails(String version, String url){
+        public static void setDetails(String version, String url, String updateType, String releaseNotes, String releaseNotesUrl) {
             mVersion = version;
             mUrl = url;
+            mUpdateType = updateType;
+            mReleaseNotes = releaseNotes;
+            mReleaseNotesUrl = releaseNotesUrl;
         }
 
         public static void setGetLatestApkSuccessStatus(Boolean status){
@@ -89,7 +99,7 @@ public class BrowserExpressGetLatestApkUtil {
             assert ThreadUtils.runningOnUiThread();
             if (isCancelled()) return;
             if(getLatestApkStatus){
-                mCallback.getLatestApkSuccessful(mVersion, mUrl);
+                mCallback.getLatestApkSuccessful(mVersion, mUrl, mUpdateType, mReleaseNotes, mReleaseNotesUrl);
             }else{
                 mCallback.getLatestApkFailed(mErrorMessage);
             }
@@ -122,7 +132,10 @@ public class BrowserExpressGetLatestApkUtil {
                     GetLatestApkWorkerTask.setGetLatestApkSuccessStatus(true);
                     String version = responseObject.getString("version");
                     String downloadUrl = responseObject.getString("url");
-                    GetLatestApkWorkerTask.setDetails(version, downloadUrl);
+                    String updateType = responseObject.getString("updateType");
+                    String releaseNotes = responseObject.getString("releaseNotes");
+                    String releaseNotesUrl = responseObject.getString("release_notes_url");
+                    GetLatestApkWorkerTask.setDetails(version, downloadUrl, updateType, releaseNotes, releaseNotesUrl);
                 }else{
                     GetLatestApkWorkerTask.setGetLatestApkSuccessStatus(false);
                     GetLatestApkWorkerTask.setErrorMessage(responseObject.getString("error"));
