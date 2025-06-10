@@ -22,6 +22,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.annotation.RequiresApi;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
