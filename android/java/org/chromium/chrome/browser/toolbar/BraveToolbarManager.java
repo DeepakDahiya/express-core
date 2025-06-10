@@ -519,6 +519,27 @@ public class BraveToolbarManager extends ToolbarManager {
         }
     }
 
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }
+        
+    }
+
     private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
@@ -557,6 +578,7 @@ public class BraveToolbarManager extends ToolbarManager {
                 public void getProfileFailed(String error) {
                     Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
                 }
+            };
 
     private void updateBottomToolbarVisibility() {
         if (mActivity == null || mActivity.getResources() == null) return;
