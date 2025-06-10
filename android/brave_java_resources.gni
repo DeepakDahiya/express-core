@@ -361,7 +361,6 @@ brave_java_resources = [
   "java/res/drawable/ad_free_card_bg.xml",
   "java/res/drawable/update_dialog_background.xml",
   "java/res/drawable/security_badge_background.xml",
-  "java/res/drawable/ic_update_available.xml",
   "java/res/drawable/ic_security_shield.xml",
   "java/res/drawable/add_custom_filter_button_background_disabled.xml",
   "java/res/drawable/add_custom_filter_button_background_selector.xml",
