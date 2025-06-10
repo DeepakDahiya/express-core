@@ -12,6 +12,7 @@ import android.content.res.ColorStateList;
 import android.util.AttributeSet;
 
 import androidx.core.widget.ImageViewCompat;
+import android.view.View;
 
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.theme.ThemeColorProvider.TintObserver;
