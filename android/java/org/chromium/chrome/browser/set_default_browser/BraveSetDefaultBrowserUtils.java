@@ -20,7 +20,7 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-
+import java.util.List;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.BravePreferenceKeys;
@@ -41,28 +41,49 @@ public class BraveSetDefaultBrowserUtils {
     public static boolean isBottomSheetVisible;
 
     public static boolean isBraveSetAsDefaultBrowser(Context context) {
+        // Use the modern, recommended RoleManager for Android 10 and above
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            return isDefaultBrowserWithRoleManager(context);
+        } else {
+            // Use the legacy method for older Android versions
+            return isDefaultBrowserWithIntentResolution(context);
+        }
+    }
+
+    @RequiresApi(api = Build.VERSION_CODES.Q)
+    private static boolean isDefaultBrowserWithRoleManager(Context context) {
+        RoleManager roleManager = (RoleManager) context.getSystemService(Context.ROLE_SERVICE);
+        if (roleManager == null || !roleManager.isRoleAvailable(RoleManager.ROLE_BROWSER)) {
+            return false;
+        }
+
+        List<String> roleHolders = roleManager.getRoleHolders(RoleManager.ROLE_BROWSER);
+        // Check if any of the Brave variants are the default browser
+        return roleHolders.contains(BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME)
+                || roleHolders.contains(BraveConstants.BRAVE_BETA_PACKAGE_NAME)
+                || roleHolders.contains(BraveConstants.BRAVE_NIGHTLY_PACKAGE_NAME);
+    }
+
+    @SuppressWarnings("deprecation") // Needed for resolveActivity on older APIs
+    private static boolean isDefaultBrowserWithIntentResolution(Context context) {
         Intent browserIntent =
                 new Intent(Intent.ACTION_VIEW, Uri.parse(UrlConstants.HTTP_URL_PREFIX));
         ResolveInfo resolveInfo =
                 context.getPackageManager()
                         .resolveActivity(browserIntent, PackageManager.MATCH_DEFAULT_ONLY);
+
         if (resolveInfo == null
                 || resolveInfo.activityInfo == null
                 || resolveInfo.activityInfo.packageName == null) {
             return false;
         }
 
-        if (context.getPackageName().equals(BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME)) {
-            return resolveInfo.activityInfo.packageName.equals(
-                    BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME);
-        } else {
-            return resolveInfo.activityInfo.packageName.equals(
-                           BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME)
-                    || resolveInfo.activityInfo.packageName.equals(
-                            BraveConstants.BRAVE_BETA_PACKAGE_NAME)
-                    || resolveInfo.activityInfo.packageName.equals(
-                            BraveConstants.BRAVE_NIGHTLY_PACKAGE_NAME);
-        }
+        String defaultBrowserPackage = resolveInfo.activityInfo.packageName;
+
+        // Check if the default package name matches any of the Brave variants
+        return BraveConstants.BRAVE_PRODUCTION_PACKAGE_NAME.equals(defaultBrowserPackage)
+                || BraveConstants.BRAVE_BETA_PACKAGE_NAME.equals(defaultBrowserPackage)
+                || BraveConstants.BRAVE_NIGHTLY_PACKAGE_NAME.equals(defaultBrowserPackage);
     }
 
     public static void checkSetDefaultBrowserModal(AppCompatActivity activity) {

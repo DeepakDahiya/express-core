@@ -128,6 +128,7 @@ public class BrowserExpressGetLatestApkUtil {
                     sb.append(line + "\n");
                 }
                 JSONObject responseObject = new JSONObject(sb.toString());
+                Log.e(TAG, "Response: " + responseObject.toString());
                 if(responseObject.getBoolean("success")){
                     GetLatestApkWorkerTask.setGetLatestApkSuccessStatus(true);
                     String version = responseObject.getString("version");

@@ -1442,14 +1442,18 @@ public abstract class BraveActivity extends ChromeActivity
 
     private void checkForCustomUpdates() {
         // Check on app start and periodically
-        int appOpenCount = SharedPreferencesManager.getInstance()
-            .readInt(BravePreferenceKeys.BRAVE_APP_OPEN_COUNT);
+        // int appOpenCount = SharedPreferencesManager.getInstance()
+        //     .readInt(BravePreferenceKeys.BRAVE_APP_OPEN_COUNT);
         
         // Check immediately on first install, then every 5th app open
-        if (appOpenCount == 1 || appOpenCount % 5 == 0) {
-            if (mCustomUpdateManager != null) {
-                mCustomUpdateManager.checkForCustomUpdate();
-            }
+        // if (appOpenCount == 1 || appOpenCount % 5 == 0) {
+        //     if (mCustomUpdateManager != null) {
+        //         mCustomUpdateManager.checkForCustomUpdate();
+        //     }
+        // }
+
+        if (mCustomUpdateManager != null) {
+            mCustomUpdateManager.checkForCustomUpdate();
         }
     }
 
@@ -2835,37 +2839,68 @@ public abstract class BraveActivity extends ChromeActivity
         
         private void showForceUpdateDialog(String version, String releaseNotes, String downloadUrl) {
             runOnUiThread(() -> {
-                AlertDialog dialog = new AlertDialog.Builder(BraveActivity.this, R.style.BraveWalletAlertDialogTheme)
-                    .setTitle("Critical Update Required")
-                    .setMessage("Version " + version + " is now available.\n\n" + 
-                            (releaseNotes != null ? releaseNotes : "This update contains important security fixes."))
-                    .setCancelable(false)
-                    .setPositiveButton("Update Now", (d, which) -> {
-                        redirectToUpdate(downloadUrl);
-                    })
-                    .create();
-                
-                dialog.show();
+                showCustomUpdateDialog(version, releaseNotes, downloadUrl, true);
             });
         }
-        
+
         private void showOptionalUpdateDialog(String version, String releaseNotes, String downloadUrl) {
             runOnUiThread(() -> {
-                AlertDialog dialog = new AlertDialog.Builder(BraveActivity.this, R.style.BraveWalletAlertDialogTheme)
-                    .setTitle("Update Available")
-                    .setMessage("Version " + version + " is now available.\n\n" + 
-                            (releaseNotes != null ? releaseNotes : "This update includes improvements and bug fixes."))
-                    .setPositiveButton("Update", (d, which) -> {
-                        redirectToUpdate(downloadUrl);
-                    })
-                    .setNegativeButton("Later", (d, which) -> {
-                        d.dismiss();
-                        setNextUpdateCheckTime();
-                    })
-                    .create();
-                
-                dialog.show();
+                showCustomUpdateDialog(version, releaseNotes, downloadUrl, false);
             });
+        }
+
+        private void showCustomUpdateDialog(String version, String releaseNotes, String downloadUrl, boolean isForced) {
+            View dialogView = getLayoutInflater().inflate(R.layout.custom_update_dialog, null);
+            
+            // Setup views
+            TextView titleView = dialogView.findViewById(R.id.update_title);
+            TextView versionView = dialogView.findViewById(R.id.update_version);
+            TextView messageView = dialogView.findViewById(R.id.update_message);
+            Button laterButton = dialogView.findViewById(R.id.btn_later);
+            Button updateButton = dialogView.findViewById(R.id.btn_update);
+            View securityBadge = dialogView.findViewById(R.id.security_badge_container);
+            
+            // Configure content
+            if (isForced) {
+                titleView.setText("Critical Update Required");
+                securityBadge.setVisibility(View.VISIBLE);
+            } else {
+                titleView.setText("Update Available");
+                securityBadge.setVisibility(View.GONE);
+            }
+            
+            versionView.setText("Version " + version);
+            messageView.setText(releaseNotes != null ? releaseNotes : 
+                (isForced ? "This update contains important security fixes and must be installed." 
+                        : "This update includes improvements and bug fixes."));
+
+            AlertDialog dialog = new AlertDialog.Builder(BraveActivity.this)
+                .setView(dialogView)
+                .setCancelable(!isForced)
+                .create();
+    
+            // Configure buttons
+            if (isForced) {
+                laterButton.setVisibility(View.GONE);
+            } else {
+                laterButton.setOnClickListener(v -> {
+                    dialog.dismiss();
+                    setNextUpdateCheckTime();
+                });
+            }
+            
+            updateButton.setOnClickListener(v -> {
+                dialog.dismiss();
+                redirectToUpdate(downloadUrl);
+            });
+            
+            // Show dialog
+            dialog.show();
+            
+            // Make dialog background transparent to show custom background
+            if (dialog.getWindow() != null) {
+                dialog.getWindow().setBackgroundDrawableResource(android.R.color.transparent);
+            }
         }
         
         private void redirectToUpdate(String downloadUrl) {
