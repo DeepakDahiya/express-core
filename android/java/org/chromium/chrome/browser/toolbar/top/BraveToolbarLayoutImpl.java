@@ -279,6 +279,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
         mCommentsText = findViewById(R.id.comments_button1);
         mBeHomeButton = findViewById(R.id.be_home_button);
+        mBottomHomeButton = findViewById(R.id.bottom_home_button);
 
         mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
         mBraveRewardsOnboardingIcon = findViewById(R.id.br_rewards_onboarding_icon);
@@ -483,12 +484,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 dismissShieldsTooltip();
                 hidePlaylistButton();
 
-                if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
-                    mBeHomeButton.setVisibility(View.GONE);
-                } else {
-                    mBeHomeButton.setVisibility(View.VISIBLE);
-                }
-
                 String mUrl = url.getSpec();
 
                 if(isValidUrl(mUrl) && !tab.isIncognito()) {
@@ -555,10 +550,20 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     int commentCount = 0;
                     mCommentsText = activity.getCommentCountText();
                     mBottomHomeButton = activity.getBottomHomeButton();
-                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    mBeHomeButton = activity.getBeHomeButton();
+
                     if(mBottomHomeButton != null) {
-                        mBottomHomeButton.setVisibility(View.VISIBLE);
+                        if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
+                            mBeHomeButton.setVisibility(View.GONE);
+                        } else {
+                            mBeHomeButton.setVisibility(View.VISIBLE);
+                        }
+                    } else {
+                        mBeHomeButton.setVisibility(View.VISIBLE);
                     }
+
+                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                    
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
                 } catch (JSONException e) {
