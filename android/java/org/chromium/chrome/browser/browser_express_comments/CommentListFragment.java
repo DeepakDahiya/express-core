@@ -259,6 +259,8 @@ public class CommentListFragment extends Fragment {
         getActivity().getWindowManager().getDefaultDisplay().getMetrics(displayMetrics);
         int screenHeight = displayMetrics.heightPixels;
 
+        mEmptyContainer.getLayoutParams().height = (int)(screenHeight * 0.7);
+
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
