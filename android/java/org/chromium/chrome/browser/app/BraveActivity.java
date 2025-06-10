@@ -2904,7 +2904,7 @@ public abstract class BraveActivity extends ChromeActivity
             long lastCheck = SharedPreferencesManager.getInstance()
                 .readLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, 0);
             long now = System.currentTimeMillis();
-            long checkInterval = 24 * 60 * 60 * 1000; // 24 hours
+            long checkInterval = 6 * 60 * 60 * 1000; // 24 hours
             
             return (now - lastCheck) > checkInterval;
         }
@@ -2916,7 +2916,7 @@ public abstract class BraveActivity extends ChromeActivity
         
         private void setNextUpdateCheckTime() {
             // Set next check for 3 days later for optional updates
-            long nextCheck = System.currentTimeMillis() + (3 * 24 * 60 * 60 * 1000);
+            long nextCheck = System.currentTimeMillis() + (6 * 60 * 60 * 1000);
             SharedPreferencesManager.getInstance()
                 .writeLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, nextCheck);
         }
