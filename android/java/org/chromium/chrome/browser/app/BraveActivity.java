@@ -253,6 +253,7 @@ import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 import android.content.ActivityNotFoundException;
 import android.content.pm.PackageInfo;
 import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil;
+import org.chromium.base.task.AsyncTask;
 
 /**
  * Brave's extension for ChromeActivity
@@ -2758,8 +2759,19 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    // Add this after your existing member variables
-private CustomUpdateManager mCustomUpdateManager;
+    private enum DifferenceType {
+        UP_TO_DATE,
+        PATCH_DIFFERENCE,
+        MAJOR_MINOR_DIFFERENCE
+    }
+    
+    private class VersionDifference {
+        public DifferenceType type;
+        public String currentVersion;
+        public String latestVersion;
+    }
+
+    private CustomUpdateManager mCustomUpdateManager;
 
     // Add this inner class at the end of BraveActivity, before the @NativeMethods interface
     private class CustomUpdateManager {
@@ -2771,9 +2783,9 @@ private CustomUpdateManager mCustomUpdateManager;
             }
             
             // Use your existing API call
-            BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask getLatestApkWorkerTask =
+            BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask workerTask =
                 new BrowserExpressGetLatestApkUtil.GetLatestApkWorkerTask(getLatestApkCallback);
-            getLatestApkWorkerTask.execute();
+            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
         
         private BrowserExpressGetLatestApkUtil.GetLatestApkCallback getLatestApkCallback = 
@@ -2802,7 +2814,7 @@ private CustomUpdateManager mCustomUpdateManager;
             VersionDifference diff = compareVersions(currentVersion, latestVersion);
             
             // Check if backend specifies force update
-            boolean isForceUpdate = "force".equalsIgnoreCase(updateType) || 
+            boolean isForceUpdate = "forced".equalsIgnoreCase(updateType) || 
                                 "critical".equalsIgnoreCase(updateType);
             
             if (isForceUpdate || diff.type == DifferenceType.MAJOR_MINOR_DIFFERENCE) {
@@ -2907,19 +2919,6 @@ private CustomUpdateManager mCustomUpdateManager;
             long nextCheck = System.currentTimeMillis() + (3 * 24 * 60 * 60 * 1000);
             SharedPreferencesManager.getInstance()
                 .writeLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, nextCheck);
-        }
-        
-        // Version comparison logic
-        private enum DifferenceType {
-            UP_TO_DATE,
-            PATCH_DIFFERENCE,
-            MAJOR_MINOR_DIFFERENCE
-        }
-        
-        private class VersionDifference {
-            public DifferenceType type;
-            public String currentVersion;
-            public String latestVersion;
         }
         
         private VersionDifference compareVersions(String current, String latest) {
