@@ -4288,7 +4288,7 @@ If you don't accept this request, VPN will not reconnect and your internet conne
       Update
     </message>
     <message name="IDS_UPDATE_DIALOG_VERSION_FORMAT" desc="Format string for displaying the version number in the update dialog. The placeholder will be replaced by the actual version string (e.g., '2.1.0').">
-      Version <ph name="VERSION_NUMBER">$1s</ph>
+      Version
     </message>
     <!-- <message name="IDS_BROWSER_EXPRESS_SEPARATOR_DOT" desc="Sign in with Brave Wallet Request ID label">
       \u2022

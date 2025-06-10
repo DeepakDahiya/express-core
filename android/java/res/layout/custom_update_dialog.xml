@@ -18,7 +18,7 @@
             android:id="@+id/update_icon"
             android:layout_width="48dp"
             android:layout_height="48dp"
-            android:src="@drawable/ic_update_available"
+            android:src="@drawable/be_logo"
             android:layout_marginEnd="16dp"
             android:contentDescription="@string/update_dialog_title_available" />
 

@@ -2869,9 +2869,8 @@ public abstract class BraveActivity extends ChromeActivity
                 securityBadge.setVisibility(View.GONE);
             }
 
-            versionView.setText(
-                getResources().getString(R.string.update_dialog_version_format, version)
-            );
+            String t = getResources().getString(R.string.update_dialog_version_format) + version;
+            versionView.setText(t);
             
             messageView.setText(releaseNotes != null ? releaseNotes : 
                 (isForced ? "This update contains important security fixes and must be installed." 
