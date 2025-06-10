@@ -2907,7 +2907,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
         
         private boolean shouldCheckForUpdate() {
-            return true
+            return true;
             // long lastCheck = SharedPreferencesManager.getInstance()
             //     .readLong(BravePreferenceKeys.BRAVE_CUSTOM_UPDATE_LAST_CHECK, 0);
             // long now = System.currentTimeMillis();
