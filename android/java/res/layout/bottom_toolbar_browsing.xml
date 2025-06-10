@@ -27,11 +27,11 @@
 
         <ImageButton 
             android:id="@+id/be_home_button"
-            android:background="@drawable/btn_toolbar_home"
+            android:background="@drawable/home"
             android:layout_height="17sp"
             android:layout_width="17sp"
             android:layout_gravity="center"
-            android:visibility="gone"
+            android:visibility="visible"
             android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <org.chromium.chrome.browser.toolbar.BraveHomeButton

@@ -551,16 +551,17 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     mCommentsText = activity.getCommentCountText();
                     mBottomHomeButton = activity.getBottomHomeButton();
                     mBeHomeButton = activity.getBeHomeButton();
+                    mBeHomeButton.setVisibility(View.VISIBLE);
 
-                    if(mBottomHomeButton != null) {
-                        if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
-                            mBeHomeButton.setVisibility(View.GONE);
-                        } else {
-                            mBeHomeButton.setVisibility(View.VISIBLE);
-                        }
-                    } else {
-                        mBeHomeButton.setVisibility(View.VISIBLE);
-                    }
+                    // if(mBottomHomeButton != null) {
+                    //     if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
+                    //         mBeHomeButton.setVisibility(View.GONE);
+                    //     } else {
+                    //         mBeHomeButton.setVisibility(View.VISIBLE);
+                    //     }
+                    // } else {
+                    //     mBeHomeButton.setVisibility(View.VISIBLE);
+                    // }
 
                     mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
                     

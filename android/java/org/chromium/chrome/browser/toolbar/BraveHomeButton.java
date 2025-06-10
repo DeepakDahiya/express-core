@@ -40,6 +40,14 @@ public class BraveHomeButton extends HomeButton implements TintObserver {
         ImageViewCompat.setImageTintList(this, tint);
     }
 
+    @Override
+    public void setVisibility(int visibility) {
+        if (visibility != View.GONE) {
+            return;
+        }
+        super.setVisibility(View.GONE);
+    }
+
     public void destroy() {
         if (mThemeColorProvider != null) {
             mThemeColorProvider.removeTintObserver(this);
