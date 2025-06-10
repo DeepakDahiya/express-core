@@ -32,6 +32,7 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.util.BraveConstants;
 import org.chromium.components.embedder_support.util.UrlConstants;
 import org.chromium.ui.widget.Toast;
+import java.lang.reflect.Method;
 
 public class BraveSetDefaultBrowserUtils {
     private static final String TAG = "BSDBrowserUtils";

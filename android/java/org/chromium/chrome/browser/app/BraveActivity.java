@@ -2870,7 +2870,7 @@ public abstract class BraveActivity extends ChromeActivity
             }
 
             versionView.setText(
-                context.getString(R.string.update_dialog_version_format, version)
+                getResources().getString(R.string.update_dialog_version_format, version)
             );
             
             messageView.setText(releaseNotes != null ? releaseNotes : 
