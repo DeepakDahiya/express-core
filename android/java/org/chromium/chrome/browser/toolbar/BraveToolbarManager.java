@@ -86,7 +86,9 @@ import android.widget.ImageButton;
 import android.content.Context;
 import org.chromium.base.ContextUtils;
 import com.bumptech.glide.Glide;
-
+import org.chromium.base.task.AsyncTask;
+import android.util.Base64;
+import java.io.UnsupportedEncodingException;
 import java.util.List;
 
 public class BraveToolbarManager extends ToolbarManager {
