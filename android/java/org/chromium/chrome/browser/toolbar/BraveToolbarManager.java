@@ -503,7 +503,7 @@ public class BraveToolbarManager extends ToolbarManager {
 
             mProfileButton = activity.getProfileButton();
 
-            if (accessToken != null) {
+            if (accessToken != null && mProfileButton != null) {
                 Context context = ContextUtils.getApplicationContext();
                 SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                 String avatar = prefs.getString("avatar_url", null);
