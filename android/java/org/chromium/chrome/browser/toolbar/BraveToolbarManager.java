@@ -479,8 +479,6 @@ public class BraveToolbarManager extends ToolbarManager {
             }
         }
 
-        fetchAndUpdateProfileImage();
-
         if (mToolbar instanceof BraveTopToolbarCoordinator) {
             ((BraveTopToolbarCoordinator) mToolbar).onBottomToolbarVisibilityChanged(visible);
         }
