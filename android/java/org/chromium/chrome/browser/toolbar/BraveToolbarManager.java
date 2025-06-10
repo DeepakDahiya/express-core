@@ -77,6 +77,11 @@ import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.components.embedder_support.util.UrlUtilities;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
 import org.chromium.url.GURL;
+import android.content.SharedPreferences;
+import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.util.List;
 
