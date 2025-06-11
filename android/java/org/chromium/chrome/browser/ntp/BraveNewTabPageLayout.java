@@ -1467,18 +1467,10 @@ public class BraveNewTabPageLayout
 
                     int len = mPosts.size();
                     if (mPosts.size() > 1) {
-                        mPosts.subList(1, mDisplayableItems.size()).clear();
+                        mPosts.subList(1, mPosts.size()).clear();
                     }
                     mPosts.addAll(posts);
                     mPostAdapter.notifyItemRangeInserted(1, posts.size());
-
-                    mRecyclerView.post(() -> {
-                        RecyclerView.ViewHolder viewHolder = mRecyclerView.findViewHolderForAdapterPosition(0);
-
-                        if (viewHolder instanceof PostListAdapter.HeaderViewHolder) {
-                            setupHeaderViews((PostListAdapter.HeaderViewHolder) viewHolder);
-                        }
-                    });
                 }
 
                 @Override
