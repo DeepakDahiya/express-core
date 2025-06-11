@@ -145,17 +145,21 @@ public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
         private void setupTopSites() {
             mDatabaseHelper = DatabaseHelper.getInstance();
             List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-            if (topSites != null && !topSites.isEmpty()) {
-                topSitesContainer.removeAllViews();
-                int maxSites = Math.min(4, topSites.size());
-                for (int i = 0; i < maxSites; i++) {
-                    TopSiteTable topSite = topSites.get(i);
-                    View tileView = createTile(getContext(), topSite);
-                    topSitesContainer.addView(tileView);
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                if (topSites != null && !topSites.isEmpty()) {
+                    topSitesContainer.removeAllViews();
+                    int maxSites = Math.min(4, topSites.size());
+                    for (int i = 0; i < maxSites; i++) {
+                        TopSiteTable topSite = topSites.get(i);
+                        View tileView = createTile(activity, topSite);
+                        topSitesContainer.addView(tileView);
+                    }
+                    topSitesContainer.setVisibility(View.VISIBLE);
+                } else {
+                    topSitesContainer.setVisibility(View.GONE);
                 }
-                topSitesContainer.setVisibility(View.VISIBLE);
-            } else {
-                topSitesContainer.setVisibility(View.GONE);
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
         }
     }
