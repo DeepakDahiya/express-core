@@ -78,6 +78,8 @@ import java.util.Random;
 import androidx.core.graphics.drawable.RoundedBitmapDrawable;
 import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.graphics.BitmapFactory;
+import android.graphics.Bitmap;
+import java.io.File;
 
 public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
