@@ -561,7 +561,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
         if (mMessageEditText != null && getContext() != null) {
             mMessageEditText.post(() -> {
-                if (getContext() != null && isAdded() && mMessageEditText != null) {
+                if (getContext() != null && mMessageEditText != null) {
                     mMessageEditText.clearFocus();
                     mMessageEditText.requestFocus();
                     
