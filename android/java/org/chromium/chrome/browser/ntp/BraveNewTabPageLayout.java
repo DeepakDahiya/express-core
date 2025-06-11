@@ -138,6 +138,13 @@ import java.util.Random;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import org.chromium.ui.widget.Toast;
 import org.chromium.chrome.browser.browser_express_generate_username.BrowserExpressClaimUsernameUtil;
+import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import org.json.JSONException;
+import org.json.JSONObject;
+import android.widget.ImageButton;
+import java.io.UnsupportedEncodingException;
+import android.util.Base64;
 
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
@@ -212,6 +219,8 @@ public class BraveNewTabPageLayout
 
     private Supplier<Tab> mTabProvider;
 
+    private ImageButton mProfileButton;
+    
     private static final int SHOW_BRAVE_RATE_ENTRY_AT = 10; // 10th row
 
     public BraveNewTabPageLayout(Context context, AttributeSet attrs) {
@@ -1484,6 +1493,46 @@ public class BraveNewTabPageLayout
                 }
             };
 
+    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+            new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
+                @Override
+                public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
+                    Context context = ContextUtils.getApplicationContext();
+                    SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                    SharedPreferences.Editor editor = sharedPref.edit();
+
+                    if(avatar != null && avatar.length() > 0){
+                        editor.putString("avatar_url", avatar);
+                        ImageLoader.downloadImage(avatar, Glide.with(context), true, 5, mProfileButton, null);
+                    }
+
+                    if(xp != null && xp.length() > 0){
+                        editor.putString("views", xp);
+                    }else{
+                        editor.putString("views", "-");
+                    }
+
+                    if(lg != null && lg.length() > 0){
+                        editor.putString("likes_given", lg);
+                    }else{
+                        editor.putString("likes_given", "-");
+                    }
+
+                    if(lr != null && lr.length() > 0){
+                        editor.putString("likes_received", lr);
+                    }else{
+                        editor.putString("likes_received", "-");
+                    }
+
+                    editor.apply();
+                }
+
+                @Override
+                public void getProfileFailed(String error) {
+                    Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
+                }
+            };
+
     private BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
             new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
                 @Override
@@ -1501,4 +1550,57 @@ public class BraveNewTabPageLayout
                     Log.e("Express Browser LOGIN", "INSIDE LOGIN FAILED");
                 }
             };
+
+    private void fetchAndUpdateProfileImage() {
+        try {
+            BraveActivity activity = BraveActivity.getBraveActivity();
+            if(activity == null){
+                return;
+            }
+            String accessToken = activity.getAccessToken();
+
+            mProfileButton = activity.getProfileButton();
+
+            if (accessToken != null && mProfileButton != null) {
+                Context context = ContextUtils.getApplicationContext();
+                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                String avatar = prefs.getString("avatar_url", null);
+                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+                if (avatar != null) {
+                    ImageLoader.downloadImage(avatar, Glide.with(activity), true, 5, mProfileButton, null);
+                }else{
+                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(activity), true, 5, mProfileButton, null);
+                }
+
+                BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                    new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            Log.e(TAG, "maybeShowWalletPanel " + e);
+        } catch (JSONException e) {
+            Log.e("Express Browser Access Token", e.getMessage());
+        }
+    }
+
+    private JSONObject getDecodedToken(String accessToken){
+        try{
+            String[] split_string = accessToken.split("\\.");
+            String base64EncodedHeader = split_string[0];
+            String base64EncodedBody = split_string[1];
+            String base64EncodedSignature = split_string[2];
+
+            byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+            String decodedString = new String(data, "UTF-8");
+            JSONObject jsonObj = new JSONObject(decodedString.toString());
+            return jsonObj;
+        }catch(JSONException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }catch(UnsupportedEncodingException e){
+            Log.e("Express Browser Access Token", e.getMessage());
+            return null;
+        }
+        
+    }
 }
