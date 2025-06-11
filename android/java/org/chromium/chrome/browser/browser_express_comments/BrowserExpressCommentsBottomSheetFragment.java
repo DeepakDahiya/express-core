@@ -558,6 +558,20 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     public void hideKeyboard() {
         if (getContext() == null || getView() == null) return;
+
+        if (mMessageEditText != null && getContext() != null) {
+            mMessageEditText.post(() -> {
+                if (getContext() != null && isAdded() && mMessageEditText != null) {
+                    mMessageEditText.clearFocus();
+                    mMessageEditText.requestFocus();
+                    
+                    if (mMessageEditText.getText() != null) {
+                        mMessageEditText.setSelection(mMessageEditText.getText().length());
+                    }
+                }
+            });
+        }
+
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
             imm.hideSoftInputFromWindow(getView().getWindowToken(), 0);
