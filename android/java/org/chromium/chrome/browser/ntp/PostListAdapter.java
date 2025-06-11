@@ -68,19 +68,33 @@ import android.view.MotionEvent;
 import android.widget.ProgressBar;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
+import org.chromium.chrome.browser.local_database.DatabaseHelper;
+import org.chromium.chrome.browser.local_database.TopSiteTable;
 
-public class PostListAdapter extends RecyclerView.Adapter {
+public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
-    private List<Post> mPostList;
+    private List<DisplayableItem> mPostList;
     private String INSHORTS_TYPE = "Inshorts";
     private String TWITTER_TYPE = "Twitter";
     private String INSTAGRAM_TYPE = "Instagram";
     private RecyclerView mTopPostRecycler;
 
-    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler) {
+    private static final int VIEW_TYPE_HEADER = 0;
+    private static final int VIEW_TYPE_POST = 1;
+
+    public PostListAdapter(Context context, List<DisplayableItem> postList, RecyclerView topPostRecycler) {
         mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+        if (position == 0) {
+            return VIEW_TYPE_HEADER;
+        } else {
+            return VIEW_TYPE_POST;
+        }
     }
 
     @Override
@@ -93,16 +107,57 @@ public class PostListAdapter extends RecyclerView.Adapter {
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
 
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
-        return new PostHolder(view, mTopPostRecycler);
+        if (viewType == VIEW_TYPE_HEADER) {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.new_tab_page_header_layout, parent, false);
+            return new HeaderViewHolder(view);
+        } else {
+            view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.browser_express_post, parent, false);
+            return new PostHolder(view, mTopPostRecycler);
+        }
     }
 
     // Passes the post object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Post post = (Post) mPostList.get(position);
+        if (holder.getItemViewType() == VIEW_TYPE_POST) {
+            Post post = mPostList.get(position - 1);
+            ((PostHolder) holder).bind(post);
+        } else { 
+            ((HeaderViewHolder) holder).bind();
+        }
+    }
 
-        ((PostHolder) holder).bind(post);
+    private class HeaderViewHolder extends RecyclerView.ViewHolder {
+        LinearLayout topSitesContainer;
+        DatabaseHelper mDatabaseHelper;
+
+        HeaderViewHolder(View itemView) {
+            super(itemView);
+            topSitesContainer = itemView.findViewById(R.id.top_sites_container);
+        }
+
+        void bind() {
+            setupTopSites();
+        }
+
+        private void setupTopSites() {
+            mDatabaseHelper = DatabaseHelper.getInstance();
+            List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+            if (topSites != null && !topSites.isEmpty()) {
+                topSitesContainer.removeAllViews();
+                int maxSites = Math.min(4, topSites.size());
+                for (int i = 0; i < maxSites; i++) {
+                    TopSiteTable topSite = topSites.get(i);
+                    View tileView = createTile(getContext(), topSite);
+                    topSitesContainer.addView(tileView);
+                }
+                topSitesContainer.setVisibility(View.VISIBLE);
+            } else {
+                topSitesContainer.setVisibility(View.GONE);
+            }
+        }
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {

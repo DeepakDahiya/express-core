@@ -4,7 +4,7 @@ import org.chromium.chrome.browser.browser_express_comments.Comment;
 import java.util.List;
 import java.util.ArrayList;
 
-public class Post{  
+public class Post implements DisplayableItem {  
     private String _id;  
     private String content;  
     private String type;  

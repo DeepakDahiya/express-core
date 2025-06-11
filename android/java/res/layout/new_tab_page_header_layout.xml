@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- This layout contains all the content that will appear above the post list. -->
+<LinearLayout
+      xmlns:android="http://schemas.android.com/apk/res/android"
+      xmlns:app="http://schemas.android.com/apk/res-auto"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:orientation="vertical">
+      <LinearLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="24dp"
+            android:layout_marginBottom="24dp"
+            android:gravity="center"
+            android:padding="12dp">
+            <TextView
+                  android:layout_width="wrap_content"
+                  android:layout_height="wrap_content"
+                  android:text="@string/browser_express_name"
+                  android:layout_gravity="center_horizontal"
+                  android:drawablePadding="8dp"
+                  app:drawableStartCompat="@drawable/be_logo"
+                  android:gravity="center"
+                  android:textColor="@color/content_color"
+                  android:textStyle="bold"
+                  android:textSize="40sp"/>
+      </LinearLayout>
+
+      <include layout="@layout/fake_search_box_layout"/>
+
+      <LinearLayout
+            android:id="@+id/top_sites_container"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_horizontal"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"
+            android:paddingHorizontal="8dp"/>
+      <FrameLayout
+            android:id="@+id/logo_holder"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ViewStub
+                  android:id="@+id/cryptid_holder"
+                  android:layout="@layout/new_tab_page_cryptid_holder"
+                  android:layout_width="@dimen/cryptid_width_in_logo_wrapper"
+                  android:layout_height="@dimen/cryptid_height_in_logo_wrapper"
+                  android:layout_gravity="bottom|start" />
+            <org.chromium.chrome.browser.logo.LogoView
+                  android:id="@+id/search_provider_logo"
+                  android:layout_width="wrap_content"
+                  android:layout_height="@dimen/ntp_logo_height"
+                  android:layout_gravity="center_horizontal"
+                  android:layout_marginStart="16dp"
+                  android:layout_marginEnd="16dp"
+                  android:layout_marginTop="@dimen/ntp_logo_margin_top"
+                  android:layout_marginBottom="23dp" />
+      </FrameLayout>
+
+      <View
+            android:id="@+id/no_search_logo_spacer"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:visibility="gone" />
+      <LinearLayout 
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:gravity="center_vertical">
+            <TextView
+                  android:layout_width="0dp"
+                  android:layout_height="wrap_content"
+                  android:text="@string/browser_express_feed_title"
+                  android:layout_weight="1"
+                  android:textColor="@color/content_color"
+                  android:textStyle="bold"
+                  android:textSize="18sp"/>
+      </LinearLayout>
+</LinearLayout>
