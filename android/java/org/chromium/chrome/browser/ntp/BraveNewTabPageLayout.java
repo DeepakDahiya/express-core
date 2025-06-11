@@ -389,6 +389,8 @@ public class BraveNewTabPageLayout
         BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
             new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
         workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+        fetchAndUpdateProfileImage();
     }
 
     private boolean shouldDisplayTopSites() {
