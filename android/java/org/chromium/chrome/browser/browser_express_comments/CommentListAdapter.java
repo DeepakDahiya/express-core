@@ -246,6 +246,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
         private final int mViewType;
 
+        private boolean shouldCloseKeyboardOnReply = false;
+
         CommentHolder(@NonNull View itemView, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
             super(itemView);
             this.context = itemView.getContext(); // Initialize context
@@ -475,9 +477,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                             : comment.getCommentCount() + " replies";
                     mReplyButton.setText(mReplyButtonText);
                     mReplyButton.setTextColor(ContextCompat.getColor(activity, R.color.browser_express_blue_color));
+                    shouldCloseKeyboardOnReply = true;
                 } else {
                     String t = "Reply";
                     mReplyButton.setText(t); 
+                    shouldCloseKeyboardOnReply = false;
                 }
             }
 
@@ -485,6 +489,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if(mReplyButton != null){
                 mReplyButton.setOnClickListener(v -> {
                     if (activity == null || mParentFragment == null) return; // Guard clause
+
+                    if(shouldCloseKeyboardOnReply){
+                        mParentFragment.hideKeyboard();
+                    }else{
+                        mParentFragment.showKeyboardWithFocus();
+                    }
 
                     if(mIsReplyAdapter){
                         mParentFragment.openRepliesToReply(comment.getId());

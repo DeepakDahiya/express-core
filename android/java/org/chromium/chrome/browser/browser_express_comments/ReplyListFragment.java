@@ -217,6 +217,7 @@ public class ReplyListFragment extends Fragment {
         mBackButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                parentFragment.hideKeyboard();
                 parentFragment.openComments();
             }
         });

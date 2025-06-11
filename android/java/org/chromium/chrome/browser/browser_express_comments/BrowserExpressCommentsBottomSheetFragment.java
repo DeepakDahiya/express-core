@@ -298,10 +298,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                     FragmentManager fragmentManager = getChildFragmentManager();
                     if (fragmentManager.getBackStackEntryCount() > 2) {
+                        hideKeyboard();
                         openComments(false);
                         return true;
                     }
                     if (fragmentManager.getBackStackEntryCount() > 1) {
+                        hideKeyboard();
                         openComments();
                         return true;
                     }
@@ -317,10 +319,12 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                 if (keyCode == KeyEvent.KEYCODE_BACK && event.getAction() == KeyEvent.ACTION_UP) {
                     FragmentManager fragmentManager = getChildFragmentManager();
                     if (fragmentManager.getBackStackEntryCount() > 2) {
+                        hideKeyboard();
                         openComments(false);
                         return true;
                     }
                     if (fragmentManager.getBackStackEntryCount() > 1) {
+                        hideKeyboard();
                         openComments();
                         return true;
                     }
@@ -337,8 +341,10 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
                     FragmentManager fragmentManager = getChildFragmentManager();
                     Log.e("BACK BUTTON PRESSED 2", fragmentManager.getBackStackEntryCount() + "");
                     if (fragmentManager.getBackStackEntryCount() > 2) {
+                        hideKeyboard();
                         openComments(false);
                     } else if (fragmentManager.getBackStackEntryCount() > 1) {
+                        hideKeyboard();
                         openComments();
                     } else {
                         this.remove();
@@ -523,7 +529,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
-    private void showKeyboardWithFocus() {
+    public void showKeyboardWithFocus() {
         if (mMessageEditText != null && getContext() != null && isAdded()) {
             mMessageEditText.post(() -> {
                 if (getContext() != null && isAdded() && mMessageEditText != null) {
@@ -550,7 +556,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         }
     }
 
-    private void hideKeyboard() {
+    public void hideKeyboard() {
         if (getContext() == null || getView() == null) return;
         InputMethodManager imm = (InputMethodManager) getContext().getSystemService(Context.INPUT_METHOD_SERVICE);
         if (imm != null) {
