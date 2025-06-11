@@ -70,6 +70,14 @@ import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
 import org.chromium.chrome.browser.local_database.TopSiteTable;
+import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.GradientDrawable;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import java.util.Random;
+import androidx.core.graphics.drawable.RoundedBitmapDrawable;
+import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
+import android.graphics.BitmapFactory;
 
 public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private Context mContext;
@@ -161,6 +169,74 @@ public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                 }
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
+        }
+
+        private View createTile(Context context, TopSiteTable topSite) {
+            View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
+
+            LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
+            ImageView imageView = tileView.findViewById(R.id.tile_image);
+            TextView textView = tileView.findViewById(R.id.tile_text);
+            LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
+
+            // Set background color for image container
+            try {
+                int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
+                GradientDrawable shape = new GradientDrawable();
+                shape.setShape(GradientDrawable.OVAL); // Circular background
+                shape.setColor(backgroundColor);
+                imageContainer.setBackground(shape);
+            } catch (IllegalArgumentException e) {
+                // Handle invalid color string
+                imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
+            }
+
+            if (topSite.getImagePath() != null) {
+                File imgFile = new File(topSite.getImagePath());
+                if (imgFile.exists()) {
+                    Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
+                    RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(context.getResources(), bitmap);
+                    roundedBitmap.setCircular(true);
+                    imageView.setImageDrawable(roundedBitmap);
+                } else {
+                    imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
+                }
+            } else {
+                imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
+            }
+
+            // Limit name length and set text
+            String name = topSite.getName();
+            if (name.length() > 30) {
+                name = name.substring(0, 27) + "...";
+            }
+            textView.setText(name);
+
+            // Click listener to open website
+            tileView.setOnClickListener(v -> {
+                TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
+            });
+
+            return tileView;
+        }
+
+        private BitmapDrawable generateAvatar(Context context, String name) {
+            Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
+            Canvas canvas = new Canvas(bitmap);
+
+            // Generate a random color
+            Random rnd = new Random();
+            int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+            canvas.drawColor(color);
+
+            // Draw the first letter of the name
+            Paint paint = new Paint();
+            paint.setColor(Color.WHITE);
+            paint.setTextSize(60);
+            paint.setTextAlign(Paint.Align.CENTER);
+            canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(Locale.ROOT), 50, 70, paint);
+
+            return new BitmapDrawable(context.getResources(), bitmap);
         }
     }
 
