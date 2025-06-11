@@ -149,6 +149,7 @@ import android.util.Base64;
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
     private static final String TAG = "BraveNewTabPage";
+    private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
 
     private static final int MINIMUM_VISIBLE_HEIGHT_THRESHOLD = 50;
     private static final String BRAVE_RECYCLERVIEW_POSITION = "recyclerview_visible_position_";
@@ -220,7 +221,7 @@ public class BraveNewTabPageLayout
     private Supplier<Tab> mTabProvider;
 
     private ImageButton mProfileButton;
-    
+
     private static final int SHOW_BRAVE_RATE_ENTRY_AT = 10; // 10th row
 
     public BraveNewTabPageLayout(Context context, AttributeSet attrs) {
