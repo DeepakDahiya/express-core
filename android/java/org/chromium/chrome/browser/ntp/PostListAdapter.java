@@ -122,7 +122,7 @@ public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         if (holder.getItemViewType() == VIEW_TYPE_POST) {
-            Post post = mPostList.get(position - 1);
+            Post post = (Post) mPostList.get(position);
             ((PostHolder) holder).bind(post);
         } else { 
             ((HeaderViewHolder) holder).bind();
