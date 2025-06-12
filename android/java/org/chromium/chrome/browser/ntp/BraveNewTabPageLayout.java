@@ -351,8 +351,8 @@ public class BraveNewTabPageLayout
         mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
         LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
 
-        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-        mPostAdapter.updateTopSites(topSites);
+        // List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+        // mPostAdapter.updateTopSites(topSites);
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         if(accessToken == null){
