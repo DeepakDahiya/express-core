@@ -16,6 +16,38 @@
       android:paddingTop="@dimen/toolbar_height_no_shadow"
       android:visibility="visible" >
 
+      <LinearLayout 
+            android:id="@+id/top_header"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center_horizontal">
+
+            <LinearLayout
+                  android:layout_width="match_parent"
+                  android:layout_height="wrap_content"
+                  android:orientation="horizontal"
+                  android:layout_marginTop="24dp"
+                  android:layout_marginBottom="24dp"
+                  android:gravity="center"
+                  android:padding="12dp">
+                  <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/browser_express_name"
+                        android:layout_gravity="center_horizontal"
+                        android:drawablePadding="8dp"
+                        app:drawableStartCompat="@drawable/be_logo"
+                        android:gravity="center"
+                        android:textColor="@color/content_color"
+                        android:textStyle="bold"
+                        android:textSize="40sp"/>
+            </LinearLayout>
+
+            <include layout="@layout/fake_search_box_layout"/>
+
+      </LinearLayout>
+
       <include layout="@layout/ntp_header"/>
 
       <androidx.recyclerview.widget.RecyclerView

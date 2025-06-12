@@ -340,7 +340,21 @@ public class BraveNewTabPageLayout
 
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
+        LinearLayout linearLayout = findViewById(R.id.top_header);
         mRecyclerView = findViewById(R.id.recycler_posts);
+
+        linearLayout.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
+            @Override
+            public void onGlobalLayout() {
+                linearLayout.getViewTreeObserver().removeOnGlobalLayoutListener(this);
+
+                int linearHeight = linearLayout.getHeight();
+
+                ViewGroup.MarginLayoutParams params = (ViewGroup.MarginLayoutParams) mRecyclerView.getLayoutParams();
+                params.topMargin = linearHeight;
+                mRecyclerView.setLayoutParams(params);
+            }
+        });
         
         mShimmerLoading = findViewById(R.id.skeleton_shimmer);
         mShimmerItems = findViewById(R.id.shimmer_items);
