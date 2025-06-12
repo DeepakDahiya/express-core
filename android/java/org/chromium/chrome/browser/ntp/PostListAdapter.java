@@ -78,9 +78,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     @Override
     public int getItemViewType(int position) {
-        if (position == 0) {
-            return VIEW_TYPE_HEADER;
-        }
+        // if (position == 0) {
+        //     return VIEW_TYPE_HEADER;
+        // }
         return VIEW_TYPE_POST;
     }
 
