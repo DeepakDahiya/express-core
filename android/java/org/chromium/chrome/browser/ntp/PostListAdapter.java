@@ -39,7 +39,12 @@ import org.chromium.chrome.browser.local_database.TopSiteTable;
 import org.chromium.chrome.browser.util.TabUtils;
 
 import android.view.animation.Animation;
+import com.bumptech.glide.Glide;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import android.animation.ValueAnimator;
+import org.chromium.base.Log;
+import androidx.annotation.NonNull;
+import android.view.animation.AnimationUtils;
 
 import java.io.File;
 import java.util.ArrayList;
