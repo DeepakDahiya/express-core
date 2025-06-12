@@ -45,6 +45,8 @@ import android.animation.ValueAnimator;
 import org.chromium.base.Log;
 import androidx.annotation.NonNull;
 import android.view.animation.AnimationUtils;
+import android.view.HapticFeedbackConstants;
+import android.view.animation.LinearInterpolator;
 
 import java.io.File;
 import java.util.ArrayList;
