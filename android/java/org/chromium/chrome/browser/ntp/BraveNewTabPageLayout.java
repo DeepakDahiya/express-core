@@ -340,57 +340,57 @@ public class BraveNewTabPageLayout
 
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
-        mRecyclerView = findViewById(R.id.recycler_posts);
+        // mRecyclerView = findViewById(R.id.recycler_posts);
         
-        mShimmerLoading = findViewById(R.id.skeleton_shimmer);
-        mShimmerItems = findViewById(R.id.shimmer_items);
-        int shimmerSkeletonRows =
-                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(getContext(), 50));
-        for (int i = 0; i < shimmerSkeletonRows; i++) {
-            LayoutInflater.from(getContext()).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
-        }
+        // mShimmerLoading = findViewById(R.id.skeleton_shimmer);
+        // mShimmerItems = findViewById(R.id.shimmer_items);
+        // int shimmerSkeletonRows =
+        //         AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(getContext(), 50));
+        // for (int i = 0; i < shimmerSkeletonRows; i++) {
+        //     LayoutInflater.from(getContext()).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+        // }
 
-        mShimmerLoading.showShimmer(true);
-        AndroidUtils.show(mShimmerItems);
+        // mShimmerLoading.showShimmer(true);
+        // AndroidUtils.show(mShimmerItems);
 
-        mPosts = new ArrayList<Post>();
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
-        mRecyclerView.setAdapter(mPostAdapter);
+        // mPosts = new ArrayList<Post>();
+        // mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+        // mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
+        // mRecyclerView.setAdapter(mPostAdapter);
 
-        mMainLayout = findViewById(R.id.ntp_content);
-        mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
-        LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
+        // mMainLayout = findViewById(R.id.ntp_content);
+        // mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
+        // LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
 
-        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+        // List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
 
-        if (topSites != null && !topSites.isEmpty()) {
-            topSitesContainer.removeAllViews(); // Clear existing views.
+        // if (topSites != null && !topSites.isEmpty()) {
+        //     topSitesContainer.removeAllViews(); // Clear existing views.
 
-            int maxSites = Math.min(4, topSites.size()); // Limit to 4 sites.
+        //     int maxSites = Math.min(4, topSites.size()); // Limit to 4 sites.
 
-            for (int i = 0; i < maxSites; i++) {
-                TopSiteTable topSite = topSites.get(i);
-                View tileView = createTile(getContext(), topSite);
-                topSitesContainer.addView(tileView);
-            }
-            topSitesContainer.setVisibility(View.VISIBLE);
-        } else {
-            topSitesContainer.setVisibility(View.GONE); // Hide if no top sites.
-        }
+        //     for (int i = 0; i < maxSites; i++) {
+        //         TopSiteTable topSite = topSites.get(i);
+        //         View tileView = createTile(getContext(), topSite);
+        //         topSitesContainer.addView(tileView);
+        //     }
+        //     topSitesContainer.setVisibility(View.VISIBLE);
+        // } else {
+        //     topSitesContainer.setVisibility(View.GONE); // Hide if no top sites.
+        // }
 
-        String accessToken = ((BraveActivity)mActivity).getAccessToken();
-        if(accessToken == null){
-            BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
-                    new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
-                            claimUsernameCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
-        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        // String accessToken = ((BraveActivity)mActivity).getAccessToken();
+        // if(accessToken == null){
+        //     BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
+        //             new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
+        //                     claimUsernameCallback);
+        //     workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        // }
+        // BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
+        //     new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
+        // workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        fetchAndUpdateProfileImage();
+        // fetchAndUpdateProfileImage();
     }
 
     private boolean shouldDisplayTopSites() {
