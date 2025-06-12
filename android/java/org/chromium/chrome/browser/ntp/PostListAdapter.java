@@ -68,43 +68,19 @@ import android.view.MotionEvent;
 import android.widget.ProgressBar;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
-import org.chromium.chrome.browser.local_database.DatabaseHelper;
-import org.chromium.chrome.browser.local_database.TopSiteTable;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.GradientDrawable;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import java.util.Random;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
-import android.graphics.BitmapFactory;
-import android.graphics.Bitmap;
-import java.io.File;
 
-public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
-    private List<DisplayableItem> mPostList;
+    private List<Post> mPostList;
     private String INSHORTS_TYPE = "Inshorts";
     private String TWITTER_TYPE = "Twitter";
     private String INSTAGRAM_TYPE = "Instagram";
     private RecyclerView mTopPostRecycler;
 
-    private static final int VIEW_TYPE_HEADER = 0;
-    private static final int VIEW_TYPE_POST = 1;
-
-    public PostListAdapter(Context context, List<DisplayableItem> postList, RecyclerView topPostRecycler) {
+    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler) {
         mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
-    }
-
-    @Override
-    public int getItemViewType(int position) {
-        if (position == 0) {
-            return VIEW_TYPE_HEADER;
-        } else {
-            return VIEW_TYPE_POST;
-        }
     }
 
     @Override
@@ -117,129 +93,16 @@ public class PostListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
 
-        if (viewType == VIEW_TYPE_HEADER) {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.new_tab_page_header_layout, parent, false);
-            return new HeaderViewHolder(view);
-        } else {
-            view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.browser_express_post, parent, false);
-            return new PostHolder(view, mTopPostRecycler);
-        }
+        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
+        return new PostHolder(view, mTopPostRecycler);
     }
 
     // Passes the post object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder.getItemViewType() == VIEW_TYPE_POST) {
-            Post post = (Post) mPostList.get(position);
-            ((PostHolder) holder).bind(post);
-        } else { 
-            ((HeaderViewHolder) holder).bind();
-        }
-    }
+        Post post = (Post) mPostList.get(position);
 
-    private class HeaderViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout topSitesContainer;
-        DatabaseHelper mDatabaseHelper;
-
-        HeaderViewHolder(View itemView) {
-            super(itemView);
-            topSitesContainer = itemView.findViewById(R.id.top_sites_container);
-        }
-
-        void bind() {
-            setupTopSites();
-        }
-
-        private void setupTopSites() {
-            mDatabaseHelper = DatabaseHelper.getInstance();
-            List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-            try {
-                BraveActivity activity = BraveActivity.getBraveActivity();
-                if (topSites != null && !topSites.isEmpty()) {
-                    topSitesContainer.removeAllViews();
-                    int maxSites = Math.min(4, topSites.size());
-                    for (int i = 0; i < maxSites; i++) {
-                        TopSiteTable topSite = topSites.get(i);
-                        View tileView = createTile(activity, topSite);
-                        topSitesContainer.addView(tileView);
-                    }
-                    topSitesContainer.setVisibility(View.VISIBLE);
-                } else {
-                    topSitesContainer.setVisibility(View.GONE);
-                }
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }
-        }
-
-        private View createTile(Context context, TopSiteTable topSite) {
-            View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
-
-            LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
-            ImageView imageView = tileView.findViewById(R.id.tile_image);
-            TextView textView = tileView.findViewById(R.id.tile_text);
-            LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
-
-            // Set background color for image container
-            try {
-                int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
-                GradientDrawable shape = new GradientDrawable();
-                shape.setShape(GradientDrawable.OVAL); // Circular background
-                shape.setColor(backgroundColor);
-                imageContainer.setBackground(shape);
-            } catch (IllegalArgumentException e) {
-                // Handle invalid color string
-                imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
-            }
-
-            if (topSite.getImagePath() != null) {
-                File imgFile = new File(topSite.getImagePath());
-                if (imgFile.exists()) {
-                    Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                    RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(context.getResources(), bitmap);
-                    roundedBitmap.setCircular(true);
-                    imageView.setImageDrawable(roundedBitmap);
-                } else {
-                    imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
-                }
-            } else {
-                imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
-            }
-
-            // Limit name length and set text
-            String name = topSite.getName();
-            if (name.length() > 30) {
-                name = name.substring(0, 27) + "...";
-            }
-            textView.setText(name);
-
-            // Click listener to open website
-            tileView.setOnClickListener(v -> {
-                TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
-            });
-
-            return tileView;
-        }
-
-        private BitmapDrawable generateAvatar(Context context, String name) {
-            Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-            Canvas canvas = new Canvas(bitmap);
-
-            // Generate a random color
-            Random rnd = new Random();
-            int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-            canvas.drawColor(color);
-
-            // Draw the first letter of the name
-            Paint paint = new Paint();
-            paint.setColor(Color.WHITE);
-            paint.setTextSize(60);
-            paint.setTextAlign(Paint.Align.CENTER);
-            canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(Locale.ROOT), 50, 70, paint);
-
-            return new BitmapDrawable(context.getResources(), bitmap);
-        }
+        ((PostHolder) holder).bind(post);
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {

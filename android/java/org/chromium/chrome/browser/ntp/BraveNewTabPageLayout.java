@@ -192,7 +192,7 @@ public class BraveNewTabPageLayout
     private TextView mNewContentText;
     private ProgressBar mNewContentProgressBar;
     private PostListAdapter mPostAdapter;
-    private List<DisplayableItem> mPosts;
+    private List<Post> mPosts;
 
     private NTPImage mNtpImageGlobal;
     private BraveNewsController mBraveNewsController;
@@ -353,14 +353,31 @@ public class BraveNewTabPageLayout
         mShimmerLoading.showShimmer(true);
         AndroidUtils.show(mShimmerItems);
 
-        mPosts = new ArrayList<DisplayableItem>();
-        mPosts.add(new HeaderData());
+        mPosts = new ArrayList<Post>();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
 
         mMainLayout = findViewById(R.id.ntp_content);
         mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
+        LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
+
+        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+
+        if (topSites != null && !topSites.isEmpty()) {
+            topSitesContainer.removeAllViews(); // Clear existing views.
+
+            int maxSites = Math.min(4, topSites.size()); // Limit to 4 sites.
+
+            for (int i = 0; i < maxSites; i++) {
+                TopSiteTable topSite = topSites.get(i);
+                View tileView = createTile(getContext(), topSite);
+                topSitesContainer.addView(tileView);
+            }
+            topSitesContainer.setVisibility(View.VISIBLE);
+        } else {
+            topSitesContainer.setVisibility(View.GONE); // Hide if no top sites.
+        }
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         if(accessToken == null){
@@ -1172,19 +1189,19 @@ public class BraveNewTabPageLayout
 
         assert mMvTilesContainerLayout != null : "Something has changed in the upstream!";
 
-        // if (mMvTilesContainerLayout != null && !isScrollableMvtEnabled()) {
-        //     ViewGroup tilesLayout = mMvTilesContainerLayout.findViewById(R.id.mv_tiles_layout);
+        if (mMvTilesContainerLayout != null && !isScrollableMvtEnabled()) {
+            ViewGroup tilesLayout = mMvTilesContainerLayout.findViewById(R.id.mv_tiles_layout);
 
-        //     assert tilesLayout
-        //             instanceof MostVisitedTilesGridLayout
-        //         : "Something has changed in the upstream!";
+            assert tilesLayout
+                    instanceof MostVisitedTilesGridLayout
+                : "Something has changed in the upstream!";
 
-        //     if (tilesLayout instanceof MostVisitedTilesGridLayout) {
-        //         ((MostVisitedTilesGridLayout) tilesLayout)
-        //                 .setMaxRows(
-        //                         BraveQueryTileSection.getMaxRowsForMostVisitedTiles(getContext()));
-        //     }
-        // }
+            if (tilesLayout instanceof MostVisitedTilesGridLayout) {
+                ((MostVisitedTilesGridLayout) tilesLayout)
+                        .setMaxRows(
+                                BraveQueryTileSection.getMaxRowsForMostVisitedTiles(getContext()));
+            }
+        }
 
         assert (activity instanceof BraveActivity);
         mActivity = activity;
@@ -1272,7 +1289,7 @@ public class BraveNewTabPageLayout
                 protected void onPostExecute(List<TopSiteTable> topSites) {
                     assert ThreadUtils.runningOnUiThread();
                     if (isCancelled()) return;
-                    // loadTopSites(topSites);
+                    loadTopSites(topSites);
                 }
             }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
         }
@@ -1461,16 +1478,16 @@ public class BraveNewTabPageLayout
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
+                    Log.e("BE_GET_POST", "9"); 
+                    
                     mShimmerLoading.setVisibility(View.GONE);
                     AndroidUtils.gone(mShimmerItems);
                     mShimmerLoading.hideShimmer();
 
                     int len = mPosts.size();
-                    if (mPosts.size() > 1) {
-                        mPosts.subList(1, mPosts.size()).clear();
-                    }
                     mPosts.addAll(posts);
-                    mPostAdapter.notifyItemRangeInserted(1, posts.size());
+                    Log.e("BE_GET_POST", "10"); 
+                    mPostAdapter.notifyItemRangeInserted(len, posts.size());
                 }
 
                 @Override
