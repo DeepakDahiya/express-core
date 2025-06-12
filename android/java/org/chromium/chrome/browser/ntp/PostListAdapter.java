@@ -1,169 +1,108 @@
 package org.chromium.chrome.browser.ntp;
 
+import android.view.GestureDetector;
+import android.os.Build;
+import java.util.UUID;
+import java.util.List;
+import java.util.ArrayList;
+import android.widget.TextView;
+import android.view.View;
+import org.chromium.base.Log;
+import android.widget.ImageButton;
+import android.widget.MediaController;
+import android.media.MediaPlayer;
+import android.widget.ImageView;
+import android.widget.VideoView;
+import android.widget.Button;
+import android.view.ViewGroup;
+import androidx.recyclerview.widget.RecyclerView;
 import android.content.Context;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
+import org.chromium.chrome.R;
+import android.view.LayoutInflater;
+import org.chromium.chrome.browser.app.BraveActivity;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffColorFilter;
 import android.graphics.Color;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.GradientDrawable;
+import android.graphics.drawable.Drawable;
+import org.chromium.base.task.AsyncTask;
+import java.util.Locale;
+import androidx.core.content.ContextCompat;
+import org.json.JSONException;
+import org.json.JSONObject;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import android.widget.LinearLayout;
+import android.content.SharedPreferences;
+import android.widget.EditText;
+import android.view.inputmethod.InputMethodManager;
+import android.view.HapticFeedbackConstants;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import org.chromium.chrome.browser.browser_express_comments.BrowserExpressGetCommentsUtil;
+import org.chromium.chrome.browser.browser_express_comments.Vote;
+import org.chromium.chrome.browser.browser_express_comments.BrowserExpressAddVoteUtil;
+import com.bumptech.glide.Glide;
+import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import android.content.Intent;
+import android.net.Uri;
+import androidx.cardview.widget.CardView;
+import org.chromium.chrome.browser.util.TabUtils;
+import android.webkit.WebSettings;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
+import android.webkit.WebChromeClient;
+import android.widget.ProgressBar;
+import android.webkit.WebResourceError;
+import android.webkit.WebResourceRequest;
+import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
+import org.chromium.chrome.browser.browser_express_comments.Comment;
+import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.LinearSnapHelper;
 import android.os.Handler;
 import android.os.Looper;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
-import android.widget.TextView;
-
-import androidx.cardview.widget.CardView;
-import androidx.core.graphics.drawable.RoundedBitmapDrawable;
-import androidx.core.graphics.drawable.RoundedBitmapDrawableFactory;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.MediaItem;
 import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.ui.StyledPlayerView;
-
-import org.chromium.chrome.R;
-import org.chromium.chrome.browser.app.BraveActivity;
-import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
-import org.chromium.chrome.browser.browser_express_comments.Comment;
-import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
-import org.chromium.chrome.browser.local_database.TopSiteTable;
-import org.chromium.chrome.browser.util.TabUtils;
-
-import android.view.animation.Animation;
-import com.bumptech.glide.Glide;
-import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import com.google.android.exoplayer2.util.Util;
+import android.view.MotionEvent;
+import android.widget.ProgressBar;
 import android.animation.ValueAnimator;
-import org.chromium.base.Log;
-import androidx.annotation.NonNull;
-import android.view.animation.AnimationUtils;
-import android.view.HapticFeedbackConstants;
 import android.view.animation.LinearInterpolator;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Random;
-
 public class PostListAdapter extends RecyclerView.Adapter {
-    private static final int VIEW_TYPE_HEADER = 0;
-    private static final int VIEW_TYPE_POST = 1;
-
-    private BraveActivity mActivity;
+    private Context mContext;
     private List<Post> mPostList;
-
-    // Header-specific data
-    private List<TopSiteTable> mTopSites = new ArrayList<>();
-    private boolean mIsShimmering = true;
-
     private String INSHORTS_TYPE = "Inshorts";
     private String TWITTER_TYPE = "Twitter";
     private String INSTAGRAM_TYPE = "Instagram";
     private RecyclerView mTopPostRecycler;
 
-    public PostListAdapter(BraveActivity activity, List<Post> postList, RecyclerView topPostRecycler) {
-        mActivity = activity;
+    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler) {
+        mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
     }
 
     @Override
-    public int getItemViewType(int position) {
-        // if (position == 0) {
-        //     return VIEW_TYPE_HEADER;
-        // }
-        return VIEW_TYPE_POST;
-    }
-
-    @Override
     public int getItemCount() {
-        return mPostList.size() + 1;
+        return mPostList.size();
     }
 
+    // Inflates the appropriate layout according to the ViewType.
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        if (viewType == VIEW_TYPE_HEADER) {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.ntp_header, parent, false);
-            return new HeaderViewHolder(view);
-        } else {
-            View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
-            return new PostHolder(view, mTopPostRecycler);
-        }
+        View view;
+
+        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
+        return new PostHolder(view, mTopPostRecycler);
     }
 
+    // Passes the post object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        if (holder.getItemViewType() == VIEW_TYPE_HEADER) {
-            ((HeaderViewHolder) holder).bind();
-        } else {
-            Post post = mPostList.get(position - 1);
-            ((PostHolder) holder).bind(post);
-        }
-    }
+        Post post = (Post) mPostList.get(position);
 
-    public void updateTopSites(List<TopSiteTable> topSites) {
-        mTopSites.clear();
-        if (topSites != null) {
-            mTopSites.addAll(topSites);
-        }
-        notifyItemChanged(0); // Notify header view to re-bind
-    }
-
-    public void showShimmer(boolean show) {
-        if (mIsShimmering != show) {
-            mIsShimmering = show;
-            notifyItemChanged(0); // Notify header view to re-bind
-        }
-    }
-
-    private class HeaderViewHolder extends RecyclerView.ViewHolder {
-        LinearLayout topSitesContainer;
-        ShimmerFrameLayout shimmerLoading;
-        ViewGroup shimmerItems;
-
-        HeaderViewHolder(View itemView) {
-            super(itemView);
-            topSitesContainer = itemView.findViewById(R.id.top_sites_container);
-            shimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
-            shimmerItems = itemView.findViewById(R.id.shimmer_items);
-        }
-
-        void bind() {
-            if (mIsShimmering) {
-                shimmerLoading.setVisibility(View.VISIBLE);
-                if (shimmerItems.getChildCount() == 0) { // Inflate skeletons only if needed
-                    int shimmerSkeletonRows = 5; // Or calculate dynamically
-                    for (int i = 0; i < shimmerSkeletonRows; i++) {
-                        LayoutInflater.from(itemView.getContext()).inflate(R.layout.shimmer_skeleton_item, shimmerItems, true);
-                    }
-                }
-                shimmerLoading.showShimmer(true);
-            } else {
-                shimmerLoading.hideShimmer();
-                shimmerLoading.setVisibility(View.GONE);
-            }
-
-            if (mTopSites != null && !mTopSites.isEmpty()) {
-                topSitesContainer.setVisibility(View.VISIBLE);
-                topSitesContainer.removeAllViews();
-                int maxSites = Math.min(4, mTopSites.size());
-                for (int i = 0; i < maxSites; i++) {
-                    View tileView = createTile(itemView.getContext(), mTopSites.get(i));
-                    topSitesContainer.addView(tileView);
-                }
-            } else {
-                topSitesContainer.setVisibility(View.GONE);
-            }
-        }
+        ((PostHolder) holder).bind(post);
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
@@ -721,60 +660,5 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }
             currentPosition = 0;
         }
-    }
-
-    private View createTile(Context context, TopSiteTable topSite) {
-        View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
-
-        ImageView imageView = tileView.findViewById(R.id.tile_image);
-        TextView textView = tileView.findViewById(R.id.tile_text);
-        LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
-
-        try {
-            int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
-            GradientDrawable shape = new GradientDrawable();
-            shape.setShape(GradientDrawable.OVAL);
-            shape.setColor(backgroundColor);
-            imageContainer.setBackground(shape);
-        } catch (IllegalArgumentException e) {
-            imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY);
-        }
-
-        if (topSite.getImagePath() != null) {
-            File imgFile = new File(topSite.getImagePath());
-            if (imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(context.getResources(), bitmap);
-                roundedBitmap.setCircular(true);
-                imageView.setImageDrawable(roundedBitmap);
-            } else {
-                imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
-            }
-        } else {
-            imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
-        }
-
-        String name = topSite.getName();
-        if (name.length() > 30) {
-            name = name.substring(0, 27) + "...";
-        }
-        textView.setText(name);
-
-        tileView.setOnClickListener(v -> TabUtils.openUrlInSameTab(topSite.getDestinationUrl()));
-        return tileView;
-    }
-
-    private BitmapDrawable generateAvatar(Context context, String name) {
-        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-        Random rnd = new Random();
-        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-        canvas.drawColor(color);
-        Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(60);
-        paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(Locale.ROOT), 50, 70, paint);
-        return new BitmapDrawable(context.getResources(), bitmap);
     }
 }

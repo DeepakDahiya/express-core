@@ -215,6 +215,8 @@ public class BraveNewTabPageLayout
     private boolean mIsDisplayNewsFeed;
     private boolean mIsDisplayNewsOptin;
     private boolean mNewsFeedViewedOnce;
+    private ShimmerFrameLayout mShimmerLoading;
+    private ViewGroup mShimmerItems;
 
     private Supplier<Tab> mTabProvider;
 
@@ -340,19 +342,42 @@ public class BraveNewTabPageLayout
     private void setNtpViews() {
         mRecyclerView = findViewById(R.id.recycler_posts);
         
+        mShimmerLoading = findViewById(R.id.skeleton_shimmer);
+        mShimmerItems = findViewById(R.id.shimmer_items);
+        int shimmerSkeletonRows =
+                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(getContext(), 50));
+        for (int i = 0; i < shimmerSkeletonRows; i++) {
+            LayoutInflater.from(getContext()).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+        }
+
+        mShimmerLoading.showShimmer(true);
+        AndroidUtils.show(mShimmerItems);
+
         mPosts = new ArrayList<Post>();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-        mPostAdapter = new PostListAdapter((BraveActivity) mActivity, mPosts, mRecyclerView);
+        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView);
         mRecyclerView.setAdapter(mPostAdapter);
-
-        mPostAdapter.showShimmer(true);
 
         mMainLayout = findViewById(R.id.ntp_content);
         mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
-        // LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
+        LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
 
-        // List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-        // mPostAdapter.updateTopSites(topSites);
+        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+
+        if (topSites != null && !topSites.isEmpty()) {
+            topSitesContainer.removeAllViews(); // Clear existing views.
+
+            int maxSites = Math.min(4, topSites.size()); // Limit to 4 sites.
+
+            for (int i = 0; i < maxSites; i++) {
+                TopSiteTable topSite = topSites.get(i);
+                View tileView = createTile(getContext(), topSite);
+                topSitesContainer.addView(tileView);
+            }
+            topSitesContainer.setVisibility(View.VISIBLE);
+        } else {
+            topSitesContainer.setVisibility(View.GONE); // Hide if no top sites.
+        }
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         if(accessToken == null){
@@ -1453,24 +1478,20 @@ public class BraveNewTabPageLayout
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
-                    if (mPostAdapter != null) {
-                        mPostAdapter.showShimmer(false);
-                    }
+                    Log.e("BE_GET_POST", "9"); 
+                    
+                    mShimmerLoading.setVisibility(View.GONE);
+                    AndroidUtils.gone(mShimmerItems);
+                    mShimmerLoading.hideShimmer();
 
                     int len = mPosts.size();
                     mPosts.addAll(posts);
-
-                    // The +1 is important because of the header at position 0
-                    if (mPostAdapter != null) {
-                        mPostAdapter.notifyItemRangeInserted(len + 1, posts.size());
-                    }
+                    Log.e("BE_GET_POST", "10"); 
+                    mPostAdapter.notifyItemRangeInserted(len, posts.size());
                 }
 
                 @Override
                 public void getPostsFailed(String error) {
-                    if (mPostAdapter != null) {
-                        mPostAdapter.showShimmer(false);
-                    }
                     Log.e("BE_GET_POST", error);
                 }
             };
