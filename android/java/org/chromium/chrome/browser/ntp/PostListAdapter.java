@@ -38,6 +38,9 @@ import org.chromium.chrome.browser.browser_express_comments.CommentListAdapter;
 import org.chromium.chrome.browser.local_database.TopSiteTable;
 import org.chromium.chrome.browser.util.TabUtils;
 
+import android.view.animation.Animation;
+import android.animation.ValueAnimator;
+
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -50,7 +53,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private BraveActivity mActivity;
     private List<Post> mPostList;
-    private RecyclerView mTopPostRecycler;
 
     // Header-specific data
     private List<TopSiteTable> mTopSites = new ArrayList<>();
