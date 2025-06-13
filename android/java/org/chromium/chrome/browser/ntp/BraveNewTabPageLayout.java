@@ -215,8 +215,6 @@ public class BraveNewTabPageLayout
     private boolean mIsDisplayNewsFeed;
     private boolean mIsDisplayNewsOptin;
     private boolean mNewsFeedViewedOnce;
-    private ShimmerFrameLayout mShimmerLoading;
-    private ViewGroup mShimmerItems;
 
     private Supplier<Tab> mTabProvider;
 
@@ -341,17 +339,6 @@ public class BraveNewTabPageLayout
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
         mRecyclerView = findViewById(R.id.recycler_posts);
-        
-        mShimmerLoading = findViewById(R.id.skeleton_shimmer);
-        mShimmerItems = findViewById(R.id.shimmer_items);
-        int shimmerSkeletonRows =
-                AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(getContext(), 50));
-        for (int i = 0; i < shimmerSkeletonRows; i++) {
-            LayoutInflater.from(getContext()).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
-        }
-
-        mShimmerLoading.showShimmer(true);
-        AndroidUtils.show(mShimmerItems);
 
         mPosts = new ArrayList<Post>();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
@@ -360,24 +347,6 @@ public class BraveNewTabPageLayout
 
         mMainLayout = findViewById(R.id.ntp_content);
         mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
-        LinearLayout topSitesContainer = mMainLayout.findViewById(R.id.top_sites_container);
-
-        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-
-        if (topSites != null && !topSites.isEmpty()) {
-            topSitesContainer.removeAllViews(); // Clear existing views.
-
-            int maxSites = Math.min(4, topSites.size()); // Limit to 4 sites.
-
-            for (int i = 0; i < maxSites; i++) {
-                TopSiteTable topSite = topSites.get(i);
-                View tileView = createTile(getContext(), topSite);
-                topSitesContainer.addView(tileView);
-            }
-            topSitesContainer.setVisibility(View.VISIBLE);
-        } else {
-            topSitesContainer.setVisibility(View.GONE); // Hide if no top sites.
-        }
 
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         if(accessToken == null){
@@ -1077,74 +1046,6 @@ public class BraveNewTabPageLayout
                 Log.e(TAG, "processFeed " + e);
             }
         });
-    }
-
-    private View createTile(Context context, TopSiteTable topSite) {
-        View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
-
-        LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
-        ImageView imageView = tileView.findViewById(R.id.tile_image);
-        TextView textView = tileView.findViewById(R.id.tile_text);
-        LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
-
-        // Set background color for image container
-        try {
-            int backgroundColor = android.graphics.Color.parseColor(topSite.getBackgroundColor());
-            GradientDrawable shape = new GradientDrawable();
-            shape.setShape(GradientDrawable.OVAL); // Circular background
-            shape.setColor(backgroundColor);
-            imageContainer.setBackground(shape);
-        } catch (IllegalArgumentException e) {
-            // Handle invalid color string
-            imageContainer.setBackgroundColor(android.graphics.Color.LTGRAY); // Default background
-        }
-
-        if (topSite.getImagePath() != null) {
-            File imgFile = new File(topSite.getImagePath());
-            if (imgFile.exists()) {
-                Bitmap bitmap = BitmapFactory.decodeFile(imgFile.getAbsolutePath());
-                RoundedBitmapDrawable roundedBitmap = RoundedBitmapDrawableFactory.create(context.getResources(), bitmap);
-                roundedBitmap.setCircular(true);
-                imageView.setImageDrawable(roundedBitmap);
-            } else {
-                imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
-            }
-        } else {
-            imageView.setImageDrawable(generateAvatar(context, topSite.getName()));
-        }
-
-        // Limit name length and set text
-        String name = topSite.getName();
-        if (name.length() > 30) {
-            name = name.substring(0, 27) + "...";
-        }
-        textView.setText(name);
-
-        // Click listener to open website
-        tileView.setOnClickListener(v -> {
-            TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
-        });
-
-        return tileView;
-    }
-
-    private BitmapDrawable generateAvatar(Context context, String name) {
-        Bitmap bitmap = Bitmap.createBitmap(100, 100, Bitmap.Config.ARGB_8888);
-        Canvas canvas = new Canvas(bitmap);
-
-        // Generate a random color
-        Random rnd = new Random();
-        int color = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
-        canvas.drawColor(color);
-
-        // Draw the first letter of the name
-        Paint paint = new Paint();
-        paint.setColor(Color.WHITE);
-        paint.setTextSize(60);
-        paint.setTextAlign(Paint.Align.CENTER);
-        canvas.drawText(String.valueOf(name.charAt(0)).toUpperCase(Locale.ROOT), 50, 70, paint);
-
-        return new BitmapDrawable(context.getResources(), bitmap);
     }
 
     private void setNewContentChanges(boolean isNewContent) {
