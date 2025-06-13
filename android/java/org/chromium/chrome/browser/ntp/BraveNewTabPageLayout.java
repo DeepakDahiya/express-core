@@ -1381,9 +1381,9 @@ public class BraveNewTabPageLayout
                 public void getPostsSuccessful(List<Post> posts) {
                     Log.e("BE_GET_POST", "9"); 
                     
-                    mShimmerLoading.setVisibility(View.GONE);
-                    AndroidUtils.gone(mShimmerItems);
-                    mShimmerLoading.hideShimmer();
+                    // mShimmerLoading.setVisibility(View.GONE);
+                    // AndroidUtils.gone(mShimmerItems);
+                    // mShimmerLoading.hideShimmer();
 
                     int len = mPosts.size();
                     mPosts.addAll(posts);

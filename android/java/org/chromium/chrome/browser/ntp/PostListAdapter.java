@@ -168,7 +168,10 @@ import java.util.UUID;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.chromium.ui.base.ViewUtils.dpToPx;
-
+import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
+import android.graphics.BitmapFactory;
+import android.view.HapticFeedbackConstants;
+import android.view.animation.LinearInterpolator;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private Context mContext;
@@ -235,16 +238,21 @@ public class PostListAdapter extends RecyclerView.Adapter {
         HeaderViewHolder(View itemView) {
             super(itemView);
             topSitesContainer = itemView.findViewById(R.id.top_sites_container);
-            mShimmerLoading = findViewById(R.id.skeleton_shimmer);
-            mShimmerItems = findViewById(R.id.shimmer_items);
+            mShimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
+            mShimmerItems = itemView.findViewById(R.id.shimmer_items);
 
             mDatabaseHelper = DatabaseHelper.getInstance();
         }
         void bind() {
+            BraveActivity activity = null;
+             try {
+                activity = BraveActivity.getBraveActivity();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
             int shimmerSkeletonRows =
-                    AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(getContext(), 50));
+                    AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(activity, 50));
             for (int i = 0; i < shimmerSkeletonRows; i++) {
-                LayoutInflater.from(getContext()).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
+                LayoutInflater.from(activity).inflate(R.layout.shimmer_skeleton_item, mShimmerItems, true);
             }
 
             mShimmerLoading.showShimmer(true);
@@ -258,7 +266,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
                 for (int i = 0; i < maxSites; i++) {
                     TopSiteTable topSite = topSites.get(i);
-                    View tileView = createTile(getContext(), topSite);
+                    View tileView = createTile(activity, topSite);
                     topSitesContainer.addView(tileView);
                 }
                 topSitesContainer.setVisibility(View.VISIBLE);
