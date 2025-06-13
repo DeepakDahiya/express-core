@@ -18,8 +18,6 @@
 
       <include layout="@layout/fake_search_box_layout"/>
 
-      <include layout="@layout/ntp_header"/>
-
       <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_posts"
             android:layout_width="match_parent"
