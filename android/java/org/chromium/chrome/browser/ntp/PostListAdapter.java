@@ -89,36 +89,62 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private String INSTAGRAM_TYPE = "Instagram";
 
     public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler, List<TopSiteTable> topSites, BraveNewTabPageLayout parentLayout) {
+        Log.e("PostListAdapter", "Constructor called");
+        Log.e("PostListAdapter", "Context: " + (context != null));
+        Log.e("PostListAdapter", "PostList: " + (postList != null));
+        Log.e("PostListAdapter", "TopSites: " + (topSites != null ? topSites.size() : "null"));
+        Log.e("PostListAdapter", "ParentLayout: " + (parentLayout != null));
+
         mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
         mTopSites = topSites != null ? topSites : new ArrayList<>();
         mParentLayout = parentLayout;
+
+        Log.e("PostListAdapter", "Constructor completed");
     }
 
     @Override
     public int getItemCount() {
-        return mPostList.size() + 1;
+        int count = mPostList.size() + 1;
+        Log.e("PostListAdapter", "getItemCount: " + count);
+        return count;
     }
 
     @Override
     public int getItemViewType(int position) {
-        return position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_POST;
+        int type = position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_POST;
+        Log.e("PostListAdapter", "getItemViewType position=" + position + " type=" + type);
+        return type;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view;
-        switch (viewType) {
-            case VIEW_TYPE_HEADER:
-                view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.ntp_header, parent, false);
-                mHeaderViewHolder = new HeaderViewHolder(view);
-                return mHeaderViewHolder;
-            default:
-                view = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.browser_express_post, parent, false);
-                return new PostHolder(view, mTopPostRecycler);
+        Log.e("PostListAdapter", "onCreateViewHolder viewType=" + viewType);
+        
+        try {
+            View view;
+            switch (viewType) {
+                case VIEW_TYPE_HEADER:
+                    Log.e("PostListAdapter", "Creating header view");
+                    view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.ntp_header, parent, false);
+                    Log.e("PostListAdapter", "Header view inflated: " + (view != null));
+                    
+                    mHeaderViewHolder = new HeaderViewHolder(view);
+                    Log.e("PostListAdapter", "HeaderViewHolder created");
+                    return mHeaderViewHolder;
+                    
+                default:
+                    Log.e("PostListAdapter", "Creating post view");
+                    view = LayoutInflater.from(parent.getContext())
+                        .inflate(R.layout.browser_express_post, parent, false);
+                    Log.e("PostListAdapter", "Post view inflated: " + (view != null));
+                    return new PostHolder(view, mTopPostRecycler);
+            }
+        } catch (Exception e) {
+            Log.e("PostListAdapter", "Error in onCreateViewHolder", e);
+            throw e;
         }
     }
 
@@ -159,69 +185,131 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         HeaderViewHolder(View itemView) {
             super(itemView);
-            topSitesContainer = itemView.findViewById(R.id.top_sites_container);
-            shimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
-            shimmerItems = itemView.findViewById(R.id.shimmer_items);
-
-            setupShimmerItems();
+            Log.e("HeaderViewHolder", "Constructor started");
+            
+            try {
+                topSitesContainer = itemView.findViewById(R.id.top_sites_container);
+                Log.e("HeaderViewHolder", "topSitesContainer: " + (topSitesContainer != null));
+                
+                shimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
+                Log.e("HeaderViewHolder", "shimmerLoading: " + (shimmerLoading != null));
+                
+                shimmerItems = itemView.findViewById(R.id.shimmer_items);
+                Log.e("HeaderViewHolder", "shimmerItems: " + (shimmerItems != null));
+                
+                // Don't setup shimmer items in constructor - do it later
+                Log.e("HeaderViewHolder", "Constructor completed");
+                
+            } catch (Exception e) {
+                Log.e("HeaderViewHolder", "Error in constructor", e);
+                throw e;
+            }
         }
 
         void bind(List<TopSiteTable> topSites) {
-            setupTopSites(topSites);
-            showShimmer();
-        }
-
-        private void setupTopSites(List<TopSiteTable> topSites) {
-            if (topSites != null && !topSites.isEmpty()) {
-                topSitesContainer.removeAllViews();
-                int maxSites = Math.min(4, topSites.size());
-
-                for (int i = 0; i < maxSites; i++) {
-                    TopSiteTable topSite = topSites.get(i);
-                    View tileView = mParentLayout.createTile(mContext, topSite);
-                    topSitesContainer.addView(tileView);
-                }
-                topSitesContainer.setVisibility(View.VISIBLE);
-            } else {
-                topSitesContainer.setVisibility(View.GONE);
+            Log.e("HeaderViewHolder", "bind() started");
+            
+            try {
+                setupTopSites(topSites);
+                Log.e("HeaderViewHolder", "setupTopSites completed");
+                
+                // Setup shimmer items here instead of constructor
+                setupShimmerItems();
+                Log.e("HeaderViewHolder", "setupShimmerItems completed");
+                
+                showShimmer();
+                Log.e("HeaderViewHolder", "showShimmer completed");
+                
+            } catch (Exception e) {
+                Log.e("HeaderViewHolder", "Error in bind()", e);
+                // Don't re-throw here, just log the error
             }
         }
 
         private void setupShimmerItems() {
-            if (shimmerItems != null) {
-                // Clear existing items first
+            Log.e("HeaderViewHolder", "setupShimmerItems started");
+            
+            if (shimmerItems == null) {
+                Log.w("HeaderViewHolder", "shimmerItems is null, skipping setup");
+                return;
+            }
+            
+            try {
                 shimmerItems.removeAllViews();
                 
-                try {
-                    int shimmerSkeletonRows = AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(mContext, 50));
-                    for (int i = 0; i < shimmerSkeletonRows; i++) {
-                        LayoutInflater.from(mContext).inflate(R.layout.shimmer_skeleton_item, shimmerItems, true);
-                    }
-                } catch (Exception e) {
-                    Log.e("PostListAdapter", "Error setting up shimmer items", e);
-                    // Fallback: add a few shimmer items manually
-                    for (int i = 0; i < 5; i++) {
-                        try {
-                            LayoutInflater.from(mContext).inflate(R.layout.shimmer_skeleton_item, shimmerItems, true);
-                        } catch (Exception ex) {
-                            Log.e("PostListAdapter", "Error inflating shimmer item", ex);
-                            break;
+                // Add just a few shimmer items for testing
+                for (int i = 0; i < 3; i++) {
+                    View shimmerView = LayoutInflater.from(mContext).inflate(R.layout.shimmer_skeleton_item, shimmerItems, false);
+                    shimmerItems.addView(shimmerView);
+                    Log.e("HeaderViewHolder", "Added shimmer item " + i);
+                }
+                
+            } catch (Exception e) {
+                Log.e("HeaderViewHolder", "Error setting up shimmer items", e);
+            }
+        }
+
+        private void setupTopSites(List<TopSiteTable> topSites) {
+            Log.e("HeaderViewHolder", "setupTopSites started");
+            
+            if (topSitesContainer == null) {
+                Log.w("HeaderViewHolder", "topSitesContainer is null");
+                return;
+            }
+            
+            try {
+                if (topSites != null && !topSites.isEmpty()) {
+                    topSitesContainer.removeAllViews();
+                    int maxSites = Math.min(4, topSites.size());
+
+                    for (int i = 0; i < maxSites; i++) {
+                        TopSiteTable topSite = topSites.get(i);
+                        if (topSite != null && mParentLayout != null) {
+                            View tileView = mParentLayout.createTile(mContext, topSite);
+                            if (tileView != null) {
+                                topSitesContainer.addView(tileView);
+                                Log.e("HeaderViewHolder", "Added top site " + i);
+                            }
                         }
                     }
+                    topSitesContainer.setVisibility(View.VISIBLE);
+                } else {
+                    topSitesContainer.setVisibility(View.GONE);
+                    Log.e("HeaderViewHolder", "No top sites, hiding container");
                 }
+            } catch (Exception e) {
+                Log.e("HeaderViewHolder", "Error setting up top sites", e);
             }
         }
 
         void showShimmer() {
-            shimmerLoading.setVisibility(View.VISIBLE);
-            shimmerLoading.showShimmer(true);
-            AndroidUtils.show(shimmerItems);
+            Log.e("HeaderViewHolder", "showShimmer started");
+            
+            try {
+                if (shimmerLoading != null) {
+                    shimmerLoading.setVisibility(View.VISIBLE);
+                    shimmerLoading.showShimmer(true);
+                    Log.e("HeaderViewHolder", "Shimmer shown");
+                } else {
+                    Log.w("HeaderViewHolder", "shimmerLoading is null");
+                }
+            } catch (Exception e) {
+                Log.e("HeaderViewHolder", "Error showing shimmer", e);
+            }
         }
 
         void hideShimmer() {
-            shimmerLoading.setVisibility(View.GONE);
-            shimmerLoading.hideShimmer();
-            AndroidUtils.gone(shimmerItems);
+            Log.e("HeaderViewHolder", "hideShimmer started");
+            
+            try {
+                if (shimmerLoading != null) {
+                    shimmerLoading.setVisibility(View.GONE);
+                    shimmerLoading.hideShimmer();
+                    Log.e("HeaderViewHolder", "Shimmer hidden");
+                }
+            } catch (Exception e) {
+                Log.e("HeaderViewHolder", "Error hiding shimmer", e);
+            }
         }
     }
 
@@ -462,7 +550,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         videoParent.setOnClickListener(new View.OnClickListener() {
                             @Override
                             public void onClick(View v) {
-                                Log.d("VideoPlayer", "Parent view clicked");
+                                Log.e("VideoPlayer", "Parent view clicked");
                                 togglePlayPause();
                             }
                         });

@@ -340,32 +340,52 @@ public class BraveNewTabPageLayout
 
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
-        mRecyclerView = findViewById(R.id.recycler_posts);
+        Log.e("BraveNTP", "setNtpViews() started");
     
-        mPosts = new ArrayList<Post>();
-        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-        
-        // Initialize adapter
-        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, topSites, this);
-        mRecyclerView.setAdapter(mPostAdapter);
+        try {
+            mRecyclerView = findViewById(R.id.recycler_posts);
+            Log.e("BraveNTP", "RecyclerView found: " + (mRecyclerView != null));
+            
+            mPosts = new ArrayList<Post>();
+            Log.e("BraveNTP", "Posts list created");
+            
+            List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+            Log.e("BraveNTP", "TopSites retrieved: " + (topSites != null ? topSites.size() : "null"));
+            
+            mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
+            Log.e("BraveNTP", "LayoutManager set");
 
-        mMainLayout = findViewById(R.id.ntp_content);
-        mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
+            mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, topSites, this);
+            Log.e("BraveNTP", "Adapter created");
+            
+            mRecyclerView.setAdapter(mPostAdapter);
+            Log.e("BraveNTP", "Adapter set to RecyclerView");
 
-        String accessToken = ((BraveActivity)mActivity).getAccessToken();
-        if(accessToken == null){
-            BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
-                    new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
-                            claimUsernameCallback);
+            mMainLayout = findViewById(R.id.ntp_content);
+            Log.e("BraveNTP", "MainLayout found: " + (mMainLayout != null));
+            
+            if (mMainLayout != null) {
+                mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
+                Log.e("BraveNTP", "Background color set");
+            }
+
+            String accessToken = ((BraveActivity)mActivity).getAccessToken();
+            if(accessToken == null){
+                BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
+                        new BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask(
+                                claimUsernameCallback);
+                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+            
+            BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
+                new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
             workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        }
-        
-        BrowserExpressGetPostsUtil.GetPostsWorkerTask workerTask =
-            new BrowserExpressGetPostsUtil.GetPostsWorkerTask(1, 20, accessToken, getPostsCallback);
-        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
-        fetchAndUpdateProfileImage();
+            fetchAndUpdateProfileImage();
+        } catch (Exception e) {
+            Log.e("BraveNTP", "Error in setNtpViews()", e);
+            throw e; // Re-throw to see the original crash
+        }
     }
 
     private boolean shouldDisplayTopSites() {
