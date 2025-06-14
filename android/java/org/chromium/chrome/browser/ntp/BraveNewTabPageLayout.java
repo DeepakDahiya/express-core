@@ -353,8 +353,6 @@ public class BraveNewTabPageLayout
         mMainLayout = findViewById(R.id.ntp_content);
         mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
 
-        mPostAdapter.showShimmer();
-
         String accessToken = ((BraveActivity)mActivity).getAccessToken();
         if(accessToken == null){
             BrowserExpressClaimUsernameUtil.ClaimUsernameWorkerTask workerTask =
@@ -1455,7 +1453,9 @@ public class BraveNewTabPageLayout
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
-                    mPostAdapter.hideShimmer();
+                    if (mPostAdapter != null) {
+                        mPostAdapter.hideShimmer();
+                    }
 
                     int len = mPosts.size();
                     mPosts.addAll(posts);

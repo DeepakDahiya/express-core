@@ -71,6 +71,8 @@ import android.view.animation.LinearInterpolator;
 import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
 import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.local_database.TopSiteTable;
+import static org.chromium.ui.base.ViewUtils.dpToPx;
+import org.chromium.ui.base.ViewUtils;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_HEADER = 0;
@@ -160,6 +162,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             topSitesContainer = itemView.findViewById(R.id.top_sites_container);
             shimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
             shimmerItems = itemView.findViewById(R.id.shimmer_items);
+
+            setupShimmerItems();
         }
 
         void bind(List<TopSiteTable> topSites) {
@@ -180,6 +184,31 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 topSitesContainer.setVisibility(View.VISIBLE);
             } else {
                 topSitesContainer.setVisibility(View.GONE);
+            }
+        }
+
+        private void setupShimmerItems() {
+            if (shimmerItems != null) {
+                // Clear existing items first
+                shimmerItems.removeAllViews();
+                
+                try {
+                    int shimmerSkeletonRows = AndroidUtils.getSkeletonRowCount(ViewUtils.dpToPx(mContext, 50));
+                    for (int i = 0; i < shimmerSkeletonRows; i++) {
+                        LayoutInflater.from(mContext).inflate(R.layout.shimmer_skeleton_item, shimmerItems, true);
+                    }
+                } catch (Exception e) {
+                    Log.e("PostListAdapter", "Error setting up shimmer items", e);
+                    // Fallback: add a few shimmer items manually
+                    for (int i = 0; i < 5; i++) {
+                        try {
+                            LayoutInflater.from(mContext).inflate(R.layout.shimmer_skeleton_item, shimmerItems, true);
+                        } catch (Exception ex) {
+                            Log.e("PostListAdapter", "Error inflating shimmer item", ex);
+                            break;
+                        }
+                    }
+                }
             }
         }
 
