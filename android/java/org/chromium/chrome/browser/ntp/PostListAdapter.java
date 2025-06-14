@@ -192,6 +192,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 shimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
                 
                 shimmerItems = itemView.findViewById(R.id.shimmer_items);
+
+                setupShimmerItems();
                 
             } catch (Exception e) {
                 throw e;
@@ -202,8 +204,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
             try {
                 setupTopSites(topSites);
                 // Setup shimmer items here instead of constructor
-                setupShimmerItems();
-                
                 showShimmer();
                 
             } catch (Exception e) {
@@ -316,9 +316,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private Context context;
 
-        private Animation bounceUp;
-        private Animation bounceDown;
-
         private int myPosition;
 
         private Handler autoScrollHandler;
@@ -355,22 +352,25 @@ public class PostListAdapter extends RecyclerView.Adapter {
             mTopPostRecycler = topPostRecycler;
 
             autoScrollHandler = new Handler(Looper.getMainLooper());
-        }
 
-        void bind(Post post) {
-            try {
-                activity = BraveActivity.getBraveActivity();
-                mComments = new ArrayList<Comment>();
-                mTopCommentsRecycler.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL,false));
-                mCommentAdapter = new CommentListAdapter(activity, mComments, null, null, false, false);
-                mTopCommentsRecycler.setAdapter(mCommentAdapter);
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-            }
+            if (mTopCommentsRecycler != null) {
+                try {
+                    activity = BraveActivity.getBraveActivity();
+                    mTopCommentsRecycler.setLayoutManager(new LinearLayoutManager(activity, LinearLayoutManager.HORIZONTAL, false));
+                    mComments = new ArrayList<Comment>();
+                    mCommentAdapter = new CommentListAdapter(activity, mComments, null, null, false, false);
+                    mTopCommentsRecycler.setAdapter(mCommentAdapter);
 
-            stopAutoScroll();
-
-            if (post.getComments() != null && post.getComments().size() > 0) {
-                setupAutoScroll();
+                    mTopCommentsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
+                        @Override
+                        public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                            super.onScrolled(recyclerView, dx, dy);
+                            LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
+                            int position = layoutManager.findFirstVisibleItemPosition();
+                        }
+                    });
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                }
             }
 
             itemView.addOnAttachStateChangeListener(new View.OnAttachStateChangeListener() {
@@ -390,41 +390,34 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }
                     }
                 });
+        }
 
-            // LinearSnapHelper snapHelper = new LinearSnapHelper();
-            // snapHelper.attachToRecyclerView(mTopCommentsRecycler);
+        void bind(Post post) {
+            try {
+                activity = BraveActivity.getBraveActivity();
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
+
+            stopAutoScroll();
+
+            if (post.getComments() != null && post.getComments().size() > 0) {
+                setupAutoScroll();
+            }
 
             try{
 
-            Log.e("BE_GET_POST", "11"); 
             List<Comment> comments = post.getComments();
             int len = comments.size();
-
+            mComments.clear();
             if (len > 0 ) {
                 mTopCommentsRecycler.setVisibility(View.VISIBLE);
                 mComments.addAll(comments);
                 mCommentAdapter.notifyItemRangeInserted(len, comments.size());
             }
 
-            Log.e("BE_GET_POST", "11.5"); 
-
             if (len == 0){
-                Log.e("BE_GET_POST", "11.6"); 
                 mTopCommentsRecycler.setVisibility(View.GONE);
             }
-
-            Log.e("BE_GET_POST", "12"); 
-
-            mTopCommentsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
-                @Override
-                public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-                    super.onScrolled(recyclerView, dx, dy);
-                    LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                    int position = layoutManager.findFirstVisibleItemPosition();
-                }
-            });
-
-            Log.e("BE_GET_POST", "13"); 
             
             myPosition = getBindingAdapterPosition();
 
@@ -665,10 +658,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mCommentButton.setText(commentCountText);
             }
             
-                
-            bounceUp = AnimationUtils.loadAnimation(activity ,R.anim.bounce_up);
-            bounceDown = AnimationUtils.loadAnimation(activity ,R.anim.bounce_down);
-
             mCommentButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -781,15 +770,21 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         // Make sure to release the player when the view is recycled
         public void onViewRecycled() {
+            super.onViewRecycled(); // Call super
             releasePlayer();
+            stopAutoScroll(); // Add this
 
-            if (twitterImage != null) {
-                Glide.with(context).clear(twitterImage);
+            if (twitterImage != null && mContext != null) { // Add mContext null check
+                Glide.with(mContext).clear(twitterImage); // Use mContext from constructor
                 twitterImage.setImageDrawable(null);
             }
-            if (twitterProfilePicture != null) {
-                Glide.with(context).clear(twitterProfilePicture);
+            if (twitterProfilePicture != null && mContext != null) {
+                Glide.with(mContext).clear(twitterProfilePicture);
                 twitterProfilePicture.setImageDrawable(null);
+            }
+            if (postImage != null && mContext != null) {
+                Glide.with(mContext).clear(postImage);
+                postImage.setImageDrawable(null);
             }
         }
 

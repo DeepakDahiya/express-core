@@ -349,6 +349,9 @@ public class BraveNewTabPageLayout
             
             mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
 
+            mRecyclerView.setHasFixedSize(false);
+            mRecyclerView.setItemViewCacheSize(10);
+
             mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, topSites, this);
             
             mRecyclerView.setAdapter(mPostAdapter);
