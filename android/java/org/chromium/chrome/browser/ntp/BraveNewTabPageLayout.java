@@ -343,10 +343,11 @@ public class BraveNewTabPageLayout
         mRecyclerView = findViewById(R.id.recycler_posts);
     
         mPosts = new ArrayList<Post>();
+        List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
         mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
         
         // Initialize adapter
-        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, mTopSites, this);
+        mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, topSites, this);
         mRecyclerView.setAdapter(mPostAdapter);
 
         mMainLayout = findViewById(R.id.ntp_content);
@@ -1055,7 +1056,7 @@ public class BraveNewTabPageLayout
         });
     }
 
-    private View createTile(Context context, TopSiteTable topSite) {
+    public View createTile(Context context, TopSiteTable topSite) {
         View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
 
         LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
