@@ -340,33 +340,23 @@ public class BraveNewTabPageLayout
 
     @SuppressLint("ClickableViewAccessibility")
     private void setNtpViews() {
-        Log.e("BraveNTP", "setNtpViews() started");
-    
         try {
             mRecyclerView = findViewById(R.id.recycler_posts);
-            Log.e("BraveNTP", "RecyclerView found: " + (mRecyclerView != null));
             
             mPosts = new ArrayList<Post>();
-            Log.e("BraveNTP", "Posts list created");
             
             List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
-            Log.e("BraveNTP", "TopSites retrieved: " + (topSites != null ? topSites.size() : "null"));
             
             mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
-            Log.e("BraveNTP", "LayoutManager set");
 
             mPostAdapter = new PostListAdapter(mActivity, mPosts, mRecyclerView, topSites, this);
-            Log.e("BraveNTP", "Adapter created");
             
             mRecyclerView.setAdapter(mPostAdapter);
-            Log.e("BraveNTP", "Adapter set to RecyclerView");
 
             mMainLayout = findViewById(R.id.ntp_content);
-            Log.e("BraveNTP", "MainLayout found: " + (mMainLayout != null));
             
             if (mMainLayout != null) {
                 mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
-                Log.e("BraveNTP", "Background color set");
             }
 
             String accessToken = ((BraveActivity)mActivity).getAccessToken();
@@ -383,7 +373,6 @@ public class BraveNewTabPageLayout
 
             fetchAndUpdateProfileImage();
         } catch (Exception e) {
-            Log.e("BraveNTP", "Error in setNtpViews()", e);
             throw e; // Re-throw to see the original crash
         }
     }
