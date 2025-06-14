@@ -148,12 +148,16 @@ public class ReplyListFragment extends Fragment {
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         if (parentFragment != null) {
             String targetId = parentFragment.getLastOpenedRepliesToRepliesForCommentId();
-            if (targetId != null && mCombinedList != null && !mCombinedList.isEmpty()) {
-                scrollToCommentId(targetId);
-                parentFragment.clearLastOpenedRepliesToRepliesForCommentId();
-            } else if (targetId != null) {
-                mShouldScrollToLastParent = true;
-                mTargetScrollCommentId = targetId;
+            if (targetId != null) {
+                mSavedScrollPosition = RecyclerView.NO_POSITION;
+
+                if (mCombinedList != null && !mCombinedList.isEmpty()) {
+                    scrollToCommentId(targetId);
+                    parentFragment.clearLastOpenedRepliesToRepliesForCommentId();
+                } else if (targetId != null) {
+                    mShouldScrollToLastParent = true;
+                    mTargetScrollCommentId = targetId;
+                }
             }
         }
     }

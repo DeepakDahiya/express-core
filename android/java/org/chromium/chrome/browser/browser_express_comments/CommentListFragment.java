@@ -141,12 +141,16 @@ public class CommentListFragment extends Fragment {
         BrowserExpressCommentsBottomSheetFragment parentFragment = (BrowserExpressCommentsBottomSheetFragment) getParentFragment();
         if (parentFragment != null) {
             String targetId = parentFragment.getLastOpenedRepliesForCommentId();
-            if (targetId != null && mComments != null && !mComments.isEmpty()) {
-                scrollToCommentId(targetId);
-                parentFragment.clearLastOpenedRepliesForCommentId();
-            } else if (targetId != null) {
-                mShouldScrollToLastParent = true;
-                mTargetScrollCommentId = targetId;
+            if (targetId != null) {
+                mSavedScrollPosition = RecyclerView.NO_POSITION;
+
+                if (mComments != null && !mComments.isEmpty()) {
+                    scrollToCommentId(targetId);
+                    parentFragment.clearLastOpenedRepliesForCommentId();
+                } else {
+                    mShouldScrollToLastParent = true;
+                    mTargetScrollCommentId = targetId;
+                }
             }
         }
     }
