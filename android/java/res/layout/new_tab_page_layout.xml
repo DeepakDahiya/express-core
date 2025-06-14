@@ -16,14 +16,11 @@
       android:paddingTop="@dimen/toolbar_height_no_shadow"
       android:visibility="visible" >
 
-      <include layout="@layout/ntp_header"/>
-
       <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recycler_posts"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="8sp"
-            android:overScrollMode="never" />
+            android:layout_height="match_parent"/>
+            
       <LinearLayout
             android:id="@+id/ntp_main_layout"
             android:layout_width="match_parent"
