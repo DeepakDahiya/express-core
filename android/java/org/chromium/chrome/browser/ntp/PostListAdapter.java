@@ -770,7 +770,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         // Make sure to release the player when the view is recycled
         public void onViewRecycled() {
-            super.onViewRecycled(); // Call super
             releasePlayer();
             stopAutoScroll(); // Add this
 
