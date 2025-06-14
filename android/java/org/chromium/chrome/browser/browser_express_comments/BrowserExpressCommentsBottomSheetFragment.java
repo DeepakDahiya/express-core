@@ -533,7 +533,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         if (mMessageEditText != null && getContext() != null && isAdded()) {
             mMessageEditText.post(() -> {
                 if (getContext() != null && isAdded() && mMessageEditText != null) {
-                    mMessageEditText.clearFocus();
                     mMessageEditText.requestFocus();
                     
                     if (mMessageEditText.getText() != null) {
@@ -563,7 +562,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
             mMessageEditText.post(() -> {
                 if (getContext() != null && mMessageEditText != null) {
                     mMessageEditText.clearFocus();
-                    mMessageEditText.requestFocus();
                     
                     if (mMessageEditText.getText() != null) {
                         mMessageEditText.setSelection(mMessageEditText.getText().length());

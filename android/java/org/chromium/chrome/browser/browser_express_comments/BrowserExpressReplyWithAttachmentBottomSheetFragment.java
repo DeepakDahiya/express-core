@@ -432,7 +432,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         if (mMessageEditText != null && getContext() != null && isAdded()) {
             mMessageEditText.post(() -> {
                 if (getContext() != null && isAdded() && mMessageEditText != null) {
-                    mMessageEditText.clearFocus();
                     mMessageEditText.requestFocus();
                     
                     if (mMessageEditText.getText() != null) {
