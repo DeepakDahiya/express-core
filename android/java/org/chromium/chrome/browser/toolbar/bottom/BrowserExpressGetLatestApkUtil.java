@@ -42,7 +42,7 @@ import java.nio.charset.StandardCharsets;
 
 public class BrowserExpressGetLatestApkUtil {
     private static final String TAG = "Get_First_Comments_Browser_Express";
-    private static final String GET_LATEST_APK_URL = "https://api.browser.express/v1/public/latest_apk";
+    private static final String GET_LATEST_APK_URL = "https://api.browser.express/v1/public/v2/latest_apk";
     private static final String KEY = "fc91c3a9-1a2e-4555-aef2-a62d64397c88";
 
     public interface GetLatestApkCallback {
