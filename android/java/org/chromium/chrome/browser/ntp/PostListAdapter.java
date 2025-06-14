@@ -68,41 +68,132 @@ import android.view.MotionEvent;
 import android.widget.ProgressBar;
 import android.animation.ValueAnimator;
 import android.view.animation.LinearInterpolator;
+import org.chromium.chrome.browser.app.shimmer.ShimmerFrameLayout;
+import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
+import org.chromium.chrome.browser.local_database.TopSiteTable;
 
 public class PostListAdapter extends RecyclerView.Adapter {
+    private static final int VIEW_TYPE_HEADER = 0;
+    private static final int VIEW_TYPE_POST = 1;
+
     private Context mContext;
     private List<Post> mPostList;
+    private RecyclerView mTopPostRecycler;
+    private List<TopSiteTable> mTopSites;
+    private BraveNewTabPageLayout mParentLayout;
+    private HeaderViewHolder mHeaderViewHolder;
     private String INSHORTS_TYPE = "Inshorts";
     private String TWITTER_TYPE = "Twitter";
     private String INSTAGRAM_TYPE = "Instagram";
-    private RecyclerView mTopPostRecycler;
 
-    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler) {
+    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler, List<TopSiteTable> topSites, BraveNewTabPageLayout parentLayout) {
         mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
+        mTopSites = topSites != null ? topSites : new ArrayList<>();
+        mParentLayout = parentLayout;
     }
 
     @Override
     public int getItemCount() {
-        return mPostList.size();
+        return mPostList.size() + 1;
     }
 
-    // Inflates the appropriate layout according to the ViewType.
+    @Override
+    public int getItemViewType(int position) {
+        return position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_POST;
+    }
+
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
         View view;
-
-        view = LayoutInflater.from(parent.getContext()).inflate(R.layout.browser_express_post, parent, false);
-        return new PostHolder(view, mTopPostRecycler);
+        switch (viewType) {
+            case VIEW_TYPE_HEADER:
+                view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.ntp_header, parent, false);
+                mHeaderViewHolder = new HeaderViewHolder(view);
+                return mHeaderViewHolder;
+            default:
+                view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.browser_express_post, parent, false);
+                return new PostHolder(view, mTopPostRecycler);
+        }
     }
 
-    // Passes the post object to a ViewHolder so that the contents can be bound to UI.
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-        Post post = (Post) mPostList.get(position);
+        switch (getItemViewType(position)) {
+            case VIEW_TYPE_HEADER:
+                ((HeaderViewHolder) holder).bind(mTopSites);
+                break;
+            case VIEW_TYPE_POST:
+                Post post = mPostList.get(position - 1);
+                ((PostHolder) holder).bind(post);
+                break;
+        }
+    }
 
-        ((PostHolder) holder).bind(post);
+    public void showShimmer() {
+        if (mHeaderViewHolder != null) {
+            mHeaderViewHolder.showShimmer();
+        }
+    }
+
+    public void hideShimmer() {
+        if (mHeaderViewHolder != null) {
+            mHeaderViewHolder.hideShimmer();
+        }
+    }
+
+    public void updateTopSites(List<TopSiteTable> topSites) {
+        mTopSites = topSites != null ? topSites : new ArrayList<>();
+        notifyItemChanged(0);
+    }
+
+    private class HeaderViewHolder extends RecyclerView.ViewHolder {
+        private LinearLayout topSitesContainer;
+        private ShimmerFrameLayout shimmerLoading;
+        private LinearLayout shimmerItems;
+
+        HeaderViewHolder(View itemView) {
+            super(itemView);
+            topSitesContainer = itemView.findViewById(R.id.top_sites_container);
+            shimmerLoading = itemView.findViewById(R.id.skeleton_shimmer);
+            shimmerItems = itemView.findViewById(R.id.shimmer_items);
+        }
+
+        void bind(List<TopSiteTable> topSites) {
+            setupTopSites(topSites);
+            showShimmer();
+        }
+
+        private void setupTopSites(List<TopSiteTable> topSites) {
+            if (topSites != null && !topSites.isEmpty()) {
+                topSitesContainer.removeAllViews();
+                int maxSites = Math.min(4, topSites.size());
+
+                for (int i = 0; i < maxSites; i++) {
+                    TopSiteTable topSite = topSites.get(i);
+                    View tileView = mParentLayout.createTile(mContext, topSite);
+                    topSitesContainer.addView(tileView);
+                }
+                topSitesContainer.setVisibility(View.VISIBLE);
+            } else {
+                topSitesContainer.setVisibility(View.GONE);
+            }
+        }
+
+        void showShimmer() {
+            shimmerLoading.setVisibility(View.VISIBLE);
+            shimmerLoading.showShimmer(true);
+            AndroidUtils.show(shimmerItems);
+        }
+
+        void hideShimmer() {
+            shimmerLoading.setVisibility(View.GONE);
+            shimmerLoading.hideShimmer();
+            AndroidUtils.gone(shimmerItems);
+        }
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
