@@ -815,11 +815,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mComments.clear();
             }
 
-            if (mCommentAdapter != null) {
-                mCommentAdapter.notifyDataSetChanged();
-            }
-            if (mTopCommentsRecycler != null) {
-                mTopCommentsRecycler.setVisibility(View.GONE);
+            if (mCommentAdapter != null && !mComments.isEmpty()) {
+                // Get the number of items before clearing the list
+                int itemCount = mComments.size();
+                // Clear the data source
+                mComments.clear();
+                // Notify the adapter that the items were removed
+                mCommentAdapter.notifyItemRangeRemoved(0, itemCount);
             }
 
             // 3. Clear any pending image loads.
