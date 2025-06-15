@@ -90,12 +90,16 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
     private boolean mIsLoading = true;
 
+    private final RecyclerView.RecycledViewPool mCommentRecycledViewPool;
+
     public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler, List<TopSiteTable> topSites, BraveNewTabPageLayout parentLayout) {
         mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
         mTopSites = topSites != null ? topSites : new ArrayList<>();
         mParentLayout = parentLayout;
+
+        mCommentRecycledViewPool = new RecyclerView.RecycledViewPool();
     }
 
     public void setLoading(boolean isLoading) {
@@ -133,7 +137,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 default:
                     view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.browser_express_post, parent, false);
-                    return new PostHolder(view, mTopPostRecycler);
+                    return new PostHolder(view, mTopPostRecycler, mCommentRecycledViewPool);
             }
         } catch (Exception e) {
             Log.e("PostListAdapter", "Error in onCreateViewHolder", e);
@@ -314,7 +318,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         private int currentPosition = 0;
         private boolean isAutoScrolling = false;
 
-        PostHolder(View itemView, RecyclerView topPostRecycler) {
+        PostHolder(View itemView, RecyclerView topPostRecycler, RecyclerView.RecycledViewPool commentRecycledViewPool) {
             super(itemView);
             twitterPostLayout = (LinearLayout) itemView.findViewById(R.id.twitter_post_layout);
             twitterProfilePicture = (ImageView) itemView.findViewById(R.id.twitter_profile_picture);
@@ -351,7 +355,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mComments = new ArrayList<Comment>();
                     mCommentAdapter = new CommentListAdapter(activity, mComments, null, null, false, false);
                     mTopCommentsRecycler.setAdapter(mCommentAdapter);
-
+                    mTopCommentsRecycler.setRecycledViewPool(commentRecycledViewPool);
                     mTopCommentsRecycler.addOnScrollListener(new RecyclerView.OnScrollListener() {
                         @Override
                         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
@@ -386,17 +390,13 @@ public class PostListAdapter extends RecyclerView.Adapter {
         void bind(Post post) {
             cleanup();
             if (post == null) return;
-            
+
             try {
                 activity = BraveActivity.getBraveActivity();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
             stopAutoScroll();
-
-            if (post.getComments() != null && post.getComments().size() > 0) {
-                setupAutoScroll();
-            }
 
             try{
 
@@ -407,6 +407,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 mTopCommentsRecycler.setVisibility(View.VISIBLE);
                 mComments.addAll(comments);
                 mCommentAdapter.notifyItemRangeInserted(len, comments.size());
+                setupAutoScroll();
             }
 
             if (len == 0){
@@ -810,15 +811,26 @@ public class PostListAdapter extends RecyclerView.Adapter {
             // 2. Release the player if it exists.
             releasePlayer();
 
+            if (mComments != null) {
+                mComments.clear();
+            }
+
+            if (mCommentAdapter != null) {
+                mCommentAdapter.notifyDataSetChanged();
+            }
+            if (mTopCommentsRecycler != null) {
+                mTopCommentsRecycler.setVisibility(View.GONE);
+            }
+
             // 3. Clear any pending image loads.
             Context safeContext = itemView.getContext();
             if (safeContext != null) {
                 try {
-                if (twitterImage != null) Glide.with(safeContext).clear(twitterImage);
-                if (twitterProfilePicture != null) Glide.with(safeContext).clear(twitterProfilePicture);
-                if (postImage != null) Glide.with(safeContext).clear(postImage);
+                    if (twitterImage != null) Glide.with(safeContext).clear(twitterImage);
+                    if (twitterProfilePicture != null) Glide.with(safeContext).clear(twitterProfilePicture);
+                    if (postImage != null) Glide.with(safeContext).clear(postImage);
                 } catch (Exception e) {
-                Log.w("PostHolder", "Error clearing Glide images.", e);
+                    Log.w("PostHolder", "Error clearing Glide images.", e);
                 }
             }
 
