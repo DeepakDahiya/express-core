@@ -1469,6 +1469,8 @@ public class BraveNewTabPageLayout
                         mPostAdapter.hideShimmer();
                     }
 
+                    mPostAdapter.setLoading(false);
+
                     int len = mPosts.size();
                     mPosts.addAll(posts);
                     mPostAdapter.notifyItemRangeInserted(len + 1, posts.size());
@@ -1478,6 +1480,7 @@ public class BraveNewTabPageLayout
                 public void getPostsFailed(String error) {
                     Log.e("BE_GET_POST", error);
                     mPostAdapter.hideShimmer();
+                    mPostAdapter.setLoading(false);
                 }
             };
 

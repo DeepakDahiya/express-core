@@ -88,58 +88,51 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private String TWITTER_TYPE = "Twitter";
     private String INSTAGRAM_TYPE = "Instagram";
 
-    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler, List<TopSiteTable> topSites, BraveNewTabPageLayout parentLayout) {
-        Log.e("PostListAdapter", "Constructor called");
-        Log.e("PostListAdapter", "Context: " + (context != null));
-        Log.e("PostListAdapter", "PostList: " + (postList != null));
-        Log.e("PostListAdapter", "TopSites: " + (topSites != null ? topSites.size() : "null"));
-        Log.e("PostListAdapter", "ParentLayout: " + (parentLayout != null));
+    private boolean mIsLoading = true;
 
+    public PostListAdapter(Context context, List<Post> postList, RecyclerView topPostRecycler, List<TopSiteTable> topSites, BraveNewTabPageLayout parentLayout) {
         mContext = context;
         mPostList = postList;
         mTopPostRecycler = topPostRecycler;
         mTopSites = topSites != null ? topSites : new ArrayList<>();
         mParentLayout = parentLayout;
+    }
 
-        Log.e("PostListAdapter", "Constructor completed");
+    public void setLoading(boolean isLoading) {
+        mIsLoading = isLoading;
+        if (mHeaderViewHolder != null) {
+            notifyItemChanged(0);
+        }
     }
 
     @Override
     public int getItemCount() {
         int count = mPostList.size() + 1;
-        Log.e("PostListAdapter", "getItemCount: " + count);
         return count;
     }
 
     @Override
     public int getItemViewType(int position) {
         int type = position == 0 ? VIEW_TYPE_HEADER : VIEW_TYPE_POST;
-        Log.e("PostListAdapter", "getItemViewType position=" + position + " type=" + type);
         return type;
     }
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        Log.e("PostListAdapter", "onCreateViewHolder viewType=" + viewType);
         
         try {
             View view;
             switch (viewType) {
                 case VIEW_TYPE_HEADER:
-                    Log.e("PostListAdapter", "Creating header view");
                     view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.ntp_header, parent, false);
-                    Log.e("PostListAdapter", "Header view inflated: " + (view != null));
                     
                     mHeaderViewHolder = new HeaderViewHolder(view);
-                    Log.e("PostListAdapter", "HeaderViewHolder created");
                     return mHeaderViewHolder;
                     
                 default:
-                    Log.e("PostListAdapter", "Creating post view");
                     view = LayoutInflater.from(parent.getContext())
                         .inflate(R.layout.browser_express_post, parent, false);
-                    Log.e("PostListAdapter", "Post view inflated: " + (view != null));
                     return new PostHolder(view, mTopPostRecycler);
             }
         } catch (Exception e) {
@@ -152,7 +145,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         switch (getItemViewType(position)) {
             case VIEW_TYPE_HEADER:
-                ((HeaderViewHolder) holder).bind(mTopSites);
+                ((HeaderViewHolder) holder).bind(mTopSites, mIsLoading);
                 break;
             case VIEW_TYPE_POST:
                 Post post = mPostList.get(position - 1);
@@ -200,14 +193,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
             }
         }
 
-        void bind(List<TopSiteTable> topSites) {
-            try {
-                setupTopSites(topSites);
-                // Setup shimmer items here instead of constructor
+        void bind(List<TopSiteTable> topSites, boolean isLoading) {
+            setupTopSites(topSites);
+            if (isLoading) {
                 showShimmer();
-                
-            } catch (Exception e) {
-                // Don't re-throw here, just log the error
+            } else {
+                hideShimmer();
             }
         }
 
