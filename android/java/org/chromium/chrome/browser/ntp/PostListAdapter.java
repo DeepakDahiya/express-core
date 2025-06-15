@@ -384,6 +384,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
 
         void bind(Post post) {
+            cleanup();
+            if (post == null) return;
+            
             try {
                 activity = BraveActivity.getBraveActivity();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
@@ -785,42 +788,51 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private void setupAutoScroll() {
             if (isAutoScrolling) return;
-            
             isAutoScrolling = true;
-            currentPosition = 0;
-            
-            autoScrollRunnable = new Runnable() {
-                @Override
-                public void run() {
-                    if (!isAutoScrolling) return;
-                    
-                    if (mCommentAdapter != null && mCommentAdapter.getItemCount() > 0) {
-                        currentPosition++;
-                        if (currentPosition >= mCommentAdapter.getItemCount()) {
-                            currentPosition = 0;
-                        }
-                        
-                        try {
-                            mTopCommentsRecycler.smoothScrollToPosition(currentPosition);
-                        } catch (Exception e) {
-                            Log.e("BE_GET_POST", "Error during auto-scroll", e);
-                            stopAutoScroll();
-                            return;
-                        }
-                    }
-                    
-                    autoScrollHandler.postDelayed(this, 5000);
+            autoScrollRunnable =
+                () -> {
+                if (!isAutoScrolling || mCommentAdapter == null || mCommentAdapter.getItemCount() == 0 || mTopCommentsRecycler.getLayoutManager() == null) {
+                    stopAutoScroll();
+                    return;
                 }
-            };
-            
+                int currentPosition = ((LinearLayoutManager) mTopCommentsRecycler.getLayoutManager()).findFirstVisibleItemPosition();
+                int nextPosition = (currentPosition + 1) % mCommentAdapter.getItemCount();
+                mTopCommentsRecycler.smoothScrollToPosition(nextPosition);
+                autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
+                };
             autoScrollHandler.postDelayed(autoScrollRunnable, 5000);
         }
 
-        private void stopAutoScroll() {
-            isAutoScrolling = false;
-            if (autoScrollHandler != null && autoScrollRunnable != null) {
-                autoScrollHandler.removeCallbacks(autoScrollRunnable);
+        private void cleanup() {
+            // 1. Stop the Auto-Scroll Handler.
+            stopAutoScroll();
+
+            // 2. Release the player if it exists.
+            releasePlayer();
+
+            // 3. Clear any pending image loads.
+            Context safeContext = itemView.getContext();
+            if (safeContext != null) {
+                try {
+                if (twitterImage != null) Glide.with(safeContext).clear(twitterImage);
+                if (twitterProfilePicture != null) Glide.with(safeContext).clear(twitterProfilePicture);
+                if (postImage != null) Glide.with(safeContext).clear(postImage);
+                } catch (Exception e) {
+                Log.w("PostHolder", "Error clearing Glide images.", e);
+                }
             }
+
+            // 4. Reset view visibility to default state.
+            if (twitterPostLayout != null) twitterPostLayout.setVisibility(View.GONE);
+            if (twitterMediaCard != null) twitterMediaCard.setVisibility(View.GONE);
+            if (cardView != null) cardView.setVisibility(View.VISIBLE);
+        }
+
+        private void stopAutoScroll() {
+            if (autoScrollHandler != null) {
+                autoScrollHandler.removeCallbacksAndMessages(null);
+            }
+            isAutoScrolling = false;
             currentPosition = 0;
         }
     }
