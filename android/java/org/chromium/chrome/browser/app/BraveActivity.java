@@ -2246,34 +2246,29 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showCommentsBottomSheetFromPost(String postId, String username, String content, String avatarUrl, Boolean openKeyboard) {
-        Log.e("BraveActivity", "showCommentsBottomSheetFromPost: " + postId + ", " + username + ", " + content + ", " + avatarUrl + ", " + openKeyboard);
+        final String FRAGMENT_TAG = "BrowserExpressCommentsBottomSheetFragment";
+        if (getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG) != null) {
+            Log.d("BraveActivity", "Comments bottom sheet is already visible. Ignoring request.");
+            return;
+        }
+
         try {
-            if(mBottomSheetCommentsDialog == null){
-                BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
-                        BrowserExpressCommentsBottomSheetFragment.newInstance(true);
-                
-                Bundle fragmentBundle = new Bundle();
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_USERNAME, username);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_CONTENT, content);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
-                bottomSheetDialog.setArguments(fragmentBundle);
-                bottomSheetDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
-                mBottomSheetCommentsDialog = bottomSheetDialog;
-            }else{
-                Bundle fragmentBundle = new Bundle();
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_USERNAME, username);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_CONTENT, content);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
-                fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
-                mBottomSheetCommentsDialog.setArguments(fragmentBundle);
-                mBottomSheetCommentsDialog.show(getBraveActivity().getSupportFragmentManager(), "BrowserExpressCommentsBottomSheetFragment");
-            }
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
+            BrowserExpressCommentsBottomSheetFragment bottomSheetDialog =
+                    BrowserExpressCommentsBottomSheetFragment.newInstance(true);
+
+            Bundle fragmentBundle = new Bundle();
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.COMMENTS_FOR, "post");
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_ID, postId);
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_USERNAME, username);
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_CONTENT, content);
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.POST_AVATAR_URL, avatarUrl);
+            fragmentBundle.putString(BrowserExpressCommentsBottomSheetFragment.OPEN_KEYBOARD, openKeyboard ? "true" : "false");
+            bottomSheetDialog.setArguments(fragmentBundle);
+
+            bottomSheetDialog.show(getSupportFragmentManager(), FRAGMENT_TAG);
+            mBottomSheetCommentsDialog = bottomSheetDialog;
+
+        } catch (Exception e) {
         }
     }
 
