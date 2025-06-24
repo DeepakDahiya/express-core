@@ -924,6 +924,9 @@ const char16_t k_youtube_background_playback_script[] =
 
 
       // ---- 1. PiP flag overrides for YouTube mobile ----
+    let userPaused = false;
+    let lastUserAction = 0;
+
     function modifyYtcfgFlags() {
         const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
         if (config && typeof config.serializedExperimentFlags === 'string') {
@@ -1009,12 +1012,20 @@ const char16_t k_youtube_background_playback_script[] =
         
         navigator.mediaSession.setActionHandler('play', () => {
             const video = document.querySelector('video');
-            if (video) video.play();
+            if (video) {
+            userPaused = false;
+            lastUserAction = Date.now();
+            video.play();
+            }
         });
         
         navigator.mediaSession.setActionHandler('pause', () => {
             const video = document.querySelector('video');
-            if (video) video.pause();
+            if (video) {
+            userPaused = true;
+            lastUserAction = Date.now();
+            video.pause();
+            }
         });
         
         navigator.mediaSession.setActionHandler('seekbackward', () => {
@@ -1029,6 +1040,10 @@ const char16_t k_youtube_background_playback_script[] =
         }
     }
 
+    function isUserAction() {
+        return Date.now() - lastUserAction < 1000;
+    }
+
     function setupVideoElement() {
         const video = document.querySelector('video');
         if (!video) return;
@@ -1041,17 +1056,28 @@ const char16_t k_youtube_background_playback_script[] =
         if (stack.includes('visibilitychange') || stack.includes('blur') || stack.includes('focus')) {
             return;
         }
+        userPaused = true;
+        lastUserAction = Date.now();
         return originalPause.call(this);
+        };
+
+        const originalPlay = video.play;
+        video.play = function() {
+        userPaused = false;
+        lastUserAction = Date.now();
+        return originalPlay.call(this);
         };
         
         video.addEventListener('pause', (e) => {
-        setTimeout(() => {
-            if (video.paused && !video.ended) {
-            video.play().catch(console.error);
+        if (!userPaused && !isUserAction()) {
+            setTimeout(() => {
+            if (video.paused && !video.ended && !userPaused) {
+                video.play().catch(console.error);
             }
-        }, 100);
+            }, 100);
+        }
         });
-        
+
         video.addEventListener('play', () => {
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = 'playing';
@@ -1063,6 +1089,26 @@ const char16_t k_youtube_background_playback_script[] =
             navigator.mediaSession.playbackState = 'paused';
         }
         });
+
+        document.addEventListener('click', (e) => {
+        const target = e.target;
+        if (target.closest('.ytp-play-button') || 
+            target.closest('[data-title-no-tooltip="Play"]') || 
+            target.closest('[data-title-no-tooltip="Pause"]') ||
+            target.closest('.player-controls-play-pause-replay-button') ||
+            target.matches('[aria-label*="Play"]') ||
+            target.matches('[aria-label*="Pause"]')) {
+            lastUserAction = Date.now();
+            userPaused = target.closest('[data-title-no-tooltip="Pause"]') || target.matches('[aria-label*="Pause"]') ? false : true;
+        }
+        }, true);
+
+        document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' || e.key === 'k' || e.key === 'K') {
+            lastUserAction = Date.now();
+            userPaused = !userPaused;
+        }
+        }, true);
     }
 
     if (document._addEventListener === undefined) {
