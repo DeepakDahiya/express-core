@@ -90,8 +90,8 @@
         android:fragment="org.chromium.chrome.browser.settings.AppearancePreferences"
         android:key="appearance"
         android:order="17"
-        android:icon="@drawable/ic_appearance"
-        android:title="@string/prefs_appearance"/>
+        android:icon="@drawable/ic_media"
+        android:title="@string/prefs_media"/>
     <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BackgroundImagesPreferences"
         android:key="background_images"
