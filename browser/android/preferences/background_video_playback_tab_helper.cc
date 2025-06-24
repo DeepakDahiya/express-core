@@ -924,70 +924,182 @@ const char16_t k_youtube_background_playback_script[] =
 
 
       // ---- 1. PiP flag overrides for YouTube mobile ----
-      function modifyYtcfgFlags() {
+    function modifyYtcfgFlags() {
         const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
         if (config && typeof config.serializedExperimentFlags === 'string') {
-          let flags = config.serializedExperimentFlags;
-          flags = flags
+        let flags = config.serializedExperimentFlags;
+        flags = flags
             .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
             .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
             .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
             .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
             .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
-          config.serializedExperimentFlags = flags;
+        config.serializedExperimentFlags = flags;
         }
-      }
+    }
 
-      if (window.ytcfg) {
+    if (window.ytcfg) {
         modifyYtcfgFlags();
-      } else {
+    } else {
         document.addEventListener('load', (event) => {
-          const target = event.target;
-          if (target.tagName === 'SCRIPT' && window.ytcfg) {
+        const target = event.target;
+        if (target.tagName === 'SCRIPT' && window.ytcfg) {
             modifyYtcfgFlags();
-          }
-        }, true);
-      }
-
-      (function() {
-        if (document._addEventListener === undefined) {
-          document._addEventListener = document.addEventListener;
-          document.addEventListener = function(a, b, c) {
-            if (a != 'visibilitychange') {
-              document._addEventListener(a, b, c);
-            }
-          };
         }
-      }());
+        }, true);
+    }
 
-      // ---- 2. Floating PiP button for video ----
-      const buttonElement = document.createElement('button');
-      const originalStyles = {
+    function setupBackgroundPlayback() {
+        const visibilityProps = ['hidden', 'webkitHidden', 'mozHidden', 'msHidden'];
+        const visibilityStates = ['visibilityState', 'webkitVisibilityState', 'mozVisibilityState', 'msVisibilityState'];
+        
+        visibilityProps.forEach(prop => {
+        if (prop in document) {
+            Object.defineProperty(document, prop, {
+            value: false,
+            writable: false,
+            configurable: false
+            });
+        }
+        });
+        
+        visibilityStates.forEach(state => {
+        if (state in document) {
+            Object.defineProperty(document, state, {
+            value: 'visible',
+            writable: false,
+            configurable: false
+            });
+        }
+        });
+        
+        Object.defineProperty(document, 'hasFocus', {
+        value: () => true,
+        writable: false,
+        configurable: false
+        });
+        
+        const eventsToBlock = [
+        'visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'msvisibilitychange',
+        'blur', 'focus', 'focusin', 'focusout', 'pagehide', 'pageshow'
+        ];
+        
+        eventsToBlock.forEach(eventType => {
+        document.addEventListener(eventType, (e) => {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }, true);
+        
+        window.addEventListener(eventType, (e) => {
+            e.stopImmediatePropagation();
+            e.preventDefault();
+        }, true);
+        });
+    }
+
+    function setupMediaSession() {
+        if ('mediaSession' in navigator) {
+        navigator.mediaSession.metadata = new MediaMetadata({
+            title: document.title || 'YouTube Video',
+            artist: 'YouTube',
+            artwork: [
+            { src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' }
+            ]
+        });
+        
+        navigator.mediaSession.setActionHandler('play', () => {
+            const video = document.querySelector('video');
+            if (video) video.play();
+        });
+        
+        navigator.mediaSession.setActionHandler('pause', () => {
+            const video = document.querySelector('video');
+            if (video) video.pause();
+        });
+        
+        navigator.mediaSession.setActionHandler('seekbackward', () => {
+            const video = document.querySelector('video');
+            if (video) video.currentTime = Math.max(0, video.currentTime - 10);
+        });
+        
+        navigator.mediaSession.setActionHandler('seekforward', () => {
+            const video = document.querySelector('video');
+            if (video) video.currentTime = Math.min(video.duration, video.currentTime + 10);
+        });
+        }
+    }
+
+    function setupVideoElement() {
+        const video = document.querySelector('video');
+        if (!video) return;
+        
+        video.removeAttribute('disablePictureInPicture');
+        
+        const originalPause = video.pause;
+        video.pause = function() {
+        const stack = new Error().stack;
+        if (stack.includes('visibilitychange') || stack.includes('blur') || stack.includes('focus')) {
+            return;
+        }
+        return originalPause.call(this);
+        };
+        
+        video.addEventListener('pause', (e) => {
+        setTimeout(() => {
+            if (video.paused && !video.ended) {
+            video.play().catch(console.error);
+            }
+        }, 100);
+        });
+        
+        video.addEventListener('play', () => {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'playing';
+        }
+        });
+        
+        video.addEventListener('pause', () => {
+        if ('mediaSession' in navigator) {
+            navigator.mediaSession.playbackState = 'paused';
+        }
+        });
+    }
+
+    if (document._addEventListener === undefined) {
+        document._addEventListener = document.addEventListener;
+        document.addEventListener = function(a, b, c) {
+        if (a != 'visibilitychange') {
+            document._addEventListener(a, b, c);
+        }
+        };
+    }
+
+    const buttonElement = document.createElement('button');
+    const originalStyles = {
         backgroundColor: '#39B1F6',
         transform: 'scale(1)',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         outline: '2px solid transparent',
         outlineOffset: '2px'
-      };
+    };
 
-      const hoverStyles = {
-        backgroundColor: '#2F90D5', // Slightly darker blue
+    const hoverStyles = {
+        backgroundColor: '#2F90D5',
         transform: 'scale(1.1)',
         boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
-      };
+    };
 
-      const activeStyles = {
+    const activeStyles = {
         transform: 'scale(0.95)',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-        backgroundColor: '#2A82BF' // Even darker blue
-      };
+        backgroundColor: '#2A82BF'
+    };
 
-      const focusStyles = {
-        outline: '2px solid #0056b3' // Or a more contrasting focus ring color
-      };
+    const focusStyles = {
+        outline: '2px solid #0056b3'
+    };
 
-      // Base styles (including transitions)
-      buttonElement.setAttribute('style', `
+    buttonElement.setAttribute('style', `
         position: fixed;
         bottom: 20px;
         right: 20px;
@@ -1007,145 +1119,138 @@ const char16_t k_youtube_background_playback_script[] =
         outline: ${originalStyles.outline};
         outline-offset: ${originalStyles.outlineOffset};
         transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, outline 0.1s linear;
-      `);
+    `);
 
-      buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
-      buttonElement.setAttribute('title', 'Picture-in-Picture');
+    buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+    buttonElement.setAttribute('title', 'Picture-in-Picture');
 
-      // Hover effects
-      buttonElement.addEventListener('mouseenter', () => {
+    buttonElement.addEventListener('mouseenter', () => {
         buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
         buttonElement.style.transform = hoverStyles.transform;
         buttonElement.style.boxShadow = hoverStyles.boxShadow;
-      });
+    });
 
-      buttonElement.addEventListener('mouseleave', () => {
-        // Revert to original styles unless it's also focused and active
-        if (document.activeElement !== buttonElement) { // Check if not focused
-            buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-            buttonElement.style.transform = originalStyles.transform;
-            buttonElement.style.boxShadow = originalStyles.boxShadow;
-        } else { // If it's focused, keep focus styles and potentially hover if mouse is still over
-            buttonElement.style.backgroundColor = hoverStyles.backgroundColor; // Keep hover BG if mouse still over
-            buttonElement.style.transform = hoverStyles.transform; // Keep hover transform
-            buttonElement.style.boxShadow = hoverStyles.boxShadow; // Keep hover shadow
-            // Focus outline is handled by focus/blur
+    buttonElement.addEventListener('mouseleave', () => {
+        if (document.activeElement !== buttonElement) {
+        buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+        buttonElement.style.transform = originalStyles.transform;
+        buttonElement.style.boxShadow = originalStyles.boxShadow;
+        } else {
+        buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+        buttonElement.style.transform = hoverStyles.transform;
+        buttonElement.style.boxShadow = hoverStyles.boxShadow;
         }
-      });
+    });
 
-      // Active (click) effects
-      buttonElement.addEventListener('mousedown', () => {
+    buttonElement.addEventListener('mousedown', () => {
         buttonElement.style.transform = activeStyles.transform;
         buttonElement.style.boxShadow = activeStyles.boxShadow;
         buttonElement.style.backgroundColor = activeStyles.backgroundColor;
-      });
+    });
 
-      buttonElement.addEventListener('mouseup', () => {
-        // Revert to hover styles if mouse is still over it, otherwise original
+    buttonElement.addEventListener('mouseup', () => {
         if (buttonElement.matches(':hover')) {
-            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-            buttonElement.style.transform = hoverStyles.transform;
-            buttonElement.style.boxShadow = hoverStyles.boxShadow;
-        } else {
-            buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-            buttonElement.style.transform = originalStyles.transform;
-            buttonElement.style.boxShadow = originalStyles.boxShadow;
-        }
-      });
-
-      // Focus effects (for accessibility / keyboard navigation)
-      buttonElement.addEventListener('focus', () => {
-        buttonElement.style.outline = focusStyles.outline;
-        // Optional: Apply hover-like visual changes on focus too for better visibility
         buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
         buttonElement.style.transform = hoverStyles.transform;
         buttonElement.style.boxShadow = hoverStyles.boxShadow;
-      });
-
-      buttonElement.addEventListener('blur', () => {
-        buttonElement.style.outline = originalStyles.outline;
-        // Revert other styles if not hovered
-        if (!buttonElement.matches(':hover')) {
-            buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-            buttonElement.style.transform = originalStyles.transform;
-            buttonElement.style.boxShadow = originalStyles.boxShadow;
+        } else {
+        buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+        buttonElement.style.transform = originalStyles.transform;
+        buttonElement.style.boxShadow = originalStyles.boxShadow;
         }
-      });
+    });
 
+    buttonElement.addEventListener('focus', () => {
+        buttonElement.style.outline = focusStyles.outline;
+        buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+        buttonElement.style.transform = hoverStyles.transform;
+        buttonElement.style.boxShadow = hoverStyles.boxShadow;
+    });
 
-      // Click action
-      buttonElement.addEventListener('click', () => {
+    buttonElement.addEventListener('blur', () => {
+        buttonElement.style.outline = originalStyles.outline;
+        if (!buttonElement.matches(':hover')) {
+        buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+        buttonElement.style.transform = originalStyles.transform;
+        buttonElement.style.boxShadow = originalStyles.boxShadow;
+        }
+    });
+
+    buttonElement.addEventListener('click', () => {
         const videoElement = document.querySelector('video');
         if (videoElement) {
-          videoElement.removeAttribute('disablePictureInPicture');
-          videoElement.requestPictureInPicture().catch(console.error);
+        videoElement.removeAttribute('disablePictureInPicture');
+        videoElement.requestPictureInPicture().catch(console.error);
         }
-      });
+    });
 
-      const observer = new MutationObserver(() => {
+    const observer = new MutationObserver(() => {
         const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
         if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
         buttonContainerElement.prepend(buttonElement);
-      });
-      observer.observe(document.documentElement, { subtree: true, childList: true });
+        setupVideoElement();
+    });
+    observer.observe(document.documentElement, { subtree: true, childList: true });
 
-      // ---- 3. Visibility and focus hack + auto key pressing ----
-      'use strict';
-      const IS_YOUTUBE = /(?:^|.+\\.)youtube\\.com/.test(window.location.hostname) || /(?:^|.+\\.)youtube-nocookie\\.com/.test(window.location.hostname);
-      const IS_MOBILE_YOUTUBE = window.location.hostname === 'm.youtube.com';
-      const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
-      const IS_VIMEO = /(?:^|.+\\.)vimeo\\.com/.test(window.location.hostname);
-      const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
+    const IS_YOUTUBE = /(?:^|.+\.)youtube\.com/.test(window.location.hostname) || /(?:^|.+\.)youtube-nocookie\.com/.test(window.location.hostname);
+    const IS_MOBILE_YOUTUBE = window.location.hostname === 'm.youtube.com';
+    const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
+    const IS_VIMEO = /(?:^|.+\.)vimeo\.com/.test(window.location.hostname);
+    const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
 
-      const videoElement = document.querySelector('video');
-      if (videoElement) {
+    const videoElement = document.querySelector('video');
+    if (videoElement) {
         videoElement.removeAttribute('disablePictureInPicture');
-      }
+    }
 
-      if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
+    if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
         Object.defineProperties(document, {
-          hidden: { value: false },
-          visibilityState: { value: 'visible' }
+        hidden: { value: false },
+        visibilityState: { value: 'visible' }
         });
-      }
+    }
 
-      window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
-      if (IS_VIMEO) {
+    window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
+    if (IS_VIMEO) {
         window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
-      }
+    }
 
-      if (IS_YOUTUBE) {
-        loop(pressKey, 60000, 10000);
-      }
-
-      function pressKey() {
-        const key = 18; // Alt key
+    function pressKey() {
+        const key = 18;
         sendKeyEvent("keydown", key);
         sendKeyEvent("keyup", key);
-      }
+    }
 
-      function sendKeyEvent(type, key) {
+    function sendKeyEvent(type, key) {
         document.dispatchEvent(new KeyboardEvent(type, {
-          bubbles: true,
-          cancelable: true,
-          keyCode: key,
-          which: key
+        bubbles: true,
+        cancelable: true,
+        keyCode: key,
+        which: key
         }));
-      }
+    }
 
-      function loop(callback, delay, jitter) {
+    function loop(callback, delay, jitter) {
         const actualDelay = Math.max(delay + getRandomInt(-jitter / 2, jitter / 2), 0);
         setTimeout(() => {
-          callback();
-          loop(callback, delay, jitter);
+        callback();
+        loop(callback, delay, jitter);
         }, actualDelay);
-      }
+    }
 
-      function getRandomInt(min, max) {
+    function getRandomInt(min, max) {
         min = Math.ceil(min);
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min)) + min;
-      }
+    }
+
+    setupBackgroundPlayback();
+    setupMediaSession();
+    setupVideoElement();
+
+    if (IS_YOUTUBE) {
+        loop(pressKey, 60000, 10000);
+    }
     })();
     )";
 
