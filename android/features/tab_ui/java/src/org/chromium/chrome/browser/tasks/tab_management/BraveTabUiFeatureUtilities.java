@@ -10,7 +10,8 @@ import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
 
 public class BraveTabUiFeatureUtilities {
     public static boolean isBraveTabGroupsEnabled() {
-        return SharedPreferencesManager.getInstance().readBoolean(
-                BravePreferenceKeys.BRAVE_TAB_GROUPS_ENABLED, true);
+        return false;
+        // return SharedPreferencesManager.getInstance().readBoolean(
+        //         BravePreferenceKeys.BRAVE_TAB_GROUPS_ENABLED, true);
     }
 }
