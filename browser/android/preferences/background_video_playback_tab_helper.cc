@@ -29,7 +29,8 @@ const char16_t k_youtube_background_playback_script[] =
       function setupPIPProtection() {
           let currentPIPVideoId = null;
           let pipReplacementEnabled = true;
-          
+          let lastPlayingVideoElement = null;
+
           // Check if PIP is active
           function isPIPActive() {
               return document.pictureInPictureElement !== null;
@@ -39,29 +40,29 @@ const char16_t k_youtube_background_playback_script[] =
               // Method 1: Check for search input existence and visibility
               const searchInput = document.querySelector('.ytSearchboxComponentInput');
               const searchContainer = document.querySelector('.ytSearchboxComponentHost');
-              
+
               if (searchInput && searchContainer) {
-              // Check if search container is visible and input has focus or contains text
-              const containerVisible = searchContainer.offsetParent !== null;
-              const inputHasText = searchInput.value && searchInput.value.trim().length > 0;
-              const inputHasFocus = document.activeElement === searchInput;
-              
-              if (containerVisible && (inputHasText || inputHasFocus)) {
-                  return true;
+                  // Check if search container is visible and input has focus or contains text
+                  const containerVisible = searchContainer.offsetParent !== null;
+                  const inputHasText = searchInput.value && searchInput.value.trim().length > 0;
+                  const inputHasFocus = document.activeElement === searchInput;
+
+                  if (containerVisible && (inputHasText || inputHasFocus)) {
+                      return true;
+                  }
               }
-              }
-              
+
               // Method 2: Check URL for #searching
               if (window.location.hash.includes('searching')) {
-              return true;
+                  return true;
               }
-              
+
               // Method 3: Check if suggestions are visible
               const suggestionsContainer = document.querySelector('.ytSearchboxComponentSuggestionsContainer');
               if (suggestionsContainer && suggestionsContainer.offsetParent !== null) {
-              return true;
+                  return true;
               }
-              
+
               return false;
           }
 
@@ -101,23 +102,57 @@ const char16_t k_youtube_background_playback_script[] =
               }
           }
 
+          function handleVideoPlay(videoElement) {
+              const currentVideoId = getCurrentVideoId();
+
+              // If this is a different video element or different video ID
+              if (isPIPActive() &&
+                  (lastPlayingVideoElement !== videoElement ||
+                      (currentPIPVideoId && currentPIPVideoId !== currentVideoId))) {
+
+                  console.log('New video started playing, handling PIP...');
+
+                  if (pipReplacementEnabled && currentVideoId) {
+                      // Replace PIP with new video
+                      replacePIPVideo(videoElement, currentVideoId);
+                  } else {
+                      // Close existing PIP
+                      closePIP();
+                  }
+              }
+
+              lastPlayingVideoElement = videoElement;
+          }
+
           function replacePIPVideo(newVideoElement, newVideoId) {
               try {
+                  console.log('Replacing PIP video with:', newVideoId);
+
                   // Exit current PIP
                   if (document.pictureInPictureElement) {
                       document.exitPictureInPicture().then(() => {
                           // Small delay to ensure clean transition
                           setTimeout(() => {
                               // Enter PIP with new video
-                              if (newVideoElement && typeof newVideoElement.requestPictureInPicture === 'function') {
+                              if (newVideoElement &&
+                                  typeof newVideoElement.requestPictureInPicture === 'function' &&
+                                  !newVideoElement.paused) {
+
                                   newVideoElement.requestPictureInPicture()
                                       .then(() => {
                                           currentPIPVideoId = newVideoId;
+                                          lastPlayingVideoElement = newVideoElement;
                                           console.log('PIP replaced with new video:', newVideoId);
                                       })
                                       .catch(err => {
                                           console.warn('Failed to enter PIP with new video:', err);
+                                          // If PIP fails, just close the old one
+                                          currentPIPVideoId = null;
                                       });
+                              } else {
+                                  // If new video can't do PIP, just close old PIP
+                                  currentPIPVideoId = null;
+                                  console.log('New video cannot do PIP, closed old PIP');
                               }
                           }, 200);
                       }).catch(err => {
@@ -134,6 +169,7 @@ const char16_t k_youtube_background_playback_script[] =
                   if (document.pictureInPictureElement) {
                       document.exitPictureInPicture().then(() => {
                           currentPIPVideoId = null;
+                          lastPlayingVideoElement = null;
                           console.log('PIP closed due to video change');
                       }).catch(err => {
                           console.warn('Failed to close PIP:', err);
@@ -148,14 +184,38 @@ const char16_t k_youtube_background_playback_script[] =
               // Track when PIP is entered
               document.addEventListener('enterpictureinpicture', (event) => {
                   currentPIPVideoId = getCurrentVideoId();
+                  lastPlayingVideoElement = event.target;
                   console.log('PIP entered for video:', currentPIPVideoId);
               });
 
               // Track when PIP is exited
               document.addEventListener('leavepictureinpicture', (event) => {
                   currentPIPVideoId = null;
+                  lastPlayingVideoElement = null;
                   console.log('PIP exited');
               });
+
+              // NEW: Listen for video play events
+              document.addEventListener('play', (event) => {
+                  if (event.target.tagName === 'VIDEO') {
+                      console.log('Video play event detected');
+                      setTimeout(() => handleVideoPlay(event.target), 100);
+                  }
+              }, true);
+
+              // NEW: Listen for video loadstart events (when new video loads)
+              document.addEventListener('loadstart', (event) => {
+                  if (event.target.tagName === 'VIDEO') {
+                      console.log('Video loadstart event detected');
+                      setTimeout(() => {
+                          const currentVideoId = getCurrentVideoId();
+                          if (isPIPActive() && currentPIPVideoId &&
+                              currentVideoId && currentPIPVideoId !== currentVideoId) {
+                              handleVideoChange();
+                          }
+                      }, 100);
+                  }
+              }, true);
 
               // Monitor URL changes (for SPA navigation)
               let lastVideoId = getCurrentVideoId();
@@ -168,8 +228,8 @@ const char16_t k_youtube_background_playback_script[] =
                   }
               };
 
-              // Check for video changes periodically
-              setInterval(checkVideoChange, 1000);
+              // Check for video changes periodically (reduced frequency)
+              setInterval(checkVideoChange, 2000);
 
               // Also check on navigation events
               window.addEventListener('yt-navigate-finish', () => {
@@ -181,7 +241,25 @@ const char16_t k_youtube_background_playback_script[] =
                   mutations.forEach(mutation => {
                       mutation.addedNodes.forEach(node => {
                           if (node.nodeType === 1 && node.tagName === 'VIDEO') {
-                              // New video element detected
+                              console.log('New video element detected');
+
+                              // Add event listeners to new video element
+                              node.addEventListener('play', () => {
+                                  console.log('New video element started playing');
+                                  setTimeout(() => handleVideoPlay(node), 100);
+                              });
+
+                              node.addEventListener('loadstart', () => {
+                                  console.log('New video element loadstart');
+                                  setTimeout(() => {
+                                      const currentVideoId = getCurrentVideoId();
+                                      if (isPIPActive() && currentPIPVideoId &&
+                                          currentVideoId && currentPIPVideoId !== currentVideoId) {
+                                          handleVideoChange();
+                                      }
+                                  }, 100);
+                              });
+
                               setTimeout(checkVideoChange, 500);
                           }
                       });
@@ -214,74 +292,74 @@ const char16_t k_youtube_background_playback_script[] =
 
                   const script = tab.document.createElement('script');
                   script.textContent = `
-              (function() {
-                // Check if this tab should take over PIP
-                function checkPIPTakeover() {
-                  const videoElement = document.querySelector('video');
-                  const currentVideoId = new URLSearchParams(window.location.search).get('v');
-                  
-                  if (videoElement && currentVideoId && window.location.pathname === '/watch') {
-                    // Add a subtle indicator that PIP can be activated
-                    addPIPIndicator(videoElement);
-                  }
-                }
-                
-                function addPIPIndicator(videoElement) {
-                  // Add a small PIP button overlay
-                  if (document.getElementById('pip-takeover-btn')) return;
-                  
-                  const pipBtn = document.createElement('button');
-                  pipBtn.id = 'pip-takeover-btn';
-                  pipBtn.innerHTML = '📺 PIP';
-                  pipBtn.style.cssText = \`
-                    position: absolute; top: 10px; right: 10px; z-index: 1000;
-                    background: rgba(0,0,0,0.7); color: white; border: none;
-                    padding: 8px 12px; border-radius: 6px; cursor: pointer;
-                    font-size: 12px; font-family: Arial, sans-serif;
-                    transition: all 0.2s ease;
-                  \`;
-                  
-                  pipBtn.onmouseover = () => {
-                    pipBtn.style.background = 'rgba(255,68,68,0.9)';
-                  };
-                  
-                  pipBtn.onmouseout = () => {
-                    pipBtn.style.background = 'rgba(0,0,0,0.7)';
-                  };
-                  
-                  pipBtn.onclick = () => {
-                    if (videoElement.requestPictureInPicture) {
-                      videoElement.requestPictureInPicture().catch(console.warn);
-                    }
-                  };
-                  
-                  // Position relative to video
-                  const videoContainer = videoElement.closest('.html5-video-player') || videoElement.parentElement;
-                  if (videoContainer) {
-                    videoContainer.style.position = 'relative';
-                    videoContainer.appendChild(pipBtn);
-                    
-                    // Auto-hide after 5 seconds
-                    setTimeout(() => {
-                      if (pipBtn.parentElement) {
-                        pipBtn.style.opacity = '0';
-                        setTimeout(() => pipBtn.remove(), 300);
+                    (function() {
+                      // Check if this tab should take over PIP
+                      function checkPIPTakeover() {
+                        const videoElement = document.querySelector('video');
+                        const currentVideoId = new URLSearchParams(window.location.search).get('v');
+                        
+                        if (videoElement && currentVideoId && window.location.pathname === '/watch') {
+                          // Add a subtle indicator that PIP can be activated
+                          addPIPIndicator(videoElement);
+                        }
                       }
-                    }, 5000);
-                  }
-                }
-                
-                // Initialize when video loads
-                if (document.readyState === 'loading') {
-                  document.addEventListener('DOMContentLoaded', checkPIPTakeover);
-                } else {
-                  checkPIPTakeover();
-                }
-                
-                // Also check when video elements are added
-                setTimeout(checkPIPTakeover, 1000);
-              })();
-            `;
+                      
+                      function addPIPIndicator(videoElement) {
+                        // Add a small PIP button overlay
+                        if (document.getElementById('pip-takeover-btn')) return;
+                        
+                        const pipBtn = document.createElement('button');
+                        pipBtn.id = 'pip-takeover-btn';
+                        pipBtn.innerHTML = '📺 PIP';
+                        pipBtn.style.cssText = \`
+                          position: absolute; top: 10px; right: 10px; z-index: 1000;
+                          background: rgba(0,0,0,0.7); color: white; border: none;
+                          padding: 8px 12px; border-radius: 6px; cursor: pointer;
+                          font-size: 12px; font-family: Arial, sans-serif;
+                          transition: all 0.2s ease;
+                        \`;
+                        
+                        pipBtn.onmouseover = () => {
+                          pipBtn.style.background = 'rgba(255,68,68,0.9)';
+                        };
+                        
+                        pipBtn.onmouseout = () => {
+                          pipBtn.style.background = 'rgba(0,0,0,0.7)';
+                        };
+                        
+                        pipBtn.onclick = () => {
+                          if (videoElement.requestPictureInPicture) {
+                            videoElement.requestPictureInPicture().catch(console.warn);
+                          }
+                        };
+                        
+                        // Position relative to video
+                        const videoContainer = videoElement.closest('.html5-video-player') || videoElement.parentElement;
+                        if (videoContainer) {
+                          videoContainer.style.position = 'relative';
+                          videoContainer.appendChild(pipBtn);
+                          
+                          // Auto-hide after 5 seconds
+                          setTimeout(() => {
+                            if (pipBtn.parentElement) {
+                              pipBtn.style.opacity = '0';
+                              setTimeout(() => pipBtn.remove(), 300);
+                            }
+                          }, 5000);
+                        }
+                      }
+                      
+                      // Initialize when video loads
+                      if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', checkPIPTakeover);
+                      } else {
+                        checkPIPTakeover();
+                      }
+                      
+                      // Also check when video elements are added
+                      setTimeout(checkPIPTakeover, 1000);
+                    })();
+                  `;
 
                   tab.document.head.appendChild(script);
               } catch (e) {
@@ -321,16 +399,16 @@ const char16_t k_youtube_background_playback_script[] =
 
           function openSearchInNewTab(searchQuery) {
               if (!searchQuery) return false;
-              
+
               const encodedQuery = encodeURIComponent(searchQuery);
               const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
-              
+
               const newTab = window.open(searchUrl, '_blank');
               if (newTab) {
-              newTab.focus();
-              setTimeout(() => newTab.focus(), 100);
-              closeSearchDropdown();
-              return true;
+                  newTab.focus();
+                  setTimeout(() => newTab.focus(), 100);
+                  closeSearchDropdown();
+                  return true;
               }
               return false;
           }
@@ -412,42 +490,42 @@ const char16_t k_youtube_background_playback_script[] =
 
           function handleSearchButtonClick(event) {
               const isVideoPage = window.location.pathname === '/watch';
-              
+
               // Only intercept if PIP is active AND search is currently active
               if (isVideoPage && isPIPActive() && isSearchActive()) {
-              event.preventDefault();
-              event.stopPropagation();
-              event.stopImmediatePropagation();
-              
-              const searchQuery = getSearchQuery();
-              if (searchQuery) {
-                  setTimeout(() => {
-                  openSearchInNewTab(searchQuery);
-                  }, 10);
-              }
-              
-              return false;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  event.stopImmediatePropagation();
+
+                  const searchQuery = getSearchQuery();
+                  if (searchQuery) {
+                      setTimeout(() => {
+                          openSearchInNewTab(searchQuery);
+                      }, 10);
+                  }
+
+                  return false;
               }
               return true;
           }
 
           function handleSearchKeydown(event) {
               const isVideoPage = window.location.pathname === '/watch';
-              
+
               // Only intercept Enter key when PIP is active and search is active
               if (event.key === 'Enter' && isVideoPage && isPIPActive() && isSearchActive()) {
-              event.preventDefault();
-              event.stopPropagation();
-              event.stopImmediatePropagation();
-              
-              const searchQuery = getSearchQuery();
-              if (searchQuery) {
-                  setTimeout(() => {
-                  openSearchInNewTab(searchQuery);
-                  }, 10);
-              }
-              
-              return false;
+                  event.preventDefault();
+                  event.stopPropagation();
+                  event.stopImmediatePropagation();
+
+                  const searchQuery = getSearchQuery();
+                  if (searchQuery) {
+                      setTimeout(() => {
+                          openSearchInNewTab(searchQuery);
+                      }, 10);
+                  }
+
+                  return false;
               }
               return true;
           }
@@ -514,45 +592,45 @@ const char16_t k_youtube_background_playback_script[] =
           function interceptSearchForms() {
               // Intercept search forms
               const searchForms = document.querySelectorAll(
-              'form[role="search"], ' +
-              '#search-form, ' +
-              '.ytSearchboxComponentSearchForm, ' +
-              'form[action="/results"]'
+                  'form[role="search"], ' +
+                  '#search-form, ' +
+                  '.ytSearchboxComponentSearchForm, ' +
+                  'form[action="/results"]'
               );
-              
+
               searchForms.forEach(form => {
-              form.removeEventListener('submit', handleSearchSubmit, true);
-              form.removeEventListener('submit', handleSearchSubmit, false);
-              form.addEventListener('submit', handleSearchSubmit, true);
-              form.addEventListener('submit', handleSearchSubmit, false);
+                  form.removeEventListener('submit', handleSearchSubmit, true);
+                  form.removeEventListener('submit', handleSearchSubmit, false);
+                  form.addEventListener('submit', handleSearchSubmit, true);
+                  form.addEventListener('submit', handleSearchSubmit, false);
               });
 
               // Intercept search buttons - but only when search is active
               const searchButtons = document.querySelectorAll(
-              '.ytSearchboxComponentSearchButton, ' +
-              'button[aria-label="Search"], ' +
-              'button[title="Search YouTube"]'
+                  '.ytSearchboxComponentSearchButton, ' +
+                  'button[aria-label="Search"], ' +
+                  'button[title="Search YouTube"]'
               );
-              
+
               searchButtons.forEach(button => {
-              button.removeEventListener('click', handleSearchButtonClick, true);
-              button.removeEventListener('click', handleSearchButtonClick, false);
-              button.addEventListener('click', handleSearchButtonClick, true);
-              button.addEventListener('click', handleSearchButtonClick, false);
+                  button.removeEventListener('click', handleSearchButtonClick, true);
+                  button.removeEventListener('click', handleSearchButtonClick, false);
+                  button.addEventListener('click', handleSearchButtonClick, true);
+                  button.addEventListener('click', handleSearchButtonClick, false);
               });
 
               // Intercept keyboard events on search inputs
               const searchInputs = document.querySelectorAll(
-              '.ytSearchboxComponentInput, ' +
-              'input[name="search_query"], ' +
-              'input[role="combobox"]'
+                  '.ytSearchboxComponentInput, ' +
+                  'input[name="search_query"], ' +
+                  'input[role="combobox"]'
               );
-              
+
               searchInputs.forEach(input => {
-              input.removeEventListener('keydown', handleSearchKeydown, true);
-              input.removeEventListener('keydown', handleSearchKeydown, false);
-              input.addEventListener('keydown', handleSearchKeydown, true);
-              input.addEventListener('keydown', handleSearchKeydown, false);
+                  input.removeEventListener('keydown', handleSearchKeydown, true);
+                  input.removeEventListener('keydown', handleSearchKeydown, false);
+                  input.addEventListener('keydown', handleSearchKeydown, true);
+                  input.addEventListener('keydown', handleSearchKeydown, false);
               });
           }
 
@@ -618,6 +696,7 @@ const char16_t k_youtube_background_playback_script[] =
               interceptSearchSuggestions();
               interceptSearchForms();
               interceptNavigationMethods();
+              setupVideoChangeDetection();
           }
 
           // Run initial setup
@@ -631,7 +710,7 @@ const char16_t k_youtube_background_playback_script[] =
                   mutation.addedNodes.forEach(node => {
                       if (node.nodeType === 1) {
                           if (node.matches && (
-                              node.matches('ytm-home-logo') || 
+                              node.matches('ytm-home-logo') ||
                               node.matches('ytd-topbar-logo-renderer') ||
                               node.matches('.ytSuggestionComponentSuggestion') ||
                               node.matches('.ytSearchboxComponentHost') ||
@@ -661,17 +740,17 @@ const char16_t k_youtube_background_playback_script[] =
           // Re-intercept when search gets focus
           document.addEventListener('focus', (event) => {
               if (event.target.matches('.ytSearchboxComponentInput, input[name="search_query"], input[role="combobox"]')) {
-              setTimeout(() => {
-                  interceptSearchSuggestions();
-                  interceptSearchForms();
-              }, 500);
+                  setTimeout(() => {
+                      interceptSearchSuggestions();
+                      interceptSearchForms();
+                  }, 500);
               }
           }, true);
 
           // Also re-intercept when search suggestions appear
           document.addEventListener('input', (event) => {
               if (event.target.matches('.ytSearchboxComponentInput, input[name="search_query"], input[role="combobox"]')) {
-              setTimeout(interceptSearchSuggestions, 300);
+                  setTimeout(interceptSearchSuggestions, 300);
               }
           }, true);
       }
