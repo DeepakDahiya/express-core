@@ -26,6 +26,333 @@ namespace {
 const char16_t k_youtube_background_playback_script[] =
     uR"(
     (function() {
+      function setupPIPProtection() {
+        // Check if PIP is active
+        function isPIPActive() {
+          return document.pictureInPictureElement !== null;
+        }
+
+        // Extract search query from suggestion element
+        function extractSearchQuery(element) {
+          const textElement = element.querySelector('.ytSuggestionComponentText');
+          if (textElement) {
+            const ariaLabel = textElement.getAttribute('aria-label');
+            if (ariaLabel) {
+              return ariaLabel;
+            }
+          }
+          
+          const spans = element.querySelectorAll('.ytSuggestionComponentLeftContainer span span');
+          let searchText = '';
+          spans.forEach(span => {
+            searchText += span.textContent;
+          });
+          
+          return searchText.trim();
+        }
+
+        // Click the back button to close search dropdown
+        function closeSearchDropdown() {
+          const backButton = document.querySelector('.mobile-topbar-back-arrow[aria-label="Close search"]');
+          if (backButton) {
+            // Small delay to ensure the new tab opens first
+            setTimeout(() => {
+              backButton.click();
+            }, 100);
+          }
+        }
+
+        // Handle logo click
+        function handleLogoClick(event) {
+          const isVideoPage = window.location.pathname === '/watch';
+          
+          if (isVideoPage && isPIPActive()) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            
+            const newTab = window.open('https://www.youtube.com/', '_blank');
+            if (newTab) {
+              newTab.focus();
+              setTimeout(() => newTab.focus(), 100);
+            }
+            
+            return false;
+          }
+          return true;
+        }
+
+        // Handle search suggestion click
+        function handleSearchSuggestionClick(event) {
+          const isVideoPage = window.location.pathname === '/watch';
+          
+          if (isVideoPage && isPIPActive()) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.stopImmediatePropagation();
+            
+            const suggestionElement = event.target.closest('.ytSuggestionComponentSuggestion');
+            if (suggestionElement) {
+              const searchQuery = extractSearchQuery(suggestionElement);
+              if (searchQuery) {
+                const encodedQuery = encodeURIComponent(searchQuery);
+                const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+                
+                setTimeout(() => {
+                  const newTab = window.open(searchUrl, '_blank');
+                  if (newTab) {
+                    newTab.focus();
+                    setTimeout(() => newTab.focus(), 100);
+                    
+                    // Close the search dropdown in the original tab
+                    closeSearchDropdown();
+                  }
+                }, 10);
+              }
+            }
+            
+            return false;
+          }
+          return true;
+        }
+
+        // Handle search form submission
+        function handleSearchSubmit(event) {
+          const isVideoPage = window.location.pathname === '/watch';
+          
+          if (isVideoPage && isPIPActive()) {
+            const isSearchSubmission = event.type === 'submit' || 
+                                      event.target.closest('form[role="search"]') ||
+                                      event.target.matches('button[type="submit"]');
+            
+            if (isSearchSubmission) {
+              event.preventDefault();
+              event.stopPropagation();
+              event.stopImmediatePropagation();
+              
+              const searchInput = document.querySelector('#search, input[name="search_query"], .ytSearchboxComponentInput');
+              if (searchInput && searchInput.value.trim()) {
+                const encodedQuery = encodeURIComponent(searchInput.value.trim());
+                const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+                
+                setTimeout(() => {
+                  const newTab = window.open(searchUrl, '_blank');
+                  if (newTab) {
+                    newTab.focus();
+                    
+                    // Close the search dropdown in the original tab
+                    closeSearchDropdown();
+                  }
+                }, 10);
+              }
+              
+              return false;
+            }
+          }
+          return true;
+        }
+
+        // Intercept YouTube logo clicks
+        function interceptYouTubeLogo() {
+          const logoSelectors = [
+            'ytm-home-logo button',
+            'ytm-home-logo button.mobile-topbar-header-endpoint',
+            'button[aria-label*="YouTube"][aria-label*="Home"]',
+            'button[key="logo"]',
+            'ytd-topbar-logo-renderer a',
+            'a[href="/"]',
+            'a[href="https://www.youtube.com/"]',
+            '#logo a',
+            '.ytd-topbar-logo-renderer a',
+            '.mobile-topbar-header-endpoint',
+            'c3-icon.mobile-topbar-logo',
+            '[aria-label*="YouTube Home"]',
+            '[aria-label*="YouTube Premium Home"]'
+          ];
+
+          logoSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+              element.removeEventListener('click', handleLogoClick, true);
+              element.removeEventListener('click', handleLogoClick, false);
+              element.addEventListener('click', handleLogoClick, true);
+              element.addEventListener('click', handleLogoClick, false);
+            });
+          });
+        }
+
+        // Intercept search suggestions
+        function interceptSearchSuggestions() {
+          const suggestionSelectors = [
+            '.ytSuggestionComponentSuggestion',
+            '.ytSuggestionComponentText',
+            '[role="option"].ytSuggestionComponentText',
+            '.ytSuggestionComponentLeftContainer span[role="button"]',
+            '.ytSuggestionComponentLeftContainer span'
+          ];
+
+          suggestionSelectors.forEach(selector => {
+            const elements = document.querySelectorAll(selector);
+            elements.forEach(element => {
+              element.removeEventListener('click', handleSearchSuggestionClick, true);
+              element.removeEventListener('click', handleSearchSuggestionClick, false);
+              element.removeEventListener('mousedown', handleSearchSuggestionClick, true);
+              element.removeEventListener('mousedown', handleSearchSuggestionClick, false);
+              
+              element.addEventListener('click', handleSearchSuggestionClick, true);
+              element.addEventListener('click', handleSearchSuggestionClick, false);
+              element.addEventListener('mousedown', handleSearchSuggestionClick, true);
+              element.addEventListener('mousedown', handleSearchSuggestionClick, false);
+              
+              element.addEventListener('touchstart', handleSearchSuggestionClick, true);
+              element.addEventListener('touchend', handleSearchSuggestionClick, true);
+            });
+          });
+        }
+
+        // Intercept search forms
+        function interceptSearchForms() {
+          const searchForms = document.querySelectorAll('form[role="search"], #search-form, .ytSearchboxComponentForm');
+          searchForms.forEach(form => {
+            form.removeEventListener('submit', handleSearchSubmit, true);
+            form.removeEventListener('submit', handleSearchSubmit, false);
+            form.addEventListener('submit', handleSearchSubmit, true);
+            form.addEventListener('submit', handleSearchSubmit, false);
+          });
+
+          const searchSubmitButtons = document.querySelectorAll(
+            'button[type="submit"][aria-label*="Search"], ' +
+            '.ytSearchboxComponentSearchButton, ' +
+            'form[role="search"] button[type="submit"]'
+          );
+          
+          searchSubmitButtons.forEach(button => {
+            if (!button.matches('.topbar-menu-button-avatar-button') && 
+                !button.matches('.icon-button.topbar-menu-button-avatar-button')) {
+              button.removeEventListener('click', handleSearchSubmit, true);
+              button.removeEventListener('click', handleSearchSubmit, false);
+              button.addEventListener('click', handleSearchSubmit, true);
+              button.addEventListener('click', handleSearchSubmit, false);
+            }
+          });
+        }
+
+        // Navigation method interception
+        function interceptNavigationMethods() {
+          const originalPushState = history.pushState;
+          const originalReplaceState = history.replaceState;
+
+          history.pushState = function(state, title, url) {
+            if (isPIPActive() && window.location.pathname === '/watch') {
+              if (url === '/' || 
+                  url === 'https://www.youtube.com/' || 
+                  url.includes('/results?') ||
+                  url.includes('search_query=')) {
+                
+                const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
+                setTimeout(() => {
+                  const newTab = window.open(fullUrl, '_blank');
+                  if (newTab) {
+                    newTab.focus();
+                    
+                    // Close search dropdown if it's a search-related navigation
+                    if (url.includes('/results?') || url.includes('search_query=')) {
+                      closeSearchDropdown();
+                    }
+                  }
+                }, 10);
+                return;
+              }
+            }
+            return originalPushState.apply(this, arguments);
+          };
+
+          history.replaceState = function(state, title, url) {
+            if (isPIPActive() && window.location.pathname === '/watch') {
+              if (url === '/' || 
+                  url === 'https://www.youtube.com/' || 
+                  url.includes('/results?') ||
+                  url.includes('search_query=')) {
+                
+                const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
+                setTimeout(() => {
+                  const newTab = window.open(fullUrl, '_blank');
+                  if (newTab) {
+                    newTab.focus();
+                    
+                    // Close search dropdown if it's a search-related navigation
+                    if (url.includes('/results?') || url.includes('search_query=')) {
+                      closeSearchDropdown();
+                    }
+                  }
+                }, 10);
+                return;
+              }
+            }
+            return originalReplaceState.apply(this, arguments);
+          };
+        }
+
+        // Initialize all interceptors
+        function initialize() {
+          interceptYouTubeLogo();
+          interceptSearchSuggestions();
+          interceptSearchForms();
+          interceptNavigationMethods();
+        }
+
+        // Run initial setup
+        initialize();
+
+        // Mutation observer
+        const observer = new MutationObserver((mutations) => {
+          let shouldReintercept = false;
+          
+          mutations.forEach(mutation => {
+            mutation.addedNodes.forEach(node => {
+              if (node.nodeType === 1) {
+                if (node.matches && (
+                  node.matches('ytm-home-logo') || 
+                  node.matches('ytd-topbar-logo-renderer') ||
+                  node.matches('.ytSuggestionComponentSuggestion') ||
+                  node.querySelector('ytm-home-logo, ytd-topbar-logo-renderer, .ytSuggestionComponentSuggestion')
+                )) {
+                  shouldReintercept = true;
+                }
+              }
+            });
+          });
+
+          if (shouldReintercept) {
+            setTimeout(initialize, 100);
+          }
+        });
+
+        observer.observe(document.body, {
+          childList: true,
+          subtree: true
+        });
+
+        // YouTube-specific events
+        window.addEventListener('yt-navigate-start', initialize);
+        window.addEventListener('yt-navigate-finish', initialize);
+        
+        // Re-intercept when search gets focus
+        document.addEventListener('focus', (event) => {
+          if (event.target.matches('#search, input[name="search_query"], .ytSearchboxComponentInput')) {
+            setTimeout(interceptSearchSuggestions, 500);
+          }
+        }, true);
+      }
+
+      // Initialize
+      if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', setupPIPProtection);
+      } else {
+        setupPIPProtection();
+      }
+
+
       // ---- 1. PiP flag overrides for YouTube mobile ----
       function modifyYtcfgFlags() {
         const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
@@ -470,3 +797,331 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);
+
+
+
+function setupPIPProtection() {
+  // Check if PIP is active
+  function isPIPActive() {
+    return document.pictureInPictureElement !== null;
+  }
+
+  // Extract search query from suggestion element
+  function extractSearchQuery(element) {
+    const textElement = element.querySelector('.ytSuggestionComponentText');
+    if (textElement) {
+      const ariaLabel = textElement.getAttribute('aria-label');
+      if (ariaLabel) {
+        return ariaLabel;
+      }
+    }
+    
+    const spans = element.querySelectorAll('.ytSuggestionComponentLeftContainer span span');
+    let searchText = '';
+    spans.forEach(span => {
+      searchText += span.textContent;
+    });
+    
+    return searchText.trim();
+  }
+
+  // Click the back button to close search dropdown
+  function closeSearchDropdown() {
+    const backButton = document.querySelector('.mobile-topbar-back-arrow[aria-label="Close search"]');
+    if (backButton) {
+      // Small delay to ensure the new tab opens first
+      setTimeout(() => {
+        backButton.click();
+      }, 100);
+    }
+  }
+
+  // Handle logo click
+  function handleLogoClick(event) {
+    const isVideoPage = window.location.pathname === '/watch';
+    
+    if (isVideoPage && isPIPActive()) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      
+      const newTab = window.open('https://www.youtube.com/', '_blank');
+      if (newTab) {
+        newTab.focus();
+        setTimeout(() => newTab.focus(), 100);
+      }
+      
+      return false;
+    }
+    return true;
+  }
+
+  // Handle search suggestion click
+  function handleSearchSuggestionClick(event) {
+    const isVideoPage = window.location.pathname === '/watch';
+    
+    if (isVideoPage && isPIPActive()) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      
+      const suggestionElement = event.target.closest('.ytSuggestionComponentSuggestion');
+      if (suggestionElement) {
+        const searchQuery = extractSearchQuery(suggestionElement);
+        if (searchQuery) {
+          const encodedQuery = encodeURIComponent(searchQuery);
+          const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+          
+          setTimeout(() => {
+            const newTab = window.open(searchUrl, '_blank');
+            if (newTab) {
+              newTab.focus();
+              setTimeout(() => newTab.focus(), 100);
+              
+              // Close the search dropdown in the original tab
+              closeSearchDropdown();
+            }
+          }, 10);
+        }
+      }
+      
+      return false;
+    }
+    return true;
+  }
+
+  // Handle search form submission
+  function handleSearchSubmit(event) {
+    const isVideoPage = window.location.pathname === '/watch';
+    
+    if (isVideoPage && isPIPActive()) {
+      const isSearchSubmission = event.type === 'submit' || 
+                                 event.target.closest('form[role="search"]') ||
+                                 event.target.matches('button[type="submit"]');
+      
+      if (isSearchSubmission) {
+        event.preventDefault();
+        event.stopPropagation();
+        event.stopImmediatePropagation();
+        
+        const searchInput = document.querySelector('#search, input[name="search_query"], .ytSearchboxComponentInput');
+        if (searchInput && searchInput.value.trim()) {
+          const encodedQuery = encodeURIComponent(searchInput.value.trim());
+          const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+          
+          setTimeout(() => {
+            const newTab = window.open(searchUrl, '_blank');
+            if (newTab) {
+              newTab.focus();
+              
+              // Close the search dropdown in the original tab
+              closeSearchDropdown();
+            }
+          }, 10);
+        }
+        
+        return false;
+      }
+    }
+    return true;
+  }
+
+  // Intercept YouTube logo clicks
+  function interceptYouTubeLogo() {
+    const logoSelectors = [
+      'ytm-home-logo button',
+      'ytm-home-logo button.mobile-topbar-header-endpoint',
+      'button[aria-label*="YouTube"][aria-label*="Home"]',
+      'button[key="logo"]',
+      'ytd-topbar-logo-renderer a',
+      'a[href="/"]',
+      'a[href="https://www.youtube.com/"]',
+      '#logo a',
+      '.ytd-topbar-logo-renderer a',
+      '.mobile-topbar-header-endpoint',
+      'c3-icon.mobile-topbar-logo',
+      '[aria-label*="YouTube Home"]',
+      '[aria-label*="YouTube Premium Home"]'
+    ];
+
+    logoSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(element => {
+        element.removeEventListener('click', handleLogoClick, true);
+        element.removeEventListener('click', handleLogoClick, false);
+        element.addEventListener('click', handleLogoClick, true);
+        element.addEventListener('click', handleLogoClick, false);
+      });
+    });
+  }
+
+  // Intercept search suggestions
+  function interceptSearchSuggestions() {
+    const suggestionSelectors = [
+      '.ytSuggestionComponentSuggestion',
+      '.ytSuggestionComponentText',
+      '[role="option"].ytSuggestionComponentText',
+      '.ytSuggestionComponentLeftContainer span[role="button"]',
+      '.ytSuggestionComponentLeftContainer span'
+    ];
+
+    suggestionSelectors.forEach(selector => {
+      const elements = document.querySelectorAll(selector);
+      elements.forEach(element => {
+        element.removeEventListener('click', handleSearchSuggestionClick, true);
+        element.removeEventListener('click', handleSearchSuggestionClick, false);
+        element.removeEventListener('mousedown', handleSearchSuggestionClick, true);
+        element.removeEventListener('mousedown', handleSearchSuggestionClick, false);
+        
+        element.addEventListener('click', handleSearchSuggestionClick, true);
+        element.addEventListener('click', handleSearchSuggestionClick, false);
+        element.addEventListener('mousedown', handleSearchSuggestionClick, true);
+        element.addEventListener('mousedown', handleSearchSuggestionClick, false);
+        
+        element.addEventListener('touchstart', handleSearchSuggestionClick, true);
+        element.addEventListener('touchend', handleSearchSuggestionClick, true);
+      });
+    });
+  }
+
+  // Intercept search forms
+  function interceptSearchForms() {
+    const searchForms = document.querySelectorAll('form[role="search"], #search-form, .ytSearchboxComponentForm');
+    searchForms.forEach(form => {
+      form.removeEventListener('submit', handleSearchSubmit, true);
+      form.removeEventListener('submit', handleSearchSubmit, false);
+      form.addEventListener('submit', handleSearchSubmit, true);
+      form.addEventListener('submit', handleSearchSubmit, false);
+    });
+
+    const searchSubmitButtons = document.querySelectorAll(
+      'button[type="submit"][aria-label*="Search"], ' +
+      '.ytSearchboxComponentSearchButton, ' +
+      'form[role="search"] button[type="submit"]'
+    );
+    
+    searchSubmitButtons.forEach(button => {
+      if (!button.matches('.topbar-menu-button-avatar-button') && 
+          !button.matches('.icon-button.topbar-menu-button-avatar-button')) {
+        button.removeEventListener('click', handleSearchSubmit, true);
+        button.removeEventListener('click', handleSearchSubmit, false);
+        button.addEventListener('click', handleSearchSubmit, true);
+        button.addEventListener('click', handleSearchSubmit, false);
+      }
+    });
+  }
+
+  // Navigation method interception
+  function interceptNavigationMethods() {
+    const originalPushState = history.pushState;
+    const originalReplaceState = history.replaceState;
+
+    history.pushState = function(state, title, url) {
+      if (isPIPActive() && window.location.pathname === '/watch') {
+        if (url === '/' || 
+            url === 'https://www.youtube.com/' || 
+            url.includes('/results?') ||
+            url.includes('search_query=')) {
+          
+          const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
+          setTimeout(() => {
+            const newTab = window.open(fullUrl, '_blank');
+            if (newTab) {
+              newTab.focus();
+              
+              // Close search dropdown if it's a search-related navigation
+              if (url.includes('/results?') || url.includes('search_query=')) {
+                closeSearchDropdown();
+              }
+            }
+          }, 10);
+          return;
+        }
+      }
+      return originalPushState.apply(this, arguments);
+    };
+
+    history.replaceState = function(state, title, url) {
+      if (isPIPActive() && window.location.pathname === '/watch') {
+        if (url === '/' || 
+            url === 'https://www.youtube.com/' || 
+            url.includes('/results?') ||
+            url.includes('search_query=')) {
+          
+          const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
+          setTimeout(() => {
+            const newTab = window.open(fullUrl, '_blank');
+            if (newTab) {
+              newTab.focus();
+              
+              // Close search dropdown if it's a search-related navigation
+              if (url.includes('/results?') || url.includes('search_query=')) {
+                closeSearchDropdown();
+              }
+            }
+          }, 10);
+          return;
+        }
+      }
+      return originalReplaceState.apply(this, arguments);
+    };
+  }
+
+  // Initialize all interceptors
+  function initialize() {
+    interceptYouTubeLogo();
+    interceptSearchSuggestions();
+    interceptSearchForms();
+    interceptNavigationMethods();
+  }
+
+  // Run initial setup
+  initialize();
+
+  // Mutation observer
+  const observer = new MutationObserver((mutations) => {
+    let shouldReintercept = false;
+    
+    mutations.forEach(mutation => {
+      mutation.addedNodes.forEach(node => {
+        if (node.nodeType === 1) {
+          if (node.matches && (
+            node.matches('ytm-home-logo') || 
+            node.matches('ytd-topbar-logo-renderer') ||
+            node.matches('.ytSuggestionComponentSuggestion') ||
+            node.querySelector('ytm-home-logo, ytd-topbar-logo-renderer, .ytSuggestionComponentSuggestion')
+          )) {
+            shouldReintercept = true;
+          }
+        }
+      });
+    });
+
+    if (shouldReintercept) {
+      setTimeout(initialize, 100);
+    }
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true
+  });
+
+  // YouTube-specific events
+  window.addEventListener('yt-navigate-start', initialize);
+  window.addEventListener('yt-navigate-finish', initialize);
+  
+  // Re-intercept when search gets focus
+  document.addEventListener('focus', (event) => {
+    if (event.target.matches('#search, input[name="search_query"], .ytSearchboxComponentInput')) {
+      setTimeout(interceptSearchSuggestions, 500);
+    }
+  }, true);
+}
+
+// Initialize
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', setupPIPProtection);
+} else {
+  setupPIPProtection();
+}
