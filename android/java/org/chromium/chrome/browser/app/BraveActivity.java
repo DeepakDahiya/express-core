@@ -398,6 +398,8 @@ public abstract class BraveActivity extends ChromeActivity
             SharedPreferencesManager.getInstance().writeInt("NOTIFICATION_REQUEST_COUNT", notificationRequestCount + 1);
         }
 
+        SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_TAB_GROUPS_ENABLED, false);
+
         if (ENABLE_IN_APP_UPDATE) {
             if (mAppUpdateManager == null) {
                 mAppUpdateManager = AppUpdateManagerFactory.create(BraveActivity.this);

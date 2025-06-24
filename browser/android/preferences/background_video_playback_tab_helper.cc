@@ -27,740 +27,900 @@ const char16_t k_youtube_background_playback_script[] =
     uR"(
     (function() {
       function setupPIPProtection() {
-          let currentPIPVideoId = null;
-          let pipReplacementEnabled = true;
-          let lastPlayingVideoElement = null;
+            let currentPIPVideoId = null;
+            let pipReplacementEnabled = true;
+            let lastPlayingVideoElement = null;
+            let isOriginalPIPTab = false;
 
-          // Check if PIP is active
-          function isPIPActive() {
-              return document.pictureInPictureElement !== null;
-          }
+            function isPIPActive() {
+                return document.pictureInPictureElement !== null;
+            }
 
-          function isSearchActive() {
-              // Method 1: Check for search input existence and visibility
-              const searchInput = document.querySelector('.ytSearchboxComponentInput');
-              const searchContainer = document.querySelector('.ytSearchboxComponentHost');
+            function isSearchActive() {
+                const searchInput = document.querySelector('.ytSearchboxComponentInput');
+                const searchContainer = document.querySelector('.ytSearchboxComponentHost');
 
-              if (searchInput && searchContainer) {
-                  // Check if search container is visible and input has focus or contains text
-                  const containerVisible = searchContainer.offsetParent !== null;
-                  const inputHasText = searchInput.value && searchInput.value.trim().length > 0;
-                  const inputHasFocus = document.activeElement === searchInput;
+                if (searchInput && searchContainer) {
+                    const containerVisible = searchContainer.offsetParent !== null;
+                    const inputHasText = searchInput.value && searchInput.value.trim().length > 0;
+                    const inputHasFocus = document.activeElement === searchInput;
 
-                  if (containerVisible && (inputHasText || inputHasFocus)) {
-                      return true;
-                  }
-              }
+                    if (containerVisible && (inputHasText || inputHasFocus)) {
+                        return true;
+                    }
+                }
 
-              // Method 2: Check URL for #searching
-              if (window.location.hash.includes('searching')) {
-                  return true;
-              }
+                if (window.location.hash.includes('searching')) {
+                    return true;
+                }
 
-              // Method 3: Check if suggestions are visible
-              const suggestionsContainer = document.querySelector('.ytSearchboxComponentSuggestionsContainer');
-              if (suggestionsContainer && suggestionsContainer.offsetParent !== null) {
-                  return true;
-              }
+                const suggestionsContainer = document.querySelector('.ytSearchboxComponentSuggestionsContainer');
+                if (suggestionsContainer && suggestionsContainer.offsetParent !== null) {
+                    return true;
+                }
 
-              return false;
-          }
+                return false;
+            }
 
-          function getSearchQuery() {
-              const searchInput = document.querySelector('.ytSearchboxComponentInput, input[name="search_query"]');
-              return searchInput ? searchInput.value.trim() : '';
-          }
+            function getSearchQuery() {
+                const searchInput = document.querySelector('.ytSearchboxComponentInput, input[name="search_query"]');
+                return searchInput ? searchInput.value.trim() : '';
+            }
 
-          function getCurrentVideoId() {
-              const urlParams = new URLSearchParams(window.location.search);
-              return urlParams.get('v');
-          }
+            function getCurrentVideoId() {
+                const urlParams = new URLSearchParams(window.location.search);
+                return urlParams.get('v');
+            }
 
-          // Get current video element
-          function getCurrentVideoElement() {
-              return document.querySelector('video');
-          }
+            function getCurrentVideoElement() {
+                return document.querySelector('video');
+            }
 
-          function handleVideoChange() {
-              const currentVideoId = getCurrentVideoId();
-              const videoElement = getCurrentVideoElement();
+            function getTabId() {
+                if (!window.tabId) {
+                    window.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+                }
+                return window.tabId;
+            }
 
-              // Only proceed if we're on a video page and have a video element
-              if (!currentVideoId || !videoElement || window.location.pathname !== '/watch') {
-                  return;
-              }
+            function setPIPStatus(videoId, isActive) {
+                try {
+                    const pipStatus = {
+                        isActive: isActive,
+                        videoId: videoId,
+                        timestamp: Date.now(),
+                        tabId: getTabId()
+                    };
+                    localStorage.setItem('pip_status', JSON.stringify(pipStatus));
+                } catch (e) {
+                    console.warn('Could not set PIP status:', e);
+                }
+            }
 
-              // If PIP is active and this is a different video
-              if (isPIPActive() && currentPIPVideoId && currentPIPVideoId !== currentVideoId) {
-                  if (pipReplacementEnabled) {
-                      // Replace PIP with new video
-                      replacePIPVideo(videoElement, currentVideoId);
-                  } else {
-                      // Close existing PIP
-                      closePIP();
-                  }
-              }
-          }
+            function getPIPStatus() {
+                try {
+                    const stored = localStorage.getItem('pip_status');
+                    if (stored) {
+                        const status = JSON.parse(stored);
+                        if (Date.now() - status.timestamp < 30000) {
+                            return status;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not get PIP status:', e);
+                }
+                return { isActive: false, videoId: null, tabId: null };
+            }
 
-          function handleVideoPlay(videoElement) {
-              const currentVideoId = getCurrentVideoId();
+            function signalPIPTransition(newVideoId) {
+                try {
+                    const transitionSignal = {
+                        action: 'PIP_TRANSITION',
+                        newVideoId: newVideoId,
+                        timestamp: Date.now(),
+                        fromTabId: getTabId()
+                    };
+                    localStorage.setItem('pip_transition_signal', JSON.stringify(transitionSignal));
+                    
+                    setTimeout(() => {
+                        try {
+                            localStorage.removeItem('pip_transition_signal');
+                        } catch (e) {}
+                    }, 5000);
+                } catch (e) {
+                    console.warn('Could not signal PIP transition:', e);
+                }
+            }
 
-              // If this is a different video element or different video ID
-              if (isPIPActive() &&
-                  (lastPlayingVideoElement !== videoElement ||
-                      (currentPIPVideoId && currentPIPVideoId !== currentVideoId))) {
+            function checkForPIPTransitionSignal() {
+                try {
+                    const stored = localStorage.getItem('pip_transition_signal');
+                    if (stored) {
+                        const signal = JSON.parse(stored);
+                        
+                        if (Date.now() - signal.timestamp < 5000 && 
+                            signal.fromTabId !== getTabId()) {
+                            
+                            console.log('Received PIP transition signal:', signal);
+                            
+                            if (isPIPActive()) {
+                                sendPlaybackState();
+                                closePIP();
+                                localStorage.removeItem('pip_transition_signal');
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
 
-                  console.log('New video started playing, handling PIP...');
+            function sendPlaybackState() {
+                try {
+                    if (isPIPActive() && lastPlayingVideoElement) {
+                        const state = {
+                            videoId: currentPIPVideoId,
+                            currentTime: lastPlayingVideoElement.currentTime,
+                            duration: lastPlayingVideoElement.duration,
+                            wasPlaying: !lastPlayingVideoElement.paused,
+                            volume: lastPlayingVideoElement.volume,
+                            muted: lastPlayingVideoElement.muted,
+                            timestamp: Date.now()
+                        };
+                        
+                        localStorage.setItem('pip_playback_state', JSON.stringify(state));
+                        console.log('Sent playback state:', state);
+                    }
+                } catch (e) {
+                    console.warn('Could not send playback state:', e);
+                }
+            }
 
-                  if (pipReplacementEnabled && currentVideoId) {
-                      // Replace PIP with new video
-                      replacePIPVideo(videoElement, currentVideoId);
-                  } else {
-                      // Close existing PIP
-                      closePIP();
-                  }
-              }
+            function getPlaybackState() {
+                try {
+                    const stored = localStorage.getItem('pip_playback_state');
+                    if (stored) {
+                        const state = JSON.parse(stored);
+                        if (Date.now() - state.timestamp < 3000) {
+                            localStorage.removeItem('pip_playback_state');
+                            return state;
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Could not get playback state:', e);
+                }
+                return null;
+            }
 
-              lastPlayingVideoElement = videoElement;
-          }
+            function applyPlaybackState(videoElement, state) {
+                try {
+                    if (state.videoId === getCurrentVideoId()) {
+                        console.log('Same video, syncing playback time:', state.currentTime);
+                        
+                        const syncTime = () => {
+                            if (videoElement.readyState >= 2) {
+                                videoElement.currentTime = state.currentTime;
+                                if (state.wasPlaying && videoElement.paused) {
+                                    videoElement.play().catch(console.warn);
+                                }
+                            } else {
+                                setTimeout(syncTime, 100);
+                            }
+                        };
+                        
+                        syncTime();
+                    }
+                    
+                    if (typeof state.volume === 'number') {
+                        videoElement.volume = state.volume;
+                    }
+                    if (typeof state.muted === 'boolean') {
+                        videoElement.muted = state.muted;
+                    }
+                    
+                } catch (e) {
+                    console.warn('Could not apply playback state:', e);
+                }
+            }
 
-          function replacePIPVideo(newVideoElement, newVideoId) {
-              try {
-                  console.log('Replacing PIP video with:', newVideoId);
+            function startPIPForNewVideo(videoElement, videoId) {
+                if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
+                    setTimeout(() => {
+                        if (!videoElement.paused) {
+                            videoElement.requestPictureInPicture()
+                                .then(() => {
+                                    currentPIPVideoId = videoId;
+                                    lastPlayingVideoElement = videoElement;
+                                    isOriginalPIPTab = true;
+                                    setPIPStatus(videoId, true);
+                                    console.log('PIP started for new video:', videoId);
+                                })
+                                .catch(err => {
+                                    console.warn('Failed to start PIP for new video:', err);
+                                });
+                        }
+                    }, 300);
+                }
+            }
 
-                  // Exit current PIP
-                  if (document.pictureInPictureElement) {
-                      document.exitPictureInPicture().then(() => {
-                          // Small delay to ensure clean transition
-                          setTimeout(() => {
-                              // Enter PIP with new video
-                              if (newVideoElement &&
-                                  typeof newVideoElement.requestPictureInPicture === 'function' &&
-                                  !newVideoElement.paused) {
+            function handleVideoPlay(videoElement) {
+                const currentVideoId = getCurrentVideoId();
+                
+                console.log('Video play detected:', currentVideoId);
+                
+                const pipStatus = getPIPStatus();
+                
+                if (currentVideoId && pipStatus.isActive && pipStatus.videoId !== currentVideoId) {
+                    console.log('New video playing, PIP detected for different video.');
+                    
+                    if (!isPIPActive()) {
+                        console.log('This is a new tab, attempting PIP transition');
+                        signalPIPTransition(currentVideoId);
+                        
+                        setTimeout(() => {
+                            const playbackState = getPlaybackState();
+                            if (playbackState) {
+                                applyPlaybackState(videoElement, playbackState);
+                            }
+                            startPIPForNewVideo(videoElement, currentVideoId);
+                        }, 600);
+                    } else {
+                        if (pipReplacementEnabled) {
+                            replacePIPVideo(videoElement, currentVideoId);
+                        } else {
+                            closePIP();
+                        }
+                    }
+                }
+                
+                lastPlayingVideoElement = videoElement;
+            }
 
-                                  newVideoElement.requestPictureInPicture()
-                                      .then(() => {
-                                          currentPIPVideoId = newVideoId;
-                                          lastPlayingVideoElement = newVideoElement;
-                                          console.log('PIP replaced with new video:', newVideoId);
-                                      })
-                                      .catch(err => {
-                                          console.warn('Failed to enter PIP with new video:', err);
-                                          // If PIP fails, just close the old one
-                                          currentPIPVideoId = null;
-                                      });
-                              } else {
-                                  // If new video can't do PIP, just close old PIP
-                                  currentPIPVideoId = null;
-                                  console.log('New video cannot do PIP, closed old PIP');
-                              }
-                          }, 200);
-                      }).catch(err => {
-                          console.warn('Failed to exit current PIP:', err);
-                      });
-                  }
-              } catch (error) {
-                  console.warn('Error replacing PIP video:', error);
-              }
-          }
+            function handleVideoChange() {
+                const currentVideoId = getCurrentVideoId();
+                const videoElement = getCurrentVideoElement();
 
-          function closePIP() {
-              try {
-                  if (document.pictureInPictureElement) {
-                      document.exitPictureInPicture().then(() => {
-                          currentPIPVideoId = null;
-                          lastPlayingVideoElement = null;
-                          console.log('PIP closed due to video change');
-                      }).catch(err => {
-                          console.warn('Failed to close PIP:', err);
-                      });
-                  }
-              } catch (error) {
-                  console.warn('Error closing PIP:', error);
-              }
-          }
+                if (!currentVideoId || !videoElement || window.location.pathname !== '/watch') {
+                    return;
+                }
 
-          function setupVideoChangeDetection() {
-              // Track when PIP is entered
-              document.addEventListener('enterpictureinpicture', (event) => {
-                  currentPIPVideoId = getCurrentVideoId();
-                  lastPlayingVideoElement = event.target;
-                  console.log('PIP entered for video:', currentPIPVideoId);
-              });
+                if (isPIPActive() && currentPIPVideoId && currentPIPVideoId !== currentVideoId) {
+                    if (pipReplacementEnabled) {
+                        replacePIPVideo(videoElement, currentVideoId);
+                    } else {
+                        closePIP();
+                    }
+                }
+            }
 
-              // Track when PIP is exited
-              document.addEventListener('leavepictureinpicture', (event) => {
-                  currentPIPVideoId = null;
-                  lastPlayingVideoElement = null;
-                  console.log('PIP exited');
-              });
+            function replacePIPVideo(newVideoElement, newVideoId) {
+                try {
+                    console.log('Replacing PIP video with:', newVideoId);
 
-              // NEW: Listen for video play events
-              document.addEventListener('play', (event) => {
-                  if (event.target.tagName === 'VIDEO') {
-                      console.log('Video play event detected');
-                      setTimeout(() => handleVideoPlay(event.target), 100);
-                  }
-              }, true);
+                    if (document.pictureInPictureElement) {
+                        document.exitPictureInPicture().then(() => {
+                            setTimeout(() => {
+                                if (newVideoElement &&
+                                    typeof newVideoElement.requestPictureInPicture === 'function' &&
+                                    !newVideoElement.paused) {
 
-              // NEW: Listen for video loadstart events (when new video loads)
-              document.addEventListener('loadstart', (event) => {
-                  if (event.target.tagName === 'VIDEO') {
-                      console.log('Video loadstart event detected');
-                      setTimeout(() => {
-                          const currentVideoId = getCurrentVideoId();
-                          if (isPIPActive() && currentPIPVideoId &&
-                              currentVideoId && currentPIPVideoId !== currentVideoId) {
-                              handleVideoChange();
-                          }
-                      }, 100);
-                  }
-              }, true);
+                                    newVideoElement.requestPictureInPicture()
+                                        .then(() => {
+                                            currentPIPVideoId = newVideoId;
+                                            lastPlayingVideoElement = newVideoElement;
+                                            setPIPStatus(newVideoId, true);
+                                            console.log('PIP replaced with new video:', newVideoId);
+                                        })
+                                        .catch(err => {
+                                            console.warn('Failed to enter PIP with new video:', err);
+                                            currentPIPVideoId = null;
+                                            setPIPStatus(null, false);
+                                        });
+                                } else {
+                                    currentPIPVideoId = null;
+                                    setPIPStatus(null, false);
+                                    console.log('New video cannot do PIP, closed old PIP');
+                                }
+                            }, 200);
+                        }).catch(err => {
+                            console.warn('Failed to exit current PIP:', err);
+                        });
+                    }
+                } catch (error) {
+                    console.warn('Error replacing PIP video:', error);
+                }
+            }
 
-              // Monitor URL changes (for SPA navigation)
-              let lastVideoId = getCurrentVideoId();
-              const checkVideoChange = () => {
-                  const currentVideoId = getCurrentVideoId();
-                  if (currentVideoId && currentVideoId !== lastVideoId) {
-                      console.log('Video changed from', lastVideoId, 'to', currentVideoId);
-                      handleVideoChange();
-                      lastVideoId = currentVideoId;
-                  }
-              };
+            function closePIP() {
+                try {
+                    if (document.pictureInPictureElement) {
+                        document.exitPictureInPicture().then(() => {
+                            currentPIPVideoId = null;
+                            lastPlayingVideoElement = null;
+                            isOriginalPIPTab = false;
+                            setPIPStatus(null, false);
+                            console.log('PIP closed due to video change');
+                        }).catch(err => {
+                            console.warn('Failed to close PIP:', err);
+                        });
+                    } else {
+                        setPIPStatus(null, false);
+                    }
+                } catch (error) {
+                    console.warn('Error closing PIP:', error);
+                }
+            }
 
-              // Check for video changes periodically (reduced frequency)
-              setInterval(checkVideoChange, 2000);
+            function setupVideoChangeDetection() {
+                document.addEventListener('enterpictureinpicture', (event) => {
+                    currentPIPVideoId = getCurrentVideoId();
+                    lastPlayingVideoElement = event.target;
+                    isOriginalPIPTab = true;
+                    setPIPStatus(currentPIPVideoId, true);
+                    console.log('PIP entered for video:', currentPIPVideoId);
+                });
 
-              // Also check on navigation events
-              window.addEventListener('yt-navigate-finish', () => {
-                  setTimeout(checkVideoChange, 500);
-              });
+                document.addEventListener('leavepictureinpicture', (event) => {
+                    currentPIPVideoId = null;
+                    lastPlayingVideoElement = null;
+                    isOriginalPIPTab = false;
+                    setPIPStatus(null, false);
+                    console.log('PIP exited');
+                });
 
-              // Monitor for new video elements being loaded
-              const videoObserver = new MutationObserver((mutations) => {
-                  mutations.forEach(mutation => {
-                      mutation.addedNodes.forEach(node => {
-                          if (node.nodeType === 1 && node.tagName === 'VIDEO') {
-                              console.log('New video element detected');
+                document.addEventListener('play', (event) => {
+                    if (event.target.tagName === 'VIDEO') {
+                        console.log('Video play event detected');
+                        setTimeout(() => handleVideoPlay(event.target), 100);
+                    }
+                }, true);
 
-                              // Add event listeners to new video element
-                              node.addEventListener('play', () => {
-                                  console.log('New video element started playing');
-                                  setTimeout(() => handleVideoPlay(node), 100);
-                              });
+                document.addEventListener('loadstart', (event) => {
+                    if (event.target.tagName === 'VIDEO') {
+                        console.log('Video loadstart event detected');
+                        setTimeout(() => {
+                            const currentVideoId = getCurrentVideoId();
+                            if (currentVideoId) {
+                                const pipStatus = getPIPStatus();
+                                if (pipStatus.isActive && pipStatus.videoId !== currentVideoId) {
+                                    if (!isPIPActive()) {
+                                        signalPIPTransition(currentVideoId);
+                                    }
+                                }
+                            }
+                            
+                            if (isPIPActive() && currentPIPVideoId &&
+                                currentVideoId && currentPIPVideoId !== currentVideoId) {
+                                handleVideoChange();
+                            }
+                        }, 100);
+                    }
+                }, true);
 
-                              node.addEventListener('loadstart', () => {
-                                  console.log('New video element loadstart');
-                                  setTimeout(() => {
-                                      const currentVideoId = getCurrentVideoId();
-                                      if (isPIPActive() && currentPIPVideoId &&
-                                          currentVideoId && currentPIPVideoId !== currentVideoId) {
-                                          handleVideoChange();
-                                      }
-                                  }, 100);
-                              });
+                setInterval(checkForPIPTransitionSignal, 1000);
 
-                              setTimeout(checkVideoChange, 500);
-                          }
-                      });
-                  });
-              });
+                setInterval(() => {
+                    if (isPIPActive() && currentPIPVideoId) {
+                        setPIPStatus(currentPIPVideoId, true);
+                    }
+                }, 10000);
 
-              videoObserver.observe(document.body, {
-                  childList: true,
-                  subtree: true
-              });
-          }
+                let lastVideoId = getCurrentVideoId();
+                const checkVideoChange = () => {
+                    const currentVideoId = getCurrentVideoId();
+                    if (currentVideoId && currentVideoId !== lastVideoId) {
+                        console.log('Video changed from', lastVideoId, 'to', currentVideoId);
+                        handleVideoChange();
+                        lastVideoId = currentVideoId;
+                    }
+                };
 
-          function openNewTabWithPIPAwareness(url) {
-              const newTab = window.open(url, '_blank');
-              if (newTab) {
-                  newTab.focus();
-                  setTimeout(() => newTab.focus(), 100);
+                setInterval(checkVideoChange, 2000);
 
-                  // Inject PIP management script into new tab
-                  setTimeout(() => {
-                      injectPIPManagementScript(newTab);
-                  }, 2000);
-              }
-              return newTab;
-          }
+                window.addEventListener('yt-navigate-finish', () => {
+                    setTimeout(checkVideoChange, 500);
+                });
 
-          function injectPIPManagementScript(tab) {
-              try {
-                  if (!tab.document) return;
+                const videoObserver = new MutationObserver((mutations) => {
+                    mutations.forEach(mutation => {
+                        mutation.addedNodes.forEach(node => {
+                            if (node.nodeType === 1 && node.tagName === 'VIDEO') {
+                                console.log('New video element detected');
 
-                  const script = tab.document.createElement('script');
-                  script.textContent = `
+                                node.addEventListener('play', () => {
+                                    console.log('New video element started playing');
+                                    setTimeout(() => handleVideoPlay(node), 100);
+                                });
+
+                                node.addEventListener('loadstart', () => {
+                                    console.log('New video element loadstart');
+                                    setTimeout(() => {
+                                        const currentVideoId = getCurrentVideoId();
+                                        if (currentVideoId) {
+                                            const pipStatus = getPIPStatus();
+                                            if (pipStatus.isActive && pipStatus.videoId !== currentVideoId) {
+                                                if (!isPIPActive()) {
+                                                    signalPIPTransition(currentVideoId);
+                                                }
+                                            }
+                                        }
+                                        
+                                        if (isPIPActive() && currentPIPVideoId &&
+                                            currentVideoId && currentPIPVideoId !== currentVideoId) {
+                                            handleVideoChange();
+                                        }
+                                    }, 100);
+                                });
+
+                                setTimeout(checkVideoChange, 500);
+                            }
+                        });
+                    });
+                });
+
+                videoObserver.observe(document.body, {
+                    childList: true,
+                    subtree: true
+                });
+            }
+
+            function openNewTabWithPIPAwareness(url) {
+                const newTab = window.open(url, '_blank');
+                if (newTab) {
+                    newTab.focus();
+                    setTimeout(() => newTab.focus(), 100);
+
+                    setTimeout(() => {
+                        injectPIPManagementScript(newTab);
+                    }, 2000);
+                }
+                return newTab;
+            }
+
+            function injectPIPManagementScript(tab) {
+                try {
+                    if (!tab.document) return;
+
+                    const script = tab.document.createElement('script');
+                    script.textContent = `
                     (function() {
-                      // Check if this tab should take over PIP
-                      function checkPIPTakeover() {
+                        function checkPIPTakeover() {
                         const videoElement = document.querySelector('video');
                         const currentVideoId = new URLSearchParams(window.location.search).get('v');
                         
                         if (videoElement && currentVideoId && window.location.pathname === '/watch') {
-                          // Add a subtle indicator that PIP can be activated
-                          addPIPIndicator(videoElement);
+                            addPIPIndicator(videoElement);
                         }
-                      }
-                      
-                      function addPIPIndicator(videoElement) {
-                        // Add a small PIP button overlay
+                        }
+                        
+                        function addPIPIndicator(videoElement) {
                         if (document.getElementById('pip-takeover-btn')) return;
                         
                         const pipBtn = document.createElement('button');
                         pipBtn.id = 'pip-takeover-btn';
                         pipBtn.innerHTML = '📺 PIP';
                         pipBtn.style.cssText = \`
-                          position: absolute; top: 10px; right: 10px; z-index: 1000;
-                          background: rgba(0,0,0,0.7); color: white; border: none;
-                          padding: 8px 12px; border-radius: 6px; cursor: pointer;
-                          font-size: 12px; font-family: Arial, sans-serif;
-                          transition: all 0.2s ease;
+                            position: absolute; top: 10px; right: 10px; z-index: 1000;
+                            background: rgba(0,0,0,0.7); color: white; border: none;
+                            padding: 8px 12px; border-radius: 6px; cursor: pointer;
+                            font-size: 12px; font-family: Arial, sans-serif;
+                            transition: all 0.2s ease;
                         \`;
                         
                         pipBtn.onmouseover = () => {
-                          pipBtn.style.background = 'rgba(255,68,68,0.9)';
+                            pipBtn.style.background = 'rgba(255,68,68,0.9)';
                         };
                         
                         pipBtn.onmouseout = () => {
-                          pipBtn.style.background = 'rgba(0,0,0,0.7)';
+                            pipBtn.style.background = 'rgba(0,0,0,0.7)';
                         };
                         
                         pipBtn.onclick = () => {
-                          if (videoElement.requestPictureInPicture) {
+                            if (videoElement.requestPictureInPicture) {
                             videoElement.requestPictureInPicture().catch(console.warn);
-                          }
+                            }
                         };
                         
-                        // Position relative to video
                         const videoContainer = videoElement.closest('.html5-video-player') || videoElement.parentElement;
                         if (videoContainer) {
-                          videoContainer.style.position = 'relative';
-                          videoContainer.appendChild(pipBtn);
-                          
-                          // Auto-hide after 5 seconds
-                          setTimeout(() => {
+                            videoContainer.style.position = 'relative';
+                            videoContainer.appendChild(pipBtn);
+                            
+                            setTimeout(() => {
                             if (pipBtn.parentElement) {
-                              pipBtn.style.opacity = '0';
-                              setTimeout(() => pipBtn.remove(), 300);
+                                pipBtn.style.opacity = '0';
+                                setTimeout(() => pipBtn.remove(), 300);
                             }
-                          }, 5000);
+                            }, 5000);
                         }
-                      }
-                      
-                      // Initialize when video loads
-                      if (document.readyState === 'loading') {
+                        }
+                        
+                        if (document.readyState === 'loading') {
                         document.addEventListener('DOMContentLoaded', checkPIPTakeover);
-                      } else {
+                        } else {
                         checkPIPTakeover();
-                      }
-                      
-                      // Also check when video elements are added
-                      setTimeout(checkPIPTakeover, 1000);
+                        }
+                        
+                        setTimeout(checkPIPTakeover, 1000);
                     })();
-                  `;
+                    `;
 
-                  tab.document.head.appendChild(script);
-              } catch (e) {
-                  console.warn('Could not inject PIP management script:', e);
-              }
-          }
+                    tab.document.head.appendChild(script);
+                } catch (e) {
+                    console.warn('Could not inject PIP management script:', e);
+                }
+            }
 
-          // Extract search query from suggestion element
-          function extractSearchQuery(element) {
-              const textElement = element.querySelector('.ytSuggestionComponentText');
-              if (textElement) {
-                  const ariaLabel = textElement.getAttribute('aria-label');
-                  if (ariaLabel) {
-                      return ariaLabel;
-                  }
-              }
+            function extractSearchQuery(element) {
+                const textElement = element.querySelector('.ytSuggestionComponentText');
+                if (textElement) {
+                    const ariaLabel = textElement.getAttribute('aria-label');
+                    if (ariaLabel) {
+                        return ariaLabel;
+                    }
+                }
 
-              const spans = element.querySelectorAll('.ytSuggestionComponentLeftContainer span span');
-              let searchText = '';
-              spans.forEach(span => {
-                  searchText += span.textContent;
-              });
+                const spans = element.querySelectorAll('.ytSuggestionComponentLeftContainer span span');
+                let searchText = '';
+                spans.forEach(span => {
+                    searchText += span.textContent;
+                });
 
-              return searchText.trim();
-          }
+                return searchText.trim();
+            }
 
-          // Click the back button to close search dropdown
-          function closeSearchDropdown() {
-              const backButton = document.querySelector('.mobile-topbar-back-arrow[aria-label="Close search"]');
-              if (backButton) {
-                  // Small delay to ensure the new tab opens first
-                  setTimeout(() => {
-                      backButton.click();
-                  }, 100);
-              }
-          }
+            function closeSearchDropdown() {
+                const backButton = document.querySelector('.mobile-topbar-back-arrow[aria-label="Close search"]');
+                if (backButton) {
+                    setTimeout(() => {
+                        backButton.click();
+                    }, 100);
+                }
+            }
 
-          function openSearchInNewTab(searchQuery) {
-              if (!searchQuery) return false;
+            function openSearchInNewTab(searchQuery) {
+                if (!searchQuery) return false;
 
-              const encodedQuery = encodeURIComponent(searchQuery);
-              const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+                const encodedQuery = encodeURIComponent(searchQuery);
+                const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
 
-              const newTab = window.open(searchUrl, '_blank');
-              if (newTab) {
-                  newTab.focus();
-                  setTimeout(() => newTab.focus(), 100);
-                  closeSearchDropdown();
-                  return true;
-              }
-              return false;
-          }
+                const newTab = window.open(searchUrl, '_blank');
+                if (newTab) {
+                    newTab.focus();
+                    setTimeout(() => newTab.focus(), 100);
+                    closeSearchDropdown();
+                    return true;
+                }
+                return false;
+            }
 
-          // Handle logo click
-          function handleLogoClick(event) {
-              const isVideoPage = window.location.pathname === '/watch';
+            function handleLogoClick(event) {
+                const isVideoPage = window.location.pathname === '/watch';
 
-              if (isVideoPage && isPIPActive()) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  event.stopImmediatePropagation();
+                if (isVideoPage && isPIPActive()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
 
-                  openNewTabWithPIPAwareness('https://www.youtube.com/');
+                    openNewTabWithPIPAwareness('https://www.youtube.com/');
 
-                  return false;
-              }
-              return true;
-          }
+                    return false;
+                }
+                return true;
+            }
 
-          // Handle search suggestion click
-          function handleSearchSuggestionClick(event) {
-              const isVideoPage = window.location.pathname === '/watch';
+            function handleSearchSuggestionClick(event) {
+                const isVideoPage = window.location.pathname === '/watch';
 
-              if (isVideoPage && isPIPActive()) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  event.stopImmediatePropagation();
+                if (isVideoPage && isPIPActive()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
 
-                  const suggestionElement = event.target.closest('.ytSuggestionComponentSuggestion');
-                  if (suggestionElement) {
-                      const searchQuery = extractSearchQuery(suggestionElement);
-                      if (searchQuery) {
-                          const encodedQuery = encodeURIComponent(searchQuery);
-                          const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+                    const suggestionElement = event.target.closest('.ytSuggestionComponentSuggestion');
+                    if (suggestionElement) {
+                        const searchQuery = extractSearchQuery(suggestionElement);
+                        if (searchQuery) {
+                            const encodedQuery = encodeURIComponent(searchQuery);
+                            const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
 
-                          setTimeout(() => {
-                              openNewTabWithPIPAwareness(searchUrl);
-                              closeSearchDropdown();
-                          }, 10);
-                      }
-                  }
+                            setTimeout(() => {
+                                openNewTabWithPIPAwareness(searchUrl);
+                                closeSearchDropdown();
+                            }, 10);
+                        }
+                    }
 
-                  return false;
-              }
-              return true;
-          }
+                    return false;
+                }
+                return true;
+            }
 
-          // Handle search form submission
-          function handleSearchSubmit(event) {
-              const isVideoPage = window.location.pathname === '/watch';
+            function handleSearchSubmit(event) {
+                const isVideoPage = window.location.pathname === '/watch';
 
-              if (isVideoPage && isPIPActive()) {
-                  const isSearchSubmission = event.type === 'submit' ||
-                      event.target.closest('form[role="search"]') ||
-                      event.target.matches('button[type="submit"]');
+                if (isVideoPage && isPIPActive()) {
+                    const isSearchSubmission = event.type === 'submit' ||
+                        event.target.closest('form[role="search"]') ||
+                        event.target.matches('button[type="submit"]');
 
-                  if (isSearchSubmission) {
-                      event.preventDefault();
-                      event.stopPropagation();
-                      event.stopImmediatePropagation();
+                    if (isSearchSubmission) {
+                        event.preventDefault();
+                        event.stopPropagation();
+                        event.stopImmediatePropagation();
 
-                      const searchInput = document.querySelector('#search, input[name="search_query"], .ytSearchboxComponentInput');
-                      if (searchInput && searchInput.value.trim()) {
-                          const encodedQuery = encodeURIComponent(searchInput.value.trim());
-                          const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
+                        const searchInput = document.querySelector('#search, input[name="search_query"], .ytSearchboxComponentInput');
+                        if (searchInput && searchInput.value.trim()) {
+                            const encodedQuery = encodeURIComponent(searchInput.value.trim());
+                            const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
 
-                          setTimeout(() => {
-                              openNewTabWithPIPAwareness(searchUrl);
-                              closeSearchDropdown();
-                          }, 10);
-                      }
+                            setTimeout(() => {
+                                openNewTabWithPIPAwareness(searchUrl);
+                                closeSearchDropdown();
+                            }, 10);
+                        }
 
-                      return false;
-                  }
-              }
-              return true;
-          }
+                        return false;
+                    }
+                }
+                return true;
+            }
 
-          function handleSearchButtonClick(event) {
-              const isVideoPage = window.location.pathname === '/watch';
+            function handleSearchButtonClick(event) {
+                const isVideoPage = window.location.pathname === '/watch';
 
-              // Only intercept if PIP is active AND search is currently active
-              if (isVideoPage && isPIPActive() && isSearchActive()) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  event.stopImmediatePropagation();
+                if (isVideoPage && isPIPActive() && isSearchActive()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
 
-                  const searchQuery = getSearchQuery();
-                  if (searchQuery) {
-                      setTimeout(() => {
-                          openSearchInNewTab(searchQuery);
-                      }, 10);
-                  }
+                    const searchQuery = getSearchQuery();
+                    if (searchQuery) {
+                        setTimeout(() => {
+                            openSearchInNewTab(searchQuery);
+                        }, 10);
+                    }
 
-                  return false;
-              }
-              return true;
-          }
+                    return false;
+                }
+                return true;
+            }
 
-          function handleSearchKeydown(event) {
-              const isVideoPage = window.location.pathname === '/watch';
+            function handleSearchKeydown(event) {
+                const isVideoPage = window.location.pathname === '/watch';
 
-              // Only intercept Enter key when PIP is active and search is active
-              if (event.key === 'Enter' && isVideoPage && isPIPActive() && isSearchActive()) {
-                  event.preventDefault();
-                  event.stopPropagation();
-                  event.stopImmediatePropagation();
+                if (event.key === 'Enter' && isVideoPage && isPIPActive() && isSearchActive()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    event.stopImmediatePropagation();
 
-                  const searchQuery = getSearchQuery();
-                  if (searchQuery) {
-                      setTimeout(() => {
-                          openSearchInNewTab(searchQuery);
-                      }, 10);
-                  }
+                    const searchQuery = getSearchQuery();
+                    if (searchQuery) {
+                        setTimeout(() => {
+                            openSearchInNewTab(searchQuery);
+                        }, 10);
+                    }
 
-                  return false;
-              }
-              return true;
-          }
+                    return false;
+                }
+                return true;
+            }
 
-          // Intercept YouTube logo clicks
-          function interceptYouTubeLogo() {
-              const logoSelectors = [
-                  'ytm-home-logo button',
-                  'ytm-home-logo button.mobile-topbar-header-endpoint',
-                  'button[aria-label*="YouTube"][aria-label*="Home"]',
-                  'button[key="logo"]',
-                  'ytd-topbar-logo-renderer a',
-                  'a[href="/"]',
-                  'a[href="https://www.youtube.com/"]',
-                  '#logo a',
-                  '.ytd-topbar-logo-renderer a',
-                  '.mobile-topbar-header-endpoint',
-                  'c3-icon.mobile-topbar-logo',
-                  '[aria-label*="YouTube Home"]',
-                  '[aria-label*="YouTube Premium Home"]'
-              ];
+            function interceptYouTubeLogo() {
+                const logoSelectors = [
+                    'ytm-home-logo button',
+                    'ytm-home-logo button.mobile-topbar-header-endpoint',
+                    'button[aria-label*="YouTube"][aria-label*="Home"]',
+                    'button[key="logo"]',
+                    'ytd-topbar-logo-renderer a',
+                    'a[href="/"]',
+                    'a[href="https://www.youtube.com/"]',
+                    '#logo a',
+                    '.ytd-topbar-logo-renderer a',
+                    '.mobile-topbar-header-endpoint',
+                    'c3-icon.mobile-topbar-logo',
+                    '[aria-label*="YouTube Home"]',
+                    '[aria-label*="YouTube Premium Home"]'
+                ];
 
-              logoSelectors.forEach(selector => {
-                  const elements = document.querySelectorAll(selector);
-                  elements.forEach(element => {
-                      element.removeEventListener('click', handleLogoClick, true);
-                      element.removeEventListener('click', handleLogoClick, false);
-                      element.addEventListener('click', handleLogoClick, true);
-                      element.addEventListener('click', handleLogoClick, false);
-                  });
-              });
-          }
+                logoSelectors.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    elements.forEach(element => {
+                        element.removeEventListener('click', handleLogoClick, true);
+                        element.removeEventListener('click', handleLogoClick, false);
+                        element.addEventListener('click', handleLogoClick, true);
+                        element.addEventListener('click', handleLogoClick, false);
+                    });
+                });
+            }
 
-          // Intercept search suggestions
-          function interceptSearchSuggestions() {
-              const suggestionSelectors = [
-                  '.ytSuggestionComponentSuggestion',
-                  '.ytSuggestionComponentText',
-                  '[role="option"].ytSuggestionComponentText',
-                  '.ytSuggestionComponentLeftContainer span[role="button"]',
-                  '.ytSuggestionComponentLeftContainer span'
-              ];
+            function interceptSearchSuggestions() {
+                const suggestionSelectors = [
+                    '.ytSuggestionComponentSuggestion',
+                    '.ytSuggestionComponentText',
+                    '[role="option"].ytSuggestionComponentText',
+                    '.ytSuggestionComponentLeftContainer span[role="button"]',
+                    '.ytSuggestionComponentLeftContainer span'
+                ];
 
-              suggestionSelectors.forEach(selector => {
-                  const elements = document.querySelectorAll(selector);
-                  elements.forEach(element => {
-                      element.removeEventListener('click', handleSearchSuggestionClick, true);
-                      element.removeEventListener('click', handleSearchSuggestionClick, false);
-                      element.removeEventListener('mousedown', handleSearchSuggestionClick, true);
-                      element.removeEventListener('mousedown', handleSearchSuggestionClick, false);
+                suggestionSelectors.forEach(selector => {
+                    const elements = document.querySelectorAll(selector);
+                    elements.forEach(element => {
+                        element.removeEventListener('click', handleSearchSuggestionClick, true);
+                        element.removeEventListener('click', handleSearchSuggestionClick, false);
+                        element.removeEventListener('mousedown', handleSearchSuggestionClick, true);
+                        element.removeEventListener('mousedown', handleSearchSuggestionClick, false);
 
-                      element.addEventListener('click', handleSearchSuggestionClick, true);
-                      element.addEventListener('click', handleSearchSuggestionClick, false);
-                      element.addEventListener('mousedown', handleSearchSuggestionClick, true);
-                      element.addEventListener('mousedown', handleSearchSuggestionClick, false);
+                        element.addEventListener('click', handleSearchSuggestionClick, true);
+                        element.addEventListener('click', handleSearchSuggestionClick, false);
+                        element.addEventListener('mousedown', handleSearchSuggestionClick, true);
+                        element.addEventListener('mousedown', handleSearchSuggestionClick, false);
 
-                      element.addEventListener('touchstart', handleSearchSuggestionClick, true);
-                      element.addEventListener('touchend', handleSearchSuggestionClick, true);
-                  });
-              });
-          }
+                        element.addEventListener('touchstart', handleSearchSuggestionClick, true);
+                        element.addEventListener('touchend', handleSearchSuggestionClick, true);
+                    });
+                });
+            }
 
-          // Intercept search forms
-          function interceptSearchForms() {
-              // Intercept search forms
-              const searchForms = document.querySelectorAll(
-                  'form[role="search"], ' +
-                  '#search-form, ' +
-                  '.ytSearchboxComponentSearchForm, ' +
-                  'form[action="/results"]'
-              );
+            function interceptSearchForms() {
+                const searchForms = document.querySelectorAll(
+                    'form[role="search"], ' +
+                    '#search-form, ' +
+                    '.ytSearchboxComponentSearchForm, ' +
+                    'form[action="/results"]'
+                );
 
-              searchForms.forEach(form => {
-                  form.removeEventListener('submit', handleSearchSubmit, true);
-                  form.removeEventListener('submit', handleSearchSubmit, false);
-                  form.addEventListener('submit', handleSearchSubmit, true);
-                  form.addEventListener('submit', handleSearchSubmit, false);
-              });
+                searchForms.forEach(form => {
+                    form.removeEventListener('submit', handleSearchSubmit, true);
+                    form.removeEventListener('submit', handleSearchSubmit, false);
+                    form.addEventListener('submit', handleSearchSubmit, true);
+                    form.addEventListener('submit', handleSearchSubmit, false);
+                });
 
-              // Intercept search buttons - but only when search is active
-              const searchButtons = document.querySelectorAll(
-                  '.ytSearchboxComponentSearchButton, ' +
-                  'button[aria-label="Search"], ' +
-                  'button[title="Search YouTube"]'
-              );
+                const searchButtons = document.querySelectorAll(
+                    '.ytSearchboxComponentSearchButton, ' +
+                    'button[aria-label="Search"], ' +
+                    'button[title="Search YouTube"]'
+                );
 
-              searchButtons.forEach(button => {
-                  button.removeEventListener('click', handleSearchButtonClick, true);
-                  button.removeEventListener('click', handleSearchButtonClick, false);
-                  button.addEventListener('click', handleSearchButtonClick, true);
-                  button.addEventListener('click', handleSearchButtonClick, false);
-              });
+                searchButtons.forEach(button => {
+                    button.removeEventListener('click', handleSearchButtonClick, true);
+                    button.removeEventListener('click', handleSearchButtonClick, false);
+                    button.addEventListener('click', handleSearchButtonClick, true);
+                    button.addEventListener('click', handleSearchButtonClick, false);
+                });
 
-              // Intercept keyboard events on search inputs
-              const searchInputs = document.querySelectorAll(
-                  '.ytSearchboxComponentInput, ' +
-                  'input[name="search_query"], ' +
-                  'input[role="combobox"]'
-              );
+                const searchInputs = document.querySelectorAll(
+                    '.ytSearchboxComponentInput, ' +
+                    'input[name="search_query"], ' +
+                    'input[role="combobox"]'
+                );
 
-              searchInputs.forEach(input => {
-                  input.removeEventListener('keydown', handleSearchKeydown, true);
-                  input.removeEventListener('keydown', handleSearchKeydown, false);
-                  input.addEventListener('keydown', handleSearchKeydown, true);
-                  input.addEventListener('keydown', handleSearchKeydown, false);
-              });
-          }
+                searchInputs.forEach(input => {
+                    input.removeEventListener('keydown', handleSearchKeydown, true);
+                    input.removeEventListener('keydown', handleSearchKeydown, false);
+                    input.addEventListener('keydown', handleSearchKeydown, true);
+                    input.addEventListener('keydown', handleSearchKeydown, false);
+                });
+            }
 
-          // Navigation method interception
-          function interceptNavigationMethods() {
-              const originalPushState = history.pushState;
-              const originalReplaceState = history.replaceState;
+            function interceptNavigationMethods() {
+                const originalPushState = history.pushState;
+                const originalReplaceState = history.replaceState;
 
-              history.pushState = function (state, title, url) {
-                  if (isPIPActive() && window.location.pathname === '/watch') {
-                      if (url === '/' ||
-                          url === 'https://www.youtube.com/' ||
-                          url.includes('/results?') ||
-                          url.includes('search_query=')) {
+                history.pushState = function (state, title, url) {
+                    if (isPIPActive() && window.location.pathname === '/watch') {
+                        if (url === '/' ||
+                            url === 'https://www.youtube.com/' ||
+                            url.includes('/results?') ||
+                            url.includes('search_query=')) {
 
-                          const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
-                          setTimeout(() => {
-                              const newTab = window.open(fullUrl, '_blank');
-                              if (newTab) {
-                                  newTab.focus();
+                            const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
+                            setTimeout(() => {
+                                const newTab = window.open(fullUrl, '_blank');
+                                if (newTab) {
+                                    newTab.focus();
 
-                                  // Close search dropdown if it's a search-related navigation
-                                  if (url.includes('/results?') || url.includes('search_query=')) {
-                                      closeSearchDropdown();
-                                  }
-                              }
-                          }, 10);
-                          return;
-                      }
-                  }
-                  return originalPushState.apply(this, arguments);
-              };
+                                    if (url.includes('/results?') || url.includes('search_query=')) {
+                                        closeSearchDropdown();
+                                    }
+                                }
+                            }, 10);
+                            return;
+                        }
+                    }
+                    return originalPushState.apply(this, arguments);
+                };
 
-              history.replaceState = function (state, title, url) {
-                  if (isPIPActive() && window.location.pathname === '/watch') {
-                      if (url === '/' ||
-                          url === 'https://www.youtube.com/' ||
-                          url.includes('/results?') ||
-                          url.includes('search_query=')) {
+                history.replaceState = function (state, title, url) {
+                    if (isPIPActive() && window.location.pathname === '/watch') {
+                        if (url === '/' ||
+                            url === 'https://www.youtube.com/' ||
+                            url.includes('/results?') ||
+                            url.includes('search_query=')) {
 
-                          const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
-                          setTimeout(() => {
-                              const newTab = window.open(fullUrl, '_blank');
-                              if (newTab) {
-                                  newTab.focus();
+                            const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
+                            setTimeout(() => {
+                                const newTab = window.open(fullUrl, '_blank');
+                                if (newTab) {
+                                    newTab.focus();
 
-                                  // Close search dropdown if it's a search-related navigation
-                                  if (url.includes('/results?') || url.includes('search_query=')) {
-                                      closeSearchDropdown();
-                                  }
-                              }
-                          }, 10);
-                          return;
-                      }
-                  }
-                  return originalReplaceState.apply(this, arguments);
-              };
-          }
+                                    if (url.includes('/results?') || url.includes('search_query=')) {
+                                        closeSearchDropdown();
+                                    }
+                                }
+                            }, 10);
+                            return;
+                        }
+                    }
+                    return originalReplaceState.apply(this, arguments);
+                };
+            }
 
-          // Initialize all interceptors
-          function initialize() {
-              interceptYouTubeLogo();
-              interceptSearchSuggestions();
-              interceptSearchForms();
-              interceptNavigationMethods();
-              setupVideoChangeDetection();
-          }
+            function initialize() {
+                interceptYouTubeLogo();
+                interceptSearchSuggestions();
+                interceptSearchForms();
+                interceptNavigationMethods();
+                setupVideoChangeDetection();
+            }
 
-          // Run initial setup
-          initialize();
+            initialize();
 
-          // Mutation observer
-          const observer = new MutationObserver((mutations) => {
-              let shouldReintercept = false;
+            const observer = new MutationObserver((mutations) => {
+                let shouldReintercept = false;
 
-              mutations.forEach(mutation => {
-                  mutation.addedNodes.forEach(node => {
-                      if (node.nodeType === 1) {
-                          if (node.matches && (
-                              node.matches('ytm-home-logo') ||
-                              node.matches('ytd-topbar-logo-renderer') ||
-                              node.matches('.ytSuggestionComponentSuggestion') ||
-                              node.matches('.ytSearchboxComponentHost') ||
-                              node.matches('yt-searchbox') ||
-                              node.querySelector('ytm-home-logo, ytd-topbar-logo-renderer, .ytSuggestionComponentSuggestion, .ytSearchboxComponentHost, yt-searchbox')
-                          )) {
-                              shouldReintercept = true;
-                          }
-                      }
-                  });
-              });
+                mutations.forEach(mutation => {
+                    mutation.addedNodes.forEach(node => {
+                        if (node.nodeType === 1) {
+                            if (node.matches && (
+                                node.matches('ytm-home-logo') ||
+                                node.matches('ytd-topbar-logo-renderer') ||
+                                node.matches('.ytSuggestionComponentSuggestion') ||
+                                node.matches('.ytSearchboxComponentHost') ||
+                                node.matches('yt-searchbox') ||
+                                node.querySelector('ytm-home-logo, ytd-topbar-logo-renderer, .ytSuggestionComponentSuggestion, .ytSearchboxComponentHost, yt-searchbox')
+                            )) {
+                                shouldReintercept = true;
+                            }
+                        }
+                    });
+                });
 
-              if (shouldReintercept) {
-                  setTimeout(initialize, 100);
-              }
-          });
+                if (shouldReintercept) {
+                    setTimeout(initialize, 100);
+                }
+            });
 
-          observer.observe(document.body, {
-              childList: true,
-              subtree: true
-          });
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
 
-          // YouTube-specific events
-          window.addEventListener('yt-navigate-start', initialize);
-          window.addEventListener('yt-navigate-finish', initialize);
+            window.addEventListener('yt-navigate-start', initialize);
+            window.addEventListener('yt-navigate-finish', initialize);
 
-          // Re-intercept when search gets focus
-          document.addEventListener('focus', (event) => {
-              if (event.target.matches('.ytSearchboxComponentInput, input[name="search_query"], input[role="combobox"]')) {
-                  setTimeout(() => {
-                      interceptSearchSuggestions();
-                      interceptSearchForms();
-                  }, 500);
-              }
-          }, true);
+            document.addEventListener('focus', (event) => {
+                if (event.target.matches('.ytSearchboxComponentInput, input[name="search_query"], input[role="combobox"]')) {
+                    setTimeout(() => {
+                        interceptSearchSuggestions();
+                        interceptSearchForms();
+                    }, 500);
+                }
+            }, true);
 
-          // Also re-intercept when search suggestions appear
-          document.addEventListener('input', (event) => {
-              if (event.target.matches('.ytSearchboxComponentInput, input[name="search_query"], input[role="combobox"]')) {
-                  setTimeout(interceptSearchSuggestions, 300);
-              }
-          }, true);
-      }
+            document.addEventListener('input', (event) => {
+                if (event.target.matches('.ytSearchboxComponentInput, input[name="search_query"], input[role="combobox"]')) {
+                    setTimeout(interceptSearchSuggestions, 300);
+                }
+            }, true);
+        }
 
-      // Initialize
-      if (document.readyState === 'loading') {
-          document.addEventListener('DOMContentLoaded', setupPIPProtection);
-      } else {
-          setupPIPProtection();
-      }
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', setupPIPProtection);
+        } else {
+            setupPIPProtection();
+        }
 
 
       // ---- 1. PiP flag overrides for YouTube mobile ----
