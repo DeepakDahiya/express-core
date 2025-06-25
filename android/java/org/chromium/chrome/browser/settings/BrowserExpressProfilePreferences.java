@@ -28,6 +28,7 @@ import org.chromium.base.task.AsyncTask;
 import android.graphics.drawable.Drawable;
 import com.bumptech.glide.request.target.Target;
 import android.content.Context;
+import android.app.Activity;
 
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
@@ -96,6 +97,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     // SettingsLauncher injected from main Settings Activity.
     private SettingsLauncher mSettingsLauncher;
 
+    private Activity mActivity;
+
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -107,6 +110,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         if (getActivity() != null) {
             getActivity().setTitle(R.string.browser_express_profile_title);
         }
+
+        mActivity = getActivity();
 
         super.onActivityCreated(savedInstanceState);
 
@@ -137,9 +142,9 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             // mLikesGivenText.setText(gc);
 
             mBtnYoutubePremium.setOnClickListener(view2 -> {
-                if (getActivity() != null) {
+                if (mActivity != null || getActivity() != null) {
                     TabUtils.openUrlInSameTab("https://m.youtube.com");
-                    Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                    Intent intent = new Intent(mActivity != null ? mActivity : getActivity(), ChromeTabbedActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     intent.setAction(Intent.ACTION_VIEW);
                     startActivity(intent);
