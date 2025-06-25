@@ -441,38 +441,103 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void attemptImmediatePip() {
-        // First try HTML5 PiP if we know it's ready
         if (mCanUseHtml5Pip) {
             Tab currentTab = getActivityTab();
             if (currentTab != null && currentTab.getWebContents() != null) {
                 Log.d("BE_PIP", "Attempting immediate HTML5 PiP");
                 
-                // Use synchronous JavaScript execution for immediate response
                 String jsCode = "window.triggerImmediatePip ? window.triggerImmediatePip() : false";
                 
                 try {
-                    // Try to execute immediately
                     currentTab.getWebContents().evaluateJavaScript(jsCode, null);
                     
-                    // Give it a very short time, then fallback if needed
                     mMainHandler.postDelayed(() -> {
                         if (!mIsInHtml5Pip && !isInPip()) {
-                            Log.d("BE_PIP", "HTML5 PiP didn't activate, using Android PiP");
-                            enterAndroidPip();
+                            Log.d("BE_PIP", "HTML5 PiP didn't activate, using Android PiP with video bounds");
+                            enterAndroidPipWithVideoBounds();
                         }
-                    }, 200); // Very short delay
+                    }, 200);
                     
                 } catch (Exception e) {
                     Log.e("BE_PIP", "JavaScript execution failed, using Android PiP", e);
-                    enterAndroidPip();
+                    enterAndroidPipWithVideoBounds();
                 }
             } else {
-                enterAndroidPip();
+                enterAndroidPipWithVideoBounds();
             }
         } else {
-            // HTML5 PiP not ready, use Android PiP
-            Log.d("BE_PIP", "HTML5 PiP not ready, using Android PiP");
-            enterAndroidPip();
+            Log.d("BE_PIP", "HTML5 PiP not ready, using Android PiP with video bounds");
+            enterAndroidPipWithVideoBounds();
+        }
+    }
+
+    private void enterAndroidPipWithVideoBounds() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+            if (mActivity == null || mActivity.isFinishing() || mActivity.isDestroyed()) {
+                return;
+            }
+
+            Tab currentTab = getActivityTab();
+            if (currentTab != null && currentTab.getWebContents() != null) {
+                String jsCode = "window.getVideoRect ? JSON.stringify(window.getVideoRect()) : null";
+                
+                currentTab.getWebContents().evaluateJavaScript(jsCode, new ValueCallback<String>() {
+                    @Override
+                    public void onReceiveValue(String result) {
+                        Rect sourceRect = null;
+                        
+                        if (result != null && !result.equals("null") && !result.equals("\"null\"")) {
+                            try {
+                                String cleanResult = result.replaceAll("^\"|\"$", "");
+                                JSONObject videoRect = new JSONObject(cleanResult);
+                                sourceRect = new Rect(
+                                    videoRect.getInt("left"),
+                                    videoRect.getInt("top"),
+                                    videoRect.getInt("left") + videoRect.getInt("width"),
+                                    videoRect.getInt("top") + videoRect.getInt("height")
+                                );
+                                Log.d("BE_PIP", "Video bounds: " + sourceRect);
+                            } catch (Exception e) {
+                                Log.e("BE_PIP", "Failed to parse video rect", e);
+                            }
+                        }
+                        
+                        enterAndroidPipWithRect(sourceRect);
+                    }
+                });
+            } else {
+                enterAndroidPipWithRect(null);
+            }
+        }
+    }
+
+    private void enterAndroidPipWithRect(Rect sourceRect) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+            if (mActivity == null || mActivity.isFinishing() || mActivity.isDestroyed()) {
+                return;
+            }
+
+            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
+            float videoAspectRatio = MathUtils.clamp(1.78f, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+            int height = (int) (windowWidth / videoAspectRatio);
+            
+            Rational aspectRatio = new Rational(windowWidth, height);
+            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
+                .setAspectRatio(aspectRatio);
+
+            if (sourceRect != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                builder.setSourceRectHint(sourceRect);
+                Log.d("BE_PIP", "Setting source rect hint: " + sourceRect);
+            }
+
+            try {
+                boolean success = mActivity.enterPictureInPictureMode(builder.build());
+                Log.d("BE_PIP", "Android PiP success: " + success);
+            } catch (IllegalStateException e) {
+                Log.e("BE_PIP", "Failed to enter Android PiP", e);
+            }
         }
     }
 
