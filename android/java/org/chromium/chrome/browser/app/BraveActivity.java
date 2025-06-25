@@ -257,6 +257,7 @@ import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil
 import org.chromium.base.task.AsyncTask;
 
 import android.webkit.JavascriptInterface;
+import android.webkit.WebView;
 
 /**
  * Brave's extension for ChromeActivity
