@@ -926,6 +926,7 @@ const char16_t k_youtube_background_playback_script[] =
       // ---- 1. PiP flag overrides for YouTube mobile ----
     let userPaused = false;
     let lastUserAction = 0;
+    let playerFeaturesInitialized = false;
 
     function modifyYtcfgFlags() {
         const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
@@ -1046,8 +1047,8 @@ const char16_t k_youtube_background_playback_script[] =
 
     function setupVideoElement() {
         const video = document.querySelector('video');
-        if (!video) return false;
-
+        if (!video) return;
+        
         video.removeAttribute('disablePictureInPicture');
         
         const originalPause = video.pause;
@@ -1109,8 +1110,6 @@ const char16_t k_youtube_background_playback_script[] =
             userPaused = !userPaused;
         }
         }, true);
-
-        return true;
     }
 
     if (document._addEventListener === undefined) {
@@ -1246,9 +1245,9 @@ const char16_t k_youtube_background_playback_script[] =
     const IS_VIMEO = /(?:^|.+\.)vimeo\.com/.test(window.location.hostname);
     const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
 
-    const videoElement = document.querySelector('video');
-    if (videoElement) {
-        videoElement.removeAttribute('disablePictureInPicture');
+    const initialVideoElement = document.querySelector('video');
+    if (initialVideoElement) {
+        initialVideoElement.removeAttribute('disablePictureInPicture');
     }
 
     if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
@@ -1291,61 +1290,83 @@ const char16_t k_youtube_background_playback_script[] =
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min)) + min;
     }
-
-    setupBackgroundPlayback();
-    setupMediaSession();
-    function waitForVideo() {
-        const video = document.querySelector('video');
-        if (video) {
-            setupVideoElement();
-            return true;
-        }
-        return false;
-    }
-
-    // Strategy 1: Immediate check
-    if (!waitForVideo()) {
-        // Strategy 2: DOM ready check
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', waitForVideo);
-        }
-        
-        // Strategy 3: Polling with exponential backoff
-        let attempts = 0;
-        const maxAttempts = 20;
-        
-        function pollForVideo() {
-            if (waitForVideo() || attempts >= maxAttempts) {
+    
+    function initializePlayerDependentFeatures() {
+        if (playerFeaturesInitialized) {
+            const currentVideo = document.querySelector('video');
+            if (currentVideo && currentVideo.dataset.playerFeaturesSet === "true") {
+                return; // Already set up on this specific video
+            } else if (!currentVideo) {
+                playerFeaturesInitialized = false; // Video gone, reset for next one
                 return;
             }
-            
-            attempts++;
-            const delay = Math.min(100 * Math.pow(1.5, attempts), 2000);
-            setTimeout(pollForVideo, delay);
+            playerFeaturesInitialized = false;
+        }
+
+        const video = document.querySelector('video');
+        if (video) {
+            if (video.dataset.playerFeaturesSet === "true") return; // Already did this one
+
+            setupVideoElement();
+            setupMediaSession();
+            video.dataset.playerFeaturesSet = "true";
+            playerFeaturesInitialized = true;
+        }
+    }
+
+    setupBackgroundPlayback(); // This can run early
+
+    // Observer for the PiP button and its container
+    const buttonObserver = new MutationObserver(() => {
+        const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+        const onWatchPage = window.location.pathname === '/watch';
+
+        if (onWatchPage && buttonContainerElement && !buttonContainerElement.contains(buttonElement)) {
+            buttonContainerElement.prepend(buttonElement);
         }
         
-        pollForVideo();
+        // When button container is ready (or any relevant mutation occurs on a watch page),
+        // ensure player features are initialized.
+        // Also, if we navigate off a watch page, reset the flag.
+        if (onWatchPage) {
+            initializePlayerDependentFeatures();
+        } else {
+            if(playerFeaturesInitialized) {
+                const oldVideo = document.querySelector('video[data-player-features-set="true"]');
+                if(oldVideo) delete oldVideo.dataset.playerFeaturesSet;
+            }
+            playerFeaturesInitialized = false; // Reset if not on watch page
+        }
+    });
+    buttonObserver.observe(document.documentElement, { subtree: true, childList: true });
 
-        const ytObserver = new MutationObserver((mutations) => {
-            for (const mutation of mutations) {
-                for (const node of mutation.addedNodes) {
-                    if (node.nodeType === 1) { // Element node
-                        if (node.tagName === 'VIDEO' || node.querySelector('video')) {
-                            if (waitForVideo()) {
-                                ytObserver.disconnect();
-                                return;
-                            }
-                        }
-                    }
+    // Attempt to initialize features early if document is already loaded or when it loads
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        initializePlayerDependentFeatures();
+    } else {
+        document.addEventListener('DOMContentLoaded', initializePlayerDependentFeatures, { once: true });
+    }
+
+    // Fallback observer specifically for the video element if it appears later
+    // and hasn't been caught by DOMContentLoaded or the buttonObserver logic yet.
+    let earlyVideoObserver = null;
+    if (!playerFeaturesInitialized) {
+        earlyVideoObserver = new MutationObserver((mutations, obs) => {
+            if (document.querySelector('video')) {
+                initializePlayerDependentFeatures();
+                if (playerFeaturesInitialized) {
+                    obs.disconnect(); // Successfully initialized
                 }
             }
         });
-    
-        ytObserver.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        setTimeout(() => ytObserver.disconnect(), 10000);
+        earlyVideoObserver.observe(document.documentElement, { childList: true, subtree: true });
+        // Clean up this observer after a timeout if it didn't find a video,
+        // to prevent it from running indefinitely on non-video pages.
+        setTimeout(() => {
+            if (earlyVideoObserver && !playerFeaturesInitialized) {
+                earlyVideoObserver.disconnect();
+            }
+        }, 15000); // 15 seconds timeout
     }
 
     if (IS_YOUTUBE) {
