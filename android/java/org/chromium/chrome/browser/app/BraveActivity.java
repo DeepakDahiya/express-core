@@ -304,8 +304,6 @@ public abstract class BraveActivity extends ChromeActivity
             // Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
     private AppUpdateManager mAppUpdateManager;
 
-    private boolean mIsInPipMode = false;
-
     /**
      * Settings for sending local notification reminders.
      */
@@ -431,145 +429,6 @@ public abstract class BraveActivity extends ChromeActivity
             return;
         }
         super.onPauseWithNative();
-    }
-
-    public void updatePipReadiness(boolean isPipReady) {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder();
-
-            AppCompatActivity activityForPip = BraveActivity.getChromeTabbedActivity();
-
-            int windowWidth = 0;
-            if (activityForPip != null && activityForPip.getWindow() != null && activityForPip.getWindow().getDecorView() != null) {
-                windowWidth = activityForPip.getWindow().getDecorView().getWidth();
-            }
-
-            if (windowWidth > 0) {
-                float defaultAspectRatio = 1.78f;
-                float videoAspectRatio = MathUtils.clamp(
-                        defaultAspectRatio, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
-                int height = (int) (windowWidth / videoAspectRatio);
-                if (height > 0) {
-                    Rational aspectRatio = new Rational(windowWidth, height);
-                    builder.setAspectRatio(aspectRatio);
-                    Log.d("BE_PIP", "Setting PiP Params AspectRatio: " + aspectRatio);
-                } else {
-                    Log.w("BE_PIP", "Calculated height for PiP aspect ratio is invalid.");
-                }
-            } else {
-                Log.w("BE_PIP", "Window width for PiP aspect ratio is invalid. Using default if available.");
-                builder.setAspectRatio(new Rational(16,9));
-            }
-
-
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                builder.setAutoEnterEnabled(isPipReady);
-                Log.d("BE_PIP", "Setting PiP Params AutoEnter: " + isPipReady);
-            }
-
-            if (activityForPip != null && !activityForPip.isFinishing() && !activityForPip.isDestroyed()) {
-                try {
-                    activityForPip.setPictureInPictureParams(builder.build());
-                } catch (IllegalStateException e) {
-                    Log.e("BE_PIP", "Failed to set PictureInPictureParams", e);
-                }
-            } else {
-                Log.w("BE_PIP", "Activity for PiP is null or not in a valid state to set params.");
-            }
-        }
-    }
-
-    @Override
-    public void onUserLeaveHint() {
-        super.onUserLeaveHint();
-        Log.d("BE_PIP", "onUserLeaveHint triggered.");
-
-        boolean shouldEnterPip = SharedPreferencesManager.getInstance().readBoolean(
-                BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
-
-        if (shouldEnterPip && !mIsInPipMode) { 
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O &&
-                android.os.Build.VERSION.SDK_INT < android.os.Build.VERSION_CODES.S) {
-                Log.d("BE_PIP", "onUserLeaveHint: Attempting manual PiP for Android O-R.");
-                enterPipManual();
-            } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
-                Log.d("BE_PIP", "onUserLeaveHint: Letting system handle auto PiP for Android S+.");
-            }
-        } else {
-            Log.d("BE_PIP", "onUserLeaveHint: Conditions not met for PiP or already in PiP. " +
-                    "ShouldEnterPip: " + shouldEnterPip + ", IsInPip: " + mIsInPipMode);
-        }
-    }
-
-    private void enterPipManual() {
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
-
-            if (mActivity == null || mActivity.isFinishing() || mActivity.isDestroyed()) {
-                Log.e("BE_PIP", "enterPipManual: Activity is null or not in a valid state.");
-                return;
-            }
-
-
-            int windowWidth = 0;
-            if (mActivity.getWindow() != null && mActivity.getWindow().getDecorView() != null) {
-                windowWidth = mActivity.getWindow().getDecorView().getWidth();
-            }
-
-            float defaultAspectRatio = 1.78f;
-            float videoAspectRatio = MathUtils.clamp(
-                    defaultAspectRatio, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
-            int height = (int) (windowWidth / videoAspectRatio);
-
-            if (height <= 0) {
-                Log.e("BE_PIP", "enterPipManual: Calculated height is invalid (" + height + "). Cannot calculate PiP dimensions.");
-                return;
-            }
-
-            Rational aspectRatio = new Rational(windowWidth, height);
-            Log.d("BE_PIP", "enterPipManual: Attempting to enter PiP. AspectRatio: " + aspectRatio);
-            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder().setAspectRatio(aspectRatio);
-
-            // Optional: setSourceRectHint for a smoother animation from a video view
-            // View videoView = findViewById(R.id.your_video_view_id); // Get your video view
-            // if (videoView != null && videoView.isShown()) {
-            //     Rect sourceRectHint = new Rect();
-            //     videoView.getGlobalVisibleRect(sourceRectHint);
-            //     builder.setSourceRectHint(sourceRectHint);
-            //     Log.d("BE_PIP", "enterPipManual: Setting sourceRectHint: " + sourceRectHint);
-            // }
-
-
-            try {
-                boolean success = mActivity.enterPictureInPictureMode(builder.build());
-                Log.d("BE_PIP", "enterPipManual: enterPictureInPictureMode success: " + success);
-                if (!success) {
-                    Log.w("BE_PIP", "enterPipManual: System denied PiP request. This can happen if media isn't playing, app isn't visible, etc.");
-                }
-            } catch (IllegalStateException e) {
-                Log.e("BE_PIP", "enterPipManual: IllegalStateException during enterPictureInPictureMode", e);
-            }
-        }
-    }
-
-    @RequiresApi(api = android.os.Build.VERSION_CODES.O)
-    @Override
-    public void onPictureInPictureModeChanged(boolean isInPictureInPictureMode, Configuration newConfig) {
-        super.onPictureInPictureModeChanged(isInPictureInPictureMode, newConfig);
-        mIsInPipMode = isInPictureInPictureMode;
-        if (isInPictureInPictureMode) {
-            Log.i("BE_PIP", "Entered PiP mode.");
-        } else {
-            Log.i("BE_PIP", "Exited PiP mode.");
-            boolean shouldBePipReadyOnReturn = SharedPreferencesManager.getInstance().readBoolean(
-                BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false); 
-            if (shouldBePipReadyOnReturn) {
-                Log.d("BE_PIP", "Exited PiP, re-evaluating PiP readiness for auto-enter.");
-                updatePipReadiness(true);
-            } else {
-                updatePipReadiness(false); 
-            }
-        }
     }
 
     @Override
@@ -745,28 +604,6 @@ public abstract class BraveActivity extends ChromeActivity
         NotificationManagerCompat notificationManager = NotificationManagerCompat.from(context);
         notificationManager.notify(3232, builder.build());
     }
-
-    // public void enterPip() {
-    //     if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-    //         Tab tab = getActivityTab();
-    //         if (tab == null) return;
-
-    //         tab.getWebContents().evaluateJavaScript(
-    //             "(function() {" +
-    //             "   try {" +
-    //             "       const video = document.querySelector('video');" +
-    //             "       if (video) {" +
-    //             "           video.removeAttribute('disablePictureInPicture');" +
-    //             "           if (document.pictureInPictureElement !== video) {" +
-    //             "               video.requestPictureInPicture().catch(console.error);" +
-    //             "           }" +
-    //             "       } else { console.warn('No video element found'); }" +
-    //             "   } catch(e) { console.error('Error requesting PiP:', e); }" +
-    //             "})()",
-    //             result -> Log.e("BE_PIP", "JS executed with result: " + result)
-    //         );
-    //     }
-    // }
 
     public void enterPip(){
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
