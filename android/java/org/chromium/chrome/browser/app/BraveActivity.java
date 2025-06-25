@@ -260,6 +260,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
 import android.webkit.ValueCallback;
 import org.json.JSONObject;
+import org.chromium.content_public.browser.JavaScriptCallback;
 
 /**
  * Brave's extension for ChromeActivity
@@ -442,37 +443,6 @@ public abstract class BraveActivity extends ChromeActivity
         super.onPauseWithNative();
     }
 
-    private void attemptImmediatePip() {
-        if (mCanUseHtml5Pip) {
-            Tab currentTab = getActivityTab();
-            if (currentTab != null && currentTab.getWebContents() != null) {
-                Log.d("BE_PIP", "Attempting immediate HTML5 PiP");
-                
-                String jsCode = "window.triggerImmediatePip ? window.triggerImmediatePip() : false";
-                
-                try {
-                    currentTab.getWebContents().evaluateJavaScript(jsCode, null);
-                    
-                    mMainHandler.postDelayed(() -> {
-                        if (!mIsInHtml5Pip && !isInPip()) {
-                            Log.d("BE_PIP", "HTML5 PiP didn't activate, using Android PiP with video bounds");
-                            enterAndroidPipWithVideoBounds();
-                        }
-                    }, 200);
-                    
-                } catch (Exception e) {
-                    Log.e("BE_PIP", "JavaScript execution failed, using Android PiP", e);
-                    enterAndroidPipWithVideoBounds();
-                }
-            } else {
-                enterAndroidPipWithVideoBounds();
-            }
-        } else {
-            Log.d("BE_PIP", "HTML5 PiP not ready, using Android PiP with video bounds");
-            enterAndroidPipWithVideoBounds();
-        }
-    }
-
     private void enterAndroidPipWithVideoBounds() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
@@ -484,9 +454,9 @@ public abstract class BraveActivity extends ChromeActivity
             if (currentTab != null && currentTab.getWebContents() != null) {
                 String jsCode = "window.getVideoRect ? JSON.stringify(window.getVideoRect()) : null";
                 
-                currentTab.getWebContents().evaluateJavaScript(jsCode, new ValueCallback<String>() {
+                currentTab.getWebContents().evaluateJavaScript(jsCode, new JavaScriptCallback() {
                     @Override
-                    public void onReceiveValue(String result) {
+                    public void handleJavaScriptResult(String result) {
                         Rect sourceRect = null;
                         
                         if (result != null && !result.equals("null") && !result.equals("\"null\"")) {
@@ -510,6 +480,35 @@ public abstract class BraveActivity extends ChromeActivity
                 });
             } else {
                 enterAndroidPipWithRect(null);
+            }
+        }
+    }
+
+    private void enterAndroidPipWithRect(Rect sourceRect) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+            if (mActivity == null || mActivity.isFinishing() || mActivity.isDestroyed()) {
+                return;
+            }
+
+            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
+            float videoAspectRatio = MathUtils.clamp(1.78f, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+            int height = (int) (windowWidth / videoAspectRatio);
+            
+            Rational aspectRatio = new Rational(windowWidth, height);
+            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
+                .setAspectRatio(aspectRatio);
+
+            if (sourceRect != null) {
+                builder.setSourceRectHint(sourceRect);
+                Log.d("BE_PIP", "Setting source rect hint: " + sourceRect);
+            }
+
+            try {
+                boolean success = mActivity.enterPictureInPictureMode(builder.build());
+                Log.d("BE_PIP", "Android PiP success: " + success);
+            } catch (IllegalStateException e) {
+                Log.e("BE_PIP", "Failed to enter Android PiP", e);
             }
         }
     }
