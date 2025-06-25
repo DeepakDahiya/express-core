@@ -1046,7 +1046,10 @@ const char16_t k_youtube_background_playback_script[] =
 
     function setupVideoElement() {
         const video = document.querySelector('video');
-        if (!video) return;
+        if (!video) return false;
+
+        if (video._backgroundPlaybackSetup) return true;
+        video._backgroundPlaybackSetup = true;
         
         video.removeAttribute('disablePictureInPicture');
         
@@ -1109,6 +1112,8 @@ const char16_t k_youtube_background_playback_script[] =
             userPaused = !userPaused;
         }
         }, true);
+
+        return true;
     }
 
     if (document._addEventListener === undefined) {
@@ -1292,7 +1297,24 @@ const char16_t k_youtube_background_playback_script[] =
 
     setupBackgroundPlayback();
     setupMediaSession();
-    setupVideoElement();
+    function initializeVideoSetup() {
+        if (setupVideoElement()) {
+            return; // Successfully set up
+        }
+        
+        // If video not found, wait a bit and try again
+        setTimeout(() => {
+            if (setupVideoElement()) {
+                return;
+            }
+            
+            // Still not found, wait longer
+            setTimeout(() => {
+                setupVideoElement();
+            }, 1000);
+        }, 100);
+    }
+    initializeVideoSetup();
 
     if (IS_YOUTUBE) {
         loop(pressKey, 60000, 10000);
