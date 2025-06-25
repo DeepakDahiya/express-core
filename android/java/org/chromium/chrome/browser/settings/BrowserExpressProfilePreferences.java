@@ -137,11 +137,13 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             // mLikesGivenText.setText(gc);
 
             mBtnYoutubePremium.setOnClickListener(view2 -> {
-                TabUtils.openUrlInSameTab("https://m.youtube.com");
-                Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
-                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                intent.setAction(Intent.ACTION_VIEW);
-                startActivity(intent);
+                if (getActivity() != null) {
+                    TabUtils.openUrlInSameTab("https://m.youtube.com");
+                    Intent intent = new Intent(getActivity(), ChromeTabbedActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    intent.setAction(Intent.ACTION_VIEW);
+                    startActivity(intent);
+                }
             });
 
             try {
