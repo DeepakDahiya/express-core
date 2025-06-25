@@ -24,6 +24,12 @@ import org.chromium.url.mojom.Url;
 import java.util.ArrayList;
 import java.util.List;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import java.io.File;
+import java.io.FileOutputStream;
+import org.chromium.chrome.R;
+
 public class DatabaseHelper extends SQLiteOpenHelper {
 
     private static volatile DatabaseHelper mInstance;
@@ -160,7 +166,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return braveAd;
     }
 
-    private boolean isTopSiteAlreadyAdded(String destinationUrl) {
+    public boolean isTopSiteAlreadyAdded(String destinationUrl) {
         SQLiteDatabase sqldb = this.getReadableDatabase();
         String query = "Select * from " + TopSiteTable.TABLE_NAME + " where " + TopSiteTable.COLUMN_DESTINATION_URL + " =?";
         Cursor cursor = sqldb.rawQuery(query, new String[] {destinationUrl});
@@ -172,7 +178,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return true;
     }
 
-    private String saveDefaultYouTubeFavicon(Context context) {
+    public String saveDefaultYouTubeFavicon(Context context) {
         try {
             Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.golden_youtube_icon);
             
