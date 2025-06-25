@@ -425,7 +425,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
             Log.e("BE_PIP", "onPauseWithNative");
-            // enterPip();
+            enterPip();
             return;
         }
         super.onPauseWithNative();
@@ -624,6 +624,56 @@ public abstract class BraveActivity extends ChromeActivity
             var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
 
             boolean success = mActivity.enterPictureInPictureMode(builder.build());
+        }
+    }
+
+    public void enterPip() {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
+
+            if (mActivity == null || mActivity.isFinishing() || mActivity.isDestroyed()) {
+                Log.e("BE_PIP", "Activity is not valid for PiP entry.");
+                return;
+            }
+
+            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
+            float defaultAspectRatio = 1.78f;
+            float videoAspectRatio = MathUtils.clamp(
+                defaultAspectRatio, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
+            int height = (int) (windowWidth / videoAspectRatio);
+
+            Rect sourceRect = new Rect(0, 480, windowWidth, 480 + height);
+
+            int activityHeight = mActivity.getWindow().getDecorView().getHeight();
+            if (sourceRect.bottom > activityHeight) {
+                Log.w("BE_PIP", "Calculated sourceRect bottom extends beyond activity height. Clamping.");
+                sourceRect.bottom = activityHeight;
+            }
+            if (sourceRect.width() <= 0 || sourceRect.height() <= 0) {
+                Log.e("BE_PIP", "Invalid sourceRect dimensions: " + sourceRect.toShortString());
+                return;
+            }
+
+            Rational aspectRatioForPipWindow = new Rational(sourceRect.width(), sourceRect.height());
+
+            Log.e("BE_PIP", "Attempting PiP with sourceRect: " + sourceRect.toShortString() +
+                            " and AspectRatio: " + aspectRatioForPipWindow.toString());
+
+            PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
+                    .setAspectRatio(aspectRatioForPipWindow); // Set the aspect ratio for the PiP window
+
+            builder.setSourceRectHint(sourceRect);
+
+            try {
+                boolean success = mActivity.enterPictureInPictureMode(builder.build());
+                Log.e("BE_PIP", "enterPictureInPictureMode called. Success: " + success);
+                if (!success) {
+                    Log.e("BE_PIP", "Failed to enter PiP mode. Check logs for system messages.");
+                }
+            } catch (Exception e) {
+                // Catching general exceptions can be useful for IllegalStateException etc.
+                Log.e("BE_PIP", "Exception during enterPictureInPictureMode: " + e.getMessage(), e);
+            }
         }
     }
 
