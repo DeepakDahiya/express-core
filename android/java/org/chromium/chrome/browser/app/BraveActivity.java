@@ -574,9 +574,36 @@ public abstract class BraveActivity extends ChromeActivity
 
     private void setupJavaScriptInterface() {
         Tab currentTab = getActivityTab();
-        if (currentTab != null && currentTab.getWebContents() != null) {
-            // Add JavaScript interface
-            currentTab.getWebContents().addJavascriptInterface(this, "Android");
+        if (currentTab != null) {
+            WebView webView = (WebView) currentTab.getView();
+            if (webView != null) {
+                webView.addJavascriptInterface(new PipJavaScriptInterface(), "Android");
+            }
+        }
+    }
+
+    public class PipJavaScriptInterface {
+        @JavascriptInterface
+        public void updatePipReadiness(boolean canUsePip) {
+            mCanUseHtml5Pip = canUsePip;
+            mLastPipCheck = System.currentTimeMillis();
+            Log.d("BE_PIP", "PiP readiness updated: " + canUsePip);
+            
+            runOnUiThread(() -> {
+                updatePipParams(canUsePip);
+            });
+        }
+
+        @JavascriptInterface
+        public void onHtml5PipEntered() {
+            Log.d("BE_PIP", "HTML5 PiP entered");
+            mIsInHtml5Pip = true;
+        }
+
+        @JavascriptInterface
+        public void onHtml5PipExited() {
+            Log.d("BE_PIP", "HTML5 PiP exited");
+            mIsInHtml5Pip = false;
         }
     }
 
