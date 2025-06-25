@@ -1297,24 +1297,59 @@ const char16_t k_youtube_background_playback_script[] =
 
     setupBackgroundPlayback();
     setupMediaSession();
-    function initializeVideoSetup() {
-        if (setupVideoElement()) {
-            return; // Successfully set up
+    function waitForVideo() {
+        const video = document.querySelector('video');
+        if (video) {
+            setupVideoElement();
+            return true;
+        }
+        return false;
+    }
+
+    // Strategy 1: Immediate check
+    if (!waitForVideo()) {
+        // Strategy 2: DOM ready check
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', waitForVideo);
         }
         
-        // If video not found, wait a bit and try again
-        setTimeout(() => {
-            if (setupVideoElement()) {
+        // Strategy 3: Polling with exponential backoff
+        let attempts = 0;
+        const maxAttempts = 20;
+        
+        function pollForVideo() {
+            if (waitForVideo() || attempts >= maxAttempts) {
                 return;
             }
             
-            // Still not found, wait longer
-            setTimeout(() => {
-                setupVideoElement();
-            }, 1000);
-        }, 100);
+            attempts++;
+            const delay = Math.min(100 * Math.pow(1.5, attempts), 2000);
+            setTimeout(pollForVideo, delay);
+        }
+        
+        pollForVideo();
+
+        const ytObserver = new MutationObserver((mutations) => {
+            for (const mutation of mutations) {
+                for (const node of mutation.addedNodes) {
+                    if (node.nodeType === 1) { // Element node
+                        if (node.tagName === 'VIDEO' || node.querySelector('video')) {
+                            if (waitForVideo()) {
+                                ytObserver.disconnect();
+                                return;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    
+        ytObserver.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        setTimeout(() => ytObserver.disconnect(), 10000);
     }
-    initializeVideoSetup();
 
     if (IS_YOUTUBE) {
         loop(pressKey, 60000, 10000);
