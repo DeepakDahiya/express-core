@@ -925,7 +925,9 @@ public abstract class BraveActivity extends ChromeActivity
         if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
             BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
         }else{
-            BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
+            if(!BraveSetDefaultBrowserUtils.isBraveDefaultDontAsk()) {
+                BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
+            }
         }
     }
 
