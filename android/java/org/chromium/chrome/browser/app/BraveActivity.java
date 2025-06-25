@@ -425,7 +425,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
             Log.e("BE_PIP", "onPauseWithNative");
-            enterPip();
+            // enterPip();
             return;
         }
         super.onPauseWithNative();
