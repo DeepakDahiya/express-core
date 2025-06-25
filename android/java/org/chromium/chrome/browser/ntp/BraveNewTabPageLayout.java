@@ -1532,6 +1532,10 @@ public class BraveNewTabPageLayout
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         activity.setAccessToken(accessToken);
                         Toast.makeText(activity, "Login Successful", Toast.LENGTH_SHORT).show();
+
+                        BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                            new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                        workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                     } catch (BraveActivity.BraveActivityNotFoundException e) {
                     }
                 }
