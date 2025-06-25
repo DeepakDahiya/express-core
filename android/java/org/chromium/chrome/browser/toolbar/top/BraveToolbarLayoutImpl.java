@@ -584,7 +584,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
                     String accessToken = activity.getAccessToken();
-                    
+
                     int commentCount = 0;
                     mCommentsText = activity.getCommentCountText();
                     mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
@@ -606,6 +606,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     }
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
+                } catch (JSONException e) {
+                    Log.e("Express Browser Access Token", e.getMessage());
                 }
 
                 BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
