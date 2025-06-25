@@ -605,28 +605,6 @@ public abstract class BraveActivity extends ChromeActivity
         notificationManager.notify(3232, builder.build());
     }
 
-    public void enterPip(){
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
-
-            int left = 0;
-            int top = 480;
-            int windowWidth = mActivity.getWindow().getDecorView().getWidth();
-            int width = windowWidth;
-            float defaultAspectRation = 1.78f;
-            float videoAspectRatio = MathUtils.clamp(
-                defaultAspectRation, MIN_ASPECT_RATIO, MAX_ASPECT_RATIO);
-            int height = (int) (windowWidth / videoAspectRatio);
-            Rect bounds = new Rect(left, top, left + width, top + height);
-
-            Rational ASPECT_RATIO = new Rational(width, height);
-            Log.e("BE_PIP", "BEFORE PIP");
-            var builder = new PictureInPictureParams.Builder().setAspectRatio(ASPECT_RATIO);
-
-            boolean success = mActivity.enterPictureInPictureMode(builder.build());
-        }
-    }
-
     public void enterPip() {
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
             AppCompatActivity mActivity = BraveActivity.getChromeTabbedActivity();
