@@ -258,6 +258,8 @@ import org.chromium.base.task.AsyncTask;
 
 import android.webkit.JavascriptInterface;
 import android.webkit.WebView;
+import android.webkit.ValueCallback;
+import org.json.JSONObject;
 
 /**
  * Brave's extension for ChromeActivity
@@ -527,7 +529,7 @@ public abstract class BraveActivity extends ChromeActivity
             PictureInPictureParams.Builder builder = new PictureInPictureParams.Builder()
                 .setAspectRatio(aspectRatio);
 
-            if (sourceRect != null && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+            if (sourceRect != null) {
                 builder.setSourceRectHint(sourceRect);
                 Log.d("BE_PIP", "Setting source rect hint: " + sourceRect);
             }
