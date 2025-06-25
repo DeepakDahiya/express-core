@@ -1048,9 +1048,6 @@ const char16_t k_youtube_background_playback_script[] =
         const video = document.querySelector('video');
         if (!video) return false;
 
-        if (video._backgroundPlaybackSetup) return true;
-        video._backgroundPlaybackSetup = true;
-        
         video.removeAttribute('disablePictureInPicture');
         
         const originalPause = video.pause;
