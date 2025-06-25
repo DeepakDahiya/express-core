@@ -495,11 +495,14 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                                 String protocol = tempUrl.getProtocol();
                                 String host = tempUrl.getHost();
 
+                                if (mDatabaseHelper.isTopSiteAlreadyAdded(protocol + "://" + host)) {
+                                    return null;
+                                }
+
                                 // Download favicon in background
                                 String faviconPath = saveFavicon(ContextUtils.getApplicationContext(), mUrl);
 
                                 // Create TopSite object
-                                Log.d(TAG, "Creating TopSite for URL: " + mUrl);
                                 return new TopSite(
                                     getWebsiteName(mUrl), 
                                     protocol + "://" + host, 

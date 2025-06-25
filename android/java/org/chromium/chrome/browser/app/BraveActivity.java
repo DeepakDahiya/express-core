@@ -353,6 +353,8 @@ public abstract class BraveActivity extends ChromeActivity
 
     private FilterListAndroidHandler mFilterListAndroidHandler;
 
+    private DatabaseHelper mDatabaseHelper;
+
     public static class BraveActivityNotFoundException extends Exception {
         public BraveActivityNotFoundException(String message) {
             super(message);
@@ -957,6 +959,9 @@ public abstract class BraveActivity extends ChromeActivity
                 BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
             }
         }
+
+        mDatabaseHelper = DatabaseHelper.getInstance();
+        mDatabaseHelper.initializeDefaultTopSites(BraveActivity.this);
     }
 
     public int getLastTabId() {

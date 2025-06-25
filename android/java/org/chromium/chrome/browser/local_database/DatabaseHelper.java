@@ -48,6 +48,19 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    public void initializeDefaultTopSites(Context context) {
+        if (getTopSitesCount() == 0) {
+            String youtubeIconPath = saveDefaultYouTubeFavicon(context);
+            TopSite youtubeTopSite = new TopSite(
+                "YouTube", 
+                "https://m.youtube.com", 
+                "#323639",
+                youtubeIconPath
+            );
+            insertTopSite(youtubeTopSite);
+        }
+    }
+
     // Creating Tables
     @Override
     public void onCreate(SQLiteDatabase db) {
@@ -157,6 +170,27 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         cursor.close();
         return true;
+    }
+
+    private String saveDefaultYouTubeFavicon(Context context) {
+        try {
+            Bitmap bitmap = BitmapFactory.decodeResource(context.getResources(), R.drawable.golden_youtube_icon);
+            
+            File faviconDir = new File(context.getFilesDir(), "favicons");
+            if (!faviconDir.exists()) {
+                faviconDir.mkdirs();
+            }
+            
+            File faviconFile = new File(faviconDir, "youtube_custom_favicon.png");
+            FileOutputStream fos = new FileOutputStream(faviconFile);
+            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+            fos.close();
+            
+            return faviconFile.getAbsolutePath();
+        } catch (Exception e) {
+            Log.e("DatabaseHelper", "Error saving YouTube favicon", e);
+            return null;
+        }
     }
 
     public void insertTopSite(TopSite topSite) {

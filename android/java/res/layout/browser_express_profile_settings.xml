@@ -254,7 +254,7 @@
             android:layout_marginBottom="4dp">
 
             <ImageView
-                android:background="@drawable/youtube"
+                android:background="@drawable/golden_youtube_icon"
                 android:layout_height="24sp"
                 android:layout_width="24sp"
                 android:layout_gravity="center"
