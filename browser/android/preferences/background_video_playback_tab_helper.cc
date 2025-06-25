@@ -1048,9 +1048,6 @@ const char16_t k_youtube_background_playback_script[] =
         const video = document.querySelector('video');
         if (!video) return false;
 
-        if (video._backgroundPlaybackSetup) return true;
-        video._backgroundPlaybackSetup = true;
-        
         video.removeAttribute('disablePictureInPicture');
         
         const originalPause = video.pause;
@@ -1297,24 +1294,9 @@ const char16_t k_youtube_background_playback_script[] =
 
     setupBackgroundPlayback();
     setupMediaSession();
-    function initializeVideoSetup() {
-        if (setupVideoElement()) {
-            return; // Successfully set up
-        }
-        
-        // If video not found, wait a bit and try again
-        setTimeout(() => {
-            if (setupVideoElement()) {
-                return;
-            }
-            
-            // Still not found, wait longer
-            setTimeout(() => {
-                setupVideoElement();
-            }, 1000);
-        }, 100);
-    }
-    initializeVideoSetup();
+    setTimeout(() => {
+        setupVideoElement();
+    }, 4000);
 
     if (IS_YOUTUBE) {
         loop(pressKey, 60000, 10000);
