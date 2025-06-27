@@ -927,77 +927,126 @@ const char16_t k_youtube_background_playback_script[] =
     let userPaused = false;
     let lastUserAction = 0;
     let playerFeaturesInitialized = false;
+    let videoSetupComplete = false;
 
     function modifyYtcfgFlags() {
-        const config = window.ytcfg?.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
+        const config = window.ytcfg
+        ?.get('WEB_PLAYER_CONTEXT_CONFIGS')
+        ?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
         if (config && typeof config.serializedExperimentFlags === 'string') {
         let flags = config.serializedExperimentFlags;
         flags = flags
-            .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
-            .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
-            .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
-            .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
-            .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
+            .replace(
+            'html5_picture_in_picture_blocking_ontimeupdate=true',
+            'html5_picture_in_picture_blocking_ontimeupdate=false'
+            )
+            .replace(
+            'html5_picture_in_picture_blocking_onresize=true',
+            'html5_picture_in_picture_blocking_onresize=false'
+            )
+            .replace(
+            'html5_picture_in_picture_blocking_document_fullscreen=true',
+            'html5_picture_in_picture_blocking_document_fullscreen=false'
+            )
+            .replace(
+            'html5_picture_in_picture_blocking_standard_api=true',
+            'html5_picture_in_picture_blocking_standard_api=false'
+            )
+            .replace(
+            'html5_picture_in_picture_logging_onresize=true',
+            'html5_picture_in_picture_logging_onresize=false'
+            );
         config.serializedExperimentFlags = flags;
         }
     }
 
+    // Apply ytcfg modifications immediately and on script loads
     if (window.ytcfg) {
         modifyYtcfgFlags();
     } else {
-        document.addEventListener('load', (event) => {
-        const target = event.target;
-        if (target.tagName === 'SCRIPT' && window.ytcfg) {
+        document.addEventListener(
+        'load',
+        (event) => {
+            const target = event.target;
+            if (target.tagName === 'SCRIPT' && window.ytcfg) {
             modifyYtcfgFlags();
-        }
-        }, true);
+            }
+        },
+        true
+        );
     }
 
     function setupBackgroundPlayback() {
-        const visibilityProps = ['hidden', 'webkitHidden', 'mozHidden', 'msHidden'];
-        const visibilityStates = ['visibilityState', 'webkitVisibilityState', 'mozVisibilityState', 'msVisibilityState'];
-        
-        visibilityProps.forEach(prop => {
+        const visibilityProps = [
+        'hidden',
+        'webkitHidden',
+        'mozHidden',
+        'msHidden',
+        ];
+        const visibilityStates = [
+        'visibilityState',
+        'webkitVisibilityState',
+        'mozVisibilityState',
+        'msVisibilityState',
+        ];
+
+        visibilityProps.forEach((prop) => {
         if (prop in document) {
             Object.defineProperty(document, prop, {
             value: false,
             writable: false,
-            configurable: false
+            configurable: false,
             });
         }
         });
-        
-        visibilityStates.forEach(state => {
+
+        visibilityStates.forEach((state) => {
         if (state in document) {
             Object.defineProperty(document, state, {
             value: 'visible',
             writable: false,
-            configurable: false
+            configurable: false,
             });
         }
         });
-        
+
         Object.defineProperty(document, 'hasFocus', {
         value: () => true,
         writable: false,
-        configurable: false
+        configurable: false,
         });
-        
+
         const eventsToBlock = [
-        'visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'msvisibilitychange',
-        'blur', 'focus', 'focusin', 'focusout', 'pagehide', 'pageshow'
+        'visibilitychange',
+        'webkitvisibilitychange',
+        'mozvisibilitychange',
+        'msvisibilitychange',
+        'blur',
+        'focus',
+        'focusin',
+        'focusout',
+        'pagehide',
+        'pageshow',
         ];
-        
-        eventsToBlock.forEach(eventType => {
-        document.addEventListener(eventType, (e) => {
+
+        eventsToBlock.forEach((eventType) => {
+        document.addEventListener(
+            eventType,
+            (e) => {
             e.stopImmediatePropagation();
             e.preventDefault();
-        }, true);
-        
-        window.addEventListener(eventType, (e) => {
+            },
+            true
+        );
+
+        window.addEventListener(
+            eventType,
+            (e) => {
             e.stopImmediatePropagation();
             e.preventDefault();
-        }, true);
+            },
+            true
+        );
         });
     }
 
@@ -1007,10 +1056,10 @@ const char16_t k_youtube_background_playback_script[] =
             title: document.title || 'YouTube Video',
             artist: 'YouTube',
             artwork: [
-            { src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' }
-            ]
+            { src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' },
+            ],
         });
-        
+
         navigator.mediaSession.setActionHandler('play', () => {
             const video = document.querySelector('video');
             if (video) {
@@ -1019,7 +1068,7 @@ const char16_t k_youtube_background_playback_script[] =
             video.play();
             }
         });
-        
+
         navigator.mediaSession.setActionHandler('pause', () => {
             const video = document.querySelector('video');
             if (video) {
@@ -1028,15 +1077,16 @@ const char16_t k_youtube_background_playback_script[] =
             video.pause();
             }
         });
-        
+
         navigator.mediaSession.setActionHandler('seekbackward', () => {
             const video = document.querySelector('video');
             if (video) video.currentTime = Math.max(0, video.currentTime - 10);
         });
-        
+
         navigator.mediaSession.setActionHandler('seekforward', () => {
             const video = document.querySelector('video');
-            if (video) video.currentTime = Math.min(video.duration, video.currentTime + 10);
+            if (video)
+            video.currentTime = Math.min(video.duration, video.currentTime + 10);
         });
         }
     }
@@ -1047,14 +1097,21 @@ const char16_t k_youtube_background_playback_script[] =
 
     function setupVideoElement() {
         const video = document.querySelector('video');
-        if (!video) return;
-        
+        if (!video || video.dataset.backgroundPlaybackSetup === 'true') return;
+
+        console.log('Setting up video element for background playback');
+
         video.removeAttribute('disablePictureInPicture');
-        
+        video.dataset.backgroundPlaybackSetup = 'true';
+
         const originalPause = video.pause;
-        video.pause = function() {
+        video.pause = function () {
         const stack = new Error().stack;
-        if (stack.includes('visibilitychange') || stack.includes('blur') || stack.includes('focus')) {
+        if (
+            stack.includes('visibilitychange') ||
+            stack.includes('blur') ||
+            stack.includes('focus')
+        ) {
             return;
         }
         userPaused = true;
@@ -1063,12 +1120,12 @@ const char16_t k_youtube_background_playback_script[] =
         };
 
         const originalPlay = video.play;
-        video.play = function() {
+        video.play = function () {
         userPaused = false;
         lastUserAction = Date.now();
         return originalPlay.call(this);
         };
-        
+
         video.addEventListener('pause', (e) => {
         if (!userPaused && !isUserAction()) {
             setTimeout(() => {
@@ -1084,100 +1141,149 @@ const char16_t k_youtube_background_playback_script[] =
             navigator.mediaSession.playbackState = 'playing';
         }
         });
-        
+
         video.addEventListener('pause', () => {
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = 'paused';
         }
         });
 
-        document.addEventListener('click', (e) => {
-        const target = e.target;
-        if (target.closest('.ytp-play-button') || 
-            target.closest('[data-title-no-tooltip="Play"]') || 
-            target.closest('[data-title-no-tooltip="Pause"]') ||
-            target.closest('.player-controls-play-pause-replay-button') ||
-            target.matches('[aria-label*="Play"]') ||
-            target.matches('[aria-label*="Pause"]')) {
-            lastUserAction = Date.now();
-            userPaused = target.closest('[data-title-no-tooltip="Pause"]') || target.matches('[aria-label*="Pause"]') ? false : true;
-        }
-        }, true);
+        // Set up user interaction tracking
+        if (!document.dataset.userInteractionSetup) {
+        document.addEventListener(
+            "click",
+            (e) => {
+            const target = e.target;
+            if (
+                target.closest(".ytp-play-button") ||
+                target.closest('[data-title-no-tooltip="Play"]') ||
+                target.closest('[data-title-no-tooltip="Pause"]') ||
+                target.closest(".player-controls-play-pause-replay-button") ||
+                target.matches('[aria-label*="Play"]') ||
+                target.matches('[aria-label*="Pause"]')
+            ) {
+                lastUserAction = Date.now();
+                userPaused =
+                target.closest('[data-title-no-tooltip="Pause"]') ||
+                target.matches('[aria-label*="Pause"]')
+                    ? false
+                    : true;
+            }
+            },
+            true
+        );
 
-        document.addEventListener('keydown', (e) => {
-        if (e.code === 'Space' || e.key === 'k' || e.key === 'K') {
-            lastUserAction = Date.now();
-            userPaused = !userPaused;
+        document.addEventListener(
+            "keydown",
+            (e) => {
+            if (e.code === "Space" || e.key === "k" || e.key === "K") {
+                lastUserAction = Date.now();
+                userPaused = !userPaused;
+            }
+            },
+            true
+        );
+
+        document.dataset.userInteractionSetup = "true";
         }
-        }, true);
+
+        videoSetupComplete = true;
     }
 
+    // Wait for video element to be ready with multiple strategies
+    function waitForVideoAndSetup() {
+        const video = document.querySelector("video");
+        
+        if (video && video.readyState >= 1) {
+        // Video exists and has metadata
+        setupVideoElement();
+        setupMediaSession();
+        return true;
+        } else if (video) {
+        // Video exists but not ready, wait for it
+        const onLoadedMetadata = () => {
+            setupVideoElement();
+            setupMediaSession();
+            video.removeEventListener("loadedmetadata", onLoadedMetadata);
+        };
+        video.addEventListener("loadedmetadata", onLoadedMetadata);
+        return true;
+        }
+        
+        return false;
+    }
+
+    // Override addEventListener to block visibility events early
     if (document._addEventListener === undefined) {
         document._addEventListener = document.addEventListener;
-        document.addEventListener = function(a, b, c) {
-        if (a != 'visibilitychange') {
+        document.addEventListener = function (a, b, c) {
+        if (a != "visibilitychange") {
             document._addEventListener(a, b, c);
         }
         };
     }
 
-    const buttonElement = document.createElement('button');
+    const buttonElement = document.createElement("button");
     const originalStyles = {
         backgroundColor: '#39B1F6',
         transform: 'scale(1)',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
         outline: '2px solid transparent',
-        outlineOffset: '2px'
+        outlineOffset: '2px',
     };
 
     const hoverStyles = {
         backgroundColor: '#2F90D5',
         transform: 'scale(1.1)',
-        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
+        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)',
     };
 
     const activeStyles = {
         transform: 'scale(0.95)',
         boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-        backgroundColor: '#2A82BF'
+        backgroundColor: '#2A82BF',
     };
 
     const focusStyles = {
-        outline: '2px solid #0056b3'
+        outline: '2px solid #0056b3',
     };
 
-    buttonElement.setAttribute('style', `
-        position: fixed;
-        bottom: 20px;
-        right: 20px;
-        z-index: 9999;
-        width: 60px;
-        height: 60px;
-        border-radius: 50%;
-        background-color: ${originalStyles.backgroundColor};
-        border: none;
-        box-shadow: ${originalStyles.boxShadow};
-        background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg");
-        background-repeat: no-repeat;
-        background-position: center;
-        background-size: 55%;
-        cursor: pointer;
-        transform: ${originalStyles.transform};
-        outline: ${originalStyles.outline};
-        outline-offset: ${originalStyles.outlineOffset};
-        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, outline 0.1s linear;
-    `);
+    buttonElement.setAttribute(
+        'style',
+        `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: ${originalStyles.backgroundColor};
+            border: none;
+            box-shadow: ${originalStyles.boxShadow};
+            background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 55%;
+            cursor: pointer;
+            transform: ${originalStyles.transform};
+            outline: ${originalStyles.outline};
+            outline-offset: ${originalStyles.outlineOffset};
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, outline 0.1s linear;
+        `
+    );
 
-    buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
-    buttonElement.setAttribute('title', 'Picture-in-Picture');
+    buttonElement.setAttribute("aria-label", "Enter Picture-in-Picture mode");
+    buttonElement.setAttribute("title", "Picture-in-Picture");
 
-    buttonElement.addEventListener('mouseenter', () => {
+    // Button event listeners
+    buttonElement.addEventListener("mouseenter", () => {
         buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
         buttonElement.style.transform = hoverStyles.transform;
         buttonElement.style.boxShadow = hoverStyles.boxShadow;
     });
 
-    buttonElement.addEventListener('mouseleave', () => {
+    buttonElement.addEventListener("mouseleave", () => {
         if (document.activeElement !== buttonElement) {
         buttonElement.style.backgroundColor = originalStyles.backgroundColor;
         buttonElement.style.transform = originalStyles.transform;
@@ -1189,14 +1295,14 @@ const char16_t k_youtube_background_playback_script[] =
         }
     });
 
-    buttonElement.addEventListener('mousedown', () => {
+    buttonElement.addEventListener("mousedown", () => {
         buttonElement.style.transform = activeStyles.transform;
         buttonElement.style.boxShadow = activeStyles.boxShadow;
         buttonElement.style.backgroundColor = activeStyles.backgroundColor;
     });
 
-    buttonElement.addEventListener('mouseup', () => {
-        if (buttonElement.matches(':hover')) {
+    buttonElement.addEventListener("mouseup", () => {
+        if (buttonElement.matches(":hover")) {
         buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
         buttonElement.style.transform = hoverStyles.transform;
         buttonElement.style.boxShadow = hoverStyles.boxShadow;
@@ -1207,61 +1313,126 @@ const char16_t k_youtube_background_playback_script[] =
         }
     });
 
-    buttonElement.addEventListener('focus', () => {
+    buttonElement.addEventListener("focus", () => {
         buttonElement.style.outline = focusStyles.outline;
         buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
         buttonElement.style.transform = hoverStyles.transform;
         buttonElement.style.boxShadow = hoverStyles.boxShadow;
     });
 
-    buttonElement.addEventListener('blur', () => {
+    buttonElement.addEventListener("blur", () => {
         buttonElement.style.outline = originalStyles.outline;
-        if (!buttonElement.matches(':hover')) {
+        if (!buttonElement.matches(":hover")) {
         buttonElement.style.backgroundColor = originalStyles.backgroundColor;
         buttonElement.style.transform = originalStyles.transform;
         buttonElement.style.boxShadow = originalStyles.boxShadow;
         }
     });
 
-    buttonElement.addEventListener('click', () => {
-        const videoElement = document.querySelector('video');
+    buttonElement.addEventListener("click", () => {
+        const videoElement = document.querySelector("video");
         if (videoElement) {
-        videoElement.removeAttribute('disablePictureInPicture');
+        videoElement.removeAttribute("disablePictureInPicture");
         videoElement.requestPictureInPicture().catch(console.error);
         }
     });
 
-    const observer = new MutationObserver(() => {
-        const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
-        if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
-        buttonContainerElement.prepend(buttonElement);
-        setupVideoElement();
-    });
-    observer.observe(document.documentElement, { subtree: true, childList: true });
-
-    const IS_YOUTUBE = /(?:^|.+\.)youtube\.com/.test(window.location.hostname) || /(?:^|.+\.)youtube-nocookie\.com/.test(window.location.hostname);
-    const IS_MOBILE_YOUTUBE = window.location.hostname === 'm.youtube.com';
+    // Platform detection
+    const IS_YOUTUBE =
+        /(?:^|.+\.)youtube\.com/.test(window.location.hostname) ||
+        /(?:^|.+\.)youtube-nocookie\.com/.test(window.location.hostname);
+    const IS_MOBILE_YOUTUBE = window.location.hostname === "m.youtube.com";
     const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
     const IS_VIMEO = /(?:^|.+\.)vimeo\.com/.test(window.location.hostname);
-    const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
+    const IS_ANDROID = window.navigator.userAgent.indexOf("Android") > -1;
 
-    const initialVideoElement = document.querySelector('video');
+    // Enhanced video detection and setup
+    function initializeAllFeatures() {
+        console.log("Initializing all features");
+        
+        // Setup background playback immediately
+        setupBackgroundPlayback();
+        
+        // Try to setup video-dependent features
+        if (!waitForVideoAndSetup()) {
+        // If video not ready, set up observers to catch it when it appears
+        let attempts = 0;
+        const maxAttempts = 50; // 5 seconds max
+        
+        const videoCheckInterval = setInterval(() => {
+            attempts++;
+            if (waitForVideoAndSetup() || attempts >= maxAttempts) {
+            clearInterval(videoCheckInterval);
+            }
+        }, 100);
+        }
+    }
+
+    // Main observer for DOM changes
+    const observer = new MutationObserver((mutations) => {
+        const buttonContainerElement = document.querySelector(
+        ".mobile-topbar-header-content"
+        );
+        const onWatchPage = window.location.pathname === "/watch";
+
+        // Handle PiP button
+        if (
+        onWatchPage &&
+        buttonContainerElement &&
+        !buttonContainerElement.contains(buttonElement)
+        ) {
+        buttonContainerElement.prepend(buttonElement);
+        }
+
+        // Handle video setup
+        if (onWatchPage && !videoSetupComplete) {
+        waitForVideoAndSetup();
+        }
+
+        // Reset on navigation away from watch page
+        if (!onWatchPage && videoSetupComplete) {
+        videoSetupComplete = false;
+        const oldVideo = document.querySelector(
+            'video[data-background-playback-setup="true"]'
+        );
+        if (oldVideo) {
+            delete oldVideo.dataset.backgroundPlaybackSetup;
+        }
+        }
+    });
+
+    observer.observe(document.documentElement, {
+        subtree: true,
+        childList: true,
+    });
+
+    // Set up platform-specific overrides
+    const initialVideoElement = document.querySelector("video");
     if (initialVideoElement) {
-        initialVideoElement.removeAttribute('disablePictureInPicture');
+        initialVideoElement.removeAttribute("disablePictureInPicture");
     }
 
     if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
         Object.defineProperties(document, {
         hidden: { value: false },
-        visibilityState: { value: 'visible' }
+        visibilityState: { value: "visible" },
         });
     }
 
-    window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
+    window.addEventListener(
+        "visibilitychange",
+        (evt) => evt.stopImmediatePropagation(),
+        true
+    );
     if (IS_VIMEO) {
-        window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
+        window.addEventListener(
+        "fullscreenchange",
+        (evt) => evt.stopImmediatePropagation(),
+        true
+        );
     }
 
+    // Keep-alive functionality
     function pressKey() {
         const key = 18;
         sendKeyEvent("keydown", key);
@@ -1269,16 +1440,21 @@ const char16_t k_youtube_background_playback_script[] =
     }
 
     function sendKeyEvent(type, key) {
-        document.dispatchEvent(new KeyboardEvent(type, {
-        bubbles: true,
-        cancelable: true,
-        keyCode: key,
-        which: key
-        }));
+        document.dispatchEvent(
+        new KeyboardEvent(type, {
+            bubbles: true,
+            cancelable: true,
+            keyCode: key,
+            which: key,
+        })
+        );
     }
 
     function loop(callback, delay, jitter) {
-        const actualDelay = Math.max(delay + getRandomInt(-jitter / 2, jitter / 2), 0);
+        const actualDelay = Math.max(
+        delay + getRandomInt(-jitter / 2, jitter / 2),
+        0
+        );
         setTimeout(() => {
         callback();
         loop(callback, delay, jitter);
@@ -1290,261 +1466,26 @@ const char16_t k_youtube_background_playback_script[] =
         max = Math.floor(max);
         return Math.floor(Math.random() * (max - min)) + min;
     }
-    
-    function initializePlayerDependentFeatures() {
-        if (playerFeaturesInitialized) {
-            const currentVideo = document.querySelector('video');
-            if (currentVideo && currentVideo.dataset.playerFeaturesSet === "true") {
-                return; // Already set up on this specific video
-            } else if (!currentVideo) {
-                playerFeaturesInitialized = false; // Video gone, reset for next one
-                return;
-            }
-            playerFeaturesInitialized = false;
-        }
 
-        const video = document.querySelector('video');
-        if (video) {
-            if (video.dataset.playerFeaturesSet === "true") return; // Already did this one
-
-            setupVideoElement();
-            setupMediaSession();
-            video.dataset.playerFeaturesSet = "true";
-            playerFeaturesInitialized = true;
-        }
+    // Initialize everything
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initializeAllFeatures);
+    } else {
+        initializeAllFeatures();
     }
 
-    setupBackgroundPlayback(); // This can run early
-
-    // Observer for the PiP button and its container
-    const buttonObserver = new MutationObserver(() => {
-        const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
-        const onWatchPage = window.location.pathname === '/watch';
-
-        if (onWatchPage && buttonContainerElement && !buttonContainerElement.contains(buttonElement)) {
-            buttonContainerElement.prepend(buttonElement);
-        }
-        
-        // When button container is ready (or any relevant mutation occurs on a watch page),
-        // ensure player features are initialized.
-        // Also, if we navigate off a watch page, reset the flag.
-        if (onWatchPage) {
-            initializePlayerDependentFeatures();
-        } else {
-            if(playerFeaturesInitialized) {
-                const oldVideo = document.querySelector('video[data-player-features-set="true"]');
-                if(oldVideo) delete oldVideo.dataset.playerFeaturesSet;
-            }
-            playerFeaturesInitialized = false; // Reset if not on watch page
+    // Also try on window load as fallback
+    window.addEventListener("load", () => {
+        if (!videoSetupComplete) {
+        initializeAllFeatures();
         }
     });
-    buttonObserver.observe(document.documentElement, { subtree: true, childList: true });
-
-    // Attempt to initialize features early if document is already loaded or when it loads
-    if (document.readyState === 'complete' || document.readyState === 'interactive') {
-        initializePlayerDependentFeatures();
-    } else {
-        document.addEventListener('DOMContentLoaded', initializePlayerDependentFeatures, { once: true });
-    }
-
-    // Fallback observer specifically for the video element if it appears later
-    // and hasn't been caught by DOMContentLoaded or the buttonObserver logic yet.
-    let earlyVideoObserver = null;
-    if (!playerFeaturesInitialized) {
-        earlyVideoObserver = new MutationObserver((mutations, obs) => {
-            if (document.querySelector('video')) {
-                initializePlayerDependentFeatures();
-                if (playerFeaturesInitialized) {
-                    obs.disconnect(); // Successfully initialized
-                }
-            }
-        });
-        earlyVideoObserver.observe(document.documentElement, { childList: true, subtree: true });
-        // Clean up this observer after a timeout if it didn't find a video,
-        // to prevent it from running indefinitely on non-video pages.
-        setTimeout(() => {
-            if (earlyVideoObserver && !playerFeaturesInitialized) {
-                earlyVideoObserver.disconnect();
-            }
-        }, 15000); // 15 seconds timeout
-    }
 
     if (IS_YOUTUBE) {
         loop(pressKey, 60000, 10000);
     }
     })();
     )";
-
-    // u"(function() { "
-    //   u"const buttonElement = document.createElement('button');"
-    //   u"buttonElement.setAttribute('style', `    -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;    background-color: white;    align-self: stretch;    flex: 1;`);"
-    //   u"buttonElement.addEventListener('click', () => {"
-    //   u"    const videoElement = document.querySelector('video');"
-    //   u"    videoElement.removeAttribute('disablePictureInPicture');"
-    //   u"    videoElement.requestPictureInPicture();"
-    //   u"});"
-    //   u"const observer = new MutationObserver(() => {"
-    //   u"    const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    //   u"    if(window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;"
-    //   u"    buttonContainerElement.prepend(buttonElement);"
-    //   u"});"
-    //   u"observer.observe(document.documentElement, { subtree: true, childList: true });"
-    // "}());";
-    // uR"(
-    // (function() {
-    //     if (document._addEventListener === undefined) {
-    //         document._addEventListener = document.addEventListener;
-    //         document.addEventListener = function(a,b,c) {
-    //             if(a != 'visibilitychange') {
-    //                 document._addEventListener(a,b,c);
-    //             }
-    //         };
-    //     }
-    // }());
-    // // Function to modify the flags if the target object exists.
-    // function modifyYtcfgFlags() {
-    //   if (!window.ytcfg) {
-    //     return;
-    //   }
-    //   const config = window.ytcfg.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH
-    //   if (config && config.serializedExperimentFlags) {
-    //     let flags = config.serializedExperimentFlags;
-    //     // Replace target flags.
-    //     flags = flags
-    //       .replace("html5_picture_in_picture_blocking_ontimeupdate=true", "html5_picture_in_picture_blocking_ontimeupdate=false")
-    //       .replace("html5_picture_in_picture_blocking_onresize=true", "html5_picture_in_picture_blocking_onresize=false")
-    //       .replace("html5_picture_in_picture_blocking_document_fullscreen=true", "html5_picture_in_picture_blocking_document_fullscreen=false")
-    //       .replace("html5_picture_in_picture_blocking_standard_api=true", "html5_picture_in_picture_blocking_standard_api=false")
-    //       .replace("html5_picture_in_picture_logging_onresize=true", "html5_picture_in_picture_logging_onresize=false");
-    //     // Assign updated flags back to config.
-    //     config.serializedExperimentFlags = flags;
-    //     if (observer) {
-    //       observer.disconnect();
-    //     }
-    //   }
-    // }
-    // const observer = new MutationObserver((mutations) => {
-    //   for (const mutation of mutations) {
-    //     if (mutation.type === "childList" && mutation.addedNodes.length > 0) {
-    //       mutation.addedNodes.forEach((node) => {
-    //         if (node.tagName === "SCRIPT") {
-    //           // Check and modify flags when a new script is added.
-    //           modifyYtcfgFlags();
-    //         }
-    //       });
-    //     }
-    //   }
-    // });
-    // observer.observe(document.documentElement, { childList: true, subtree: true });
-    // )";
-    // u"(function() {"
-    // u"  const configModificationScript = document.createElement('script');"
-    // u"  configModificationScript.textContent = `"
-    // u"    function modifyYtcfgFlags() {"
-    // u"      if (!window.ytcfg) {"
-    // u"          return;"
-    // u"      }"
-    // u"      const config = window.ytcfg.get(\"WEB_PLAYER_CONTEXT_CONFIGS\")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH"
-    // u"      if (config && config.serializedExperimentFlags) {"
-    // u"          let flags = config.serializedExperimentFlags;"
-    // u"          flags = flags"
-    // u"              .replace(\"html5_picture_in_picture_blocking_ontimeupdate=true\", \"html5_picture_in_picture_blocking_ontimeupdate=false\")"
-    // u"              .replace(\"html5_picture_in_picture_blocking_onresize=true\", \"html5_picture_in_picture_blocking_onresize=false\")"
-    // u"              .replace(\"html5_picture_in_picture_blocking_document_fullscreen=true\", \"html5_picture_in_picture_blocking_document_fullscreen=false\")"
-    // u"              .replace(\"html5_picture_in_picture_blocking_standard_api=true\", \"html5_picture_in_picture_blocking_standard_api=false\")"
-    // u"              .replace(\"html5_picture_in_picture_logging_onresize=true\", \"html5_picture_in_picture_logging_onresize=false\");"
-    // u"          // Assign updated flags back to the config"
-    // u"          config.serializedExperimentFlags = flags;"
-    // u"          if (configModificationObserver) {"
-    // u"              configModificationObserver.disconnect();"
-    // u"          }"
-    // u"      }"
-    // u"    }"
-    // u"    // MutationObserver to watch for new <script> elements"
-    // u"    const configModificationObserver = new MutationObserver((mutations) => {"
-    // u"        for (const mutation of mutations) {"
-    // u"            if (mutation.type === \"childList\" && mutation.addedNodes.length > 0) {"
-    // u"                mutation.addedNodes.forEach((node) => {"
-    // u"                    if (node.tagName === \"SCRIPT\") {"
-    // u"                        // Check and modify flags when a new script is added"
-    // u"                        modifyYtcfgFlags();"
-    // u"                    }"
-    // u"                });"
-    // u"            }"
-    // u"        }"
-    // u"    });"
-    // u"    configModificationObserver.observe(document.documentElement, { childList: true, subtree: true });"
-    // u"  `;"
-    // u"  document.head.appendChild(configModificationScript);"
-    // u"  configModificationScript.remove();"
-    // u""
-    // u"  // Script 2: Adds a Picture-in-Picture button to the mobile YouTube interface"
-    // u"  const buttonElement = document.createElement('button');"
-    // u"  buttonElement.setAttribute('style', `"
-    // u"      -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;"
-    // u"      background-color: white;"
-    // u"      align-self: stretch;"
-    // u"      flex: 1;"
-    // u"  `);"
-    // u"  buttonElement.addEventListener('click', () => {"
-    // u"      const videoElement = document.querySelector('video');"
-    // u"      videoElement.removeAttribute('disablePictureInPicture');"
-    // u"      videoElement.requestPictureInPicture();"
-    // u"  });"
-    // u"  const buttonObserver = new MutationObserver(() => {"
-    // u"      const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    // u"      // Check if the button container exists and does NOT contain the button"
-    // u"      if(window.location.pathname === '/watch' && buttonContainerElement && !buttonContainerElement.contains(buttonElement)) {"
-    // u"          buttonContainerElement.prepend(buttonElement);"
-    // u"      }"
-    // u"  });"
-    // u"  buttonObserver.observe(document.documentElement, { subtree: true, childList: true });"
-    // u""
-    // u"  // Initial check in case the elements are already present on page load"
-    // u"  const initialButtonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    // u"  if (window.location.pathname === '/watch' && initialButtonContainerElement && !initialButtonContainerElement.contains(buttonElement)) {"
-    // u"      initialButtonContainerElement.prepend(buttonElement);"
-    // u"  }"
-    // u"})();";
-    
-    // u"(function() { "
-    //   u"const buttonElement = document.createElement('button');"
-    //   u"buttonElement.setAttribute('style', `    -webkit-mask: url(\"https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg\") right center / auto 75% no-repeat;    background-color: white;    align-self: stretch;    flex: 1;`);"
-    //   u"buttonElement.addEventListener('click', () => {"
-    //   u"    const videoElement = document.querySelector('video');"
-    //   u"    videoElement.removeAttribute('disablePictureInPicture');"
-    //   u"    videoElement.requestPictureInPicture();"
-    //   u"});"
-    //   u"const observer = new MutationObserver(() => {"
-    //   u"    const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');"
-    //   u"    if(window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;"
-    //   u"    buttonContainerElement.prepend(buttonElement);"
-    //   u"});"
-    //   u"observer.observe(document.documentElement, { subtree: true, childList: true });"
-    // "}());";
-
-    // u"(function() {"
-    // "    function enablePiP() {"
-    // "        let video = document.querySelector('video');"
-    // "        if (video && document.pictureInPictureEnabled && !document.pictureInPictureElement) {"
-    // "            video.play();"  
-    // "            video.requestFullscreen();"
-    // "            video.requestPictureInPicture().catch(err => console.log('PiP Error:', err));"
-    // "        }"
-    // "    }"
-    // "    enablePiP();"
-    // "    document.addEventListener('visibilitychange', enablePiP);"
-    // "}());";
-    // u"(function() {"
-    // "    if (document._addEventListener === undefined) {"
-    // "        document._addEventListener = document.addEventListener;"
-    // "        document.addEventListener = function(a,b,c) {"
-    // "            if(a != 'visibilitychange') {"
-    // "                document._addEventListener(a,b,c);"
-    // "            }"
-    // "        };"
-    // "    }"
-    // "}());";
 
 bool IsYouTubeDomain(const GURL& url) {
   if (net::registry_controlled_domains::SameDomainOrHost(
