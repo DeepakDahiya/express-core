@@ -924,333 +924,217 @@ const char16_t k_youtube_background_playback_script[] =
 
 
       // ---- 1. PiP flag overrides for YouTube mobile ----
-    let userPaused = false;
-    let lastUserAction = 0;
-    let playerFeaturesInitialized = false;
-    let videoSetupComplete = false;
+        let userPaused = false;
+        let lastUserAction = 0;
 
-    function modifyYtcfgFlags() {
-        const config = window.ytcfg
-        ?.get('WEB_PLAYER_CONTEXT_CONFIGS')
-        ?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
-        if (config && typeof config.serializedExperimentFlags === 'string') {
-        let flags = config.serializedExperimentFlags;
-        flags = flags
-            .replace(
-            'html5_picture_in_picture_blocking_ontimeupdate=true',
-            'html5_picture_in_picture_blocking_ontimeupdate=false'
-            )
-            .replace(
-            'html5_picture_in_picture_blocking_onresize=true',
-            'html5_picture_in_picture_blocking_onresize=false'
-            )
-            .replace(
-            'html5_picture_in_picture_blocking_document_fullscreen=true',
-            'html5_picture_in_picture_blocking_document_fullscreen=false'
-            )
-            .replace(
-            'html5_picture_in_picture_blocking_standard_api=true',
-            'html5_picture_in_picture_blocking_standard_api=false'
-            )
-            .replace(
-            'html5_picture_in_picture_logging_onresize=true',
-            'html5_picture_in_picture_logging_onresize=false'
-            );
-        config.serializedExperimentFlags = flags;
-        }
-    }
-
-    // Apply ytcfg modifications immediately and on script loads
-    if (window.ytcfg) {
-        modifyYtcfgFlags();
-    } else {
-        document.addEventListener(
-        'load',
-        (event) => {
-            const target = event.target;
-            if (target.tagName === 'SCRIPT' && window.ytcfg) {
-            modifyYtcfgFlags();
+        function modifyYtcfgFlags() {
+            const config = window.ytcfg?.get('WEB_PLAYER_CONTEXT_CONFIGS')?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH;
+            if (config && typeof config.serializedExperimentFlags === 'string') {
+                let flags = config.serializedExperimentFlags;
+                flags = flags
+                    .replace('html5_picture_in_picture_blocking_ontimeupdate=true', 'html5_picture_in_picture_blocking_ontimeupdate=false')
+                    .replace('html5_picture_in_picture_blocking_onresize=true', 'html5_picture_in_picture_blocking_onresize=false')
+                    .replace('html5_picture_in_picture_blocking_document_fullscreen=true', 'html5_picture_in_picture_blocking_document_fullscreen=false')
+                    .replace('html5_picture_in_picture_blocking_standard_api=true', 'html5_picture_in_picture_blocking_standard_api=false')
+                    .replace('html5_picture_in_picture_logging_onresize=true', 'html5_picture_in_picture_logging_onresize=false');
+                config.serializedExperimentFlags = flags;
             }
-        },
-        true
-        );
-    }
+        }
 
-    function setupBackgroundPlayback() {
-        const visibilityProps = [
-        'hidden',
-        'webkitHidden',
-        'mozHidden',
-        'msHidden',
-        ];
-        const visibilityStates = [
-        'visibilityState',
-        'webkitVisibilityState',
-        'mozVisibilityState',
-        'msVisibilityState',
-        ];
-
-        visibilityProps.forEach((prop) => {
-        if (prop in document) {
-            Object.defineProperty(document, prop, {
-            value: false,
-            writable: false,
-            configurable: false,
+        function setupBackgroundPlayback() {
+            const visibilityProps = ['hidden', 'webkitHidden', 'mozHidden', 'msHidden'];
+            const visibilityStates = ['visibilityState', 'webkitVisibilityState', 'mozVisibilityState', 'msVisibilityState'];
+            
+            visibilityProps.forEach(prop => {
+                if (prop in document) {
+                    Object.defineProperty(document, prop, {
+                        value: false,
+                        writable: false,
+                        configurable: false
+                    });
+                }
+            });
+            
+            visibilityStates.forEach(state => {
+                if (state in document) {
+                    Object.defineProperty(document, state, {
+                        value: 'visible',
+                        writable: false,
+                        configurable: false
+                    });
+                }
+            });
+            
+            Object.defineProperty(document, 'hasFocus', {
+                value: () => true,
+                writable: false,
+                configurable: false
+            });
+            
+            const eventsToBlock = [
+                'visibilitychange', 'webkitvisibilitychange', 'mozvisibilitychange', 'msvisibilitychange',
+                'blur', 'focus', 'focusin', 'focusout', 'pagehide', 'pageshow'
+            ];
+            
+            eventsToBlock.forEach(eventType => {
+                document.addEventListener(eventType, (e) => {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }, true);
+                
+                window.addEventListener(eventType, (e) => {
+                    e.stopImmediatePropagation();
+                    e.preventDefault();
+                }, true);
             });
         }
-        });
 
-        visibilityStates.forEach((state) => {
-        if (state in document) {
-            Object.defineProperty(document, state, {
-            value: 'visible',
-            writable: false,
-            configurable: false,
+        function setupMediaSession() {
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: document.title || 'YouTube Video',
+                    artist: 'YouTube',
+                    artwork: [
+                        { src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' }
+                    ]
+                });
+                
+                navigator.mediaSession.setActionHandler('play', () => {
+                    const video = document.querySelector('video');
+                    if (video) {
+                        userPaused = false;
+                        lastUserAction = Date.now();
+                        video.play();
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    const video = document.querySelector('video');
+                    if (video) {
+                        userPaused = true;
+                        lastUserAction = Date.now();
+                        video.pause();
+                    }
+                });
+                
+                navigator.mediaSession.setActionHandler('seekbackward', () => {
+                    const video = document.querySelector('video');
+                    if (video) video.currentTime = Math.max(0, video.currentTime - 10);
+                });
+                
+                navigator.mediaSession.setActionHandler('seekforward', () => {
+                    const video = document.querySelector('video');
+                    if (video) video.currentTime = Math.min(video.duration, video.currentTime + 10);
+                });
+            }
+        }
+
+        function isUserAction() {
+            return Date.now() - lastUserAction < 1000;
+        }
+
+        function setupVideoElement() {
+            const video = document.querySelector('video');
+            if (!video) return;
+            
+            video.removeAttribute('disablePictureInPicture');
+            
+            const originalPause = video.pause;
+            video.pause = function() {
+                const stack = new Error().stack;
+                if (stack.includes('visibilitychange') || stack.includes('blur') || stack.includes('focus')) {
+                    return;
+                }
+                userPaused = true;
+                lastUserAction = Date.now();
+                return originalPause.call(this);
+            };
+
+            const originalPlay = video.play;
+            video.play = function() {
+                userPaused = false;
+                lastUserAction = Date.now();
+                return originalPlay.call(this);
+            };
+            
+            video.addEventListener('pause', (e) => {
+                if (!userPaused && !isUserAction()) {
+                    setTimeout(() => {
+                        if (video.paused && !video.ended && !userPaused) {
+                            video.play().catch(console.error);
+                        }
+                    }, 100);
+                }
             });
+
+            video.addEventListener('play', () => {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'playing';
+                }
+            });
+            
+            video.addEventListener('pause', () => {
+                if ('mediaSession' in navigator) {
+                    navigator.mediaSession.playbackState = 'paused';
+                }
+            });
+
+            document.addEventListener('click', (e) => {
+                const target = e.target;
+                if (target.closest('.ytp-play-button') || 
+                    target.closest('[data-title-no-tooltip="Play"]') || 
+                    target.closest('[data-title-no-tooltip="Pause"]') ||
+                    target.closest('.player-controls-play-pause-replay-button') ||
+                    target.matches('[aria-label*="Play"]') ||
+                    target.matches('[aria-label*="Pause"]')) {
+                    lastUserAction = Date.now();
+                    userPaused = target.closest('[data-title-no-tooltip="Pause"]') || target.matches('[aria-label*="Pause"]') ? false : true;
+                }
+            }, true);
+
+            document.addEventListener('keydown', (e) => {
+                if (e.code === 'Space' || e.key === 'k' || e.key === 'K') {
+                    lastUserAction = Date.now();
+                    userPaused = !userPaused;
+                }
+            }, true);
         }
-        });
 
-        Object.defineProperty(document, 'hasFocus', {
-        value: () => true,
-        writable: false,
-        configurable: false,
-        });
-
-        const eventsToBlock = [
-        'visibilitychange',
-        'webkitvisibilitychange',
-        'mozvisibilitychange',
-        'msvisibilitychange',
-        'blur',
-        'focus',
-        'focusin',
-        'focusout',
-        'pagehide',
-        'pageshow',
-        ];
-
-        eventsToBlock.forEach((eventType) => {
-        document.addEventListener(
-            eventType,
-            (e) => {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            },
-            true
-        );
-
-        window.addEventListener(
-            eventType,
-            (e) => {
-            e.stopImmediatePropagation();
-            e.preventDefault();
-            },
-            true
-        );
-        });
-    }
-
-    function setupMediaSession() {
-        if ('mediaSession' in navigator) {
-        navigator.mediaSession.metadata = new MediaMetadata({
-            title: document.title || 'YouTube Video',
-            artist: 'YouTube',
-            artwork: [
-            { src: '/favicon.ico', sizes: '96x96', type: 'image/x-icon' },
-            ],
-        });
-
-        navigator.mediaSession.setActionHandler('play', () => {
-            const video = document.querySelector('video');
-            if (video) {
-            userPaused = false;
-            lastUserAction = Date.now();
-            video.play();
-            }
-        });
-
-        navigator.mediaSession.setActionHandler('pause', () => {
-            const video = document.querySelector('video');
-            if (video) {
-            userPaused = true;
-            lastUserAction = Date.now();
-            video.pause();
-            }
-        });
-
-        navigator.mediaSession.setActionHandler('seekbackward', () => {
-            const video = document.querySelector('video');
-            if (video) video.currentTime = Math.max(0, video.currentTime - 10);
-        });
-
-        navigator.mediaSession.setActionHandler('seekforward', () => {
-            const video = document.querySelector('video');
-            if (video)
-            video.currentTime = Math.min(video.duration, video.currentTime + 10);
-        });
+        if (document._addEventListener === undefined) {
+            document._addEventListener = document.addEventListener;
+            document.addEventListener = function(a, b, c) {
+                if (a != 'visibilitychange') {
+                    document._addEventListener(a, b, c);
+                }
+            };
         }
-    }
 
-    function isUserAction() {
-        return Date.now() - lastUserAction < 1000;
-    }
-
-    function setupVideoElement() {
-        const video = document.querySelector('video');
-        if (!video || video.dataset.backgroundPlaybackSetup === 'true') return;
-
-        console.log('Setting up video element for background playback');
-
-        video.removeAttribute('disablePictureInPicture');
-        video.dataset.backgroundPlaybackSetup = 'true';
-
-        const originalPause = video.pause;
-        video.pause = function () {
-        const stack = new Error().stack;
-        if (
-            stack.includes('visibilitychange') ||
-            stack.includes('blur') ||
-            stack.includes('focus')
-        ) {
-            return;
-        }
-        userPaused = true;
-        lastUserAction = Date.now();
-        return originalPause.call(this);
+        const buttonElement = document.createElement('button');
+        const originalStyles = {
+            backgroundColor: '#39B1F6',
+            transform: 'scale(1)',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            outline: '2px solid transparent',
+            outlineOffset: '2px'
         };
 
-        const originalPlay = video.play;
-        video.play = function () {
-        userPaused = false;
-        lastUserAction = Date.now();
-        return originalPlay.call(this);
+        const hoverStyles = {
+            backgroundColor: '#2F90D5',
+            transform: 'scale(1.1)',
+            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
         };
 
-        video.addEventListener('pause', (e) => {
-        if (!userPaused && !isUserAction()) {
-            setTimeout(() => {
-            if (video.paused && !video.ended && !userPaused) {
-                video.play().catch(console.error);
-            }
-            }, 100);
-        }
-        });
-
-        video.addEventListener('play', () => {
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'playing';
-        }
-        });
-
-        video.addEventListener('pause', () => {
-        if ('mediaSession' in navigator) {
-            navigator.mediaSession.playbackState = 'paused';
-        }
-        });
-
-        // Set up user interaction tracking
-        if (!document.dataset.userInteractionSetup) {
-        document.addEventListener(
-            "click",
-            (e) => {
-            const target = e.target;
-            if (
-                target.closest(".ytp-play-button") ||
-                target.closest('[data-title-no-tooltip="Play"]') ||
-                target.closest('[data-title-no-tooltip="Pause"]') ||
-                target.closest(".player-controls-play-pause-replay-button") ||
-                target.matches('[aria-label*="Play"]') ||
-                target.matches('[aria-label*="Pause"]')
-            ) {
-                lastUserAction = Date.now();
-                userPaused =
-                target.closest('[data-title-no-tooltip="Pause"]') ||
-                target.matches('[aria-label*="Pause"]')
-                    ? false
-                    : true;
-            }
-            },
-            true
-        );
-
-        document.addEventListener(
-            "keydown",
-            (e) => {
-            if (e.code === "Space" || e.key === "k" || e.key === "K") {
-                lastUserAction = Date.now();
-                userPaused = !userPaused;
-            }
-            },
-            true
-        );
-
-        document.dataset.userInteractionSetup = "true";
-        }
-
-        videoSetupComplete = true;
-    }
-
-    // Wait for video element to be ready with multiple strategies
-    function waitForVideoAndSetup() {
-        const video = document.querySelector("video");
-        
-        if (video && video.readyState >= 1) {
-        // Video exists and has metadata
-        setupVideoElement();
-        setupMediaSession();
-        return true;
-        } else if (video) {
-        // Video exists but not ready, wait for it
-        const onLoadedMetadata = () => {
-            setupVideoElement();
-            setupMediaSession();
-            video.removeEventListener("loadedmetadata", onLoadedMetadata);
+        const activeStyles = {
+            transform: 'scale(0.95)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            backgroundColor: '#2A82BF'
         };
-        video.addEventListener("loadedmetadata", onLoadedMetadata);
-        return true;
-        }
-        
-        return false;
-    }
 
-    // Override addEventListener to block visibility events early
-    if (document._addEventListener === undefined) {
-        document._addEventListener = document.addEventListener;
-        document.addEventListener = function (a, b, c) {
-        if (a != "visibilitychange") {
-            document._addEventListener(a, b, c);
-        }
+        const focusStyles = {
+            outline: '2px solid #0056b3'
         };
-    }
 
-    const buttonElement = document.createElement("button");
-    const originalStyles = {
-        backgroundColor: '#39B1F6',
-        transform: 'scale(1)',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-        outline: '2px solid transparent',
-        outlineOffset: '2px',
-    };
-
-    const hoverStyles = {
-        backgroundColor: '#2F90D5',
-        transform: 'scale(1.1)',
-        boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)',
-    };
-
-    const activeStyles = {
-        transform: 'scale(0.95)',
-        boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-        backgroundColor: '#2A82BF',
-    };
-
-    const focusStyles = {
-        outline: '2px solid #0056b3',
-    };
-
-    buttonElement.setAttribute(
-        'style',
-        `
+        buttonElement.setAttribute('style', `
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -1270,220 +1154,169 @@ const char16_t k_youtube_background_playback_script[] =
             outline: ${originalStyles.outline};
             outline-offset: ${originalStyles.outlineOffset};
             transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, outline 0.1s linear;
-        `
-    );
+        `);
 
-    buttonElement.setAttribute("aria-label", "Enter Picture-in-Picture mode");
-    buttonElement.setAttribute("title", "Picture-in-Picture");
+        buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+        buttonElement.setAttribute('title', 'Picture-in-Picture');
 
-    // Button event listeners
-    buttonElement.addEventListener("mouseenter", () => {
-        buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-        buttonElement.style.transform = hoverStyles.transform;
-        buttonElement.style.boxShadow = hoverStyles.boxShadow;
-    });
-
-    buttonElement.addEventListener("mouseleave", () => {
-        if (document.activeElement !== buttonElement) {
-        buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-        buttonElement.style.transform = originalStyles.transform;
-        buttonElement.style.boxShadow = originalStyles.boxShadow;
-        } else {
-        buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-        buttonElement.style.transform = hoverStyles.transform;
-        buttonElement.style.boxShadow = hoverStyles.boxShadow;
-        }
-    });
-
-    buttonElement.addEventListener("mousedown", () => {
-        buttonElement.style.transform = activeStyles.transform;
-        buttonElement.style.boxShadow = activeStyles.boxShadow;
-        buttonElement.style.backgroundColor = activeStyles.backgroundColor;
-    });
-
-    buttonElement.addEventListener("mouseup", () => {
-        if (buttonElement.matches(":hover")) {
-        buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-        buttonElement.style.transform = hoverStyles.transform;
-        buttonElement.style.boxShadow = hoverStyles.boxShadow;
-        } else {
-        buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-        buttonElement.style.transform = originalStyles.transform;
-        buttonElement.style.boxShadow = originalStyles.boxShadow;
-        }
-    });
-
-    buttonElement.addEventListener("focus", () => {
-        buttonElement.style.outline = focusStyles.outline;
-        buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-        buttonElement.style.transform = hoverStyles.transform;
-        buttonElement.style.boxShadow = hoverStyles.boxShadow;
-    });
-
-    buttonElement.addEventListener("blur", () => {
-        buttonElement.style.outline = originalStyles.outline;
-        if (!buttonElement.matches(":hover")) {
-        buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-        buttonElement.style.transform = originalStyles.transform;
-        buttonElement.style.boxShadow = originalStyles.boxShadow;
-        }
-    });
-
-    buttonElement.addEventListener("click", () => {
-        const videoElement = document.querySelector("video");
-        if (videoElement) {
-        videoElement.removeAttribute("disablePictureInPicture");
-        videoElement.requestPictureInPicture().catch(console.error);
-        }
-    });
-
-    // Platform detection
-    const IS_YOUTUBE =
-        /(?:^|.+\.)youtube\.com/.test(window.location.hostname) ||
-        /(?:^|.+\.)youtube-nocookie\.com/.test(window.location.hostname);
-    const IS_MOBILE_YOUTUBE = window.location.hostname === "m.youtube.com";
-    const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
-    const IS_VIMEO = /(?:^|.+\.)vimeo\.com/.test(window.location.hostname);
-    const IS_ANDROID = window.navigator.userAgent.indexOf("Android") > -1;
-
-    // Enhanced video detection and setup
-    function initializeAllFeatures() {
-        console.log("Initializing all features");
-        
-        // Setup background playback immediately
-        setupBackgroundPlayback();
-        
-        // Try to setup video-dependent features
-        if (!waitForVideoAndSetup()) {
-        // If video not ready, set up observers to catch it when it appears
-        let attempts = 0;
-        const maxAttempts = 50; // 5 seconds max
-        
-        const videoCheckInterval = setInterval(() => {
-            attempts++;
-            if (waitForVideoAndSetup() || attempts >= maxAttempts) {
-            clearInterval(videoCheckInterval);
-            }
-        }, 100);
-        }
-    }
-
-    // Main observer for DOM changes
-    const observer = new MutationObserver((mutations) => {
-        const buttonContainerElement = document.querySelector(
-        ".mobile-topbar-header-content"
-        );
-        const onWatchPage = window.location.pathname === "/watch";
-
-        // Handle PiP button
-        if (
-        onWatchPage &&
-        buttonContainerElement &&
-        !buttonContainerElement.contains(buttonElement)
-        ) {
-        buttonContainerElement.prepend(buttonElement);
-        }
-
-        // Handle video setup
-        if (onWatchPage && !videoSetupComplete) {
-        waitForVideoAndSetup();
-        }
-
-        // Reset on navigation away from watch page
-        if (!onWatchPage && videoSetupComplete) {
-        videoSetupComplete = false;
-        const oldVideo = document.querySelector(
-            'video[data-background-playback-setup="true"]'
-        );
-        if (oldVideo) {
-            delete oldVideo.dataset.backgroundPlaybackSetup;
-        }
-        }
-    });
-
-    observer.observe(document.documentElement, {
-        subtree: true,
-        childList: true,
-    });
-
-    // Set up platform-specific overrides
-    const initialVideoElement = document.querySelector("video");
-    if (initialVideoElement) {
-        initialVideoElement.removeAttribute("disablePictureInPicture");
-    }
-
-    if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
-        Object.defineProperties(document, {
-        hidden: { value: false },
-        visibilityState: { value: "visible" },
+        buttonElement.addEventListener('mouseenter', () => {
+            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+            buttonElement.style.transform = hoverStyles.transform;
+            buttonElement.style.boxShadow = hoverStyles.boxShadow;
         });
-    }
 
-    window.addEventListener(
-        "visibilitychange",
-        (evt) => evt.stopImmediatePropagation(),
-        true
-    );
-    if (IS_VIMEO) {
-        window.addEventListener(
-        "fullscreenchange",
-        (evt) => evt.stopImmediatePropagation(),
-        true
-        );
-    }
+        buttonElement.addEventListener('mouseleave', () => {
+            if (document.activeElement !== buttonElement) {
+                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+                buttonElement.style.transform = originalStyles.transform;
+                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            } else {
+                buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+                buttonElement.style.transform = hoverStyles.transform;
+                buttonElement.style.boxShadow = hoverStyles.boxShadow;
+            }
+        });
 
-    // Keep-alive functionality
-    function pressKey() {
-        const key = 18;
-        sendKeyEvent("keydown", key);
-        sendKeyEvent("keyup", key);
-    }
+        buttonElement.addEventListener('mousedown', () => {
+            buttonElement.style.transform = activeStyles.transform;
+            buttonElement.style.boxShadow = activeStyles.boxShadow;
+            buttonElement.style.backgroundColor = activeStyles.backgroundColor;
+        });
 
-    function sendKeyEvent(type, key) {
-        document.dispatchEvent(
-        new KeyboardEvent(type, {
-            bubbles: true,
-            cancelable: true,
-            keyCode: key,
-            which: key,
-        })
-        );
-    }
+        buttonElement.addEventListener('mouseup', () => {
+            if (buttonElement.matches(':hover')) {
+                buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+                buttonElement.style.transform = hoverStyles.transform;
+                buttonElement.style.boxShadow = hoverStyles.boxShadow;
+            } else {
+                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+                buttonElement.style.transform = originalStyles.transform;
+                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            }
+        });
 
-    function loop(callback, delay, jitter) {
-        const actualDelay = Math.max(
-        delay + getRandomInt(-jitter / 2, jitter / 2),
-        0
-        );
-        setTimeout(() => {
-        callback();
-        loop(callback, delay, jitter);
-        }, actualDelay);
-    }
+        buttonElement.addEventListener('focus', () => {
+            buttonElement.style.outline = focusStyles.outline;
+            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+            buttonElement.style.transform = hoverStyles.transform;
+            buttonElement.style.boxShadow = hoverStyles.boxShadow;
+        });
 
-    function getRandomInt(min, max) {
-        min = Math.ceil(min);
-        max = Math.floor(max);
-        return Math.floor(Math.random() * (max - min)) + min;
-    }
+        buttonElement.addEventListener('blur', () => {
+            buttonElement.style.outline = originalStyles.outline;
+            if (!buttonElement.matches(':hover')) {
+                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+                buttonElement.style.transform = originalStyles.transform;
+                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            }
+        });
 
-    // Initialize everything
-    if (document.readyState === "loading") {
-        document.addEventListener("DOMContentLoaded", initializeAllFeatures);
-    } else {
-        initializeAllFeatures();
-    }
+        buttonElement.addEventListener('click', () => {
+            const videoElement = document.querySelector('video');
+            if (videoElement) {
+                videoElement.removeAttribute('disablePictureInPicture');
+                videoElement.requestPictureInPicture().catch(console.error);
+            }
+        });
 
-    // Also try on window load as fallback
-    window.addEventListener("load", () => {
-        if (!videoSetupComplete) {
-        initializeAllFeatures();
+        function initializeAllFeatures() {
+            setupBackgroundPlayback();
+            setupMediaSession();
+            setupVideoElement();
+            
+            if (IS_YOUTUBE) {
+                loop(pressKey, 60000, 10000);
+                modifyYtcfgFlags();
+            }
         }
-    });
 
-    if (IS_YOUTUBE) {
-        loop(pressKey, 60000, 10000);
-    }
+        function pressKey() {
+            const key = 18;
+            sendKeyEvent('keydown', key);
+            sendKeyEvent('keyup', key);
+        }
+
+        function sendKeyEvent(type, key) {
+            document.dispatchEvent(new KeyboardEvent(type, {
+                bubbles: true,
+                cancelable: true,
+                keyCode: key,
+                which: key
+            }));
+        }
+
+        function loop(callback, delay, jitter) {
+            const actualDelay = Math.max(delay + getRandomInt(-jitter / 2, jitter / 2), 0);
+            setTimeout(() => {
+                callback();
+                loop(callback, delay, jitter);
+            }, actualDelay);
+        }
+
+        function getRandomInt(min, max) {
+            min = Math.ceil(min);
+            max = Math.floor(max);
+            return Math.floor(Math.random() * (max - min)) + min;
+        }
+
+        const IS_YOUTUBE = /(?:^|.+\.)youtube\.com/.test(window.location.hostname) || /(?:^|.+\.)youtube-nocookie\.com/.test(window.location.hostname);
+        const IS_MOBILE_YOUTUBE = window.location.hostname === 'm.youtube.com';
+        const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
+        const IS_VIMEO = /(?:^|.+\.)vimeo\.com/.test(window.location.hostname);
+        const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
+
+        function main() {
+            initializeAllFeatures();
+            
+            const observer = new MutationObserver((mutations) => {
+                const videoElement = document.querySelector('video');
+                if (videoElement) {
+                    initializeAllFeatures();
+                }
+                
+                const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+                if (window.location.pathname === '/watch' && buttonContainerElement && !buttonContainerElement.contains(buttonElement)) {
+                    buttonContainerElement.prepend(buttonElement);
+                }
+            });
+            
+            observer.observe(document.documentElement, { 
+                subtree: true, 
+                childList: true,
+                attributes: true
+            });
+            
+            if (document.body) {
+                observer.observe(document.body, {
+                    subtree: true,
+                    childList: true,
+                    attributes: true
+                });
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', main);
+        } else {
+            main();
+        }
+
+        const ytcfgObserver = new MutationObserver(() => {
+            if (window.ytcfg) {
+                modifyYtcfgFlags();
+                ytcfgObserver.disconnect();
+            }
+        });
+
+        ytcfgObserver.observe(document.documentElement, {
+            childList: true,
+            subtree: true
+        });
+
+        window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
+        if (IS_VIMEO) {
+            window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
+        }
     })();
     )";
 
