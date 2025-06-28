@@ -23,6 +23,20 @@
 #include "url/gurl.h"
 
 namespace {
+constexpr char16_t kYoutubeBackgroundPlayback[] =
+    uR"(
+(function() {
+  if (document._addEventListener === undefined) {
+    document._addEventListener = document.addEventListener;
+    document.addEventListener = function(a, b, c) {
+      if (a != 'visibilitychange') {
+        document._addEventListener(a, b, c);
+      }
+    };
+  }
+}());
+)";
+
 const char16_t k_youtube_background_playback_script[] =
     uR"(
     (function() {
@@ -1344,6 +1358,8 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
         k_youtube_background_playback_script, base::NullCallback());
   }
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+        kYoutubeBackgroundPlayback, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);
