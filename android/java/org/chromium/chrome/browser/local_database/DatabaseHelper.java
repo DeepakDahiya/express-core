@@ -224,11 +224,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     @SuppressLint("Range")
     public List<TopSiteTable> getTopSitesForDisplay(int limit) {
         List<TopSiteTable> out = new ArrayList<>(limit);
-        SQLiteDatabase db = getReadableDatabase();
+        SQLiteDatabase db = this.getReadableDatabase();
         // A) load YouTube if present
         Cursor c = db.rawQuery(
             "SELECT * FROM " + TopSiteTable.TABLE_NAME
-          + " WHERE " + TopSiteTable.COLUMN_DESTINATION_URL + " = ?",
+          + " WHERE " + TopSiteTable.COLUMN_DESTINATION_URL + " =?",
             new String[]{ DEFAULT_YOUTUBE_URL }
         );
         if (c.moveToFirst()) {
@@ -245,7 +245,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         if (remaining > 0) {
             c = db.rawQuery(
                 "SELECT * FROM " + TopSiteTable.TABLE_NAME
-              + " WHERE " + TopSiteTable.COLUMN_DESTINATION_URL + " != ?"
+              + " WHERE " + TopSiteTable.COLUMN_DESTINATION_URL + " !=?"
               + " ORDER BY ID DESC"
               + " LIMIT " + remaining,
                 new String[]{ DEFAULT_YOUTUBE_URL }
