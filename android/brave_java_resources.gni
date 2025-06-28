@@ -504,6 +504,7 @@ brave_java_resources = [
   "java/res/drawable/ic_carat_down_country_spinner.xml",
   "java/res/drawable/ic_card_background.xml",
   "java/res/drawable/ic_channel_brave.xml",
+  "java/res/drawable/ic_media.xml",
   "java/res/drawable/ic_channel_business.xml",
   "java/res/drawable/ic_channel_cars.xml",
   "java/res/drawable/ic_channel_crypto.xml",

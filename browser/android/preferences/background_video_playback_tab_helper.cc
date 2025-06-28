@@ -101,18 +101,14 @@ bool IsYouTubeDomain(const GURL& url) {
 }
 
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
-  // PrefService* prefs =
-  //     static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
+  PrefService* prefs =
+      static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
 
-  // if (!base::FeatureList::IsEnabled(
-  //         ::preferences::features::kBraveBackgroundVideoPlayback) &&
-  //     !prefs->GetBoolean(kBackgroundVideoPlaybackEnabled))
-  //   return false;
-
-  // content::RenderFrameHost::AllowInjectingJavaScript();
-
-  return true;
+  return (base::FeatureList::IsEnabled(
+              ::preferences::features::kBraveBackgroundVideoPlayback) &&
+          prefs->GetBoolean(kBackgroundVideoPlaybackEnabled));
 }
+
 }  // namespace
 
 BackgroundVideoPlaybackTabHelper::BackgroundVideoPlaybackTabHelper(
@@ -130,12 +126,12 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
     return;
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-        kYoutubeBackgroundPlayback, base::NullCallback());
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-        k_youtube_background_playback_script, base::NullCallback());
+        kYoutubeBackgroundPlayback, base::NullCallback());
   }
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+        k_youtube_background_playback_script, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);

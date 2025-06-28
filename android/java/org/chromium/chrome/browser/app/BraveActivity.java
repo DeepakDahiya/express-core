@@ -1467,7 +1467,7 @@ public abstract class BraveActivity extends ChromeActivity
             if (BravePrefServiceBridge.getInstance().getBackgroundVideoPlaybackEnabled()
                     && ChromeFeatureList.isEnabled(
                             BraveFeatureList.BRAVE_BACKGROUND_VIDEO_PLAYBACK)) {
-                BravePrefServiceBridge.getInstance().setBackgroundVideoPlaybackEnabled(false);
+                BravePrefServiceBridge.getInstance().setBackgroundVideoPlaybackEnabled(true);
             }
             return;
         }

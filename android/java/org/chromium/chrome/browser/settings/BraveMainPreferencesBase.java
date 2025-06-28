@@ -314,7 +314,7 @@ public class BraveMainPreferencesBase
         int displaySectionOrder = generalOrder;
         findPreference(PREF_DISPLAY_SECTION).setOrder(++displaySectionOrder);
 
-        // findPreference(PREF_MEDIA).setOrder(++displaySectionOrder);
+        findPreference(PREF_MEDIA).setOrder(++displaySectionOrder);
         // findPreference(PREF_APPEARANCE).setOrder(++displaySectionOrder);
         // findPreference(PREF_NEW_TAB_PAGE).setOrder(++displaySectionOrder);
         findPreference(PREF_ACCESSIBILITY).setOrder(++displaySectionOrder);
