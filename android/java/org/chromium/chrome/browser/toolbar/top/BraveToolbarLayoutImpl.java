@@ -195,6 +195,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private static final long MINUTES_10 = 10 * 60 * 1000;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP = 10;
 
+    private long lastProfileFetchTimestamp = 0;
+    private static final long PROFILE_FETCH_COOLDOWN_MS = 30 * 60 * 1000;
+
     private static final int PLAYLIST_MEDIA_COUNT_LIMIT = 3;
 
     private PlaylistServiceObserverImpl mPlaylistServiceObserver;
@@ -545,9 +548,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
                         }
 
-                        BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
-                            new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
-                        workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        long now = System.currentTimeMillis();
+                        if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
+                            lastProfileFetchTimestamp = now;
+                            BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                                new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                            workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
                     }
 
                     int commentCount = 0;
@@ -603,9 +610,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
                         }
 
-                        BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
-                            new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
-                        workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        long now = System.currentTimeMillis();
+                        if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
+                            lastProfileFetchTimestamp = now;
+                            BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                                new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                            workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
                     }
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
                     Log.e(TAG, "BookmarkButton click " + e);
@@ -1840,6 +1851,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
+                    if (!isAttachedToWindow()) {
+                        return;
+                    }
+
+                    if (getContext() == null) return; // Extra safety check
+
                     Context context = ContextUtils.getApplicationContext();
                     SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                     SharedPreferences.Editor editor = sharedPref.edit();

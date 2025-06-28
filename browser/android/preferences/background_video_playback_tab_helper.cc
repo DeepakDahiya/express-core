@@ -23,7 +23,7 @@
 #include "url/gurl.h"
 
 namespace {
-constexpr char16_t kYoutubeBackgroundPlayback[] =
+const kYoutubeBackgroundPlayback[] =
     uR"(
     (function() {
     'use strict';
@@ -38,53 +38,85 @@ constexpr char16_t kYoutubeBackgroundPlayback[] =
     
     // Page Visibility API
     if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
-    Object.defineProperties(document,
-        { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });
+        Object.defineProperties(document,
+            { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });
     }
     
     window.addEventListener(
-    'visibilitychange', evt => evt.stopImmediatePropagation(), true);
+        'visibilitychange', evt => evt.stopImmediatePropagation(), true);
+    
+    // PIP-specific visibility handling
+    document.addEventListener(
+        'visibilitychange', evt => evt.stopImmediatePropagation(), true);
+    
+    // Prevent PIP from pausing on visibility changes
+    const originalAddEventListener = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function(type, listener, options) {
+        if (type === 'visibilitychange' && this === document) {
+            return; // Block visibility change listeners on document
+        }
+        return originalAddEventListener.call(this, type, listener, options);
+    };
     
     // Fullscreen API
     if (IS_VIMEO) {
-    window.addEventListener(
-        'fullscreenchange', evt => evt.stopImmediatePropagation(), true);
+        window.addEventListener(
+            'fullscreenchange', evt => evt.stopImmediatePropagation(), true);
     }
     
     // User activity tracking
     if (IS_YOUTUBE) {
-    loop(pressKey, 60 * 1000, 10 * 1000); // every minute +/- 10 seconds
+        loop(pressKey, 60 * 1000, 10 * 1000); // every minute +/- 10 seconds
+    }
+    
+    // Enhanced PIP support
+    if ('pictureInPictureEnabled' in document) {
+        document.addEventListener('enterpictureinpicture', function(event) {
+            // Ensure video continues playing in PIP
+            const video = event.target;
+            if (video.paused) {
+                video.play();
+            }
+        });
+        
+        document.addEventListener('leavepictureinpicture', function(event) {
+            // Handle PIP exit
+            const video = event.target;
+            if (video.paused) {
+                video.play();
+            }
+        });
     }
     
     function pressKey() {
-    const key = 18;
-    sendKeyEvent("keydown", key);
-    sendKeyEvent("keyup", key);
+        const key = 18;
+        sendKeyEvent("keydown", key);
+        sendKeyEvent("keyup", key);
     }
     
     function sendKeyEvent (aEvent, aKey) {
-    document.dispatchEvent(new KeyboardEvent(aEvent, {
-        bubbles: true,
-        cancelable: true,
-        keyCode: aKey,
-        which: aKey,
-    }));
+        document.dispatchEvent(new KeyboardEvent(aEvent, {
+            bubbles: true,
+            cancelable: true,
+            keyCode: aKey,
+            which: aKey,
+        }));
     }
     
     function loop(aCallback, aDelay, aJitter) {
-    let jitter = getRandomInt(-aJitter/2, aJitter/2);
-    let delay = Math.max(aDelay + jitter, 0);
-    
-    window.setTimeout(() => {
-                        aCallback();
-                        loop(aCallback, aDelay, aJitter);
-                        }, delay);
+        let jitter = getRandomInt(-aJitter/2, aJitter/2);
+        let delay = Math.max(aDelay + jitter, 0);
+        
+        window.setTimeout(() => {
+            aCallback();
+            loop(aCallback, aDelay, aJitter);
+        }, delay);
     }
     
     function getRandomInt(aMin, aMax) {
-    let min = Math.ceil(aMin);
-    let max = Math.floor(aMax);
-    return Math.floor(Math.random() * (max - min)) + min;
+        let min = Math.ceil(aMin);
+        let max = Math.floor(aMax);
+        return Math.floor(Math.random() * (max - min)) + min;
     }
     
     })();
@@ -1168,6 +1200,79 @@ constexpr char16_t kYoutubePipButton[] =
     })();
 )";
 
+constexpr char16_t kYoutubePIPPersistence[] =
+    uR"(
+    (function() {
+        let pipVideo = null;
+        let wasPipActive = false;
+        
+        // Track PIP state
+        document.addEventListener('enterpictureinpicture', function(event) {
+            pipVideo = event.target;
+            wasPipActive = true;
+        });
+        
+        document.addEventListener('leavepictureinpicture', function(event) {
+            pipVideo = null;
+            wasPipActive = false;
+        });
+        
+        // Handle visibility changes (app coming back to foreground)
+        const originalVisibilityChangeHandler = function() {
+            if (document.visibilityState === 'visible' && wasPipActive && pipVideo) {
+                // Delay to ensure YouTube player is ready
+                setTimeout(() => {
+                    if (!document.pictureInPictureElement && pipVideo) {
+                        pipVideo.requestPictureInPicture().catch(console.error);
+                    }
+                }, 500);
+            }
+        };
+        
+        // Override YouTube's visibility handlers
+        const originalAddEventListener = document.addEventListener;
+        document.addEventListener = function(type, listener, options) {
+            if (type === 'visibilitychange') {
+                // Replace with our handler
+                return originalAddEventListener.call(this, type, originalVisibilityChangeHandler, options);
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+        
+        // Prevent YouTube from handling focus events that might close PIP
+        window.addEventListener('focus', function(event) {
+            if (wasPipActive && pipVideo && !document.pictureInPictureElement) {
+                setTimeout(() => {
+                    pipVideo.requestPictureInPicture().catch(console.error);
+                }, 100);
+            }
+        }, true);
+        
+        // Monitor for player reinitialization
+        const observer = new MutationObserver(function(mutations) {
+            mutations.forEach(function(mutation) {
+                if (mutation.type === 'childList' && wasPipActive) {
+                    const newVideo = document.querySelector('video');
+                    if (newVideo && newVideo !== pipVideo) {
+                        pipVideo = newVideo;
+                        setTimeout(() => {
+                            if (!document.pictureInPictureElement) {
+                                newVideo.requestPictureInPicture().catch(console.error);
+                            }
+                        }, 200);
+                    }
+                }
+            });
+        });
+        
+        observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+        
+    })();
+)";
+
 bool IsYouTubeDomain(const GURL& url) {
   if (net::registry_controlled_domains::SameDomainOrHost(
           url, GURL("https://www.youtube.com"),
@@ -1203,6 +1308,8 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
     kYoutubeInAppPIP, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubePIP, base::NullCallback());
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubePIPPersistence, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);

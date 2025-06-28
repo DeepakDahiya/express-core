@@ -178,10 +178,12 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 if (views != null) mViewsText.setText(views);
                 if (likesGiven != null) mLikesGivenText.setText(likesGiven);
                 if (likesReceived != null) mLikesReceivedText.setText(likesReceived);
-                if (avatar != null) {
-                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
-                } else {
-                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
+                if (getContext() != null) {
+                    if (avatar != null) {
+                        ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mAvatarImage, null);
+                    } else {
+                        ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mAvatarImage, null);
+                    }
                 }
                 
                 mUsernameText.setText(decodedAccessTokenObj.getString("username"));
@@ -310,7 +312,19 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
                     try {
+                        if (getActivity() == null || !isAdded() || getContext() == null) {
+                            return; 
+                        }
+
+                        Context context = getContext();
+                        if (context == null) return;
+
                         BraveActivity activity = BraveActivity.getBraveActivity();
+                        if (activity == null) {
+                            Log.e("Express Browser", "BraveActivity is null");
+                            return;
+                        }
+
                         String accessToken = activity.getAccessToken();
                         JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
