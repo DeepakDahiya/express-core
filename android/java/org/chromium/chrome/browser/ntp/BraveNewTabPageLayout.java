@@ -345,7 +345,7 @@ public class BraveNewTabPageLayout
             
             mPosts = new ArrayList<Post>();
             
-            List<TopSiteTable> topSites = mDatabaseHelper.getAllTopSites();
+            List<TopSiteTable> topSites = mDatabaseHelper.getTopSitesForDisplay(4);
             
             mRecyclerView.setLayoutManager(new LinearLayoutManager(mActivity));
 

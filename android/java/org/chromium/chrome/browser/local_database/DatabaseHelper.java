@@ -40,6 +40,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     // Database Name
     private static final String DATABASE_NAME = "brave_db";
 
+    private static final String DEFAULT_YOUTUBE_URL    = "https://m.youtube.com";
+
     public static DatabaseHelper getInstance() {
         synchronized (DatabaseHelper.class) {
             if (mInstance == null) {
@@ -59,7 +61,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             String youtubeIconPath = saveDefaultYouTubeFavicon(context);
             TopSite youtubeTopSite = new TopSite(
                 "YouTube", 
-                "https://m.youtube.com", 
+                DEFAULT_YOUTUBE_URL, 
                 "#323639",
                 youtubeIconPath
             );
@@ -200,6 +202,10 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     public void insertTopSite(TopSite topSite) {
+        String url = topSite.getDestinationUrl();
+        if (DEFAULT_YOUTUBE_URL.equals(url) || url.contains("youtube.com")) {
+            return;
+        }
         if (!isTopSiteAlreadyAdded(topSite.getDestinationUrl()) && !NTPUtil.isInRemovedTopSite(topSite.getDestinationUrl())) {
             // get writable database as we want to write data
             SQLiteDatabase db = this.getWritableDatabase();
@@ -213,6 +219,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             // insert row
             db.insert(TopSiteTable.TABLE_NAME, null, values);
         }
+    }
+
+    @SuppressLint("Range")
+    public List<TopSiteTable> getTopSitesForDisplay(int limit) {
+        List<TopSiteTable> out = new ArrayList<>(limit);
+        SQLiteDatabase db = getReadableDatabase();
+        // A) load YouTube if present
+        Cursor c = db.rawQuery(
+            "SELECT * FROM " + TopSiteTable.TABLE_NAME
+          + " WHERE " + TopSiteTable.COLUMN_DESTINATION_URL + " = ?",
+            new String[]{ DEFAULT_YOUTUBE_URL }
+        );
+        if (c.moveToFirst()) {
+            out.add(new TopSiteTable(
+                c.getString(c.getColumnIndex(TopSiteTable.COLUMN_NAME)),
+                c.getString(c.getColumnIndex(TopSiteTable.COLUMN_DESTINATION_URL)),
+                c.getString(c.getColumnIndex(TopSiteTable.COLUMN_BACKGROUND_COLOR)),
+                c.getString(c.getColumnIndex(TopSiteTable.COLUMN_IMAGE_PATH))
+            ));
+        }
+        c.close();
+        // B) pull newest others, up to (limit - out.size())
+        int remaining = limit - out.size();
+        if (remaining > 0) {
+            c = db.rawQuery(
+                "SELECT * FROM " + TopSiteTable.TABLE_NAME
+              + " WHERE " + TopSiteTable.COLUMN_DESTINATION_URL + " != ?"
+              + " ORDER BY ID DESC"
+              + " LIMIT " + remaining,
+                new String[]{ DEFAULT_YOUTUBE_URL }
+            );
+            while (c.moveToNext()) {
+                out.add(new TopSiteTable(
+                    c.getString(c.getColumnIndex(TopSiteTable.COLUMN_NAME)),
+                    c.getString(c.getColumnIndex(TopSiteTable.COLUMN_DESTINATION_URL)),
+                    c.getString(c.getColumnIndex(TopSiteTable.COLUMN_BACKGROUND_COLOR)),
+                    c.getString(c.getColumnIndex(TopSiteTable.COLUMN_IMAGE_PATH))
+                ));
+            }
+            c.close();
+        }
+        return out;
     }
 
     @SuppressLint("Range")
