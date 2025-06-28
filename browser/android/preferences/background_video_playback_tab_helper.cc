@@ -1073,114 +1073,79 @@ const char16_t kYoutubePIP[] =
 constexpr char16_t kYoutubePipButton[] =
     uR"(
     (function() {
-        const buttonElement = document.createElement('button');
-        const originalStyles = {
-            backgroundColor: '#39B1F6',
-            transform: 'scale(1)',
-            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-            outline: '2px solid transparent',
-            outlineOffset: '2px'
-        };
+        const btn = document.createElement('button');
+        btn.className = 'yt‑pip‑gold';
+        btn.setAttribute('aria-label', 'Enter Picture‑in‑Picture mode');
+        btn.title = 'Picture‑in‑Picture';
 
-        const hoverStyles = {
-            backgroundColor: '#2F90D5', // Slightly darker blue
-            transform: 'scale(1.1)',
-            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
-        };
-
-        const activeStyles = {
-            transform: 'scale(0.95)',
-            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
-            backgroundColor: '#2A82BF' // Even darker blue
-        };
-
-        const focusStyles = {
-            outline: '2px solid #0056b3' // Or a more contrasting focus ring color
-        };
-
-        buttonElement.setAttribute('style', `
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            z-index: 9999;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background-color: ${originalStyles.backgroundColor};
-            border: none;
-            box-shadow: ${originalStyles.boxShadow};
-            background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg");
-            background-repeat: no-repeat;
-            background-position: center;
-            background-size: 55%;
-            cursor: pointer;
-            transform: ${originalStyles.transform};
-            outline: ${originalStyles.outline};
-            outline-offset: ${originalStyles.outlineOffset};
-            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, outline 0.1s linear;
-        `);
-
-        buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
-        buttonElement.setAttribute('title', 'Picture-in-Picture');
-
-        // Hover effects
-        buttonElement.addEventListener('mouseenter', () => {
-            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-            buttonElement.style.transform = hoverStyles.transform;
-            buttonElement.style.boxShadow = hoverStyles.boxShadow;
-        });
-
-        buttonElement.addEventListener('mouseleave', () => {
-            // Revert to original styles unless it's also focused and active
-            if (document.activeElement !== buttonElement) { // Check if not focused
-                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-                buttonElement.style.transform = originalStyles.transform;
-                buttonElement.style.boxShadow = originalStyles.boxShadow;
-            } else { // If it's focused, keep focus styles and potentially hover if mouse is still over
-                buttonElement.style.backgroundColor = hoverStyles.backgroundColor; // Keep hover BG if mouse still over
-                buttonElement.style.transform = hoverStyles.transform; // Keep hover transform
-                buttonElement.style.boxShadow = hoverStyles.boxShadow; // Keep hover shadow
-                // Focus outline is handled by focus/blur
+        if (!document.getElementById('yt‑pip‑gold‑styles')) {
+            const css = `
+            .yt‑pip‑gold {
+                position: fixed;
+                bottom: 20px; right: 20px; z-index: 9999;
+                width: 60px; height: 60px; border-radius: 50%;
+                background: #D4AF37;
+                border: none; cursor: pointer; overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,.30);
+                /* ▼ your PNG converted to Base64 ‑ replace PLACEHOLDER with the real string */
+                background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 55%;
+                transition: transform .2s, box-shadow .2s, filter .2s;
             }
-        });
+            .yt‑pip‑gold:hover      { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
+            .yt‑pip‑gold:active     { transform: scale(0.95); }
+            .yt‑pip‑gold:focus      { outline: 2px solid #000; outline-offset: 2px; }
 
-        buttonElement.addEventListener('mousedown', () => {
-            buttonElement.style.transform = activeStyles.transform;
-            buttonElement.style.boxShadow = activeStyles.boxShadow;
-            buttonElement.style.backgroundColor = activeStyles.backgroundColor;
-        });
-
-        buttonElement.addEventListener('mouseup', () => {
-            // Revert to hover styles if mouse is still over it, otherwise original
-            if (buttonElement.matches(':hover')) {
-                buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-                buttonElement.style.transform = hoverStyles.transform;
-                buttonElement.style.boxShadow = hoverStyles.boxShadow;
-            } else {
-                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-                buttonElement.style.transform = originalStyles.transform;
-                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            .yt‑pip‑gold::before {
+                content: '';
+                position: absolute; top: 0; left: -75%;
+                width: 50%; height: 100%;
+                background: linear-gradient(120deg,
+                            rgba(255,255,255,0) 0%,
+                            rgba(255,255,255,.70) 50%,
+                            rgba(255,255,255,0) 100%);
+                transform: skewX(-25deg);
+                animation: shine 2.8s infinite;
+                pointer-events: none;
             }
-        });
 
-        // Focus effects (for accessibility / keyboard navigation)
-        buttonElement.addEventListener('focus', () => {
-            buttonElement.style.outline = focusStyles.outline;
-            // Optional: Apply hover-like visual changes on focus too for better visibility
-            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
-            buttonElement.style.transform = hoverStyles.transform;
-            buttonElement.style.boxShadow = hoverStyles.boxShadow;
-        });
-
-        buttonElement.addEventListener('blur', () => {
-            buttonElement.style.outline = originalStyles.outline;
-            // Revert other styles if not hovered
-            if (!buttonElement.matches(':hover')) {
-                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
-                buttonElement.style.transform = originalStyles.transform;
-                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            @media (prefers-reduced-motion: reduce) {
+                .yt‑pip‑gold::before { animation: none; }
             }
-        });
+
+            @keyframes shine {
+                0%   { left: -75%; }
+                100% { left: 125%; }
+            }
+
+            .yt‑pip‑gold::before {
+            animation: shine 2.5s infinite;
+            }
+            .yt‑pip‑gold {
+            animation: rotateIcon 10s infinite linear;
+            }
+
+            @keyframes rotateIcon {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+            }
+
+
+            @keyframes scalePulse {
+            0%, 100% { transform: scale(1); }
+            50%      { transform: scale(1.1); }
+            }
+            .yt‑pip‑gold {
+            animation: scalePulse 2.4s ease-in-out infinite;
+            }
+        `;
+            const styleTag = document.createElement('style');
+            styleTag.id = 'yt‑pip‑gold‑styles';
+            styleTag.textContent = css;
+            document.head.appendChild(styleTag);
+        }
 
         buttonElement.addEventListener('click', () => {
             const videoElement = document.querySelector('video');
