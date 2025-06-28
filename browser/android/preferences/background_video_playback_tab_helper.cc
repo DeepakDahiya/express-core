@@ -1038,6 +1038,136 @@ const char16_t kYoutubePIP[] =
 }());
 )";
 
+constexpr char16_t kYoutubePipButton[] =
+    uR"(
+    (function() {
+        const buttonElement = document.createElement('button');
+        const originalStyles = {
+            backgroundColor: '#39B1F6',
+            transform: 'scale(1)',
+            boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
+            outline: '2px solid transparent',
+            outlineOffset: '2px'
+        };
+
+        const hoverStyles = {
+            backgroundColor: '#2F90D5', // Slightly darker blue
+            transform: 'scale(1.1)',
+            boxShadow: '0 6px 16px rgba(0, 0, 0, 0.3)'
+        };
+
+        const activeStyles = {
+            transform: 'scale(0.95)',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.2)',
+            backgroundColor: '#2A82BF' // Even darker blue
+        };
+
+        const focusStyles = {
+            outline: '2px solid #0056b3' // Or a more contrasting focus ring color
+        };
+
+        buttonElement.setAttribute('style', `
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background-color: ${originalStyles.backgroundColor};
+            border: none;
+            box-shadow: ${originalStyles.boxShadow};
+            background-image: url("https://raw.githubusercontent.com/phosphor-icons/core/refs/heads/main/assets/light/picture-in-picture-light.svg");
+            background-repeat: no-repeat;
+            background-position: center;
+            background-size: 55%;
+            cursor: pointer;
+            transform: ${originalStyles.transform};
+            outline: ${originalStyles.outline};
+            outline-offset: ${originalStyles.outlineOffset};
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out, background-color 0.2s ease-in-out, outline 0.1s linear;
+        `);
+
+        buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+        buttonElement.setAttribute('title', 'Picture-in-Picture');
+
+        // Hover effects
+        buttonElement.addEventListener('mouseenter', () => {
+            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+            buttonElement.style.transform = hoverStyles.transform;
+            buttonElement.style.boxShadow = hoverStyles.boxShadow;
+        });
+
+        buttonElement.addEventListener('mouseleave', () => {
+            // Revert to original styles unless it's also focused and active
+            if (document.activeElement !== buttonElement) { // Check if not focused
+                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+                buttonElement.style.transform = originalStyles.transform;
+                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            } else { // If it's focused, keep focus styles and potentially hover if mouse is still over
+                buttonElement.style.backgroundColor = hoverStyles.backgroundColor; // Keep hover BG if mouse still over
+                buttonElement.style.transform = hoverStyles.transform; // Keep hover transform
+                buttonElement.style.boxShadow = hoverStyles.boxShadow; // Keep hover shadow
+                // Focus outline is handled by focus/blur
+            }
+        });
+
+        buttonElement.addEventListener('mousedown', () => {
+            buttonElement.style.transform = activeStyles.transform;
+            buttonElement.style.boxShadow = activeStyles.boxShadow;
+            buttonElement.style.backgroundColor = activeStyles.backgroundColor;
+        });
+
+        buttonElement.addEventListener('mouseup', () => {
+            // Revert to hover styles if mouse is still over it, otherwise original
+            if (buttonElement.matches(':hover')) {
+                buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+                buttonElement.style.transform = hoverStyles.transform;
+                buttonElement.style.boxShadow = hoverStyles.boxShadow;
+            } else {
+                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+                buttonElement.style.transform = originalStyles.transform;
+                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            }
+        });
+
+        // Focus effects (for accessibility / keyboard navigation)
+        buttonElement.addEventListener('focus', () => {
+            buttonElement.style.outline = focusStyles.outline;
+            // Optional: Apply hover-like visual changes on focus too for better visibility
+            buttonElement.style.backgroundColor = hoverStyles.backgroundColor;
+            buttonElement.style.transform = hoverStyles.transform;
+            buttonElement.style.boxShadow = hoverStyles.boxShadow;
+        });
+
+        buttonElement.addEventListener('blur', () => {
+            buttonElement.style.outline = originalStyles.outline;
+            // Revert other styles if not hovered
+            if (!buttonElement.matches(':hover')) {
+                buttonElement.style.backgroundColor = originalStyles.backgroundColor;
+                buttonElement.style.transform = originalStyles.transform;
+                buttonElement.style.boxShadow = originalStyles.boxShadow;
+            }
+        });
+
+        buttonElement.addEventListener('click', () => {
+            const videoElement = document.querySelector('video');
+            if (videoElement) {
+                videoElement.removeAttribute('disablePictureInPicture');
+                videoElement.requestPictureInPicture().catch(console.error);
+            }
+        });
+
+        const observer = new MutationObserver(() => {
+            const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+            if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
+            buttonContainerElement.prepend(buttonElement);
+        });
+        observer.observe(document.documentElement, { subtree: true, childList: true });
+    
+    })();
+)";
+
 bool IsYouTubeDomain(const GURL& url) {
   if (net::registry_controlled_domains::SameDomainOrHost(
           url, GURL("https://www.youtube.com"),
@@ -1067,6 +1197,8 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
   content::RenderFrameHost::AllowInjectingJavaScript();
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeBackgroundPlayback, base::NullCallback());
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubePipButton, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
