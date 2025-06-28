@@ -33,90 +33,169 @@ constexpr char16_t kYoutubeBackgroundPlayback[] =
     const IS_MOBILE_YOUTUBE = window.location.hostname == 'm.youtube.com';
     const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
     const IS_VIMEO = window.location.hostname.search(/(?:^|.+\.)vimeo\.com/) > -1;
-    
     const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
     
-    // Page Visibility API
+    let currentVideo = null;
+    let isPipActive = false;
+    let isLocked = false;
+    
+    // Enhanced Page Visibility API override
     if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
-        Object.defineProperties(document,
-            { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });
+        Object.defineProperties(document, {
+            'hidden': { 
+                get: () => false,
+                configurable: true,
+                enumerable: true
+            },
+            'visibilityState': { 
+                get: () => 'visible',
+                configurable: true,
+                enumerable: true
+            }
+        });
     }
     
-    window.addEventListener(
-        'visibilitychange', evt => evt.stopImmediatePropagation(), true);
-    
-    // PIP-specific visibility handling
-    document.addEventListener(
-        'visibilitychange', evt => evt.stopImmediatePropagation(), true);
-    
-    // Prevent PIP from pausing on visibility changes
+    // Comprehensive event blocking
+    const blockedEvents = ['visibilitychange', 'blur', 'focus', 'pagehide', 'pageshow'];
     const originalAddEventListener = EventTarget.prototype.addEventListener;
+    const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
+    
     EventTarget.prototype.addEventListener = function(type, listener, options) {
-        if (type === 'visibilitychange' && this === document) {
-            return; // Block visibility change listeners on document
+        if (blockedEvents.includes(type)) {
+            console.log('Blocked event listener:', type);
+            return;
         }
         return originalAddEventListener.call(this, type, listener, options);
     };
     
-    // Fullscreen API
+    // Block existing event listeners
+    blockedEvents.forEach(eventType => {
+        window.addEventListener(eventType, evt => {
+            evt.stopImmediatePropagation();
+            evt.preventDefault();
+        }, true);
+        
+        document.addEventListener(eventType, evt => {
+            evt.stopImmediatePropagation();
+            evt.preventDefault();
+        }, true);
+    });
+    
+    // Video element management
+    function setupVideoProtection(video) {
+        if (!video || video._protected) return;
+        video._protected = true;
+        
+        const originalPause = video.pause.bind(video);
+        const originalPlay = video.play.bind(video);
+        
+        // Override pause method
+        video.pause = function() {
+            if (isPipActive) {
+                console.log('Blocking pause in PIP mode');
+                return Promise.resolve();
+            }
+            return originalPause();
+        };
+        
+        // Monitor video events
+        video.addEventListener('pause', function(e) {
+            if (isPipActive) {
+                console.log('Video paused in PIP, resuming...');
+                e.stopImmediatePropagation();
+                setTimeout(() => {
+                    if (video.paused) {
+                        originalPlay().catch(console.error);
+                    }
+                }, 50);
+            }
+        }, true);
+        
+        // PIP event handlers
+        video.addEventListener('enterpictureinpicture', function() {
+            isPipActive = true;
+            currentVideo = video;
+            console.log('Entered PIP mode');
+            
+            // Ensure continuous playback
+            if (video.paused) {
+                originalPlay().catch(console.error);
+            }
+            
+            // Override media session
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.playbackState = 'playing';
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    console.log('Media session pause blocked');
+                });
+            }
+        });
+        
+        video.addEventListener('leavepictureinpicture', function() {
+            isPipActive = false;
+            currentVideo = null;
+            console.log('Left PIP mode');
+            
+            // Restore media session
+            if ('mediaSession' in navigator) {
+                navigator.mediaSession.setActionHandler('pause', () => {
+                    video.pause();
+                });
+            }
+        });
+        
+        // Prevent attribute changes that could disable playback
+        const originalSetAttribute = video.setAttribute.bind(video);
+        video.setAttribute = function(name, value) {
+            if (isPipActive && (name === 'autoplay' || name === 'disablePictureInPicture')) {
+                console.log('Blocked attribute change in PIP:', name);
+                return;
+            }
+            return originalSetAttribute(name, value);
+        };
+    }
+    
+    // Find and protect video elements
+    function protectVideos() {
+        const videos = document.querySelectorAll('video');
+        videos.forEach(setupVideoProtection);
+    }
+    
+    // Initial setup
+    protectVideos();
+    
+    // Monitor for new videos
+    const videoObserver = new MutationObserver(() => {
+        protectVideos();
+    });
+    videoObserver.observe(document.body, { childList: true, subtree: true });
+    
+    // Fullscreen API protection
     if (IS_VIMEO) {
-        window.addEventListener(
-            'fullscreenchange', evt => evt.stopImmediatePropagation(), true);
+        window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
     }
     
-    // User activity tracking
+    // User activity simulation for YouTube
     if (IS_YOUTUBE) {
-        loop(pressKey, 60 * 1000, 10 * 1000); // every minute +/- 10 seconds
-    }
-    
-    // Enhanced PIP support
-    if ('pictureInPictureEnabled' in document) {
-        document.addEventListener('enterpictureinpicture', function(event) {
-            // Ensure video continues playing in PIP
-            const video = event.target;
-            if (video.paused) {
-                video.play();
+        function simulateActivity() {
+            if (isPipActive || document.hidden) {
+                const key = 18; // Alt key
+                document.dispatchEvent(new KeyboardEvent('keydown', {
+                    bubbles: true,
+                    cancelable: true,
+                    keyCode: key,
+                    which: key,
+                }));
+                document.dispatchEvent(new KeyboardEvent('keyup', {
+                    bubbles: true,
+                    cancelable: true,
+                    keyCode: key,
+                    which: key,
+                }));
             }
-        });
+        }
         
-        document.addEventListener('leavepictureinpicture', function(event) {
-            // Handle PIP exit
-            const video = event.target;
-            if (video.paused) {
-                video.play();
-            }
-        });
-    }
-    
-    function pressKey() {
-        const key = 18;
-        sendKeyEvent("keydown", key);
-        sendKeyEvent("keyup", key);
-    }
-    
-    function sendKeyEvent (aEvent, aKey) {
-        document.dispatchEvent(new KeyboardEvent(aEvent, {
-            bubbles: true,
-            cancelable: true,
-            keyCode: aKey,
-            which: aKey,
-        }));
-    }
-    
-    function loop(aCallback, aDelay, aJitter) {
-        let jitter = getRandomInt(-aJitter/2, aJitter/2);
-        let delay = Math.max(aDelay + jitter, 0);
-        
-        window.setTimeout(() => {
-            aCallback();
-            loop(aCallback, aDelay, aJitter);
-        }, delay);
-    }
-    
-    function getRandomInt(aMin, aMax) {
-        let min = Math.ceil(aMin);
-        let max = Math.floor(aMax);
-        return Math.floor(Math.random() * (max - min)) + min;
+        setInterval(simulateActivity, 30000); // Every 30 seconds
     }
     
     })();
@@ -1073,10 +1152,10 @@ const char16_t kYoutubePIP[] =
 constexpr char16_t kYoutubePipButton[] =
     uR"(
     (function() {
-        const btn = document.createElement('button');
-        btn.className = 'yt‑pip‑gold';
-        btn.setAttribute('aria-label', 'Enter Picture‑in‑Picture mode');
-        btn.title = 'Picture‑in‑Picture';
+        const buttonElement = document.createElement('button');
+        buttonElement.className = 'yt‑pip‑gold';
+        buttonElement.setAttribute('aria-label', 'Enter Picture‑in‑Picture mode');
+        buttonElement.title = 'Picture‑in‑Picture';
 
         if (!document.getElementById('yt‑pip‑gold‑styles')) {
             const css = `
@@ -1169,62 +1248,114 @@ constexpr char16_t kYoutubePIPPersistence[] =
     uR"(
     (function() {
         let pipVideo = null;
-        let wasPipActive = false;
+        let pipState = {
+            active: false,
+            videoId: null,
+            currentTime: 0,
+            wasPlaying: false
+        };
         
-        // Track PIP state
+        function getCurrentVideoId() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('v');
+        }
+        
+        function savePipState() {
+            if (pipVideo) {
+                pipState.currentTime = pipVideo.currentTime;
+                pipState.wasPlaying = !pipVideo.paused;
+                pipState.videoId = getCurrentVideoId();
+                sessionStorage.setItem('brave_pip_state', JSON.stringify(pipState));
+            }
+        }
+        
+        function restorePipState() {
+            try {
+                const saved = sessionStorage.getItem('brave_pip_state');
+                if (saved) {
+                    const state = JSON.parse(saved);
+                    const currentVideoId = getCurrentVideoId();
+                    
+                    if (state.active && state.videoId === currentVideoId) {
+                        const video = document.querySelector('video');
+                        if (video && !document.pictureInPictureElement) {
+                            video.currentTime = state.currentTime;
+                            if (state.wasPlaying) {
+                                video.play().then(() => {
+                                    setTimeout(() => {
+                                        video.requestPictureInPicture().catch(console.error);
+                                    }, 500);
+                                }).catch(console.error);
+                            }
+                        }
+                    }
+                }
+            } catch (e) {
+                console.error('Failed to restore PIP state:', e);
+            }
+        }
+        
+        // Track PIP events
         document.addEventListener('enterpictureinpicture', function(event) {
             pipVideo = event.target;
-            wasPipActive = true;
+            pipState.active = true;
+            savePipState();
+            console.log('PIP activated');
+            
+            // Periodic state saving
+            pipState.saveInterval = setInterval(savePipState, 2000);
         });
         
         document.addEventListener('leavepictureinpicture', function(event) {
+            pipState.active = false;
             pipVideo = null;
-            wasPipActive = false;
+            if (pipState.saveInterval) {
+                clearInterval(pipState.saveInterval);
+            }
+            sessionStorage.removeItem('brave_pip_state');
+            console.log('PIP deactivated');
         });
         
-        // Handle visibility changes (app coming back to foreground)
-        const originalVisibilityChangeHandler = function() {
-            if (document.visibilityState === 'visible' && wasPipActive && pipVideo) {
-                // Delay to ensure YouTube player is ready
-                setTimeout(() => {
-                    if (!document.pictureInPictureElement && pipVideo) {
-                        pipVideo.requestPictureInPicture().catch(console.error);
-                    }
-                }, 500);
+        // Handle app state changes
+        let wasHidden = document.hidden;
+        const checkVisibilityChange = function() {
+            const isNowHidden = document.hidden;
+            
+            if (wasHidden && !isNowHidden && pipState.active) {
+                // App came back to foreground
+                console.log('App returned to foreground, restoring PIP');
+                setTimeout(restorePipState, 1000);
             }
+            
+            wasHidden = isNowHidden;
         };
         
-        // Override YouTube's visibility handlers
-        const originalAddEventListener = document.addEventListener;
-        document.addEventListener = function(type, listener, options) {
-            if (type === 'visibilitychange') {
-                // Replace with our handler
-                return originalAddEventListener.call(this, type, originalVisibilityChangeHandler, options);
+        // Use multiple methods to detect app state changes
+        document.addEventListener('visibilitychange', checkVisibilityChange);
+        window.addEventListener('focus', function() {
+            if (pipState.active) {
+                setTimeout(restorePipState, 500);
             }
-            return originalAddEventListener.call(this, type, listener, options);
-        };
+        });
         
-        // Prevent YouTube from handling focus events that might close PIP
-        window.addEventListener('focus', function(event) {
-            if (wasPipActive && pipVideo && !document.pictureInPictureElement) {
-                setTimeout(() => {
-                    pipVideo.requestPictureInPicture().catch(console.error);
-                }, 100);
+        window.addEventListener('pageshow', function() {
+            if (pipState.active) {
+                setTimeout(restorePipState, 500);
             }
-        }, true);
+        });
         
-        // Monitor for player reinitialization
+        // Monitor for video element changes
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList' && wasPipActive) {
+                if (mutation.type === 'childList' && pipState.active) {
                     const newVideo = document.querySelector('video');
                     if (newVideo && newVideo !== pipVideo) {
                         pipVideo = newVideo;
                         setTimeout(() => {
                             if (!document.pictureInPictureElement) {
-                                newVideo.requestPictureInPicture().catch(console.error);
+                                restorePipState();
                             }
-                        }, 200);
+                        }, 300);
                     }
                 }
             });
@@ -1234,6 +1365,15 @@ constexpr char16_t kYoutubePIPPersistence[] =
             childList: true,
             subtree: true
         });
+        
+        // Check for existing state on load
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(restorePipState, 1000);
+            });
+        } else {
+            setTimeout(restorePipState, 1000);
+        }
         
     })();
 )";
@@ -1268,13 +1408,13 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeBackgroundPlayback, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubePipButton, base::NullCallback());
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubeInAppPIP, base::NullCallback());
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubePIP, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubePIPPersistence, base::NullCallback());
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubeInAppPIP, base::NullCallback());
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubePipButton, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);
