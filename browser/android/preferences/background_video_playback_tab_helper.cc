@@ -1172,6 +1172,80 @@ constexpr char16_t kYoutubePipButton[] =
             }
         }
 
+        function setupBackgroundPlayback() {
+            const visibilityProps = [
+                "hidden",
+                "webkitHidden",
+                "mozHidden",
+                "msHidden",
+            ];
+            const visibilityStates = [
+                "visibilityState",
+                "webkitVisibilityState",
+                "mozVisibilityState",
+                "msVisibilityState",
+            ];
+
+            visibilityProps.forEach(prop => {
+                if (prop in document) {
+                    Object.defineProperty(document, prop, {
+                        value: false,
+                        writable: false,
+                        configurable: false,
+                    });
+                }
+            });
+
+            visibilityStates.forEach(state => {
+                if (state in document) {
+                    Object.defineProperty(document, state, {
+                        value: "visible",
+                        writable: false,
+                        configurable: false,
+                    });
+                }
+            });
+
+            Object.defineProperty(document, "hasFocus", {
+                value: () => true,
+                writable: false,
+                configurable: false,
+            });
+
+            const eventsToBlock = [
+                "visibilitychange",
+                "webkitvisibilitychange",
+                "mozvisibilitychange",
+                "msvisibilitychange",
+                "blur",
+                "focus",
+                "focusin",
+                "focusout",
+                "pagehide",
+                "pageshow",
+            ];
+
+            eventsToBlock.forEach(eventType => {
+                document.addEventListener(
+                    eventType,
+                    e => {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                    },
+                    true,
+                );
+
+                window.addEventListener(
+                    eventType,
+                    e => {
+                        e.stopImmediatePropagation();
+                        e.preventDefault();
+                    },
+                    true,
+                );
+            });
+        }
+
         function setupVideoElement() {
             const video = document.querySelector("video");
             if (!video) return;
@@ -1268,6 +1342,8 @@ constexpr char16_t kYoutubePipButton[] =
         observer.observe(document.documentElement, { subtree: true, childList: true });
 
         setupMediaSession();
+        setupBackgroundPlayback();
+        setupVideoElement();
     
     })();
 )";
