@@ -130,12 +130,12 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
     return;
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+        kYoutubeBackgroundPlayback, base::NullCallback());
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
         k_youtube_background_playback_script, base::NullCallback());
   }
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-        kYoutubeBackgroundPlayback, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);
