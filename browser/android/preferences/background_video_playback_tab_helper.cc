@@ -425,6 +425,13 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     isOriginalPIPTab = true;
                     setPIPStatus(currentPIPVideoId, true);
                     console.log('PIP entered for video:', currentPIPVideoId);
+
+                    const videoElement = document.querySelector('video');
+                    if (videoElement) {
+                        // Save the current playback state
+                        localStorage.setItem('pip_video_id', videoElement.currentSrc);
+                        localStorage.setItem('pip_playback_time', videoElement.currentTime);
+                    }
                 });
 
                 document.addEventListener('leavepictureinpicture', (event) => {
@@ -433,6 +440,17 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     isOriginalPIPTab = false;
                     setPIPStatus(null, false);
                     console.log('PIP exited');
+
+                    const videoElement = document.querySelector('video');
+                    if (videoElement) {
+                        // Restore the playback state if needed
+                        const videoId = localStorage.getItem('pip_video_id');
+                        const playbackTime = localStorage.getItem('pip_playback_time');
+                        if (videoId && playbackTime) {
+                            videoElement.currentTime = playbackTime;
+                            videoElement.play();
+                        }
+                    }
                 });
 
                 document.addEventListener('play', (event) => {
@@ -1039,31 +1057,30 @@ constexpr char16_t kYoutubePipButton[] =
     uR"(
     (function() {
         const buttonElement = document.createElement('button');
-        buttonElement.className = 'yt‑pip‑gold';
-        buttonElement.setAttribute('aria-label', 'Enter Picture‑in‑Picture mode');
-        buttonElement.title = 'Picture‑in‑Picture';
+        buttonElement.className = 'yt-pip-gold';
+        buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+        buttonElement.title = 'Picture-in-Picture';
 
-        if (!document.getElementById('yt‑pip‑gold‑styles')) {
+        if (!document.getElementById('yt-pip-gold-styles')) {
             const css = `
-            .yt‑pip‑gold {
+            .yt-pip-gold {
                 position: fixed;
                 bottom: 20px; right: 20px; z-index: 9999;
                 width: 60px; height: 60px; border-radius: 50%;
                 background: #D4AF37;
                 border: none; cursor: pointer; overflow: hidden;
                 box-shadow: 0 4px 12px rgba(0,0,0,.30);
-                /* ▼ your PNG converted to Base64 ‑ replace PLACEHOLDER with the real string */
                 background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
                 background-repeat: no-repeat;
                 background-position: center;
                 background-size: 55%;
                 transition: transform .2s, box-shadow .2s, filter .2s;
             }
-            .yt‑pip‑gold:hover      { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
-            .yt‑pip‑gold:active     { transform: scale(0.95); }
-            .yt‑pip‑gold:focus      { outline: 2px solid #000; outline-offset: 2px; }
+            .yt-pip-gold:hover      { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
+            .yt-pip-gold:active     { transform: scale(0.95); }
+            .yt-pip-gold:focus      { outline: 2px solid #000; outline-offset: 2px; }
 
-            .yt‑pip‑gold::before {
+            .yt-pip-gold::before {
                 content: '';
                 position: absolute; top: 0; left: -75%;
                 width: 50%; height: 100%;
@@ -1077,7 +1094,7 @@ constexpr char16_t kYoutubePipButton[] =
             }
 
             @media (prefers-reduced-motion: reduce) {
-                .yt‑pip‑gold::before { animation: none; }
+                .yt-pip-gold::before { animation: none; }
             }
 
             @keyframes shine {
@@ -1085,10 +1102,10 @@ constexpr char16_t kYoutubePipButton[] =
                 100% { left: 125%; }
             }
 
-            .yt‑pip‑gold::before {
+            .yt-pip-gold::before {
             animation: shine 2.5s infinite;
             }
-            .yt‑pip‑gold {
+            .yt-pip-gold {
             animation: rotateIcon 10s infinite linear;
             }
 
@@ -1102,12 +1119,12 @@ constexpr char16_t kYoutubePipButton[] =
             0%, 100% { transform: scale(1); }
             50%      { transform: scale(1.1); }
             }
-            .yt‑pip‑gold {
+            .yt-pip-gold {
             animation: scalePulse 2.4s ease-in-out infinite;
             }
         `;
             const styleTag = document.createElement('style');
-            styleTag.id = 'yt‑pip‑gold‑styles';
+            styleTag.id = 'yt-pip-gold-styles';
             styleTag.textContent = css;
             document.head.appendChild(styleTag);
         }
