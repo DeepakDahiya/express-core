@@ -35,81 +35,53 @@ constexpr char16_t kYoutubeBackgroundPlayback[] =
     const IS_VIMEO = window.location.hostname.search(/(?:^|.+\.)vimeo\.com/) > -1;
     const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
     
-    let currentVideo = null;
     let isPipActive = false;
-    let isLocked = false;
+    let currentVideo = null;
+    let userPaused = false;
+    let lastUserAction = 0;
     
-    // Enhanced Page Visibility API override
+    // Basic Page Visibility API override (your working approach)
     if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
         Object.defineProperties(document, {
-            'hidden': { 
-                get: () => false,
-                configurable: true,
-                enumerable: true
-            },
-            'visibilityState': { 
-                get: () => 'visible',
-                configurable: true,
-                enumerable: true
-            }
+            'hidden': { value: false },
+            'visibilityState': { value: 'visible' }
         });
     }
     
-    // Comprehensive event blocking
-    const blockedEvents = ['visibilitychange', 'blur', 'focus', 'pagehide', 'pageshow'];
-    const originalAddEventListener = EventTarget.prototype.addEventListener;
-    const originalRemoveEventListener = EventTarget.prototype.removeEventListener;
+    // Block visibility change events
+    window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
+    document.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
     
-    EventTarget.prototype.addEventListener = function(type, listener, options) {
-        if (blockedEvents.includes(type)) {
-            console.log('Blocked event listener:', type);
-            return;
-        }
-        return originalAddEventListener.call(this, type, listener, options);
-    };
-    
-    // Block existing event listeners
-    blockedEvents.forEach(eventType => {
-        window.addEventListener(eventType, evt => {
-            evt.stopImmediatePropagation();
-            evt.preventDefault();
-        }, true);
-        
-        document.addEventListener(eventType, evt => {
-            evt.stopImmediatePropagation();
-            evt.preventDefault();
-        }, true);
-    });
-    
-    // Video element management
-    function setupVideoProtection(video) {
-        if (!video || video._protected) return;
-        video._protected = true;
+    // Enhanced PIP-specific handling
+    function setupPIPProtection(video) {
+        if (!video || video._pipProtected) return;
+        video._pipProtected = true;
         
         const originalPause = video.pause.bind(video);
         const originalPlay = video.play.bind(video);
         
-        // Override pause method
+        // Override pause method with PIP awareness
         video.pause = function() {
+            // Check if this is a system-initiated pause during PIP
             if (isPipActive) {
                 console.log('Blocking pause in PIP mode');
                 return Promise.resolve();
             }
+            
+            // Check call stack for system events
+            const stack = new Error().stack;
+            if (stack && (stack.includes('visibilitychange') || 
+                         stack.includes('blur') || 
+                         stack.includes('focus') ||
+                         stack.includes('pagehide'))) {
+                console.log('Blocking system-initiated pause');
+                return Promise.resolve();
+            }
+            
+            userPaused = true;
+            lastUserAction = Date.now();
             return originalPause();
         };
-        
-        // Monitor video events
-        video.addEventListener('pause', function(e) {
-            if (isPipActive) {
-                console.log('Video paused in PIP, resuming...');
-                e.stopImmediatePropagation();
-                setTimeout(() => {
-                    if (video.paused) {
-                        originalPlay().catch(console.error);
-                    }
-                }, 50);
-            }
-        }, true);
         
         // PIP event handlers
         video.addEventListener('enterpictureinpicture', function() {
@@ -117,16 +89,22 @@ constexpr char16_t kYoutubeBackgroundPlayback[] =
             currentVideo = video;
             console.log('Entered PIP mode');
             
-            // Ensure continuous playback
-            if (video.paused) {
+            // Ensure video continues playing
+            if (video.paused && !userPaused) {
                 originalPlay().catch(console.error);
             }
             
-            // Override media session
+            // Enhanced media session control for PIP
             if ('mediaSession' in navigator) {
                 navigator.mediaSession.playbackState = 'playing';
-                navigator.mediaSession.setActionHandler('pause', () => {
-                    console.log('Media session pause blocked');
+                
+                // Store original pause handler
+                const originalPauseHandler = navigator.mediaSession._originalPauseHandler;
+                
+                // Override pause action in PIP
+                navigator.mediaSession.setActionHandler('pause', function() {
+                    console.log('Media session pause blocked in PIP');
+                    // Don't actually pause in PIP mode
                 });
             }
         });
@@ -136,66 +114,107 @@ constexpr char16_t kYoutubeBackgroundPlayback[] =
             currentVideo = null;
             console.log('Left PIP mode');
             
-            // Restore media session
+            // Restore normal media session behavior
             if ('mediaSession' in navigator) {
-                navigator.mediaSession.setActionHandler('pause', () => {
+                navigator.mediaSession.setActionHandler('pause', function() {
+                    userPaused = true;
+                    lastUserAction = Date.now();
                     video.pause();
                 });
             }
         });
         
-        // Prevent attribute changes that could disable playback
+        // Monitor for unwanted pauses
+        video.addEventListener('pause', function(e) {
+            if (isPipActive && !userPaused) {
+                console.log('Video paused in PIP, resuming...');
+                setTimeout(() => {
+                    if (video.paused && !userPaused) {
+                        originalPlay().catch(console.error);
+                    }
+                }, 100);
+            }
+        });
+        
+        // Prevent disabling PIP
+        video.removeAttribute('disablePictureInPicture');
         const originalSetAttribute = video.setAttribute.bind(video);
         video.setAttribute = function(name, value) {
-            if (isPipActive && (name === 'autoplay' || name === 'disablePictureInPicture')) {
-                console.log('Blocked attribute change in PIP:', name);
-                return;
+            if (name === 'disablePictureInPicture') {
+                return; // Block attempts to disable PIP
             }
             return originalSetAttribute(name, value);
         };
     }
     
-    // Find and protect video elements
-    function protectVideos() {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(setupVideoProtection);
+    // Track user interactions (lightweight version)
+    function trackUserActions() {
+        document.addEventListener('click', function(e) {
+            const target = e.target;
+            if (target.closest('.ytp-play-button') || 
+                target.matches('[aria-label*="Play"]') ||
+                target.matches('[aria-label*="Pause"]')) {
+                lastUserAction = Date.now();
+                userPaused = target.matches('[aria-label*="Pause"]') ? false : true;
+            }
+        }, true);
+        
+        document.addEventListener('keydown', function(e) {
+            if (e.code === 'Space' || e.key === 'k' || e.key === 'K') {
+                lastUserAction = Date.now();
+                userPaused = !userPaused;
+            }
+        }, true);
     }
     
-    // Initial setup
+    // Find and protect videos
+    function protectVideos() {
+        const videos = document.querySelectorAll('video');
+        videos.forEach(setupPIPProtection);
+    }
+    
+    // Initialize
     protectVideos();
+    trackUserActions();
     
     // Monitor for new videos
-    const videoObserver = new MutationObserver(() => {
-        protectVideos();
-    });
-    videoObserver.observe(document.body, { childList: true, subtree: true });
+    const observer = new MutationObserver(protectVideos);
+    observer.observe(document.body, { childList: true, subtree: true });
     
     // Fullscreen API protection
     if (IS_VIMEO) {
         window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
     }
     
-    // User activity simulation for YouTube
+    // User activity simulation (your working approach)
     if (IS_YOUTUBE) {
-        function simulateActivity() {
-            if (isPipActive || document.hidden) {
-                const key = 18; // Alt key
-                document.dispatchEvent(new KeyboardEvent('keydown', {
-                    bubbles: true,
-                    cancelable: true,
-                    keyCode: key,
-                    which: key,
-                }));
-                document.dispatchEvent(new KeyboardEvent('keyup', {
-                    bubbles: true,
-                    cancelable: true,
-                    keyCode: key,
-                    which: key,
-                }));
-            }
+        function pressKey() {
+            const key = 18;
+            document.dispatchEvent(new KeyboardEvent('keydown', {
+                bubbles: true,
+                cancelable: true,
+                keyCode: key,
+                which: key,
+            }));
+            document.dispatchEvent(new KeyboardEvent('keyup', {
+                bubbles: true,
+                cancelable: true,
+                keyCode: key,
+                which: key,
+            }));
         }
         
-        setInterval(simulateActivity, 30000); // Every 30 seconds
+        function loop(aCallback, aDelay, aJitter) {
+            let jitter = Math.floor(Math.random() * aJitter) - aJitter/2;
+            let delay = Math.max(aDelay + jitter, 0);
+            
+            window.setTimeout(() => {
+                aCallback();
+                loop(aCallback, aDelay, aJitter);
+            }, delay);
+        }
+        
+        loop(pressKey, 60 * 1000, 10 * 1000);
     }
     
     })();
@@ -1261,7 +1280,7 @@ constexpr char16_t kYoutubePIPPersistence[] =
         }
         
         function savePipState() {
-            if (pipVideo) {
+            if (pipVideo && document.pictureInPictureElement) {
                 pipState.currentTime = pipVideo.currentTime;
                 pipState.wasPlaying = !pipVideo.paused;
                 pipState.videoId = getCurrentVideoId();
@@ -1279,14 +1298,29 @@ constexpr char16_t kYoutubePIPPersistence[] =
                     if (state.active && state.videoId === currentVideoId) {
                         const video = document.querySelector('video');
                         if (video && !document.pictureInPictureElement) {
-                            video.currentTime = state.currentTime;
-                            if (state.wasPlaying) {
-                                video.play().then(() => {
-                                    setTimeout(() => {
-                                        video.requestPictureInPicture().catch(console.error);
-                                    }, 500);
-                                }).catch(console.error);
-                            }
+                            console.log('Restoring PIP state');
+                            
+                            // Wait for video to be ready
+                            const attemptRestore = () => {
+                                if (video.readyState >= 2) {
+                                    video.currentTime = state.currentTime;
+                                    if (state.wasPlaying) {
+                                        video.play().then(() => {
+                                            setTimeout(() => {
+                                                video.requestPictureInPicture().catch(console.error);
+                                            }, 500);
+                                        }).catch(console.error);
+                                    } else {
+                                        setTimeout(() => {
+                                            video.requestPictureInPicture().catch(console.error);
+                                        }, 500);
+                                    }
+                                } else {
+                                    setTimeout(attemptRestore, 200);
+                                }
+                            };
+                            
+                            attemptRestore();
                         }
                     }
                 }
@@ -1302,8 +1336,8 @@ constexpr char16_t kYoutubePIPPersistence[] =
             savePipState();
             console.log('PIP activated');
             
-            // Periodic state saving
-            pipState.saveInterval = setInterval(savePipState, 2000);
+            // Save state periodically
+            pipState.saveInterval = setInterval(savePipState, 3000);
         });
         
         document.addEventListener('leavepictureinpicture', function(event) {
@@ -1316,35 +1350,31 @@ constexpr char16_t kYoutubePIPPersistence[] =
             console.log('PIP deactivated');
         });
         
-        // Handle app state changes
-        let wasHidden = document.hidden;
-        const checkVisibilityChange = function() {
-            const isNowHidden = document.hidden;
+        // Handle app coming back to foreground
+        let isHidden = document.hidden;
+        const handleVisibilityChange = function() {
+            const nowHidden = document.hidden;
             
-            if (wasHidden && !isNowHidden && pipState.active) {
-                // App came back to foreground
+            if (isHidden && !nowHidden && pipState.active) {
                 console.log('App returned to foreground, restoring PIP');
                 setTimeout(restorePipState, 1000);
             }
             
-            wasHidden = isNowHidden;
+            isHidden = nowHidden;
         };
         
-        // Use multiple methods to detect app state changes
-        document.addEventListener('visibilitychange', checkVisibilityChange);
+        // Use a different approach to detect visibility changes
+        setInterval(() => {
+            handleVisibilityChange();
+        }, 1000);
+        
         window.addEventListener('focus', function() {
             if (pipState.active) {
-                setTimeout(restorePipState, 500);
+                setTimeout(restorePipState, 800);
             }
         });
         
-        window.addEventListener('pageshow', function() {
-            if (pipState.active) {
-                setTimeout(restorePipState, 500);
-            }
-        });
-        
-        // Monitor for video element changes
+        // Monitor for video changes
         const observer = new MutationObserver(function(mutations) {
             mutations.forEach(function(mutation) {
                 if (mutation.type === 'childList' && pipState.active) {
@@ -1367,13 +1397,7 @@ constexpr char16_t kYoutubePIPPersistence[] =
         });
         
         // Check for existing state on load
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(restorePipState, 1000);
-            });
-        } else {
-            setTimeout(restorePipState, 1000);
-        }
+        setTimeout(restorePipState, 1500);
         
     })();
 )";
