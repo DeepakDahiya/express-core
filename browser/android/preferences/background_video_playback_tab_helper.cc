@@ -25,200 +25,70 @@
 namespace {
 constexpr char16_t kYoutubeBackgroundPlayback[] =
     uR"(
-    (function() {
-    'use strict';
-    
-    const IS_YOUTUBE = window.location.hostname.search(/(?:^|.+\.)youtube\.com/) > -1 ||
-                    window.location.hostname.search(/(?:^|.+\.)youtube-nocookie\.com/) > -1;
-    const IS_MOBILE_YOUTUBE = window.location.hostname == 'm.youtube.com';
-    const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
-    const IS_VIMEO = window.location.hostname.search(/(?:^|.+\.)vimeo\.com/) > -1;
-    const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
-    
-    let isPipActive = false;
-    let currentVideo = null;
-    let userPaused = false;
-    let lastUserAction = 0;
-    
-    // Basic Page Visibility API override (your working approach)
-    if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
-        Object.defineProperties(document, {
-            'hidden': { value: false },
-            'visibilityState': { value: 'visible' }
-        });
-    }
-    
-    // Block visibility change events
-    window.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
-    document.addEventListener('visibilitychange', evt => evt.stopImmediatePropagation(), true);
-    
-    // Enhanced PIP-specific handling
-    function setupPIPProtection(video) {
-        if (!video || video._pipProtected) return;
-        video._pipProtected = true;
-        
-        const originalPause = video.pause.bind(video);
-        const originalPlay = video.play.bind(video);
-        
-        // Override pause method with PIP awareness
-        video.pause = function() {
-            // Check if this is a system-initiated pause during PIP
-            if (isPipActive) {
-                console.log('Blocking pause in PIP mode');
-                return Promise.resolve();
+        (function() {
+            'use strict';
+
+            const IS_YOUTUBE = window.location.hostname.search(/(?:^|.+\.)youtube\.com/) > -1 ||
+                            window.location.hostname.search(/(?:^|.+\.)youtube-nocookie\.com/) > -1;
+            const IS_MOBILE_YOUTUBE = window.location.hostname == 'm.youtube.com';
+            const IS_DESKTOP_YOUTUBE = IS_YOUTUBE && !IS_MOBILE_YOUTUBE;
+            const IS_VIMEO = window.location.hostname.search(/(?:^|.+\.)vimeo\.com/) > -1;
+
+            const IS_ANDROID = window.navigator.userAgent.indexOf('Android') > -1;
+
+            // Page Visibility API
+            if (IS_ANDROID || !IS_DESKTOP_YOUTUBE) {
+            Object.defineProperties(document,
+                { 'hidden': {value: false}, 'visibilityState': {value: 'visible'} });
             }
-            
-            // Check call stack for system events
-            const stack = new Error().stack;
-            if (stack && (stack.includes('visibilitychange') || 
-                         stack.includes('blur') || 
-                         stack.includes('focus') ||
-                         stack.includes('pagehide'))) {
-                console.log('Blocking system-initiated pause');
-                return Promise.resolve();
+
+            window.addEventListener(
+            'visibilitychange', evt => evt.stopImmediatePropagation(), true);
+
+            // Fullscreen API
+            if (IS_VIMEO) {
+            window.addEventListener(
+                'fullscreenchange', evt => evt.stopImmediatePropagation(), true);
             }
-            
-            userPaused = true;
-            lastUserAction = Date.now();
-            return originalPause();
-        };
-        
-        // PIP event handlers
-        video.addEventListener('enterpictureinpicture', function() {
-            isPipActive = true;
-            currentVideo = video;
-            console.log('Entered PIP mode');
-            
-            // Ensure video continues playing
-            if (video.paused && !userPaused) {
-                originalPlay().catch(console.error);
+
+            // User activity tracking
+            if (IS_YOUTUBE) {
+            loop(pressKey, 60 * 1000, 10 * 1000); // every minute +/- 10 seconds
             }
-            
-            // Enhanced media session control for PIP
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.playbackState = 'playing';
-                
-                // Store original pause handler
-                const originalPauseHandler = navigator.mediaSession._originalPauseHandler;
-                
-                // Override pause action in PIP
-                navigator.mediaSession.setActionHandler('pause', function() {
-                    console.log('Media session pause blocked in PIP');
-                    // Don't actually pause in PIP mode
-                });
-            }
-        });
-        
-        video.addEventListener('leavepictureinpicture', function() {
-            isPipActive = false;
-            currentVideo = null;
-            console.log('Left PIP mode');
-            
-            // Restore normal media session behavior
-            if ('mediaSession' in navigator) {
-                navigator.mediaSession.setActionHandler('pause', function() {
-                    userPaused = true;
-                    lastUserAction = Date.now();
-                    video.pause();
-                });
-            }
-        });
-        
-        // Monitor for unwanted pauses
-        video.addEventListener('pause', function(e) {
-            if (isPipActive && !userPaused) {
-                console.log('Video paused in PIP, resuming...');
-                setTimeout(() => {
-                    if (video.paused && !userPaused) {
-                        originalPlay().catch(console.error);
-                    }
-                }, 100);
-            }
-        });
-        
-        // Prevent disabling PIP
-        video.removeAttribute('disablePictureInPicture');
-        const originalSetAttribute = video.setAttribute.bind(video);
-        video.setAttribute = function(name, value) {
-            if (name === 'disablePictureInPicture') {
-                return; // Block attempts to disable PIP
-            }
-            return originalSetAttribute(name, value);
-        };
-    }
-    
-    // Track user interactions (lightweight version)
-    function trackUserActions() {
-        document.addEventListener('click', function(e) {
-            const target = e.target;
-            if (target.closest('.ytp-play-button') || 
-                target.matches('[aria-label*="Play"]') ||
-                target.matches('[aria-label*="Pause"]')) {
-                lastUserAction = Date.now();
-                userPaused = target.matches('[aria-label*="Pause"]') ? false : true;
-            }
-        }, true);
-        
-        document.addEventListener('keydown', function(e) {
-            if (e.code === 'Space' || e.key === 'k' || e.key === 'K') {
-                lastUserAction = Date.now();
-                userPaused = !userPaused;
-            }
-        }, true);
-    }
-    
-    // Find and protect videos
-    function protectVideos() {
-        const videos = document.querySelectorAll('video');
-        videos.forEach(setupPIPProtection);
-    }
-    
-    // Initialize
-    protectVideos();
-    trackUserActions();
-    
-    // Monitor for new videos
-    const observer = new MutationObserver(protectVideos);
-    observer.observe(document.body, { childList: true, subtree: true });
-    
-    // Fullscreen API protection
-    if (IS_VIMEO) {
-        window.addEventListener('fullscreenchange', evt => evt.stopImmediatePropagation(), true);
-    }
-    
-    // User activity simulation (your working approach)
-    if (IS_YOUTUBE) {
-        function pressKey() {
+
+            function pressKey() {
             const key = 18;
-            document.dispatchEvent(new KeyboardEvent('keydown', {
+            sendKeyEvent("keydown", key);
+            sendKeyEvent("keyup", key);
+            }
+
+            function sendKeyEvent (aEvent, aKey) {
+            document.dispatchEvent(new KeyboardEvent(aEvent, {
                 bubbles: true,
                 cancelable: true,
-                keyCode: key,
-                which: key,
+                keyCode: aKey,
+                which: aKey,
             }));
-            document.dispatchEvent(new KeyboardEvent('keyup', {
-                bubbles: true,
-                cancelable: true,
-                keyCode: key,
-                which: key,
-            }));
-        }
-        
-        function loop(aCallback, aDelay, aJitter) {
-            let jitter = Math.floor(Math.random() * aJitter) - aJitter/2;
+            }
+
+            function loop(aCallback, aDelay, aJitter) {
+            let jitter = getRandomInt(-aJitter/2, aJitter/2);
             let delay = Math.max(aDelay + jitter, 0);
-            
+
             window.setTimeout(() => {
-                aCallback();
-                loop(aCallback, aDelay, aJitter);
-            }, delay);
-        }
-        
-        loop(pressKey, 60 * 1000, 10 * 1000);
-    }
-    
-    })();
-)";
+                                aCallback();
+                                loop(aCallback, aDelay, aJitter);
+                                }, delay);
+            }
+
+            function getRandomInt(aMin, aMax) {
+            let min = Math.ceil(aMin);
+            let max = Math.floor(aMax);
+            return Math.floor(Math.random() * (max - min)) + min;
+            }
+
+        })();
+    )";
 
 constexpr char16_t kYoutubeInAppPIP[] =
     uR"(
@@ -1122,51 +992,48 @@ constexpr char16_t kYoutubeInAppPIP[] =
 )";
 
 const char16_t kYoutubePIP[] =
-   uR"(
-(function() {
-  // Function to modify the flags if the target object exists.
-  function modifyYtcfgFlags() {
-    const config = window.ytcfg.get("WEB_PLAYER_CONTEXT_CONFIGS")
-      ?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH
-    if (config && config.serializedExperimentFlags && typeof config
-      .serializedExperimentFlags === 'string') {
-      let flags = config.serializedExperimentFlags;
+    uR"(
+        (function() {
+            // Function to modify the flags if the target object exists.
+            function modifyYtcfgFlags() {
+                const config = window.ytcfg.get("WEB_PLAYER_CONTEXT_CONFIGS")?.WEB_PLAYER_CONTEXT_CONFIG_ID_MWEB_WATCH
+                if (config && config.serializedExperimentFlags && typeof config.serializedExperimentFlags === 'string') {
+                    let flags = config.serializedExperimentFlags;
 
-      // Replace target flags.
-      flags = flags
-        .replace(
-          "html5_picture_in_picture_blocking_ontimeupdate=true",
-          "html5_picture_in_picture_blocking_ontimeupdate=false")
-        .replace("html5_picture_in_picture_blocking_onresize=true",
-          "html5_picture_in_picture_blocking_onresize=false")
-        .replace(
-          "html5_picture_in_picture_blocking_document_fullscreen=true",
-          "html5_picture_in_picture_blocking_document_fullscreen=false"
-        )
-        .replace(
-          "html5_picture_in_picture_blocking_standard_api=true",
-          "html5_picture_in_picture_blocking_standard_api=false")
-        .replace("html5_picture_in_picture_logging_onresize=true",
-          "html5_picture_in_picture_logging_onresize=false");
+                    // Replace target flags.
+                    flags = flags
+                        .replace(
+                        "html5_picture_in_picture_blocking_ontimeupdate=true",
+                        "html5_picture_in_picture_blocking_ontimeupdate=false")
+                        .replace("html5_picture_in_picture_blocking_onresize=true",
+                        "html5_picture_in_picture_blocking_onresize=false")
+                        .replace(
+                        "html5_picture_in_picture_blocking_document_fullscreen=true",
+                        "html5_picture_in_picture_blocking_document_fullscreen=false"
+                        )
+                        .replace(
+                        "html5_picture_in_picture_blocking_standard_api=true",
+                        "html5_picture_in_picture_blocking_standard_api=false")
+                        .replace("html5_picture_in_picture_logging_onresize=true",
+                        "html5_picture_in_picture_logging_onresize=false");
 
-      // Assign updated flags back to config.
-      config.serializedExperimentFlags = flags;
-    }
-  }
+                    // Assign updated flags back to config.
+                    config.serializedExperimentFlags = flags;
+                }
+            }
 
-  if (window.ytcfg) {
-    modifyYtcfgFlags();
-  } else {
-    document.addEventListener('load', (event) => {
-      const target = event.target;
-      if (target.tagName === 'SCRIPT' && window.ytcfg) {
-        // Check and modify flags when a new script is added.
-        modifyYtcfgFlags();
-      }
-    }, true);
-  }
-}());
-)";
+            if (window.ytcfg) {
+                modifyYtcfgFlags();
+            } else {
+                document.addEventListener('load', (event) => {
+                    const target = event.target;
+                    if (target.tagName === 'SCRIPT' && window.ytcfg) {
+                        modifyYtcfgFlags();
+                    }
+                }, true);
+            }
+        }());
+    )";
 
 constexpr char16_t kYoutubePipButton[] =
     uR"(
@@ -1253,152 +1120,155 @@ constexpr char16_t kYoutubePipButton[] =
             }
         });
 
+        let userPaused = false;
+        let lastUserAction = 0;
+
+        function setupMediaSession() {
+            if ("mediaSession" in navigator) {
+                navigator.mediaSession.metadata = new MediaMetadata({
+                    title: document.title || "YouTube Video",
+                    artist: "YouTube",
+                    artwork: [
+                        {
+                            src: "/favicon.ico",
+                            sizes: "96x96",
+                            type: "image/x-icon",
+                        },
+                    ],
+                });
+
+                navigator.mediaSession.setActionHandler("play", () => {
+                    const video = document.querySelector("video");
+                    if (video) {
+                        userPaused = false;
+                        lastUserAction = Date.now();
+                        video.play();
+                    }
+                });
+
+                navigator.mediaSession.setActionHandler("pause", () => {
+                    const video = document.querySelector("video");
+                    if (video) {
+                        userPaused = true;
+                        lastUserAction = Date.now();
+                        video.pause();
+                    }
+                });
+
+                navigator.mediaSession.setActionHandler("seekbackward", () => {
+                    const video = document.querySelector("video");
+                    if (video)
+                        video.currentTime = Math.max(0, video.currentTime - 10);
+                });
+
+                navigator.mediaSession.setActionHandler("seekforward", () => {
+                    const video = document.querySelector("video");
+                    if (video)
+                        video.currentTime = Math.min(
+                            video.duration,
+                            video.currentTime + 10,
+                        );
+                });
+            }
+        }
+
+        function setupVideoElement() {
+            const video = document.querySelector("video");
+            if (!video) return;
+
+            video.removeAttribute("disablePictureInPicture");
+
+            const originalPause = video.pause;
+            video.pause = function () {
+                const stack = new Error().stack;
+                if (
+                    stack.includes("visibilitychange") ||
+                    stack.includes("blur") ||
+                    stack.includes("focus")
+                ) {
+                    return;
+                }
+                userPaused = true;
+                lastUserAction = Date.now();
+                return originalPause.call(this);
+            };
+
+            const originalPlay = video.play;
+            video.play = function () {
+                userPaused = false;
+                lastUserAction = Date.now();
+                return originalPlay.call(this);
+            };
+
+            video.addEventListener("pause", e => {
+                if (!userPaused && !isUserAction()) {
+                    setTimeout(() => {
+                        if (video.paused && !video.ended && !userPaused) {
+                            video.play().catch(console.error);
+                        }
+                    }, 100);
+                }
+            });
+
+            video.addEventListener("play", () => {
+                if ("mediaSession" in navigator) {
+                    navigator.mediaSession.playbackState = "playing";
+                }
+            });
+
+            video.addEventListener("pause", () => {
+                if ("mediaSession" in navigator) {
+                    navigator.mediaSession.playbackState = "paused";
+                }
+            });
+
+            document.addEventListener(
+                "click",
+                e => {
+                    const target = e.target;
+                    if (
+                        target.closest(".ytp-play-button") ||
+                        target.closest('[data-title-no-tooltip="Play"]') ||
+                        target.closest('[data-title-no-tooltip="Pause"]') ||
+                        target.closest(
+                            ".player-controls-play-pause-replay-button",
+                        ) ||
+                        target.matches('[aria-label*="Play"]') ||
+                        target.matches('[aria-label*="Pause"]')
+                    ) {
+                        lastUserAction = Date.now();
+                        userPaused =
+                            target.closest('[data-title-no-tooltip="Pause"]') ||
+                                target.matches('[aria-label*="Pause"]')
+                                ? false
+                                : true;
+                    }
+                },
+                true,
+            );
+
+            document.addEventListener(
+                "keydown",
+                e => {
+                    if (e.code === "Space" || e.key === "k" || e.key === "K") {
+                        lastUserAction = Date.now();
+                        userPaused = !userPaused;
+                    }
+                },
+                true,
+            );
+        }
+
         const observer = new MutationObserver(() => {
             const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
             if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
             buttonContainerElement.prepend(buttonElement);
+            setupVideoElement();
         });
         observer.observe(document.documentElement, { subtree: true, childList: true });
-    
-    })();
-)";
 
-constexpr char16_t kYoutubePIPPersistence[] =
-    uR"(
-    (function() {
-        let pipVideo = null;
-        let pipState = {
-            active: false,
-            videoId: null,
-            currentTime: 0,
-            wasPlaying: false
-        };
-        
-        function getCurrentVideoId() {
-            const urlParams = new URLSearchParams(window.location.search);
-            return urlParams.get('v');
-        }
-        
-        function savePipState() {
-            if (pipVideo && document.pictureInPictureElement) {
-                pipState.currentTime = pipVideo.currentTime;
-                pipState.wasPlaying = !pipVideo.paused;
-                pipState.videoId = getCurrentVideoId();
-                sessionStorage.setItem('brave_pip_state', JSON.stringify(pipState));
-            }
-        }
-        
-        function restorePipState() {
-            try {
-                const saved = sessionStorage.getItem('brave_pip_state');
-                if (saved) {
-                    const state = JSON.parse(saved);
-                    const currentVideoId = getCurrentVideoId();
-                    
-                    if (state.active && state.videoId === currentVideoId) {
-                        const video = document.querySelector('video');
-                        if (video && !document.pictureInPictureElement) {
-                            console.log('Restoring PIP state');
-                            
-                            // Wait for video to be ready
-                            const attemptRestore = () => {
-                                if (video.readyState >= 2) {
-                                    video.currentTime = state.currentTime;
-                                    if (state.wasPlaying) {
-                                        video.play().then(() => {
-                                            setTimeout(() => {
-                                                video.requestPictureInPicture().catch(console.error);
-                                            }, 500);
-                                        }).catch(console.error);
-                                    } else {
-                                        setTimeout(() => {
-                                            video.requestPictureInPicture().catch(console.error);
-                                        }, 500);
-                                    }
-                                } else {
-                                    setTimeout(attemptRestore, 200);
-                                }
-                            };
-                            
-                            attemptRestore();
-                        }
-                    }
-                }
-            } catch (e) {
-                console.error('Failed to restore PIP state:', e);
-            }
-        }
-        
-        // Track PIP events
-        document.addEventListener('enterpictureinpicture', function(event) {
-            pipVideo = event.target;
-            pipState.active = true;
-            savePipState();
-            console.log('PIP activated');
-            
-            // Save state periodically
-            pipState.saveInterval = setInterval(savePipState, 3000);
-        });
-        
-        document.addEventListener('leavepictureinpicture', function(event) {
-            pipState.active = false;
-            pipVideo = null;
-            if (pipState.saveInterval) {
-                clearInterval(pipState.saveInterval);
-            }
-            sessionStorage.removeItem('brave_pip_state');
-            console.log('PIP deactivated');
-        });
-        
-        // Handle app coming back to foreground
-        let isHidden = document.hidden;
-        const handleVisibilityChange = function() {
-            const nowHidden = document.hidden;
-            
-            if (isHidden && !nowHidden && pipState.active) {
-                console.log('App returned to foreground, restoring PIP');
-                setTimeout(restorePipState, 1000);
-            }
-            
-            isHidden = nowHidden;
-        };
-        
-        // Use a different approach to detect visibility changes
-        setInterval(() => {
-            handleVisibilityChange();
-        }, 1000);
-        
-        window.addEventListener('focus', function() {
-            if (pipState.active) {
-                setTimeout(restorePipState, 800);
-            }
-        });
-        
-        // Monitor for video changes
-        const observer = new MutationObserver(function(mutations) {
-            mutations.forEach(function(mutation) {
-                if (mutation.type === 'childList' && pipState.active) {
-                    const newVideo = document.querySelector('video');
-                    if (newVideo && newVideo !== pipVideo) {
-                        pipVideo = newVideo;
-                        setTimeout(() => {
-                            if (!document.pictureInPictureElement) {
-                                restorePipState();
-                            }
-                        }, 300);
-                    }
-                }
-            });
-        });
-        
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-        
-        // Check for existing state on load
-        setTimeout(restorePipState, 1500);
-        
+        setupMediaSession();
+    
     })();
 )";
 
@@ -1433,8 +1303,6 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
     kYoutubeBackgroundPlayback, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubePIP, base::NullCallback());
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubePIPPersistence, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
