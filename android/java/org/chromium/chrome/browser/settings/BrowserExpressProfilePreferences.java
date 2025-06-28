@@ -316,8 +316,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                             return; 
                         }
 
-                        Context context = getContext();
-                        if (context == null) return;
+                        if (getContext() == null) return;
 
                         BraveActivity activity = BraveActivity.getBraveActivity();
                         if (activity == null) {

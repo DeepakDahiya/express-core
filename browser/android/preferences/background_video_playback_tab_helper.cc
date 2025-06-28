@@ -23,7 +23,7 @@
 #include "url/gurl.h"
 
 namespace {
-const kYoutubeBackgroundPlayback[] =
+constexpr kYoutubeBackgroundPlayback[] =
     uR"(
     (function() {
     'use strict';
