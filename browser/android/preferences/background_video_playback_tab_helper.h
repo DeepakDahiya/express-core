@@ -23,6 +23,8 @@ class BackgroundVideoPlaybackTabHelper
   // content::WebContentsObserver overrides:
   void PrimaryMainDocumentElementAvailable() override;
 
+  void DidBecomeActive() override;
+
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 

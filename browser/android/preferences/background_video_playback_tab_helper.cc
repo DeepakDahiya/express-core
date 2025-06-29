@@ -1104,17 +1104,38 @@ const char16_t kYoutubePIP[] =
 const char16_t kYoutubePipButton[] = 
     uR"(
     (function() {
-        // Store tab reference for proper restoration
+        // Enhanced tab and video state management
         let originalTabId = null;
         let videoElement = null;
         let wasPlaying = false;
+        let tabIdentifier = null;
+
+        // Create unique identifier for this tab
+        const createTabIdentifier = () => {
+            const url = window.location.href;
+            const timestamp = Date.now();
+            return `youtube_tab_${btoa(url)}_${timestamp}`;
+        };
+
+        // Store tab info in sessionStorage for cross-tab communication
+        const storeTabInfo = () => {
+            tabIdentifier = createTabIdentifier();
+            const tabInfo = {
+                url: window.location.href,
+                title: document.title,
+                timestamp: Date.now(),
+                tabId: tabIdentifier
+            };
+            sessionStorage.setItem('youtube_pip_tab', JSON.stringify(tabInfo));
+            localStorage.setItem('youtube_active_pip_tab', JSON.stringify(tabInfo));
+        };
 
         const buttonElement = document.createElement('button');
         buttonElement.className = 'yt-pip-gold';
         buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
         buttonElement.title = 'Picture-in-Picture';
 
-        // Enhanced CSS (keeping your existing styles)
+        // Your existing CSS styles
         if (!document.getElementById('yt-pip-gold-styles')) {
             const css = `
             .yt-pip-gold {
@@ -1163,24 +1184,52 @@ const char16_t kYoutubePipButton[] =
             document.head.appendChild(styleTag);
         }
 
-        // Enhanced PiP handling
+        // Enhanced PiP button click handler
         buttonElement.addEventListener('click', () => {
             videoElement = document.querySelector('video');
             if (videoElement) {
-                // Store current state
                 wasPlaying = !videoElement.paused;
-                originalTabId = window.location.href;
+                storeTabInfo(); // Store this tab's info before entering PiP
                 
                 videoElement.removeAttribute('disablePictureInPicture');
                 videoElement.requestPictureInPicture().catch(console.error);
             }
         });
 
+        // Check if this is the correct tab when page loads/becomes visible
+        const checkIfCorrectTab = () => {
+            const storedTabInfo = localStorage.getItem('youtube_active_pip_tab');
+            if (storedTabInfo) {
+                try {
+                    const tabInfo = JSON.parse(storedTabInfo);
+                    const currentUrl = window.location.href;
+                    
+                    // Check if this tab matches the stored PiP tab
+                    if (tabInfo.url === currentUrl || 
+                        (tabInfo.url.includes('/watch?v=') && currentUrl.includes('/watch?v=') && 
+                         tabInfo.url.split('v=')[1]?.split('&')[0] === currentUrl.split('v=')[1]?.split('&')[0])) {
+                        
+                        // This is the correct tab, ensure video plays
+                        setTimeout(() => {
+                            const video = document.querySelector('video');
+                            if (video && video.paused) {
+                                video.play().catch(console.error);
+                            }
+                        }, 500);
+                        
+                        return true;
+                    }
+                } catch (e) {
+                    console.error('Error parsing tab info:', e);
+                }
+            }
+            return false;
+        };
+
         // Enhanced PiP event listeners
         if (document.pictureInPictureEnabled) {
             document.addEventListener('enterpictureinpicture', (event) => {
                 console.log('Entered PiP mode');
-                // Ensure video continues playing
                 if (event.target && wasPlaying) {
                     setTimeout(() => {
                         if (event.target.paused) {
@@ -1192,19 +1241,24 @@ const char16_t kYoutubePipButton[] =
 
             document.addEventListener('leavepictureinpicture', (event) => {
                 console.log('Left PiP mode');
-                // Force focus back to this tab
-                if (window.focus) {
-                    window.focus();
-                }
                 
-                // Ensure video continues playing after PiP exit
+                // Clear PiP tab info
+                localStorage.removeItem('youtube_active_pip_tab');
+                
+                // Enhanced tab restoration
                 setTimeout(() => {
+                    // Force focus and ensure this tab is active
+                    if (window.focus) {
+                        window.focus();
+                    }
+                    
+                    // Ensure video continues playing
                     const video = document.querySelector('video');
                     if (video && wasPlaying && video.paused) {
                         video.play().catch(console.error);
                     }
                     
-                    // Force page visibility to visible
+                    // Force visibility state
                     Object.defineProperty(document, 'hidden', {
                         value: false,
                         writable: false,
@@ -1219,21 +1273,33 @@ const char16_t kYoutubePipButton[] =
             });
         }
 
+        // Listen for page visibility changes to handle tab switching
+        const originalVisibilityChangeHandler = () => {
+            if (!document.hidden) {
+                checkIfCorrectTab();
+            }
+        };
+
+        // Override visibility change to handle our custom logic
+        document.addEventListener('visibilitychange', originalVisibilityChangeHandler);
+
+        // Check on page load
+        window.addEventListener('load', checkIfCorrectTab);
+        window.addEventListener('focus', checkIfCorrectTab);
+
+        // Periodically check if we're the active PiP tab
+        setInterval(() => {
+            if (document.pictureInPictureElement) {
+                storeTabInfo(); // Keep updating our tab info while PiP is active
+            }
+        }, 1000);
+
         const observer = new MutationObserver(() => {
             const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
             if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
             buttonContainerElement.prepend(buttonElement);
         });
         observer.observe(document.documentElement, { subtree: true, childList: true });
-
-        // Additional visibility override for problematic devices
-        const originalAddEventListener = document.addEventListener;
-        document.addEventListener = function(type, listener, options) {
-            if (type === 'visibilitychange') {
-                return; // Block visibility change events
-            }
-            return originalAddEventListener.call(this, type, listener, options);
-        };
 
     })();
 )";
@@ -1266,6 +1332,20 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
 
+  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
+  if (profile) {
+    // Store tab information in profile preferences for cross-tab access
+    PrefService* prefs = profile->GetPrefs();
+    if (prefs) {
+      base::Value::Dict tab_info;
+      tab_info.Set("url", contents->GetLastCommittedURL().spec());
+      tab_info.Set("title", base::UTF16ToUTF8(contents->GetTitle()));
+      tab_info.Set("timestamp", base::Time::Now().ToDoubleT());
+      
+      prefs->SetDict("brave.youtube_pip_tab_info", std::move(tab_info));
+    }
+  }
+
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
       kYoutubeBackgroundPlayback, base::NullCallback());
   
@@ -1287,6 +1367,39 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
+}
+
+void BackgroundVideoPlaybackTabHelper::DidBecomeActive() {
+  content::WebContents* contents = web_contents();
+  if (!IsYouTubeDomain(contents->GetLastCommittedURL())) {
+    return;
+  }
+  
+  // Check if this tab should be the active PiP tab
+  const std::string check_script = R"(
+    (function() {
+      const storedTabInfo = localStorage.getItem('youtube_active_pip_tab');
+      if (storedTabInfo) {
+        try {
+          const tabInfo = JSON.parse(storedTabInfo);
+          const currentUrl = window.location.href;
+          if (tabInfo.url === currentUrl || 
+              (tabInfo.url.includes('/watch?v=') && currentUrl.includes('/watch?v=') && 
+               tabInfo.url.split('v=')[1]?.split('&')[0] === currentUrl.split('v=')[1]?.split('&')[0])) {
+            const video = document.querySelector('video');
+            if (video && video.paused) {
+              video.play().catch(console.error);
+            }
+          }
+        } catch (e) {
+          console.error('Error in tab activation check:', e);
+        }
+      }
+    })();
+  )";
+  
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+      base::UTF8ToUTF16(check_script), base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);
