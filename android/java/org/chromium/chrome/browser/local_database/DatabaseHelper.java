@@ -203,7 +203,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void insertTopSite(TopSite topSite) {
         String url = topSite.getDestinationUrl();
-        if (DEFAULT_YOUTUBE_URL.equals(url) || url.contains("youtube.com")) {
+        if ((DEFAULT_YOUTUBE_URL.equals(url) || url.contains("youtube.com")) && isTopSiteAlreadyAdded(url)) {
             return;
         }
         if (!isTopSiteAlreadyAdded(topSite.getDestinationUrl()) && !NTPUtil.isInRemovedTopSite(topSite.getDestinationUrl())) {
