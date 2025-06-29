@@ -1325,74 +1325,101 @@ BackgroundVideoPlaybackTabHelper::BackgroundVideoPlaybackTabHelper(
 BackgroundVideoPlaybackTabHelper::~BackgroundVideoPlaybackTabHelper() {}
 
 void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
+  ExecutePipScripts();
+}
+
+void BackgroundVideoPlaybackTabHelper::OnVisibilityChanged(content::Visibility visibility) {
+  if (visibility == content::Visibility::VISIBLE) {
+    HandleTabVisibilityChange();
+  }
+}
+
+void BackgroundVideoPlaybackTabHelper::DidFinishNavigation(content::NavigationHandle* navigation_handle) {
+  if (!navigation_handle->IsInPrimaryMainFrame() || !navigation_handle->HasCommitted()) {
+    return;
+  }
+  
+  // Re-inject scripts on navigation
+  if (IsYouTubeDomain(navigation_handle->GetURL())) {
+    base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&BackgroundVideoPlaybackTabHelper::ExecutePipScripts,
+                       weak_factory_.GetWeakPtr()),
+        base::Milliseconds(500));
+  }
+}
+
+void BackgroundVideoPlaybackTabHelper::ExecutePipScripts() {
   content::WebContents* contents = web_contents();
-  // Filter only YT domain here
   if (!IsYouTubeDomain(contents->GetLastCommittedURL())) {
     return;
   }
+  
   content::RenderFrameHost::AllowInjectingJavaScript();
-
-  Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
-  if (profile) {
-    // Store tab information in profile preferences for cross-tab access
-    PrefService* prefs = profile->GetPrefs();
-    if (prefs) {
-      base::Value::Dict tab_info;
-      tab_info.Set("url", contents->GetLastCommittedURL().spec());
-      tab_info.Set("title", base::UTF16ToUTF8(contents->GetTitle()));
-      tab_info.Set("timestamp", base::Time::Now().ToDoubleT());
-      
-      prefs->SetDict("brave.youtube_pip_tab_info", std::move(tab_info));
-    }
-  }
-
+  
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
       kYoutubeBackgroundPlayback, base::NullCallback());
   
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubePIP, base::NullCallback());
-      }, contents),
+      base::BindOnce([](base::WeakPtr<content::WebContents> contents) {
+        if (contents) {
+          contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+              kYoutubePIP, base::NullCallback());
+        }
+      }, contents->GetWeakPtr()),
       base::Milliseconds(100));
       
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubePipButton, base::NullCallback());
-      }, contents),
+      base::BindOnce([](base::WeakPtr<content::WebContents> contents) {
+        if (contents) {
+          contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+              kYoutubePipButton, base::NullCallback());
+        }
+      }, contents->GetWeakPtr()),
       base::Milliseconds(200));
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubeInAppPIP, base::NullCallback());
+      kYoutubeInAppPIP, base::NullCallback());
 }
 
-void BackgroundVideoPlaybackTabHelper::DidBecomeActive() {
+void BackgroundVideoPlaybackTabHelper::HandleTabVisibilityChange() {
   content::WebContents* contents = web_contents();
   if (!IsYouTubeDomain(contents->GetLastCommittedURL())) {
     return;
   }
   
-  // Check if this tab should be the active PiP tab
   const std::string check_script = R"(
     (function() {
       const storedTabInfo = localStorage.getItem('youtube_active_pip_tab');
       if (storedTabInfo) {
         try {
           const tabInfo = JSON.parse(storedTabInfo);
-          const currentUrl = window.location.href;
-          if (tabInfo.url === currentUrl || 
-              (tabInfo.url.includes('/watch?v=') && currentUrl.includes('/watch?v=') && 
-               tabInfo.url.split('v=')[1]?.split('&')[0] === currentUrl.split('v=')[1]?.split('&')[0])) {
-            const video = document.querySelector('video');
-            if (video && video.paused) {
-              video.play().catch(console.error);
-            }
+          const currentVideoId = new URLSearchParams(window.location.search).get('v');
+          
+          if (tabInfo.videoId === currentVideoId || tabInfo.url === window.location.href) {
+            console.log('This is the correct PiP tab, ensuring video plays');
+            
+            setTimeout(() => {
+              const video = document.querySelector('video');
+              if (video && video.paused) {
+                video.play().catch(console.error);
+              }
+            Object.defineProperty(document, 'hidden', {
+                value: false,
+                writable: false,
+                configurable: true
+              });
+              Object.defineProperty(document, 'visibilityState', {
+                value: 'visible',
+                writable: false,
+                configurable: true
+              });
+            }, 300);
           }
         } catch (e) {
-          console.error('Error in tab activation check:', e);
+          console.error('Error in tab visibility check:', e);
         }
       }
     })();

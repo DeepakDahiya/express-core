@@ -6,6 +6,7 @@
 #ifndef BRAVE_BROWSER_ANDROID_PREFERENCES_BACKGROUND_VIDEO_PLAYBACK_TAB_HELPER_H_
 #define BRAVE_BROWSER_ANDROID_PREFERENCES_BACKGROUND_VIDEO_PLAYBACK_TAB_HELPER_H_
 
+#include "base/memory/weak_ptr.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -22,8 +23,17 @@ class BackgroundVideoPlaybackTabHelper
 
   // content::WebContentsObserver overrides:
   void PrimaryMainDocumentElementAvailable() override;
+  void OnVisibilityChanged(content::Visibility visibility) override;
+  void DidFinishNavigation(content::NavigationHandle* navigation_handle) override;
 
-  void DidBecomeActive() override;
+ private:
+  friend class content::WebContentsUserData<BackgroundVideoPlaybackTabHelper>;
+  
+  void HandleTabVisibilityChange();
+  void ExecutePipScripts();
+  
+  // WeakPtr factory for safe async operations
+  base::WeakPtrFactory<BackgroundVideoPlaybackTabHelper> weak_factory_{this};
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
