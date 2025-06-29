@@ -1101,7 +1101,7 @@ const char16_t kYoutubePIP[] =
         }());
     )";
 
-const kYoutubePipButton[] = 
+const char16_t kYoutubePipButton[] = 
     uR"(
     (function() {
         // Store tab reference for proper restoration
