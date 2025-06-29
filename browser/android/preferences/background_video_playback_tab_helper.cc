@@ -1101,14 +1101,20 @@ const char16_t kYoutubePIP[] =
         }());
     )";
 
-constexpr char16_t kYoutubePipButton[] =
+const kYoutubePipButton[] = 
     uR"(
     (function() {
+        // Store tab reference for proper restoration
+        let originalTabId = null;
+        let videoElement = null;
+        let wasPlaying = false;
+
         const buttonElement = document.createElement('button');
         buttonElement.className = 'yt-pip-gold';
         buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
         buttonElement.title = 'Picture-in-Picture';
 
+        // Enhanced CSS (keeping your existing styles)
         if (!document.getElementById('yt-pip-gold-styles')) {
             const css = `
             .yt-pip-gold {
@@ -1124,10 +1130,9 @@ constexpr char16_t kYoutubePipButton[] =
                 background-size: 55%;
                 transition: transform .2s, box-shadow .2s, filter .2s;
             }
-            .yt-pip-gold:hover      { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
-            .yt-pip-gold:active     { transform: scale(0.95); }
-            .yt-pip-gold:focus      { outline: 2px solid #000; outline-offset: 2px; }
-
+            .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
+            .yt-pip-gold:active { transform: scale(0.95); }
+            .yt-pip-gold:focus { outline: 2px solid #000; outline-offset: 2px; }
             .yt-pip-gold::before {
                 content: '';
                 position: absolute; top: 0; left: -75%;
@@ -1140,35 +1145,16 @@ constexpr char16_t kYoutubePipButton[] =
                 animation: shine 2.8s infinite;
                 pointer-events: none;
             }
-
-            @media (prefers-reduced-motion: reduce) {
-                .yt-pip-gold::before { animation: none; }
-            }
-
             @keyframes shine {
-                0%   { left: -75%; }
+                0% { left: -75%; }
                 100% { left: 125%; }
             }
-
-            .yt-pip-gold::before {
-            animation: shine 2.5s infinite;
-            }
-            .yt-pip-gold {
-            animation: rotateIcon 10s infinite linear;
-            }
-
-            @keyframes rotateIcon {
-            0%   { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-            }
-
-
             @keyframes scalePulse {
-            0%, 100% { transform: scale(1); }
-            50%      { transform: scale(1.1); }
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
             }
             .yt-pip-gold {
-            animation: scalePulse 2.4s ease-in-out infinite;
+                animation: scalePulse 2.4s ease-in-out infinite;
             }
         `;
             const styleTag = document.createElement('style');
@@ -1177,13 +1163,61 @@ constexpr char16_t kYoutubePipButton[] =
             document.head.appendChild(styleTag);
         }
 
+        // Enhanced PiP handling
         buttonElement.addEventListener('click', () => {
-            const videoElement = document.querySelector('video');
+            videoElement = document.querySelector('video');
             if (videoElement) {
+                // Store current state
+                wasPlaying = !videoElement.paused;
+                originalTabId = window.location.href;
+                
                 videoElement.removeAttribute('disablePictureInPicture');
                 videoElement.requestPictureInPicture().catch(console.error);
             }
         });
+
+        // Enhanced PiP event listeners
+        if (document.pictureInPictureEnabled) {
+            document.addEventListener('enterpictureinpicture', (event) => {
+                console.log('Entered PiP mode');
+                // Ensure video continues playing
+                if (event.target && wasPlaying) {
+                    setTimeout(() => {
+                        if (event.target.paused) {
+                            event.target.play().catch(console.error);
+                        }
+                    }, 100);
+                }
+            });
+
+            document.addEventListener('leavepictureinpicture', (event) => {
+                console.log('Left PiP mode');
+                // Force focus back to this tab
+                if (window.focus) {
+                    window.focus();
+                }
+                
+                // Ensure video continues playing after PiP exit
+                setTimeout(() => {
+                    const video = document.querySelector('video');
+                    if (video && wasPlaying && video.paused) {
+                        video.play().catch(console.error);
+                    }
+                    
+                    // Force page visibility to visible
+                    Object.defineProperty(document, 'hidden', {
+                        value: false,
+                        writable: false,
+                        configurable: true
+                    });
+                    Object.defineProperty(document, 'visibilityState', {
+                        value: 'visible',
+                        writable: false,
+                        configurable: true
+                    });
+                }, 200);
+            });
+        }
 
         const observer = new MutationObserver(() => {
             const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
@@ -1191,6 +1225,16 @@ constexpr char16_t kYoutubePipButton[] =
             buttonContainerElement.prepend(buttonElement);
         });
         observer.observe(document.documentElement, { subtree: true, childList: true });
+
+        // Additional visibility override for problematic devices
+        const originalAddEventListener = document.addEventListener;
+        document.addEventListener = function(type, listener, options) {
+            if (type === 'visibilitychange') {
+                return; // Block visibility change events
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
+
     })();
 )";
 
@@ -1221,12 +1265,26 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
     return;
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
+
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubePipButton, base::NullCallback());
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubeBackgroundPlayback, base::NullCallback());
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubePIP, base::NullCallback());
+      kYoutubeBackgroundPlayback, base::NullCallback());
+  
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](content::WebContents* contents) {
+        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+            kYoutubePIP, base::NullCallback());
+      }, contents),
+      base::Milliseconds(100));
+      
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](content::WebContents* contents) {
+        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+            kYoutubePipButton, base::NullCallback());
+      }, contents),
+      base::Milliseconds(200));
+
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
 }
