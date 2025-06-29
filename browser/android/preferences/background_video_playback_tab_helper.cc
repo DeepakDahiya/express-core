@@ -222,6 +222,41 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 }
             }
 
+            // --- NEW FUNCTION ---
+            // Sends a signal to a specific tab ID, telling it to close.
+            function signalTabToClose(tabId) {
+                if (!tabId) return;
+                try {
+                    const closeSignal = {
+                        targetTabId: tabId,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('pip_close_tab_signal', JSON.stringify(closeSignal));
+                    console.log('Sent close signal to tab:', tabId);
+                } catch (e) {
+                    console.warn('Could not send close tab signal:', e);
+                }
+            }
+
+            // --- NEW FUNCTION ---
+            // Checks if this tab has received a signal to close itself.
+            function checkForCloseSignal() {
+                try {
+                    const stored = localStorage.getItem('pip_close_tab_signal');
+                    if (stored) {
+                        const signal = JSON.parse(stored);
+                        // Check if the signal is fresh and targeted at this specific tab
+                        if (Date.now() - signal.timestamp < 5000 && signal.targetTabId === getTabId()) {
+                            console.log('Received close signal. This tab will now close.');
+                            localStorage.removeItem('pip_close_tab_signal');
+                            window.close();
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+
             function sendPlaybackState() {
                 try {
                     if (isPIPActive() && lastPlayingVideoElement) {
@@ -290,7 +325,9 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 }
             }
 
-            function startPIPForNewVideo(videoElement, videoId) {
+            // --- MODIFIED FUNCTION ---
+            // Added `previousPIPTabId` parameter to know which tab to close later.
+            function startPIPForNewVideo(videoElement, videoId, previousPIPTabId) {
                 if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
                     setTimeout(() => {
                         if (!videoElement.paused) {
@@ -301,6 +338,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                                     isOriginalPIPTab = true;
                                     setPIPStatus(videoId, true);
                                     console.log('PIP started for new video:', videoId);
+                                    // After successfully starting PIP, tell the old tab to close.
+                                    signalTabToClose(previousPIPTabId);
                                 })
                                 .catch(err => {
                                     console.warn('Failed to start PIP for new video:', err);
@@ -310,6 +349,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 }
             }
 
+            // --- MODIFIED FUNCTION ---
+            // Captures the old tab's ID to pass it along.
             function handleVideoPlay(videoElement) {
                 const currentVideoId = getCurrentVideoId();
                 
@@ -322,6 +363,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     
                     if (!isPIPActive()) {
                         console.log('This is a new tab, attempting PIP transition');
+                        const previousPIPTabId = pipStatus.tabId; // Capture the old tab's ID
                         signalPIPTransition(currentVideoId);
                         
                         setTimeout(() => {
@@ -329,7 +371,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                             if (playbackState) {
                                 applyPlaybackState(videoElement, playbackState);
                             }
-                            startPIPForNewVideo(videoElement, currentVideoId);
+                            // Pass the old tab's ID to the function that starts the new PIP
+                            startPIPForNewVideo(videoElement, currentVideoId, previousPIPTabId);
                         }, 600);
                     } else {
                         if (pipReplacementEnabled) {
@@ -482,7 +525,12 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     }
                 }, true);
 
-                setInterval(checkForPIPTransitionSignal, 1000);
+                // --- MODIFIED INTERVAL ---
+                // Now checks for both transition signals and close signals.
+                setInterval(() => {
+                    checkForPIPTransitionSignal();
+                    checkForCloseSignal(); // Add check for the close signal
+                }, 1000);
 
                 setInterval(() => {
                     if (isPIPActive() && currentPIPVideoId) {
