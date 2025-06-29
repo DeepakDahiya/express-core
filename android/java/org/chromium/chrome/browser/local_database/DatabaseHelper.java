@@ -203,10 +203,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public void insertTopSite(TopSite topSite) {
         String url = topSite.getDestinationUrl();
-        if ((DEFAULT_YOUTUBE_URL.equals(url) || url.contains("youtube.com")) && isTopSiteAlreadyAdded(url)) {
-            return;
+
+        boolean isAnyYouTubeUrl =
+            url.contains("youtube.com") || url.contains("youtu.be");
+
+        if (isAnyYouTubeUrl) {
+            if (!DEFAULT_YOUTUBE_URL.equals(url)) {
+                return;
+            }
         }
-        if (!isTopSiteAlreadyAdded(topSite.getDestinationUrl()) && !NTPUtil.isInRemovedTopSite(topSite.getDestinationUrl())) {
+
+        if (!isTopSiteAlreadyAdded(url) && !NTPUtil.isInRemovedTopSite(url)) {
             // get writable database as we want to write data
             SQLiteDatabase db = this.getWritableDatabase();
 
