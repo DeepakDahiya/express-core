@@ -2250,7 +2250,7 @@ public abstract class BraveActivity extends ChromeActivity
                         if (tabIndex != TabModel.INVALID_TAB_INDEX) {
                             // Step 3: Set the current tab using the index. This is the
                             // correct way to select a tab on the model.
-                            model.setIndex(tabIndex, TabSelectionType.FROM_USER);
+                            model.setIndex(tabIndex, TabSelectionType.FROM_USER, false);
 
                             // Also ensure the correct model (regular vs incognito) is selected.
                             getTabModelSelector().selectModel(model.isIncognito());
