@@ -2234,15 +2234,28 @@ public abstract class BraveActivity extends ChromeActivity
                 } catch (NullPointerException e) {
                     Log.e("BraveActivity", "opening new tab " + e.getMessage());
                 }
-            }else if (intent.hasExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP)) {
+            } else if (intent.hasExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP)) {
                 // This is our new logic for handling the return from PiP.
-                // We use Tab.INVALID_TAB_ID as a safe default value.
                 int tabIdToRestore = intent.getIntExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP, Tab.INVALID_TAB_ID);
                 
                 if (tabIdToRestore != Tab.INVALID_TAB_ID) {
-                    // This is the standard Chromium function to switch to a specific tab.
-                    // It will bring the correct tab to the front.
-                    getTabModelSelector().setCurrentTabById(tabIdToRestore);
+                    // Step 1: Get the TabModel that contains our tab. We need to check both
+                    // regular and incognito models.
+                    TabModel model = getTabModelSelector().getModelForTabId(tabIdToRestore);
+
+                    if (model != null) {
+                        // Step 2: Get the index of the tab within its model.
+                        int tabIndex = TabModelUtils.getTabIndexById(model, tabIdToRestore);
+
+                        if (tabIndex != TabModel.INVALID_TAB_INDEX) {
+                            // Step 3: Set the current tab using the index. This is the
+                            // correct way to select a tab on the model.
+                            model.setIndex(tabIndex, TabSelectionType.FROM_USER);
+
+                            // Also ensure the correct model (regular vs incognito) is selected.
+                            getTabModelSelector().selectModel(model.isIncognito());
+                        }
+                    }
                 }
             }
         }
