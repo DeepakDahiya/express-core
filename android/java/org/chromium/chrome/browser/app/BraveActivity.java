@@ -290,6 +290,7 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
     public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET = "BrowserExpressCustomListSet";
+    public static final String RESTORE_TAB_ID_FROM_PIP = "com.brave.browser.PICTURE_IN_PICTURE_TAB_ID";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -2232,6 +2233,16 @@ public abstract class BraveActivity extends ChromeActivity
                     openNewOrSelectExistingTab(openUrl);
                 } catch (NullPointerException e) {
                     Log.e("BraveActivity", "opening new tab " + e.getMessage());
+                }
+            }else if (intent.hasExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP)) {
+                // This is our new logic for handling the return from PiP.
+                // We use Tab.INVALID_TAB_ID as a safe default value.
+                int tabIdToRestore = intent.getIntExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP, Tab.INVALID_TAB_ID);
+                
+                if (tabIdToRestore != Tab.INVALID_TAB_ID) {
+                    // This is the standard Chromium function to switch to a specific tab.
+                    // It will bring the correct tab to the front.
+                    getTabModelSelector().setCurrentTabById(tabIdToRestore);
                 }
             }
         }
