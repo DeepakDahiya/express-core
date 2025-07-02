@@ -257,6 +257,8 @@ import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil
 import org.chromium.base.task.AsyncTask;
 
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import android.app.ActivityManager;
 
 /**
  * Brave's extension for ChromeActivity
@@ -2300,19 +2302,15 @@ public abstract class BraveActivity extends ChromeActivity
                         int tabIndex = correctModel.indexOf(tabToShow);
                         if (tabIndex != TabModel.INVALID_TAB_INDEX) {
                             // Use setIndex for immediate tab switching
-                            correctModel.setIndex(tabIndex, TabSelectionType.FROM_USER);
+                            correctModel.setIndex(tabIndex, TabSelectionType.FROM_USER, false);
                             
-                            // Android 15: Additional focus handling
-                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                                // Force window focus
-                                getWindow().getDecorView().requestFocus();
-                                
-                                // Bring task to front
-                                try {
-                                    moveTaskToFront(getTaskId(), 0);
-                                } catch (Exception e) {
-                                    Log.w("BraveActivity", "Could not move task to front: " + e.getMessage());
-                                }
+                            getWindow().getDecorView().requestFocus();
+                            
+                            // Bring task to front
+                            try {
+                                BraveActivity.getChromeTabbedActivity().getSystemService(Context.ACTIVITY_SERVICE).moveTaskToFront(getTaskId(), 0);
+                            } catch (Exception e) {
+                                Log.w("BraveActivity", "Could not move task to front: " + e.getMessage());
                             }
                             
                             Log.d("BraveActivity", "Successfully restored tab: " + tabIdToRestore);
