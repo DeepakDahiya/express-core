@@ -2265,7 +2265,7 @@ public abstract class BraveActivity extends ChromeActivity
             return;
         }
 
-        // Android 15: Use multiple approaches to ensure tab restoration works
+        // Use Handler to ensure UI is ready
         new Handler(Looper.getMainLooper()).post(() -> {
             try {
                 TabModelSelector tabModelSelector = getTabModelSelector();
@@ -2296,30 +2296,13 @@ public abstract class BraveActivity extends ChromeActivity
                         tabModelSelector.selectModel(isIncognito);
                     }
                     
-                    // Get the correct model and select the tab
-                    TabModel correctModel = tabModelSelector.getModel(isIncognito);
-                    if (correctModel != null) {
-                        int tabIndex = correctModel.indexOf(tabToShow);
-                        if (tabIndex != TabModel.INVALID_TAB_INDEX) {
-                            // Use setIndex for immediate tab switching
-                            correctModel.setIndex(tabIndex, TabSelectionType.FROM_USER, false);
-                            
-                            getWindow().getDecorView().requestFocus();
-                            
-                            // Bring task to front
-                            try {
-                                BraveActivity.getChromeTabbedActivity().getSystemService(Context.ACTIVITY_SERVICE).moveTaskToFront(getTaskId(), 0);
-                            } catch (Exception e) {
-                                Log.w("BraveActivity", "Could not move task to front: " + e.getMessage());
-                            }
-                            
-                            Log.d("BraveActivity", "Successfully restored tab: " + tabIdToRestore);
-                        } else {
-                            Log.w("BraveActivity", "Tab index not found in model");
-                        }
-                    } else {
-                        Log.e("BraveActivity", "Could not get correct tab model");
-                    }
+                    // Request to show the tab - this is the safest method
+                    tabModelSelector.requestToShowTab(tabToShow, TabSelectionType.FROM_USER);
+                    
+                    // Force window focus
+                    getWindow().getDecorView().requestFocus();
+                    
+                    Log.d("BraveActivity", "Successfully restored tab: " + tabIdToRestore);
                 } else {
                     Log.w("BraveActivity", "Tab not found for ID: " + tabIdToRestore);
                     
