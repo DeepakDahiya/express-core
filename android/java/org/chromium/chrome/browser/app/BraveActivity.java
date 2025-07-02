@@ -257,8 +257,6 @@ import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil
 import org.chromium.base.task.AsyncTask;
 
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
-import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import android.app.ActivityManager;
 
 /**
  * Brave's extension for ChromeActivity
@@ -292,7 +290,6 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BROWSER_EXPRESS_EMAIL = "BrowserExpressEmail";
     public static final String BROWSER_EXPRESS_FIRST_COMMENTS = "BrowserExpressFirstComments";
     public static final String BROWSER_EXPRESS_CUSTOM_LIST_SET = "BrowserExpressCustomListSet";
-    public static final String RESTORE_TAB_ID_FROM_PIP = "com.brave.browser.PICTURE_IN_PICTURE_TAB_ID";
 
     private static final int DAYS_1 = 1;
     private static final int DAYS_4 = 4;
@@ -1012,16 +1009,6 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResume() {
         super.onResume();
-
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID")) {
-            // Create a new intent without the PiP extras to prevent reprocessing
-            Intent cleanIntent = new Intent(intent);
-            cleanIntent.removeExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID");
-            cleanIntent.removeExtra("pip_restore_timestamp");
-            setIntent(cleanIntent);
-        }
-
         mIsProcessingPendingDappsTxRequest = false;
         if (mIsDefaultCheckOnResume) {
             mIsDefaultCheckOnResume = false;
@@ -2246,81 +2233,11 @@ public abstract class BraveActivity extends ChromeActivity
                 } catch (NullPointerException e) {
                     Log.e("BraveActivity", "opening new tab " + e.getMessage());
                 }
-            } else if (intent.hasExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID")) {
-                restoreTabFromPiP(intent);
             }
         }
         checkForNotificationData();
     }
 
-    private void restoreTabFromPiP(Intent intent) {
-        // NOTE: Your key should match the one you defined as a constant
-        int tabIdToRestore = intent.getIntExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID", Tab.INVALID_TAB_ID);
-        
-        Log.d("BraveActivity", "Attempting to restore tab ID: " + tabIdToRestore);
-
-        if (tabIdToRestore == Tab.INVALID_TAB_ID) {
-            Log.w("BraveActivity", "Invalid tab ID for PiP restoration");
-            return;
-        }
-
-        new Handler(Looper.getMainLooper()).post(() -> {
-            try {
-                TabModelSelector tabModelSelector = getTabModelSelector();
-                if (tabModelSelector == null) {
-                    Log.e("BraveActivity", "TabModelSelector is null during PiP restore");
-                    return;
-                }
-
-                // === YOUR CORRECT TAB-FINDING LOGIC ===
-                // The compiler was right. We must search each model individually.
-                Tab tabToShow = null;
-                TabModel normalModel = tabModelSelector.getModel(false);
-                TabModel incognitoModel = tabModelSelector.getModel(true);
-                
-                if (normalModel != null) {
-                    // getTabById expects a TabModel (which is a TabList), not a TabModelSelector.
-                    tabToShow = TabModelUtils.getTabById(normalModel, tabIdToRestore);
-                }
-                
-                if (tabToShow == null && incognitoModel != null) {
-                    tabToShow = TabModelUtils.getTabById(incognitoModel, tabIdToRestore);
-                }
-                // === END OF YOUR CORRECT TAB-FINDING LOGIC ===
-
-                if (tabToShow != null) {
-                    Log.d("BraveActivity", "Found tab to restore: " + tabToShow.getTitle());
-
-                    // === THE CORRECT TAB-SELECTION LOGIC ===
-                    // This part remains the same as the last step, as it's the right way to select.
-                    TabModel model = tabToShow.isIncognito() ? incognitoModel : normalModel;
-                    
-                    if (model != null) {
-                        // Step 1: Select the correct model (regular or incognito).
-                        tabModelSelector.selectModel(model.isIncognito());
-
-                        // Step 2: Find the tab's index within its now-active model.
-                        int tabIndex = TabModelUtils.getTabIndexById(model, tabIdToRestore);
-
-                        // Step 3: Set the active tab by its index.
-                        if (tabIndex != TabModel.INVALID_TAB_INDEX) {
-                            model.setIndex(tabIndex, TabSelectionType.FROM_USER, false);
-                        }
-                        Log.d("BraveActivity", "Successfully processed restore for tab: " + tabIdToRestore);
-                    } else {
-                        Log.e("BraveActivity", "Tab found but its model is missing!");
-                    }
-                    
-                } else {
-                    Log.w("BraveActivity", "Tab not found for ID: " + tabIdToRestore);
-                }
-
-            } catch (Exception e) {
-                Log.e("BraveActivity", "Error restoring tab from PiP", e);
-            }
-        });
-    }
-   
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         if (resultCode == RESULT_OK
