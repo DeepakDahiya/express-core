@@ -1010,6 +1010,16 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResume() {
         super.onResume();
+
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID")) {
+            // Create a new intent without the PiP extras to prevent reprocessing
+            Intent cleanIntent = new Intent(intent);
+            cleanIntent.removeExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID");
+            cleanIntent.removeExtra("pip_restore_timestamp");
+            setIntent(cleanIntent);
+        }
+
         mIsProcessingPendingDappsTxRequest = false;
         if (mIsDefaultCheckOnResume) {
             mIsDefaultCheckOnResume = false;
@@ -2234,32 +2244,95 @@ public abstract class BraveActivity extends ChromeActivity
                 } catch (NullPointerException e) {
                     Log.e("BraveActivity", "opening new tab " + e.getMessage());
                 }
-            } else if (intent.hasExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP)) {
-                // This is our new logic for handling the return from PiP.
-                int tabIdToRestore = intent.getIntExtra(BraveActivity.RESTORE_TAB_ID_FROM_PIP, Tab.INVALID_TAB_ID);
-                
-                if (tabIdToRestore != Tab.INVALID_TAB_ID) {
-                    // Step 1: Get the TabModel that contains our tab. We need to check both
-                    // regular and incognito models.
-                    TabModel model = getTabModelSelector().getModelForTabId(tabIdToRestore);
-
-                    if (model != null) {
-                        // Step 2: Get the index of the tab within its model.
-                        int tabIndex = TabModelUtils.getTabIndexById(model, tabIdToRestore);
-
-                        if (tabIndex != TabModel.INVALID_TAB_INDEX) {
-                            // Step 3: Set the current tab using the index. This is the
-                            // correct way to select a tab on the model.
-                            model.setIndex(tabIndex, TabSelectionType.FROM_USER, false);
-
-                            // Also ensure the correct model (regular vs incognito) is selected.
-                            getTabModelSelector().selectModel(model.isIncognito());
-                        }
-                    }
-                }
+            } else if (intent.hasExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID")) {
+                restoreTabFromPiP(intent);
             }
         }
         checkForNotificationData();
+    }
+
+    private void restoreTabFromPiP(Intent intent) {
+        int tabIdToRestore = intent.getIntExtra("com.mybrowser.PICTURE_IN_PICTURE_TAB_ID", -1);
+        long timestamp = intent.getLongExtra("pip_restore_timestamp", 0);
+        
+        Log.d("BraveActivity", "Attempting to restore tab ID: " + tabIdToRestore + 
+            " at timestamp: " + timestamp);
+        
+        if (tabIdToRestore == -1) {
+            Log.w("BraveActivity", "Invalid tab ID for PiP restoration");
+            return;
+        }
+
+        // Android 15: Use multiple approaches to ensure tab restoration works
+        new Handler(Looper.getMainLooper()).post(() -> {
+            try {
+                TabModelSelector tabModelSelector = getTabModelSelector();
+                if (tabModelSelector == null) {
+                    Log.e("BraveActivity", "TabModelSelector is null");
+                    return;
+                }
+
+                // Find the tab across all models (normal and incognito)
+                Tab tabToShow = null;
+                TabModel normalModel = tabModelSelector.getModel(false);
+                TabModel incognitoModel = tabModelSelector.getModel(true);
+                
+                if (normalModel != null) {
+                    tabToShow = TabModelUtils.getTabById(normalModel, tabIdToRestore);
+                }
+                
+                if (tabToShow == null && incognitoModel != null) {
+                    tabToShow = TabModelUtils.getTabById(incognitoModel, tabIdToRestore);
+                }
+
+                if (tabToShow != null) {
+                    Log.d("BraveActivity", "Found tab to restore: " + tabToShow.getTitle());
+                    
+                    // Switch to correct model first
+                    boolean isIncognito = tabToShow.isIncognito();
+                    if (tabModelSelector.isIncognitoSelected() != isIncognito) {
+                        tabModelSelector.selectModel(isIncognito);
+                    }
+                    
+                    // Get the correct model and select the tab
+                    TabModel correctModel = tabModelSelector.getModel(isIncognito);
+                    if (correctModel != null) {
+                        int tabIndex = correctModel.indexOf(tabToShow);
+                        if (tabIndex != TabModel.INVALID_TAB_INDEX) {
+                            // Use setIndex for immediate tab switching
+                            correctModel.setIndex(tabIndex, TabSelectionType.FROM_USER);
+                            
+                            // Android 15: Additional focus handling
+                            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                                // Force window focus
+                                getWindow().getDecorView().requestFocus();
+                                
+                                // Bring task to front
+                                try {
+                                    moveTaskToFront(getTaskId(), 0);
+                                } catch (Exception e) {
+                                    Log.w("BraveActivity", "Could not move task to front: " + e.getMessage());
+                                }
+                            }
+                            
+                            Log.d("BraveActivity", "Successfully restored tab: " + tabIdToRestore);
+                        } else {
+                            Log.w("BraveActivity", "Tab index not found in model");
+                        }
+                    } else {
+                        Log.e("BraveActivity", "Could not get correct tab model");
+                    }
+                } else {
+                    Log.w("BraveActivity", "Tab not found for ID: " + tabIdToRestore);
+                    
+                    // Fallback: Just bring the activity to front
+                    getWindow().getDecorView().requestFocus();
+                }
+                
+            } catch (Exception e) {
+                Log.e("BraveActivity", "Error restoring tab from PiP: " + e.getMessage());
+            }
+        });
     }
 
     @Override
