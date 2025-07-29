@@ -407,12 +407,7 @@ public abstract class BraveActivity extends ChromeActivity
                     int previousIndex = navController.getLastCommittedEntryIndex() - 1;
                     String previousUrl = navController.getEntryAtIndex(previousIndex).getUrl().getSpec();
 
-                    getTabModelSelector().openNewTab(
-                        new LoadUrlParams(previousUrl, PageTransition.AUTO_BOOKMARK),
-                        TabLaunchType.FROM_LINK
-                        currentTab,
-                        false
-                    );
+                    TabUtils.openUrlInNewTab(false, previousUrl);
                     return;
                 }
             }
