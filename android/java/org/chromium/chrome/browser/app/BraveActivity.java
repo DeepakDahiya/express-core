@@ -261,6 +261,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
 
 /**
  * Brave's extension for ChromeActivity
@@ -426,20 +427,32 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void onBackPressed() {
-        if (mCustomBackInterface != null && mCustomBackInterface.shouldInterceptBackPress()) {
-            Tab currentTab = getActivityTab();
-            if (currentTab != null && currentTab.getWebContents() != null) {
+        Tab currentTab = getActivityTab();
+        if (currentTab != null) {
+            String currentUrl = currentTab.getUrl().getSpec();
+            
+            // Check if we're on YouTube watch page
+            if (currentUrl.contains("youtube.com/watch")) {
                 NavigationController navController = currentTab.getWebContents().getNavigationController();
                 if (navController.canGoBack()) {
-                    int previousIndex = navController.getLastCommittedEntryIndex() - 1;
-                    if (previousIndex >= 0) {
-                        NavigationEntry previousEntry = navController.getEntryAtIndex(previousIndex);
-                        String previousUrl = previousEntry.getUrl().getSpec();
-
-                        // Use your existing TabUtils method
-                        TabUtils.openUrlInNewTab(false, previousUrl);
-                        return;
-                    }
+                    // Use JavaScript to get the referrer or previous page
+                    currentTab.getWebContents().evaluateJavaScript(
+                        "document.referrer || window.location.href",
+                        new ValueCallback<String>() {
+                            @Override
+                            public void onReceiveValue(String result) {
+                                if (result != null && !result.equals("null")) {
+                                    String previousUrl = result.replace("\"", "");
+                                    if (!previousUrl.equals(currentUrl)) {
+                                        TabUtils.openUrlInNewTab(false, previousUrl);
+                                        return;
+                                    }
+                                }
+                                runOnUiThread(() -> BraveActivity.super.onBackPressed());
+                            }
+                        }
+                    );
+                    return;
                 }
             }
         }
