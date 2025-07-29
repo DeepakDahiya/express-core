@@ -1238,6 +1238,27 @@ const char16_t kYoutubePipButton[] =
     })();
 )";
 
+constexpr char16_t kYoutubeCustomBackPress[] =
+uR"(
+    (function() {
+        'use strict';
+        if (!window.AndroidBridge) {
+            return;
+        }
+        function updateBackPressState() {
+            const isYoutubeWatchPage = window.location.hostname.includes('youtube.com') &&
+                                        window.location.pathname === '/watch';
+            const canGoBack = window.history.length > 1;
+            if (typeof window.AndroidBridge.setCustomBackBehavior === 'function') {
+                window.AndroidBridge.setCustomBackBehavior(isYoutubeWatchPage && canGoBack);
+            }
+        }
+        window.addEventListener('yt-navigate-finish', updateBackPressState);
+        window.addEventListener('pageshow', updateBackPressState);
+        updateBackPressState();
+    })();
+)";
+
 bool IsYouTubeDomain(const GURL& url) {
   if (net::registry_controlled_domains::SameDomainOrHost(
           url, GURL("https://www.youtube.com"),
@@ -1287,6 +1308,9 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
+
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubeCustomBackPress, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);

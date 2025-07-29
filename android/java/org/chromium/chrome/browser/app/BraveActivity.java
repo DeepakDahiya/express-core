@@ -365,6 +365,61 @@ public abstract class BraveActivity extends ChromeActivity
 
     public BraveActivity() {}
 
+    private CustomBackPressJsInterface mCustomBackInterface;
+
+    public static class CustomBackPressJsInterface {
+        private volatile boolean mShouldInterceptBackPress = false;
+
+        @JavascriptInterface
+        public void setCustomBackBehavior(boolean intercept) {
+            mShouldInterceptBackPress = intercept;
+        }
+
+        public boolean shouldInterceptBackPress() {
+            return mShouldInterceptBackPress;
+        }
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        mCustomBackInterface = new CustomBackPressJsInterface();
+
+        getTabModelSelector().addObserver(new TabModelSelectorObserver() {
+            @Override
+            public void onNewTabCreated(Tab tab, @TabLaunchType int type) {
+                if (tab != null && tab.getWebContents() != null) {
+                    tab.getWebContents().addJavascriptInterface(mCustomBackInterface, "AndroidBridge");
+                }
+            }
+        });
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (mCustomBackInterface != null && mCustomBackInterface.shouldInterceptBackPress()) {
+            Tab currentTab = getActivityTab();
+            if (currentTab != null && currentTab.getWebContents() != null) {
+                NavigationController navController = currentTab.getWebContents().getNavigationController();
+                if (navController.canGoBack()) {
+                    int previousIndex = navController.getLastCommittedEntryIndex() - 1;
+                    String previousUrl = navController.getEntryAtIndex(previousIndex).getUrl().getSpec();
+
+                    getTabModelSelector().openNewTab(
+                        new LoadUrlParams(previousUrl, PageTransition.AUTO_BOOKMARK),
+                        TabLaunchType.FROM_LINK
+                        currentTab,
+                        false
+                    );
+                    return;
+                }
+            }
+        }
+
+        super.onBackPressed();
+    }
+
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
