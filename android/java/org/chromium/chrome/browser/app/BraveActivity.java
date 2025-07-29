@@ -370,61 +370,6 @@ public abstract class BraveActivity extends ChromeActivity
 
     public BraveActivity() {}
 
-    private CustomBackPressJsInterface mCustomBackInterface;
-
-    public static class CustomBackPressJsInterface {
-        private volatile boolean mShouldInterceptBackPress = false;
-
-        @JavascriptInterface
-        public void setCustomBackBehavior(boolean intercept) {
-            mShouldInterceptBackPress = intercept;
-        }
-
-        public boolean shouldInterceptBackPress() {
-            return mShouldInterceptBackPress;
-        }
-    }
-
-    private void initializeCustomBackBehavior() {
-        mCustomBackInterface = new CustomBackPressJsInterface();
-
-        getTabModelSelector().addObserver(new TabModelSelectorObserver() {
-            @Override
-            public void onNewTabCreated(Tab tab, @TabLaunchType int type) {
-                registerJavaScriptInterface(tab);
-            }
-
-            @Override
-            public void onTabStateInitialized() {
-                // Register interface for existing tabs
-                TabModel tabModel = getTabModelSelector().getCurrentModel();
-                for (int i = 0; i < tabModel.getCount(); i++) {
-                    registerJavaScriptInterface(tabModel.getTabAt(i));
-                }
-            }
-        });
-    }
-
-    private void registerJavaScriptInterface(Tab tab) {
-        if (tab != null && tab.getWebContents() != null) {
-            // Try using Chromium's addJavaScriptInterface if available
-            try {
-                tab.getWebContents().addJavaScriptInterface(mCustomBackInterface, "AndroidBridge");
-            } catch (Exception e) {
-                // Fallback: Inject bridge via JavaScript
-                String bridgeScript = 
-                    "if (!window.AndroidBridge) {" +
-                    "  window.AndroidBridge = {" +
-                    "    setCustomBackBehavior: function(intercept) {" +
-                    "      window._customBackBehavior = intercept;" +
-                    "    }" +
-                    "  };" +
-                    "}";
-                tab.getWebContents().evaluateJavaScript(bridgeScript, null);
-            }
-        }
-    }
-
     @Override
     public void onBackPressed() {
         Tab currentTab = getActivityTab();
@@ -1177,8 +1122,6 @@ public abstract class BraveActivity extends ChromeActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
         BraveVpnNativeWorker.getInstance().reloadPurchasedState();
-
-        initializeCustomBackBehavior();
 
         BraveHelper.maybeMigrateSettings();
 
