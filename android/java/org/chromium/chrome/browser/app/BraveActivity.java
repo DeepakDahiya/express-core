@@ -390,11 +390,38 @@ public abstract class BraveActivity extends ChromeActivity
         getTabModelSelector().addObserver(new TabModelSelectorObserver() {
             @Override
             public void onNewTabCreated(Tab tab, @TabLaunchType int type) {
-                if (tab != null && tab.getWebContents() != null) {
-                    tab.getWebContents().addJavascriptInterface(mCustomBackInterface, "AndroidBridge");
+                registerJavaScriptInterface(tab);
+            }
+
+            @Override
+            public void onTabStateInitialized() {
+                // Register interface for existing tabs
+                TabModel tabModel = getTabModelSelector().getCurrentModel();
+                for (int i = 0; i < tabModel.getCount(); i++) {
+                    registerJavaScriptInterface(tabModel.getTabAt(i));
                 }
             }
         });
+    }
+
+    private void registerJavaScriptInterface(Tab tab) {
+        if (tab != null && tab.getWebContents() != null) {
+            // Try using Chromium's addJavaScriptInterface if available
+            try {
+                tab.getWebContents().addJavaScriptInterface(mCustomBackInterface, "AndroidBridge");
+            } catch (Exception e) {
+                // Fallback: Inject bridge via JavaScript
+                String bridgeScript = 
+                    "if (!window.AndroidBridge) {" +
+                    "  window.AndroidBridge = {" +
+                    "    setCustomBackBehavior: function(intercept) {" +
+                    "      window._customBackBehavior = intercept;" +
+                    "    }" +
+                    "  };" +
+                    "}";
+                tab.getWebContents().evaluateJavaScript(bridgeScript, null);
+            }
+        }
     }
 
     @Override
@@ -405,10 +432,14 @@ public abstract class BraveActivity extends ChromeActivity
                 NavigationController navController = currentTab.getWebContents().getNavigationController();
                 if (navController.canGoBack()) {
                     int previousIndex = navController.getLastCommittedEntryIndex() - 1;
-                    String previousUrl = navController.getEntryAtIndex(previousIndex).getUrl().getSpec();
+                    if (previousIndex >= 0) {
+                        NavigationEntry previousEntry = navController.getEntryAtIndex(previousIndex);
+                        String previousUrl = previousEntry.getUrl().getSpec();
 
-                    TabUtils.openUrlInNewTab(false, previousUrl);
-                    return;
+                        // Use your existing TabUtils method
+                        TabUtils.openUrlInNewTab(false, previousUrl);
+                        return;
+                    }
                 }
             }
         }
