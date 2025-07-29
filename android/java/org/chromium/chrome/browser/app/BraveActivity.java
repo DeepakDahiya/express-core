@@ -260,6 +260,7 @@ import org.chromium.base.task.AsyncTask;
 
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.content_public.browser.NavigationController;
 
 /**
  * Brave's extension for ChromeActivity
