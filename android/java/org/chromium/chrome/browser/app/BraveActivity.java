@@ -238,6 +238,7 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import android.util.Rational;
 import android.app.PictureInPictureParams;
 import android.webkit.JavascriptInterface;
+import org.chromium.chrome.browser.util.TabUtils;
 
 import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
 import java.util.ArrayList;
