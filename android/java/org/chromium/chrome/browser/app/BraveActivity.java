@@ -259,6 +259,7 @@ import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil
 import org.chromium.base.task.AsyncTask;
 
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 
 /**
  * Brave's extension for ChromeActivity
