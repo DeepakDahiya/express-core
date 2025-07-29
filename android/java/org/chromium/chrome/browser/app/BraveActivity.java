@@ -262,6 +262,7 @@ import org.chromium.chrome.browser.local_database.DatabaseHelper;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
+import android.webkit.ValueCallback;
 
 /**
  * Brave's extension for ChromeActivity
