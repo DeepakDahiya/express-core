@@ -263,6 +263,7 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import android.webkit.ValueCallback;
+import org.chromium.content_public.browser.JavaScriptCallback;
 
 /**
  * Brave's extension for ChromeActivity
@@ -381,22 +382,14 @@ public abstract class BraveActivity extends ChromeActivity
             if (currentUrl.contains("youtube.com/watch")) {
                 NavigationController navController = currentTab.getWebContents().getNavigationController();
                 if (navController.canGoBack()) {
-                    // Use JavaScript to get the referrer or previous page
+                    // Simple approach: get referrer via JavaScript without callback
                     currentTab.getWebContents().evaluateJavaScript(
-                        "document.referrer || window.location.href",
-                        new ValueCallback<String>() {
-                            @Override
-                            public void onReceiveValue(String result) {
-                                if (result != null && !result.equals("null")) {
-                                    String previousUrl = result.replace("\"", "");
-                                    if (!previousUrl.equals(currentUrl)) {
-                                        TabUtils.openUrlInNewTab(false, previousUrl);
-                                        return;
-                                    }
-                                }
-                                runOnUiThread(() -> BraveActivity.super.onBackPressed());
-                            }
-                        }
+                        "if (document.referrer && document.referrer !== window.location.href) {" +
+                        "  window.open(document.referrer, '_blank');" +
+                        "} else {" +
+                        "  history.back();" +
+                        "}",
+                        null
                     );
                     return;
                 }
