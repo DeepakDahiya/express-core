@@ -382,10 +382,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
+    private void initializeCustomBackBehavior() {
         mCustomBackInterface = new CustomBackPressJsInterface();
 
         getTabModelSelector().addObserver(new TabModelSelectorObserver() {
@@ -1134,6 +1131,8 @@ public abstract class BraveActivity extends ChromeActivity
     public void finishNativeInitialization() {
         super.finishNativeInitialization();
         BraveVpnNativeWorker.getInstance().reloadPurchasedState();
+
+        initializeCustomBackBehavior();
 
         BraveHelper.maybeMigrateSettings();
 
