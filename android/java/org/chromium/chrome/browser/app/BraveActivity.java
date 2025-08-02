@@ -258,6 +258,15 @@ import org.chromium.base.task.AsyncTask;
 
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
 
+import androidx.activity.OnBackPressedCallback;
+import org.chromium.chrome.browser.tabmodel.TabModelSelector;
+import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
+import org.chromium.content_public.browser.NavigationController;
+import org.chromium.content_public.browser.NavigationEntry;
+import org.chromium.content_public.browser.JavaScriptCallback;
+import org.chromium.chrome.browser.tab.TabCreator;
+import org.chromium.content_public.browser.LoadUrlParams;
+
 /**
  * Brave's extension for ChromeActivity
  */
@@ -305,6 +314,9 @@ public abstract class BraveActivity extends ChromeActivity
     private static final boolean ENABLE_IN_APP_UPDATE = true;
             // Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
     private AppUpdateManager mAppUpdateManager;
+
+    private static final String YOUTUBE_WATCH_PATTERN = "youtube.com/watch";
+    private OnBackPressedCallback mYouTubeBackPressedCallback;
 
     /**
      * Settings for sending local notification reminders.
@@ -427,12 +439,182 @@ public abstract class BraveActivity extends ChromeActivity
             BraveSearchEngineUtils.updateActiveDSE(profile);
         }
 
+        setupYouTubeBackButtonHandler();
+
         if (SharedPreferencesManager.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
             Log.e("BE_PIP", "onPauseWithNative");
             // enterPip();
             // return;
         }
         super.onPauseWithNative();
+    }
+
+    private void setupYouTubeBackButtonHandler() {
+        Log.e("Browser Express", "Setting up YouTube back button handler");
+        mYouTubeBackPressedCallback = new OnBackPressedCallback(false) {
+            @Override
+            public void handleOnBackPressed() {
+                handleYouTubeBackPress();
+            }
+        };
+        
+        getOnBackPressedDispatcher().addCallback(this, mYouTubeBackPressedCallback);
+        
+        // Update callback state when tab changes
+        getTabModelSelector().addObserver(new TabModelSelectorObserver() {
+            @Override
+            public void onTabStateChanged() {
+                updateBackCallbackState();
+            }
+            
+            @Override
+            public void onChange() {
+                updateBackCallbackState();
+            }
+        });
+    }
+
+    private void updateBackCallbackState() {
+        Log.e("Browser Express", "Updating YouTube back button callback state");
+        Tab currentTab = getActivityTab();
+        if (currentTab != null && currentTab.getWebContents() != null) {
+            Log.e("Browser Express", "Current tab URL: " + currentTab.getUrl().getSpec());
+            String currentUrl = currentTab.getUrl().getSpec();
+            boolean isYouTubeWatch = isYouTubeWatchPage(currentUrl);
+            boolean canGoBack = currentTab.canGoBack();
+            
+            // Enable our custom callback only for YouTube watch pages with history
+            mYouTubeBackPressedCallback.setEnabled(isYouTubeWatch && canGoBack);
+        } else {
+            mYouTubeBackPressedCallback.setEnabled(false);
+        }
+    }
+    
+    private boolean isYouTubeWatchPage(String url) {
+        return url != null && url.contains(YOUTUBE_WATCH_PATTERN);
+    }
+
+    private void handleYouTubeBackPress() {
+        Log.e("Browser Express", "Handling Youtube Back Press");
+        Tab currentTab = getActivityTab();
+        if (currentTab == null || currentTab.getWebContents() == null) {
+            Log.e("Browser Express", "Current tab is null or has no web contents");
+            // Fallback to default behavior
+            performDefaultBackPress();
+            return;
+        }
+        
+        // Get the previous URL from navigation history
+        String previousUrl = getPreviousUrlFromHistory(currentTab);
+        Log.e("Browser Express", "Previous URL: " + previousUrl);
+        if (previousUrl == null) {
+            Log.e("Browser Express", "No previous URL found in history");
+            // No previous URL, fallback to default behavior
+            performDefaultBackPress();
+            return;
+        }
+        
+        // Execute the PIP and new tab flow
+        executePIPAndNewTabFlow(currentTab, previousUrl);
+    }
+
+    private String getPreviousUrlFromHistory(Tab tab) {
+        try {
+            NavigationController navigationController = tab.getWebContents().getNavigationController();
+            if (navigationController.canGoBack()) {
+                NavigationEntry previousEntry = navigationController.getEntryAtIndex(
+                    navigationController.getLastCommittedEntryIndex() - 1);
+                if (previousEntry != null) {
+                    return previousEntry.getUrl().getSpec();
+                }
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Error getting previous URL from history", e);
+        }
+        return null;
+    }
+
+    private void executePIPAndNewTabFlow(Tab currentTab, String previousUrl) {
+        // First, try to start PIP for the current video
+        String startPIPScript = "(" + getStartPIPScript() + ")()";
+        
+        currentTab.getWebContents().evaluateJavaScript(startPIPScript, new JavaScriptCallback() {
+            @Override
+            public void handleJavaScriptResult(String result) {
+                // Parse the result to check if PIP was successful
+                boolean pipSuccess = "true".equals(result) || "success".equals(result);
+                
+                if (pipSuccess) {
+                    // PIP started successfully, now open new tab with previous URL
+                    TabUtils.openUrlInNewTab(false, previousUrl);
+                } else {
+                    TabUtils.openUrlInNewTab(false, previousUrl);
+                    // PIP failed, fallback to default back behavior
+                    Log.w("BraveActivity", "PIP failed, falling back to default back behavior");
+                    // performDefaultBackPress();
+                }
+            }
+        });
+    }
+
+    private String getStartPIPScript() {
+        return """
+            function() {
+                try {
+                    const videoElement = document.querySelector('video');
+                    if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
+                        if (!videoElement.paused) {
+                            videoElement.requestPictureInPicture()
+                                .then(() => {
+                                    console.log('PIP started successfully');
+                                    return 'true';
+                                })
+                                .catch(err => {
+                                    console.warn('PIP failed:', err);
+                                    return 'false';
+                                });
+                            return 'true';
+                        }
+                    }
+                    return 'false';
+                } catch (e) {
+                    console.error('Error starting PIP:', e);
+                    return 'false';
+                }
+            }
+        """;
+    }
+
+    private void openNewTabWithUrl(String url) {
+        try {
+            // Create new tab with the previous URL
+            TabCreator tabCreator = getTabCreator(false);
+            if (tabCreator != null) {
+                LoadUrlParams loadUrlParams = new LoadUrlParams(url);
+                tabCreator.createNewTab(loadUrlParams, TabLaunchType.FROM_LINK, null);
+                
+                // Optional: Switch to the new tab immediately
+                // TabModel tabModel = getTabModelSelector().getCurrentModel();
+                // if (tabModel.getCount() > 0) {
+                //     TabModelUtils.setIndex(tabModel, tabModel.getCount() - 1);
+                // }
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Error opening new tab", e);
+            // Fallback to default back behavior
+            performDefaultBackPress();
+        }
+    }
+
+    private void performDefaultBackPress() {
+        // Disable our custom callback temporarily and trigger default back behavior
+        mYouTubeBackPressedCallback.setEnabled(false);
+        getOnBackPressedDispatcher().onBackPressed();
+        
+        // Re-enable our callback after a short delay
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            updateBackCallbackState();
+        }, 100);
     }
 
     @Override
@@ -531,6 +713,10 @@ public abstract class BraveActivity extends ChromeActivity
         cleanUpBraveNewsController();
         cleanUpWalletNativeServices();
         cleanUpMiscAndroidMetrics();
+
+        if (mYouTubeBackPressedCallback != null) {
+            mYouTubeBackPressedCallback.remove();
+        }
     }
 
     public WalletModel getWalletModel() {
@@ -1010,6 +1196,7 @@ public abstract class BraveActivity extends ChromeActivity
     public void onResume() {
         super.onResume();
         mIsProcessingPendingDappsTxRequest = false;
+        updateBackCallbackState();
         if (mIsDefaultCheckOnResume) {
             mIsDefaultCheckOnResume = false;
 
