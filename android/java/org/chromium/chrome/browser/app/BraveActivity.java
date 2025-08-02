@@ -680,37 +680,6 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
-    protected void onResume() {
-        super.onResume();
-        
-        // Ensure callback is setup before updating state
-        if (!mIsCallbackSetup) {
-            setupYouTubeBackButtonHandler();
-        }
-        
-        // Safe update with null check
-        updateBackCallbackState();
-    }
-
-    @Override
-    protected void onDestroy() {
-        try {
-            // Clean up WebContents observer
-            if (mWebContentsObserver != null) {
-                mWebContentsObserver = null;
-            }
-            
-            if (mYouTubeBackPressedCallback != null) {
-                mYouTubeBackPressedCallback.remove();
-                mYouTubeBackPressedCallback = null;
-            }
-        } catch (Exception e) {
-            Log.e("BraveActivity", "Error cleaning up callback", e);
-        }
-        super.onDestroy();
-    }
-
-    @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
         final TabImpl currentTab = (TabImpl) getActivityTab();
         if (id == R.id.info_menu_id && currentTab != null) {
