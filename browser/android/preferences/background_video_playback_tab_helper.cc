@@ -1104,22 +1104,23 @@ const char16_t kYoutubePIP[] =
 const char16_t kYoutubePipButton[] = 
     uR"(
     (function() {
-        // Store tab reference for proper restoration
         let originalTabId = null;
         let videoElement = null;
         let wasPlaying = false;
+        let buttonVisible = false;
 
         const buttonElement = document.createElement('button');
         buttonElement.className = 'yt-pip-gold';
         buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
         buttonElement.title = 'Picture-in-Picture';
 
-        // Enhanced CSS (keeping your existing styles)
         if (!document.getElementById('yt-pip-gold-styles')) {
             const css = `
             .yt-pip-gold {
                 position: fixed;
-                bottom: 20px; right: 20px; z-index: 9999;
+                bottom: 20px; right: 20px;
+                z-index: 2147483647 !important;
+                pointer-events: auto !important;
                 width: 60px; height: 60px; border-radius: 50%;
                 background: #D4AF37;
                 border: none; cursor: pointer; overflow: hidden;
@@ -1129,6 +1130,7 @@ const char16_t kYoutubePipButton[] =
                 background-position: center;
                 background-size: 55%;
                 transition: transform .2s, box-shadow .2s, filter .2s;
+                animation: scalePulse 2.4s ease-in-out infinite;
             }
             .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
             .yt-pip-gold:active { transform: scale(0.95); }
@@ -1153,24 +1155,18 @@ const char16_t kYoutubePipButton[] =
                 0%, 100% { transform: scale(1); }
                 50% { transform: scale(1.1); }
             }
-            .yt-pip-gold {
-                animation: scalePulse 2.4s ease-in-out infinite;
-            }
-        `;
+            `;
             const styleTag = document.createElement('style');
             styleTag.id = 'yt-pip-gold-styles';
             styleTag.textContent = css;
             document.head.appendChild(styleTag);
         }
 
-        // Enhanced PiP handling
         buttonElement.addEventListener('click', () => {
             videoElement = document.querySelector('video');
             if (videoElement) {
-                // Store current state
                 wasPlaying = !videoElement.paused;
                 originalTabId = window.location.href;
-                
                 videoElement.removeAttribute('disablePictureInPicture');
                 videoElement.requestPictureInPicture().catch(console.error);
             }
@@ -1219,23 +1215,34 @@ const char16_t kYoutubePipButton[] =
             });
         }
 
-        const observer = new MutationObserver(() => {
-            const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
-            if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
-            buttonContainerElement.prepend(buttonElement);
-        });
-        observer.observe(document.documentElement, { subtree: true, childList: true });
+        // Keep button only on watch page
+        function updateButtonVisibility() {
+            const onWatchPage = window.location.pathname === '/watch';
+            if (onWatchPage && !buttonVisible) {
+                document.body.appendChild(buttonElement);
+                buttonVisible = true;
+            } else if (!onWatchPage && buttonVisible) {
+                buttonElement.remove();
+                buttonVisible = false;
+            }
+        }
 
-        // Additional visibility override for problematic devices
+        // Watch for page changes (for SPAs like YouTube)
+        const observer = new MutationObserver(() => updateButtonVisibility());
+        observer.observe(document.body, { childList: true, subtree: true });
+
+        // Also run on script load
+        updateButtonVisibility();
+
+        // Optional: block visibilitychange events if needed
         const originalAddEventListener = document.addEventListener;
         document.addEventListener = function(type, listener, options) {
-            if (type === 'visibilitychange') {
-                return; // Block visibility change events
-            }
+            if (type === 'visibilitychange') return;
             return originalAddEventListener.call(this, type, listener, options);
         };
 
     })();
+
 )";
 
 constexpr char16_t kYoutubeCustomBackPress[] =
