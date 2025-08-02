@@ -179,6 +179,18 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 return { isActive: false, videoId: null, tabId: null };
             }
 
+            function saveCurrentPlaybackState() {
+                if (isPIPActive() && lastPlayingVideoElement) {
+                    try {
+                        // We only need to save the current time for seamless transitions.
+                        localStorage.setItem('pip_video_id', lastPlayingVideoElement.currentSrc);
+                        localStorage.setItem('pip_playback_time', lastPlayingVideoElement.currentTime);
+                    } catch (e) {
+                        // This can fail in private mode, which is fine.
+                    }
+                }
+            }
+
             function signalPIPTransition(newVideoId) {
                 try {
                     const transitionSignal = {
@@ -469,12 +481,12 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     setPIPStatus(currentPIPVideoId, true);
                     console.log('PIP entered for video:', currentPIPVideoId);
 
-                    const videoElement = document.querySelector('video');
-                    if (videoElement) {
-                        // Save the current playback state
-                        localStorage.setItem('pip_video_id', videoElement.currentSrc);
-                        localStorage.setItem('pip_playback_time', videoElement.currentTime);
-                    }
+                    // const videoElement = document.querySelector('video');
+                    // if (videoElement) {
+                    //     // Save the current playback state
+                    //     localStorage.setItem('pip_video_id', videoElement.currentSrc);
+                    //     localStorage.setItem('pip_playback_time', videoElement.currentTime);
+                    // }
                 });
 
                 document.addEventListener('leavepictureinpicture', (event) => {
@@ -531,6 +543,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     checkForPIPTransitionSignal();
                     checkForCloseSignal(); // Add check for the close signal
                 }, 1000);
+
+                setInterval(saveCurrentPlaybackState, 500);
 
                 setInterval(() => {
                     if (isPIPActive() && currentPIPVideoId) {
