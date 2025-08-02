@@ -488,19 +488,30 @@ public abstract class BraveActivity extends ChromeActivity
     private void updateBackCallbackState() {
         Log.e("Browser Express", "Updating YouTube back button callback state");
         if (mYouTubeBackPressedCallback == null) {
-            return; // Not initialized yet
+            Log.e("Browser Express", "Callback is null, returning");
+            return;
         }
-        Tab currentTab = getActivityTab();
-        if (currentTab != null && currentTab.getWebContents() != null) {
-            Log.e("Browser Express", "Current tab URL: " + currentTab.getUrl().getSpec());
-            String currentUrl = currentTab.getUrl().getSpec();
-            boolean isYouTubeWatch = isYouTubeWatchPage(currentUrl);
-            boolean canGoBack = currentTab.canGoBack();
-            
-            // Enable our custom callback only for YouTube watch pages with history
-            mYouTubeBackPressedCallback.setEnabled(isYouTubeWatch && canGoBack);
-        } else {
-            mYouTubeBackPressedCallback.setEnabled(false);
+        
+        try {
+            Tab currentTab = getActivityTab();
+            if (currentTab != null && currentTab.getWebContents() != null) {
+                String currentUrl = currentTab.getUrl().getSpec();
+                boolean isYouTubeWatch = isYouTubeWatchPage(currentUrl);
+                boolean canGoBack = currentTab.canGoBack();
+                
+                Log.e("Browser Express", "URL: " + currentUrl);
+                Log.e("Browser Express", "isYouTubeWatch: " + isYouTubeWatch + ", canGoBack: " + canGoBack);
+                
+                // Enable our custom callback only for YouTube watch pages with history
+                boolean shouldEnable = isYouTubeWatch && canGoBack;
+                mYouTubeBackPressedCallback.setEnabled(shouldEnable);
+                Log.e("Browser Express", "Callback enabled: " + shouldEnable);
+            } else {
+                Log.e("Browser Express", "No current tab or web contents");
+                mYouTubeBackPressedCallback.setEnabled(false);
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Error updating back callback state", e);
         }
     }
     
@@ -509,25 +520,28 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void handleYouTubeBackPress() {
-        Log.e("Browser Express", "Handling Youtube Back Press");
+        Log.e("Browser Express", "=== Handling Youtube Back Press ===");
         Tab currentTab = getActivityTab();
         if (currentTab == null || currentTab.getWebContents() == null) {
             Log.e("Browser Express", "Current tab is null or has no web contents");
-            // Fallback to default behavior
             performDefaultBackPress();
             return;
         }
+        
+        String currentUrl = currentTab.getUrl().getSpec();
+        Log.e("Browser Express", "Current URL: " + currentUrl);
         
         // Get the previous URL from navigation history
         String previousUrl = getPreviousUrlFromHistory(currentTab);
         Log.e("Browser Express", "Previous URL: " + previousUrl);
+        
         if (previousUrl == null) {
             Log.e("Browser Express", "No previous URL found in history");
-            // No previous URL, fallback to default behavior
             performDefaultBackPress();
             return;
         }
         
+        Log.e("Browser Express", "Proceeding with PIP and new tab flow");
         // Execute the PIP and new tab flow
         executePIPAndNewTabFlow(currentTab, previousUrl);
     }
@@ -555,19 +569,10 @@ public abstract class BraveActivity extends ChromeActivity
         currentTab.getWebContents().evaluateJavaScript(startPIPScript, new JavaScriptCallback() {
             @Override
             public void handleJavaScriptResult(String result) {
-                TabUtils.openUrlInNewTab(false, previousUrl);
-                // // Parse the result to check if PIP was successful
-                // boolean pipSuccess = "true".equals(result) || "success".equals(result);
-                
-                // if (pipSuccess) {
-                //     // PIP started successfully, now open new tab with previous URL
-                //     TabUtils.openUrlInNewTab(false, previousUrl);
-                // } else {
-                //     TabUtils.openUrlInNewTab(false, previousUrl);
-                //     // PIP failed, fallback to default back behavior
-                //     Log.w("BraveActivity", "PIP failed, falling back to default back behavior");
-                //     // performDefaultBackPress();
-                // }
+                new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                    Log.e("Browser Express", "Opening new tab with URL: " + previousUrl);
+                    TabUtils.openUrlInNewTab(false, previousUrl);
+                }, 300);
             }
         });
     }
@@ -575,24 +580,28 @@ public abstract class BraveActivity extends ChromeActivity
     private String getStartPIPScript() {
         return "function() {\n"
             + "    try {\n"
+            + "        // Check if already in PIP mode\n"
+            + "        if (document.pictureInPictureElement) {\n"
+            + "            console.log('Already in PIP mode');\n"
+            + "            return 'already_pip';\n"
+            + "        }\n"
+            + "        \n"
             + "        const videoElement = document.querySelector('video');\n"
             + "        if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {\n"
-            + "            if (!videoElement.paused) {\n"
-            + "                return videoElement.requestPictureInPicture()\n"
-            + "                    .then(() => {\n"
-            + "                        console.log('PIP started successfully');\n"
-            + "                        return 'true';\n"
-            + "                    })\n"
-            + "                    .catch(err => {\n"
-            + "                        console.warn('PIP failed:', err);\n"
-            + "                        return 'false';\n"
-            + "                    });\n"
-            + "            }\n"
+            + "            // Remove paused check - always try PIP\n"
+            + "            videoElement.requestPictureInPicture()\n"
+            + "                .then(() => {\n"
+            + "                    console.log('PIP started successfully');\n"
+            + "                })\n"
+            + "                .catch(err => {\n"
+            + "                    console.warn('PIP failed:', err);\n"
+            + "                });\n"
+            + "            return 'pip_attempted';\n"
             + "        }\n"
-            + "        return 'false';\n"
+            + "        return 'no_video_element';\n"
             + "    } catch (e) {\n"
             + "        console.error('Error starting PIP:', e);\n"
-            + "        return 'false';\n"
+            + "        return 'error';\n"
             + "    }\n"
             + "}";
     }
