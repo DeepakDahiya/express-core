@@ -144,12 +144,10 @@ constexpr char16_t kYoutubeInAppPIP[] =
             }
 
             function getTabId() {
-                let tabId = sessionStorage.getItem('pip_tab_id');
-                if (!tabId) {
-                    tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-                    sessionStorage.setItem('pip_tab_id', tabId);
+                if (!window.tabId) {
+                    window.tabId = 'tab_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
                 }
-                return tabId;
+                return window.tabId;
             }
 
             function setPIPStatus(videoId, isActive) {
@@ -231,24 +229,10 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 try {
                     const closeSignal = {
                         targetTabId: tabId,
-                        timestamp: Date.now(),
-                        action: 'CLOSE_TAB' // Add action identifier
+                        timestamp: Date.now()
                     };
                     localStorage.setItem('pip_close_tab_signal', JSON.stringify(closeSignal));
                     console.log('Sent close signal to tab:', tabId);
-                    
-                    // Clean up the signal after a longer timeout
-                    setTimeout(() => {
-                        try {
-                            const currentSignal = localStorage.getItem('pip_close_tab_signal');
-                            if (currentSignal) {
-                                const parsed = JSON.parse(currentSignal);
-                                if (parsed.targetTabId === tabId) {
-                                    localStorage.removeItem('pip_close_tab_signal');
-                                }
-                            }
-                        } catch (e) {}
-                    }, 15000); // Increased cleanup timeout
                 } catch (e) {
                     console.warn('Could not send close tab signal:', e);
                 }
@@ -262,20 +246,15 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     if (stored) {
                         const signal = JSON.parse(stored);
                         // Check if the signal is fresh and targeted at this specific tab
-                        if (Date.now() - signal.timestamp < 10000 && signal.targetTabId === getTabId()) { // Increased timeout to 10 seconds
+                        if (Date.now() - signal.timestamp < 5000 && signal.targetTabId === getTabId()) {
                             console.log('Received close signal. This tab will now close.');
                             localStorage.removeItem('pip_close_tab_signal');
-                            // Add a small delay to ensure the signal is processed
-                            setTimeout(() => {
-                                window.close();
-                            }, 100);
-                            return true;
+                            window.close();
                         }
                     }
                 } catch (e) {
                     // Ignore errors
                 }
-                return false;
             }
 
             function sendPlaybackState() {
@@ -551,7 +530,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 setInterval(() => {
                     checkForPIPTransitionSignal();
                     checkForCloseSignal(); // Add check for the close signal
-                }, 500);
+                }, 1000);
 
                 setInterval(() => {
                     if (isPIPActive() && currentPIPVideoId) {
@@ -1021,10 +1000,6 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
             initialize();
 
-            setTimeout(() => {
-                checkForCloseSignal();
-            }, 100);
-
             const observer = new MutationObserver((mutations) => {
                 let shouldReintercept = false;
 
@@ -1270,6 +1245,27 @@ const char16_t kYoutubePipButton[] =
 
 )";
 
+constexpr char16_t kYoutubeCustomBackPress[] =
+uR"(
+    (function() {
+        'use strict';
+        if (!window.AndroidBridge) {
+            return;
+        }
+        function updateBackPressState() {
+            const isYoutubeWatchPage = window.location.hostname.includes('youtube.com') &&
+                                        window.location.pathname === '/watch';
+            const canGoBack = window.history.length > 1;
+            if (typeof window.AndroidBridge.setCustomBackBehavior === 'function') {
+                window.AndroidBridge.setCustomBackBehavior(isYoutubeWatchPage && canGoBack);
+            }
+        }
+        window.addEventListener('yt-navigate-finish', updateBackPressState);
+        window.addEventListener('pageshow', updateBackPressState);
+        updateBackPressState();
+    })();
+)";
+
 bool IsYouTubeDomain(const GURL& url) {
   if (net::registry_controlled_domains::SameDomainOrHost(
           url, GURL("https://www.youtube.com"),
@@ -1319,6 +1315,9 @@ void BackgroundVideoPlaybackTabHelper::PrimaryMainDocumentElementAvailable() {
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
+
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubeCustomBackPress, base::NullCallback());
 }
 
 WEB_CONTENTS_USER_DATA_KEY_IMPL(BackgroundVideoPlaybackTabHelper);
