@@ -266,7 +266,7 @@ import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.chrome.browser.util.TabUtils;
-
+import org.chromium.url.GURL;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 
