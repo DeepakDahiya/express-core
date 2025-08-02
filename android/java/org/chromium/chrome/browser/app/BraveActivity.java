@@ -516,21 +516,29 @@ public abstract class BraveActivity extends ChromeActivity
             Log.e("Browser Express", "Setting up WebContents observer for tab");
             mWebContentsObserver = new WebContentsObserver(currentTab.getWebContents()) {
                 @Override
-                public void didFinishNavigation(NavigationHandle navigation) {
-                    if (navigation.isInPrimaryMainFrame()) {
-                        Log.e("Browser Express", "Navigation finished: " + navigation.getUrl());
-                        // Small delay to ensure URL is updated in the tab
-                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                            updateBackCallbackState();
-                        }, 200);
-                    }
+                public void didFinishNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {
+                    Log.e("Browser Express", "Navigation finished: " + navigationHandle.getUrl());
+                    // Small delay to ensure URL is updated in the tab
+                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                        updateBackCallbackState();
+                    }, 200);
                 }
                 
                 @Override
-                public void didStartNavigation(NavigationHandle navigation) {
-                    if (navigation.isInPrimaryMainFrame()) {
-                        Log.e("Browser Express", "Navigation started: " + navigation.getUrl());
-                    }
+                public void didStartNavigationInPrimaryMainFrame(NavigationHandle navigationHandle) {
+                    Log.e("Browser Express", "Navigation started: " + navigationHandle.getUrl());
+                }
+                
+                @Override
+                public void didStartLoading(GURL url) {
+                    Log.e("Browser Express", "Started loading: " + url.getSpec());
+                }
+                
+                @Override
+                public void didStopLoading(GURL url, boolean isKnownValid) {
+                    Log.e("Browser Express", "Stopped loading: " + url.getSpec());
+                    // Update callback state when page finishes loading
+                    updateBackCallbackState();
                 }
             };
         }
