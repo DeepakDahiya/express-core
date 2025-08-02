@@ -266,6 +266,7 @@ import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.chrome.browser.tab.TabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
+import org.chromium.chrome.browser.util.TabUtils;
 
 /**
  * Brave's extension for ChromeActivity
@@ -580,27 +581,6 @@ public abstract class BraveActivity extends ChromeActivity
             + "        return 'false';\n"
             + "    }\n"
             + "}";
-    }
-
-    private void openNewTabWithUrl(String url) {
-        try {
-            // Create new tab with the previous URL
-            TabCreator tabCreator = getTabCreator(false);
-            if (tabCreator != null) {
-                LoadUrlParams loadUrlParams = new LoadUrlParams(url);
-                tabCreator.createNewTab(loadUrlParams, TabLaunchType.FROM_LINK, null);
-                
-                // Optional: Switch to the new tab immediately
-                // TabModel tabModel = getTabModelSelector().getCurrentModel();
-                // if (tabModel.getCount() > 0) {
-                //     TabModelUtils.setIndex(tabModel, tabModel.getCount() - 1);
-                // }
-            }
-        } catch (Exception e) {
-            Log.e("BraveActivity", "Error opening new tab", e);
-            // Fallback to default back behavior
-            performDefaultBackPress();
-        }
     }
 
     private void performDefaultBackPress() {
