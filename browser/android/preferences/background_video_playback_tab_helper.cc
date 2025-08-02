@@ -299,6 +299,77 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 }
             }
 
+            // Add this right after the existing helper functions (after applyPlaybackState)
+            function manageTabsAndOpenNew(url, shouldCloseCurrent = false) {
+                try {
+                    console.log('Managing tabs and opening:', url);
+                    
+                    // Get current tab count (approximate)
+                    const currentTabId = getTabId();
+                    
+                    // Signal other tabs to close if we have too many
+                    const cleanupSignal = {
+                        action: 'CLEANUP_TABS',
+                        keepTabId: currentTabId,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('tab_cleanup_signal', JSON.stringify(cleanupSignal));
+                    
+                    // Open new tab
+                    const newTab = window.open(url, '_blank');
+                    if (newTab) {
+                        newTab.focus();
+                        setTimeout(() => newTab.focus(), 100);
+                        
+                        // If we should close current tab after opening new one
+                        if (shouldCloseCurrent) {
+                            setTimeout(() => {
+                                console.log('Closing current tab after new tab opened');
+                                window.close();
+                            }, 500);
+                        }
+                    }
+                    
+                    // Clean up signal after 3 seconds
+                    setTimeout(() => {
+                        try {
+                            localStorage.removeItem('tab_cleanup_signal');
+                        } catch (e) {}
+                    }, 3000);
+                    
+                    return newTab;
+                } catch (e) {
+                    console.warn('Error managing tabs:', e);
+                    // Fallback to simple window.open
+                    return window.open(url, '_blank');
+                }
+            }
+
+            // Add cleanup signal checker
+            function checkForCleanupSignal() {
+                try {
+                    const stored = localStorage.getItem('tab_cleanup_signal');
+                    if (stored) {
+                        const signal = JSON.parse(stored);
+                        
+                        // Check if signal is fresh and not from this tab
+                        if (Date.now() - signal.timestamp < 3000 && 
+                            signal.keepTabId !== getTabId()) {
+                            
+                            console.log('Received cleanup signal, checking if should close');
+                            
+                            // Close this tab if it's not in PIP and not the keeper tab
+                            if (!isPIPActive()) {
+                                console.log('This tab will close due to cleanup signal');
+                                window.close();
+                            }
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+
             // --- MODIFIED FUNCTION ---
             // Added `previousPIPTabId` parameter to know which tab to close later.
             function startPIPForNewVideo(videoElement, videoId) {
@@ -565,16 +636,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
             }
 
             function openNewTabWithPIPAwareness(url) {
-                const newTab = window.open(url, '_blank');
-                if (newTab) {
-                    newTab.focus();
-                    setTimeout(() => newTab.focus(), 100);
-
-                    setTimeout(() => {
-                        injectPIPManagementScript(newTab);
-                    }, 2000);
-                }
-                return newTab;
+                return manageTabsAndOpenNew(url, false);
             }
 
             function injectPIPManagementScript(tab) {
@@ -684,10 +746,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 const encodedQuery = encodeURIComponent(searchQuery);
                 const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
 
-                const newTab = window.open(searchUrl, '_blank');
+                const newTab = manageTabsAndOpenNew(searchUrl, false);
                 if (newTab) {
-                    newTab.focus();
-                    setTimeout(() => newTab.focus(), 100);
                     closeSearchDropdown();
                     return true;
                 }
@@ -702,7 +762,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     event.stopPropagation();
                     event.stopImmediatePropagation();
 
-                    openNewTabWithPIPAwareness('https://www.youtube.com/');
+                    manageTabsAndOpenNew('https://www.youtube.com/', false);
 
                     return false;
                 }
@@ -917,13 +977,11 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
                             const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
                             setTimeout(() => {
-                                const newTab = window.open(fullUrl, '_blank');
-                                if (newTab) {
-                                    newTab.focus();
-
-                                    if (url.includes('/results?') || url.includes('search_query=')) {
-                                        closeSearchDropdown();
-                                    }
+                                // Use centralized tab management
+                                manageTabsAndOpenNew(fullUrl, false);
+                                
+                                if (url.includes('/results?') || url.includes('search_query=')) {
+                                    closeSearchDropdown();
                                 }
                             }, 10);
                             return;
@@ -941,13 +999,11 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
                             const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
                             setTimeout(() => {
-                                const newTab = window.open(fullUrl, '_blank');
-                                if (newTab) {
-                                    newTab.focus();
-
-                                    if (url.includes('/results?') || url.includes('search_query=')) {
-                                        closeSearchDropdown();
-                                    }
+                                // Use centralized tab management
+                                manageTabsAndOpenNew(fullUrl, false);
+                                
+                                if (url.includes('/results?') || url.includes('search_query=')) {
+                                    closeSearchDropdown();
                                 }
                             }, 10);
                             return;
