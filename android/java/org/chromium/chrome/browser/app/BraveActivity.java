@@ -269,6 +269,8 @@ import org.chromium.chrome.browser.util.TabUtils;
 import org.chromium.url.GURL;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Brave's extension for ChromeActivity
