@@ -205,25 +205,51 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     if (stored) {
                         const signal = JSON.parse(stored);
                         
-                        // Check if the signal is fresh and isn't from this tab
-                        if (Date.now() - signal.timestamp < 5000 && signal.fromTabId !== getTabId()) {
+                        if (Date.now() - signal.timestamp < 5000 && 
+                            signal.fromTabId !== getTabId()) {
+                            
                             console.log('Received PIP transition signal:', signal);
                             
-                            // If this tab is the one currently in PiP
-                            if (document.pictureInPictureElement) {
-                                sendPlaybackState(); // Send playback state to the new tab
-                                
-                                // Exit PiP, and once done, close the tab. This is the key change.
-                                document.exitPictureInPicture().then(() => {
-                                    console.log('PiP yielded. This tab will now close.');
-                                    localStorage.removeItem('pip_transition_signal'); // Clean up
-                                    window.close(); // Close the tab
-                                }).catch(err => {
-                                    console.warn('Failed to exit PiP, closing tab anyway.', err);
-                                    localStorage.removeItem('pip_transition_signal');
-                                    window.close(); // Force close on error
-                                });
+                            if (isPIPActive()) {
+                                sendPlaybackState();
+                                closePIP();
+                                localStorage.removeItem('pip_transition_signal');
                             }
+                        }
+                    }
+                } catch (e) {
+                    // Ignore errors
+                }
+            }
+
+            // --- NEW FUNCTION ---
+            // Sends a signal to a specific tab ID, telling it to close.
+            function signalTabToClose(tabId) {
+                if (!tabId) return;
+                try {
+                    const closeSignal = {
+                        targetTabId: tabId,
+                        timestamp: Date.now()
+                    };
+                    localStorage.setItem('pip_close_tab_signal', JSON.stringify(closeSignal));
+                    console.log('Sent close signal to tab:', tabId);
+                } catch (e) {
+                    console.warn('Could not send close tab signal:', e);
+                }
+            }
+
+            // --- NEW FUNCTION ---
+            // Checks if this tab has received a signal to close itself.
+            function checkForCloseSignal() {
+                try {
+                    const stored = localStorage.getItem('pip_close_tab_signal');
+                    if (stored) {
+                        const signal = JSON.parse(stored);
+                        // Check if the signal is fresh and targeted at this specific tab
+                        if (Date.now() - signal.timestamp < 5000 && signal.targetTabId === getTabId()) {
+                            console.log('Received close signal. This tab will now close.');
+                            localStorage.removeItem('pip_close_tab_signal');
+                            window.close();
                         }
                     }
                 } catch (e) {
@@ -299,91 +325,12 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 }
             }
 
-            // Add this right after the existing helper functions (after applyPlaybackState)
-            function manageTabsAndOpenNew(url, shouldCloseCurrent = false) {
-                try {
-                    console.log('Managing tabs and opening:', url);
-                    
-                    // Get current tab count (approximate)
-                    const currentTabId = getTabId();
-                    
-                    // Signal other tabs to close if we have too many
-                    const cleanupSignal = {
-                        action: 'CLEANUP_TABS',
-                        keepTabId: currentTabId,
-                        timestamp: Date.now()
-                    };
-                    localStorage.setItem('tab_cleanup_signal', JSON.stringify(cleanupSignal));
-                    
-                    // Open new tab
-                    const newTab = window.open(url, '_blank');
-                    if (newTab) {
-                        newTab.focus();
-                        setTimeout(() => newTab.focus(), 100);
-                        
-                        // If we should close current tab after opening new one
-                        if (shouldCloseCurrent) {
-                            setTimeout(() => {
-                                console.log('Closing current tab after new tab opened');
-                                window.close();
-                            }, 500);
-                        }
-                    }
-                    
-                    // Clean up signal after 3 seconds
-                    setTimeout(() => {
-                        try {
-                            localStorage.removeItem('tab_cleanup_signal');
-                        } catch (e) {}
-                    }, 3000);
-                    
-                    return newTab;
-                } catch (e) {
-                    console.warn('Error managing tabs:', e);
-                    // Fallback to simple window.open
-                    return window.open(url, '_blank');
-                }
-            }
-
-            // Add cleanup signal checker
-            function checkForCleanupSignal() {
-                try {
-                    const stored = localStorage.getItem('tab_cleanup_signal');
-                    if (stored) {
-                        const signal = JSON.parse(stored);
-                        
-                        // Check if signal is fresh and not from this tab
-                        if (Date.now() - signal.timestamp < 3000 && 
-                            signal.keepTabId !== getTabId()) {
-                            
-                            console.log('Received cleanup signal, checking if should close');
-                            
-                            // Close this tab if it's not in PIP and not the keeper tab
-                            if (!isPIPActive()) {
-                                console.log('This tab will close due to cleanup signal');
-                                window.close();
-                            }
-                        }
-                    }
-                } catch (e) {
-                    // Ignore errors
-                }
-            }
-
             // --- MODIFIED FUNCTION ---
             // Added `previousPIPTabId` parameter to know which tab to close later.
-            function startPIPForNewVideo(videoElement, videoId) {
+            function startPIPForNewVideo(videoElement, videoId, previousPIPTabId) {
                 if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
-                    // First, ensure the video is playing. This is the key fix.
-                    const playPromise = videoElement.play();
-
-                    playPromise.then(() => {
-                        // Once playback has started, request Picture-in-Picture.
-                        setTimeout(() => {
-                            if (videoElement.paused) {
-                                console.warn('Video was paused before PiP could be requested.');
-                                return;
-                            }
+                    setTimeout(() => {
+                        if (!videoElement.paused) {
                             videoElement.requestPictureInPicture()
                                 .then(() => {
                                     currentPIPVideoId = videoId;
@@ -391,14 +338,14 @@ constexpr char16_t kYoutubeInAppPIP[] =
                                     isOriginalPIPTab = true;
                                     setPIPStatus(videoId, true);
                                     console.log('PIP started for new video:', videoId);
+                                    // After successfully starting PIP, tell the old tab to close.
+                                    signalTabToClose(previousPIPTabId);
                                 })
                                 .catch(err => {
-                                    console.warn('Failed to start PiP for new video:', err);
+                                    console.warn('Failed to start PIP for new video:', err);
                                 });
-                        }, 150); // Short delay for stability
-                    }).catch(err => {
-                        console.warn('Could not auto-play video for PiP transition:', err);
-                    });
+                        }
+                    }, 300);
                 }
             }
 
@@ -406,7 +353,9 @@ constexpr char16_t kYoutubeInAppPIP[] =
             // Captures the old tab's ID to pass it along.
             function handleVideoPlay(videoElement) {
                 const currentVideoId = getCurrentVideoId();
+                
                 console.log('Video play detected:', currentVideoId);
+                
                 const pipStatus = getPIPStatus();
                 
                 if (currentVideoId && pipStatus.isActive && pipStatus.videoId !== currentVideoId) {
@@ -414,6 +363,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     
                     if (!isPIPActive()) {
                         console.log('This is a new tab, attempting PIP transition');
+                        const previousPIPTabId = pipStatus.tabId; // Capture the old tab's ID
                         signalPIPTransition(currentVideoId);
                         
                         setTimeout(() => {
@@ -421,8 +371,8 @@ constexpr char16_t kYoutubeInAppPIP[] =
                             if (playbackState) {
                                 applyPlaybackState(videoElement, playbackState);
                             }
-                            // Call the simplified function without the old tab ID.
-                            startPIPForNewVideo(videoElement, currentVideoId);
+                            // Pass the old tab's ID to the function that starts the new PIP
+                            startPIPForNewVideo(videoElement, currentVideoId, previousPIPTabId);
                         }, 600);
                     } else {
                         if (pipReplacementEnabled) {
@@ -532,7 +482,18 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     lastPlayingVideoElement = null;
                     isOriginalPIPTab = false;
                     setPIPStatus(null, false);
-                    console.log('PIP exited. Video will remain in its current state (paused).');
+                    console.log('PIP exited');
+
+                    const videoElement = document.querySelector('video');
+                    if (videoElement) {
+                        // Restore the playback state if needed
+                        const videoId = localStorage.getItem('pip_video_id');
+                        const playbackTime = localStorage.getItem('pip_playback_time');
+                        if (videoId && playbackTime) {
+                            videoElement.currentTime = playbackTime;
+                            videoElement.play();
+                        }
+                    }
                 });
 
                 document.addEventListener('play', (event) => {
@@ -568,6 +529,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 // Now checks for both transition signals and close signals.
                 setInterval(() => {
                     checkForPIPTransitionSignal();
+                    checkForCloseSignal(); // Add check for the close signal
                 }, 1000);
 
                 setInterval(() => {
@@ -636,7 +598,16 @@ constexpr char16_t kYoutubeInAppPIP[] =
             }
 
             function openNewTabWithPIPAwareness(url) {
-                return manageTabsAndOpenNew(url, false);
+                const newTab = window.open(url, '_blank');
+                if (newTab) {
+                    newTab.focus();
+                    setTimeout(() => newTab.focus(), 100);
+
+                    setTimeout(() => {
+                        injectPIPManagementScript(newTab);
+                    }, 2000);
+                }
+                return newTab;
             }
 
             function injectPIPManagementScript(tab) {
@@ -746,8 +717,10 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 const encodedQuery = encodeURIComponent(searchQuery);
                 const searchUrl = `https://m.youtube.com/results?sp=mAEA&search_query=${encodedQuery}`;
 
-                const newTab = manageTabsAndOpenNew(searchUrl, false);
+                const newTab = window.open(searchUrl, '_blank');
                 if (newTab) {
+                    newTab.focus();
+                    setTimeout(() => newTab.focus(), 100);
                     closeSearchDropdown();
                     return true;
                 }
@@ -762,7 +735,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     event.stopPropagation();
                     event.stopImmediatePropagation();
 
-                    manageTabsAndOpenNew('https://www.youtube.com/', false);
+                    openNewTabWithPIPAwareness('https://www.youtube.com/');
 
                     return false;
                 }
@@ -977,11 +950,13 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
                             const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
                             setTimeout(() => {
-                                // Use centralized tab management
-                                manageTabsAndOpenNew(fullUrl, false);
-                                
-                                if (url.includes('/results?') || url.includes('search_query=')) {
-                                    closeSearchDropdown();
+                                const newTab = window.open(fullUrl, '_blank');
+                                if (newTab) {
+                                    newTab.focus();
+
+                                    if (url.includes('/results?') || url.includes('search_query=')) {
+                                        closeSearchDropdown();
+                                    }
                                 }
                             }, 10);
                             return;
@@ -999,11 +974,13 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
                             const fullUrl = url.startsWith('/') ? `https://m.youtube.com${url}` : url;
                             setTimeout(() => {
-                                // Use centralized tab management
-                                manageTabsAndOpenNew(fullUrl, false);
-                                
-                                if (url.includes('/results?') || url.includes('search_query=')) {
-                                    closeSearchDropdown();
+                                const newTab = window.open(fullUrl, '_blank');
+                                if (newTab) {
+                                    newTab.focus();
+
+                                    if (url.includes('/results?') || url.includes('search_query=')) {
+                                        closeSearchDropdown();
+                                    }
                                 }
                             }, 10);
                             return;
@@ -1127,16 +1104,17 @@ const char16_t kYoutubePIP[] =
 const char16_t kYoutubePipButton[] = 
     uR"(
     (function() {
+        // Store tab reference for proper restoration
         let originalTabId = null;
         let videoElement = null;
         let wasPlaying = false;
-        let buttonVisible = false;
 
         const buttonElement = document.createElement('button');
         buttonElement.className = 'yt-pip-gold';
         buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
         buttonElement.title = 'Picture-in-Picture';
 
+        // Enhanced CSS (keeping your existing styles)
         if (!document.getElementById('yt-pip-gold-styles')) {
             const css = `
             .yt-pip-gold {
@@ -1178,18 +1156,21 @@ const char16_t kYoutubePipButton[] =
                 0%, 100% { transform: scale(1); }
                 50% { transform: scale(1.1); }
             }
-            `;
+        `;
             const styleTag = document.createElement('style');
             styleTag.id = 'yt-pip-gold-styles';
             styleTag.textContent = css;
             document.head.appendChild(styleTag);
         }
 
+        // Enhanced PiP handling
         buttonElement.addEventListener('click', () => {
             videoElement = document.querySelector('video');
             if (videoElement) {
+                // Store current state
                 wasPlaying = !videoElement.paused;
                 originalTabId = window.location.href;
+                
                 videoElement.removeAttribute('disablePictureInPicture');
                 videoElement.requestPictureInPicture().catch(console.error);
             }
@@ -1210,38 +1191,51 @@ const char16_t kYoutubePipButton[] =
             });
 
             document.addEventListener('leavepictureinpicture', (event) => {
-                wasPlaying = false;
+                console.log('Left PiP mode');
+                // Force focus back to this tab
+                if (window.focus) {
+                    window.focus();
+                }
+                
+                // Ensure video continues playing after PiP exit
+                setTimeout(() => {
+                    const video = document.querySelector('video');
+                    if (video && wasPlaying && video.paused) {
+                        video.play().catch(console.error);
+                    }
+                    
+                    // Force page visibility to visible
+                    Object.defineProperty(document, 'hidden', {
+                        value: false,
+                        writable: false,
+                        configurable: true
+                    });
+                    Object.defineProperty(document, 'visibilityState', {
+                        value: 'visible',
+                        writable: false,
+                        configurable: true
+                    });
+                }, 200);
             });
         }
 
-        // Keep button only on watch page
-        function updateButtonVisibility() {
-            const onWatchPage = window.location.pathname === '/watch';
-            if (onWatchPage && !buttonVisible) {
-                document.body.appendChild(buttonElement);
-                buttonVisible = true;
-            } else if (!onWatchPage && buttonVisible) {
-                buttonElement.remove();
-                buttonVisible = false;
-            }
-        }
+        const observer = new MutationObserver(() => {
+            const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+            if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
+            buttonContainerElement.prepend(buttonElement);
+        });
+        observer.observe(document.documentElement, { subtree: true, childList: true });
 
-        // Watch for page changes (for SPAs like YouTube)
-        const observer = new MutationObserver(() => updateButtonVisibility());
-        observer.observe(document.body, { childList: true, subtree: true });
-
-        // Also run on script load
-        updateButtonVisibility();
-
-        // Optional: block visibilitychange events if needed
+        // Additional visibility override for problematic devices
         const originalAddEventListener = document.addEventListener;
         document.addEventListener = function(type, listener, options) {
-            if (type === 'visibilitychange') return;
+            if (type === 'visibilitychange') {
+                return; // Block visibility change events
+            }
             return originalAddEventListener.call(this, type, listener, options);
         };
 
     })();
-
 )";
 
 bool IsYouTubeDomain(const GURL& url) {
