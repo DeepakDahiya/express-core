@@ -264,7 +264,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.content_public.browser.JavaScriptCallback;
-import org.chromium.chrome.browser.tab.TabCreator;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.chrome.browser.util.TabUtils;
 
@@ -463,11 +462,6 @@ public abstract class BraveActivity extends ChromeActivity
         
         // Update callback state when tab changes
         getTabModelSelector().addObserver(new TabModelSelectorObserver() {
-            @Override
-            public void onTabStateChanged() {
-                updateBackCallbackState();
-            }
-            
             @Override
             public void onChange() {
                 updateBackCallbackState();
