@@ -237,8 +237,6 @@ import java.util.Locale;
 import java.util.concurrent.CopyOnWriteArrayList;
 import android.util.Rational;
 import android.app.PictureInPictureParams;
-import android.webkit.JavascriptInterface;
-import org.chromium.chrome.browser.util.TabUtils;
 
 import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
 import java.util.ArrayList;
@@ -259,11 +257,6 @@ import org.chromium.chrome.browser.toolbar.bottom.BrowserExpressGetLatestApkUtil
 import org.chromium.base.task.AsyncTask;
 
 import org.chromium.chrome.browser.local_database.DatabaseHelper;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
-import org.chromium.content_public.browser.NavigationController;
-import org.chromium.content_public.browser.NavigationEntry;
-import android.webkit.ValueCallback;
-import org.chromium.content_public.browser.JavaScriptCallback;
 
 /**
  * Brave's extension for ChromeActivity
@@ -371,33 +364,6 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public BraveActivity() {}
-
-    @Override
-    public void onBackPressed() {
-        Tab currentTab = getActivityTab();
-        if (currentTab != null) {
-            String currentUrl = currentTab.getUrl().getSpec();
-            
-            // Check if we're on YouTube watch page
-            if (currentUrl.contains("youtube.com/watch")) {
-                NavigationController navController = currentTab.getWebContents().getNavigationController();
-                if (navController.canGoBack()) {
-                    // Simple approach: get referrer via JavaScript without callback
-                    currentTab.getWebContents().evaluateJavaScript(
-                        "if (document.referrer && document.referrer !== window.location.href) {" +
-                        "  window.open(document.referrer, '_blank');" +
-                        "} else {" +
-                        "  history.back();" +
-                        "}",
-                        null
-                    );
-                    return;
-                }
-            }
-        }
-
-        super.onBackPressed();
-    }
 
     @Override
     public void onResumeWithNative() {

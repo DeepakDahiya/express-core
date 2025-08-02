@@ -1243,31 +1243,20 @@ constexpr char16_t kYoutubeCustomBackPress[] =
 uR"(
     (function() {
         'use strict';
-        if (!window.AndroidBridge || typeof window.AndroidBridge.setCustomBackBehavior !== 'function') {
-            console.log('AndroidBridge not available');
+        if (!window.AndroidBridge) {
             return;
         }
-        
         function updateBackPressState() {
             const isYoutubeWatchPage = window.location.hostname.includes('youtube.com') &&
                                         window.location.pathname === '/watch';
             const canGoBack = window.history.length > 1;
-            
-            console.log('YouTube custom back state:', isYoutubeWatchPage && canGoBack);
-            window.AndroidBridge.setCustomBackBehavior(isYoutubeWatchPage && canGoBack);
+            if (typeof window.AndroidBridge.setCustomBackBehavior === 'function') {
+                window.AndroidBridge.setCustomBackBehavior(isYoutubeWatchPage && canGoBack);
+            }
         }
-        
-        // YouTube SPA navigation events
         window.addEventListener('yt-navigate-finish', updateBackPressState);
-        window.addEventListener('yt-navigate-start', updateBackPressState);
         window.addEventListener('pageshow', updateBackPressState);
-        window.addEventListener('popstate', updateBackPressState);
-        
-        // Initial check
         updateBackPressState();
-        
-        // Periodic check as fallback
-        setInterval(updateBackPressState, 1000);
     })();
 )";
 
