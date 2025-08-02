@@ -1129,7 +1129,6 @@ const char16_t kYoutubePipButton[] =
                 background-position: center;
                 background-size: 55%;
                 transition: transform .2s, box-shadow .2s, filter .2s;
-                z-index: 1000;
             }
             .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
             .yt-pip-gold:active { transform: scale(0.95); }

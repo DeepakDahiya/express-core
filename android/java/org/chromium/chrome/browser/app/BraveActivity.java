@@ -558,7 +558,7 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private String getStartPIPScript() {
-        return """
+        return "
             function() {
                 try {
                     const videoElement = document.querySelector('video');
@@ -582,7 +582,7 @@ public abstract class BraveActivity extends ChromeActivity
                     return 'false';
                 }
             }
-        """;
+        ";
     }
 
     private void openNewTabWithUrl(String url) {
