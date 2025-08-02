@@ -322,6 +322,8 @@ public abstract class BraveActivity extends ChromeActivity
     private OnBackPressedCallback mYouTubeBackPressedCallback;
     private boolean mIsCallbackSetup = false;
     private WebContentsObserver mWebContentsObserver;
+    private Set<Integer> mOurCreatedTabs = new HashSet<>();
+    private static final int MAX_OUR_TABS = 2;
 
     /**
      * Settings for sending local notification reminders.
@@ -624,7 +626,9 @@ public abstract class BraveActivity extends ChromeActivity
     private void executePIPAndNewTabFlow(Tab currentTab, String previousUrl) {
         Log.e("Browser Express", "Executing PIP and new tab flow");
         
-        // First, try to start PIP for the current video
+        // Clean up only OUR excess tabs before creating new one
+        cleanupOurExcessTabs();
+        
         String startPIPScript = "(" + getStartPIPScript() + ")()";
         
         currentTab.getWebContents().evaluateJavaScript(startPIPScript, new JavaScriptCallback() {
@@ -632,16 +636,15 @@ public abstract class BraveActivity extends ChromeActivity
             public void handleJavaScriptResult(String result) {
                 Log.e("Browser Express", "PIP script result: " + result);
                 
-                // Add a small delay to ensure PIP has time to start
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                    // ADDED: Clean up excess tabs before creating new one
-                    closeExcessTabs();
+                    Log.e("Browser Express", "Opening new tab with URL: " + previousUrl);
                     
-                    // Small delay to ensure cleanup is complete
-                    new Handler(Looper.getMainLooper()).postDelayed(() -> {
-                        Log.e("Browser Express", "Opening new tab with URL: " + previousUrl);
-                        TabUtils.openUrlInNewTab(false, previousUrl);
-                    }, 100);
+                    // Create tab and track it
+                    Tab newTab = TabUtils.openUrlInNewTab(false, previousUrl);
+                    if (newTab != null) {
+                        mOurCreatedTabs.add(newTab.getId());
+                        Log.e("Browser Express", "Tracking our created tab: " + newTab.getId());
+                    }
                 }, 300);
             }
         });
@@ -693,30 +696,33 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    private void closeExcessTabs() {
+    private void cleanupOurExcessTabs() {
         try {
             TabModel tabModel = getTabModelSelector().getCurrentModel();
-            int tabCount = tabModel.getCount();
             
-            Log.e("Browser Express", "Current tab count: " + tabCount);
+            // Remove any tab IDs that no longer exist
+            mOurCreatedTabs.removeIf(tabId -> tabModel.getTabById(tabId) == null);
             
-            // If we have more than 1 tab, close all except current
-            if (tabCount > 1) {
+            Log.e("Browser Express", "Our tracked tabs count: " + mOurCreatedTabs.size());
+            
+            if (mOurCreatedTabs.size() >= MAX_OUR_TABS) {
                 Tab currentTab = getActivityTab();
                 
-                // Close all tabs except the current one
-                for (int i = tabCount - 1; i >= 0; i--) {
-                    Tab tab = tabModel.getTabAt(i);
+                // Close oldest of OUR tabs (except current tab)
+                for (Integer tabId : new ArrayList<>(mOurCreatedTabs)) {
+                    Tab tab = tabModel.getTabById(tabId);
                     if (tab != null && tab != currentTab) {
-                        Log.e("Browser Express", "Closing tab: " + tab.getUrl().getSpec());
-                        tabModel.closeTab(tab, false, false, false);
+                        Log.e("Browser Express", "Closing our created tab: " + tab.getUrl().getSpec());
+                        tabModel.closeTab(tab);
+                        mOurCreatedTabs.remove(tabId);
+                        
+                        // Only close one at a time
+                        break;
                     }
                 }
-                
-                Log.e("Browser Express", "Cleaned up tabs, remaining: " + tabModel.getCount());
             }
         } catch (Exception e) {
-            Log.e("BraveActivity", "Error closing excess tabs", e);
+            Log.e("BraveActivity", "Error cleaning up our excess tabs", e);
         }
     }
 
