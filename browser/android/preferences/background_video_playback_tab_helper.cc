@@ -301,10 +301,18 @@ constexpr char16_t kYoutubeInAppPIP[] =
 
             // --- MODIFIED FUNCTION ---
             // Added `previousPIPTabId` parameter to know which tab to close later.
-            function startPIPForNewVideo(videoElement, videoId) { // Removed 'previousPIPTabId'
+            function startPIPForNewVideo(videoElement, videoId) {
                 if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
-                    setTimeout(() => {
-                        if (!videoElement.paused) {
+                    // First, ensure the video is playing. This is the key fix.
+                    const playPromise = videoElement.play();
+
+                    playPromise.then(() => {
+                        // Once playback has started, request Picture-in-Picture.
+                        setTimeout(() => {
+                            if (videoElement.paused) {
+                                console.warn('Video was paused before PiP could be requested.');
+                                return;
+                            }
                             videoElement.requestPictureInPicture()
                                 .then(() => {
                                     currentPIPVideoId = videoId;
@@ -314,10 +322,12 @@ constexpr char16_t kYoutubeInAppPIP[] =
                                     console.log('PIP started for new video:', videoId);
                                 })
                                 .catch(err => {
-                                    console.warn('Failed to start PIP for new video:', err);
+                                    console.warn('Failed to start PiP for new video:', err);
                                 });
-                        }
-                    }, 300);
+                        }, 150); // Short delay for stability
+                    }).catch(err => {
+                        console.warn('Could not auto-play video for PiP transition:', err);
+                    });
                 }
             }
 
@@ -451,18 +461,7 @@ constexpr char16_t kYoutubeInAppPIP[] =
                     lastPlayingVideoElement = null;
                     isOriginalPIPTab = false;
                     setPIPStatus(null, false);
-                    console.log('PIP exited');
-
-                    const videoElement = document.querySelector('video');
-                    if (videoElement) {
-                        // Restore the playback state if needed
-                        const videoId = localStorage.getItem('pip_video_id');
-                        const playbackTime = localStorage.getItem('pip_playback_time');
-                        if (videoId && playbackTime) {
-                            videoElement.currentTime = playbackTime;
-                            videoElement.play();
-                        }
-                    }
+                    console.log('PIP exited. Video will remain in its current state (paused).');
                 });
 
                 document.addEventListener('play', (event) => {
