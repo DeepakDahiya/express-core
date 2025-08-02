@@ -536,18 +536,19 @@ public abstract class BraveActivity extends ChromeActivity
         currentTab.getWebContents().evaluateJavaScript(startPIPScript, new JavaScriptCallback() {
             @Override
             public void handleJavaScriptResult(String result) {
-                // Parse the result to check if PIP was successful
-                boolean pipSuccess = "true".equals(result) || "success".equals(result);
+                TabUtils.openUrlInNewTab(false, previousUrl);
+                // // Parse the result to check if PIP was successful
+                // boolean pipSuccess = "true".equals(result) || "success".equals(result);
                 
-                if (pipSuccess) {
-                    // PIP started successfully, now open new tab with previous URL
-                    TabUtils.openUrlInNewTab(false, previousUrl);
-                } else {
-                    TabUtils.openUrlInNewTab(false, previousUrl);
-                    // PIP failed, fallback to default back behavior
-                    Log.w("BraveActivity", "PIP failed, falling back to default back behavior");
-                    // performDefaultBackPress();
-                }
+                // if (pipSuccess) {
+                //     // PIP started successfully, now open new tab with previous URL
+                //     TabUtils.openUrlInNewTab(false, previousUrl);
+                // } else {
+                //     TabUtils.openUrlInNewTab(false, previousUrl);
+                //     // PIP failed, fallback to default back behavior
+                //     Log.w("BraveActivity", "PIP failed, falling back to default back behavior");
+                //     // performDefaultBackPress();
+                // }
             }
         });
     }
