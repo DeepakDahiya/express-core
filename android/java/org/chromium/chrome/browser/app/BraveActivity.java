@@ -267,6 +267,9 @@ import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.chrome.browser.util.TabUtils;
 
+import org.chromium.content_public.browser.WebContentsObserver;
+import org.chromium.content_public.browser.NavigationHandle;
+
 /**
  * Brave's extension for ChromeActivity
  */
@@ -318,6 +321,7 @@ public abstract class BraveActivity extends ChromeActivity
     private static final String YOUTUBE_WATCH_PATTERN = "youtube.com/watch";
     private OnBackPressedCallback mYouTubeBackPressedCallback;
     private boolean mIsCallbackSetup = false;
+    private WebContentsObserver mWebContentsObserver;
 
     /**
      * Settings for sending local notification reminders.
@@ -452,7 +456,12 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
-        setupYouTubeBackButtonHandler();
+        if (!mIsCallbackSetup) {
+            setupYouTubeBackButtonHandler();
+        }
+
+        // Safe update with null check
+        updateBackCallbackState();
     }
 
     private void setupYouTubeBackButtonHandler() {
@@ -460,28 +469,70 @@ public abstract class BraveActivity extends ChromeActivity
             return; // Already setup
         }
         try {
-        Log.e("Browser Express", "Setting up YouTube back button handler");
-        mYouTubeBackPressedCallback = new OnBackPressedCallback(false) {
-            @Override
-            public void handleOnBackPressed() {
-                handleYouTubeBackPress();
-            }
-        };
-        
-        getOnBackPressedDispatcher().addCallback(this, mYouTubeBackPressedCallback);
-        
-        // Update callback state when tab changes
-        if (getTabModelSelector() != null) {
-            getTabModelSelector().addObserver(new TabModelSelectorObserver() {
+            Log.e("Browser Express", "Setting up YouTube back button handler");
+            mYouTubeBackPressedCallback = new OnBackPressedCallback(false) {
                 @Override
-                public void onChange() {
-                    updateBackCallbackState();
+                public void handleOnBackPressed() {
+                    handleYouTubeBackPress();
                 }
-            });
-        }
-        mIsCallbackSetup = true;
+            };
+            
+            getOnBackPressedDispatcher().addCallback(this, mYouTubeBackPressedCallback);
+            
+            // Update callback state when tab changes
+            if (getTabModelSelector() != null) {
+                getTabModelSelector().addObserver(new TabModelSelectorObserver() {
+                    @Override
+                    public void onChange() {
+                        updateBackCallbackState();
+                        setupWebContentsObserver(); // Setup observer for new tab
+                    }
+                    
+                    @Override
+                    public void onNewTabCreated(Tab tab, int creationState) {
+                        updateBackCallbackState();
+                        setupWebContentsObserver(); // Setup observer for new tab
+                    }
+                });
+            }
+            
+            // Setup observer for current tab
+            setupWebContentsObserver();
+            
+            mIsCallbackSetup = true;
         } catch (Exception e) {
             Log.e("BraveActivity", "Error setting up YouTube back button handler", e);
+        }
+    }
+
+    private void setupWebContentsObserver() {
+        // Remove existing observer
+        if (mWebContentsObserver != null) {
+            mWebContentsObserver = null;
+        }
+        
+        Tab currentTab = getActivityTab();
+        if (currentTab != null && currentTab.getWebContents() != null) {
+            Log.e("Browser Express", "Setting up WebContents observer for tab");
+            mWebContentsObserver = new WebContentsObserver(currentTab.getWebContents()) {
+                @Override
+                public void didFinishNavigation(NavigationHandle navigation) {
+                    if (navigation.isInPrimaryMainFrame()) {
+                        Log.e("Browser Express", "Navigation finished: " + navigation.getUrl());
+                        // Small delay to ensure URL is updated in the tab
+                        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                            updateBackCallbackState();
+                        }, 200);
+                    }
+                }
+                
+                @Override
+                public void didStartNavigation(NavigationHandle navigation) {
+                    if (navigation.isInPrimaryMainFrame()) {
+                        Log.e("Browser Express", "Navigation started: " + navigation.getUrl());
+                    }
+                }
+            };
         }
     }
 
@@ -514,7 +565,7 @@ public abstract class BraveActivity extends ChromeActivity
             Log.e("BraveActivity", "Error updating back callback state", e);
         }
     }
-    
+
     private boolean isYouTubeWatchPage(String url) {
         return url != null && url.contains(YOUTUBE_WATCH_PATTERN);
     }
@@ -563,12 +614,17 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void executePIPAndNewTabFlow(Tab currentTab, String previousUrl) {
+        Log.e("Browser Express", "Executing PIP and new tab flow");
+        
         // First, try to start PIP for the current video
         String startPIPScript = "(" + getStartPIPScript() + ")()";
         
         currentTab.getWebContents().evaluateJavaScript(startPIPScript, new JavaScriptCallback() {
             @Override
             public void handleJavaScriptResult(String result) {
+                Log.e("Browser Express", "PIP script result: " + result);
+                
+                // Add a small delay to ensure PIP has time to start
                 new Handler(Looper.getMainLooper()).postDelayed(() -> {
                     Log.e("Browser Express", "Opening new tab with URL: " + previousUrl);
                     TabUtils.openUrlInNewTab(false, previousUrl);
@@ -607,14 +663,51 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void performDefaultBackPress() {
-        // Disable our custom callback temporarily and trigger default back behavior
-        mYouTubeBackPressedCallback.setEnabled(false);
-        getOnBackPressedDispatcher().onBackPressed();
+        try {
+            // Disable our custom callback temporarily and trigger default back behavior
+            if (mYouTubeBackPressedCallback != null) {
+                mYouTubeBackPressedCallback.setEnabled(false);
+            }
+            getOnBackPressedDispatcher().onBackPressed();
+            
+            // Re-enable our callback after a short delay
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                updateBackCallbackState();
+            }, 100);
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Error performing default back press", e);
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         
-        // Re-enable our callback after a short delay
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
-            updateBackCallbackState();
-        }, 100);
+        // Ensure callback is setup before updating state
+        if (!mIsCallbackSetup) {
+            setupYouTubeBackButtonHandler();
+        }
+        
+        // Safe update with null check
+        updateBackCallbackState();
+    }
+
+    @Override
+    protected void onDestroy() {
+        try {
+            // Clean up WebContents observer
+            if (mWebContentsObserver != null) {
+                mWebContentsObserver = null;
+            }
+            
+            if (mYouTubeBackPressedCallback != null) {
+                mYouTubeBackPressedCallback.remove();
+                mYouTubeBackPressedCallback = null;
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Error cleaning up callback", e);
+        }
+        super.onDestroy();
     }
 
     @Override
@@ -714,8 +807,18 @@ public abstract class BraveActivity extends ChromeActivity
         cleanUpWalletNativeServices();
         cleanUpMiscAndroidMetrics();
 
-        if (mYouTubeBackPressedCallback != null) {
-            mYouTubeBackPressedCallback.remove();
+        try {
+            // Clean up WebContents observer
+            if (mWebContentsObserver != null) {
+                mWebContentsObserver = null;
+            }
+            
+            if (mYouTubeBackPressedCallback != null) {
+                mYouTubeBackPressedCallback.remove();
+                mYouTubeBackPressedCallback = null; 
+            }
+        } catch (Exception e) {
+            Log.e("BraveActivity", "Error cleaning up callback", e);
         }
     }
 
