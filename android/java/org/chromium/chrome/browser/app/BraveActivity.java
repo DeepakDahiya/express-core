@@ -558,31 +558,28 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private String getStartPIPScript() {
-        return "
-            function() {
-                try {
-                    const videoElement = document.querySelector('video');
-                    if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {
-                        if (!videoElement.paused) {
-                            videoElement.requestPictureInPicture()
-                                .then(() => {
-                                    console.log('PIP started successfully');
-                                    return 'true';
-                                })
-                                .catch(err => {
-                                    console.warn('PIP failed:', err);
-                                    return 'false';
-                                });
-                            return 'true';
-                        }
-                    }
-                    return 'false';
-                } catch (e) {
-                    console.error('Error starting PIP:', e);
-                    return 'false';
-                }
-            }
-        ";
+        return "function() {\n"
+            + "    try {\n"
+            + "        const videoElement = document.querySelector('video');\n"
+            + "        if (videoElement && typeof videoElement.requestPictureInPicture === 'function') {\n"
+            + "            if (!videoElement.paused) {\n"
+            + "                return videoElement.requestPictureInPicture()\n"
+            + "                    .then(() => {\n"
+            + "                        console.log('PIP started successfully');\n"
+            + "                        return 'true';\n"
+            + "                    })\n"
+            + "                    .catch(err => {\n"
+            + "                        console.warn('PIP failed:', err);\n"
+            + "                        return 'false';\n"
+            + "                    });\n"
+            + "            }\n"
+            + "        }\n"
+            + "        return 'false';\n"
+            + "    } catch (e) {\n"
+            + "        console.error('Error starting PIP:', e);\n"
+            + "        return 'false';\n"
+            + "    }\n"
+            + "}";
     }
 
     private void openNewTabWithUrl(String url) {
