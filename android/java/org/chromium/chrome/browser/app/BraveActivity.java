@@ -642,7 +642,8 @@ public abstract class BraveActivity extends ChromeActivity
                     Log.e("Browser Express", "Opening new tab with URL: " + previousUrl);
                     
                     // Create tab and track it
-                    Tab newTab = TabUtils.openUrlInNewTab(false, previousUrl);
+                    TabUtils.openUrlInNewTab(false, previousUrl);
+                    Tab newTab = getActivityTab();
                     if (newTab != null) {
                         mOurCreatedTabs.add(newTab.getId());
                         Log.e("Browser Express", "Tracking our created tab: " + newTab.getId());
@@ -703,7 +704,7 @@ public abstract class BraveActivity extends ChromeActivity
             TabModel tabModel = getTabModelSelector().getCurrentModel();
             
             // Remove any tab IDs that no longer exist
-            mOurCreatedTabs.removeIf(tabId -> tabModel.getTabById(tabId) == null);
+            mOurCreatedTabs.removeIf(tabId -> TabModelUtils.getTabById(tabModel, tabId) == null);
             
             Log.e("Browser Express", "Our tracked tabs count: " + mOurCreatedTabs.size());
             
@@ -712,7 +713,7 @@ public abstract class BraveActivity extends ChromeActivity
                 
                 // Close oldest of OUR tabs (except current tab)
                 for (Integer tabId : new ArrayList<>(mOurCreatedTabs)) {
-                    Tab tab = tabModel.getTabById(tabId);
+                    Tab tab = TabModelUtils.getTabById(tabModel, tabId);
                     if (tab != null && tab != currentTab) {
                         Log.e("Browser Express", "Closing our created tab: " + tab.getUrl().getSpec());
                         tabModel.closeTab(tab);
