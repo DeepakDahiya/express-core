@@ -226,7 +226,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
             } catch (BraveActivity.BraveActivityNotFoundException e) {
-            } catch (NameNotFoundException e) {
             } catch (JSONException e) {
                 Log.e("Express Browser Access Token", e.getMessage());
             }catch(Exception ex){
