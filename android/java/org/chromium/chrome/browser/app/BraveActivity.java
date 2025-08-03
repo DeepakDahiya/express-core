@@ -3112,7 +3112,7 @@ public abstract class BraveActivity extends ChromeActivity
             }
         }
         
-        private String getCurrentAppVersion() {
+        public String getCurrentAppVersion() {
             try {
                 PackageInfo packageInfo = getPackageManager()
                     .getPackageInfo(getPackageName(), 0);

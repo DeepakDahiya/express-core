@@ -814,6 +814,22 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
+        private void sendEventToPostHog(String event, String accessToken, String pInfo, JSONObject payload) {
+            try {
+                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);    
+                if (decodedAccessTokenObj != null) {
+                    String countryCode = Locale.getDefault().getCountry();
+                    payload.put("country_code", countryCode);
+                    payload.put("app_version", pInfo);
+                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                        new PostHogUtil.PostHogWorkerTask(event, decodedAccessTokenObj.getString("_id"), payload);
+                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+            } catch (JSONException e) {
+                Log.e("TokenHandler", "Error decoding new access token", e);
+            }
+        }
+
         private JSONObject getDecodedToken(String accessToken){
             if (accessToken == null || accessToken.isEmpty()) return null;
             try{
@@ -851,22 +867,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
             viewer.show(mParentFragment.getChildFragmentManager(), MediaViewerFragment.class.getSimpleName());
-        }
-    }
-
-    private void sendEventToPostHog(String event, String accessToken, String pInfo, JSONObject payload) {
-        try {
-            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);    
-            if (decodedAccessTokenObj != null) {
-                String countryCode = Locale.getDefault().getCountry();
-                payload.put("country_code", countryCode);
-                payload.put("app_version", pInfo);
-                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                    new PostHogUtil.PostHogWorkerTask(event, decodedAccessTokenObj.getString("_id"), payload);
-                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
-        } catch (JSONException e) {
-            Log.e("TokenHandler", "Error decoding new access token", e);
         }
     }
 

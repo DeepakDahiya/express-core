@@ -287,7 +287,7 @@ public class ReplyListFragment extends Fragment {
                             if (content.length() > 0 || mediaUri != null) {
                                 String countryCode = Locale.getDefault().getCountry();
                                 PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
-                                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                                 JSONObject payload = new JSONObject();
                                 payload.put("country_code", countryCode);
                                 payload.put("app_version", pInfo.versionName);
