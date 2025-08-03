@@ -154,7 +154,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                     activity.openBrowserExpressEditProfileSettings();
                 });
 
-                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                PackageInfo pInfo = activity.getCurrentAppVersion();
                 mAppVersionText.setText(pInfo.versionName);
 
                 Context context = ContextUtils.getApplicationContext();

@@ -168,7 +168,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
                 String countryCode = Locale.getDefault().getCountry();
-                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                PackageInfo pInfo = activity.getCurrentAppVersion();
                 JSONObject payload = new JSONObject();
                 payload.put("email", email);
                 payload.put("country_code", countryCode);

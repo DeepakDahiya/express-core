@@ -861,7 +861,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);    
                 if (decodedAccessTokenObj != null) {
                     String countryCode = Locale.getDefault().getCountry();
-                    PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                    PackageInfo pInfo = activity.getCurrentAppVersion();
                     JSONObject payload = new JSONObject();
                     payload.put("post_id", postId);
                     payload.put("country_code", countryCode);

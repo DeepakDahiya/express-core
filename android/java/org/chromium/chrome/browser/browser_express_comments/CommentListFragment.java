@@ -334,7 +334,7 @@ public class CommentListFragment extends Fragment {
                                 }
 
                                 String countryCode = Locale.getDefault().getCountry();
-                                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                                PackageInfo pInfo = activity.getCurrentAppVersion();
                                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                                 JSONObject payload = new JSONObject();
                                 payload.put("country_code", countryCode);
