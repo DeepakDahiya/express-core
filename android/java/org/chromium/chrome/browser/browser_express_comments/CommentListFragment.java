@@ -344,16 +344,15 @@ public class CommentListFragment extends Fragment {
                                     payload.put("type", pType);
                                     payload.put("url", mUrl);
                                     payload.put("post_id", pId);
+                                    if (mediaUri != null) {
+                                        payload.put("media_type", mediaType);
+                                    }
+
+                                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.COMMENTED, decodedAccessTokenObj.getString("_id"), payload);
+                                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
                                 } catch (JSONException e) {
                                 }
-                                
-                                if (mediaUri != null) {
-                                    payload.put("media_type", mediaType);
-                                }
-
-                                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.COMMENTED, decodedAccessTokenObj.getString("_id"), payload);
-                                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                                 Log.e("Express Browser Add Comment", "Content: " + content + ", Type: " + pType + ", URL: " + mUrl + ", Post ID: " + pId + ", Media URI: " + mediaUri + ", Media Type: " + mediaType);
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
