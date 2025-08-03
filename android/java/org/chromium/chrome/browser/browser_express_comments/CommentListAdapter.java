@@ -78,6 +78,9 @@ import com.bumptech.glide.request.transition.Transition;
 import java.util.concurrent.Executor;
 import androidx.annotation.Nullable;
 import android.graphics.Rect;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+import android.content.pm.PackageInfo;
 
 public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.CommentHolder> {
     private static final int VIEW_TYPE_TOP_COMMENT = 1;
@@ -428,7 +431,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                 View.OnClickListener postClickListener = v -> {
                     if (activity != null) { // Check activity again
-                         activity.showCommentsBottomSheetFromPost(comment.getPostParent(), comment.getPostUsername(), comment.getPostContent(), comment.getPostAvatarUrl(), false);
+                        JSONObject payload = new JSONObject();
+                        payload.put("comment_id", comment.getId());
+                        payload.put("post_id", comment.getPostParent());
+                        String accessToken = activity.getAccessToken();
+                        sendEventToPostHog(PostHogEventKeys.FEED_CLICKED_ON, accessToken, payload);
+
+                        activity.showCommentsBottomSheetFromPost(comment.getPostParent(), comment.getPostUsername(), comment.getPostContent(), comment.getPostAvatarUrl(), false);
                     }
                 };
                 usernameText.setOnClickListener(postClickListener);
@@ -496,9 +505,15 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                         mParentFragment.showKeyboardWithFocus();
                     }
 
+                    JSONObject payload = new JSONObject();
+                    payload.put("comment_id", comment.getId());
+                    String accessToken = activity.getAccessToken();
+
                     if(mIsReplyAdapter){
+                        sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLY2REPLY, accessToken, payload);
                         mParentFragment.openRepliesToReply(comment.getId());
                     } else if (!mIsReplyToReplyAdapter){ // This condition was: !mIsReplyAdapter && !mIsReplyToReplyAdapter
+                        sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLIES, accessToken, payload);
                         mParentFragment.openReplies(comment.getId());
                     }
                 });
@@ -508,6 +523,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             if(mShareButton != null){
                 mShareButton.setOnClickListener(v -> {
                     if (activity == null) return;
+
+                    JSONObject payload = new JSONObject();
+                    payload.put("comment_id", comment.getId());
+                    String accessToken = activity.getAccessToken();
+                    sendEventToPostHog(PostHogEventKeys.COMMENT_REPLY_SHARE_CLICKED, accessToken, payload);
+
                     String link = "https://browser.express/view?id=" + comment.getId();
                     String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it's where everyone’s talking about everything, nonstop.";
                     Intent sharingIntent = new Intent(Intent.ACTION_SEND);
@@ -550,6 +571,9 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     mUpvoteButton.setClickable(false); // Prevent multi-click
                     mDownvoteButton.setClickable(false);
 
+                    JSONObject payload = new JSONObject();
+                    payload.put("comment_id", comment.getId());
+                    sendEventToPostHog(PostHogEventKeys.UPVOTE_GIVEN, accessToken, payload);
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                         new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
@@ -613,6 +637,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     voteCountText.setText(formatNumberCompact(finalVote));
                     mUpvoteButton.setClickable(false);
                     mDownvoteButton.setClickable(false);
+
+                    JSONObject payload = new JSONObject();
+                    payload.put("comment_id", comment.getId());
+                    sendEventToPostHog(PostHogEventKeys.DOWNVOTE_GIVEN, accessToken, payload);
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                         new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
@@ -823,6 +851,23 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
             MediaViewerFragment viewer = MediaViewerFragment.newInstance(mediaUri, mediaType, false);
             viewer.show(mParentFragment.getChildFragmentManager(), MediaViewerFragment.class.getSimpleName());
+        }
+    }
+
+    private void sendEventToPostHog(String event, String accessToken, JSONObject payload) {
+        try {
+            JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);    
+            if (decodedAccessTokenObj != null) {
+                String countryCode = Locale.getDefault().getCountry();
+                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                payload.put("country_code", countryCode);
+                payload.put("app_version", pInfo.versionName);
+                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                    new PostHogUtil.PostHogWorkerTask(event, decodedAccessTokenObj.getString("_id"), payload);
+                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            }
+        } catch (JSONException e) {
+            Log.e("TokenHandler", "Error decoding new access token", e);
         }
     }
 

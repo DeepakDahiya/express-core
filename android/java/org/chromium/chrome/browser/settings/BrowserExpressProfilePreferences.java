@@ -66,6 +66,8 @@ import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 
 import java.util.List;
+import java.util.Locale;
+import android.content.pm.PackageInfo;
 
 import org.chromium.chrome.browser.util.TabUtils;
 
@@ -141,16 +143,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             // mLikesReceivedText.setText(lc);
             // mLikesGivenText.setText(gc);
 
-            mBtnYoutubePremium.setOnClickListener(view2 -> {
-                if (mActivity != null || getActivity() != null) {
-                    TabUtils.openUrlInSameTab("https://m.youtube.com");
-                    Intent intent = new Intent(mActivity != null ? mActivity : getActivity(), ChromeTabbedActivity.class);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                    intent.setAction(Intent.ACTION_VIEW);
-                    startActivity(intent);
-                }
-            });
-
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
 
@@ -175,6 +167,24 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String accessToken = activity.getAccessToken();
                 JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
+                mBtnYoutubePremium.setOnClickListener(view2 -> {
+                    if (mActivity != null || getActivity() != null) {
+                        String countryCode = Locale.getDefault().getCountry();
+                        JSONObject payload = new JSONObject();
+                        payload.put("country_code", countryCode);
+                        payload.put("app_version", pInfo.versionName);
+                        PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                            new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
+                        postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                        TabUtils.openUrlInSameTab("https://m.youtube.com");
+                        Intent intent = new Intent(mActivity != null ? mActivity : getActivity(), ChromeTabbedActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                        intent.setAction(Intent.ACTION_VIEW);
+                        startActivity(intent);
+                    }
+                });
+
                 if (views != null) mViewsText.setText(views);
                 if (likesGiven != null) mLikesGivenText.setText(likesGiven);
                 if (likesReceived != null) mLikesReceivedText.setText(likesReceived);
@@ -193,6 +203,14 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                     mFullNameText.setText(""); // Set default or placeholder
                     Log.e("Express Browser", "Name not found in token.");
                 }
+
+                String countryCode = Locale.getDefault().getCountry();
+                JSONObject payload = new JSONObject();
+                payload.put("country_code", countryCode);
+                payload.put("app_version", pInfo.versionName);
+                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.PROFILE_VIEWED, decodedAccessTokenObj.getString("_id"), payload);
+                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
 
                 Log.e("Express Browser", "GETTING USER PROFILE 1");
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask =

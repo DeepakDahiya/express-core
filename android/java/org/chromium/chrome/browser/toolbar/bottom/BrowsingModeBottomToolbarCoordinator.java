@@ -45,6 +45,11 @@ import android.widget.Button;
 import android.widget.ImageButton;
 import android.view.HapticFeedbackConstants;
 import org.chromium.chrome.browser.util.TabUtils;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+import android.content.pm.PackageInfo;
+import java.io.UnsupportedEncodingException;
+import org.json.JSONException;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
@@ -144,9 +149,34 @@ public class BrowsingModeBottomToolbarCoordinator {
                 TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
+                    String t = activity.getActivityTab().getUrl().getSpec();
+
+                    String accessToken = activity.getAccessToken();
+                    String[] split_string = accessToken.split("\\.");
+                    String base64EncodedHeader = split_string[0];
+                    String base64EncodedBody = split_string[1];
+                    String base64EncodedSignature = split_string[2];
+
+                    byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
+                    String decodedString = new String(data, "UTF-8");
+                    JSONObject decodedAccessTokenObj = new JSONObject(decodedString.toString());
+
+                    String countryCode = Locale.getDefault().getCountry();
+                    PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                    JSONObject payload = new JSONObject();
+                    payload.put("country_code", countryCode);
+                    payload.put("app_version", pInfo.versionName);
+                    payload.put("type", "page");
+                    payload.put("url", t);
+
+                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.BOTTOM_SHEET_CLICKED, decodedAccessTokenObj.getString("_id"), payload);
+                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
                     activity.showCommentsBottomSheet();
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    Log.e(TAG, "BookmarkButton click " + e);
+                } catch(JSONException e){
+                }catch(UnsupportedEncodingException e){
                 }
             };
             mCommentsButton.setOnClickListener(commentsClickHandler);

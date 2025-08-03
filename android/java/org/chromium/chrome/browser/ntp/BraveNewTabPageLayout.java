@@ -145,6 +145,9 @@ import org.json.JSONObject;
 import android.widget.ImageButton;
 import java.io.UnsupportedEncodingException;
 import android.util.Base64;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+import android.content.pm.PackageInfo;
 
 public class BraveNewTabPageLayout
         extends NewTabPageLayout implements ConnectionErrorHandler, OnBraveNtpListener {
@@ -1109,6 +1112,31 @@ public class BraveNewTabPageLayout
 
         // Click listener to open website
         tileView.setOnClickListener(v -> {
+            if (topSite.getDestinationUrl().contains("m.youtube.com")) {
+                try {
+                    BraveActivity activity = BraveActivity.getBraveActivity();
+                    if(activity == null){
+                        return;
+                    }
+                    String accessToken = activity.getAccessToken();
+
+                    if (accessToken != null) {
+                        JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+                        PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                        String countryCode = Locale.getDefault().getCountry();
+                        JSONObject payload = new JSONObject();
+                        payload.put("country_code", countryCode);
+                        payload.put("app_version", pInfo.versionName);
+                        PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                            new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_HOME, decodedAccessTokenObj.getString("_id"), payload);
+                        postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
+                } catch (BraveActivity.BraveActivityNotFoundException e) {
+                    Log.e(TAG, "maybeShowWalletPanel " + e);
+                } catch (JSONException e) {
+                    Log.e("Express Browser Access Token", e.getMessage());
+                }
+            }
             TabUtils.openUrlInSameTab(topSite.getDestinationUrl());
         });
 

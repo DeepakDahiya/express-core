@@ -60,6 +60,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.net.Uri;
 import android.widget.FrameLayout;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+import android.content.pm.PackageInfo;
 
 public class ReplyListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -282,6 +285,24 @@ public class ReplyListFragment extends Fragment {
                             }
 
                             if (content.length() > 0 || mediaUri != null) {
+                                String countryCode = Locale.getDefault().getCountry();
+                                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                                JSONObject payload = new JSONObject();
+                                payload.put("country_code", countryCode);
+                                payload.put("app_version", pInfo.versionName);
+                                payload.put("content", content);
+                                payload.put("type", "comment");
+                                payload.put("url", mUrl);
+                                payload.put("comment_id", mCommentId);
+                                if (mediaUri != null) {
+                                    payload.put("media_type", mediaType);
+                                }
+
+                                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.COMMENTED, decodedAccessTokenObj.getString("_id"), payload);
+                                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
                                             content, "comment", mUrl, mCommentId, mediaUri, mediaType, accessToken, addCommentCallback);

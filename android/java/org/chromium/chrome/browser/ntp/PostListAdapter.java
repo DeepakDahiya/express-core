@@ -73,6 +73,11 @@ import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.local_database.TopSiteTable;
 import static org.chromium.ui.base.ViewUtils.dpToPx;
 import org.chromium.ui.base.ViewUtils;
+import android.util.Base64;
+import java.io.UnsupportedEncodingException;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+import android.content.pm.PackageInfo;
 
 public class PostListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_HEADER = 0;
@@ -396,6 +401,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
             } catch (BraveActivity.BraveActivityNotFoundException e) {
             }
 
+            String accessToken = activity.getAccessToken();
+
             stopAutoScroll();
 
             try{
@@ -452,6 +459,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                         activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                     }
                 });
@@ -461,6 +469,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     public void onClick(View v) {
                         LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                         layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                        sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                         activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                     }
                 });
@@ -600,6 +609,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                             activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                         }
                     }
@@ -613,6 +623,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                             activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                         }
                     }
@@ -626,6 +637,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                             activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                         }
                     }
@@ -640,6 +652,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         }else{
                             LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                             layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                            sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                             activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, true);
                         }
                     }
@@ -659,6 +672,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
                     mCommentButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
                     LinearLayoutManager layoutManager = (LinearLayoutManager) mTopPostRecycler.getLayoutManager();
                     layoutManager.scrollToPositionWithOffset(myPosition, 0);
+                    sendEventToPostHog(PostHogEventKeys.POST_CLICKED_ON, accessToken, post.getId());
                     activity.showCommentsBottomSheetFromPost(post.getId(), username, content, profilePicUrl, false);
                 }
             });
@@ -840,6 +854,49 @@ public class PostListAdapter extends RecyclerView.Adapter {
             if (twitterPostLayout != null) twitterPostLayout.setVisibility(View.GONE);
             if (twitterMediaCard != null) twitterMediaCard.setVisibility(View.GONE);
             if (cardView != null) cardView.setVisibility(View.VISIBLE);
+        }
+
+        private void sendEventToPostHog(String event, String accessToken, String postId) {
+            try {
+                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);    
+                if (decodedAccessTokenObj != null) {
+                    String countryCode = Locale.getDefault().getCountry();
+                    PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                    JSONObject payload = new JSONObject();
+                    payload.put("post_id", postId);
+                    payload.put("country_code", countryCode);
+                    payload.put("app_version", pInfo.versionName);
+                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                        new PostHogUtil.PostHogWorkerTask(event, decodedAccessTokenObj.getString("_id"), payload);
+                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                }
+            } catch (JSONException e) {
+                Log.e("TokenHandler", "Error decoding new access token", e);
+            }
+        }
+
+        private JSONObject getDecodedToken(String accessToken){
+            if (accessToken == null || accessToken.isEmpty()) return null;
+            try{
+                String[] split_string = accessToken.split("\\.");
+                if (split_string.length < 2) { // JWT must have at least header and payload
+                    Log.e("TokenDecoder", "Invalid JWT format");
+                    return null;
+                }
+                String base64EncodedBody = split_string[1];
+                byte[] data = Base64.decode(base64EncodedBody, Base64.URL_SAFE | Base64.NO_PADDING | Base64.NO_WRAP); // Use URL_SAFE for JWTs
+                String decodedString = new String(data, "UTF-8");
+                return new JSONObject(decodedString);
+            }catch(JSONException e){
+                Log.e("TokenDecoder", "JSON parsing error in token: " + e.getMessage());
+                return null;
+            }catch(UnsupportedEncodingException e){
+                Log.e("TokenDecoder", "UTF-8 encoding not supported: " + e.getMessage());
+                return null;
+            } catch(IllegalArgumentException e) {
+                Log.e("TokenDecoder", "Base64 decoding error: " + e.getMessage());
+                return null;
+            }
         }
 
         private void stopAutoScroll() {

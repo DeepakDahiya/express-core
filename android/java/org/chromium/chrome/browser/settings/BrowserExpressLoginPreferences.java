@@ -55,6 +55,9 @@ import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 
 import java.util.List;
+import java.util.Locale;
+import org.json.JSONObject;
+import android.content.pm.PackageInfo;
 
 public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
@@ -161,6 +164,20 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
             mBtnSignIn.setText(R.string.browser_express_loading_title);
 
             Utils.hideKeyboard(getActivity());
+
+            try {
+                BraveActivity activity = BraveActivity.getBraveActivity();
+                String countryCode = Locale.getDefault().getCountry();
+                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                JSONObject payload = new JSONObject();
+                payload.put("email", email);
+                payload.put("country_code", countryCode);
+                payload.put("app_version", pInfo.versionName);
+                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.LOGIN, "NEW_USER", payload);
+                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+            }
 
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
                     new BrowserExpressLoginPreferencesUtil.LoginWorkerTask(

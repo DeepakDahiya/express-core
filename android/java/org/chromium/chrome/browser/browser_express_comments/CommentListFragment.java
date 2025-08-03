@@ -60,6 +60,9 @@ import android.os.Handler;
 import android.os.Looper;
 import android.net.Uri;
 import android.widget.LinearLayout;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
+import android.content.pm.PackageInfo;
 
 public class CommentListFragment extends Fragment {
     public static final String IS_FROM_MENU = "is_from_menu";
@@ -329,6 +332,25 @@ public class CommentListFragment extends Fragment {
                                     pType = "post";
                                     pId = mPostId;
                                 }
+
+                                String countryCode = Locale.getDefault().getCountry();
+                                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                                JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
+                                JSONObject payload = new JSONObject();
+                                payload.put("country_code", countryCode);
+                                payload.put("app_version", pInfo.versionName);
+                                payload.put("content", content);
+                                payload.put("type", pType);
+                                payload.put("url", mUrl);
+                                payload.put("post_id", pId);
+                                if (mediaUri != null) {
+                                    payload.put("media_type", mediaType);
+                                }
+
+                                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.COMMENTED, decodedAccessTokenObj.getString("_id"), payload);
+                                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
                                 Log.e("Express Browser Add Comment", "Content: " + content + ", Type: " + pType + ", URL: " + mUrl + ", Post ID: " + pId + ", Media URI: " + mediaUri + ", Media Type: " + mediaType);
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
