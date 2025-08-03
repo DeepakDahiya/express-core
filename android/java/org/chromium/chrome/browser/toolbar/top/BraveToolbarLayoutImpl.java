@@ -177,6 +177,8 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesUtil;
 import org.chromium.chrome.browser.toolbar.BraveHomeButton;
+import org.chromium.chrome.browser.settings.PostHogEventKeys;
+import org.chromium.chrome.browser.settings.PostHogUtil;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
