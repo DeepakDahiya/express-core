@@ -171,11 +171,15 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                     if (mActivity != null || getActivity() != null) {
                         String countryCode = Locale.getDefault().getCountry();
                         JSONObject payload = new JSONObject();
-                        payload.put("country_code", countryCode);
-                        payload.put("app_version", pInfo);
-                        PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                            new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
-                        postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        try {
+                            payload.put("country_code", countryCode);
+                            payload.put("app_version", pInfo);
+                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
+                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        } catch (JSONException e) {
+                            Log.e("Express Browser", "Error creating JSON payload", e);
+                        }
 
                         TabUtils.openUrlInSameTab("https://m.youtube.com");
                         Intent intent = new Intent(mActivity != null ? mActivity : getActivity(), ChromeTabbedActivity.class);
@@ -206,11 +210,15 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
 
                 String countryCode = Locale.getDefault().getCountry();
                 JSONObject payload = new JSONObject();
-                payload.put("country_code", countryCode);
-                payload.put("app_version", pInfo);
-                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.PROFILE_VIEWED, decodedAccessTokenObj.getString("_id"), payload);
-                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                try {
+                    payload.put("country_code", countryCode);
+                    payload.put("app_version", pInfo);
+                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.PROFILE_VIEWED, decodedAccessTokenObj.getString("_id"), payload);
+                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                } catch (JSONException e) {
+                    Log.e("Express Browser", "Error creating JSON payload", e);
+                }
 
                 Log.e("Express Browser", "GETTING USER PROFILE 1");
                 BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask =

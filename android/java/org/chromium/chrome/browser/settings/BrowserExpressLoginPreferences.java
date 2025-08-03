@@ -58,6 +58,7 @@ import java.util.List;
 import java.util.Locale;
 import org.json.JSONObject;
 import android.content.pm.PackageInfo;
+import org.json.JSONException;
 
 public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
@@ -177,6 +178,8 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
                         new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.LOGIN, "NEW_USER", payload);
                 postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             } catch (BraveActivity.BraveActivityNotFoundException e) {
+            } catch (JSONException e) {
+                Log.e("TokenHandler", "Error decoding new access token", e);
             }
 
             BrowserExpressLoginPreferencesUtil.LoginWorkerTask workerTask =
