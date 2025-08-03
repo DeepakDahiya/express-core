@@ -1122,7 +1122,7 @@ public class BraveNewTabPageLayout
 
                     if (accessToken != null) {
                         JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                        PackageInfo pInfo = activity.getCurrentAppVersion();
+                        String pInfo = activity.getCurrentAppVersion();
                         String countryCode = Locale.getDefault().getCountry();
                         JSONObject payload = new JSONObject();
                         payload.put("country_code", countryCode);
