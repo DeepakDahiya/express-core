@@ -2767,6 +2767,17 @@ public abstract class BraveActivity extends ChromeActivity
         return false;
     }
 
+    private String getCurrentAppVersion() {
+        try {
+            PackageInfo packageInfo = getPackageManager()
+                .getPackageInfo(getPackageName(), 0);
+            return packageInfo.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            Log.e("CustomUpdateManager", "Failed to get app version", e);
+            return "1.0.0";
+        }
+    }
+
     @NativeMethods
     interface Natives {
         void restartStatsUpdater();
@@ -3112,7 +3123,7 @@ public abstract class BraveActivity extends ChromeActivity
             }
         }
         
-        public String getCurrentAppVersion() {
+        private String getCurrentAppVersion() {
             try {
                 PackageInfo packageInfo = getPackageManager()
                     .getPackageInfo(getPackageName(), 0);
