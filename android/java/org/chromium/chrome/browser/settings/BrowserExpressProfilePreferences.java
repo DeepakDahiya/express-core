@@ -207,7 +207,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 String countryCode = Locale.getDefault().getCountry();
                 JSONObject payload = new JSONObject();
                 payload.put("country_code", countryCode);
-                payload.put("app_version", pInfo.versionName);
+                payload.put("app_version", pInfo);
                 PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                     new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.PROFILE_VIEWED, decodedAccessTokenObj.getString("_id"), payload);
                 postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
