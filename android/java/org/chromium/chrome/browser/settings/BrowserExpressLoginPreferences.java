@@ -168,11 +168,9 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
-                String countryCode = Locale.getDefault().getCountry();
                 String pInfo = activity.getCurrentAppVersion();
                 JSONObject payload = new JSONObject();
                 payload.put("email", email);
-                payload.put("country_code", countryCode);
                 payload.put("app_version", pInfo);
                 PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                         new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.LOGIN, "NEW_USER", payload);

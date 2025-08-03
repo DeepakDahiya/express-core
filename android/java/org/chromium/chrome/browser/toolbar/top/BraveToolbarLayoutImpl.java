@@ -542,6 +542,16 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
                         String avatar = prefs.getString("avatar_url", null);
                         JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+
+                        if(mUrl.contains(YOUTUBE_DOMAIN)){
+                            String pInfo = activity.getCurrentAppVersion();
+                            JSONObject payload = new JSONObject();
+                            payload.put("app_version", pInfo);
+                            payload.put("url", mUrl);
+                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YOUTUBE_VISITED, decodedAccessTokenObj.getString("_id"), payload);
+                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
                         if (avatar != null) {
                             ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
                         }else{

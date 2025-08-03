@@ -46,4 +46,5 @@ public final class PostHogEventKeys {
         public static final String ACTIVITY_ON_COMMENT_OR_REPLY = "Activity on Comment or Reply";
         public static final String UPVOTE_GIVEN = "Upvote Given"; // DONE
         public static final String DOWNVOTE_GIVEN = "Downvote Given"; // DONE
+        public static final String YOUTUBE_VISITED = "YouTube Visited"; // DONE
 }

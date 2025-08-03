@@ -163,10 +163,8 @@ public class BrowsingModeBottomToolbarCoordinator {
                     String decodedString = new String(data, "UTF-8");
                     JSONObject decodedAccessTokenObj = new JSONObject(decodedString.toString());
 
-                    String countryCode = Locale.getDefault().getCountry();
                     String pInfo = activity.getCurrentAppVersion();
                     JSONObject payload = new JSONObject();
-                    payload.put("country_code", countryCode);
                     payload.put("app_version", pInfo);
                     payload.put("type", "page");
                     payload.put("url", t);

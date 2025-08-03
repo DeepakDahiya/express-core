@@ -333,12 +333,10 @@ public class CommentListFragment extends Fragment {
                                     pId = mPostId;
                                 }
 
-                                String countryCode = Locale.getDefault().getCountry();
                                 String pInfo = activity.getCurrentAppVersion();
                                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                                 JSONObject payload = new JSONObject();
                                 try {
-                                    payload.put("country_code", countryCode);
                                     payload.put("app_version", pInfo);
                                     payload.put("content", content);
                                     payload.put("type", pType);

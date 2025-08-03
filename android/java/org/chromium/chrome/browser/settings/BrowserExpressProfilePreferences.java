@@ -169,10 +169,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
 
                 mBtnYoutubePremium.setOnClickListener(view2 -> {
                     if (mActivity != null || getActivity() != null) {
-                        String countryCode = Locale.getDefault().getCountry();
                         JSONObject payload = new JSONObject();
                         try {
-                            payload.put("country_code", countryCode);
                             payload.put("app_version", pInfo);
                             PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                                 new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_QUICKLINK, decodedAccessTokenObj.getString("_id"), payload);
@@ -208,10 +206,8 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                     Log.e("Express Browser", "Name not found in token.");
                 }
 
-                String countryCode = Locale.getDefault().getCountry();
                 JSONObject payload = new JSONObject();
                 try {
-                    payload.put("country_code", countryCode);
                     payload.put("app_version", pInfo);
                     PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                         new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.PROFILE_VIEWED, decodedAccessTokenObj.getString("_id"), payload);
