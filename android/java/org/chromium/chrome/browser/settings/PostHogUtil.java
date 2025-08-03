@@ -30,7 +30,7 @@ import java.lang.Integer;
 
 public class PostHogUtil {
     private static final String TAG = "Post_Hog_Util";
-    private static final String GET_PROFILE_URL = "https://us.i.posthog.com";
+    private static final String GET_PROFILE_URL = "https://us.i.posthog.com/i/v0/e/";
     private static final String POST_HOG_API_KEY = "phc_Nn8HVrhAeFqo35ymuvUKOKe59RhXnShdushDuyDn3vL";
 
     public static class PostHogWorkerTask extends AsyncTask<Void> {
