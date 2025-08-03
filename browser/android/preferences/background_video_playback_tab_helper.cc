@@ -1063,10 +1063,100 @@ constexpr char16_t kYoutubeInAppPIP[] =
             }, true);
         }
 
+        // Add to your kYoutubeInAppPIP script
+        function handleScreenLockUnlock() {
+            let wasInPiP = false;
+            let pipVideo = null;
+            
+            // Detect when screen might be locking
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && document.pictureInPictureElement) {
+                    wasInPiP = true;
+                    pipVideo = document.pictureInPictureElement;
+                    console.log('Screen locked with PiP active');
+                    
+                    // Keep PiP alive during lock
+                    if (pipVideo && !pipVideo.paused) {
+                        // Force video to continue playing
+                        pipVideo.play().catch(console.error);
+                    }
+                } else if (!document.hidden && wasInPiP && pipVideo) {
+                    console.log('Screen unlocked, restoring PiP');
+                    
+                    // Restore PiP if it was lost
+                    setTimeout(() => {
+                        if (!document.pictureInPictureElement && pipVideo) {
+                            pipVideo.requestPictureInPicture().catch(console.error);
+                        }
+                        wasInPiP = false;
+                        pipVideo = null;
+                    }, 500);
+                }
+            });
+            
+            // Additional wake lock for PiP videos
+            let wakeLock = null;
+            
+            document.addEventListener('enterpictureinpicture', async (event) => {
+                try {
+                    if ('wakeLock' in navigator) {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                        console.log('Wake lock acquired for PiP');
+                    }
+                } catch (err) {
+                    console.warn('Could not acquire wake lock:', err);
+                }
+            });
+            
+            document.addEventListener('leavepictureinpicture', () => {
+                if (wakeLock) {
+                    wakeLock.release();
+                    wakeLock = null;
+                    console.log('Wake lock released');
+                }
+            });
+        }
+
+        // Add to kYoutubePipButton or kYoutubeInAppPIP
+        function enhancePiPPersistence() {
+            let pipCheckInterval = null;
+            let lastPiPVideo = null;
+    
+            document.addEventListener('enterpictureinpicture', (event) => {
+                lastPiPVideo = event.target;
+                
+                // Start monitoring PiP health
+                pipCheckInterval = setInterval(() => {
+                    if (!document.pictureInPictureElement && lastPiPVideo) {
+                        console.log('PiP lost unexpectedly, attempting restore');
+                        
+                        // Try to restore PiP
+                        if (lastPiPVideo.readyState >= 2 && !lastPiPVideo.paused) {
+                            lastPiPVideo.requestPictureInPicture().catch(err => {
+                                console.warn('Failed to restore PiP:', err);
+                            });
+                        }
+                    }
+                }, 2000);
+            });
+            
+            document.addEventListener('leavepictureinpicture', () => {
+                if (pipCheckInterval) {
+                    clearInterval(pipCheckInterval);
+                    pipCheckInterval = null;
+                }
+                lastPiPVideo = null;
+            });
+        }
+
         if (document.readyState === 'loading') {
             document.addEventListener('DOMContentLoaded', setupPIPProtection);
+            document.addEventListener('DOMContentLoaded', handleScreenLockUnlock);
+            document.addEventListener('DOMContentLoaded', enhancePiPPersistence);
         } else {
             setupPIPProtection();
+            handleScreenLockUnlock();
+            enhancePiPPersistence();
         }
     }());
 )";
@@ -1244,7 +1334,17 @@ const char16_t kYoutubePipButton[] =
         const originalAddEventListener = document.addEventListener;
         document.addEventListener = function(type, listener, options) {
             if (type === 'visibilitychange') {
-                return; // Block visibility change events
+                // Don't completely block - handle it smartly
+                const wrappedListener = function(event) {
+                    // Only block if we're in PiP mode
+                    if (document.pictureInPictureElement) {
+                        console.log('Blocking visibility change during PiP');
+                        return;
+                    }
+                    // Otherwise, allow normal handling
+                    return listener.call(this, event);
+                };
+                return originalAddEventListener.call(this, type, wrappedListener, options);
             }
             return originalAddEventListener.call(this, type, listener, options);
         };
