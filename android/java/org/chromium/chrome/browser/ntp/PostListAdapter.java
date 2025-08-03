@@ -861,11 +861,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);    
                 if (decodedAccessTokenObj != null) {
                     String countryCode = Locale.getDefault().getCountry();
-                    PackageInfo pInfo = activity.getCurrentAppVersion();
+                    String pInfo = activity.getCurrentAppVersion();
                     JSONObject payload = new JSONObject();
                     payload.put("post_id", postId);
                     payload.put("country_code", countryCode);
-                    payload.put("app_version", pInfo.versionName);
+                    payload.put("app_version", pInfo);
                     PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                         new PostHogUtil.PostHogWorkerTask(event, decodedAccessTokenObj.getString("_id"), payload);
                     postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
