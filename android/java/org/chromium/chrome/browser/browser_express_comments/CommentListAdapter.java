@@ -432,8 +432,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                 View.OnClickListener postClickListener = v -> {
                     if (activity != null) { // Check activity again
                         JSONObject payload = new JSONObject();
-                        payload.put("comment_id", comment.getId());
-                        payload.put("post_id", comment.getPostParent());
+                        try {
+                            payload.put("comment_id", comment.getId());
+                            payload.put("post_id", comment.getPostParent());
+                        } catch (JSONException e) {
+                        }
                         String accessToken = activity.getAccessToken();
                         sendEventToPostHog(PostHogEventKeys.FEED_CLICKED_ON, accessToken, activity.getCurrentAppVersion(), payload);
 
@@ -506,7 +509,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     }
 
                     JSONObject payload = new JSONObject();
-                    payload.put("comment_id", comment.getId());
+                    try {
+                            payload.put("comment_id", comment.getId());
+                    } catch (JSONException e) {
+                    }
                     String accessToken = activity.getAccessToken();
 
                     if(mIsReplyAdapter){
@@ -525,7 +531,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     if (activity == null) return;
 
                     JSONObject payload = new JSONObject();
-                    payload.put("comment_id", comment.getId());
+                    try {
+                            payload.put("comment_id", comment.getId());
+                    } catch (JSONException e) {
+                    }
                     String accessToken = activity.getAccessToken();
                     sendEventToPostHog(PostHogEventKeys.COMMENT_REPLY_SHARE_CLICKED, accessToken, activity.getCurrentAppVersion(), payload);
 
@@ -572,7 +581,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     mDownvoteButton.setClickable(false);
 
                     JSONObject payload = new JSONObject();
-                    payload.put("comment_id", comment.getId());
+                    try {
+                            payload.put("comment_id", comment.getId());
+                    } catch (JSONException e) {
+                    }
                     sendEventToPostHog(PostHogEventKeys.UPVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(),payload);
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
@@ -639,7 +651,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     mDownvoteButton.setClickable(false);
 
                     JSONObject payload = new JSONObject();
-                    payload.put("comment_id", comment.getId());
+                    try {
+                            payload.put("comment_id", comment.getId());
+                    } catch (JSONException e) {
+                    }
                     sendEventToPostHog(PostHogEventKeys.DOWNVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(),payload);
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
