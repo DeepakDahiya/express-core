@@ -289,19 +289,22 @@ public class ReplyListFragment extends Fragment {
                                 String pInfo = activity.getCurrentAppVersion();
                                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                                 JSONObject payload = new JSONObject();
-                                payload.put("country_code", countryCode);
-                                payload.put("app_version", pInfo);
-                                payload.put("content", content);
-                                payload.put("type", "comment");
-                                payload.put("url", mUrl);
-                                payload.put("comment_id", mCommentId);
-                                if (mediaUri != null) {
-                                    payload.put("media_type", mediaType);
-                                }
+                                try {
+                                    payload.put("country_code", countryCode);
+                                    payload.put("app_version", pInfo);
+                                    payload.put("content", content);
+                                    payload.put("type", "comment");
+                                    payload.put("url", mUrl);
+                                    payload.put("comment_id", mCommentId);
+                                    if (mediaUri != null) {
+                                        payload.put("media_type", mediaType);
+                                    }
 
-                                PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                    new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.COMMENTED, decodedAccessTokenObj.getString("_id"), payload);
-                                postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.COMMENTED, decodedAccessTokenObj.getString("_id"), payload);
+                                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                } catch (JSONException e) {
+                                }
 
                                 BrowserExpressAddCommentUtil.AddCommentWorkerTask workerTask =
                                     new BrowserExpressAddCommentUtil.AddCommentWorkerTask(
