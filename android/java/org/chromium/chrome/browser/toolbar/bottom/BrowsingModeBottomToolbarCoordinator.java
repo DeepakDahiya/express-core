@@ -50,6 +50,8 @@ import org.chromium.chrome.browser.settings.PostHogUtil;
 import android.content.pm.PackageInfo;
 import java.io.UnsupportedEncodingException;
 import org.json.JSONException;
+import android.util.Base64;
+import org.json.JSONObject;
 
 /**
  * The coordinator for the browsing mode bottom toolbar. This class has two primary components,

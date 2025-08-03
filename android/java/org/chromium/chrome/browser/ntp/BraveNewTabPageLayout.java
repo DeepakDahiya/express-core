@@ -1122,11 +1122,11 @@ public class BraveNewTabPageLayout
 
                     if (accessToken != null) {
                         JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                        PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
+                        PackageInfo pInfo = activity.getCurrentAppVersion();
                         String countryCode = Locale.getDefault().getCountry();
                         JSONObject payload = new JSONObject();
                         payload.put("country_code", countryCode);
-                        payload.put("app_version", pInfo.versionName);
+                        payload.put("app_version", pInfo);
                         PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                             new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YTP_PREMIUM_CLICKED_ON_HOME, decodedAccessTokenObj.getString("_id"), payload);
                         postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);

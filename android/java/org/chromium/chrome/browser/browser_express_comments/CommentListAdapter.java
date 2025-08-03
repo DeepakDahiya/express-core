@@ -435,7 +435,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                         payload.put("comment_id", comment.getId());
                         payload.put("post_id", comment.getPostParent());
                         String accessToken = activity.getAccessToken();
-                        sendEventToPostHog(PostHogEventKeys.FEED_CLICKED_ON, accessToken, payload);
+                        sendEventToPostHog(PostHogEventKeys.FEED_CLICKED_ON, accessToken, activity.getCurrentAppVersion(), payload);
 
                         activity.showCommentsBottomSheetFromPost(comment.getPostParent(), comment.getPostUsername(), comment.getPostContent(), comment.getPostAvatarUrl(), false);
                     }
@@ -510,10 +510,10 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     String accessToken = activity.getAccessToken();
 
                     if(mIsReplyAdapter){
-                        sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLY2REPLY, accessToken, payload);
+                        sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLY2REPLY, accessToken, activity.getCurrentAppVersion(), payload);
                         mParentFragment.openRepliesToReply(comment.getId());
                     } else if (!mIsReplyToReplyAdapter){ // This condition was: !mIsReplyAdapter && !mIsReplyToReplyAdapter
-                        sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLIES, accessToken, payload);
+                        sendEventToPostHog(PostHogEventKeys.CLICKED_TO_VIEW_REPLIES, accessToken, activity.getCurrentAppVersion(), payload);
                         mParentFragment.openReplies(comment.getId());
                     }
                 });
@@ -527,7 +527,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                     JSONObject payload = new JSONObject();
                     payload.put("comment_id", comment.getId());
                     String accessToken = activity.getAccessToken();
-                    sendEventToPostHog(PostHogEventKeys.COMMENT_REPLY_SHARE_CLICKED, accessToken, payload);
+                    sendEventToPostHog(PostHogEventKeys.COMMENT_REPLY_SHARE_CLICKED, accessToken, activity.getCurrentAppVersion(), payload);
 
                     String link = "https://browser.express/view?id=" + comment.getId();
                     String message = "People say the craziest stuff! 👀 Check this out 👇\n\n" + link + "\n\n" + "Dive in—it's where everyone’s talking about everything, nonstop.";
@@ -573,7 +573,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                     JSONObject payload = new JSONObject();
                     payload.put("comment_id", comment.getId());
-                    sendEventToPostHog(PostHogEventKeys.UPVOTE_GIVEN, accessToken, payload);
+                    sendEventToPostHog(PostHogEventKeys.UPVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(),payload);
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                         new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
@@ -640,7 +640,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
 
                     JSONObject payload = new JSONObject();
                     payload.put("comment_id", comment.getId());
-                    sendEventToPostHog(PostHogEventKeys.DOWNVOTE_GIVEN, accessToken, payload);
+                    sendEventToPostHog(PostHogEventKeys.DOWNVOTE_GIVEN, accessToken, activity.getCurrentAppVersion(),payload);
 
                     BrowserExpressAddVoteUtil.AddVoteWorkerTask workerTask =
                         new BrowserExpressAddVoteUtil.AddVoteWorkerTask(
@@ -854,14 +854,13 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
     }
 
-    private void sendEventToPostHog(String event, String accessToken, JSONObject payload) {
+    private void sendEventToPostHog(String event, String accessToken, String pInfo, JSONObject payload) {
         try {
-            JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);    
+            JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);    
             if (decodedAccessTokenObj != null) {
                 String countryCode = Locale.getDefault().getCountry();
-                PackageInfo pInfo = activity.getPackageManager().getPackageInfo(activity.getPackageName(), 0);
                 payload.put("country_code", countryCode);
-                payload.put("app_version", pInfo.versionName);
+                payload.put("app_version", pInfo);
                 PostHogUtil.PostHogWorkerTask postHogWorkerTask =
                     new PostHogUtil.PostHogWorkerTask(event, decodedAccessTokenObj.getString("_id"), payload);
                 postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
