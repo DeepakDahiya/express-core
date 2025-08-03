@@ -337,12 +337,16 @@ public class CommentListFragment extends Fragment {
                                 String pInfo = activity.getCurrentAppVersion();
                                 JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
                                 JSONObject payload = new JSONObject();
-                                payload.put("country_code", countryCode);
-                                payload.put("app_version", pInfo);
-                                payload.put("content", content);
-                                payload.put("type", pType);
-                                payload.put("url", mUrl);
-                                payload.put("post_id", pId);
+                                try {
+                                    payload.put("country_code", countryCode);
+                                    payload.put("app_version", pInfo);
+                                    payload.put("content", content);
+                                    payload.put("type", pType);
+                                    payload.put("url", mUrl);
+                                    payload.put("post_id", pId);
+                                } catch (JSONException e) {
+                                }
+                                
                                 if (mediaUri != null) {
                                     payload.put("media_type", mediaType);
                                 }
