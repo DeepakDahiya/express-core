@@ -15,3 +15,10 @@ android_aar_prebuilt("sentry_android_okhttp") {
     ":sentry_android_sdk",
   ]
 }
+
+group("sentry_java") {
+  deps = [
+    ":sentry_android_sdk",
+    ":sentry_android_okhttp",
+  ]
+}
