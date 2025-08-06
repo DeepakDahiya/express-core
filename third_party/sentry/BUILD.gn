@@ -1,14 +1,14 @@
 import("//build/config/android/rules.gni")
 
-java_prebuilt("sentry_android_sdk") {
+java_prebuilt("sentry_android_java") {
   jar_path = "sentry-android-core-7.9.0.jar"
   supports_android = true
 }
 
-java_prebuilt("sentry_android_okhttp") {
+java_prebuilt("sentry_android_okhttp_java") {
   jar_path = "sentry-android-okhttp-7.9.0.jar"
   supports_android = true
   deps = [
-    ":sentry_android_sdk",
+    ":sentry_android_java",
   ]
 }
