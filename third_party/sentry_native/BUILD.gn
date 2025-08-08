@@ -9,6 +9,9 @@ config("sentry_native_config") {
     "SENTRY_BUILD_STATIC",
     "SENTRY_WITH_CRASHPAD=OFF",  # Disable Sentry's crashpad, use Chromium's
   ]
+  cflags = [
+    "-Wno-shadow",  # disable shadow warnings for this target
+  ]
 }
 
 static_library("sentry_native") {
