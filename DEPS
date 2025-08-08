@@ -16,6 +16,7 @@ deps = {
     "url": "https://github.com/brave/Sparkle.git@8721f93f694244f9ff41fe975a92617ac5f63f9a",
     "condition": "checkout_mac",
   },
+  "third_party/sentry_native": "https://github.com/getsentry/sentry-native.git@0.5.4",
   "vendor/bat-native-tweetnacl": "https://github.com/brave-intl/bat-native-tweetnacl.git@800f9d40b7409239ff192e0be634764e747c7a75",
   "vendor/gn-project-generators": "https://github.com/brave/gn-project-generators.git@b76e14b162aa0ce40f11920ec94bfc12da29e5d0",
   "vendor/web-discovery-project": "https://github.com/brave/web-discovery-project@2d05ad803e249f3686d093b9318f783c6cb5f380",
