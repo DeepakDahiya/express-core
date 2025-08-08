@@ -1,8 +1,16 @@
 import("//build/config/android/rules.gni")
 
+java_prebuilt("sentry_java") {
+  jar_path = "sentry-7.9.0.jar"
+  supports_android = true
+}
+
 java_prebuilt("sentry_android_java") {
   jar_path = "sentry-android-core-7.9.0.jar"
   supports_android = true
+  deps = [
+    ":sentry_java",
+  ]
 }
 
 java_prebuilt("sentry_android_okhttp_java") {
