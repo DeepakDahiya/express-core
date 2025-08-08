@@ -23,7 +23,6 @@ static_library("sentry_native") {
     "src/sentry_logger.c",
     "src/sentry_options.c",
     "src/sentry_os.c",
-    "src/sentry_path.c",
     "src/sentry_random.c",
     "src/sentry_ratelimiter.c",
     "src/sentry_scope.c",
