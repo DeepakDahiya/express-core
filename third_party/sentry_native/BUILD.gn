@@ -36,7 +36,6 @@ static_library("sentry_native") {
     "src/sentry_utils.c",
     "src/sentry_uuid.c",
     "src/sentry_value.c",
-    "src/sentry_windows_dbghelp.c",  # harmless on non-Windows builds
   ]
 
   public_configs = [ ":sentry_native_config" ]
