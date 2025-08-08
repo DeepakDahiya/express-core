@@ -1,4 +1,7 @@
 -dontwarn io.sentry.android.fragment.**
 -dontwarn io.sentry.android.timber.**
 -dontwarn io.sentry.compose.**
+-dontwarn io.sentry.okhttp.**
+-dontwarn okhttp3.**
+-dontwarn okio.**
 -dontwarn org.jetbrains.annotations.**
