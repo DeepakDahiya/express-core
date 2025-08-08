@@ -1,7 +1,10 @@
 import("//build/config/c++/c++.gni")
 
-config("sentry_config") {
-  include_dirs = [ "include" ]
+config("sentry_native_config") {
+  include_dirs = [
+    "include",
+    "src",
+  ]
   defines = [
     "SENTRY_BUILD_STATIC",
     "SENTRY_WITH_CRASHPAD=OFF",  # Disable Sentry's crashpad, use Chromium's
@@ -10,31 +13,39 @@ config("sentry_config") {
 
 static_library("sentry_native") {
   sources = [
-    "src/sentry.c",
-    "src/sentry_backend.c",
-    "src/sentry_envelope.c",
-    "src/sentry_event.c",
-    "src/sentry_path.c",
-    "src/sentry_scope.c",
-    "src/sentry_session.c",
-    "src/sentry_string.c",
-    "src/sentry_sync.c",
-    "src/sentry_transport.c",
-    "src/sentry_utils.c",
-    "src/sentry_value.c",
     "src/sentry_alloc.c",
+    "src/sentry_backend.c",
     "src/sentry_core.c",
     "src/sentry_database.c",
+    "src/sentry_envelope.c",
+    "src/sentry_info.c",
     "src/sentry_json.c",
     "src/sentry_logger.c",
-    "src/sentry_modulefinder.c",
+    "src/sentry_options.c",
     "src/sentry_os.c",
+    "src/sentry_path.c",
     "src/sentry_random.c",
+    "src/sentry_ratelimiter.c",
+    "src/sentry_scope.c",
+    "src/sentry_session.c",
     "src/sentry_slice.c",
-    "src/sentry_symbolizer.c",
-    "src/sentry_unwinder.c",
+    "src/sentry_string.c",
+    "src/sentry_sync.c",
+    "src/sentry_tracing.c",
+    "src/sentry_transport.c",
+    "src/sentry_unix_pageallocator.c",
+    "src/sentry_utils.c",
     "src/sentry_uuid.c",
+    "src/sentry_value.c",
+    "src/sentry_windows_dbghelp.c",  # harmless on non-Windows builds
   ]
 
-  public_configs = [ ":sentry_config" ]
+  public_configs = [ ":sentry_native_config" ]
+
+  deps = [
+    # Link to Chromium's Crashpad instead of building Sentry's own
+    "//third_party/crashpad/crashpad/client:common",
+    "//third_party/crashpad/crashpad/client:client",
+    "//third_party/crashpad/crashpad/util:util",
+  ]
 }
