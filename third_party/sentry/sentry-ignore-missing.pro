@@ -1,0 +1,4 @@
+-dontwarn io.sentry.android.fragment.**
+-dontwarn io.sentry.android.timber.**
+-dontwarn io.sentry.compose.**
+-dontwarn org.jetbrains.annotations.**
