@@ -16,15 +16,18 @@ config("sentry_native_config") {
 
 static_library("sentry_native") {
   sources = [
+    # Backends
     "src/backends/sentry_backend_inproc.c",
     "src/backends/sentry_backend_none.c",
-    "src/modulefinder/sentry_modulefinder_aix.c",
-    "src/modulefinder/sentry_modulefinder_apple.c",
+
+    # Linux/Android module finder
     "src/modulefinder/sentry_modulefinder_linux.c",
-    "src/modulefinder/sentry_modulefinder_windows.c",
+
+    # Path handling for Unix/Android
     "src/path/sentry_path_unix.c",
-    "src/path/sentry_path_windows.c",
     "src/path/sentry_path.c",
+
+    # Core Sentry sources
     "src/sentry_alloc.c",
     "src/sentry_backend.c",
     "src/sentry_core.c",
@@ -48,15 +51,16 @@ static_library("sentry_native") {
     "src/sentry_utils.c",
     "src/sentry_uuid.c",
     "src/sentry_value.c",
-    "src/sentry_windows_dbghelp.c",
+
+    # Symbolizer for Unix/Android
     "src/symbolizer/sentry_symbolizer_unix.c",
-    "src/symbolizer/sentry_symbolizer_windows.c",
+
+    # Transports (disk + function)
     "src/transports/sentry_disk_transport.c",
     "src/transports/sentry_function_transport.c",
-    "src/transports/sentry_transport_curl.c",
     "src/transports/sentry_transport_none.c",
-    "src/transports/sentry_transport_winhttp.c",
-    "src/unwinder/sentry_unwinder_dbghelp.c",
+
+    # Unwinder for Unix/Android
     "src/unwinder/sentry_unwinder_libbacktrace.c",
     "src/unwinder/sentry_unwinder.c",
   ]
