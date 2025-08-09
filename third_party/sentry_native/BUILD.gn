@@ -10,7 +10,7 @@ config("sentry_native_config") {
     "SENTRY_WITH_CRASHPAD=OFF",  # Disable Sentry's crashpad, use Chromium's
   ]
   cflags = [
-    "-Wno-shadow",  # disable shadow warnings for this target
+    "-Wno-shadow",
   ]
 }
 
@@ -18,14 +18,18 @@ static_library("sentry_native") {
   sources = [
     "src/sentry_alloc.c",
     "src/sentry_backend.c",
+    "src/sentry_backend_none.c",
     "src/sentry_core.c",
     "src/sentry_database.c",
     "src/sentry_envelope.c",
+    "src/sentry_file.c",
+    "src/sentry_filelock.c",
     "src/sentry_info.c",
     "src/sentry_json.c",
     "src/sentry_logger.c",
     "src/sentry_options.c",
     "src/sentry_os.c",
+    "src/sentry_path.c",
     "src/sentry_random.c",
     "src/sentry_ratelimiter.c",
     "src/sentry_scope.c",
@@ -35,6 +39,7 @@ static_library("sentry_native") {
     "src/sentry_sync.c",
     "src/sentry_tracing.c",
     "src/sentry_transport.c",
+    "src/sentry_transport_default.c",
     "src/sentry_unix_pageallocator.c",
     "src/sentry_utils.c",
     "src/sentry_uuid.c",
@@ -44,7 +49,6 @@ static_library("sentry_native") {
   public_configs = [ ":sentry_native_config" ]
 
   deps = [
-    # Link to Chromium's Crashpad instead of building Sentry's own
     "//third_party/crashpad/crashpad/client:common",
     "//third_party/crashpad/crashpad/client:client",
     "//third_party/crashpad/crashpad/util:util",
