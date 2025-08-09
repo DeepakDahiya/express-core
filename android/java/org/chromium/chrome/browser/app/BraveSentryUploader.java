@@ -34,7 +34,7 @@ public class BraveSentryUploader {
                     // Optional: release info
                     out.writeBytes("--" + boundary + "\r\n");
                     out.writeBytes("Content-Disposition: form-data; name=\"sentry[release]\"\r\n\r\n");
-                    out.writeBytes("chromium@" + BuildConfig.VERSION_NAME + "\r\n");
+                    out.writeBytes("chromium@" + "0.0.217" + "\r\n");
 
                     out.writeBytes("--" + boundary + "--\r\n");
                 }
