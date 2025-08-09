@@ -305,7 +305,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mProfileButton.setOnLongClickListener(this);
             BraveTouchUtils.ensureMinTouchTarget(mProfileButton);
 
-            // mProfileButton.post(this::fetchAndUpdateProfileImage);
+            mProfileButton.post(this::fetchAndUpdateProfileImage);
         }
 
         mBraveShieldsHandler = new BraveShieldsHandler(getContext());
