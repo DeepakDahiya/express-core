@@ -1,5 +1,5 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java b/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java
-index f46b319c4fc0efb162ba364da6929df1e5026888..238b81bff6b18669c2ba7419f19bb3ae16f34f84 100644
+index f46b319c4fc0efb162ba364da6929df1e5026888..71c6aa0687b47683705577ce9024540545e2e5a2 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/contextmenu/ChromeContextMenuPopulator.java
 @@ -131,7 +131,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
@@ -20,7 +20,16 @@ index f46b319c4fc0efb162ba364da6929df1e5026888..238b81bff6b18669c2ba7419f19bb3ae
          }
      }
  
-@@ -259,6 +259,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+@@ -235,7 +235,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+ 
+         if (mParams.isAnchor()) {
+             ModelList linkGroup = new ModelList();
+-            if (FirstRunStatus.getFirstRunFlowComplete() && !isEmptyUrl(mParams.getUrl())
++            if (!isEmptyUrl(mParams.getUrl())
+                     && UrlUtilities.isAcceptedScheme(mParams.getUrl())) {
+                 if (mMode == ContextMenuMode.NORMAL) {
+                     linkGroup.add(createListItem(Item.OPEN_IN_NEW_TAB_IN_GROUP));
+@@ -259,39 +259,38 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
              if (!MailTo.isMailTo(mParams.getLinkUrl().getSpec())
                      && !UrlUtilities.isTelScheme(mParams.getLinkUrl())) {
                  linkGroup.add(createListItem(Item.COPY_LINK_ADDRESS));
@@ -28,3 +37,87 @@ index f46b319c4fc0efb162ba364da6929df1e5026888..238b81bff6b18669c2ba7419f19bb3ae
                  if (!mParams.getLinkText().trim().isEmpty() && !mParams.isImage()) {
                      linkGroup.add(createListItem(Item.COPY_LINK_TEXT));
                  }
+             }
+-            if (FirstRunStatus.getFirstRunFlowComplete()) {
+-                if (!mItemDelegate.isIncognito()
+-                        && UrlUtilities.isDownloadableScheme(mParams.getLinkUrl())) {
+-                    linkGroup.add(createListItem(Item.SAVE_LINK_AS));
++            if (!mItemDelegate.isIncognito()
++                    && UrlUtilities.isDownloadableScheme(mParams.getLinkUrl())) {
++                linkGroup.add(createListItem(Item.SAVE_LINK_AS));
++            }
++            if (!mParams.isImage()
++                    && ReadingListUtils.isReadingListSupported(mParams.getLinkUrl())) {
++                linkGroup.add(createListItem(Item.READ_LATER, shouldTriggerReadLaterHelpUi()));
++            }
++            linkGroup.add(createShareListItem(Item.SHARE_LINK, Item.DIRECT_SHARE_LINK));
++            if (UrlUtilities.isTelScheme(mParams.getLinkUrl())) {
++                if (mItemDelegate.supportsCall()) {
++                    linkGroup.add(createListItem(Item.CALL));
+                 }
+-                if (!mParams.isImage()
+-                        && ReadingListUtils.isReadingListSupported(mParams.getLinkUrl())) {
+-                    linkGroup.add(createListItem(Item.READ_LATER, shouldTriggerReadLaterHelpUi()));
++                if (mItemDelegate.supportsSendTextMessage()) {
++                    linkGroup.add(createListItem(Item.SEND_MESSAGE));
+                 }
+-                linkGroup.add(createShareListItem(Item.SHARE_LINK, Item.DIRECT_SHARE_LINK));
+-                if (UrlUtilities.isTelScheme(mParams.getLinkUrl())) {
+-                    if (mItemDelegate.supportsCall()) {
+-                        linkGroup.add(createListItem(Item.CALL));
+-                    }
+-                    if (mItemDelegate.supportsSendTextMessage()) {
+-                        linkGroup.add(createListItem(Item.SEND_MESSAGE));
+-                    }
+-                    if (mItemDelegate.supportsAddToContacts()) {
+-                        linkGroup.add(createListItem(Item.ADD_TO_CONTACTS));
+-                    }
++                if (mItemDelegate.supportsAddToContacts()) {
++                    linkGroup.add(createListItem(Item.ADD_TO_CONTACTS));
+                 }
+-                if (MailTo.isMailTo(mParams.getLinkUrl().getSpec())) {
+-                    if (mItemDelegate.supportsSendEmailMessage()) {
+-                        linkGroup.add(createListItem(Item.SEND_MESSAGE));
+-                    }
+-                    if (!TextUtils.isEmpty(MailTo.parse(mParams.getLinkUrl().getSpec()).getTo())
+-                            && mItemDelegate.supportsAddToContacts()) {
+-                        linkGroup.add(createListItem(Item.ADD_TO_CONTACTS));
+-                    }
++            }
++            if (MailTo.isMailTo(mParams.getLinkUrl().getSpec())) {
++                if (mItemDelegate.supportsSendEmailMessage()) {
++                    linkGroup.add(createListItem(Item.SEND_MESSAGE));
++                }
++                if (!TextUtils.isEmpty(MailTo.parse(mParams.getLinkUrl().getSpec()).getTo())
++                        && mItemDelegate.supportsAddToContacts()) {
++                    linkGroup.add(createListItem(Item.ADD_TO_CONTACTS));
+                 }
+             }
+             if (UrlUtilities.isTelScheme(mParams.getLinkUrl())
+@@ -303,7 +302,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+             }
+         }
+ 
+-        if (mParams.isImage() && FirstRunStatus.getFirstRunFlowComplete()) {
++        if (mParams.isImage()) {
+             ModelList imageGroup = new ModelList();
+             boolean isSrcDownloadableScheme =
+                     UrlUtilities.isDownloadableScheme(mParams.getSrcUrl());
+@@ -366,7 +365,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+             groupedItems.add(new Pair<>(R.string.contextmenu_image_title, imageGroup));
+         }
+ 
+-        if (mParams.isVideo() && FirstRunStatus.getFirstRunFlowComplete() && mParams.canSaveMedia()
++        if (mParams.isVideo() && mParams.canSaveMedia()
+                 && UrlUtilities.isDownloadableScheme(mParams.getSrcUrl())) {
+             ModelList videoGroup = new ModelList();
+             videoGroup.add(createListItem(Item.SAVE_VIDEO));
+@@ -385,7 +384,7 @@ public class ChromeContextMenuPopulator implements ContextMenuPopulator {
+             groupedItems.add(new Pair<>(null, sharedHighlightingGroup));
+         }
+ 
+-        if (mMode != ContextMenuMode.NORMAL && FirstRunStatus.getFirstRunFlowComplete()) {
++        if (mMode != ContextMenuMode.NORMAL) {
+             ModelList items = groupedItems.isEmpty()
+                     ? new ModelList()
+                     : groupedItems

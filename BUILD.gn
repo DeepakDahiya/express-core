@@ -194,6 +194,9 @@ if (is_android) {
       "//brave/android/java/org/chromium/chrome/browser/onboarding/animations/website_loads_faster.json",
       "//brave/android/java/org/chromium/chrome/browser/shields/disconnect_entitylist.json",
       "//brave/android/java/org/chromium/chrome/browser/vpn/brave_vpn_confirm.json",
+      "//brave/components/brave_ads/browser/component_updater/resources.json",
+      "//brave/components/brave_ads/browser/component_updater/manifest.json",
+      "//brave/components/brave_shields/browser/resources.json",
     ]
     disable_compression = false
   }

@@ -1,0 +1,21 @@
+diff --git a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java
+index 870933d36fd26177934e54b9a7c9263bdb533aca..395826591a095dd4c61abc0529f7c4aea6f3f7b1 100644
+--- a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java
++++ b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java
+@@ -21,6 +21,8 @@ import android.widget.FrameLayout;
+ import android.widget.ImageButton;
+ import android.widget.ImageView;
+ 
++import org.chromium.base.Log;
++
+ import androidx.annotation.DrawableRes;
+ import androidx.annotation.VisibleForTesting;
+ import androidx.core.view.ViewCompat;
+@@ -98,6 +100,7 @@ public class MenuButton extends FrameLayout implements TintObserver {
+      * TODO(crbug.com/865801): Clean this up when MenuButton and UpdateMenuItemHelper is MVCed.
+      */
+     private void setUpdateBadgeVisibility(boolean visible) {
++        Log.e("CHROME_MENU_BUTTON", "VISIBLE: " + visible);
+         if (mUpdateBadgeView == null) return;
+         mUpdateBadgeView.setVisibility(visible ? View.VISIBLE : View.GONE);
+         if (visible) updateImageResources();

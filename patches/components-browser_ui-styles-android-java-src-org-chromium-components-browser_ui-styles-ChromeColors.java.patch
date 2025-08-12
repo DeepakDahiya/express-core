@@ -1,0 +1,16 @@
+diff --git a/components/browser_ui/styles/android/java/src/org/chromium/components/browser_ui/styles/ChromeColors.java b/components/browser_ui/styles/android/java/src/org/chromium/components/browser_ui/styles/ChromeColors.java
+index 3cad6d1646df1a0ef13b72b0366f2a4c9f6a8f75..692fdcd3aea12e1c0fece06bbf303eb848c7dc1e 100644
+--- a/components/browser_ui/styles/android/java/src/org/chromium/components/browser_ui/styles/ChromeColors.java
++++ b/components/browser_ui/styles/android/java/src/org/chromium/components/browser_ui/styles/ChromeColors.java
+@@ -31,8 +31,9 @@ public class ChromeColors {
+      * @return The default theme color.
+      */
+     public static @ColorInt int getDefaultThemeColor(Context context, boolean isIncognito) {
+-        return isIncognito ? context.getColor(R.color.toolbar_background_primary_dark)
+-                           : MaterialColors.getColor(context, R.attr.colorSurface, TAG);
++        return context.getColor(R.color.toolbar_background_primary_dark);
++        // return isIncognito ? context.getColor(R.color.toolbar_background_primary_dark)
++        //                    : MaterialColors.getColor(context, R.attr.colorSurface, TAG);
+     }
+ 
+     /**

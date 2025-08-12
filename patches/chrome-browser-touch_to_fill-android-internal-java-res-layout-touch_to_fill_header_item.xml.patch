@@ -1,0 +1,27 @@
+diff --git a/chrome/browser/touch_to_fill/android/internal/java/res/layout/touch_to_fill_header_item.xml b/chrome/browser/touch_to_fill/android/internal/java/res/layout/touch_to_fill_header_item.xml
+index 9574f008eb9a51f72dfd338d2e5c62955173dd23..936c52d9cef70517e895d5e56c229e668c670116 100644
+--- a/chrome/browser/touch_to_fill/android/internal/java/res/layout/touch_to_fill_header_item.xml
++++ b/chrome/browser/touch_to_fill/android/internal/java/res/layout/touch_to_fill_header_item.xml
+@@ -1,8 +1,9 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <!--
+-Copyright 2022 The Chromium Authors
+-Use of this source code is governed by a BSD-style license that can be
+-found in the LICENSE file.
++Copyright (c) 2023 The Brave Authors. All rights reserved.
++This Source Code Form is subject to the terms of the Mozilla Public
++License, v. 2.0. If a copy of the MPL was not distributed with this file,
++You can obtain one at https://mozilla.org/MPL/2.0/.
+ -->
+ 
+ <LinearLayout
+@@ -19,7 +20,8 @@ found in the LICENSE file.
+       android:layout_height="@dimen/touch_to_fill_favicon_size_modern"
+       android:layout_gravity="center_horizontal"
+       android:layout_marginBottom="8dp"
+-      android:importantForAccessibility="no" />
++      android:importantForAccessibility="no"
++      android:visibility="gone" />
+ 
+   <androidx.appcompat.widget.DialogTitle
+       android:id="@+id/touch_to_fill_sheet_title"

@@ -1,0 +1,37 @@
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java b/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
+index 828a433c9b274c9a47e8f6d96aaef3417794e537..d80a69be7738cac6654ada825f67487b1a0faceb 100644
+--- a/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
+@@ -809,6 +809,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
+                 updateTabLoadingState(true);
+                 onBackPressStateChanged();
+ 
++                // NewTabPage ntp = getNewTabPageForCurrentTab();
++                // if (ntp != null) {
++                //     mLocationBar.getContainerView().setVisibility(View.GONE);
++                // } else {
++                //     mLocationBar.getContainerView().setVisibility(View.VISIBLE);
++                // }
++
+                 // A URL update is a decent enough indicator that the toolbar widget is in
+                 // a stable state to capture its bitmap for use in fullscreen.
+                 mControlContainer.setReadyForBitmapCapture(true);
+@@ -1787,6 +1794,18 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
+     public void onUrlFocusChange(boolean hasFocus) {
+         mToolbar.onUrlFocusChange(hasFocus);
+ 
++        // if (hasFocus) {
++        //     mLocationBar.getContainerView().setVisibility(View.VISIBLE);
++        // } else {
++        //     NewTabPage ntp = getNewTabPageForCurrentTab();
++        //     if (ntp != null) {
++        //         mLocationBar.getContainerView().setVisibility(View.GONE);
++        //     } else {
++        //         mLocationBar.getContainerView().setVisibility(View.VISIBLE);
++        //     }
++        // }
++        
++
+         if (mIsStartSurfaceRefactorEnabled && mLayoutStateProvider != null
+                 && mLayoutStateProvider.isLayoutVisible(LayoutType.START_SURFACE)) {
+             mToolbar.updateStartSurfaceToolbarState(null, !hasFocus, LayoutType.START_SURFACE);

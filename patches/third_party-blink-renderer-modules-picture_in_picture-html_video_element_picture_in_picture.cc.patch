@@ -1,0 +1,52 @@
+diff --git a/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc b/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc
+index fb4c3c735763b80c0c0702108530fdea42a52f64..b7a45bd7c60d8cd727be73584011c45679bfa962 100644
+--- a/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc
++++ b/third_party/blink/renderer/modules/picture_in_picture/html_video_element_picture_in_picture.cc
+@@ -30,11 +30,11 @@ const char kFeaturePolicyBlocked[] =
+     "Access to the feature \"picture-in-picture\" is disallowed by permissions "
+     "policy.";
+ const char kNotAvailable[] = "Picture-in-Picture is not available.";
+-const char kUserGestureRequired[] =
+-    "Must be handling a user gesture if there isn't already an element in "
+-    "Picture-in-Picture.";
+-const char kDisablePictureInPicturePresent[] =
+-    "\"disablePictureInPicture\" attribute is present.";
++// const char kUserGestureRequired[] =
++//     "Must be handling a user gesture if there isn't already an element in "
++//     "Picture-in-Picture.";
++// const char kDisablePictureInPicturePresent[] =
++//     "\"disablePictureInPicture\" attribute is present.";
+ const char kAutoPipAndroid[] = "The video is currently in auto-pip mode.";
+ const char kDocumentPip[] = "The video is currently in document pip mode.";
+ 
+@@ -111,9 +111,10 @@ void HTMLVideoElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
+       exception_state.ThrowSecurityError(kFeaturePolicyBlocked);
+       return;
+     case Status::kDisabledByAttribute:
+-      exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
+-                                        kDisablePictureInPicturePresent);
+-      return;
++      // exception_state.ThrowDOMException(DOMExceptionCode::kInvalidStateError,
++      //                                   kDisablePictureInPicturePresent);
++      // return;
++      break;
+     case Status::kDisabledBySystem:
+       exception_state.ThrowDOMException(DOMExceptionCode::kNotSupportedError,
+                                         kNotAvailable);
+@@ -134,11 +135,11 @@ void HTMLVideoElementPictureInPicture::CheckIfPictureInPictureIsAllowed(
+   // `kFrameDetached`.
+   LocalFrame* frame = document.GetFrame();
+   DCHECK(frame);
+-  if (!controller.PictureInPictureElement() &&
+-      !LocalFrame::ConsumeTransientUserActivation(frame)) {
+-    exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
+-                                      kUserGestureRequired);
+-  }
++  // if (!controller.PictureInPictureElement() &&
++  //     !LocalFrame::ConsumeTransientUserActivation(frame)) {
++  //   exception_state.ThrowDOMException(DOMExceptionCode::kNotAllowedError,
++  //                                     kUserGestureRequired);
++  // }
+ }
+ 
+ }  // namespace blink

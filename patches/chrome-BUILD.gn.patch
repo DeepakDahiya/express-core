@@ -1,5 +1,5 @@
 diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
-index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028987b3699 100644
+index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..1efda602c2b274cc2ad3f01248ee6c741194833f 100644
 --- a/chrome/BUILD.gn
 +++ b/chrome/BUILD.gn
 @@ -198,6 +198,7 @@ if (!is_android && !is_mac) {
@@ -118,3 +118,11 @@ index bc54ace77cade8c2e2439af6d0c18984cfdaf5c6..a63dd1fc5e762fb29f571d0123d51028
      }
  
      if (is_chrome_branded && !is_mac) {
+@@ -1714,6 +1726,7 @@ if (is_android) {
+       "//components/safe_browsing/android:safe_browsing_api_handler",
+       "//components/safe_browsing/android:safe_browsing_mobile",
+       "//content/public/app",
++      "//brave/third_party/sentry_native:sentry_native",
+     ]
+ 
+     # Explicit dependency required for JNI registration to be able to

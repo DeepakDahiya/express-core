@@ -1,0 +1,20 @@
+diff --git a/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java b/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java
+index 56736ec4abbe8544552ec1e1c7bc60839e2f932d..36c1789c7d5ffd79e06ca1c9926dc316616acee0 100644
+--- a/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java
++++ b/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java
+@@ -221,10 +221,11 @@ public abstract class FirstRunFlowSequencer  {
+      */
+     public static boolean checkIfFirstRunIsNecessary(
+             boolean preferLightweightFre, Intent fromIntent) {
+-        boolean isCct = fromIntent.getBooleanExtra(
+-                                FirstRunActivityBase.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false)
+-                || LaunchIntentDispatcher.isCustomTabIntent(fromIntent);
+-        return checkIfFirstRunIsNecessary(preferLightweightFre, isCct);
++        return false;
++        // boolean isCct = fromIntent.getBooleanExtra(
++        //                         FirstRunActivityBase.EXTRA_CHROME_LAUNCH_INTENT_IS_CCT, false)
++        //         || LaunchIntentDispatcher.isCustomTabIntent(fromIntent);
++        // return checkIfFirstRunIsNecessary(preferLightweightFre, isCct);
+     }
+ 
+     /**

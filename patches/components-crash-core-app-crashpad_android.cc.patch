@@ -1,0 +1,13 @@
+diff --git a/components/crash/core/app/crashpad_android.cc b/components/crash/core/app/crashpad_android.cc
+index 657f34da95a640b152a69e5c2c8718ba2f428a4b..0154219926738d53124444ecdcdcb2dd833191da 100644
+--- a/components/crash/core/app/crashpad_android.cc
++++ b/components/crash/core/app/crashpad_android.cc
+@@ -423,7 +423,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
+   crash_reporter_client->GetCrashMetricsLocation(metrics_path);
+ 
+   // TODO(jperaza): Set URL for Android when Crashpad takes over report upload.
+-  *url = std::string();
++  *url = "https://o4509807793733632.ingest.de.sentry.io/api/4509807795372112/minidump/?sentry_key=591d5ee7a98b1fdeca311066ff238573";
+ 
+   std::string product_name;
+   std::string product_version;

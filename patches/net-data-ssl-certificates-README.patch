@@ -1,0 +1,13 @@
+diff --git a/net/data/ssl/certificates/README b/net/data/ssl/certificates/README
+index 6e3db6490063625caeb7c6737e4b3cfecd8f6922..488f302b3d42a2527d2d0e2947ebc015169a0f7c 100644
+--- a/net/data/ssl/certificates/README
++++ b/net/data/ssl/certificates/README
+@@ -12,6 +12,8 @@ unit tests.
+ 
+ - mit.davidben.der : An expired MIT client certificate.
+ 
++- cca_india_2022.pem
++
+ - foaf.me.chromium-test-cert.der : A client certificate for a FOAF.ME identity
+      created for testing.
+ 

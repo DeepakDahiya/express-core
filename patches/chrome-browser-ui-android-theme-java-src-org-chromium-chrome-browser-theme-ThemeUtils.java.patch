@@ -1,0 +1,21 @@
+diff --git a/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/ThemeUtils.java b/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/ThemeUtils.java
+index f224a9925990f9529b0463a87c6370ff3232d90b..951a0ca96d9a90d42cc78bc11408eca67582fec9 100644
+--- a/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/ThemeUtils.java
++++ b/chrome/browser/ui/android/theme/java/src/org/chromium/chrome/browser/theme/ThemeUtils.java
+@@ -109,7 +109,7 @@ public class ThemeUtils {
+      * @return The {@link ColorStateList} for the icon tint of themed toolbar.
+      */
+     public static ColorStateList getThemedToolbarIconTint(Context context, boolean useLight) {
+-        return AppCompatResources.getColorStateList(context, getThemedToolbarIconTintRes(useLight));
++        return AppCompatResources.getColorStateList(context, getThemedToolbarIconTintRes(false));
+     }
+ 
+     /**
+@@ -155,6 +155,7 @@ public class ThemeUtils {
+         } else if (brandedColorScheme == BrandedColorScheme.DARK_BRANDED_THEME) {
+             colorId = R.color.default_icon_color_white_tint_list;
+         }
++        colorId = R.color.default_icon_color_white_tint_list;
+         return colorId;
+     }
+ 

@@ -1,0 +1,13 @@
+diff --git a/chrome/browser/ui/android/quickactionsearchwidget/java/res/values/dimens.xml b/chrome/browser/ui/android/quickactionsearchwidget/java/res/values/dimens.xml
+index 07e057f0484f48d0fc514eecefa6bc4098ae7e13..1afc8fa9d90b692ed4145bf2b77a3a496b6410f0 100644
+--- a/chrome/browser/ui/android/quickactionsearchwidget/java/res/values/dimens.xml
++++ b/chrome/browser/ui/android/quickactionsearchwidget/java/res/values/dimens.xml
+@@ -7,7 +7,7 @@ found in the LICENSE file.
+ 
+ <resources xmlns:tools="http://schemas.android.com/tools">
+     <dimen name="quick_action_search_widget_width">264dp</dimen>
+-    <dimen name="quick_action_search_widget_background_radius">20dp</dimen>
++    <dimen name="quick_action_search_widget_background_radius">60dp</dimen>
+     <dimen name="quick_action_search_widget_xsmall_background_radius">16dp</dimen>
+ 
+     <!-- Specify the reference widths of all widgets, guaranteeing that all of the

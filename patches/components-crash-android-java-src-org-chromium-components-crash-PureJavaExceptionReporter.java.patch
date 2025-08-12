@@ -1,0 +1,93 @@
+diff --git a/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java b/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
+index 1fa450a7737e6f0f459fb052ce47df160c5da603..87e6a6a57924cff3811fa612d1de5bb6de4ac932 100644
+--- a/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
++++ b/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
+@@ -25,6 +25,12 @@ import java.util.HashMap;
+ import java.util.Map;
+ import java.util.UUID;
+ import java.util.concurrent.atomic.AtomicReferenceArray;
++import java.io.DataOutputStream;
++import java.net.HttpURLConnection;
++import java.io.FileInputStream;
++import java.net.URL;
++import java.io.InputStream;
++import java.nio.charset.StandardCharsets;
+ 
+ /**
+  * Creates a crash report and uploads it to crash server if there is a Java exception.
+@@ -39,6 +45,8 @@ public abstract class PureJavaExceptionReporter
+     public static final String PRODUCT = "prod";
+     public static final String ANDROID_BUILD_ID = "android_build_id";
+     public static final String ANDROID_BUILD_FP = "android_build_fp";
++    private static final String SENTRY_MINIDUMP_URL =
++        "https://o4509807793733632.ingest.de.sentry.io/api/4509807795372112/minidump/?sentry_key=591d5ee7a98b1fdeca311066ff238573";
+     // android-sdk-int and sdk are expected to have the same value.
+     // android-sdk-int is needed for compatibility with the C++ crashpad implementation.
+     // sdk should be maintained for potential custom monitoring.
+@@ -206,9 +214,66 @@ public abstract class PureJavaExceptionReporter
+             mMinidumpFile = logcatExtractor.attachLogcatToMinidump(
+                     mMinidumpFile, new CrashFileManager(getCrashFilesDirectory()));
+         }
++        Log.e("BraveSentry 2", mMinidumpFile.getName());
++        // uploadMinidumpToSentry(mMinidumpFile);
+         uploadMinidump(mMinidumpFile);
+     }
+ 
++    private static void uploadMinidumpToSentry(File minidumpFile) {
++        Log.e("BraveSentry", "Inside uploadMinidumpToSentry");
++        new Thread(() -> {
++            try {
++                Log.e("BraveSentry", "Thread started");
++
++                String boundary = "----SentryBoundary" + System.currentTimeMillis();
++                Log.e("BraveSentry", "Boundary: " + boundary);
++
++                HttpURLConnection conn = (HttpURLConnection) new URL(SENTRY_MINIDUMP_URL).openConnection();
++                Log.e("BraveSentry", "Connection opened");
++
++                conn.setDoOutput(true);
++                conn.setRequestMethod("POST");
++                conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
++
++                Log.e("BraveSentry", "Before getOutputStream()");
++                try (DataOutputStream out = new DataOutputStream(conn.getOutputStream())) {
++                    Log.e("BraveSentry", "OutputStream opened");
++
++                    // Minidump file
++                    out.writeBytes("--" + boundary + "\r\n");
++                    out.writeBytes("Content-Disposition: form-data; name=\"upload_file_minidump\"; filename=\"" + minidumpFile.getName() + "\"\r\n");
++                    out.writeBytes("Content-Type: application/octet-stream\r\n\r\n");
++
++                    Log.e("BraveSentry", "Before file copy, size=" + minidumpFile.length());
++                    try (FileInputStream fis = new FileInputStream(minidumpFile)) {
++                        byte[] buffer = new byte[8192];
++                        int bytesRead;
++                        while ((bytesRead = fis.read(buffer)) != -1) {
++                            out.write(buffer, 0, bytesRead);
++                        }
++                    }
++                    Log.e("BraveSentry", "File copy done");
++
++                    out.writeBytes("\r\n");
++
++                    // Optional: release info
++                    out.writeBytes("--" + boundary + "\r\n");
++                    out.writeBytes("Content-Disposition: form-data; name=\"sentry[release]\"\r\n\r\n");
++                    out.writeBytes("chromium@" + "0.0.217" + "\r\n");
++
++                    out.writeBytes("--" + boundary + "--\r\n");
++                }
++                Log.e("BraveSentry", "OutputStream closed");
++
++                Log.e("BraveSentry", "Before getResponseCode()");
++                int responseCode = conn.getResponseCode();
++                Log.e("BraveSentry", "Response code: " + responseCode);
++            } catch (Exception e) {
++                Log.e("BraveSentry", "Upload failed", e);
++            }
++        }).start();
++    }
++
+     /**
+      * @return the product name to be used in the crash report.
+      */
