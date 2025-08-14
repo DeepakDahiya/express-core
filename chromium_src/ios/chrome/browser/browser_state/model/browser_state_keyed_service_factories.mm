@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "ios/chrome/browser/browser_state/browser_state_keyed_service_factories.h"
+#include "ios/chrome/browser/browser_state/model/browser_state_keyed_service_factories.h"
 
 #include "ios/chrome/browser/autofill/personal_data_manager_factory.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
@@ -22,11 +22,11 @@
 #include "ios/chrome/browser/search_engines/template_url_service_factory.h"
 #include "ios/chrome/browser/signin/account_consistency_service_factory.h"
 #include "ios/chrome/browser/signin/identity_manager_factory.h"
-#include "ios/chrome/browser/sync/ios_user_event_service_factory.h"
-#include "ios/chrome/browser/sync/model_type_store_service_factory.h"
-#include "ios/chrome/browser/sync/session_sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_service_factory.h"
-#include "ios/chrome/browser/sync/sync_setup_service_factory.h"
+#include "ios/chrome/browser/sync/model/ios_user_event_service_factory.h"
+#include "ios/chrome/browser/sync/model/model_type_store_service_factory.h"
+#include "ios/chrome/browser/sync/model/session_sync_service_factory.h"
+#include "ios/chrome/browser/sync/model/sync_service_factory.h"
+#include "ios/chrome/browser/sync/model/sync_setup_service_factory.h"
 #include "ios/chrome/browser/webdata_services/web_data_service_factory.h"
 
 void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
