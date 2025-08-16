@@ -3,10 +3,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-package org.chromium.chrome.browser.preferences;
+#include "brave/browser/ui/views/tabs/brave_new_tab_button.h"
+#include "brave/browser/ui/views/tabs/brave_tab_search_button.h"
 
-public class BravePreferenceKeyChecker {
-    public static ChromePreferenceKeyChecker getInstance() {
-        return null;
-    }
-}
+#define TabSearchButton BraveTabSearchButton
+
+#include "src/chrome/browser/ui/views/tabs/tab_search_container.cc"
+
+#undef TabSearchButton

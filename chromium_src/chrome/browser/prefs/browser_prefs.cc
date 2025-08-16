@@ -70,7 +70,8 @@
 #endif
 
 // This method should be periodically pruned of year+ old migrations.
-void MigrateObsoleteProfilePrefs(Profile* profile) {
+void MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
+  DCHECK(profile_prefs);
   // BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS
   PrefService* profile_prefs = profile->GetPrefs();
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
@@ -80,7 +81,7 @@ void MigrateObsoleteProfilePrefs(Profile* profile) {
   gcm::MigrateGCMPrefs(profile_prefs);
 #endif
 
-  MigrateObsoleteProfilePrefs_ChromiumImpl(profile);
+  MigrateObsoleteProfilePrefs_ChromiumImpl(profile_prefs);
 
 #if BUILDFLAG(ENABLE_WIDEVINE)
   // Added 11/2019.

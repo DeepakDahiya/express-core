@@ -10,7 +10,7 @@ index e89e2f7d23cdf9552e15026fd805580c99d673e6..173bde9b904f47dba0254c4104e3fdb6
    }
  
    android_resources("chrome_app_java_resources") {
-@@ -237,6 +238,7 @@ if (current_toolchain == default_toolchain) {
+@@ -236,6 +237,7 @@ if (current_toolchain == default_toolchain) {
        "//third_party/androidx:androidx_gridlayout_gridlayout_java",
        "//third_party/androidx:androidx_preference_preference_java",
      ]
