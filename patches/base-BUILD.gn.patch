@@ -1,5 +1,5 @@
 diff --git a/base/BUILD.gn b/base/BUILD.gn
-index 82cb596dcbb369cf67addf856dfe8c0789449e78..e157aa9e2149f97b8df2db33dc7a5710559e9d8d 100644
+index 55479f4187323ad0f26dbbda555c0ff3093cc8d5..d1782c5c35b1f0a8d76f7c39d2450fecfd430b44 100644
 --- a/base/BUILD.gn
 +++ b/base/BUILD.gn
 @@ -4461,6 +4461,7 @@ if (is_android) {
@@ -10,7 +10,7 @@ index 82cb596dcbb369cf67addf856dfe8c0789449e78..e157aa9e2149f97b8df2db33dc7a5710
  
      if (use_clang_profiling) {
        sources += [
-@@ -4441,6 +4442,7 @@ if (is_android) {
+@@ -4480,6 +4481,7 @@ if (is_android) {
        "android/proguard/chromium_apk.flags",
        "android/proguard/chromium_code.flags",
        "android/proguard/remove_logging.flags",
@@ -18,7 +18,7 @@ index 82cb596dcbb369cf67addf856dfe8c0789449e78..e157aa9e2149f97b8df2db33dc7a5710
      ]
    }
  
-@@ -4500,6 +4501,7 @@ if (is_android) {
+@@ -4500,6 +4502,7 @@ if (is_android) {
        "android/java/src/org/chromium/base/shared_preferences/SharedPreferencesManager.java",
        "android/java/src/org/chromium/base/shared_preferences/StrictPreferenceKeyChecker.java",
      ]

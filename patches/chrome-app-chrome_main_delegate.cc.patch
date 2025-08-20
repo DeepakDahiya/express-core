@@ -1,5 +1,5 @@
 diff --git a/chrome/app/chrome_main_delegate.cc b/chrome/app/chrome_main_delegate.cc
-index 7aacff321a40c71ba20ae98d87b9c3c188d4b4d7..c62222fd3bb44c99869c4a8a916f769c687c838f 100644
+index 4c150b5cb007dbd8cb3ea5078fa3043fcccc6370..84284160402129276408905a341ede634fb7d31b 100644
 --- a/chrome/app/chrome_main_delegate.cc
 +++ b/chrome/app/chrome_main_delegate.cc
 @@ -100,6 +100,7 @@
@@ -10,7 +10,7 @@ index 7aacff321a40c71ba20ae98d87b9c3c188d4b4d7..c62222fd3bb44c99869c4a8a916f769c
  
  #if BUILDFLAG(IS_WIN)
  #include <malloc.h>
-@@ -1576,6 +1577,24 @@ void ChromeMainDelegate::PreSandboxStartup() {
+@@ -1604,6 +1605,24 @@ void ChromeMainDelegate::PreSandboxStartup() {
      if (process_type.empty()) {
        base::android::InitJavaExceptionReporter();
        UninstallPureJavaExceptionHandler();

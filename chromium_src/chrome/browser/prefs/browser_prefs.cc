@@ -73,7 +73,6 @@
 void MigrateObsoleteProfilePrefs(PrefService* profile_prefs) {
   DCHECK(profile_prefs);
   // BEGIN_MIGRATE_OBSOLETE_PROFILE_PREFS
-  PrefService* profile_prefs = profile->GetPrefs();
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   // Added 02/2020.
   // Must be called before ChromiumImpl because it's migrating a Chromium pref

@@ -1,5 +1,5 @@
 diff --git a/net/data/ssl/certificates/README b/net/data/ssl/certificates/README
-index 6e3db6490063625caeb7c6737e4b3cfecd8f6922..488f302b3d42a2527d2d0e2947ebc015169a0f7c 100644
+index dcc938b2aa251965a5ee2bea56513378d55221e2..072b4eaa46405dbea4ac0cdec94937d26d525444 100644
 --- a/net/data/ssl/certificates/README
 +++ b/net/data/ssl/certificates/README
 @@ -12,6 +12,8 @@ unit tests.

@@ -1,5 +1,5 @@
 diff --git a/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java b/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
-index 1fa450a7737e6f0f459fb052ce47df160c5da603..87e6a6a57924cff3811fa612d1de5bb6de4ac932 100644
+index a71a2caed56170ca85a1505aea1593def16a027d..c7263d6bcc84fc12918b4d80bd7b3415a5d5e45b 100644
 --- a/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
 +++ b/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
 @@ -25,6 +25,12 @@ import java.util.HashMap;
@@ -24,7 +24,7 @@ index 1fa450a7737e6f0f459fb052ce47df160c5da603..87e6a6a57924cff3811fa612d1de5bb6
      // android-sdk-int and sdk are expected to have the same value.
      // android-sdk-int is needed for compatibility with the C++ crashpad implementation.
      // sdk should be maintained for potential custom monitoring.
-@@ -206,9 +214,66 @@ public abstract class PureJavaExceptionReporter
+@@ -208,9 +216,66 @@ public abstract class PureJavaExceptionReporter
              mMinidumpFile = logcatExtractor.attachLogcatToMinidump(
                      mMinidumpFile, new CrashFileManager(getCrashFilesDirectory()));
          }

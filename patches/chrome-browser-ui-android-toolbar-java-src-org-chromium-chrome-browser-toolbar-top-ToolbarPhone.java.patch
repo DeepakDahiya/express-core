@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
-index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d96f1185d9 100644
+index 0dbe4aa666dbfd1b261891dec76cf763342f4cc1..56a88de6d5ec711fded1c6f2ae03d12fe7894581 100644
 --- a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
 +++ b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
-@@ -37,6 +37,8 @@ import android.widget.FrameLayout;
+@@ -38,6 +38,8 @@ import android.widget.FrameLayout;
  import android.widget.ImageView;
  import android.widget.TextView;
  
@@ -11,7 +11,7 @@ index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d9
  import androidx.annotation.IntDef;
  import androidx.annotation.NonNull;
  import androidx.annotation.Nullable;
-@@ -405,6 +407,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -422,6 +424,7 @@ public class ToolbarPhone extends ToolbarLayout
          if (mOptionalButtonCoordinator != null) {
              mOptionalButtonCoordinator.setBackgroundColorFilter(color);
          }
@@ -19,7 +19,7 @@ index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d9
      }
  
      private void updateModernLocationBarCorners() {
-@@ -591,6 +592,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -591,6 +594,7 @@ public class ToolbarPhone extends ToolbarLayout
                          EventConstants.PARTNER_HOME_PAGE_BUTTON_PRESSED);
              }
          }
@@ -27,7 +27,7 @@ index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d9
      }
  
      @Override
-@@ -1049,6 +1051,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -1049,6 +1053,7 @@ public class ToolbarPhone extends ToolbarLayout
       * New Tab Page.
       */
      private void updateLocationBarLayoutForExpansionAnimation() {
@@ -35,7 +35,7 @@ index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d9
          TraceEvent.begin("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
          if (isInTabSwitcherMode()) return;
  
-@@ -1392,6 +1395,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -1392,6 +1397,7 @@ public class ToolbarPhone extends ToolbarLayout
              canvas.restore();
          }
  
@@ -43,7 +43,7 @@ index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d9
          // Draw the tab stack button and associated text if necessary.
          if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null
                  && mUrlExpansionFraction != 1f) {
-@@ -1725,6 +1731,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -1751,6 +1757,7 @@ public class ToolbarPhone extends ToolbarLayout
      public void updateButtonVisibility() {
          boolean hideHomeButton =
                  !mIsHomeButtonEnabled || getToolbarDataProvider().isInOverviewAndShowingOmnibox();
@@ -51,7 +51,7 @@ index fdde4f4b600b90ba793c24018c19dc508e2d8009..b9e6206c73c61802768cefdc9699d5d9
          if (hideHomeButton) {
              removeHomeButton();
          } else {
-@@ -2158,6 +2165,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -2188,6 +2195,7 @@ public class ToolbarPhone extends ToolbarLayout
          } else {
              populateUrlClearExpansionAnimatorSet(animators);
          }
