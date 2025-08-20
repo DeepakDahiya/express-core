@@ -265,16 +265,16 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
     }
 
     private void onShowNewsToggle(boolean isEnable) {
-        BravePrefServiceBridge.getInstance().setShowNews(isEnable);
+        // BravePrefServiceBridge.getInstance().setShowNews(isEnable);
 
-        SharedPreferencesManager.getInstance().writeBoolean(
-                BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS, isEnable);
+        // SharedPreferencesManager.getInstance().writeBoolean(
+        //         BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS, isEnable);
 
-        FrameLayout.LayoutParams parentLayoutParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
+        // FrameLayout.LayoutParams parentLayoutParams = new FrameLayout.LayoutParams(
+        //         FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
 
-        parentLayoutParams.gravity = Gravity.NO_GRAVITY;
-        mParentLayout.setLayoutParams(parentLayoutParams);
+        // parentLayoutParams.gravity = Gravity.NO_GRAVITY;
+        // mParentLayout.setLayoutParams(parentLayoutParams);
     }
 
     private void openBraveNewsPreferencesDetails(
