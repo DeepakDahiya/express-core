@@ -649,9 +649,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     @Override
                     public void onPageLoadFinished(final Tab tab, GURL url) {
                         if (url.getSpec().contains("youtube.com/watch")) {
-                            SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
+                            ChromeSharedPreferences.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
                         }else{
-                            SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
+                            ChromeSharedPreferences.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
                         }
                     }
 
@@ -718,10 +718,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     Tab providerTab = getToolbarDataProvider().getTab();
                     if (providerTab != null && providerTab.getId() == tab.getId()) {
                         showWalletIcon(mTabsWithWalletIcon.contains(tab.getId()));
-                    } else if (mWalletLayout != null) {
-                        mWalletLayout.setVisibility(mTabsWithWalletIcon.contains(tab.getId())
-                                        ? View.VISIBLE
-                                        : View.GONE);
                     }
                 }
             }
@@ -1368,7 +1364,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         // We need to enable the promo for later release.
         // Delay showing the panel. Otherwise there are ANRs on holding onUrlFocusChange
         /* PostTask.postTask(TaskTraits.UI_DEFAULT, () -> {
-            int appOpenCountForWidgetPromo = SharedPreferencesManager.getInstance().readInt(
+            int appOpenCountForWidgetPromo = ChromeSharedPreferences.getInstance().readInt(
                     BravePreferenceKeys.BRAVE_APP_OPEN_COUNT_FOR_WIDGET_PROMO);
             if (hasFocus
                     && appOpenCountForWidgetPromo >= BraveActivity.APP_OPEN_COUNT_FOR_WIDGET_PROMO)

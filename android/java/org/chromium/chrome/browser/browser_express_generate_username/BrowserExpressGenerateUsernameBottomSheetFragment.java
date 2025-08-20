@@ -30,7 +30,8 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.preferences.SharedPreferencesManager;
+import org.chromium.base.shared_preferences.SharedPreferencesManager;
+import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 
 public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
@@ -86,7 +87,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
             }
         }));
 
-        int braveDefaultModalCount = SharedPreferencesManager.getInstance().readInt(
+        int braveDefaultModalCount = ChromeSharedPreferences.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
         if (braveDefaultModalCount > 2 && !isFromMenu) {
