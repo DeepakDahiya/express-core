@@ -454,248 +454,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         // to proactively update the shields button state here, otherwise shields
         // might sometimes show as disabled while it is actually enabled.
         updateBraveShieldsButtonState(getToolbarDataProvider().getTab());
-<<<<<<< HEAD
-        mTabModelSelectorTabObserver = new TabModelSelectorTabObserver(selector) {
-            @Override
-            protected void onTabRegistered(Tab tab) {
-                super.onTabRegistered(tab);
-                if (tab.isIncognito()) {
-                    showWalletIcon(false);
-                }
-            }
-
-            @Override
-            public void onShown(Tab tab, @TabSelectionType int type) {
-                // Update shields button state when visible tab is changed.
-                updateBraveShieldsButtonState(tab);
-                // case when window.open is triggered from dapps site and new tab is in focus
-                if (type != TabSelectionType.FROM_USER) {
-                    dismissWalletPanelOrDialog();
-                }
-                findMediaFiles(tab);
-            }
-
-            @Override
-            public void onHidden(Tab tab, @TabHidingType int reason) {
-                hidePlaylistButton();
-            }
-
-            @Override
-            public void onPageLoadStarted(Tab tab, GURL url) {
-                showWalletIcon(false, tab);
-                if (getToolbarDataProvider().getTab() == tab) {
-                    updateBraveShieldsButtonState(tab);
-                }
-                mBraveShieldsHandler.clearBraveShieldsCount(tab.getId());
-                dismissShieldsTooltip();
-                hidePlaylistButton();
-
-                String mUrl = url.getSpec();
-
-                if(isValidUrl(mUrl) && !tab.isIncognito()) {
-                    new AsyncTask<TopSite>() {
-                        @Override
-                        protected TopSite doInBackground() {
-                            try {
-                                URL tempUrl = new URL(mUrl);
-                                String protocol = tempUrl.getProtocol();
-                                String host = tempUrl.getHost();
-
-                                if (mDatabaseHelper.isTopSiteAlreadyAdded(protocol + "://" + host)) {
-                                    return null;
-                                }
-
-                                // Download favicon in background
-                                String faviconPath = saveFavicon(ContextUtils.getApplicationContext(), mUrl);
-
-                                // Create TopSite object
-                                return new TopSite(
-                                    getWebsiteName(mUrl), 
-                                    protocol + "://" + host, 
-                                    "#323639", 
-                                    faviconPath
-                                );
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error processing top site", e);
-                                return null;
-                            }
-                        }
-
-                        @Override
-                        protected void onPostExecute(TopSite topSite) {
-                            Log.e(TAG, "TopSiteAsyncTask onPostExecute");
-                            if (topSite != null) {
-                                try {
-                                    Log.e(TAG, "Inserting TopSite: " + topSite.getName());
-                                    mDatabaseHelper.insertTopSite(topSite);
-                                } catch (Exception e) {
-                                    Log.e(TAG, "Error inserting top site", e);
-                                }
-                            }
-                        }
-                    }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                }
-
-                try {
-                    BraveActivity activity = BraveActivity.getBraveActivity();
-                    String accessToken = activity.getAccessToken();
-                
-                    if (accessToken != null) {
-                        Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                        String avatar = prefs.getString("avatar_url", null);
-                        JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-
-                        if(mUrl.contains(YOUTUBE_DOMAIN)){
-                            String pInfo = activity.getCurrentAppVersion();
-                            JSONObject payload = new JSONObject();
-                            payload.put("app_version", pInfo);
-                            payload.put("url", mUrl);
-                            PostHogUtil.PostHogWorkerTask postHogWorkerTask =
-                                new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YOUTUBE_VISITED, decodedAccessTokenObj.getString("_id"), payload);
-                            postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
-                        if (avatar != null) {
-                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
-                        }else{
-                            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
-                        }
-
-                        long now = System.currentTimeMillis();
-                        if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
-                            lastProfileFetchTimestamp = now;
-                            BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
-                                new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
-                            workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
-                    }
-
-                    int commentCount = 0;
-                    mCommentsText = activity.getCommentCountText();
-                    mBottomHomeButton = activity.getBottomHomeButton();
-                    mBeHomeButton = activity.getBeHomeButton();
-                    mBeHomeButton.setVisibility(View.VISIBLE);
-
-                    // if(mBottomHomeButton != null) {
-                    //     if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
-                    //         mBeHomeButton.setVisibility(View.GONE);
-                    //     } else {
-                    //         mBeHomeButton.setVisibility(View.VISIBLE);
-                    //     }
-                    // } else {
-                    //     mBeHomeButton.setVisibility(View.VISIBLE);
-                    // }
-
-                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-                    
-                } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    Log.e(TAG, "BookmarkButton click " + e);
-                } catch (JSONException e) {
-                    Log.e("Express Browser Access Token", e.getMessage());
-                }
-
-                BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
-                    new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-                            mUrl, getFirstCommentsCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            }
-
-            @Override
-            public void onUrlUpdated(Tab tab) {
-                String mUrl = tab.getUrl().getSpec();
-
-                try {
-                    BraveActivity activity = BraveActivity.getBraveActivity();
-                    String accessToken = activity.getAccessToken();
-
-                    int commentCount = 0;
-                    mCommentsText = activity.getCommentCountText();
-                    mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
-
-                    if (accessToken != null) {
-                        Context context = ContextUtils.getApplicationContext();
-                        SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
-                        String avatar = prefs.getString("avatar_url", null);
-                        JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
-                        if (avatar != null) {
-                            ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
-                        }else{
-                            ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
-                        }
-
-                        long now = System.currentTimeMillis();
-                        if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
-                            lastProfileFetchTimestamp = now;
-                            BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
-                                new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
-                            workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-                        }
-                    }
-                } catch (BraveActivity.BraveActivityNotFoundException e) {
-                    Log.e(TAG, "BookmarkButton click " + e);
-                } catch (JSONException e) {
-                    Log.e("Express Browser Access Token", e.getMessage());
-                }
-
-                BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
-                    new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
-                            mUrl, getFirstCommentsCallback);
-                workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-                super.onUrlUpdated(tab);
-            }
-
-            @Override
-            public void onPageLoadFinished(final Tab tab, GURL url) {
-                if (url.getSpec().contains("youtube.com/watch")) {
-                    SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
-                }else{
-                    SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
-                }
-            }
-
-            private void showNotificationNotEarningDialog() {
-                try {
-                    RewardsYouAreNotEarningDialog rewardsYouAreNotEarningDialog =
-                            RewardsYouAreNotEarningDialog.newInstance();
-                    rewardsYouAreNotEarningDialog.setCancelable(false);
-                    rewardsYouAreNotEarningDialog.show(
-                            BraveActivity.getBraveActivity().getSupportFragmentManager(),
-                            RewardsYouAreNotEarningDialog.RewardsYouAreNotEarningDialogTAG);
-
-                } catch (BraveActivity.BraveActivityNotFoundException | IllegalStateException e) {
-                    Log.e(TAG, "showNotificationNotEarningDialog " + e);
-                }
-            }
-
-            @Override
-            public void onDidFinishNavigationInPrimaryMainFrame(
-                    Tab tab, NavigationHandle navigation) {
-                if (getToolbarDataProvider().getTab() == tab && mBraveRewardsNativeWorker != null
-                        && !tab.isIncognito()) {
-                    mBraveRewardsNativeWorker.OnNotifyFrontTabUrlChanged(
-                            tab.getId(), tab.getUrl().getSpec());
-                }
-                if (PackageUtils.isFirstInstall(getContext()) && tab.getUrl().getSpec() != null
-                        && (tab.getUrl().getSpec().equals(BraveActivity.BRAVE_REWARDS_SETTINGS_URL))
-                        && BraveRewardsHelper.shouldShowBraveRewardsOnboardingModal()
-                        && mBraveRewardsNativeWorker != null
-                        && !mBraveRewardsNativeWorker.isRewardsEnabled()
-                        && mBraveRewardsNativeWorker.IsSupported()) {
-                    showOnBoarding();
-                }
-                findMediaFiles(tab);
-            }
-
-            @Override
-            public void onDestroyed(Tab tab) {
-                // Remove references for the ads from the Database. Tab is destroyed, they are not
-                // needed anymore.
-                new Thread() {
-=======
         mTabModelSelectorTabObserver =
                 new TabModelSelectorTabObserver(selector) {
->>>>>>> 587ce3ee0fb (Upgrade from Chromium 119 to Chromium 120 (uplift to 1.61.x). (#21135))
                     @Override
                     protected void onTabRegistered(Tab tab) {
                         super.onTabRegistered(tab);
@@ -730,42 +490,168 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         mBraveShieldsHandler.clearBraveShieldsCount(tab.getId());
                         dismissShieldsTooltip();
                         hidePlaylistButton();
+
+                        String mUrl = url.getSpec();
+
+                        if(isValidUrl(mUrl) && !tab.isIncognito()) {
+                            new AsyncTask<TopSite>() {
+                                @Override
+                                protected TopSite doInBackground() {
+                                    try {
+                                        URL tempUrl = new URL(mUrl);
+                                        String protocol = tempUrl.getProtocol();
+                                        String host = tempUrl.getHost();
+
+                                        if (mDatabaseHelper.isTopSiteAlreadyAdded(protocol + "://" + host)) {
+                                            return null;
+                                        }
+
+                                        // Download favicon in background
+                                        String faviconPath = saveFavicon(ContextUtils.getApplicationContext(), mUrl);
+
+                                        // Create TopSite object
+                                        return new TopSite(
+                                            getWebsiteName(mUrl), 
+                                            protocol + "://" + host, 
+                                            "#323639", 
+                                            faviconPath
+                                        );
+                                    } catch (Exception e) {
+                                        Log.e(TAG, "Error processing top site", e);
+                                        return null;
+                                    }
+                                }
+
+                                @Override
+                                protected void onPostExecute(TopSite topSite) {
+                                    Log.e(TAG, "TopSiteAsyncTask onPostExecute");
+                                    if (topSite != null) {
+                                        try {
+                                            Log.e(TAG, "Inserting TopSite: " + topSite.getName());
+                                            mDatabaseHelper.insertTopSite(topSite);
+                                        } catch (Exception e) {
+                                            Log.e(TAG, "Error inserting top site", e);
+                                        }
+                                    }
+                                }
+                            }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                        }
+
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            String accessToken = activity.getAccessToken();
+                        
+                            if (accessToken != null) {
+                                Context context = ContextUtils.getApplicationContext();
+                                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                                String avatar = prefs.getString("avatar_url", null);
+                                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+
+                                if(mUrl.contains(YOUTUBE_DOMAIN)){
+                                    String pInfo = activity.getCurrentAppVersion();
+                                    JSONObject payload = new JSONObject();
+                                    payload.put("app_version", pInfo);
+                                    payload.put("url", mUrl);
+                                    PostHogUtil.PostHogWorkerTask postHogWorkerTask =
+                                        new PostHogUtil.PostHogWorkerTask(PostHogEventKeys.YOUTUBE_VISITED, decodedAccessTokenObj.getString("_id"), payload);
+                                    postHogWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                }
+                                if (avatar != null) {
+                                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                                }else{
+                                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
+                                }
+
+                                long now = System.currentTimeMillis();
+                                if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
+                                    lastProfileFetchTimestamp = now;
+                                    BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                                        new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                                    workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                }
+                            }
+
+                            int commentCount = 0;
+                            mCommentsText = activity.getCommentCountText();
+                            mBottomHomeButton = activity.getBottomHomeButton();
+                            mBeHomeButton = activity.getBeHomeButton();
+                            mBeHomeButton.setVisibility(View.VISIBLE);
+
+                            // if(mBottomHomeButton != null) {
+                            //     if (mBottomHomeButton.getVisibility() == View.VISIBLE) {
+                            //         mBeHomeButton.setVisibility(View.GONE);
+                            //     } else {
+                            //         mBeHomeButton.setVisibility(View.VISIBLE);
+                            //     }
+                            // } else {
+                            //     mBeHomeButton.setVisibility(View.VISIBLE);
+                            // }
+
+                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+                            
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e(TAG, "BookmarkButton click " + e);
+                        } catch (JSONException e) {
+                            Log.e("Express Browser Access Token", e.getMessage());
+                        }
+
+                        BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                            new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                                    mUrl, getFirstCommentsCallback);
+                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                    }
+
+                    @Override
+                    public void onUrlUpdated(Tab tab) {
+                        String mUrl = tab.getUrl().getSpec();
+
+                        try {
+                            BraveActivity activity = BraveActivity.getBraveActivity();
+                            String accessToken = activity.getAccessToken();
+
+                            int commentCount = 0;
+                            mCommentsText = activity.getCommentCountText();
+                            mCommentsText.setText(String.format(Locale.getDefault(), "%d comments", commentCount));
+
+                            if (accessToken != null) {
+                                Context context = ContextUtils.getApplicationContext();
+                                SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
+                                String avatar = prefs.getString("avatar_url", null);
+                                JSONObject decodedAccessTokenObj = getDecodedToken(accessToken);
+                                if (avatar != null) {
+                                    ImageLoader.downloadImage(avatar, Glide.with(getContext()), true, 5, mProfileButton, null);
+                                }else{
+                                    ImageLoader.downloadImage("https://api.dicebear.com/9.x/fun-emoji/png?seed=" + decodedAccessTokenObj.getString("_id") + "&radius=50&backgroundColor=059ff2,71cf62,d84be5,d9915b,f6d594,fcbc34,ffd5dc,ffdfbf,b6e3f4,c0aede,d1d4f9&backgroundType=gradientLinear&mouth=cute,faceMask,kissHeart,lilSmile,smileLol,smileTeeth,tongueOut,wideSmile", Glide.with(getContext()), true, 5, mProfileButton, null);
+                                }
+
+                                long now = System.currentTimeMillis();
+                                if (now - lastProfileFetchTimestamp > PROFILE_FETCH_COOLDOWN_MS) {
+                                    lastProfileFetchTimestamp = now;
+                                    BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask workerTask1 =
+                                        new BrowserExpressGetProfilePreferencesUtil.GetProfileWorkerTask(accessToken, getProfileCallback);
+                                    workerTask1.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                                }
+                            }
+                        } catch (BraveActivity.BraveActivityNotFoundException e) {
+                            Log.e(TAG, "BookmarkButton click " + e);
+                        } catch (JSONException e) {
+                            Log.e("Express Browser Access Token", e.getMessage());
+                        }
+
+                        BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask workerTask =
+                            new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsWorkerTask(
+                                    mUrl, getFirstCommentsCallback);
+                        workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+
+                        super.onUrlUpdated(tab);
                     }
 
                     @Override
                     public void onPageLoadFinished(final Tab tab, GURL url) {
-                        if (getToolbarDataProvider().getTab() == tab) {
-                            mBraveShieldsHandler.updateUrlSpec(url.getSpec());
-                            updateBraveShieldsButtonState(tab);
-
-                            if (mBraveShieldsButton != null
-                                    && mBraveShieldsButton.isShown()
-                                    && mBraveShieldsHandler != null
-                                    && !mBraveShieldsHandler.isShowing()) {
-                                checkForTooltip(tab);
-                            }
-                        }
-
-                        if (mBraveShieldsButton != null
-                                && mBraveShieldsButton.isShown()
-                                && mBraveShieldsHandler != null
-                                && !mBraveShieldsHandler.isShowing()
-                                && url.getSpec().contains("rewards")
-                                && ((!BravePermissionUtils.hasNotificationPermission(getContext()))
-                                        || BraveNotificationWarningDialog
-                                                .shouldShowRewardWarningDialog(getContext()))) {
-                            showNotificationNotEarningDialog();
-                        }
-
-                        String countryCode = Locale.getDefault().getCountry();
-                        if (countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
-                                && url.domainIs(YOUTUBE_DOMAIN)
-                                && ChromeSharedPreferences.getInstance()
-                                        .readBoolean(
-                                                BravePreferenceKeys.BRAVE_AD_FREE_CALLOUT_DIALOG,
-                                                true)) {
-                            ChromeSharedPreferences.getInstance()
-                                    .writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
+                        if (url.getSpec().contains("youtube.com/watch")) {
+                            SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, true);
+                        }else{
+                            SharedPreferencesManager.getInstance().writeBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false);
                         }
                     }
 
@@ -832,6 +718,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     Tab providerTab = getToolbarDataProvider().getTab();
                     if (providerTab != null && providerTab.getId() == tab.getId()) {
                         showWalletIcon(mTabsWithWalletIcon.contains(tab.getId()));
+                    } else if (mWalletLayout != null) {
+                        mWalletLayout.setVisibility(mTabsWithWalletIcon.contains(tab.getId())
+                                        ? View.VISIBLE
+                                        : View.GONE);
                     }
                 }
             }

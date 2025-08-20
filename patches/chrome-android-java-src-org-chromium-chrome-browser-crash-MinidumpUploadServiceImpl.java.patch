@@ -1,8 +1,8 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java b/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
-index 03e9446c932617246e791e7a652b3bd73bf54ffd..0431c8f9f719f30da7c4c656526fe76549965c07 100644
+index f4970c0eee192560620d5ecd54898fa60df19c08..67cedaee357228908fad16be94b4134fee5a22f9 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/crash/MinidumpUploadServiceImpl.java
-@@ -44,12 +44,46 @@ import java.lang.annotation.Retention;
+@@ -46,12 +46,46 @@ import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
  import java.util.concurrent.atomic.AtomicBoolean;
  
@@ -49,7 +49,7 @@ index 03e9446c932617246e791e7a652b3bd73bf54ffd..0431c8f9f719f30da7c4c656526fe765
      // Intent actions
      @VisibleForTesting
      static final String ACTION_UPLOAD = "com.google.android.apps.chrome.crash.ACTION_UPLOAD";
-@@ -341,6 +375,96 @@ public class MinidumpUploadServiceImpl extends MinidumpUploadService.Impl {
+@@ -343,6 +377,96 @@ public class MinidumpUploadServiceImpl extends MinidumpUploadService.Impl {
          CrashUploadCountStore.getInstance().incrementCrashFailureUploadCount(process_type);
      }
  
@@ -146,7 +146,7 @@ index 03e9446c932617246e791e7a652b3bd73bf54ffd..0431c8f9f719f30da7c4c656526fe765
      /**
       * Factory method for creating minidump callables.
       *
-@@ -352,8 +476,28 @@ public class MinidumpUploadServiceImpl extends MinidumpUploadService.Impl {
+@@ -354,8 +478,28 @@ public class MinidumpUploadServiceImpl extends MinidumpUploadService.Impl {
       */
      @VisibleForTesting
      MinidumpUploadCallable createMinidumpUploadCallable(File minidumpFile, File logfile) {

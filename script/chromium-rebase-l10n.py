@@ -9,6 +9,7 @@ import argparse
 import os.path
 import sys
 import glob
+print("PYTHON: ", sys.executable)
 from lib.l10n.grd_utils import (GOOGLE_CHROME_STRINGS_MIGRATION_MAP,
                                 get_override_file_path, textify,
                                 update_braveified_grd_tree_override,

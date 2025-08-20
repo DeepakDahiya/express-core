@@ -1,5 +1,5 @@
 diff --git a/components/crash/core/app/crashpad_android.cc b/components/crash/core/app/crashpad_android.cc
-index 657f34da95a640b152a69e5c2c8718ba2f428a4b..0154219926738d53124444ecdcdcb2dd833191da 100644
+index d2172182ae58e34e5e930acbceb7cc57df9939be..d7e2c57cba77c189291823bab192924ca55c1feb 100644
 --- a/components/crash/core/app/crashpad_android.cc
 +++ b/components/crash/core/app/crashpad_android.cc
 @@ -423,7 +423,7 @@ void BuildHandlerArgs(CrashReporterClient* crash_reporter_client,
