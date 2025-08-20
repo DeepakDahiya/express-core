@@ -267,7 +267,11 @@
     "projects": {
       "chrome": {
         "dir": "src",
+<<<<<<< HEAD
         "tag": "119.0.6045.33",
+=======
+        "tag": "120.0.6099.56",
+>>>>>>> 587ce3ee0fb (Upgrade from Chromium 119 to Chromium 120 (uplift to 1.61.x). (#21135))
         "repository": {
           "url": "https://github.com/brave/chromium"
         }

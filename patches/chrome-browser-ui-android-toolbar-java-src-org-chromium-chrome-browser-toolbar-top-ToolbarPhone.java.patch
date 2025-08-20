@@ -1,17 +1,8 @@
 diff --git a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
-index 0dbe4aa666dbfd1b261891dec76cf763342f4cc1..56a88de6d5ec711fded1c6f2ae03d12fe7894581 100644
+index 404ff70b970ed28221ace433cd36c62c5eb9fa10..d773c73d5fc1d1617bbfaeffcc66257207c20599 100644
 --- a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
 +++ b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
-@@ -38,6 +38,8 @@ import android.widget.FrameLayout;
- import android.widget.ImageView;
- import android.widget.TextView;
- 
-+import org.chromium.base.Log;
-+
- import androidx.annotation.IntDef;
- import androidx.annotation.NonNull;
- import androidx.annotation.Nullable;
-@@ -422,6 +424,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -427,6 +427,7 @@ public class ToolbarPhone extends ToolbarLayout
          if (mOptionalButtonCoordinator != null) {
              mOptionalButtonCoordinator.setBackgroundColorFilter(color);
          }
@@ -19,7 +10,7 @@ index 0dbe4aa666dbfd1b261891dec76cf763342f4cc1..56a88de6d5ec711fded1c6f2ae03d12f
      }
  
      private void updateModernLocationBarCorners() {
-@@ -591,6 +594,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -596,6 +597,7 @@ public class ToolbarPhone extends ToolbarLayout
                          EventConstants.PARTNER_HOME_PAGE_BUTTON_PRESSED);
              }
          }
@@ -27,7 +18,7 @@ index 0dbe4aa666dbfd1b261891dec76cf763342f4cc1..56a88de6d5ec711fded1c6f2ae03d12f
      }
  
      @Override
-@@ -1049,6 +1053,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -1078,6 +1080,7 @@ public class ToolbarPhone extends ToolbarLayout
       * New Tab Page.
       */
      private void updateLocationBarLayoutForExpansionAnimation() {
@@ -35,7 +26,7 @@ index 0dbe4aa666dbfd1b261891dec76cf763342f4cc1..56a88de6d5ec711fded1c6f2ae03d12f
          TraceEvent.begin("ToolbarPhone.updateLocationBarLayoutForExpansionAnimation");
          if (isInTabSwitcherMode()) return;
  
-@@ -1392,6 +1397,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -1501,6 +1504,7 @@ public class ToolbarPhone extends ToolbarLayout
              canvas.restore();
          }
  

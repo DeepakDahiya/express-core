@@ -29,7 +29,7 @@ PurchaseIntentSignalHistoryInfo PurchaseIntentSignalHistoryFromValue(
                  dict.FindString("timestamp_in_seconds")) {
     double value_as_double = 0;
     if (base::StringToDouble(*legacy_string_value, &value_as_double)) {
-      created_at = base::Time::FromDoubleT(value_as_double);
+      created_at = base::Time::FromSecondsSinceUnixEpoch(value_as_double);
     }
   }
 

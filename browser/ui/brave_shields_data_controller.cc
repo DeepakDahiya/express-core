@@ -182,8 +182,9 @@ GURL BraveShieldsDataController::GetFaviconURL(bool refresh) {
                              GetCurrentSiteURL().GetWithoutFilename().spec());
 
   if (refresh) {
-    url = AppendQueryParameter(url, "v",
-                               std::to_string(base::Time::Now().ToJsTime()));
+    url = AppendQueryParameter(
+        url, "v",
+        std::to_string(base::Time::Now().InMillisecondsFSinceUnixEpoch()));
   }
 
   return url;

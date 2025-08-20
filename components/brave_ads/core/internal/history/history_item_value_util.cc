@@ -59,10 +59,12 @@ HistoryItemInfo HistoryItemFromValue(const base::Value::Dict& dict) {
                  dict.FindString(kLegacyCreatedAtKey)) {
     double value_as_double = 0.0;
     if (base::StringToDouble(*legacy_string_value, &value_as_double)) {
-      history_item.created_at = base::Time::FromDoubleT(value_as_double);
+      history_item.created_at =
+          base::Time::FromSecondsSinceUnixEpoch(value_as_double);
     }
   } else if (const auto legacy_double_value = dict.FindDouble(kCreatedAtKey)) {
-    history_item.created_at = base::Time::FromDoubleT(*legacy_double_value);
+    history_item.created_at =
+        base::Time::FromSecondsSinceUnixEpoch(*legacy_double_value);
   }
 
   if (const auto* const value = dict.FindDict(kAdContentKey)) {
@@ -98,10 +100,9 @@ base::Value::List HistoryItemsToUIValue(const HistoryItemList& history_items) {
         base::Value::Dict()
             .Set(kUIUuidKey, base::NumberToString(uuid++))
             .Set(kUIJavaScriptTimestampKey,
-                 history_item.created_at.ToJsTimeIgnoringNull())
-            .Set(kUIDetailRowsKey, HistoryItemToDetailRowsValue(history_item));
-
-    list.Append(std::move(dict));
+                 history_item.created_at
+                     .InMillisecondsFSinceUnixEpochIgnoringNull())
+            .Set(kUIDetailRowsKey, HistoryItemToDetailRowsValue(history_item)));
   }
 
   return list;

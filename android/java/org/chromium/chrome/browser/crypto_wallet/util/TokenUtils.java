@@ -5,6 +5,7 @@
 
 package org.chromium.chrome.browser.crypto_wallet.util;
 
+import android.annotation.SuppressLint;
 import android.text.TextUtils;
 
 import androidx.annotation.NonNull;
@@ -127,6 +128,7 @@ public class TokenUtils {
                 });
     }
 
+    @SuppressLint("WrongCommentType")
     /*
      * Wrapper for {@link BlockchainRegistry#getAllTokens} with Goerli contract address
      * modifications.
@@ -139,9 +141,7 @@ public class TokenUtils {
             String chainId,
             int coinType,
             Callbacks.Callback1<BlockchainToken[]> callback) {
-        blockchainRegistry.getAllTokens(
-                chainId,
-                coinType,
+        blockchainRegistry.getAllTokens(chainId, coinType,
                 tokens -> callback.call(Utils.fixupTokensRegistry(tokens, chainId)));
     }
 
