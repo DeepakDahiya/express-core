@@ -42,8 +42,7 @@ public class BraveLocationBarMediator extends LocationBarMediator {
     private Context mContext;
     private @BrandedColorScheme int mBrandedColorScheme = BrandedColorScheme.APP_DEFAULT;
 
-    public BraveLocationBarMediator(
-            @NonNull Context context,
+    public BraveLocationBarMediator(@NonNull Context context,
             @NonNull LocationBarLayout locationBarLayout,
             @NonNull LocationBarDataProvider locationBarDataProvider,
             @NonNull ObservableSupplier<Profile> profileSupplier,
@@ -51,33 +50,18 @@ public class BraveLocationBarMediator extends LocationBarMediator {
             @NonNull OverrideUrlLoadingDelegate overrideUrlLoadingDelegate,
             @NonNull LocaleManager localeManager,
             @NonNull OneshotSupplier<TemplateUrlService> templateUrlServiceSupplier,
-            @NonNull BackKeyBehaviorDelegate backKeyBehavior,
-            @NonNull WindowAndroid windowAndroid,
-            boolean isTablet,
+            @NonNull BackKeyBehaviorDelegate backKeyBehavior, @NonNull WindowAndroid windowAndroid,
+            boolean isTablet, @NonNull SearchEngineLogoUtils searchEngineLogoUtils,
             @NonNull LensController lensController,
-            @NonNull SaveOfflineButtonState saveOfflineButtonState,
-            @NonNull OmniboxUma omniboxUma,
+            @NonNull SaveOfflineButtonState saveOfflineButtonState, @NonNull OmniboxUma omniboxUma,
             @NonNull BooleanSupplier isToolbarMicEnabledSupplier,
             @NonNull OmniboxSuggestionsDropdownEmbedderImpl dropdownEmbedder,
             @Nullable ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
-        super(
-                context,
-                locationBarLayout,
-                locationBarDataProvider,
-                profileSupplier,
-                privacyPreferencesManager,
-                overrideUrlLoadingDelegate,
-                localeManager,
-                templateUrlServiceSupplier,
-                backKeyBehavior,
-                windowAndroid,
-                isTablet,
-                lensController,
-                saveOfflineButtonState,
-                omniboxUma,
-                isToolbarMicEnabledSupplier,
-                dropdownEmbedder,
-                tabModelSelectorSupplier);
+        super(context, locationBarLayout, locationBarDataProvider, profileSupplier,
+                privacyPreferencesManager, overrideUrlLoadingDelegate, localeManager,
+                templateUrlServiceSupplier, backKeyBehavior, windowAndroid, isTablet,
+                searchEngineLogoUtils, lensController, saveOfflineButtonState, omniboxUma,
+                isToolbarMicEnabledSupplier, dropdownEmbedder, tabModelSelectorSupplier);
     }
 
     public static Class<OmniboxUma> getOmniboxUmaClass() {

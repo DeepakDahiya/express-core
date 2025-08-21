@@ -7,8 +7,6 @@
 
 #include <memory>
 
-#include "ui/base/metadata/metadata_impl_macros.h"
-
 BraveInfoBarContainerView::BraveInfoBarContainerView(
     infobars::InfoBarContainer::Delegate* delegate)
     : InfoBarContainerView(delegate) {
@@ -19,6 +17,3 @@ BraveInfoBarContainerView::BraveInfoBarContainerView(
 }
 
 BraveInfoBarContainerView::~BraveInfoBarContainerView() = default;
-
-BEGIN_METADATA(BraveInfoBarContainerView)
-END_METADATA

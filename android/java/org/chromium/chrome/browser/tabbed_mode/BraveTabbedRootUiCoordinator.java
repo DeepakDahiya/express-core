@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.fullscreen.BrowserControlsManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
-import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
@@ -101,8 +100,7 @@ public class BraveTabbedRootUiCoordinator extends TabbedRootUiCoordinator {
             OneshotSupplier<TabReparentingController> tabReparentingControllerSupplier,
             boolean initializeUiWithIncognitoColors,
             @NonNull BackPressManager backPressManager,
-            @Nullable Bundle savedInstanceState,
-            @Nullable MultiInstanceManager multiInstanceManager) {
+            @Nullable Bundle savedInstanceState) {
         super(
                 activity,
                 onOmniboxFocusChangedListener,
@@ -146,8 +144,7 @@ public class BraveTabbedRootUiCoordinator extends TabbedRootUiCoordinator {
                 tabReparentingControllerSupplier,
                 initializeUiWithIncognitoColors,
                 backPressManager,
-                savedInstanceState,
-                multiInstanceManager);
+                savedInstanceState);
 
         mActivity = activity;
     }

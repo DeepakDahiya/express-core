@@ -36,9 +36,8 @@
   screenY_ChromiumImpl() const; \
   int screenTop
 
-#define resizeTo                                                \
-  resizeTo_ChromiumImpl(int width, int height,                  \
-                        ExceptionState& exception_state) const; \
+#define resizeTo                                      \
+  resizeTo_ChromiumImpl(int width, int height) const; \
   void resizeTo
 
 #define moveTo                             \

@@ -33,7 +33,7 @@ class MockContentSettingsManagerImpl : public mojom::ContentSettingsManager {
     ADD_FAILURE() << "Not reached";
   }
 
-  void AllowStorageAccess(const blink::LocalFrameToken& frame_token,
+  void AllowStorageAccess(int32_t render_frame_id,
                           StorageType storage_type,
                           const url::Origin& origin,
                           const ::net::SiteForCookies& site_for_cookies,
@@ -41,13 +41,13 @@ class MockContentSettingsManagerImpl : public mojom::ContentSettingsManager {
                           base::OnceCallback<void(bool)> callback) override {}
 
   void AllowEphemeralStorageAccess(
-      const blink::LocalFrameToken& frame_token,
+      int32_t render_frame_id,
       const ::url::Origin& origin,
       const ::net::SiteForCookies& site_for_cookies,
       const ::url::Origin& top_frame_origin,
       AllowEphemeralStorageAccessCallback callback) override {}
 
-  void OnContentBlocked(const blink::LocalFrameToken& frame_token,
+  void OnContentBlocked(int32_t render_frame_id,
                         ContentSettingsType type) override {
     ++log_->on_content_blocked_count;
     log_->on_content_blocked_type = type;

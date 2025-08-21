@@ -7,17 +7,26 @@ import {RegisterPolymerTemplateModifications} from 'chrome://resources/brave/pol
 
 RegisterPolymerTemplateModifications({
   'settings-cookies-page': (templateContent) => {
-    const is3pcdRedesignEnabledTemplate = templateContent.
+    const privacySandboxSettings4Template = templateContent.
       querySelector(
-        'template[if*="!is3pcdRedesignEnabled_"]'
+        'template[if*="isPrivacySandboxSettings3CookieSettingsEnabled_"]'
       )
-    if (!is3pcdRedesignEnabledTemplate) {
+    if (!privacySandboxSettings4Template) {
       console.error(
         '[Brave Settings Overrides] Could not find template with ' +
-        'if*=!is3pcdRedesignEnabledTemplate on cookies page.')
+        'if*=isPrivacySandboxSettings3CookieSettingsEnabled_ on cookies page.')
     } else {
+      const clearOnExitToggle =
+        privacySandboxSettings4Template.content.getElementById('clearOnExit')
+      if (!clearOnExitToggle) {
+        console.error(
+          '[Brave Settings Overrides] Could not find clearOnExit id ' +
+          'on cookies page.')
+      } else {
+        clearOnExitToggle.setAttribute('sub-label', '')
+      }
       const blockThirdPartyIncognitoRadioButton =
-        is3pcdRedesignEnabledTemplate.content.
+        privacySandboxSettings4Template.content.
           getElementById('blockThirdPartyIncognito')
       if (!blockThirdPartyIncognitoRadioButton) {
         console.error(

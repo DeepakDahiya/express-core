@@ -23,8 +23,6 @@ import PremiumSuggestion from '../premium_suggestion'
 import WarningPremiumDisconnected from '../alerts/warning_premium_disconnected'
 import styles from './style.module.scss'
 
-const SCROLL_BOTTOM_THRESHOLD = 10.0
-
 function Main() {
   const context = React.useContext(DataContext)
   const {
@@ -39,11 +37,9 @@ function Main() {
     getPageHandlerInstance().pageHandler.clearConversationHistory()
   }
 
-  const shouldShowPremiumSuggestionForModel =
-    hasAcceptedAgreement &&
-    !context.isPremiumStatusFetching && // Avoid flash of content
-    !context.isPremiumUser &&
-    context.currentModel?.access === mojom.ModelAccess.PREMIUM
+  const shouldPromptSuggestQuestions = hasAcceptedAgreement && userAutoGeneratePref === mojom.AutoGenerateQuestionsPref.Unset
+
+  const shouldShowPremiumSuggestionForModel = hasAcceptedAgreement && !context.isPremiumUser && context.currentModel?.isPremium
 
   const shouldShowPremiumSuggestionStandalone =
     hasAcceptedAgreement &&
@@ -58,9 +54,6 @@ function Main() {
   let conversationListElement = <PrivacyMessage />
   let siteTitleElement = null
   let currentErrorElement = null
-
-  let scrollerElement: HTMLDivElement | null = null
-  const scrollPos = React.useRef({ isAtBottom: true })
 
   if (hasAcceptedAgreement) {
     conversationListElement = <ConversationList />
@@ -83,23 +76,6 @@ function Main() {
           onRetry={() => getPageHandlerInstance().pageHandler.retryAPIRequest()}
         />
       )
-    }
-  }
-
-  const handleScroll = (e: React.UIEvent<HTMLDivElement>) => {
-    // Monitor scroll positions only when Assistant is generating
-    if (!context.isGenerating) return
-    const el = e.currentTarget
-    scrollPos.current.isAtBottom = Math.abs(el.scrollHeight - el.clientHeight - el.scrollTop) < SCROLL_BOTTOM_THRESHOLD
-  }
-
-  const handleLastElementHeightChange = () => {
-    if (!scrollerElement) {
-      return
-    }
-
-    if (scrollPos.current.isAtBottom) {
-      scrollerElement.scrollTop = scrollerElement.scrollHeight - scrollerElement.clientHeight
     }
   }
 
@@ -131,18 +107,13 @@ function Main() {
           )}
         </div>
       </div>
-      <div className={classnames({
-        [styles.scroller]: true,
-        [styles.flushBottom]: !hasAcceptedAgreement
-      })}
-        ref={node => (scrollerElement = node)}
-        onScroll={handleScroll}
-      >
+      <div className={styles.scroller}>
         <AlertCenter position='top-left' className={styles.alertCenter} />
-        {context.hasAcceptedAgreement && <ModelIntro />}
-        <ConversationList
-          onLastElementHeightChange={handleLastElementHeightChange}
-        />
+        {siteTitleElement && (
+          <div className={styles.siteTitleBox}>{siteTitleElement}</div>
+        )}
+        {context.hasChangedModel && <ModelIntro />}
+        {conversationListElement}
         {currentErrorElement && (
           <div className={styles.promptContainer}>{currentErrorElement}</div>
         )}

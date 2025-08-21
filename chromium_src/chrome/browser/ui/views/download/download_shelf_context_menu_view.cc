@@ -26,7 +26,8 @@ ui::SimpleMenuModel* DownloadShelfContextMenuView::GetMenuModel() {
   }
 
   // Only add "Remove item from list" entry to download bubble.
-  if (!download::IsDownloadBubbleEnabled()) {
+  if (!download::IsDownloadBubbleEnabled(
+          ProfileManager::GetLastUsedProfile())) {
     return model;
   }
 

@@ -37,6 +37,5 @@ include_rules = [
   "+third_party/blink/public/common",
   "+third_party/blink/public/mojom",
   "+third_party/blink/public/public_buildflags.h",
-  "+ui/accessibility/accessibility_features.h",
   "+ui/base",
 ]

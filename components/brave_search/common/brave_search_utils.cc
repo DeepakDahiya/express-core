@@ -18,17 +18,10 @@
 
 namespace {
 
-constexpr auto kVettedHosts =
-    base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,
-                                             {
-                                                 "safesearch.brave.com",
-                                                 "safesearch.brave.software",
-                                                 "safesearch.bravesoftware.com",
-                                                 "search-dev-local.brave.com",
-                                                 "search.brave.com",
-                                                 "search.brave.software",
-                                                 "search.bravesoftware.com",
-                                             });
+constexpr auto kVettedHosts = base::MakeFixedFlatSet<std::string_view>(
+    {"search.brave.com", "search.brave.software", "search.bravesoftware.com",
+     "safesearch.brave.com", "safesearch.brave.software",
+     "safesearch.bravesoftware.com", "search-dev-local.brave.com"});
 
 }  // namespace
 

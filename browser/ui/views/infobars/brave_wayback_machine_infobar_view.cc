@@ -11,7 +11,6 @@
 #include "brave/browser/infobars/brave_wayback_machine_delegate_impl.h"
 #include "brave/browser/ui/views/infobars/brave_wayback_machine_infobar_contents_view.h"
 #include "brave/components/brave_wayback_machine/brave_wayback_machine_infobar_delegate.h"
-#include "ui/base/metadata/metadata_impl_macros.h"
 
 // static
 std::unique_ptr<infobars::InfoBar>
@@ -42,6 +41,3 @@ void BraveWaybackMachineInfoBarView::Layout() {
   sub_views_->SetBounds(0, OffsetY(&*sub_views_), GetEndX(),
                         sub_views_->height());
 }
-
-BEGIN_METADATA(BraveWaybackMachineInfoBarView)
-END_METADATA

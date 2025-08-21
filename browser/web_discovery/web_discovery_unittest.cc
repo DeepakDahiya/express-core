@@ -58,8 +58,7 @@ class WebDiscoveryCTATest : public testing::Test {
     // Set brave search as a default provider.
     std::unique_ptr<TemplateURL> brave = CreateTestTemplateURL(
         u"brave", "https://search.brave.com/", std::string(),
-        base::Time::FromTimeT(100), false,
-        TemplateURLData::CreatedByPolicy::kNoPolicy,
+        base::Time::FromTimeT(100), false, false,
         TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE);
     service()->SetUserSelectedDefaultSearchProvider(brave.get());
     ASSERT_TRUE(IsBraveSearchDefault());
@@ -69,8 +68,7 @@ class WebDiscoveryCTATest : public testing::Test {
     // Set brave search as a default provider.
     std::unique_ptr<TemplateURL> google = CreateTestTemplateURL(
         u"google", "https://www.google.com/", std::string(),
-        base::Time::FromTimeT(100), false,
-        TemplateURLData::CreatedByPolicy::kNoPolicy,
+        base::Time::FromTimeT(100), false, false,
         TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_GOOGLE);
     service()->SetUserSelectedDefaultSearchProvider(google.get());
     ASSERT_FALSE(IsBraveSearchDefault());

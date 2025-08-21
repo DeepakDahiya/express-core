@@ -96,7 +96,11 @@ void BraveContentRendererClient::
   if (!base::FeatureList::IsEnabled(blink::features::kBraveWebSerialAPI)) {
     blink::WebRuntimeFeatures::EnableFeatureFromString("Serial", false);
   }
+  blink::WebRuntimeFeatures::EnableFeatureFromString(
+      "SpeculationRulesPrefetchProxy", false);
   blink::WebRuntimeFeatures::EnableFeatureFromString("AdTagging", false);
+  blink::WebRuntimeFeatures::EnableFeatureFromString("WebEnvironmentIntegrity",
+                                                     false);
 }
 
 BraveContentRendererClient::~BraveContentRendererClient() = default;

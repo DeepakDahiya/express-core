@@ -80,12 +80,11 @@ HttpsUpgradesNavigationThrottle::MaybeCreateThrottleFor(
       HttpsFirstModeServiceFactory::GetForProfile(profile);
   if (hfm_service) {
     // Can be null in some cases, e.g. when using Ash sign-in profile.
-    interstitial_state.enabled_by_typically_secure_browsing =
-        hfm_service->IsInterstitialEnabledByTypicallySecureUserHeuristic();
+    hfm_service->MaybeEnableHttpsFirstModeForUrl(handle->GetURL());
   }
   // StatefulSSLHostStateDelegate can be null during tests.
-  if (state &&
-      state->IsHttpsEnforcedForUrl(handle->GetURL(), storage_partition)) {
+  if (state && state->IsHttpsEnforcedForHost(handle->GetURL().host(),
+                                             storage_partition)) {
     interstitial_state.enabled_by_engagement_heuristic = true;
   }
 

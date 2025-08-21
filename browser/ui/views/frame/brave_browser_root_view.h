@@ -7,19 +7,10 @@
 #define BRAVE_BROWSER_UI_VIEWS_FRAME_BRAVE_BROWSER_ROOT_VIEW_H_
 
 #include "chrome/browser/ui/views/frame/browser_root_view.h"
-#include "ui/base/metadata/metadata_header_macros.h"
-#include "ui/native_theme/native_theme.h"
 
 class Browser;
 
-// Observe native theme changes to propagate brave theme change notification
-// to child views for non-normal profile windows.
-// W/o this, OnThemeChanged() is not called for private/tor window
-// whenever brave theme is changed because these window uses dark theme
-// provider always.
-class BraveBrowserRootView : public BrowserRootView,
-                             public ui::NativeThemeObserver {
-  METADATA_HEADER(BraveBrowserRootView, BrowserRootView)
+class BraveBrowserRootView : public BrowserRootView {
  public:
   BraveBrowserRootView(BrowserView* browser_view, views::Widget* widget);
   ~BraveBrowserRootView() override;

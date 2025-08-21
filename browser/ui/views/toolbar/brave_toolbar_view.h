@@ -12,7 +12,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/prefs/pref_member.h"
-#include "ui/base/metadata/metadata_header_macros.h"
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
 class BraveVPNButton;
@@ -23,7 +22,6 @@ class WalletButton;
 
 class BraveToolbarView : public ToolbarView,
                          public ProfileAttributesStorage::Observer {
-  METADATA_HEADER(BraveToolbarView, ToolbarView)
  public:
   explicit BraveToolbarView(Browser* browser, BrowserView* browser_view);
   ~BraveToolbarView() override;

@@ -115,6 +115,7 @@ import org.chromium.chrome.browser.shields.BraveShieldsMenuObserver;
 import org.chromium.chrome.browser.shields.BraveShieldsUtils;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabHidingType;
+import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
@@ -447,6 +448,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
     }
 
+    @Override
     public void setTabModelSelector(TabModelSelector selector) {
         // We might miss events before calling setTabModelSelector, so we need
         // to proactively update the shields button state here, otherwise shields
@@ -1343,10 +1345,9 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         Context context = getContext();
         String countryCode = Locale.getDefault().getCountry();
         try {
-            if (hasFocus
-                    && PackageUtils.isFirstInstall(context)
+            if (hasFocus && PackageUtils.isFirstInstall(context)
                     && BraveActivity.getBraveActivity().getActivityTab() != null
-                    && UrlUtilities.isNtpUrl(
+                    && UrlUtilities.isNTPUrl(
                             BraveActivity.getBraveActivity().getActivityTab().getUrl().getSpec())
                     && !OnboardingPrefManager.getInstance().hasSearchEngineOnboardingShown()
                     && OnboardingPrefManager.getInstance().getUrlFocusCount() == 1
@@ -1413,15 +1414,13 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     private boolean isShieldsOnForTab(Tab tab) {
-        if (!isNativeLibraryReady()
-                || tab == null
-                || Profile.fromWebContents(tab.getWebContents()) == null) {
+        if (!isNativeLibraryReady() || tab == null
+                || Profile.fromWebContents(((TabImpl) tab).getWebContents()) == null) {
             return false;
         }
 
         return BraveShieldsContentSettings.getShields(
-                Profile.fromWebContents(tab.getWebContents()),
-                tab.getUrl().getSpec(),
+                Profile.fromWebContents(((TabImpl) tab).getWebContents()), tab.getUrl().getSpec(),
                 BraveShieldsContentSettings.RESOURCE_IDENTIFIER_BRAVE_SHIELDS);
     }
 
@@ -1615,7 +1614,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 || BraveReflectionUtil.EqualTypes(this.getClass(), ToolbarPhone.class)) {
             updateMenuButtonState();
             Tab tab = getToolbarDataProvider() != null ? getToolbarDataProvider().getTab() : null;
-            if (tab != null && tab.getWebContents() != null) {
+            if (tab != null && ((TabImpl) tab).getWebContents() != null) {
                 updateBraveShieldsButtonState(tab);
             }
         }

@@ -11,7 +11,6 @@ import { setIconBasePath } from '@brave/leo/react/icon'
 import '$web-components/app.global.scss'
 import '@brave/leo/tokens/css/variables.css'
 
-import '$web-common/defaultTrustedTypesPolicy'
 import { loadTimeData } from '$web-common/loadTimeData'
 import BraveCoreThemeProvider from '$web-common/BraveCoreThemeProvider'
 import Main from './components/main'

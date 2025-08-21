@@ -12,11 +12,13 @@
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
+
+// static
+const char RoundedSeparator::kViewClassName[] = "RoundedSeparator";
 
 // static
 const int RoundedSeparator::kThickness = 1;
@@ -77,5 +79,6 @@ void RoundedSeparator::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
 }
 
-BEGIN_METADATA(RoundedSeparator)
-END_METADATA
+const char* RoundedSeparator::GetClassName() const {
+  return kViewClassName;
+}

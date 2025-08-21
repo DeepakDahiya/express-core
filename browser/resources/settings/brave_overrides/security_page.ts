@@ -27,23 +27,13 @@ RegisterPolymerTemplateModifications({
       passwordsLeakToggle.setAttribute('hidden', 'true')
     }
     if (loadTimeData.getBoolean("isHttpsByDefaultEnabled")) {
-      const enableHttpsFirstModeNewSettings = templateContent.
-        querySelector(
-          'template[is=dom-if][if="[[!enableHttpsFirstModeNewSettings_]]"]'
-      )
-      if (!enableHttpsFirstModeNewSettings) {
-        console.error(
-          '[Brave Settings Overrides] Could not find template with ' +
-          'if=[[!enableHttpsFirstModeNewSettings on security page.]]')
+      const httpsOnlyModeToggle = templateContent.
+        getElementById('httpsOnlyModeToggle')
+      if (!httpsOnlyModeToggle) {
+        console.error('[Brave Settings Overrides] Could not find' +
+          'httpsOnlyModeToggle on security page.')
       } else {
-        const httpsOnlyModeToggle = enableHttpsFirstModeNewSettings.content.
-          getElementById('httpsOnlyModeToggle')
-        if (!httpsOnlyModeToggle) {
-          console.error('[Brave Settings Overrides] Could not find' +
-            'httpsOnlyModeToggle on security page.')
-        } else {
-          httpsOnlyModeToggle.setAttribute('hidden', 'true')
-        }
+        httpsOnlyModeToggle.setAttribute('hidden', 'true')
       }
     }
     const link = templateContent.getElementById('advanced-protection-program-link')

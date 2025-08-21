@@ -33,7 +33,6 @@ import org.chromium.chrome.browser.compositor.CompositorViewHolder;
 import org.chromium.chrome.browser.compositor.bottombar.ephemeraltab.EphemeralTabCoordinator;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManagerImpl;
 import org.chromium.chrome.browser.compositor.layouts.content.TabContentManager;
-import org.chromium.chrome.browser.compositor.overlays.strip.StripLayoutHelperManager;
 import org.chromium.chrome.browser.findinpage.FindToolbarManager;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 import org.chromium.chrome.browser.homepage.HomepageManager;
@@ -114,6 +113,7 @@ public class BraveToolbarManager extends ToolbarManager {
     private LayoutManagerImpl mLayoutManager;
     private ObservableSupplierImpl<Boolean> mOverlayPanelVisibilitySupplier;
     private IncognitoStateProvider mIncognitoStateProvider;
+    private TabCountProvider mTabCountProvider;
     private TabGroupUi mTabGroupUi;
     private BottomSheetController mBottomSheetController;
     private ActivityLifecycleDispatcher mActivityLifecycleDispatcher;
@@ -354,49 +354,30 @@ public class BraveToolbarManager extends ToolbarManager {
 
 
     @Override
-    public void initializeWithNative(
-            @NonNull LayoutManagerImpl layoutManager,
-            @Nullable StripLayoutHelperManager stripLayoutHelperManager,
-            OnClickListener tabSwitcherClickHandler,
-            OnClickListener newTabClickHandler,
-            OnClickListener bookmarkClickHandler,
-            OnClickListener customTabsBackClickHandler,
+    public void initializeWithNative(LayoutManagerImpl layoutManager,
+            OnClickListener tabSwitcherClickHandler, OnClickListener newTabClickHandler,
+            OnClickListener bookmarkClickHandler, OnClickListener customTabsBackClickHandler,
             Supplier<Boolean> showStartSurfaceSupplier) {
-        OnClickListener wrappedNewTabClickHandler =
-                v -> {
-                    recordNewTabClick();
-                    newTabClickHandler.onClick(v);
-                };
-        super.initializeWithNative(
-                layoutManager,
-                stripLayoutHelperManager,
-                tabSwitcherClickHandler,
-                wrappedNewTabClickHandler,
-                bookmarkClickHandler,
-                customTabsBackClickHandler,
-                showStartSurfaceSupplier);
+        super.initializeWithNative(layoutManager, tabSwitcherClickHandler, newTabClickHandler,
+                bookmarkClickHandler, customTabsBackClickHandler, showStartSurfaceSupplier);
+
+        TabModelSelector currentSelector = mLocalTabModelSelector != null ? mLocalTabModelSelector : mPassedTabModelSelectorSupplier.get();
 
         if (isToolbarPhone() && BottomToolbarConfiguration.isBottomToolbarEnabled()) {
             enableBottomControls();
-            Runnable closeAllTabsAction =
-                    () -> {
-                        mTabModelSelector
-                                .getModel(mIncognitoStateProvider.isIncognitoSelected())
-                                .closeAllTabs();
-                    };
+            Runnable closeAllTabsAction = () -> {
+                if (currentSelector != null) {
+                    currentSelector.getModel(mIncognitoStateProvider.isIncognitoSelected())
+                            .closeAllTabs();
+                }
+            };
             assert (mBottomControlsCoordinatorSupplier.get()
-                    instanceof BraveBottomControlsCoordinator);
+                            instanceof BraveBottomControlsCoordinator);
             ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
-                    .initializeWithNative(
-                            mActivity,
-                            mCompositorViewHolder.getResourceManager(),
-                            mCompositorViewHolder.getLayoutManager(),
-                            tabSwitcherClickHandler,
-                            wrappedNewTabClickHandler,
-                            mWindowAndroid,
-                            mTabModelSelector,
-                            mIncognitoStateProvider,
-                            mActivity.findViewById(R.id.control_container),
+                    .initializeWithNative(mActivity, mCompositorViewHolder.getResourceManager(),
+                            mCompositorViewHolder.getLayoutManager(), tabSwitcherClickHandler,
+                            newTabClickHandler, mWindowAndroid, mTabCountProvider,
+                            mIncognitoStateProvider, mActivity.findViewById(R.id.control_container),
                             closeAllTabsAction);
             if (mLocationBar != null && mLocationBar.getContainerView() != null) {
                  mLocationBar.getContainerView().setAccessibilityTraversalBefore(R.id.bottom_toolbar);

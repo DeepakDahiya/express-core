@@ -157,12 +157,8 @@ namespace views {
 
 MdTextButton::MdTextButton(PressedCallback callback,
                            const std::u16string& text,
-                           int button_context,
-                           bool use_text_color_for_icon)
-    : MdTextButtonBase(std::move(callback),
-                       text,
-                       button_context,
-                       use_text_color_for_icon) {
+                           int button_context)
+    : MdTextButtonBase(std::move(callback), text, button_context) {
   SetCornerRadius(100);
   views::HighlightPathGenerator::Install(
       this, std::make_unique<BraveTextButtonHighlightPathGenerator>());
@@ -370,9 +366,6 @@ MdTextButton::ButtonColors MdTextButton::GetButtonColors() {
               style.border_color.value_or(SK_ColorTRANSPARENT), opacity),
           .text_color = AddOpacity(style.text_color, opacity)};
 }
-
-BEGIN_METADATA(MdTextButton)
-END_METADATA
 
 }  // namespace views
 

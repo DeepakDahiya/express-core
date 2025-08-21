@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/app_controller_mac.mm b/chrome/browser/app_controller_mac.mm
-index 7c74fda092ad25bb0b6fdce3f4f85eaae14c40cc..39877cff88842f39e0244eab1e13f478d33c8614 100644
+index f477e7d102c33c55d29f3c71593283c9cd70f878..0583d55aea5f552f15c6b44a4bbe22fa5dfca6c7 100644
 --- a/chrome/browser/app_controller_mac.mm
 +++ b/chrome/browser/app_controller_mac.mm
-@@ -643,7 +643,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
+@@ -645,7 +645,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
  
  + (AppController*)sharedController {
    static AppController* sharedController = [] {
@@ -11,30 +11,7 @@ index 7c74fda092ad25bb0b6fdce3f4f85eaae14c40cc..39877cff88842f39e0244eab1e13f478
      NSApp.delegate = sharedController;
      return sharedController;
    }();
-@@ -722,6 +722,22 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
- 
-   // Initialize the Profile menu.
-   [self initProfileMenu];
-+
-+  // Work around a bug in macOS 14. The application name shown in the menu bar
-+  // should be the CFBundleName, but a bug in the menu rewrite causes the
-+  // CFBundleDisplayName to be swapped in. What's happening here is that the
-+  // NSMenuBarDisplayManager registers for a notification that the app name
-+  // changed, and then, when the notification comes in, it calls a Process
-+  // Manager API that returns the CFBundleDisplayName which is not appropriate
-+  // for this use. Work around this by unregistering the NSMenuBarDisplayManager
-+  // for the notification. See https://crbug.com/1487224 and FB13192263.
-+  if (id sharedMenuBarDisplayManager = [NSClassFromString(
-+          @"NSMenuBarDisplayManager") performSelector:@selector(shared)]) {
-+    [NSWorkspace.sharedWorkspace.notificationCenter
-+        removeObserver:sharedMenuBarDisplayManager
-+                  name:@"NSWorkspaceApplicationNameDidChangeNotification"
-+                object:nil];
-+  }
- }
- 
- - (void)unregisterEventHandlers {
-@@ -1174,7 +1190,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
+@@ -1181,7 +1181,7 @@ class AppControllerNativeThemeObserver : public ui::NativeThemeObserver {
    }
  
    auto it = _profileBookmarkMenuBridgeMap.find(profilePath);

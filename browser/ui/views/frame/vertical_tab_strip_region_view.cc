@@ -307,17 +307,16 @@ class VerticalTabNewTabButton : public BraveNewTabButton {
 
   // BraveNewTabButton:
   SkPath GetBorderPath(const gfx::Point& origin,
+                       float scale,
                        bool extend_to_top) const override {
     auto contents_bounds = GetContentsBounds();
+    const float radius = GetCornerRadius() * scale;
     SkPath path;
-    const auto* widget = GetWidget();
-    if (widget) {
-      const float radius = GetCornerRadius();
-      const gfx::Rect path_rect(origin.x(), origin.y(), contents_bounds.width(),
-                                contents_bounds.height());
-      path.addRoundRect(RectToSkRect(path_rect), radius, radius);
-      path.close();
-    }
+    const gfx::Rect path_rect(origin.x(), origin.y(),
+                              contents_bounds.width() * scale,
+                              contents_bounds.height() * scale);
+    path.addRoundRect(RectToSkRect(path_rect), radius, radius);
+    path.close();
     return path;
   }
 
@@ -346,7 +345,8 @@ class VerticalTabNewTabButton : public BraveNewTabButton {
       cc::PaintFlags flags;
       flags.setAntiAlias(true);
       flags.setColor(cp->GetColor(kColorToolbar));
-      canvas->DrawPath(GetBorderPath(gfx::Point(), false), flags);
+      canvas->DrawPath(
+          GetBorderPath(gfx::Point(), canvas->image_scale(), false), flags);
     }
 
     // Draw split line on the top.
@@ -430,7 +430,7 @@ class ResettableResizeArea : public views::ResizeArea {
   raw_ptr<VerticalTabStripRegionView> region_view_;
 };
 
-BEGIN_METADATA(ResettableResizeArea, views::ResizeArea)
+BEGIN_METADATA(ResettableResizeArea, ResizeArea)
 END_METADATA
 
 }  // namespace

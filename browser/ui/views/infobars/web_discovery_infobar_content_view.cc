@@ -57,9 +57,8 @@ void OpenMoreInfoPage() {
 // Re-calculated preferred size as it doesn't give proper
 // size when enlarged.
 class InfoBarStyledLabel : public CustomStyledLabel {
-  METADATA_HEADER(InfoBarStyledLabel, CustomStyledLabel)
-
  public:
+  METADATA_HEADER(InfoBarStyledLabel);
   using CustomStyledLabel::CustomStyledLabel;
   InfoBarStyledLabel(const InfoBarStyledLabel&) = delete;
   InfoBarStyledLabel& operator=(const InfoBarStyledLabel&) = delete;
@@ -88,7 +87,7 @@ class InfoBarStyledLabel : public CustomStyledLabel {
   }
 };
 
-BEGIN_METADATA(InfoBarStyledLabel)
+BEGIN_METADATA(InfoBarStyledLabel, CustomStyledLabel)
 END_METADATA
 
 // TODO(simonhong): Use leo MdTextButton when it's stabilized.
@@ -462,9 +461,9 @@ std::unique_ptr<views::View> WebDiscoveryInfoBarContentView::GetOkButton(
 std::unique_ptr<views::View> WebDiscoveryInfoBarContentView::GetCloseButton() {
   auto close_button = std::make_unique<views::ImageButton>(base::BindRepeating(
       &WebDiscoveryInfoBarContentView::CloseInfoBar, base::Unretained(this)));
-  close_button->SetImageModel(
+  close_button->SetImage(
       views::Button::STATE_NORMAL,
-      ui::ImageModel::FromVectorIcon(
+      gfx::CreateVectorIcon(
           kWebDiscoveryInfobarCloseButtonIcon,
           GetColorProvider()->GetColor(kColorWebDiscoveryInfoBarClose)));
   close_button->SetProperty(

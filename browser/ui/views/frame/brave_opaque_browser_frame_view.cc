@@ -17,7 +17,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/opaque_browser_frame_view_layout.h"
 #include "ui/base/hit_test.h"
-#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -126,33 +125,3 @@ void BraveOpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
 
   OpaqueBrowserFrameView::PaintClientEdge(canvas);
 }
-
-int BraveOpaqueBrowserFrameView::GetTopInset(bool restored) const {
-  if (ShouldShowVerticalTabs()) {
-    // In order to ignore horizontal tab strip's height, we by pass the base
-    // class's implementation.
-    return layout_->NonClientTopHeight(restored);
-  }
-
-  return OpaqueBrowserFrameView::GetTopInset(restored);
-}
-
-int BraveOpaqueBrowserFrameView::GetTopAreaHeight() const {
-  if (ShouldShowVerticalTabs()) {
-    // In order to ignore horizontal tab strip's height, we by pass the base
-    // class's implementation.
-    return layout_->NonClientTopHeight(false);
-  }
-
-  return OpaqueBrowserFrameView::GetTopAreaHeight();
-}
-
-bool BraveOpaqueBrowserFrameView::ShouldShowVerticalTabs() const {
-  DCHECK(browser_view());
-  auto* browser = browser_view()->browser();
-  DCHECK(browser);
-  return tabs::utils::ShouldShowVerticalTabs(browser);
-}
-
-BEGIN_METADATA(BraveOpaqueBrowserFrameView)
-END_METADATA

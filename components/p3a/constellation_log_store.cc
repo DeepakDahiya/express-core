@@ -191,8 +191,4 @@ void ConstellationLogStore::LoadPersistedUnsentLogs() {
   }
 }
 
-const metrics::LogMetadata ConstellationLogStore::staged_log_metadata() const {
-  return {};
-}
-
 }  // namespace p3a

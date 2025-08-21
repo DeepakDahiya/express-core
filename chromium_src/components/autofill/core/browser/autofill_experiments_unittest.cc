@@ -109,7 +109,10 @@ TEST_F(AutofillExperimentsTest, IsCardUploadEnabled_UserEmailWithGoogleDomain) {
 
 TEST_F(AutofillExperimentsTest,
        IsCardUploadEnabled_UserEmailWithNonGoogleDomainIfExperimentEnabled) {
-  scoped_feature_list_.InitWithFeatures({features::kAutofillUpstream}, {});
+  scoped_feature_list_.InitWithFeatures(
+      {features::kAutofillUpstream,
+       features::kAutofillUpstreamAllowAllEmailDomains},
+      {});
   EXPECT_FALSE(IsCreditCardUploadEnabled(
       "cool.user@hotmail.com",
       AutofillMetrics::PaymentsSigninState::kSignedInAndSyncFeatureEnabled));

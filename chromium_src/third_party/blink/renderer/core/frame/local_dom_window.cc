@@ -17,14 +17,8 @@
 #define resizeTo resizeTo_ChromiumImpl
 #define moveTo moveTo_ChromiumImpl
 
-#define BRAVE_LOCAL_DOM_WINDOW_CAN_EXECUTE_SCRIPTS                        \
-  if (WebContentSettingsClient* settings_client =                         \
-          GetFrame()->GetContentSettingsClient()) {                       \
-    script_enabled = settings_client->AllowScript(allow_script_renderer); \
-  }
-
 #include "src/third_party/blink/renderer/core/frame/local_dom_window.cc"
-#undef BRAVE_LOCAL_DOM_WINDOW_CAN_EXECUTE_SCRIPTS
+
 #undef outerHeight
 #undef outerWidth
 #undef screenX
@@ -101,16 +95,13 @@ int LocalDOMWindow::screenY() const {
              : screenY_ChromiumImpl();
 }
 
-void LocalDOMWindow::resizeTo(int width,
-                              int height,
-                              ExceptionState& exception_state) const {
+void LocalDOMWindow::resizeTo(int width, int height) const {
   ExecutionContext* context = GetExecutionContext();
   if (BlockScreenFingerprinting(context)) {
     resizeTo_ChromiumImpl(width + outerWidth_ChromiumImpl() - outerWidth(),
-                          height + outerHeight_ChromiumImpl() - outerHeight(),
-                          exception_state);
+                          height + outerHeight_ChromiumImpl() - outerHeight());
   } else {
-    resizeTo_ChromiumImpl(width, height, exception_state);
+    resizeTo_ChromiumImpl(width, height);
   }
 }
 

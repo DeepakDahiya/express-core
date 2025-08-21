@@ -34,16 +34,12 @@ const std::array<std::string, 5> kFakeQValues = {";q=0.5", ";q=0.6", ";q=0.7",
                                                  ";q=0.8", ";q=0.9"};
 static constexpr auto kFarbleAcceptLanguageExceptions =
     base::MakeFixedFlatSet<std::string_view>(
-        base::sorted_unique,
-        {
-            // https://github.com/brave/brave-browser/issues/26325
-            "aeroplan.rewardops.com",
-            // https://github.com/brave/brave-browser/issues/31196
-            "login.live.com",
-            // https://github.com/brave/brave-browser/issues/25309
-            "ulta.com",
-            "www.ulta.com",
-        });
+        {// https://github.com/brave/brave-browser/issues/25309
+         "ulta.com", "www.ulta.com",
+         // https://github.com/brave/brave-browser/issues/26325
+         "aeroplan.rewardops.com",
+         // https://github.com/brave/brave-browser/issues/31196
+         "login.live.com"});
 }  // namespace
 
 std::string FarbleAcceptLanguageHeader(
