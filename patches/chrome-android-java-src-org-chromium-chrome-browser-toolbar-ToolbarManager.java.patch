@@ -1,8 +1,8 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java b/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
-index 46ae70839739bf0e6ad8ac1973c0b3774f44fcdd..8924c0d3aac61266aa70e756af970ff622d4a9a0 100644
+index 410e289c3ceefb1423d5966bd705492301051483..09ceb974f472fa48234330c83f55675dc8833ef8 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/toolbar/ToolbarManager.java
-@@ -835,6 +835,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
+@@ -815,6 +815,13 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
                  updateTabLoadingState(true);
                  onBackPressStateChanged();
  
@@ -16,7 +16,7 @@ index 46ae70839739bf0e6ad8ac1973c0b3774f44fcdd..8924c0d3aac61266aa70e756af970ff6
                  // A URL update is a decent enough indicator that the toolbar widget is in
                  // a stable state to capture its bitmap for use in fullscreen.
                  mControlContainer.setReadyForBitmapCapture(true);
-@@ -1864,6 +1871,18 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
+@@ -1796,6 +1803,18 @@ public class ToolbarManager implements UrlFocusChangeListener, ThemeColorObserve
      public void onUrlFocusChange(boolean hasFocus) {
          mToolbar.onUrlFocusChange(hasFocus);
  

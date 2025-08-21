@@ -1,8 +1,8 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java b/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java
-index 7c5e4e417483d71a18c76408047b5b2dfbb9499a..7cc46d56ca9434b7a65aad11139ec24b9e4d303a 100644
+index 56736ec4abbe8544552ec1e1c7bc60839e2f932d..36c1789c7d5ffd79e06ca1c9926dc316616acee0 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/firstrun/FirstRunFlowSequencer.java
-@@ -217,10 +217,11 @@ public abstract class FirstRunFlowSequencer  {
+@@ -221,10 +221,11 @@ public abstract class FirstRunFlowSequencer  {
       */
      public static boolean checkIfFirstRunIsNecessary(
              boolean preferLightweightFre, Intent fromIntent) {
