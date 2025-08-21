@@ -7,6 +7,8 @@
 
 #include "chrome/browser/ui/views/side_panel/side_panel_content_proxy.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_util.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/background.h"
 
 BraveSidePanelViewBase::BraveSidePanelViewBase() {
   // Originally SidePanelEntry's Content was
@@ -39,3 +41,6 @@ void BraveSidePanelViewBase::OnViewVisibilityChanged(
     observation_.Reset();
   }
 }
+
+BEGIN_METADATA(BraveSidePanelViewBase)
+END_METADATA

@@ -186,8 +186,22 @@ std::string WalletButton::GetBadgeText() {
 
 void WalletButton::UpdateImageAndText() {
   const ui::ColorProvider* color_provider = GetColorProvider();
-  SkColor icon_color = color_provider->GetColor(kColorToolbarButtonIcon);
-  auto icon = gfx::CreateVectorIcon(kLeoProductBraveWalletIcon, 16, icon_color);
+
+  ui::ColorId color_id = kColorToolbarButtonIcon;
+  if (activated) {
+    color_id = kColorToolbarButtonActivated;
+  }
+
+  if (counter_ == 0) {
+    SetImageModel(
+        views::Button::STATE_NORMAL,
+        ui::ImageModel::FromVectorIcon(kLeoProductBraveWalletIcon,
+                                       color_provider->GetColor(color_id), 16));
+    return;
+  }
+
+  auto icon = gfx::CreateVectorIcon(kLeoProductBraveWalletIcon, GetIconSize(),
+                                    color_provider->GetColor(color_id));
 
   size_t icon_size = std::max(icon.width(), icon.height());
   auto badge_size = brave::BraveIconWithBadgeImageSource::GetMaxBadgeSize();
@@ -205,10 +219,9 @@ void WalletButton::UpdateImageAndText() {
   auto text = GetBadgeText();
   image_source->SetBadge(std::make_unique<IconWithBadgeImageSource::Badge>(
       text, brave::kBadgeTextColor, brave::kBadgeNotificationBG));
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::ImageSkia(std::move(image_source), preferred_size));
-  SetTooltipText(
-      brave_l10n::GetLocalizedResourceUTF16String(IDS_TOOLTIP_WALLET));
+  SetImageModel(views::Button::STATE_NORMAL,
+                ui::ImageModel::FromImageSkia(
+                    gfx::ImageSkia(std::move(image_source), preferred_size)));
 }
 
 void WalletButton::UpdateVisibility() {
@@ -254,5 +267,5 @@ views::View* WalletButton::GetAsAnchorView() {
   return anchor_view;
 }
 
-BEGIN_METADATA(WalletButton, ToolbarButton)
+BEGIN_METADATA(WalletButton)
 END_METADATA
