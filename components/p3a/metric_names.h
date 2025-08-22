@@ -23,8 +23,9 @@ namespace p3a {
 // TODO(iefremov) Clean up obsolete metrics.
 //
 // clang-format off
-constexpr inline auto kCollectedTypicalHistograms =
-  base::MakeFixedFlatSet<std::string_view>({
+inline constexpr auto kCollectedTypicalHistograms =
+  base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,{
+    "Brave.AIChat.AcquisitionSource",
     "Brave.AIChat.AvgPromptCount",
     "Brave.AIChat.ChatCount",
     "Brave.AIChat.Enabled",
@@ -195,8 +196,8 @@ constexpr inline auto kCollectedTypicalHistograms =
     "Brave.P2A.new_tab_page_ad.impressions"
 });
 
-constexpr inline auto kCollectedSlowHistograms =
-  base::MakeFixedFlatSet<std::string_view>({
+inline constexpr auto kCollectedSlowHistograms =
+  base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,{
     "Brave.Accessibility.DisplayZoomEnabled",
     "Brave.Core.DocumentsDirectorySizeMB",
     "Brave.Core.ProfileCount",
@@ -215,8 +216,8 @@ constexpr inline auto kCollectedSlowHistograms =
     "Brave.Wallet.UsageMonthly"
 });
 
-constexpr inline auto kCollectedExpressHistograms =
-  base::MakeFixedFlatSet<std::string_view>({
+inline constexpr auto kCollectedExpressHistograms =
+  base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,{
     "Brave.AIChat.UsageDaily",
     "Brave.Core.UsageDaily",
     "Brave.Rewards.EnabledInstallationTime",
@@ -228,8 +229,9 @@ constexpr inline auto kCollectedExpressHistograms =
 
 // List of metrics that should only be sent once per latest histogram update.
 // Once the metric value has been sent, the value will be removed from the log store.
-constexpr inline auto kEphemeralHistograms =
-  base::MakeFixedFlatSet<std::string_view>({
+inline constexpr auto kEphemeralHistograms =
+  base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,{
+    "Brave.AIChat.AcquisitionSource",
     "Brave.AIChat.AvgPromptCount",
     "Brave.AIChat.ChatCount",
     "Brave.AIChat.UsageDaily",

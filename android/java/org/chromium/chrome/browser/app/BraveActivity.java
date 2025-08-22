@@ -191,7 +191,6 @@ import org.chromium.chrome.browser.share.ShareDelegate.ShareOrigin;
 import org.chromium.chrome.browser.site_settings.BraveWalletEthereumConnectedSites;
 import org.chromium.chrome.browser.speedreader.BraveSpeedReaderUtils;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabImpl;
 import org.chromium.chrome.browser.tab.TabLaunchType;
 import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModel;
@@ -750,7 +749,8 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public boolean onMenuOrKeyboardAction(int id, boolean fromMenu) {
-        final TabImpl currentTab = (TabImpl) getActivityTab();
+        final Tab currentTab = getActivityTab();
+        // Handle items replaced by Brave.
         if (id == R.id.info_menu_id && currentTab != null) {
             ShareDelegate shareDelegate = (ShareDelegate) getShareDelegateSupplier().get();
             shareDelegate.share(currentTab, false, ShareOrigin.OVERFLOW_MENU);
@@ -795,7 +795,8 @@ public abstract class BraveActivity extends ChromeActivity
                             BraveVpnUtils.openBraveVpnProfileActivity(BraveActivity.this);
                         }
                     } else {
-                        BraveVpnUtils.showProgressDialog(BraveActivity.this,
+                        BraveVpnUtils.showProgressDialog(
+                                BraveActivity.this,
                                 getResources().getString(R.string.vpn_connect_text));
                         if (BraveVpnPrefUtils.isSubscriptionPurchase()) {
                             verifySubscription();
@@ -1594,7 +1595,7 @@ public abstract class BraveActivity extends ChromeActivity
                         .readBoolean(BravePreferenceKeys.BRAVE_AD_FREE_CALLOUT_DIALOG, true)
                 && getActivityTab() != null
                 && getActivityTab().getUrl().getSpec() != null
-                && UrlUtilities.isNTPUrl(getActivityTab().getUrl().getSpec())
+                && UrlUtilities.isNtpUrl(getActivityTab().getUrl().getSpec())
                 && (ChromeSharedPreferences.getInstance()
                                 .readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false)
                         || ChromeSharedPreferences.getInstance()
@@ -1616,9 +1617,10 @@ public abstract class BraveActivity extends ChromeActivity
             handleDeepLinkVpn();
         } else if (!mIsDeepLink
                 && OnboardingPrefManager.getInstance().isOnboardingSearchBoxTooltip()
-                && getActivityTab() != null && getActivityTab().getUrl().getSpec() != null
-                && UrlUtilities.isNTPUrl(getActivityTab().getUrl().getSpec())) {
-                    // showSearchBoxTooltip();
+                && getActivityTab() != null
+                && getActivityTab().getUrl().getSpec() != null
+                && UrlUtilities.isNtpUrl(getActivityTab().getUrl().getSpec())) {
+            // showSearchBoxTooltip();
         }
         // Added to reset app links settings for upgrade case
         if (!PackageUtils.isFirstInstall(this)
@@ -2106,8 +2108,9 @@ public abstract class BraveActivity extends ChromeActivity
         if (OnboardingPrefManager.getInstance().isBraveStatsEnabled()) {
             BraveStatsUtil.showBraveStats();
         } else {
-            if (getActivityTab() != null && getActivityTab().getUrl().getSpec() != null
-                    && !UrlUtilities.isNTPUrl(getActivityTab().getUrl().getSpec())) {
+            if (getActivityTab() != null
+                    && getActivityTab().getUrl().getSpec() != null
+                    && !UrlUtilities.isNtpUrl(getActivityTab().getUrl().getSpec())) {
                 OnboardingPrefManager.getInstance().setFromNotification(true);
                 if (getTabCreator(false) != null) {
                     getTabCreator(false).launchUrl(
