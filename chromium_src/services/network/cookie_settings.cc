@@ -5,8 +5,6 @@
 
 #include "services/network/cookie_settings.h"
 
-#include <optional>
-
 #include "net/base/features.h"
 #include "url/origin.h"
 
@@ -18,8 +16,7 @@ bool CookieSettings::IsEphemeralCookieAccessible(
     const net::CanonicalCookie& cookie,
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const std::optional<url::Origin>& top_frame_origin,
-    const net::FirstPartySetMetadata& first_party_set_metadata,
+    const absl::optional<url::Origin>& top_frame_origin,
     net::CookieSettingOverrides overrides,
     net::CookieInclusionStatus* cookie_inclusion_status) const {
   // Upstream now do single cookie-specific checks in some places to determine
@@ -33,15 +30,14 @@ bool CookieSettings::IsEphemeralCookieAccessible(
   }
 
   return IsCookieAccessible(cookie, url, site_for_cookies, top_frame_origin,
-                            first_party_set_metadata, overrides,
-                            cookie_inclusion_status);
+                            overrides, cookie_inclusion_status);
 }
 
 net::NetworkDelegate::PrivacySetting
 CookieSettings::IsEphemeralPrivacyModeEnabled(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    const std::optional<url::Origin>& top_frame_origin,
+    const absl::optional<url::Origin>& top_frame_origin,
     net::CookieSettingOverrides overrides) const {
   if (IsEphemeralCookieAccessAllowed(url, site_for_cookies, top_frame_origin,
                                      overrides)) {
@@ -60,7 +56,7 @@ bool CookieSettings::AnnotateAndMoveUserBlockedEphemeralCookies(
     net::CookieSettingOverrides overrides,
     net::CookieAccessResultList& maybe_included_cookies,
     net::CookieAccessResultList& excluded_cookies) const {
-  std::optional<url::Origin> top_frame_origin_opt;
+  absl::optional<url::Origin> top_frame_origin_opt;
   if (top_frame_origin)
     top_frame_origin_opt = *top_frame_origin;
 

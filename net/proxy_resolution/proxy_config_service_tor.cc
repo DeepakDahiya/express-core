@@ -181,12 +181,10 @@ void ProxyConfigServiceTor::SetProxyAuthorization(
   // Adding username & password to global sock://127.0.0.1:[port] config
   // without actually modifying it when resolving proxy for each url.
   const std::string username = CircuitAnonymizationKey(url);
-  const net::ProxyChain& chain =
-      config.value().proxy_rules().single_proxies.First();
-  CHECK(chain.is_single_proxy());
-  const net::ProxyServer& server = chain.GetProxyServer(/*chain_index=*/0);
-  const std::string& proxy_uri = net::ProxyServerToProxyUri(server);
-  HostPortPair host_port_pair = server.host_port_pair();
+  const std::string& proxy_uri = net::ProxyServerToProxyUri(
+      config.value().proxy_rules().single_proxies.Get());
+  HostPortPair host_port_pair =
+      config.value().proxy_rules().single_proxies.Get().host_port_pair();
 
   if (!username.empty()) {
     auto* map = GetTorProxyMap(service);

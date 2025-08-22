@@ -25,24 +25,23 @@ import androidx.appcompat.widget.AppCompatRadioButton;
 import androidx.appcompat.widget.SwitchCompat;
 import androidx.appcompat.widget.Toolbar;
 
-import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.base.supplier.OneshotSupplierImpl;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.about_settings.AboutChromeSettings;
 import org.chromium.chrome.browser.about_settings.AboutSettingsBridge;
 import org.chromium.chrome.browser.firstrun.BraveFirstRunFlowSequencer;
-import org.chromium.chrome.browser.init.ActivityProfileProvider;
 import org.chromium.chrome.browser.init.AsyncInitializationActivity;
-import org.chromium.chrome.browser.profiles.ProfileProvider;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.vpn.utils.BraveVpnPrefUtils;
 
 import java.util.TimeZone;
 
 public class BraveVpnSupportActivity extends AsyncInitializationActivity {
     private BraveFirstRunFlowSequencer mFirstRunFlowSequencer;
-    private final OneshotSupplier<ProfileProvider> mProfileSupplier;
+    private final OneshotSupplierImpl<Profile> mProfileSupplier;
 
     public BraveVpnSupportActivity() {
-        mProfileSupplier = createProfileProvider();
+        mProfileSupplier = new OneshotSupplierImpl<>();
     }
 
     private void initializeViews() {
@@ -145,13 +144,13 @@ public class BraveVpnSupportActivity extends AsyncInitializationActivity {
 
     @Override
     protected void triggerLayoutInflation() {
-        mFirstRunFlowSequencer =
-                new BraveFirstRunFlowSequencer(this, mProfileSupplier) {
-                    @Override
-                    public void onFlowIsKnown(Bundle freProperties) {
-                        initializeViews();
-                    }
-                };
+        mProfileSupplier.set(Profile.getLastUsedRegularProfile());
+        mFirstRunFlowSequencer = new BraveFirstRunFlowSequencer(this, mProfileSupplier) {
+            @Override
+            public void onFlowIsKnown(Bundle freProperties) {
+                initializeViews();
+            }
+        };
         mFirstRunFlowSequencer.start();
         onInitialLayoutInflationComplete();
     }
@@ -200,10 +199,5 @@ public class BraveVpnSupportActivity extends AsyncInitializationActivity {
         TelephonyManager telephonyManager =
                 ((TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE));
         return telephonyManager.getNetworkOperatorName();
-    }
-
-    @Override
-    protected OneshotSupplier<ProfileProvider> createProfileProvider() {
-        return new ActivityProfileProvider(getLifecycleDispatcher());
     }
 }

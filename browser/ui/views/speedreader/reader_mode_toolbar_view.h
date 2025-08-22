@@ -8,7 +8,6 @@
 
 #include <memory>
 
-#include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/views/controls/webview/webview.h"
 
 namespace content {
@@ -16,7 +15,6 @@ class BrowserContext;
 }
 
 class ReaderModeToolbarView : public views::View {
-  METADATA_HEADER(ReaderModeToolbarView, views::View)
  public:
   explicit ReaderModeToolbarView(content::BrowserContext* browser_context);
   ~ReaderModeToolbarView() override;

@@ -80,9 +80,4 @@ public class BraveBookmarkUtils extends BookmarkUtils {
             Log.e(TAG, "showBookmarkImportExportDialog:" + e.getMessage());
         }
     }
-
-    public static boolean isSpecialFolder(BookmarkModel bookmarkModel, BookmarkItem item) {
-        // This is to avoid the root folder to have different color and tint.
-        return false;
-    }
 }

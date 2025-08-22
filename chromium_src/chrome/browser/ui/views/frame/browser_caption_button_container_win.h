@@ -9,7 +9,6 @@
 #include <string>
 
 #include "components/prefs/pref_change_registrar.h"
-#include "ui/base/metadata/metadata_header_macros.h"
 
 #define BrowserCaptionButtonContainer BrowserCaptionButtonContainer_ChromiumImpl
 
@@ -18,8 +17,6 @@
 
 class BrowserCaptionButtonContainer
     : public BrowserCaptionButtonContainer_ChromiumImpl {
-  METADATA_HEADER(BrowserCaptionButtonContainer,
-                  BrowserCaptionButtonContainer_ChromiumImpl)
  public:
   explicit BrowserCaptionButtonContainer(BrowserFrameViewWin* frame_view);
   ~BrowserCaptionButtonContainer() override;

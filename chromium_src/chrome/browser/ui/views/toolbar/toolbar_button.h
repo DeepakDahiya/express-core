@@ -12,27 +12,6 @@
 #define UpdateColorsAndInsets virtual UpdateColorsAndInsets
 #include "src/chrome/browser/ui/views/toolbar/toolbar_button.h"  // IWYU pragma: export
 #undef SetHighlight
-#undef ToolbarButton
-
-class ToolbarButton : public ToolbarButton_ChromiumImpl,
-                      public views::InkDropObserver {
-  METADATA_HEADER(ToolbarButton, ToolbarButton_ChromiumImpl)
-
- public:
-  using ToolbarButton_ChromiumImpl::ToolbarButton_ChromiumImpl;
-  ~ToolbarButton() override;
-
-  // ToolbarButton_ChromiumImpl overrides:
-  void OnThemeChanged() override;
-
-  virtual void OnInkDropStateChanged(views::InkDropState state);
-
- private:
-  // InkDropObserverImpl overrides:
-  void InkDropAnimationStarted() override {}
-  void InkDropRippleAnimationEnded(views::InkDropState state) override;
-
-  bool activated_ = false;
-};
+#undef UpdateColorsAndInsets
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_TOOLBAR_TOOLBAR_BUTTON_H_

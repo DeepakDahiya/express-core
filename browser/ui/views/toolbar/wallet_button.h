@@ -23,7 +23,7 @@
 class PrefService;
 
 class WalletButton : public ToolbarButton {
-  METADATA_HEADER(WalletButton, ToolbarButton)
+  METADATA_HEADER(WalletButton);
 
  public:
   WalletButton(View* backup_anchor_view, Profile* profile);

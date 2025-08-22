@@ -6,8 +6,6 @@
 #ifndef BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
 #define BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_TABS_ALERT_INDICATOR_BUTTON_H_
 
-#include "ui/base/metadata/metadata_header_macros.h"
-
 class AlertIndicatorButton;
 #define AlertIndicatorButton AlertIndicatorButtonBase
 #define GetTab     \
@@ -23,7 +21,6 @@ class AlertIndicatorButton;
 #undef AlertIndicatorButton
 
 class AlertIndicatorButton : public AlertIndicatorButtonBase {
-  METADATA_HEADER(AlertIndicatorButton, AlertIndicatorButtonBase)
  public:
   using AlertIndicatorButtonBase::AlertIndicatorButtonBase;
   void UpdateEnabledForMuteToggle() override;

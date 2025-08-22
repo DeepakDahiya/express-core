@@ -9,7 +9,6 @@
 #include <cstring>
 #include <iterator>
 #include <memory>
-#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -23,6 +22,7 @@
 #include "components/cbor/reader.h"
 #include "crypto/random.h"
 #include "net/base/url_util.h"
+#include "net/cert/pki/parsed_certificate.h"
 #include "net/cert/x509_certificate.h"
 #include "net/cert/x509_util.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -30,8 +30,8 @@
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
-#include "third_party/boringssl/src/pki/parsed_certificate.h"
 
 namespace nitro_utils {
 
@@ -153,7 +153,7 @@ bool VerifyUserDataKey(scoped_refptr<net::X509Certificate> server_cert,
   return false;
 }
 
-std::optional<bssl::ParsedCertificateList> ParseCertificatesAndCheckRoot(
+absl::optional<net::ParsedCertificateList> ParseCertificatesAndCheckRoot(
     scoped_refptr<net::X509Certificate> server_cert,
     const cbor::Value::MapValue& cose_map) {
   const auto cert_it = cose_map.find(cbor::Value("certificate"));
@@ -162,7 +162,7 @@ std::optional<bssl::ParsedCertificateList> ParseCertificatesAndCheckRoot(
       !cabundle_it->second.is_array()) {
     LOG(ERROR) << "Nitro verification: certificate and/or cabundle are "
                << "missing or not the right type";
-    return std::nullopt;
+    return absl::nullopt;
   }
 
   const cbor::Value::ArrayValue& cabundle_arr = cabundle_it->second.GetArray();
@@ -173,24 +173,24 @@ std::optional<bssl::ParsedCertificateList> ParseCertificatesAndCheckRoot(
                  std::back_inserter(cert_vals),
                  [](const cbor::Value& val) { return val.Clone(); });
 
-  bssl::ParsedCertificateList cert_chain;
+  net::ParsedCertificateList cert_chain;
 
-  bssl::ParseCertificateOptions parse_cert_options;
+  net::ParseCertificateOptions parse_cert_options;
   // Nitro enclave certs seem to contain serial numbers that Chromium does not
   // like, so we disable serial number validation
   parse_cert_options.allow_invalid_serial_numbers = true;
-  bssl::CertErrors cert_errors;
+  net::CertErrors cert_errors;
   for (auto& cert_val : cert_vals) {
     if (!cert_val.is_bytestring()) {
       LOG(ERROR) << "Nitro verification: certificate is not bstr";
-      return std::nullopt;
+      return absl::nullopt;
     }
-    if (!bssl::ParsedCertificate::CreateAndAddToVector(
+    if (!net::ParsedCertificate::CreateAndAddToVector(
             net::x509_util::CreateCryptoBuffer(cert_val.GetBytestring()),
             parse_cert_options, &cert_chain, &cert_errors)) {
       LOG(ERROR) << "Nitro verification: failed to parse certificate: "
                  << cert_errors.ToDebugString();
-      return std::nullopt;
+      return absl::nullopt;
     }
   }
 
@@ -200,10 +200,10 @@ std::optional<bssl::ParsedCertificateList> ParseCertificatesAndCheckRoot(
   if (root_cert_fp != kAWSRootCertFP) {
     LOG(ERROR)
         << "Nitro verification: root cert fp does not match AWS root cert fp";
-    return std::nullopt;
+    return absl::nullopt;
   }
 
-  return std::make_optional(cert_chain);
+  return absl::make_optional(cert_chain);
 }
 
 void ParseAndVerifyDocument(
@@ -220,7 +220,7 @@ void ParseAndVerifyDocument(
 
   std::string_view trimmed_body =
       base::TrimWhitespaceASCII(*response_body, base::TrimPositions::TRIM_ALL);
-  std::optional<std::vector<uint8_t>> cose_encoded =
+  absl::optional<std::vector<uint8_t>> cose_encoded =
       base::Base64Decode(trimmed_body);
   if (!cose_encoded.has_value()) {
     LOG(ERROR) << "Nitro verification: Failed to decode base64 document";
@@ -260,7 +260,7 @@ void ParseAndVerifyDocument(
     return;
   }
 
-  std::optional<bssl::ParsedCertificateList> cert_chain =
+  absl::optional<net::ParsedCertificateList> cert_chain =
       ParseCertificatesAndCheckRoot(server_cert, cose_map);
   if (!cert_chain.has_value()) {
     std::move(result_callback).Run(scoped_refptr<net::X509Certificate>());

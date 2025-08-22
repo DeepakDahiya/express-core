@@ -575,10 +575,10 @@ TEST(JsonParser, ConvertAllNumbersToString) {
   json = R"([])";
   EXPECT_EQ(std::string(json::convert_all_numbers_to_string(json, "")), json);
 
-  // OK: floating point values in scientific notation are unchanged
+  // OK: convert floating point values in scientific notation to string
   json = R"({"a": 1.196568750220778e-7})";
   EXPECT_EQ(std::string(json::convert_all_numbers_to_string(json, "")),
-            R"({"a":"1.196568750220778e-7"})");
+            R"({"a":"0.0000001196568750220778"})");
 
   // OK: convert under specified JSON path only
   json = R"({"a":1,"outer":{"inner": 2}})";

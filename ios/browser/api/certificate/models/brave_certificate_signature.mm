@@ -4,17 +4,15 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/ios/browser/api/certificate/models/brave_certificate_signature.h"
-
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "brave/ios/browser/api/certificate/utils/brave_certificate_utils.h"
 #include "brave/ios/browser/api/certificate/utils/brave_certificate_x509_utils.h"
-#include "third_party/boringssl/src/pki/input.h"
-#include "third_party/boringssl/src/pki/parsed_certificate.h"
+#include "net/cert/pki/parsed_certificate.h"
+#include "net/der/input.h"
 
 @implementation BraveCertificateSignature
-- (instancetype)initWithCertificate:
-    (const bssl::ParsedCertificate*)certificate {
+- (instancetype)initWithCertificate:(const net::ParsedCertificate*)certificate {
   if ((self = [super init])) {
     _algorithm = [[NSString alloc] init];
     _digest = [[NSString alloc] init];
@@ -33,8 +31,8 @@
               *certificate->signature_algorithm()));
     }
 
-    bssl::der::Input signature_oid;
-    bssl::der::Input signature_params;
+    net::der::Input signature_oid;
+    net::der::Input signature_params;
     if (certificate::x509_utils::ParseAlgorithmIdentifier(
             certificate->signature_algorithm_tlv(), &signature_oid,
             &signature_params)) {

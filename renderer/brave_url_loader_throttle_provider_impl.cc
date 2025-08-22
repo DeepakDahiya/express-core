@@ -29,10 +29,10 @@ BraveURLLoaderThrottleProviderImpl::~BraveURLLoaderThrottleProviderImpl() =
 
 blink::WebVector<std::unique_ptr<blink::URLLoaderThrottle>>
 BraveURLLoaderThrottleProviderImpl::CreateThrottles(
-    base::optional_ref<const blink::LocalFrameToken> local_frame_token,
+    int render_frame_id,
     const blink::WebURLRequest& request) {
-  auto throttles = URLLoaderThrottleProviderImpl::CreateThrottles(
-      local_frame_token, request);
+  auto throttles =
+      URLLoaderThrottleProviderImpl::CreateThrottles(render_frame_id, request);
 #if BUILDFLAG(ENABLE_TOR)
   if (auto onion_domain_throttle =
           tor::OnionDomainThrottle::MaybeCreateThrottle(

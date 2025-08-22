@@ -3,8 +3,6 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
-#include "chrome/browser/ui/views/toolbar/side_panel_toolbar_button.h"
-
 #include <memory>
 
 #include "base/memory/raw_ptr.h"
@@ -13,10 +11,10 @@
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/views/toolbar/side_panel_toolbar_button.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_button.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
-#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/simple_menu_model.h"
 #include "ui/views/context_menu_controller.h"
 
@@ -78,6 +76,3 @@ void SidePanelToolbarButton::UpdateButtonImage() {
   SetVectorIcon(sidebar_alignment_.GetValue() ? kSidebarToolbarButtonRightIcon
                                               : kSidebarToolbarButtonIcon);
 }
-
-BEGIN_METADATA(SidePanelToolbarButton)
-END_METADATA

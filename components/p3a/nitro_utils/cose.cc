@@ -16,11 +16,11 @@
 #include "crypto/sha2.h"
 #include "crypto/signature_verifier.h"
 #include "net/cert/asn1_util.h"
+#include "net/cert/pki/trust_store.h"
 #include "net/cert/time_conversions.h"
 #include "third_party/boringssl/src/include/openssl/bn.h"
 #include "third_party/boringssl/src/include/openssl/bytestring.h"
 #include "third_party/boringssl/src/include/openssl/ecdsa.h"
-#include "third_party/boringssl/src/pki/trust_store.h"
 
 namespace nitro_utils {
 
@@ -188,19 +188,19 @@ bool CoseSign1::DecodeFromBytes(const std::vector<uint8_t>& data) {
   return true;
 }
 
-bool CoseSign1::Verify(const bssl::ParsedCertificateList& cert_chain) {
+bool CoseSign1::Verify(const net::ParsedCertificateList& cert_chain) {
   CHECK_GT(cert_chain.size(), 1U);
 
-  bssl::der::GeneralizedTime time_now;
+  net::der::GeneralizedTime time_now;
   CHECK(net::EncodeTimeAsGeneralizedTime(base::Time::Now(), &time_now));
 
-  bssl::CertPathErrors cert_path_errors;
+  net::CertPathErrors cert_path_errors;
 
-  bssl::VerifyCertificateChain(
-      cert_chain, bssl::CertificateTrust::ForTrustAnchor(), this, time_now,
-      bssl::KeyPurpose::ANY_EKU, bssl::InitialExplicitPolicy::kFalse,
-      std::set<bssl::der::Input>(), bssl::InitialPolicyMappingInhibit::kFalse,
-      bssl::InitialAnyPolicyInhibit::kFalse, nullptr, &cert_path_errors);
+  net::VerifyCertificateChain(
+      cert_chain, net::CertificateTrust::ForTrustAnchor(), this, time_now,
+      net::KeyPurpose::ANY_EKU, net::InitialExplicitPolicy::kFalse,
+      std::set<net::der::Input>(), net::InitialPolicyMappingInhibit::kFalse,
+      net::InitialAnyPolicyInhibit::kFalse, nullptr, &cert_path_errors);
 
   if (cert_path_errors.ContainsHighSeverityErrors()) {
     LOG(ERROR) << "COSE verification: bad certificate chain: "
@@ -260,17 +260,17 @@ const cbor::Value& CoseSign1::payload() {
 }
 
 bool CoseSign1::IsSignatureAlgorithmAcceptable(
-    bssl::SignatureAlgorithm signature_algorithm,
-    bssl::CertErrors* errors) {
+    net::SignatureAlgorithm signature_algorithm,
+    net::CertErrors* errors) {
   return true;
 }
 
 bool CoseSign1::IsPublicKeyAcceptable(EVP_PKEY* public_key,
-                                      bssl::CertErrors* errors) {
+                                      net::CertErrors* errors) {
   return true;
 }
 
-bssl::SignatureVerifyCache* CoseSign1::GetVerifyCache() {
+net::SignatureVerifyCache* CoseSign1::GetVerifyCache() {
   return nullptr;
 }
 

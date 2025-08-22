@@ -17,7 +17,6 @@ import androidx.fragment.app.FragmentTransaction;
 
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.brave_wallet.mojom.TransactionInfo;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.app.BraveActivity;
@@ -34,8 +33,6 @@ import org.chromium.chrome.browser.crypto_wallet.fragments.dapps.SiweMessageFrag
 import org.chromium.chrome.browser.crypto_wallet.listeners.TransactionConfirmationListener;
 import org.chromium.chrome.browser.crypto_wallet.util.PendingTxHelper;
 import org.chromium.chrome.browser.crypto_wallet.util.TransactionUtils;
-import org.chromium.chrome.browser.init.ActivityProfileProvider;
-import org.chromium.chrome.browser.profiles.ProfileProvider;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -268,10 +265,5 @@ public class BraveWalletDAppsActivity extends BraveWalletBaseActivity
         if (mPendingTxHelper != null) {
             mPendingTxHelper.destroy();
         }
-    }
-
-    @Override
-    protected OneshotSupplier<ProfileProvider> createProfileProvider() {
-        return new ActivityProfileProvider(getLifecycleDispatcher());
     }
 }

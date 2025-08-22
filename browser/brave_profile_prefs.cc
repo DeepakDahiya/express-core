@@ -412,10 +412,6 @@ void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
   registry->SetDefaultPrefValue(prefs::kPrivacySandboxApisEnabledV2,
                                 base::Value(false));
 
-  // Disable ScrollToText (Copy link to text).
-  registry->SetDefaultPrefValue(prefs::kScrollToTextFragmentEnabled,
-                                base::Value(false));
-
   // Importer: selected data types
   registry->RegisterBooleanPref(kImportDialogExtensions, true);
   registry->RegisterBooleanPref(kImportDialogPayments, true);

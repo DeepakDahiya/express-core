@@ -72,20 +72,13 @@ const char16_t kVideoTrackTranscriptUrlExtractionScript[] =
       })()
     )JS";
 
-constexpr auto kYouTubeHosts =
-    base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,
-                                             {
-                                                 "m.youtube.com",
-                                                 "www.youtube.com",
-                                             });
+constexpr auto kYouTubeHosts = base::MakeFixedFlatSet<std::string_view>(
+    {"www.youtube.com", "m.youtube.com"});
 
 // TODO(petemill): Use heuristics to determine if page's main focus is
 // a video, and not a hard-coded list of Url hosts.
 constexpr auto kVideoTrackHosts =
-    base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,
-                                             {
-                                                 "www.ted.com",
-                                             });
+    base::MakeFixedFlatSet<std::string_view>({"www.ted.com"});
 
 }  // namespace
 

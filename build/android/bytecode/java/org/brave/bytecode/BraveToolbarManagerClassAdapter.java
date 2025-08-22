@@ -74,6 +74,9 @@ public class BraveToolbarManagerClassAdapter extends BraveClassVisitor {
         deleteField(sBraveToolbarManagerClassName, "mIncognitoStateProvider");
         makeProtectedField(sToolbarManagerClassName, "mIncognitoStateProvider");
 
+        deleteField(sBraveToolbarManagerClassName, "mTabCountProvider");
+        makeProtectedField(sToolbarManagerClassName, "mTabCountProvider");
+
         deleteField(sBraveToolbarManagerClassName, "mTabGroupUi");
         makeProtectedField(sToolbarManagerClassName, "mTabGroupUi");
 

@@ -6,7 +6,6 @@
 package org.chromium.chrome.browser.toolbar.top;
 
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewStub;
 
 import org.chromium.base.Callback;
@@ -14,15 +13,11 @@ import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.browser_controls.BrowserControlsVisibilityManager;
 import org.chromium.chrome.browser.browser_controls.BrowserStateBrowserControlsVisibilityDelegate;
 import org.chromium.chrome.browser.fullscreen.FullscreenManager;
-import org.chromium.chrome.browser.layouts.LayoutManager;
 import org.chromium.chrome.browser.layouts.LayoutStateProvider;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
-import org.chromium.chrome.browser.theme.TopUiThemeColorProvider;
 import org.chromium.chrome.browser.toolbar.ButtonData;
 import org.chromium.chrome.browser.toolbar.ButtonDataProvider;
 import org.chromium.chrome.browser.toolbar.ToolbarDataProvider;
@@ -32,7 +27,6 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonCoordinator;
 import org.chromium.chrome.browser.toolbar.top.NavigationPopup.HistoryDelegate;
 import org.chromium.chrome.browser.toolbar.top.ToolbarTablet.OfflineDownloader;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
-import org.chromium.chrome.browser.ui.appmenu.AppMenuDelegate;
 import org.chromium.chrome.browser.user_education.UserEducationHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.ui.resources.ResourceManager;
@@ -51,7 +45,6 @@ public class BraveTopToolbarCoordinator extends TopToolbarCoordinator {
     private MenuButtonCoordinator mBraveMenuButtonCoordinator;
     private boolean mIsBottomToolbarVisible;
     private ObservableSupplier<Integer> mConstraintsProxy;
-    private ObservableSupplier<TabModelSelector> mTabModelSelectorSupplier;
 
     public BraveTopToolbarCoordinator(ToolbarControlContainer controlContainer,
             ViewStub toolbarStub, ToolbarLayout toolbarLayout,
@@ -94,7 +87,6 @@ public class BraveTopToolbarCoordinator extends TopToolbarCoordinator {
         mBraveToolbarLayout = toolbarLayout;
         mBraveMenuButtonCoordinator = browsingModeMenuButtonCoordinator;
         mConstraintsProxy = constraintsSupplier;
-        mTabModelSelectorSupplier = tabModelSelectorSupplier;
 
         if (isToolbarPhone()) {
             if (!isStartSurfaceEnabled) {
@@ -142,38 +134,6 @@ public class BraveTopToolbarCoordinator extends TopToolbarCoordinator {
             mBraveToolbarLayout.setVisibility(
                     ((ToolbarPhone) mBraveToolbarLayout).isInTabSwitcherMode() ? View.INVISIBLE
                                                                                : View.VISIBLE);
-        }
-    }
-
-    @Override
-    public void initializeWithNative(
-            Runnable layoutUpdater,
-            OnClickListener tabSwitcherClickHandler,
-            OnClickListener newTabClickHandler,
-            OnClickListener bookmarkClickHandler,
-            OnClickListener customTabsBackClickHandler,
-            AppMenuDelegate appMenuDelegate,
-            LayoutManager layoutManager,
-            ObservableSupplier<Tab> tabSupplier,
-            BrowserControlsVisibilityManager browserControlsVisibilityManager,
-            TopUiThemeColorProvider topUiThemeColorProvider) {
-        super.initializeWithNative(
-                layoutUpdater,
-                tabSwitcherClickHandler,
-                newTabClickHandler,
-                bookmarkClickHandler,
-                customTabsBackClickHandler,
-                appMenuDelegate,
-                layoutManager,
-                tabSupplier,
-                browserControlsVisibilityManager,
-                topUiThemeColorProvider);
-
-        assert mBraveToolbarLayout instanceof BraveToolbarLayoutImpl
-                : "Something has changed in the upstream!";
-        if (mBraveToolbarLayout instanceof BraveToolbarLayoutImpl) {
-            ((BraveToolbarLayoutImpl) mBraveToolbarLayout)
-                    .setTabModelSelector(mTabModelSelectorSupplier.get());
         }
     }
 }
