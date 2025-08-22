@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml b/chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml
-index 10becbd14aa99ec5f67e97e07cb591d5eb823cb1..83d36a1d28810d6a5ef63fcbe4f8554a6e76b5ee 100644
+index 10becbd14aa99ec5f67e97e07cb591d5eb823cb1..af1f8a60a9b2a84e906b38b5cdf0e0621dae3e84 100644
 --- a/chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml
 +++ b/chrome/browser/ui/android/toolbar/java/res/layout/toolbar_phone.xml
 @@ -18,7 +18,6 @@ found in the LICENSE file.
-     <org.chromium.chrome.browser.toolbar.HomeButton
+     <org.chromium.chrome.browser.toolbar.home_button.HomeButton
          android:id="@+id/home_button"
          style="@style/ToolbarHoverableButton"
 -        android:src="@drawable/btn_toolbar_home"

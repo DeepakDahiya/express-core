@@ -2004,10 +2004,10 @@ Your Brave account may have other forms of browsing history like searches and ac
 
       <!-- About Brave preferences -->
       <message name="IDS_PREFS_ABOUT_CHROME" desc="Title for the About Brave page. [CHAR_LIMIT=32]">
-        About Express Browser
+        About Brave
       </message>
       <message name="IDS_LEGAL_INFORMATION_SUMMARY" desc="Summary for legal information" meaning="Android">
-        Copyright © <ph name="year">%1$d<ex>2014</ex></ph> Express Browser. All rights reserved.
+        Copyright © <ph name="year">%1$d<ex>2014</ex></ph> The Brave Authors. All rights reserved.
       </message>
       <message name="IDS_APPLICATION_VERSION_TITLE" desc="Title for application version">
         Application version
@@ -2100,6 +2100,9 @@ Your Brave account may have other forms of browsing history like searches and ac
       <message name="IDS_OPEN_SOURCE_LICENSE_URL" desc="URL for open source license" translateable="false">
         chrome://credits
       </message>
+      <message name="IDS_GOOGLE_TERMS_OF_SERVICE_TITLE" desc="Title for Brave terms of service">
+        Brave Terms of Service
+      </message>
       <message name="IDS_GOOGLE_TERMS_OF_SERVICE_URL" desc="URL for Brave terms of service" translateable="false">
         https://policies.google.com/terms/embedded
       </message>
@@ -2111,6 +2114,9 @@ Your Brave account may have other forms of browsing history like searches and ac
       </message>
       <message name="IDS_CHROME_ADDITIONAL_TERMS_OF_SERVICE_URL" desc="URL for Brave and ChromeOS additional terms of service" translateable="false">
         https://www.google.com/chrome/terms/
+      </message>
+      <message name="IDS_PRIVACY_POLICY_TITLE" desc="Title for the Brave privacy policy">
+        Brave Privacy Policy
       </message>
       <message name="IDS_GOOGLE_PRIVACY_POLICY_URL" desc="URL for the Brave privacy policy" translateable="false">
         https://policies.google.com/privacy
