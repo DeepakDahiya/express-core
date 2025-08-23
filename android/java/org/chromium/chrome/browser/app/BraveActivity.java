@@ -327,7 +327,7 @@ public abstract class BraveActivity extends ChromeActivity
 
     private static final String YOUTUBE_WATCH_PATTERN = "youtube.com/watch";
     private OnBackPressedCallback mYouTubeBackPressedCallback;
-    private boolean mIsCallbackSetup = false;
+    private boolean mIsCallbackSetup;
     private WebContentsObserver mWebContentsObserver;
     private Set<Integer> mOurCreatedTabs = new HashSet<>();
     private static final int MAX_OUR_TABS = 2;

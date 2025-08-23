@@ -130,8 +130,8 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
 
     private ImageView mAvatarImage;
 
-    private String mLastOpenedRepliesForCommentId = null;
-    private String mLastOpenedRepliesToRepliesForCommentId = null;
+    private String mLastOpenedRepliesForCommentId;
+    private String mLastOpenedRepliesToRepliesForCommentId;
 
     private ActivityResultLauncher<String[]> mMediaPickerLauncher;
 

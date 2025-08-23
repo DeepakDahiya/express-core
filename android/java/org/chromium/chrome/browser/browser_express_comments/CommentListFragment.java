@@ -110,8 +110,8 @@ public class CommentListFragment extends Fragment {
 
     private android.content.BroadcastReceiver mUploadReceiver;
 
-    private boolean mShouldScrollToLastParent = false;
-    private String mTargetScrollCommentId = null;
+    private boolean mShouldScrollToLastParent;
+    private String mTargetScrollCommentId;
 
     private static final String KEY_SCROLL_POSITION = "comment_list_scroll_position";
     private int mSavedScrollPosition = RecyclerView.NO_POSITION; // Or 0 as default

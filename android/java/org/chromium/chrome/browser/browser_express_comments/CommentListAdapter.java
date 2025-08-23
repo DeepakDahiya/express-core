@@ -244,12 +244,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         Space mediaAspectRatioSpacer;
         ConstraintLayout mediaContainer;
 
-        private boolean mHasVideo = false;
-        private boolean mIsVideoInitialized = false;
+        private boolean mHasVideo;
+        private boolean mIsVideoInitialized;
 
         private final int mViewType;
 
-        private boolean shouldCloseKeyboardOnReply = false;
+        private boolean shouldCloseKeyboardOnReply;
 
         CommentHolder(@NonNull View itemView, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
             super(itemView);

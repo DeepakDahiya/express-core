@@ -99,8 +99,8 @@ public class ReplyListFragment extends Fragment {
 
     private BottomSheetInputCallback inputCallback;
 
-    private boolean mShouldScrollToLastParent = false;
-    private String mTargetScrollCommentId = null;
+    private boolean mShouldScrollToLastParent;
+    private String mTargetScrollCommentId;
     
     private RecyclerView.OnScrollListener videoScrollListener;
 

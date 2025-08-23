@@ -34,6 +34,7 @@ public class ImageProcessor {
         void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType);
     }
 
+    @SuppressWarnings("NoAndroidAsyncTaskCheck")
     public static class ProcessImageTask extends AsyncTask<Void, Void, Pair<Uri, String>> {
         private WeakReference<Context> contextRef;
         private Uri originalImageUri;

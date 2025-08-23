@@ -137,7 +137,7 @@ public class BraveToolbarManager extends ToolbarManager {
     private BraveScrollingBottomViewResourceFrameLayout mBottomControls;
 
     private TabModelSelectorTabObserver mTabModelSelectorTabObserver;
-    private boolean mIsCurrentPageNtpOrHome = false;
+    private boolean mIsCurrentPageNtpOrHome;
     private final ObservableSupplier<TabModelSelector> mPassedTabModelSelectorSupplier;
     private Callback<TabModelSelector> mTabModelSelectorSupplierObserver;
     private TabModelSelector mLocalTabModelSelector;

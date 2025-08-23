@@ -125,8 +125,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
 
     private boolean isFromMenu;
 
-    private String mLastOpenedRepliesForCommentId = null;
-    private String mLastOpenedRepliesToRepliesForCommentId = null;
+    private String mLastOpenedRepliesForCommentId;
+    private String mLastOpenedRepliesToRepliesForCommentId;
 
     private ActivityResultLauncher<String[]> mMediaPickerLauncher;
 
