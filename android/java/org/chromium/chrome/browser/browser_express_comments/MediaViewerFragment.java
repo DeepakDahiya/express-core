@@ -45,8 +45,8 @@ public class MediaViewerFragment extends DialogFragment {
     private PlayerView mPlayerView;
     private ImageView mImageView;
     private boolean mPlayWhenReady = true;
-    private long mPlaybackPosition = 0L;
-    private int mCurrentWindow = 0;
+    private long mPlaybackPosition;
+    private int mCurrentWindow;
 
     public static MediaViewerFragment newInstance(Uri mediaUri, String mediaType, boolean showKeyboardOnClose) {
         MediaViewerFragment fragment = new MediaViewerFragment();
