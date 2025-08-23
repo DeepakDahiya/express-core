@@ -12,7 +12,6 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
-@SuppressWarnings("NoAndroidAsyncTaskCheck")
 import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
@@ -25,6 +24,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
+@SuppressWarnings("NoAndroidAsyncTaskCheck")
 public class ImageProcessor {
 
     private static final String TAG = "ImageProcessor";
