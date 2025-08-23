@@ -1,7 +1,0 @@
-Name: sentry-native
-URL: https://github.com/getsentry/sentry-native
-Version: 0.5.4
-License: MIT
-License File: LICENSE
-Description: Sentry SDK for native C/C++ crash/error reporting.
-Local Modifications: None
