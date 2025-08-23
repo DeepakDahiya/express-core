@@ -179,6 +179,8 @@ import org.chromium.chrome.browser.settings.BrowserExpressGetProfilePreferencesU
 import org.chromium.chrome.browser.toolbar.BraveHomeButton;
 import org.chromium.chrome.browser.settings.PostHogEventKeys;
 import org.chromium.chrome.browser.settings.PostHogUtil;
+import org.chromium.net.ChromiumNetworkAdapter;
+import org.chromium.net.NetworkTrafficAnnotationTag;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout, OnClickListener, View.OnLongClickListener,
@@ -197,7 +199,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private static final long MINUTES_10 = 10 * 60 * 1000;
     private static final int URL_FOCUS_TOOLBAR_BUTTONS_TRANSLATION_X_DP = 10;
 
-    private long lastProfileFetchTimestamp = 0;
+    private long lastProfileFetchTimestamp;
     private static final long PROFILE_FETCH_COOLDOWN_MS = 30 * 60 * 1000;
 
     private static final int PLAYLIST_MEDIA_COUNT_LIMIT = 3;
@@ -1706,7 +1708,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     private Bitmap downloadFavicon(URL faviconUrl) throws IOException {
-        HttpURLConnection connection = (HttpURLConnection) faviconUrl.openConnection();
+        HttpURLConnection connection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
+                    faviconUrl, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
         connection.setConnectTimeout(CONNECTION_TIMEOUT);
         connection.setReadTimeout(READ_TIMEOUT);
         connection.setRequestMethod("GET");

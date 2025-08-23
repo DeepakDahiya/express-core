@@ -320,8 +320,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private Handler autoScrollHandler;
         private Runnable autoScrollRunnable;
-        private int currentPosition = 0;
-        private boolean isAutoScrolling = false;
+        private int currentPosition;
+        private boolean isAutoScrolling;
 
         PostHolder(View itemView, RecyclerView topPostRecycler, RecyclerView.RecycledViewPool commentRecycledViewPool) {
             super(itemView);

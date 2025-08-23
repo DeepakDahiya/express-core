@@ -17,8 +17,8 @@ public class Comment{
     private User user;
     private Vote didVote;
 
-    private int mediaWidth = 0;
-    private int mediaHeight = 0;
+    private int mediaWidth;
+    private int mediaHeight;
 
     public enum UploadStatus { PENDING, POSTING, SUCCEEDED, FAILED }
 
