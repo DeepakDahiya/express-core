@@ -12,11 +12,11 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
 import androidx.annotation.Nullable;
 import androidx.exifinterface.media.ExifInterface;
+import org.chromium.base.task.AsyncTask;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -24,7 +24,6 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.ref.WeakReference;
 
-@SuppressWarnings("NoAndroidAsyncTaskCheck")
 public class ImageProcessor {
 
     private static final String TAG = "ImageProcessor";
@@ -35,8 +34,7 @@ public class ImageProcessor {
         void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType);
     }
 
-    @SuppressWarnings("NoAndroidAsyncTaskCheck")
-    public static class ProcessImageTask extends AsyncTask<Void, Void, Pair<Uri, String>> {
+    public static class ProcessImageTask extends AsyncTask<Pair<Uri, String>> {
         private WeakReference<Context> contextRef;
         private Uri originalImageUri;
         private ProcessImageCallback callback;
@@ -54,7 +52,7 @@ public class ImageProcessor {
         }
 
         @Override
-        protected Pair<Uri, String> doInBackground(Void... voids) {
+        protected Pair<Uri, String> doInBackground() {
             Context context = contextRef.get();
             if (context == null) return null;
 
@@ -145,12 +143,12 @@ public class ImageProcessor {
     public static void processImage(Context context, Uri imageUri,
                                     int maxDimension, int compressionQuality,
                                     ProcessImageCallback callback) {
-        new ProcessImageTask(context, imageUri, maxDimension, compressionQuality, callback).execute();
+        new ProcessImageTask(context, imageUri, maxDimension, compressionQuality, callback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 
      public static void processImage(Context context, Uri imageUri, ProcessImageCallback callback) {
         new ProcessImageTask(context, imageUri,
                 DEFAULT_MAX_IMAGE_DIMENSION, DEFAULT_IMAGE_COMPRESSION_QUALITY,
-                callback).execute();
+                callback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
     }
 }
