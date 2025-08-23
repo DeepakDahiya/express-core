@@ -1,8 +1,8 @@
 diff --git a/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java b/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
-index a71a2caed56170ca85a1505aea1593def16a027d..c7263d6bcc84fc12918b4d80bd7b3415a5d5e45b 100644
+index a71a2caed56170ca85a1505aea1593def16a027d..a80e3292af11134c0b7a6d30a2d14c82d010a433 100644
 --- a/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
 +++ b/components/crash/android/java/src/org/chromium/components/crash/PureJavaExceptionReporter.java
-@@ -25,6 +25,12 @@ import java.util.HashMap;
+@@ -25,6 +25,14 @@ import java.util.HashMap;
  import java.util.Map;
  import java.util.UUID;
  import java.util.concurrent.atomic.AtomicReferenceArray;
@@ -12,10 +12,12 @@ index a71a2caed56170ca85a1505aea1593def16a027d..c7263d6bcc84fc12918b4d80bd7b3415
 +import java.net.URL;
 +import java.io.InputStream;
 +import java.nio.charset.StandardCharsets;
++import org.chromium.net.ChromiumNetworkAdapter;
++import org.chromium.net.NetworkTrafficAnnotationTag;
  
  /**
   * Creates a crash report and uploads it to crash server if there is a Java exception.
-@@ -39,6 +45,8 @@ public abstract class PureJavaExceptionReporter
+@@ -39,6 +47,8 @@ public abstract class PureJavaExceptionReporter
      public static final String PRODUCT = "prod";
      public static final String ANDROID_BUILD_ID = "android_build_id";
      public static final String ANDROID_BUILD_FP = "android_build_fp";
@@ -24,7 +26,7 @@ index a71a2caed56170ca85a1505aea1593def16a027d..c7263d6bcc84fc12918b4d80bd7b3415
      // android-sdk-int and sdk are expected to have the same value.
      // android-sdk-int is needed for compatibility with the C++ crashpad implementation.
      // sdk should be maintained for potential custom monitoring.
-@@ -208,9 +216,66 @@ public abstract class PureJavaExceptionReporter
+@@ -208,9 +218,67 @@ public abstract class PureJavaExceptionReporter
              mMinidumpFile = logcatExtractor.attachLogcatToMinidump(
                      mMinidumpFile, new CrashFileManager(getCrashFilesDirectory()));
          }
@@ -42,7 +44,8 @@ index a71a2caed56170ca85a1505aea1593def16a027d..c7263d6bcc84fc12918b4d80bd7b3415
 +                String boundary = "----SentryBoundary" + System.currentTimeMillis();
 +                Log.e("BraveSentry", "Boundary: " + boundary);
 +
-+                HttpURLConnection conn = (HttpURLConnection) new URL(SENTRY_MINIDUMP_URL).openConnection();
++                HttpURLConnection conn = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
++                    new URL(SENTRY_MINIDUMP_URL), NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
 +                Log.e("BraveSentry", "Connection opened");
 +
 +                conn.setDoOutput(true);

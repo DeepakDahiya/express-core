@@ -1,8 +1,8 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java b/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java
-index 63d4b110808c064bd082218186238f940899a71e..61446533c26d2c602af1158fa3c68795d45c8f8a 100644
+index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb27e80655c 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java
-@@ -12,6 +12,38 @@ import org.chromium.components.crash.LogcatCrashExtractor;
+@@ -12,6 +12,40 @@ import org.chromium.components.crash.LogcatCrashExtractor;
  import org.chromium.components.minidump_uploader.CrashFileManager;
  
  import java.io.File;
@@ -38,10 +38,12 @@ index 63d4b110808c064bd082218186238f940899a71e..61446533c26d2c602af1158fa3c68795
 +import android.net.ConnectivityManager;
 +import android.net.Network;
 +import android.net.NetworkCapabilities;
++import org.chromium.net.ChromiumNetworkAdapter;
++import org.chromium.net.NetworkTrafficAnnotationTag;
  
  /**
   * Extracts the recent logcat output from an Android device, elides PII sensitive info from it,
-@@ -24,6 +56,9 @@ public class LogcatExtractionRunnable implements Runnable {
+@@ -24,6 +58,9 @@ public class LogcatExtractionRunnable implements Runnable {
      private final File mMinidumpFile;
      private final LogcatCrashExtractor mLogcatExtractor;
  
@@ -51,7 +53,7 @@ index 63d4b110808c064bd082218186238f940899a71e..61446533c26d2c602af1158fa3c68795
      /**
       * @param minidump The minidump file that needs logcat output to be attached.
       */
-@@ -45,6 +80,8 @@ public class LogcatExtractionRunnable implements Runnable {
+@@ -45,6 +82,8 @@ public class LogcatExtractionRunnable implements Runnable {
      public void run() {
          File fileToUpload = mLogcatExtractor.attachLogcatToMinidump(mMinidumpFile,
                  new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir()));
@@ -60,7 +62,7 @@ index 63d4b110808c064bd082218186238f940899a71e..61446533c26d2c602af1158fa3c68795
          uploadMinidump(fileToUpload, false);
      }
  
-@@ -57,6 +94,8 @@ public class LogcatExtractionRunnable implements Runnable {
+@@ -57,6 +96,8 @@ public class LogcatExtractionRunnable implements Runnable {
          // Regardless of success, initiate the upload. That way, even if there are errors augmenting
          // the minidump with logcat data, the service can still upload the unaugmented minidump.
          try {
@@ -69,7 +71,7 @@ index 63d4b110808c064bd082218186238f940899a71e..61446533c26d2c602af1158fa3c68795
              if (uploadNow) {
                  MinidumpUploadServiceImpl.tryUploadCrashDumpNow(minidump);
              } else {
-@@ -67,4 +106,170 @@ public class LogcatExtractionRunnable implements Runnable {
+@@ -67,4 +108,171 @@ public class LogcatExtractionRunnable implements Runnable {
              if (!uploadNow) throw e;
          }
      }
@@ -180,7 +182,8 @@ index 63d4b110808c064bd082218186238f940899a71e..61446533c26d2c602af1158fa3c68795
 +            byte[] body = baos.toByteArray();
 +            Log.d(TAG, "Multipart body size: " + body.length + " bytes");
 +            
-+            conn = (HttpURLConnection) url.openConnection();
++            conn = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
++                    url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
 +            conn.setConnectTimeout(15000);
 +            conn.setReadTimeout(30000);
 +            conn.setDoOutput(true);

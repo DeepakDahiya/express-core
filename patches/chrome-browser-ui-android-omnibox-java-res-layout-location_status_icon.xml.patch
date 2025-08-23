@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml b/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml
-index 8864db6bfc9ffd0494656137cd672b160ade3c3a..0cf034fd268b352796a5d9ad31aee3f52c26f255 100644
+index 8864db6bfc9ffd0494656137cd672b160ade3c3a..ce4fb8572e9003423ab957897d9fcd511b17b1b5 100644
 --- a/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml
 +++ b/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml
 @@ -1,8 +1,9 @@
@@ -15,7 +15,12 @@ index 8864db6bfc9ffd0494656137cd672b160ade3c3a..0cf034fd268b352796a5d9ad31aee3f5
  -->
  <merge
      xmlns:android="http://schemas.android.com/apk/res/android"
-@@ -38,7 +39,9 @@ found in the LICENSE file.
+@@ -33,12 +34,12 @@ found in the LICENSE file.
+         <org.chromium.ui.widget.ChromeImageView
+             android:id="@+id/location_bar_status_icon"
+             style="@style/OmniboxIcon"
+-            android:layout_width="@dimen/omnibox_search_engine_logo_composed_size"
+-            android:layout_height="@dimen/omnibox_search_engine_logo_composed_size"
              android:layout_gravity="center"
              android:src="@android:color/transparent"
              android:visibility="visible"
