@@ -12,7 +12,8 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.net.Uri;
-import org.chromium.base.task.AsyncTask;
+@SuppressWarnings("NoAndroidAsyncTaskCheck")
+import android.os.AsyncTask;
 import android.util.Log;
 import android.util.Pair;
 import androidx.annotation.Nullable;
@@ -34,6 +35,7 @@ public class ImageProcessor {
         void onImageProcessed(@Nullable Uri processedImageUri, @Nullable String finalMimeType);
     }
 
+    @SuppressWarnings("NoAndroidAsyncTaskCheck")
     public static class ProcessImageTask extends AsyncTask<Void, Void, Pair<Uri, String>> {
         private WeakReference<Context> contextRef;
         private Uri originalImageUri;
