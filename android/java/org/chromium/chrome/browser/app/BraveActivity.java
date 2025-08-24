@@ -1259,13 +1259,13 @@ public abstract class BraveActivity extends ChromeActivity
         setLoadedFeed(false);
         setComesFromNewTab(false);
         setNewsItemsFeedCards(null);
-        BraveSearchEngineUtils.initializeBraveSearchEngineStates(getTabModelSelector());
-        Intent intent = getIntent();
-        if (intent != null && intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY, false)) {
-            openBraveWallet(false,
-                    intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY_SETUP, false),
-                    intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY_RESTORE, false));
-        }
+        // BraveSearchEngineUtils.initializeBraveSearchEngineStates(getTabModelSelector());
+        // Intent intent = getIntent();
+        // if (intent != null && intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY, false)) {
+        //     openBraveWallet(false,
+        //             intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY_SETUP, false),
+        //             intent.getBooleanExtra(Utils.RESTART_WALLET_ACTIVITY_RESTORE, false));
+        // }
 
         if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
             BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
