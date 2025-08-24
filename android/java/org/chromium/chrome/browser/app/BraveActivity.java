@@ -274,6 +274,8 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 import java.util.HashSet;
 import java.util.Set;
+import io.sentry.Sentry;
+import io.sentry.SentryOptions;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
@@ -394,6 +396,18 @@ public abstract class BraveActivity extends ChromeActivity
     @Override
     public void onResumeWithNative() {
         super.onResumeWithNative();
+        try {
+            SentryOptions options = new SentryOptions();
+            options.setDsn("https://591d5ee7a98b1fdeca311066ff238573@o4509807793733632.ingest.de.sentry.io/4509807795372112");
+            options.setTracesSampleRate(1.0);
+            options.setDebug(true);
+            
+            Sentry.init(options);
+            Log.i("BraveSentry", "Sentry initialized successfully");
+        } catch (Exception e) {
+            Log.e("BraveSentry", "Failed to initialize Sentry", e);
+        }
+
         BraveActivityJni.get().restartStatsUpdater();
         if (BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
             BraveVpnNativeWorker.getInstance().addObserver(this);
