@@ -48,23 +48,37 @@ constexpr char kDataConversionObservationWindowValue[] =
 
 // The list of search result ad attributes. All of them are required.
 constexpr auto kSearchResultAdRequiredAttributes =
-    base::MakeFixedFlatSet<std::string_view>(
-        {kDataPlacementId, kDataCreativeInstanceId, kDataCreativeSetId,
-         kDataCampaignId, kDataAdvertiserId, kDataLandingPage,
-         kDataHeadlineText, kDataDescription, kDataRewardsValue});
+    base::MakeFixedFlatSet<std::string_view>(base::sorted_unique,
+                                             {
+                                                 kDataAdvertiserId,
+                                                 kDataCampaignId,
+                                                 kDataCreativeInstanceId,
+                                                 kDataCreativeSetId,
+                                                 kDataDescription,
+                                                 kDataHeadlineText,
+                                                 kDataLandingPage,
+                                                 kDataPlacementId,
+                                                 kDataRewardsValue,
+                                             });
 
 // The list of all conversion attributes, including optional.
 constexpr auto kAllConversionAttributes =
     base::MakeFixedFlatSet<std::string_view>(
-        {kDataConversionUrlPatternValue,
-         kDataConversionAdvertiserPublicKeyValue,
-         kDataConversionObservationWindowValue});
+        base::sorted_unique,
+        {
+            kDataConversionAdvertiserPublicKeyValue,
+            kDataConversionObservationWindowValue,
+            kDataConversionUrlPatternValue,
+        });
 
 // The list of required (non-optional) conversion attributes.
 constexpr auto kRequiredConversionAttributes =
     base::MakeFixedFlatSet<std::string_view>(
-        {kDataConversionUrlPatternValue,
-         kDataConversionObservationWindowValue});
+        base::sorted_unique,
+        {
+            kDataConversionObservationWindowValue,
+            kDataConversionUrlPatternValue,
+        });
 
 bool GetStringValue(const schema_org::mojom::PropertyPtr& ad_property,
                     std::string* out_value) {

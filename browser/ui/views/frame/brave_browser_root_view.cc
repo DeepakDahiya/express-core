@@ -7,6 +7,8 @@
 
 #include "brave/browser/ui/tabs/features.h"
 #include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
+#include "chrome/browser/ui/browser.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 
 BraveBrowserRootView::BraveBrowserRootView(BrowserView* browser_view,
                                            views::Widget* widget)
@@ -32,3 +34,11 @@ bool BraveBrowserRootView::OnMouseWheel(const ui::MouseWheelEvent& event) {
 
   return BrowserRootView::OnMouseWheel(event);
 }
+
+void BraveBrowserRootView::OnNativeThemeUpdated(
+    ui::NativeTheme* observed_theme) {
+  ThemeChanged();
+}
+
+BEGIN_METADATA(BraveBrowserRootView)
+END_METADATA
