@@ -90,6 +90,14 @@ public class ImageLoader {
 
         Resources resources = ContextUtils.getApplicationContext().getResources();
         Profile profile = Utils.getProfile(false);
+        if (profile == null) {
+            // Log an error for debugging purposes if you can
+            // Log.e(TAG, "Profile is null, cannot proceed with image download.");
+            if (callback != null) {
+                callback.onLoadFailed();
+            }
+            return; // Stop execution to prevent NullPointerException
+        }
         if (isSvg(url)) {
             final String validUrl;
             if (URLUtil.isDataUrl(url)) {
