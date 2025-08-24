@@ -399,10 +399,10 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnNativeWorker.getInstance().addObserver(this);
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
-        Profile profile = getCurrentTabModel().getProfile();
-        if (profile != null) {
-            BraveSearchEngineUtils.updateActiveDSE(profile);
-        }
+        // Profile profile = getCurrentTabModel().getProfile();
+        // if (profile != null) {
+        //     BraveSearchEngineUtils.updateActiveDSE(profile);
+        // }
 
         // if (mNativeInitialized) {
         //     BraveToolbarLayoutImpl layout = getBraveToolbarLayout();
@@ -448,10 +448,10 @@ public abstract class BraveActivity extends ChromeActivity
         if (BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
             BraveVpnNativeWorker.getInstance().removeObserver(this);
         }
-        Profile profile = getCurrentTabModel().getProfile();
-        if (profile != null && profile.isOffTheRecord()) {
-            BraveSearchEngineUtils.updateActiveDSE(profile);
-        }
+        // Profile profile = getCurrentTabModel().getProfile();
+        // if (profile != null && profile.isOffTheRecord()) {
+        //     BraveSearchEngineUtils.updateActiveDSE(profile);
+        // }
 
 
         if (ChromeSharedPreferences.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
