@@ -399,10 +399,10 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnNativeWorker.getInstance().addObserver(this);
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
-        // Profile profile = getCurrentTabModel().getProfile();
-        // if (profile != null) {
-        //     BraveSearchEngineUtils.updateActiveDSE(profile);
-        // }
+        Profile profile = getCurrentTabModel().getProfile();
+        if (profile != null) {
+            BraveSearchEngineUtils.updateActiveDSE(profile);
+        }
 
         // if (mNativeInitialized) {
         //     BraveToolbarLayoutImpl layout = getBraveToolbarLayout();
@@ -448,10 +448,10 @@ public abstract class BraveActivity extends ChromeActivity
         if (BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
             BraveVpnNativeWorker.getInstance().removeObserver(this);
         }
-        // Profile profile = getCurrentTabModel().getProfile();
-        // if (profile != null && profile.isOffTheRecord()) {
-        //     BraveSearchEngineUtils.updateActiveDSE(profile);
-        // }
+        Profile profile = getCurrentTabModel().getProfile();
+        if (profile != null && profile.isOffTheRecord()) {
+            BraveSearchEngineUtils.updateActiveDSE(profile);
+        }
 
 
         if (ChromeSharedPreferences.getInstance().readBoolean(BravePreferenceKeys.BRAVE_OPENED_YOUTUBE, false) && !isInPip()) {
@@ -1355,15 +1355,15 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void onPreferenceChange() {
-        // String captchaID = UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                            .getString(BravePref.SCHEDULED_CAPTCHA_ID);
-        // String paymentID = UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                            .getString(BravePref.SCHEDULED_CAPTCHA_PAYMENT_ID);
-        // if (BraveQAPreferences.shouldVlogRewards()) {
-        //     Log.e(AdaptiveCaptchaHelper.TAG,
-        //             "captchaID : " + captchaID + " Payment ID : " + paymentID);
-        // }
-        // maybeSolveAdaptiveCaptcha();
+        String captchaID = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .getString(BravePref.SCHEDULED_CAPTCHA_ID);
+        String paymentID = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .getString(BravePref.SCHEDULED_CAPTCHA_PAYMENT_ID);
+        if (BraveQAPreferences.shouldVlogRewards()) {
+            Log.e(AdaptiveCaptchaHelper.TAG,
+                    "captchaID : " + captchaID + " Payment ID : " + paymentID);
+        }
+        maybeSolveAdaptiveCaptcha();
     }
 
     @Override
@@ -1382,14 +1382,14 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void maybeSolveAdaptiveCaptcha() {
-        // String captchaID = UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                            .getString(BravePref.SCHEDULED_CAPTCHA_ID);
-        // String paymentID = UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                            .getString(BravePref.SCHEDULED_CAPTCHA_PAYMENT_ID);
-        // if (!TextUtils.isEmpty(captchaID) && !TextUtils.isEmpty(paymentID)
-        //         && !BravePrefServiceBridge.getInstance().getSafetynetCheckFailed()) {
-        //     AdaptiveCaptchaHelper.startAttestation(captchaID, paymentID);
-        // }
+        String captchaID = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .getString(BravePref.SCHEDULED_CAPTCHA_ID);
+        String paymentID = UserPrefs.get(Profile.getLastUsedRegularProfile())
+                                   .getString(BravePref.SCHEDULED_CAPTCHA_PAYMENT_ID);
+        if (!TextUtils.isEmpty(captchaID) && !TextUtils.isEmpty(paymentID)
+                && !BravePrefServiceBridge.getInstance().getSafetynetCheckFailed()) {
+            AdaptiveCaptchaHelper.startAttestation(captchaID, paymentID);
+        }
     }
 
     @Override
@@ -1407,12 +1407,12 @@ public abstract class BraveActivity extends ChromeActivity
         PrefChangeRegistrar mPrefChangeRegistrar = new PrefChangeRegistrar();
         mPrefChangeRegistrar.addObserver(BravePref.SCHEDULED_CAPTCHA_ID, this);
 
-        // if (UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                 .getInteger(BravePref.SCHEDULED_CAPTCHA_FAILED_ATTEMPTS)
-        //         >= MAX_FAILED_CAPTCHA_ATTEMPTS) {
-        //     UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //             .setBoolean(BravePref.SCHEDULED_CAPTCHA_PAUSED, true);
-        // }
+        if (UserPrefs.get(Profile.getLastUsedRegularProfile())
+                        .getInteger(BravePref.SCHEDULED_CAPTCHA_FAILED_ATTEMPTS)
+                >= MAX_FAILED_CAPTCHA_ATTEMPTS) {
+            UserPrefs.get(Profile.getLastUsedRegularProfile())
+                    .setBoolean(BravePref.SCHEDULED_CAPTCHA_PAUSED, true);
+        }
 
         if (BraveQAPreferences.shouldVlogRewards()) {
             Log.e(AdaptiveCaptchaHelper.TAG,
@@ -1420,10 +1420,10 @@ public abstract class BraveActivity extends ChromeActivity
                             + UserPrefs.get(Profile.getLastUsedRegularProfile())
                                       .getInteger(BravePref.SCHEDULED_CAPTCHA_FAILED_ATTEMPTS));
         }
-        // if (!UserPrefs.get(Profile.getLastUsedRegularProfile())
-        //                 .getBoolean(BravePref.SCHEDULED_CAPTCHA_PAUSED)) {
-        //     maybeSolveAdaptiveCaptcha();
-        // }
+        if (!UserPrefs.get(Profile.getLastUsedRegularProfile())
+                        .getBoolean(BravePref.SCHEDULED_CAPTCHA_PAUSED)) {
+            maybeSolveAdaptiveCaptcha();
+        }
 
         if (ChromeSharedPreferences.getInstance()
                 .readBoolean(BravePreferenceKeys.BRAVE_DOUBLE_RESTART, false)) {
@@ -1929,15 +1929,15 @@ public abstract class BraveActivity extends ChromeActivity
             boolean value =
                     ChromeSharedPreferences.getInstance()
                             .readBoolean(BravePrivacySettings.PREF_FINGERPRINTING_PROTECTION, true);
-            // if (value) {
-            //     BraveShieldsContentSettings.setShieldsValue(Profile.getLastUsedRegularProfile(), "",
-            //             BraveShieldsContentSettings.RESOURCE_IDENTIFIER_FINGERPRINTING,
-            //             BraveShieldsContentSettings.DEFAULT, false);
-            // } else {
-            //     BraveShieldsContentSettings.setShieldsValue(Profile.getLastUsedRegularProfile(), "",
-            //             BraveShieldsContentSettings.RESOURCE_IDENTIFIER_FINGERPRINTING,
-            //             BraveShieldsContentSettings.ALLOW_RESOURCE, false);
-            // }
+            if (value) {
+                BraveShieldsContentSettings.setShieldsValue(Profile.getLastUsedRegularProfile(), "",
+                        BraveShieldsContentSettings.RESOURCE_IDENTIFIER_FINGERPRINTING,
+                        BraveShieldsContentSettings.DEFAULT, false);
+            } else {
+                BraveShieldsContentSettings.setShieldsValue(Profile.getLastUsedRegularProfile(), "",
+                        BraveShieldsContentSettings.RESOURCE_IDENTIFIER_FINGERPRINTING,
+                        BraveShieldsContentSettings.ALLOW_RESOURCE, false);
+            }
         }
     }
 
