@@ -18,11 +18,3 @@ index e5b52505013b5345bc7a5357ce7693eb94894fc9..c73e845f5e0b81870aa21b0333bfb1dd
  }
  
  // This method should be periodically pruned of year+ old migrations.
-@@ -826,6 +828,7 @@ void MigrateObsoleteBrowserStatePrefs(PrefService* prefs) {
-   // Added 10/2023.
-   MigrateArrayOfDatesPreferenceFromUserDefaults(
-       kActivityBucketLastReportedDateArrayKey, prefs, defaults);
-+  BRAVE_MIGRATE_OBSOLETE_BROWSER_STATE_PREFS
- }
- 
- void MigrateObsoleteUserDefault(void) {

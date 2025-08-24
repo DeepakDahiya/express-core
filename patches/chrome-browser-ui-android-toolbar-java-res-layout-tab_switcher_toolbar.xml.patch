@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/android/toolbar/java/res/layout/tab_switcher_toolbar.xml b/chrome/browser/ui/android/toolbar/java/res/layout/tab_switcher_toolbar.xml
-index ea7782f36f89377f6cc28492d1786391c4c86f11..f6e4da2a92920ab428d29ba845447e868f56bc6e 100644
+index 415359e887e234dfc3b0c708daeb99726e6c32dc..4ee47d83d4fdcfd66a6e7877d66a1902399c7d52 100644
 --- a/chrome/browser/ui/android/toolbar/java/res/layout/tab_switcher_toolbar.xml
 +++ b/chrome/browser/ui/android/toolbar/java/res/layout/tab_switcher_toolbar.xml
 @@ -1,11 +1,9 @@
@@ -10,17 +10,17 @@ index ea7782f36f89377f6cc28492d1786391c4c86f11..f6e4da2a92920ab428d29ba845447e86
 -found in the LICENSE file.
 --->
 +<!-- Copyright 2020 The Brave Authors. All rights reserved.
-+     Use of this source code is governed by a BSD-style license that can be
-+     found in the LICENSE file. -->
++    Use of this source code is governed by a BSD-style license that can be
++    found in the LICENSE file. -->
  
 -<org.chromium.chrome.browser.toolbar.top.TabSwitcherModeTopToolbar
 +<org.chromium.chrome.browser.toolbar.top.BraveTabSwitcherModeTopToolbar
      xmlns:android="http://schemas.android.com/apk/res/android"
      xmlns:app="http://schemas.android.com/apk/res-auto"
      xmlns:tools="http://schemas.android.com/tools"
-@@ -96,4 +94,4 @@ found in the LICENSE file.
+@@ -72,4 +70,4 @@ found in the LICENSE file.
  
-     </LinearLayout>
+     </FrameLayout>
  
 -</org.chromium.chrome.browser.toolbar.top.TabSwitcherModeTopToolbar>
 +</org.chromium.chrome.browser.toolbar.top.BraveTabSwitcherModeTopToolbar>

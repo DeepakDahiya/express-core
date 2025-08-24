@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java
-index 870933d36fd26177934e54b9a7c9263bdb533aca..395826591a095dd4c61abc0529f7c4aea6f3f7b1 100644
+index 7d5c54bfd421067bb3180e57b9ac8d171ee1bb1a..29670e2abef38f56202a8959ca679b707db9cfdb 100644
 --- a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java
 +++ b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/menu_button/MenuButton.java
 @@ -21,6 +21,8 @@ import android.widget.FrameLayout;

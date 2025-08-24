@@ -1,11 +1,11 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java b/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java
-index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb27e80655c 100644
+index 6c90bd4ded81b1e85d82bc5d073555cd1e58f999..64f88ad34c9f712754bbf01cb130810d0059f4da 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/crash/LogcatExtractionRunnable.java
-@@ -12,6 +12,40 @@ import org.chromium.components.crash.LogcatCrashExtractor;
- import org.chromium.components.minidump_uploader.CrashFileManager;
+@@ -13,6 +13,33 @@ import org.chromium.components.minidump_uploader.CrashFileManager;
  
  import java.io.File;
+ 
 +import java.io.DataOutputStream;
 +import java.net.HttpURLConnection;
 +import java.net.URL;
@@ -16,62 +16,44 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +import java.io.BufferedReader;
 +import java.io.OutputStream;
 +import java.io.ByteArrayOutputStream;
-+
-+// Standard Android/Java imports
 +import android.os.StrictMode;
 +import android.os.Looper;
-+
-+// Concurrency imports (if using CountDownLatch solution)
 +import java.util.concurrent.CountDownLatch;
 +import java.util.concurrent.TimeUnit;
 +import java.util.concurrent.atomic.AtomicBoolean;
 +import java.util.concurrent.atomic.AtomicReference;
-+
-+// Chromium imports (if using PostTask solution)
 +import org.chromium.base.task.PostTask;
 +import org.chromium.base.task.TaskTraits;
-+
 +import android.net.ConnectivityManager;
 +import android.net.NetworkInfo;
 +import android.content.Context;
-+
 +import android.net.ConnectivityManager;
 +import android.net.Network;
 +import android.net.NetworkCapabilities;
 +import org.chromium.net.ChromiumNetworkAdapter;
 +import org.chromium.net.NetworkTrafficAnnotationTag;
- 
++
  /**
   * Extracts the recent logcat output from an Android device, elides PII sensitive info from it,
-@@ -24,6 +58,9 @@ public class LogcatExtractionRunnable implements Runnable {
-     private final File mMinidumpFile;
-     private final LogcatCrashExtractor mLogcatExtractor;
- 
+  * prepends the logcat data to the caller-provided minidump file, and initiates upload for the crash
+@@ -20,6 +47,8 @@ import java.io.File;
+  */
+ public class LogcatExtractionRunnable implements Runnable {
+     private static final String TAG = "LogcatExtraction";
 +    private static final String SENTRY_MINIDUMP_URL =
 +        "https://o4509807793733632.ingest.de.sentry.io/api/4509807795372112/minidump/?sentry_key=591d5ee7a98b1fdeca311066ff238573";
-+
-     /**
-      * @param minidump The minidump file that needs logcat output to be attached.
-      */
-@@ -45,6 +82,8 @@ public class LogcatExtractionRunnable implements Runnable {
-     public void run() {
-         File fileToUpload = mLogcatExtractor.attachLogcatToMinidump(mMinidumpFile,
-                 new CrashFileManager(ContextUtils.getApplicationContext().getCacheDir()));
-+        Log.e("BraveSentry", fileToUpload.getName());
-+        logMinidumpInfo(fileToUpload);
-         uploadMinidump(fileToUpload, false);
-     }
  
-@@ -57,6 +96,8 @@ public class LogcatExtractionRunnable implements Runnable {
+     private final File mMinidumpFile;
+     private final LogcatCrashExtractor mLogcatExtractor;
+@@ -59,6 +88,7 @@ public class LogcatExtractionRunnable implements Runnable {
          // Regardless of success, initiate the upload. That way, even if there are errors augmenting
          // the minidump with logcat data, the service can still upload the unaugmented minidump.
          try {
-+            Log.e("BraveSentry", "Before uploadMinidumpToSentry");
 +            uploadMinidumpToSentry(minidump);
              if (uploadNow) {
                  MinidumpUploadServiceImpl.tryUploadCrashDumpNow(minidump);
              } else {
-@@ -67,4 +108,171 @@ public class LogcatExtractionRunnable implements Runnable {
+@@ -69,4 +99,161 @@ public class LogcatExtractionRunnable implements Runnable {
              if (!uploadNow) throw e;
          }
      }
@@ -131,32 +113,31 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +        Log.i(TAG, "=== Starting Sentry Upload ===");
 +        long dumpSize = minidumpFile.length();
 +        Log.e(TAG, "Minidump size: " + dumpSize + " bytes (" + (dumpSize / 1024 / 1024) + " MB)");
-+        
++
 +        if (!isNetworkAvailable()) {
 +            Log.e(TAG, "No network available.");
 +            return false;
 +        }
-+        
++
 +        if (minidumpFile == null || !minidumpFile.exists() || minidumpFile.length() == 0) {
 +            Log.e(TAG, "Invalid minidump file.");
 +            return false;
 +        }
-+        
++
 +        HttpURLConnection conn = null;
 +        try {
 +            String boundary = "----SentryBoundary" + System.currentTimeMillis();
 +            URL url = new URL(SENTRY_MINIDUMP_URL);
-+            
++
 +            ByteArrayOutputStream baos = new ByteArrayOutputStream();
 +            DataOutputStream out = new DataOutputStream(baos);
-+            
-+            // 1️⃣ Minidump part
++
++            // Minidump file part
 +            out.writeBytes("--" + boundary + "\r\n");
 +            out.writeBytes("Content-Disposition: form-data; name=\"upload_file_minidump\"; filename=\"" 
-+                + minidumpFile.getName() + "\"\r\n");
-+            out.writeBytes("Content-Type: application/octet-stream\r\n");
-+            out.writeBytes("\r\n"); // empty line required
-+            
++                           + minidumpFile.getName() + "\"\r\n");
++            out.writeBytes("Content-Type: application/octet-stream\r\n\r\n");
++
 +            try (FileInputStream fis = new FileInputStream(minidumpFile)) {
 +                byte[] buffer = new byte[4096];
 +                int bytesRead;
@@ -164,24 +145,15 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +                    out.write(buffer, 0, bytesRead);
 +                }
 +            }
-+            out.writeBytes("\r\n"); // end of file part
-+            
-+            // 2️⃣ Sentry metadata part - REMOVED Content-Type header
-+            // String sentryJson = "{\"release\":\"chromium@0.0.217\"}";
-+            // out.writeBytes("--" + boundary + "\r\n");
-+            // out.writeBytes("Content-Disposition: form-data; name=\"sentry\"\r\n");
-+            // // REMOVED: out.writeBytes("Content-Type: application/json\r\n");
-+            // out.writeBytes("\r\n"); // empty line before content
-+            // out.write(sentryJson.getBytes("UTF-8"));
-+            // out.writeBytes("\r\n");
-+            
-+            // 3️⃣ Closing boundary
++            out.writeBytes("\r\n");
++
++            // Closing boundary
 +            out.writeBytes("--" + boundary + "--\r\n");
 +            out.flush();
-+            
++
 +            byte[] body = baos.toByteArray();
 +            Log.d(TAG, "Multipart body size: " + body.length + " bytes");
-+            
++
 +            conn = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
 +                    url, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
 +            conn.setConnectTimeout(15000);
@@ -191,15 +163,15 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +            conn.setRequestProperty("Content-Type", "multipart/form-data; boundary=" + boundary);
 +            conn.setRequestProperty("User-Agent", "Android-Crash-Reporter/1.0");
 +            conn.setFixedLengthStreamingMode(body.length);
-+            
++
 +            try (OutputStream os = conn.getOutputStream()) {
 +                os.write(body);
 +                os.flush();
 +            }
-+            
++
 +            int code = conn.getResponseCode();
 +            Log.i(TAG, "Sentry response: " + code + " " + conn.getResponseMessage());
-+            
++
 +            if (code >= 400) {
 +                try (InputStream err = conn.getErrorStream()) {
 +                    if (err != null) {
@@ -213,9 +185,9 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +                    }
 +                }
 +            }
-+            
++
 +            return (code >= 200 && code < 300);
-+            
++
 +        } catch (Exception e) {
 +            Log.e(TAG, "Error uploading to Sentry", e);
 +            return false;
@@ -224,7 +196,7 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +            Log.i(TAG, "=== Sentry Upload Finished ===");
 +        }
 +    }
-+    
++
 +    /**
 +     * Checks if there is an active network connection.
 +     */
@@ -232,10 +204,10 @@ index 63d4b110808c064bd082218186238f940899a71e..bfe625329abf6abc3a36b538f4feecb2
 +        Context context = ContextUtils.getApplicationContext();
 +        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
 +        if (cm == null) return false;
-+        
++
 +        Network activeNetwork = cm.getActiveNetwork();
 +        if (activeNetwork == null) return false;
-+        
++
 +        NetworkCapabilities capabilities = cm.getNetworkCapabilities(activeNetwork);
 +        return capabilities != null &&
 +               (capabilities.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) ||

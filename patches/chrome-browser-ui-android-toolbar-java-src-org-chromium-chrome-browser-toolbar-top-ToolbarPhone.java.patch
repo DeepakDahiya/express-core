@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
-index e32e3f0e0b6a5b7d933b5ba39a2ff83e8ba4cc86..302ed8b5334f5ad36feb5d4cff8d588088ccc8af 100644
+index e32e3f0e0b6a5b7d933b5ba39a2ff83e8ba4cc86..e19c8865ba4b8f42f6f2ec100540d83803dc8ee8 100644
 --- a/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
 +++ b/chrome/browser/ui/android/toolbar/java/src/org/chromium/chrome/browser/toolbar/top/ToolbarPhone.java
 @@ -442,6 +442,7 @@ public class ToolbarPhone extends ToolbarLayout
@@ -32,17 +32,17 @@ index e32e3f0e0b6a5b7d933b5ba39a2ff83e8ba4cc86..302ed8b5334f5ad36feb5d4cff8d5880
  
 +        BraveToolbarLayout.class.cast(this).drawAnimationOverlay(mToolbarButtonsContainer, canvas);
          // Draw the tab stack button and associated text if necessary.
-         if (mTabSwitcherAnimationTabStackDrawable != null && mToggleTabStackButton != null
-                 && mUrlExpansionFraction != 1f) {
-@@ -1860,6 +1864,7 @@ public class ToolbarPhone extends ToolbarLayout
+         if (mTabSwitcherAnimationTabStackDrawable != null
+                 && mToggleTabStackButton != null
+@@ -1937,6 +1941,7 @@ public class ToolbarPhone extends ToolbarLayout
      public void updateButtonVisibility() {
          boolean hideHomeButton =
                  !mIsHomeButtonEnabled || getToolbarDataProvider().isInOverviewAndShowingOmnibox();
-+        hideHomeButton  = false;
++        hideHomeButton = false;
          if (hideHomeButton) {
              mHomeButton.setVisibility(View.GONE);
          } else {
-@@ -2289,6 +2294,7 @@ public class ToolbarPhone extends ToolbarLayout
+@@ -2391,6 +2396,7 @@ public class ToolbarPhone extends ToolbarLayout
          } else {
              populateUrlClearExpansionAnimatorSet(animators);
          }

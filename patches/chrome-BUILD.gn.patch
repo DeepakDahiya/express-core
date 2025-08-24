@@ -1,5 +1,5 @@
 diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
-index a506e77d09602accb319240b3b1cdd16638c4da1..b38ebc60358f771fec2f358752abd6de8a4a3033 100644
+index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e78667523132 100644
 --- a/chrome/BUILD.gn
 +++ b/chrome/BUILD.gn
 @@ -199,6 +199,7 @@ if (!is_android && !is_mac) {
@@ -109,7 +109,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..b38ebc60358f771fec2f358752abd6de
      }
  
      if (is_chrome_branded && !is_mac) {
-@@ -1719,6 +1731,7 @@ if (is_android) {
+@@ -1704,6 +1716,7 @@ if (is_android) {
        "//components/safe_browsing/android:safe_browsing_api_handler",
        "//components/safe_browsing/android:safe_browsing_mobile",
        "//content/public/app",
