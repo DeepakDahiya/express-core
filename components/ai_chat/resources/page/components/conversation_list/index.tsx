@@ -9,7 +9,7 @@ import Button from '@brave/leo/react/button'
 import Icon from '@brave/leo/react/icon'
 
 import styles from './style.module.scss'
-import getPageHandlerInstance, { CharacterType } from '../../api/page_handler'
+import getPageHandlerInstance, * as mojom from '../../api/page_handler'
 import DataContext from '../../state/context'
 import ContextMenuAssistant from '../context_menu_assistant'
 import { getLocale } from '$web-common/locale'
@@ -68,8 +68,11 @@ function ConversationList(props: ConversationListProps) {
     isGenerating,
     conversationHistory,
     suggestedQuestions,
-    shouldDisableUserInput
-  } = React.useContext(DataContext)
+    shouldDisableUserInput,
+    hasAcceptedAgreement,
+    shouldSendPageContents
+  } = context
+
   const portalRefs = React.useRef<Map<number, Element>>(new Map())
 
   const showSuggestions: boolean =
@@ -94,8 +97,9 @@ function ConversationList(props: ConversationListProps) {
         {conversationHistory.map((turn, id) => {
           const isLastEntry = id === conversationHistory.length - 1
           const isLoading = isLastEntry && isGenerating
-          const isHuman = turn.characterType === CharacterType.HUMAN
-          const isAIAssistant = turn.characterType === CharacterType.ASSISTANT
+          const isHuman = turn.characterType === mojom.CharacterType.HUMAN
+          const isAIAssistant = turn.characterType === mojom.CharacterType.ASSISTANT
+          const showSiteTitle = id === 0 && isHuman && shouldSendPageContents
 
           const turnClass = classnames({
             [styles.turn]: true,
@@ -131,6 +135,7 @@ function ConversationList(props: ConversationListProps) {
                 >
                   {<FormattedTextRenderer text={turn.text} />}
                   {isLoading && <span className={styles.caret} />}
+                  {showSiteTitle && <div className={styles.siteTitleContainer}><SiteTitle size="default" /></div>}
                 </div>
               </div>
               {isAIAssistant ? (
@@ -143,11 +148,10 @@ function ConversationList(props: ConversationListProps) {
           )
         })}
       </div>
-      {suggestedQuestions.length > 0 && (
+      {showSuggestions && (
         <div className={styles.suggestedQuestionsBox}>
           <div className={styles.suggestedQuestionLabel}>
-            <Icon name='product-brave-leo' />
-            <div>Suggested follow-ups</div>
+            {getLocale('suggestionsTitle')}
           </div>
           <div className={styles.questionsList}>
             {suggestedQuestions.map((question, id) => (
@@ -160,6 +164,23 @@ function ConversationList(props: ConversationListProps) {
                 <span className={styles.buttonText}>{question}</span>
               </Button>
             ))}
+            {SUGGESTION_STATUS_SHOW_BUTTON.includes(
+              context.suggestionStatus
+            ) && (
+              <Button
+                onClick={() => context.generateSuggestedQuestions()}
+                // isDisabled={context.suggestionStatus === mojom.SuggestionGenerationStatus.IsGenerating}
+                isLoading={
+                  context.suggestionStatus ===
+                  mojom.SuggestionGenerationStatus.IsGenerating
+                }
+                kind='outline'
+              >
+                <span className={styles.buttonText}>
+                  {getLocale('suggestQuestionsLabel')}
+                </span>
+              </Button>
+            )}
           </div>
         </div>
       )}

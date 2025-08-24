@@ -4,13 +4,12 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as React from 'react'
-import { withKnobs, select } from '@storybook/addon-knobs'
 import styles from './style.module.scss'
 
 import './locale'
 import '$web-components/app.global.scss'
 import '@brave/leo/tokens/css/variables.css'
-
+import { getKeysForMojomEnum } from '$web-common/mojomUtils'
 import ThemeProvider from '$web-common/BraveCoreThemeProvider'
 import Main from '../components/main'
 import * as mojom from '../api/page_handler'
@@ -60,16 +59,31 @@ const MODELS: mojom.Model[] = [
     displayMaker: 'Company',
     engineType: mojom.ModelEngineType.LLAMA_REMOTE,
     category: mojom.ModelCategory.CHAT,
-    isPremium: false
+    access: mojom.ModelAccess.BASIC,
+    maxPageContentLength: 10000,
+    longConversationWarningCharacterLimit: 9700
   },
   {
     key: '2',
-    name: 'model-two',
+    name: 'model-two-premium',
     displayName: 'Model Two',
     displayMaker: 'Company',
     engineType: mojom.ModelEngineType.LLAMA_REMOTE,
     category: mojom.ModelCategory.CHAT,
-    isPremium: true
+    access: mojom.ModelAccess.PREMIUM,
+    maxPageContentLength: 10000,
+    longConversationWarningCharacterLimit: 9700
+  },
+  {
+    key: '3',
+    name: 'model-three-freemium',
+    displayName: 'Model Three',
+    displayMaker: 'Company',
+    engineType: mojom.ModelEngineType.LLAMA_REMOTE,
+    category: mojom.ModelCategory.CHAT,
+    access: mojom.ModelAccess.BASIC_AND_PREMIUM,
+    maxPageContentLength: 10000,
+    longConversationWarningCharacterLimit: 9700
   }
 ]
 
@@ -81,63 +95,73 @@ const SAMPLE_QUESTIONS = [
 ]
 
 const SITE_INFO = {
-  title: 'Microsoft is hiking the price of Xbox Series X and Xbox Game Pass'
-}
-
-interface StoryArgs {
-  hasQuestions: boolean
-  hasAcceptedAgreement: boolean
-  currentErrorState: mojom.APIError
+  title: 'Microsoft is hiking the price of Xbox Series X and Xbox Game Pass',
+  isContentTruncated: false,
+  isContentAssociationPossible: true,
+  hasContentAssociated: true
 }
 
 export default {
-  title: 'Chat/Page',
+  title: 'Chat/Chat',
   parameters: {
     layout: 'centered'
   },
+  argTypes: {
+    currentErrorState: {
+      options: getKeysForMojomEnum(mojom.APIError),
+      control: { type: 'select' }
+    },
+    suggestionStatus: {
+      options: getKeysForMojomEnum(mojom.SuggestionGenerationStatus),
+      control: { type: 'select' }
+    },
+    model: {
+      options: MODELS.map(m => m.name),
+      control: { type: 'select' }
+    }
+  },
   args: {
-    hasQuestions: true,
-    hasChosenSuggestedQuestions: true,
-    hasChangedModel: false,
+    hasConversation: true,
+    hasSuggestedQuestions: true,
+    hasSiteInfo: true,
+    canShowPremiumPrompt: false,
     hasAcceptedAgreement: true,
+    isPremiumModel: false,
     isPremiumUser: true,
     isPremiumUserDisconnected: false,
-    currentErrorState: select(
-      'Current Status',
-      mojom.APIError,
-      mojom.APIError.RateLimitReached
-    )
+    currentErrorState: 'ConnectionIssue' satisfies keyof typeof mojom.APIError,
+    suggestionStatus: 'None' satisfies keyof typeof mojom.SuggestionGenerationStatus,
+    model: MODELS[0].name,
+    showAgreementModal: false,
   },
   decorators: [
     (Story: any, options: any) => {
-      const [conversationHistory] =
-        React.useState<mojom.ConversationTurn[]>(HISTORY)
-      const [suggestedQuestions] = React.useState<string[]>(SAMPLE_QUESTIONS)
       const [isGenerating] = React.useState(false)
-      const [canGenerateQuestions] = React.useState(false)
-      const userAutoGeneratePref: mojom.AutoGenerateQuestionsPref = options.args.hasChosenSuggestedQuestions ? mojom.AutoGenerateQuestionsPref.Enabled : mojom.AutoGenerateQuestionsPref.Unset
-      const [siteInfo] = React.useState<mojom.SiteInfo | null>(SITE_INFO)
       const [favIconUrl] = React.useState<string>()
-      const [currentError] = React.useState<mojom.APIError>(
-        options.args.currentErrorState
-      )
-      const [hasAcceptedAgreement] = React.useState(options.args.hasAcceptedAgreement)
+      const hasAcceptedAgreement = options.args.hasAcceptedAgreement
 
+      const siteInfo = options.args.hasSiteInfo ? SITE_INFO : new mojom.SiteInfo()
+      const suggestedQuestions = options.args.hasSuggestedQuestions
+        ? SAMPLE_QUESTIONS
+        : siteInfo
+        ? [SAMPLE_QUESTIONS[0]]
+        : []
 
+      const currentError = mojom.APIError[options.args.currentErrorState]
       const apiHasError = currentError !== mojom.APIError.None
       const shouldDisableUserInput = apiHasError || isGenerating
 
       const store: AIChatContext = {
         // Don't error when new properties are added
         ...defaultContext,
-        hasChangedModel: options.args.hasChangedModel,
         allModels: MODELS,
-        currentModel: MODELS[0],
-        conversationHistory,
+        currentModel: MODELS.find(m => m.name === options.args.model),
+        conversationHistory: options.args.hasConversation ? HISTORY : [],
         isGenerating,
+        isPremiumStatusFetching: false,
         suggestedQuestions,
-        canGenerateQuestions,
-        userAutoGeneratePref,
+        suggestionStatus: mojom.SuggestionGenerationStatus[options.args.suggestionStatus],
+        canShowPremiumPrompt: options.args.canShowPremiumPrompt,
         siteInfo,
         favIconUrl,
         currentError,
@@ -145,7 +169,8 @@ export default {
         apiHasError,
         shouldDisableUserInput,
         isPremiumUser: options.args.isPremiumUser,
-        isPremiumUserDisconnected: options.args.isPremiumUserDisconnected
+        isPremiumUserDisconnected: options.args.isPremiumUserDisconnected,
+        showAgreementModal: options.args.showAgreementModal,
       }
 
       return (
@@ -155,12 +180,11 @@ export default {
           </ThemeProvider>
         </AIChatDataContext.Provider>
       )
-    },
-    withKnobs
+    }
   ]
 }
 
-export const _Main = (props: StoryArgs) => {
+export const _Panel = (props: {}) => {
   return (
     <div className={styles.container}>
       <Main />

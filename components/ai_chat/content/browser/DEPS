@@ -1,0 +1,8 @@
+include_rules = [
+  "+content/public/browser",
+  "+content/public/common",
+  "+services/data_decoder/public",
+  "+services/network/public",
+  "+services/service_manager/public",
+  "+ui",
+]
