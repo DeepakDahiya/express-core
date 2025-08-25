@@ -5,9 +5,16 @@
 
 #include <utility>
 
-#include "src/chrome/browser/ui/views/toolbar/toolbar_button.cc"
+#include "brave/browser/ui/color/brave_color_id.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
-void ToolbarButton::SetMenuModel(std::unique_ptr<ui::MenuModel> model) {
+#define ToolbarButton ToolbarButton_ChromiumImpl
+#include "src/chrome/browser/ui/views/toolbar/toolbar_button.cc"
+#undef ToolbarButton
+
+void ToolbarButton_ChromiumImpl::SetMenuModel(
+    std::unique_ptr<ui::MenuModel> model) {
   model_ = std::move(model);
 }
 
