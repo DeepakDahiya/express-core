@@ -64,6 +64,13 @@
 # https://github.com/brave/brave-browser/issues/34185
 -DynamicOriginBrowserTest.DynamicUrl
 -DynamicOriginBrowserTest.InvalidDynamicResourceFailsToLoad
+-ServiceWorker/DeclarativeContentApiTestWithContextType.RulesPersistence/0
+-ServiceWorker/ExtensionApiTabTestWithContextType.OnUpdated/0
+-PersistentBackground/ContentScriptApiTestWithContextType.CannotScriptTheNewTabPage/0
+-PersistentBackground/ExtensionApiTabTestWithContextType.OnUpdated/0
+-PersistentBackground/NTPInterceptionTest.ContentScript/0
+-PersistentBackground/DeclarativeContentApiTestWithContextType.RulesPersistence/0
+-PersistentBackground/ContentScriptApiPrerenderingTest.Prerendering/0
 -PersistentBackground/ExtensionWebRequestApiTestWithContextType.WebRequestBlocking/0
 -PersistentBackground/ExtensionWebRequestApiTestWithContextType.WebRequestRedirects/0 # Request id not the same
 -PersistentBackground/ExtensionWebRequestApiTestWithContextType.WebRequestRedirects/BackgroundResourceFetchDisabled # Request id collision
@@ -114,40 +121,6 @@
 -PrivacySandboxPromptHelperTestWithParamInstance/PrivacySandboxPromptHelperTestWithParam.PromptOpensOnSettings/*
 -PrivacySandboxPromptHelperTestWithParamInstance/PrivacySandboxPromptHelperTestWithParam.UnsuitableUrl/*
 
-# These tests fail because BraveMainDelegate is not available in the Chromium
-# tests. They fail with the message:
-#
-# Terminating render process for bad Mojo message: Received bad user message:
-# No binder found for interface brave_news.mojom.BraveNewsController for the
-# frame/document scope
-#
-# The binder is not instantiated because BraveContentBrowserClient is also not
-# available.
--All/ActionAndBrowserActionAPITest.TestSetBadgeTextGlobalAndTab/*
--All/IntentPickerIconBrowserTest.*
--All/MLPromotionInstallDialogBrowserTest.MlHandlesInvisible/Detailed_Install_Dialog
--All/PromotionalTabsEnabledPolicyWelcomeNoFreTest.RunTest/1
--BackgroundPage/ExtensionPreferenceApiTest.OnChangeSplitWithoutIncognitoAccess/0
--InteractiveBrowserTestBrowsertest.InstrumentTabsAsTestSteps
--IntentPickerIconBrowserBubbleTest.IntentChipLaunchesAppDirectly
--IntentPickerIconBrowserTest.*
--LensDesktopNTPSearchEnabledPolicyTest.LensSearchButtonHidden
--PrivacySandboxPromptHelperTestWithParamInstance/PrivacySandboxPromptHelperTestWithParam.NoPromptNonDefaultNtp/*
--PermissionRequestChipGestureSensitiveBrowserTest.ShouldUpdateActiverPRMAndObservations
--PersistentBackground/ContentScriptApiPrerenderingTest.Prerendering/0
--PersistentBackground/ContentScriptApiTestWithContextType.CannotScriptTheNewTabPage/0
--PersistentBackground/DeclarativeContentApiTestWithContextType.RulesPersistence/0
--PersistentBackground/ExtensionApiNewTabTest.Tabs/0
--PersistentBackground/ExtensionApiTabTestWithContextType.Muted/0
--PersistentBackground/ExtensionApiTabTestWithContextType.OnUpdatedDiscardedState/0
--PersistentBackground/NTPInterceptionTest.ContentScript/0
--ServiceWorker/DeclarativeContentApiTestWithContextType.RulesPersistence/0
--ServiceWorker/ExtensionApiNewTabTest.Tabs/0
--ServiceWorker/ExtensionApiTabTestWithContextType.Muted/0
--ServiceWorker/ExtensionApiTabTestWithContextType.OnUpdatedDiscardedState/0
--TrackingProtectionHatsIneligibleClientBrowserTest.IneligibleClientDoesntSurvey
--WebAppTabStripBrowserTest.HomeTab*
-
 # These tests fail because they directly subclass ChromeContentBrowserClient.
 # They fail with the message:
 #
@@ -171,7 +144,6 @@
 # These fail because we disable HATS (Happiness Survey) service from showing any
 # surveys.
 -TrackingProtectionHatsBrowserTest.CallHatsServiceWithProductData/*
-
 
 # These tests are disabled because sharedStorage is not enabled in Brave
 # (PrivacySandboxSettings is overridden)
@@ -378,6 +350,7 @@
 -PrivacySandboxSettingsEventReportingBrowserTest/PrivacySandboxSettingsEventReportingBrowserTest.ReportWinDestinationEnrollment/*
 -PrivacySandboxSettingsEventReportingBrowserTest/PrivacySandboxSettingsEventReportingBrowserTest.ReportResultDestinationEnrollment/*
 
+
 # These tests fail because we intentionally disable direct/raw sockets via
 # policy::policy_prefs::kIsolatedAppsDeveloperModeAllowed. See
 # https://github.com/brave/brave-browser/issues/11546 for additional
@@ -467,7 +440,7 @@
 -ExtensionManagementApiTestSupervised.ParentPermissionGrantedForEnable
 -ExtensionManagementApiTestSupervised.ParentPermissionNotGrantedForEnable
 
-# These tests fail because "Isolated Web Apps are not enabled, or Isolated Web 
+# These tests fail because "Isolated Web Apps are not enabled, or Isolated Web
 # App Developer Mode is not enabled or blocked by policy."
 -GarbageCollectStoragePartitionsCommandBrowserTest.UninstalledAppsHaveStoragePartitionsCleanedUp
 
@@ -628,11 +601,11 @@
 -All/DeclarativeNetRequestSubresourceWebBundlesBrowserTest.WebBundleRequestRedirected/*
 -PersistentBackground/SubresourceWebBundlesWebRequestApiTest.RequestCanceled/0
 -PersistentBackground/SubresourceWebBundlesWebRequestApiTest.RequestRedirected/0
--PersistentBackground/SubresourceWebBundlesWebRequestApiTest.WebBundleRequestCanceledWithResourceType/0 
+-PersistentBackground/SubresourceWebBundlesWebRequestApiTest.WebBundleRequestCanceledWithResourceType/0
 -PersistentBackground/SubresourceWebBundlesWebRequestApiTest.WebBundleRequestRedirected/0
 -PersistentBackgroundWithExtraHeaders/SubresourceWebBundlesWebRequestApiTest.RequestCanceled/0
 -PersistentBackgroundWithExtraHeaders/SubresourceWebBundlesWebRequestApiTest.RequestRedirected/0
--PersistentBackgroundWithExtraHeaders/SubresourceWebBundlesWebRequestApiTest.WebBundleRequestCanceledWithResourceType/0 
+-PersistentBackgroundWithExtraHeaders/SubresourceWebBundlesWebRequestApiTest.WebBundleRequestCanceledWithResourceType/0
 -PersistentBackgroundWithExtraHeaders/SubresourceWebBundlesWebRequestApiTest.WebBundleRequestRedirected/0
 -ServiceWorker/SubresourceWebBundlesWebRequestApiTest.RequestCanceled/0
 -ServiceWorker/SubresourceWebBundlesWebRequestApiTest.RequestRedirected/0
@@ -799,26 +772,6 @@
 # tokens
 -DisallowManagedProfileSignoutFeature/UserPolicySigninServiceTest.*
 
-# These tests fail with the following error:
-#  Terminating render process for bad Mojo message: Received bad user message:
-# No binder found for interface brave_private_new_tab.mojom.PageHandler for the
-# frame/document scope
-# Terminating renderer for bad IPC message, reason 123
--DevToolsExtensionChromeUrlTest.TestExtensionOnNewTab
--PersistentBackground/ExtensionApiTabTestWithContextType.Move/0
--PersistentBackground/ExtensionApiTabTestWithContextType.NoPermissions/0
--PersistentBackground/ExtensionApiTabTestWithContextType.OnRemoved/0
--PersistentBackground/ExtensionApiTabTestWithContextType.OnUpdated/0
--PersistentBackground/ExtensionApiTabTestWithContextType.RemoveMultiple/0
--ServiceWorker/ExtensionApiTabTestWithContextType.Connect/0
--ServiceWorker/ExtensionApiTabTestWithContextType.Move/0
--ServiceWorker/ExtensionApiTabTestWithContextType.NoPermissions/0
--ServiceWorker/ExtensionApiTabTestWithContextType.OnRemoved/0
--ServiceWorker/ExtensionApiTabTestWithContextType.OnUpdated/0
--ServiceWorker/ExtensionApiTabTestWithContextType.RemoveMultiple/0
--SystemNetworkContextManagerWithCustomProxyConfigBrowserTest.InitialCustomProxyConfig
--SystemNetworkContextManagerWithIpProtectionFlagsEnabledAndCommandLineSettingsEnabled.EnableIpProtectionProxyCommandLineOverridesFeature
-
 # These tests fail because we disable DIPS via features::kDIPS
 -All/OpenerHeuristicBackfillGrantBrowserTest.TrackingProtectionOnboardingCreatesBackfillGrants/*
 -All/OpenerHeuristicCurrentInteractionGrantBrowserTest.AdTaggedPopupInteractionWithStorageAccessGrant/*
@@ -843,27 +796,8 @@
 -DIPSWebAuthnBrowserTest.WebAuthnAssertion_ConfirmWCOCallback
 -OpenerHeuristicBrowserTest.*
 
-# This test fails because we disable link capturing
--EnableLinkCapturingInfobarBrowserTest.AppLaunched
-
-# These tests fail because our default search provider is not Google, which
-# makes the page classification return the result the tests don't expect. Also,
-# kZeroSuggestPrefetchingOnWeb feature is currently disabled by default which
-# causes prefetch not to start.
--ZeroSuggestPrefetchTabHelperBrowserTestOnNTP.StartPrefetch
--ZeroSuggestPrefetchTabHelperBrowserTestOnSRP.StartPrefetch
--ZeroSuggestPrefetchTabHelperBrowserTestOnWeb.StartPrefetch
-
-# These tests fail due to:
-# Receiver for unknown Channel-associated interface: brave.mojom.BraveRendererConfiguration
-# But also, we disable kSharedStorageAPI.
--All/SharedStorageChromeBrowserTest.*
--All/SharedStoragePrefBrowserTest.*
--All/SharedStoragePrivateAggregationChromeBrowserTest.*
--SharedStorageFencedFrameChromeBrowserTest.FencedFrameNavigateTop_BudgetWithdrawal
--SharedStorageFencedFrameChromeBrowserTest.TwoFencedFrames_DifferentURNs_EachNavigateOnce_BudgetWithdrawalTwice
-
 # These tests fail on CI but pass locally
+-All/MLPromotionInstallDialogBrowserTest.MlHandlesInvisible/PWA_Confirmation_Bubble
 -All/PermissionPromptBubbleBaseViewBrowserTest.InvokeUi_storage_access/*
 -AutoPictureInPictureTabHelperBrowserTest.ImmediatelyClosesAutopipIfTabIsAlreadyFocused
 -AutoPictureInPictureTabHelperBrowserTest.RespectsAutoPictureInPictureContentSetting
@@ -993,7 +927,7 @@
 -HttpsUpgradesBrowserTest.InterstitialLearnMoreLink/HttpsFirstModeAndHttpsUpgrades
 -HttpsUpgradesBrowserTest.InterstitialLearnMoreLink/HttpsFirstModeOnly
 
-# These tests crash because we disable 
+# These tests crash because we disable
 # enterprise_connectors::kLocalContentAnalysisEnabled feature
 -All/ContentAnalysisAfterPrintPreviewBrowserTest.*/*
 -All/ContentAnalysisBeforePrintPreviewBrowserTest.PrintWithPreview/*
@@ -1019,6 +953,7 @@
 -All/BrowsingDataModelBrowserTest.LocalStorageRemovedBasedOnPartition/*
 -All/EligibilityServiceBrowserTest.EligibilityChanged_NetworkContextUpdated/*
 -All/EligibilityServiceBrowserTest.OnboardingChanged_NetworkContextUpdated/*
+-EligibilityServiceSilentOnboardingBrowserTest.OnboardingChanged_NetworkContextUpdated
 -ReadAnythingAppControllerTest.*
 -StorageAccessAPIEnterprisePolicyBrowserTest.PartitionedStorage/*
 -StorageAccessAPIWithNoRequiredTopLevelInteractionBrowserTest.TopLevelUserInteractionNotRequired
@@ -1036,7 +971,7 @@
 -RequestStorageAccessForBrowserTest.ThirdPartyGrantsExpireOverIPC
 -RequestStorageAccessForWithCHIPSBrowserTest.RequestStorageAccessFor_CoexistsWithCHIPS
 -RequestStorageAccessForWithFirstPartySetsBrowserTest.Permission_AllowsRequestStorageAccessResolution
--RequestStorageAccessForWithFirstPartySetsBrowserTest.Permission_AutograntedWithinFirstPartySet 
+-RequestStorageAccessForWithFirstPartySetsBrowserTest.Permission_AutograntedWithinFirstPartySet
 -RequestStorageAccessForWithFirstPartySetsBrowserTest.RequestStorageAccessForTopLevelScoping
 -RequestStorageAccessForWithFirstPartySetsBrowserTest.RequestStorageAccessForTopLevelScopingWhenRequestedFromSubdomain
 
