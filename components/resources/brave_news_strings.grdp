@@ -86,6 +86,7 @@
   </message>
   <message name="IDS_BRAVE_NEWS_NO_CONTENT_HEADING" desc="Message heading for when there is no Brave News content">
     Your Feed is Empty
+
   </message>
   <message name="IDS_BRAVE_NEWS_NO_CONTENT_MESSAGE" desc="Message body for when there is no Brave News content">
     Follow publishers and channels to see them in your feed.
