@@ -49,6 +49,7 @@
 #include "components/keyed_service/core/service_access_type.h"
 #include "components/password_manager/core/browser/password_store/password_store.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/core/common/safe_browsing_prefs.h"
 #include "components/send_tab_to_self/send_tab_to_self_sync_service.h"
 #include "ios/chrome/app/startup/provider_registration.h"
 #include "ios/chrome/browser/bookmarks/model/bookmark_undo_service_factory.h"
@@ -202,6 +203,10 @@ const BraveCoreLogSeverity BraveCoreLogSeverityVerbose =
         browserStateManager->GetLastUsedBrowserState();
     _mainBrowserState = chromeBrowserState;
 
+    // Disable Safe-Browsing via Prefs
+    chromeBrowserState->GetPrefs()->SetBoolean(prefs::kSafeBrowsingEnabled,
+                                               false);
+
     // Setup main browser
     _browserList = BrowserListFactory::GetForBrowserState(_mainBrowserState);
     _browser = Browser::Create(_mainBrowserState, {});
@@ -313,7 +318,9 @@ const BraveCoreLogSeverity BraveCoreLogSeverityVerbose =
           base::BindRepeating(&component_updater::BraveOnDemandUpdate));
 
   RegisterSafetyTipsComponent(cus);
-  brave_wallet::RegisterWalletDataFilesComponent(cus);
+  brave_wallet::WalletDataFilesInstaller::GetInstance()
+      .MaybeRegisterWalletDataFilesComponent(
+          cus, GetApplicationContext()->GetLocalState());
 }
 
 + (void)setLogHandler:(BraveCoreLogHandler)logHandler {

@@ -17,6 +17,7 @@
 #include "brave/components/cosmetic_filters/renderer/cosmetic_filters_js_render_frame_observer.h"
 #include "brave/components/playlist/common/buildflags/buildflags.h"
 #include "brave/components/safe_builtins/renderer/safe_builtins.h"
+#include "brave/components/script_injector/renderer/script_injector_render_frame_observer.h"
 #include "brave/components/skus/common/features.h"
 #include "brave/components/skus/renderer/skus_render_frame_observer.h"
 #include "brave/components/speedreader/common/buildflags/buildflags.h"
@@ -135,6 +136,8 @@ void BraveContentRendererClient::RenderFrameCreated(
         base::BindRepeating(&BraveRenderThreadObserver::GetDynamicParams));
   }
 
+  new script_injector::ScriptInjectorRenderFrameObserver(render_frame);
+
   if (brave_search::IsDefaultAPIEnabled()) {
     new brave_search::BraveSearchRenderFrameObserver(
         render_frame, content::ISOLATED_WORLD_ID_GLOBAL);
@@ -229,6 +232,6 @@ BraveContentRendererClient::CreateURLLoaderThrottleProvider(
       browser_interface_broker_.get(), provider_type, this);
 }
 
-bool BraveContentRendererClient::IsTorProcess() const {
-  return brave_observer_->is_tor_process();
+bool BraveContentRendererClient::IsOnionAllowed() const {
+  return brave_observer_->IsOnionAllowed();
 }
