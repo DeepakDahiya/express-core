@@ -165,7 +165,7 @@
 <translation id="4720556299488643018">إلغاء الاشتراك</translation>
 <translation id="1209739344687072997">الإبلاغ عن موقع إلكتروني معطل</translation>
 <translation id="8510478288840333677">إخطار مطوري Brave بأن هذا الموقع لا يعمل بشكلٍ سليم مع Shields:</translation>
-<translation id="8265244536487014968">ملاحظة: سيتضمن التقرير المرسل إلى خوادم Brave عنوان الموقع ورقم إصدار متصفح Brave وإعدادات Shields وحالة الـ VPN وإعدادات اللغة. كما سيتم إرسال عنوان الـ IP ولكن لن يتم تخزينه.</translation>
+<translation id="6387106423577201267">ملاحظة: سيتضمن التقرير المرسل إلى خوادم Brave عنوان الموقع ورقم إصدار متصفح Brave وإعدادات Shields وحالة VPN وإعدادات اللغة.</translation>
 <translation id="6476216365964140603">التفاصيل الإضافية (اختياري):</translation>
 <translation id="6145852496180774737">تواصل معي على: (اختياري)</translation>
 <translation id="7616645803364270729">البريد الإلكتروني، تويتر، إلخ.</translation>
@@ -258,14 +258,12 @@
 <translation id="3274650021044762770">حدثت مشكلة أثناء التحقق من صحة طلب المتصفح الخاص بك لتوصيل مكافآت Brave الخاصة بك بحساب <ph name="PROVIDER"/>. يمكنك <ph name="BEGIN_LINK"/>التواصل مع الدعم<ph name="END_LINK"/> لمزيد من المساعدة.</translation>
 <translation id="1316066811927496401">خطأ: تعذر التحقق من صحة الطلب</translation>
 <translation id="8167256685618982116">بتفعيل <ph name="TITLE"/>، فأنت توافق على <ph name="BEGIN_LINK1"/>Terms of Service<ph name="END_LINK1"/> and <ph name="BEGIN_LINK2"/>Privacy Policy<ph name="END_LINK2"/>.</translation>
-<translation id="4123948149985772126">اختيار موفر خدمة الحساب</translation>
-<translation id="896953639186217388">يُطلب من موفري الحسابات المُستضافة التحقق من هويتك، والتي قد تشمل تقديم بطاقة تعريف هوية بها صورة. راجع سياسة خصوصية <ph name="BEGIN_LINK1"/>Brave Rewards <ph name="END_LINK1"/>. راجع هنا <ph name="BEGIN_LINK2"/>لمعرفة المزيد حول BAT<ph name="END_LINK2"/>.</translation>
-<translation id="5785531043735482053">تخزين أرباح BAT وإدارتها وسحبها.</translation>
-<translation id="5155452078869279096">قم بتعبئة حسابك باستخدام BAT التي اشتريتها</translation>
-<translation id="2662540985634906665">إرسال مساهمات عند الطلب إلى مواقعك المفضلة؛ ومنشئي المحتوى</translation>
+<translation id="8817096698141999876">الحسابات المُستضافة (يتطلب التحقق من الهوية)</translation>
+<translation id="1539433155512862005">الحسابات المُستضافة هي حسابات ذات خدمات تابعة لجهات خارجية موثوقة والتي تحتفظ بـ BAT الخاص بك نيابةً عنك.</translation>
+<translation id="6751803821780922506">اختر المكان الذي ترغب في تلقي BAT</translation>
 <translation id="1233129511866436960">تعرف على المزيد حول المناطق والدعم</translation>
 <translation id="7329170127335794328">غير متوفر حاليًا في بلدك</translation>
-<translation id="8304979233901023264">لقد قرأت Brave’s <ph name="TOS_LINK_BEGIN"/>Terms of Service<ph name="TOS_LINK_END"/> &amp; <ph name="PP_LINK_BEGIN"/>Privacy Policy<ph name="PP_LINK_END"/> وأوافق عليه.</translation>
+<translation id="966956302643313970">للبدء في كسب مكافآت Basic Attention Token (رمز الانتباه الأساسي) (BAT)، قم بربط أحد الحسابات. سيتم تحويل BAT الذي تكسبه تلقائيًا إلى حسابك كل شهر.</translation>
 <translation id="1892970806832316900">معلّق حتى <ph name="DATE"/></translation>
 <translation id="7849926087559412554">عذرًا! تعذّر على متصفحك استقبال Brave Private Ads.</translation>
 <translation id="5177429570315095022">يحتاج متصفحك إلى التحديث لمواصلة مشاهدة الإعلانات.</translation>
@@ -456,9 +454,6 @@
 <translation id="4354564238172327160">كن أحد منشئي Brave!</translation>
 <translation id="4639659520811817892">تفضل بزيارة creators.brave.com لتسجل اليوم وتبدأ في كسب عملات BAT من معجبيك ومتابعيك.</translation>
 <translation id="4816455138209470435">يدعم Brave YouTube، Twitch، Vimeo، وغير ذلك الكثير!</translation>
-<translation id="3001581544796357879">التسجيل في Gemini لتخزين عملة BAT الرقمية خاصتك بكل أمان</translation>
-<translation id="4083523826017830313">قم بربط Brave Rewards بـ Gemini لاستلام أرباح عملة BAT الرقمية مباشرةً على حسابك على Gemini. ويتميز Gemini بكونه مصرفًا قائمًا على نظام الاحتياطي بالكامل ومنظمًا بكفاءة عالية للعملات المشفرة، كما يُعدّ مسؤولًا عنها بالكامل.</translation>
-<translation id="3313756098698370125">يختار ملايين العملاء في أكثر من 70 دولة استخدام Gemini لشراء أكثر من 90 عملة مشفرة وبيعها وتخزينها والاستثمار فيها بكل سهولة.</translation>
 <translation id="7404779623219601861">تبديل BAT ببطاقات هدايا</translation>
 <translation id="6215565499749144110">مع شبكة TAP فبإمكانك تبديل BAT ببطاقات هدايا ذات علامات تجارية شهيرة.</translation>
 <translation id="6074001074364432111">*يتطلب التسجيل حساب Uphold.</translation>
@@ -477,6 +472,7 @@
 <translation id="8327818101454798856">لذا فإذا كنت تنوي دعم مواقعك المفضلة فانتقل إلى هناك فضلاً عن ذلك.</translation>
 <translation id="412480955826088549">جاري تحميل المكون ...</translation>
 <translation id="4894106830958548828">أفهم</translation>
+<translation id="326118736933420687">إنك الآن تقوم بعرض صفحة WebTorrent</translation>
 <translation id="7534079972563542000">النطاقات التي لا يمكن إيقافها</translation>
 <translation id="4492298165410552103">هل تريد تمكين دعم النطاقات التي لا يمكن إيقافها في Brave؟</translation>
 <translation id="3647533686160055812">ستستخدم منصة Brave منصة Infura لحل أسماء نطاقات .crypto (وأيضا .x و.nft و.dao و.wallet و.blockchain و.bitcoin و.zil) الموجودة على نطاقات لا يمكن إيقافها. تقوم Brave بإخفاء عنوان IP الخاص بك. إذا قمت بتمكين هذا، فستتمكن منصة Infura من التعرف على أن شخصًا ما يحاول زيارة هذه النطاقات ولكن لا شيء غير ذلك. راجع <ph name="BEGIN_INFURA_TOU_LINK"/>شروط الاستخدام<ph name="END_INFURA_TOU_LINK"/> و <ph name="BEGIN_INFURA_PRIVACY_LINK"/>سياسة الخصوصية<ph name="END_INFURA_PRIVACY_LINK"/> من Infura.</translation>
@@ -609,7 +605,7 @@
 <translation id="7415051511657673556"><ph name="BOLD_BEGIN"/>هل أنت مستعد لبدء الربح؟<ph name="BOLD_END"/> قم بربط أو إنشاء حساب مع أحد شركائنا.</translation>
 <translation id="1772961321862399863">لكسب BAT، يجب على المستخدمين توصيل حساب مُستضاف بـ Brave Rewards. ولسوء الحظ، لا يوجد حساب مُستضاف متاح في منطقتك، لذا لا يتوفر الربح. في الوقت الحالي، سيؤدي تشغيل Brave Rewards إلى دعم مُنشئي المحتوى تلقائيًا.</translation>
 <translation id="902298128239575729">إرسال المساهمات مع Brave Rewards</translation>
-<translation id="8413791505518414158">ستتمكن من إرسال مساهمات عند الطلب إلى منشئي المحتوى المفضلين لديك باستخدام رصيد Brave Rewards الخاص بك بمجرد أن يكون لديك حساب مُستضاف متصل.</translation>
+<translation id="6276721355724491595">ستتمكن من إرسال مساهمات عند الطلب إلى منشئي المحتوى المفضلين لديك باستخدام رصيد Brave Rewards الخاص بك بمجرد أن يكون لديك حساب مُستضاف متصل.</translation>
 <translation id="1149481926056509086">لإرسال مساهمات عند الطلب، يجب على المستخدمين ربط حساب المُستضاف بـ Brave Rewards. وللأسف، لا يُتاح حساب مُستضاف في منطقتك، لذا فالإرسال غير متاح. في هذه الأثناء، لا تزال تدعم منشئي المحتوى تلقائيًا.</translation>
 <translation id="2584752537998444309">{PUBLISHER_COUNT, plural,
       =1 {لقد زرت هذا الشهر # منشئ المحتوى المدعوم من Brave Rewards}
@@ -630,13 +626,12 @@
 <translation id="2862978891748913252">حدّد بلدك</translation>
 <translation id="3717922248131893262">لمواصلة استخدام Brave Rewards، حدد بلدك حتى نتمكن من عرض الخيارات والإعلانات المناسبة لمنطقتك. <ph name="LINK_BEGIN"/>سياسة الخصوصية<ph name="LINK_END"/></translation>
 <translation id="2965798296974325760">ابدأ في استخدام Rewards</translation>
-<translation id="818003031290137834">والآن بعد أن أصبحت متصلاً بـ ZebPay، سيتم إيداع أي رصيد سابق لديك في حسابك على ZebPay كجزء من أرباحك التالية. وبمجرد تلقيها، سترى BAT الخاص بك ينعكس في رصيد المكافآت الخاص بك.</translation>
 <translation id="2221902203895354376">منحة الرموز المميزة متاحة!</translation>
 <translation id="2956070106555335453">ملخص</translation>
 <translation id="2369994359029526515">مُنشِئ غير مُصدَّق</translation>
-<translation id="1010940411509546886">لم يتم التحقق من منشئ المحتوى هذا بعد مع منشئي المحتوي لدى Brave. ستتمكن من إرسال مساهمات إليهم بمجرد التحقق منهم.</translation>
+<translation id="3984338085370091436">لم يتم التحقق من هذا المنشئ بعد مع Brave Creators. ستتمكن من إرسال المساهمات إليهم بمجرد التحقق منها.</translation>
 <translation id="6020176662032623904">مُنشِئ مُصدَّق</translation>
-<translation id="215037911651623564">قم بتحديث حالة التحقق من منشئ المحتوى</translation>
+<translation id="8635423276837443905">تحديث حالة التحقق من المنشئ</translation>
 <translation id="6633436087937398390"><ph name="NAME"/> على <ph name="PLATFORM"/></translation>
 <translation id="3733094367889291358">إرسال المساهمة</translation>
 <translation id="7335371657242627509">تضمين في المساهمة التلقائية</translation>
@@ -694,12 +689,13 @@
 <translation id="6621880242105464352">يجمع Brave <ph name="FEE_PCT"/> من المبلغ المرسل كرسوم معالجة.</translation>
 <translation id="1420756770787071946">دعم هذا المنشئ</translation>
 <translation id="1483493594462132177">إرسال</translation>
+<translation id="6632987674051304487">قم بالإرسال باستخدام <ph name="PROVIDER"/></translation>
 <translation id="4319632089378796037">استخدام محفظة Web3</translation>
-<translation id="5399596220743521546">قام منشئ المحتوى هذا بالتسجيل في Brave ويمكنه تلقي مساهمات من مستخدمي Brave Rewards.</translation>
+<translation id="4530198836725543997">قام هذا المنشئ بالتسجيل في Brave ويمكنه تلقي مساهمات من مستخدمي Brave Rewards.</translation>
 <translation id="4529874892536380156">اجعل هذه مساهمة شهرية متكررة. يمكنك إلغاؤها في أي وقت.</translation>
 <translation id="1177863135347784049">مخصص</translation>
 <translation id="5907051927340164207">أنت ترسلُ بالفعل مساهمات شهرية إلى منشئ المحتوى هذا</translation>
-<translation id="2840845521251717054">لا يزال بإمكانك إرسال مساهمة الآن، ويمكنك إلغاء مساهماتك الشهرية إلى منشئ المحتوى هذا عن طريق إزالته من <ph name="LINK_BEGIN"/>المساهمات الشهرية<ph name="LINK_END"/>.</translation>
+<translation id="4357685964329620278">لا يزال بإمكانك إرسال مساهمة الآن، ويمكنك إلغاء مساهماتك الشهرية لهذا المنشئ عن طريق إزالتها من <ph name="LINK_BEGIN"/>المساهمات الشهرية<ph name="LINK_END"/>.</translation>
 <translation id="1899434873745933492">يتعذّر إرسال مساهمتك</translation>
 <translation id="8598111278506452136">يتعذر على منشئ المحتوى هذا تلقي مساهمات من <ph name="PROVIDER"/>.</translation>
 <translation id="8379442066667303579">لا يزال بإمكانك إرسال المساهمات المشفرة إلى منشئ المحتوى هذا باستخدام محفظة Web3 الخاصة بك.</translation>
@@ -719,8 +715,13 @@
 <translation id="1950340257946519340">حدث خطأ غير متوقع</translation>
 <translation id="2605703631071131439">يُرجى إعادة فتح لوحة المساهمة للمحاولة مرة أخرى.</translation>
 <translation id="8855543392451028706">مرحبًا! يمكن للمستخدمين دعم منشئ المحتوى هذا عن طريق إرسال مساهمات إليهم. إنها طريقة لتوجيه الشكر لهم على إنشاء محتوى رائع.</translation>
+<translation id="7090992647511817643">الحساب</translation>
+<translation id="4822132585477111396">معرّف السلسلة</translation>
+<translation id="3269475789479462358">النطاق</translation>
+<translation id="1288078776976153868">الشبكة</translation>
 <translation id="1148827340205946630">رفض المستخدم الطلب</translation>
 <translation id="2403819048476450281">معايير غير صالحة</translation>
+<translation id="3849003816301348130">عنوان الوجهة موجود في قائمة OFAC SDN.</translation>
 <translation id="3955144560853195652">لم تتم إضافة سلسلة <ph name="VALUE"/></translation>
 <translation id="1875861420974447980">معرّف السلسلة هذا مستخدم حاليًّا</translation>
 <translation id="167698752210114155">حدث خطأ داخلي</translation>
@@ -906,6 +907,7 @@
 <translation id="6577166808959668729">يدعم الأصول المتوافقة مع عملة SPL على تقنية blockchain لمشروع العملة الرقمية Solana</translation>
 <translation id="4541295941776129088">تخزين الأصول للعملة الرقمية FIL</translation>
 <translation id="29759539656432505">تخزين أصول العملة الرقمية المشفرة BTC</translation>
+<translation id="8749751940551938347">تخزين أصول ZEC</translation>
 <translation id="8500387257977999003">المفتاح الخاص لـ<ph name="PROTOCOL"/></translation>
 <translation id="8275038454117074363">الاستيراد</translation>
 <translation id="232925166623833246">الاستيراد من محفظة الأجهزة</translation>
@@ -991,6 +993,7 @@
 <translation id="5294062982587710720">لاحظ أن Brave لا يمكنه التحقق مما سيحدث إذا قمت بالتوقيع. يمكن أن يخول التوقيع تقريبًا أي عملية في حسابك أو نيابة عنك ، بما في ذلك (على سبيل المثال لا الحصر) منح التحكم الكامل في حسابك وأصول التشفير للموقع الذي يقدم الطلب. قم بالتوقيع فقط إذا كنت متأكدًا من رغبتك في اتخاذ هذا الإجراء، وتثق في الموقع الطالب.</translation>
 <translation id="3474375934783434676">تسجيل الدخول على مسؤوليتك الخاصة</translation>
 <translation id="5488357322146334497">رسالة</translation>
+<translation id="3586931643579894722">إخفاء التفاصيل</translation>
 <translation id="7702907602086592255">النطاق</translation>
 <translation id="3586752056660754651">توقيع</translation>
 <translation id="3484981968509595506">يطلب DApp مفتاح التشفير العام الخاص بك</translation>
@@ -1016,7 +1019,6 @@
 <translation id="5052727830821470769">عنوان URL للشبكة</translation>
 <translation id="427875364838253580">عرض جميع التفاصيل</translation>
 <translation id="8030852056903932865">موافق</translation>
-<translation id="4822132585477111396">معرّف السلسلة</translation>
 <translation id="7131971375297699539">رمز العملة</translation>
 <translation id="4693057234255364395">عنوان URL الخاص بمستكشف الحظر</translation>
 <translation id="7982789257301363584">الشبكة</translation>
@@ -1082,7 +1084,7 @@
 <translation id="5867988533873716616">عنوان URL لمستكشف الحظر غير متاح.</translation>
 <translation id="4255623233927788178">عرض مستكشف الحظر</translation>
 <translation id="563386395023152633">نسخ تجزئة المعاملة</translation>
-<translation id="7148658188569580292">تسريع المعاملة</translation>
+<translation id="881317738916264532">تعجيل</translation>
 <translation id="1198263951134066686">إلغاء المعاملة</translation>
 <translation id="3562548974839822204">أعد المعاملة</translation>
 <translation id="6383204195803840504">ستظهر المعاملات هنا</translation>
@@ -1096,6 +1098,7 @@
 <translation id="1165039591588034296">خطأ</translation>
 <translation id="8373210463207847451">تم الإلقاء</translation>
 <translation id="8214232307424031138">مسجل الدخول</translation>
+<translation id="5916664084637901428">مفعّل</translation>
 <translation id="9065572743819293042">المعاملات الأخيرة</translation>
 <translation id="4235538284468006757">تفاصيل المعاملة</translation>
 <translation id="7488671812634887146">الإسراع</translation>
@@ -1156,10 +1159,15 @@
 <translation id="471055802670233033">تنفق</translation>
 <translation id="7916618590403748182">ستتلقى</translation>
 <translation id="8328657208304368165">تأكيد الطلب</translation>
+<translation id="8220255674527598378">تبديل Solana</translation>
 <translation id="5071303414930953888">حساب <ph name="ACCOUNT_NUMBER"/></translation>
 <translation id="2330177808960134000">يجب إلغاء قفل المحفظة أولاً</translation>
 <translation id="7930338223819368854"><ph name="ADDRESS"/> ليس عنوانًا صالحًا</translation>
-<translation id="1470129769517088397"><ph name="ADDRESS"/> ليست شبكة حالية</translation>
+<translation id="5036882519065735613"><ph name="CHAIN_ID"/> ليست الشبكة الحالية</translation>
+<translation id="317252468455212145"><ph name="ADDRESS"/> غير متطابق مع العنوان</translation>
+<translation id="8034449164954956172"><ph name="DOMAIN"/> غير متطابق مع النطاق الحالي</translation>
+<translation id="5444904139422068509">لقد تم رفض هذا الطلب لأن هذا الموقع يطلب منك استخدام <ph name="NAME"/> مختلف
+(<ph name="VALUE"/>)</translation>
 <translation id="7340805872138998391">تعذر إلغاء قفل الجهاز، حاول إعادة الاتصال</translation>
 <translation id="1984410139271779110">خطأ داخلي، مخطط غير معروف</translation>
 <translation id="6989562355845156390">الموافقة</translation>
@@ -1247,8 +1255,6 @@
 <translation id="1257387162647804035">الشبكات الأساسية</translation>
 <translation id="8323674164587854512">منصة Ethereum + سلاسل EVM</translation>
 <translation id="1398414935371867469">منصة Solana + سلاسل SVM</translation>
-<translation id="2588471487641583523">نظام Filecoin</translation>
-<translation id="5774718649402782121">نظام Bitcoin</translation>
 <translation id="7058248670699639973">شعار الشبكة</translation>
 <translation id="4378208228955237306">إظهار شعار الشبكة على الرموز المميزة غير القابلة للاستبدال (NFT)</translation>
 <translation id="5472199803712163015">الرموز المميزة غير القابلة للاستبدال (NFT) في البريد العشوائي</translation>
@@ -1275,6 +1281,20 @@
 <translation id="5601436886921227795">تفاعل Dapp</translation>
 <translation id="9104177294757104789">أرسِل <ph name="VALUE"/></translation>
 <translation id="4048336522751528394">بدّل <ph name="MAKER"/> إلى <ph name="TAKER"/></translation>
+<translation id="8613144770663526433">قم بتسجيل الدخول إلى  Brave Wallet</translation>
+<translation id="8813165409788097898">تقوم بتسجيل الدخول إلى<ph name="ORIGIN"/>. ستشارك Brave Wallet عنوان محفظتك مع <ph name="ORIGIN"/>.</translation>
+<translation id="1028781062521375153">عرض التفاصيل</translation>
+<translation id="3950820424414687140">تسجيل الدخول</translation>
+<translation id="4530494379350999373">الأصل</translation>
+<translation id="6736243959894955139">العنوان</translation>
+<translation id="3095940652251934233">البيان</translation>
+<translation id="308268297242056490">‏معرف موارد منتظم (URI)</translation>
+<translation id="1313065465616456728">تم الإصدار في</translation>
+<translation id="7902225556763260253">وقت انتهاء الصلاحية</translation>
+<translation id="2471230424465522689">ليس قبل</translation>
+<translation id="4841860051609590575">طلب الرقم التعريفي</translation>
+<translation id="6759710362319508545">المصادر</translation>
+<translation id="1908159733454294871">تم اكتشاف المخاطر الأمنية</translation>
 <translation id="1965889974717516497">شبكات ثانوية</translation>
 <translation id="7691821949666755802">شبكات اختبار</translation>
 <translation id="2816106784624007524">حد الغاز يجب أن يكون عددًا صحيحًا أكبر من 0</translation>
@@ -1573,6 +1593,20 @@
 <translation id="7756624047234151641"><ph name="REFRESH"/>التحديث<ph name="REFRESH_END"/> أو <ph name="IMPORT"/>الاستيراد يدويًا<ph name="IMPORT_END"/></translation>
 <translation id="3840001806553580474">جارٍ التحديث</translation>
 <translation id="4608324163534970318">رسوم الشبكة</translation>
+<translation id="6213230117190778270">التحصيل</translation>
+<translation id="6748108480210050150">من</translation>
+<translation id="4875290286426670462"><ph name="ASSET_SYMBOL"/> غير محدود</translation>
+<translation id="6018568069962140636">لم يتم التحقق من هذا الرمز المميز</translation>
+<translation id="8549067157732633185">تم التحقق من هذا الرمز المميز</translation>
+<translation id="2130170065617939165">تم التحقق من هذا الرمز المميز في قوائم <ph name="NUMBER_OF_LISTS"/></translation>
+<translation id="1554316484739382186">المُنفق: <ph name="ADDRESS"/></translation>
+<translation id="4265415116535094892">Zebpay</translation>
+<translation id="3026353765778463291">حساب <ph name="PROVIDER"/></translation>
+<translation id="5360752485622434494">Brave Rewards BAT على<ph name="PROVIDER"/></translation>
+<translation id="429061011725027672">لقد قمت حاليًا بتسجيل الخروج من<ph name="PROVIDER"/>. يُرجى تسجيل الدخول لعرض رصيدك.</translation>
+<translation id="4611292653554630842">تسجيل الدخول</translation>
+<translation id="1132794822159463424">عرض على <ph name="PROVIDER"/></translation>
+<translation id="7875005109025196005">النظام الأساسي</translation>
 <translation id="3155170474926428993">مشغِّل تور</translation>
 <translation id="3745016858329272300">معلومات عامة</translation>
 <translation id="4045404575593562245">أحداث تحكم تور</translation>
@@ -1690,8 +1724,14 @@
 <translation id="1536390784834419204">ترجمة الصفحة</translation>
 <translation id="5973664933364241128">توجيه الوسائط</translation>
 <translation id="1568067597247500137">كتم صوت الموقع</translation>
+<translation id="6674128381307353306">إغلاق كل علامات التبويب</translation>
+<translation id="1815548596883953231">إغلاق علامات التبويب الأخرى</translation>
+<translation id="926046137238708033">إعادة فتح كل علامات التبويب</translation>
 <translation id="855081842937141170">تثبيت علامة التبويب</translation>
+<translation id="2805351816064694332">غلق علامات التبويب غير المثبتة</translation>
 <translation id="8657641252283410630">علامة تبويب المجموعات</translation>
+<translation id="8290333944535778783">تمرير علامة التبويب لأعلى</translation>
+<translation id="6141382045715907645">تمرير علامة التبويب لأسفل</translation>
 <translation id="923853139812360539">مولد رمز الاستجابة السريعة</translation>
 <translation id="8754922069999490293">عروض ومكافآت للصفحة</translation>
 <translation id="8620714260606376019">مركز المشاركة</translation>
@@ -1787,6 +1827,15 @@
 <translation id="6002210667729577411">نقل المجموعة إلى نافذة جديدة</translation>
 <translation id="253980346046488815">إغلاق علامات التبويب المكررة</translation>
 <translation id="9210143726807220086">تبديل علامات التبويب العمودية الموسعة</translation>
+<translation id="684629111155788563">إضافة كل علامات التبويب إلى مجموعة جديدة</translation>
+<translation id="9106013521852824634">الإرسال إلى نفسك</translation>
+<translation id="1926106318101432555">فتح شريط الإشارات</translation>
+<translation id="6118819645013156507">الانتقال إلى نافذة...</translation>
+<translation id="1623204575967809688">دمج النافذة الحالية في...</translation>
+<translation id="7196533333647500853">نقل علامات التبويب إلى نافذة...</translation>
+<translation id="2026671913373402445">الإضافة إلى مجموعة موجودة مسبقًا...</translation>
+<translation id="8158903143594876176">تثبيت علامة التبويب...</translation>
+<translation id="1487981090845324947">إلغاء تثبيت علامة التبويب...</translation>
 <translation id="5182394825813677917">البحث عن أمر أو اختصار</translation>
 <translation id="4138119885026877702">إعادة تعيين الكل إلى الإعدادات الافتراضية</translation>
 <translation id="8247915960543694908">قم بإنشاء اختصار جديد. اضغط على المفاتيح المرغوبة لإنشاء ارتباط جديد</translation>
@@ -1795,17 +1844,17 @@
 <translation id="3537006124004887164">تُستخدم هذه التركيبة لأمر <ph name="COMMAND"/> ولا يمكن تعديلها. جرّب تعديلها من خلال "اختصارات التطبيقات" الموجودة بإعدادات النظام.</translation>
 <translation id="8591883849678260674">عرض الصفحة الأصلية</translation>
 <translation id="1969654232209826429">دقائق للقراءة</translation>
-<translation id="906598168058463050">إيقاف Speedreader</translation>
-<translation id="8948558186299884715">تشغيل قارئ السرعة</translation>
-<translation id="1385842054306112120">استخدم دائمًا قارئ السرعة لهذا الموقع</translation>
-<translation id="8028940590935492959">قم بالتبديل لتشغيل/إيقاف تشغيل قارئ السرعة لهذا الموقع.</translation>
-<translation id="1022901542006152519">استخدم دائمًا قارئ السرعة لجميع المواقع</translation>
-<translation id="3460907549384263858">قم بالتبديل لتشغيل/إيقاف تشغيل قارئ السرعة لجميع مواقع الويب.</translation>
-<translation id="8745592921916491483">لا توفر جميع المواقع إمكانيات قارئ السرعة.</translation>
+<translation id="4101707289420716287">إيقاف تشغيل قارئ السرعة</translation>
+<translation id="9089090017461255038">تشغيل قارئ السرعة</translation>
+<translation id="3929926885379607283">استخدم دائمًا قارئ السرعة لهذا الموقع</translation>
+<translation id="4186588885948504942">التبديل لتشغيل/إيقاف تشغيل قارئ السرعة لهذا الموقع.</translation>
+<translation id="1873585723672836337">استخدم قارئ السرعة دائمًا لكل المواقع</translation>
+<translation id="3138587343887871192">التبديل لتشغيل/إيقاف تشغيل قارئ السرعة لكل المواقع.</translation>
+<translation id="5153147025131874069">لا توفر كل المواقع إمكانيات قارئ السرعة.</translation>
 <translation id="1013121820689882118">قارئ السرعة</translation>
-<translation id="1103345585203110275">الخروج من قارئ السرعة</translation>
+<translation id="2104268045272817433">الخروج من قارئ السرعة</translation>
 <translation id="6315170314923504164">الصوت</translation>
-<translation id="57748525762025171">ضبط قارئ السرعة</translation>
+<translation id="864152735015641598">ضبط قارئ السرعة</translation>
 <translation id="251940709686581010">إعدادات المظهر</translation>
 <translation id="4809927044794281115">مظهر فاتح</translation>
 <translation id="5595850093882577201">مظهر داكن</translation>
@@ -1817,12 +1866,79 @@
 <translation id="8960352557529001690">Dyslexic</translation>
 <translation id="8189819085033738728">تصغير حجم الخط</translation>
 <translation id="1952725803106139986">تكبير حجم الخط</translation>
+<translation id="6338177649973309262">عمود محتوى محدود</translation>
+<translation id="6500600749984466451">عمود محتوى واسع</translation>
 <translation id="7239710518122372020">تحويل النص إلى كلام</translation>
 <translation id="4330722796577425585">ترجيع</translation>
 <translation id="1199355487114804640">تشغيل/إيقاف مؤقت</translation>
 <translation id="1689210457482459023">تقليل سرعة التشغيل</translation>
 <translation id="5872363163901278000">زيادة سرعة التشغيل</translation>
-<translation id="3507699941492423127">Brave Leo</translation>
+<translation id="6129027151000961048">Leo</translation>
+<translation id="8637805148029768813">تتاح ميزة الملخص في الوقت الراهن لمقالات مختارة وصفحات ويب طويلة أخرى فقط.</translation>
+<translation id="2346991295632453064">اقبل وابدأ</translation>
+<translation id="1223498995510244364">تلخيص</translation>
+<translation id="7491773233732232424">نبذة عن Leo</translation>
+<translation id="70442873931504163">Brave Leo هو مساعد ذكي يعمل بالذكاء الاصطناعي يمكنه تلخيص صفحات الويب، وتحويل مقاطع الفيديو إلى نصوص، والإجابة عن الأسئلة. يستخدم  Brave Leo Premium نسخًا متقدمة <ph name="LINK_BEFORE"/>من نماذج الذكاء الاصطناعي <ph name="LINK_AFTER"/> لاستخراج ردود أكثر دقة مما سبق، كما يعطي إمكانية الوصول المبكرة للميزات الجديدة.</translation>
+<translation id="3055739528128372229">إن دقة الإجابات غير مضمونة، وقد تحتوي على معلومات غير دقيقة أو مضللة أو خاطئة. لا تقم بإرسال معلومات حساسة أو خاصة، وتوخ الحذر مع الإجابات المتعلقة بالصحة أو الأموال أو السلامة الشخصية أو ما شابه.</translation>
+<translation id="7297681068636289435">لا تقوم شركة Leo بجمع معلومات عن عنوان IP الخاص بك الذي يمكن ربطه بك. لا يتم الاحتفاظ بأي بيانات شخصية بواسطة نموذج الذكاء الاصطناعي أو أيًا من موفري نماذج تابعين لجهات خارجية.</translation>
+<translation id="7839853125981164613">أدخل الأمر هنا</translation>
+<translation id="1171287413830401223">هل تريد تفعيل الأسئلة المقترحة؟</translation>
+<translation id="4567071417854988869">تلخيص مقطع الفيديو هذا</translation>
+<translation id="7921782882718083488">تلخيص هذه الصفحة</translation>
+<translation id="5431287032059464898">يمكن لـ Leo اقتراح الأسئلة تلقائيًا بناءً على محتوى الموقع. للقيام بذلك، سيتم إرسال محتويات صفحة التنقلات الخاصة بك إلى Leo لإنشاء هذه الاقتراحات أثناء فتح Leo. ويمكنك تعطيله لاحقًا في الإعدادات.</translation>
+<translation id="3435896845095436175">تفعيل الإضافات</translation>
+<translation id="7473891865547856676">لا، شكرًا</translation>
+<translation id="7932221068776853847">قم بإيقاف الاتصال لإيقاف إرسال محتوى هذه الصفحة إلى Leo، وابدأ محادثة جديدة</translation>
+<translation id="1167803637855350748">حدثت مشكلة في الشبكة أثناء الاتصال بـ Leo، تحقق من الاتصال بالإنترنت وحاول مرة أخرى.</translation>
+<translation id="5095201428204952524">Leo مشغول جدًا الآن. يرجى المحاولة مرة أخرى بعد بضع دقائق.</translation>
+<translation id="7144878232160441200">إعادة المحاولة</translation>
+<translation id="2505565639170795978">مرحبًا، أنا Leo. أنا مساعد يعمل بالذكاء الاصطناعي مملوك ومعزز بالكامل من قبل Brave. أنا مدعوم من Llama 13B، وهو نموذج تم إنشاؤه بواسطة Meta ليكون فعالًا وقابلًا للتطبيق في العديد من حالات الاستخدام.</translation>
+<translation id="7202619923031933110">مرحبًا، أنا Leo. أنا مساعد يعمل بالذكاء الاصطناعي مملوك ومعزز بالكامل من قبل Brave. أنا مدعوم من Llama70B، وهو نموذج تم إنشاؤه بواسطة Meta للتعامل مع المهام الأكثر تقدمًا من 13B.</translation>
+<translation id="2489317965865266353">مرحبًا، أنا Leo. أنا موكل من قبل Brave ومدعوم من Claude Instant، وهو نموذج تم إنشاؤه بواسطة Anthropic لتشغيل المهام الحوارية ومعالجة النصوص.</translation>
+<translation id="6206029817087805290"><ph name="MODEL_NAME"/> بواسطة <ph name="COMPANY_NAME"/></translation>
+<translation id="6187065185557150870">الدردشة</translation>
+<translation id="2961040541145689181">دردشة جديدة</translation>
+<translation id="97095589689466044">الأسئلة المقترحة</translation>
+<translation id="7557539689487606886">الاشتراك الحصري (Premium)</translation>
+<translation id="1691256669639196606">إدارة الاشتراك</translation>
+<translation id="3037594989275592390">نماذج اللغة</translation>
+<translation id="849535826888024304">تم بلوغ الحد الأقصى من معدل الاستجابة</translation>
+<translation id="3834321271158315162">احصل على معدل استجابة أعلى عن طريق الاشتراك الحصري (Premium)، أو جرب مجددًا 
+لاحقًا</translation>
+<translation id="1239767708151339890">إمكانية الوصول إلى نماذج اللغة الضخمة الرائدة في المجال</translation>
+<translation id="8021579987620496265">الحصول على حدود معدلات أعلى</translation>
+<translation id="8556044455877152001"><ph name="PRICE_VALUE"/>دولار أمريكي /شهريًا</translation>
+<translation id="9221988663340523352">انتقل إلى الوضع التلقائي</translation>
+<translation id="377376641316998425">أطلق العنان لإمكانيات Leo الكاملة</translation>
+<translation id="8363148882096737034">Anthropic Claude + وقريبًا المزيد</translation>
+<translation id="886527905046308697">أولوية الوصول وزيادة حدود الاستجابة</translation>
+<translation id="1068954060985569277">لقد انتهت صلاحية الجلسة لحساب Brave خاصتك. يرجى زيارة صفحة حسابك للتحديث، ثم العودة لاستخدام المميزات المتقدمة.</translation>
+<translation id="94736968936709953">تم إرسال التعليقات بنجاح</translation>
+<translation id="9109355817507033196">تم اختيار عدم الإعجاب بالإجابة</translation>
+<translation id="4049425842478222936">تم الإعجاب بالإجابة</translation>
+<translation id="6393149565874086128">إضافة تعليق</translation>
+<translation id="3521125531016408657">أعجبتني الإجابة</translation>
+<translation id="8202517001427388906">لم تعجبني الإجابة</translation>
+<translation id="1379399209929302811">إضافة تعليق بخصوص Brave AI</translation>
+<translation id="2415950536410763575">حدد موضوع التعليق خاصتك</translation>
+<translation id="9018766373792005944">ما هي فئة تعليقك؟</translation>
+<translation id="7355096922131918313">أضف تعليقًا هنا</translation>
+<translation id="3027575440738035995">يوفر Leo Premium إمكانية الوصول إلى مجموعات موسعة من نماذج اللغات للحصول على إجابات أكثر دقة. <ph name="LINK_BEFORE"/>لمزيد من المعلومات<ph name="LINK_AFTER"/></translation>
+<translation id="2399439821649319175">غير مفيد</translation>
+<translation id="2976167228906046828">غير صحيح</translation>
+<translation id="1183055847065865059">غير آمن/ضار</translation>
+<translation id="7138678301420049075">أخرى</translation>
+<translation id="2313959174679245365">لم يتم إرسال المعدل الخاص بك، يرجى التحقق من اتصال الشبكة والمحاولة مجددًا</translation>
+<translation id="98413980871833152">لم يتم إرسال تعليقك، يرجى التحقق من اتصال الشبكة والمحاولة مجددًا</translation>
+<translation id="8742658901413346500">إن هذه المحادثة طويلة وLeo قد ينسى بعض الأشياء قريبًا. بإمكانك الحصول على محادثات أطول عن طريق التبديل للنموذج الحصري (Premium)، أو يمكنك محو سجل الدردشة لإعادة ضبطه.</translation>
+<translation id="7550152963854770123">محو سجل الدردشة</translation>
+<translation id="7494736170250048402">إرسال رسالة إلى Leo</translation>
+<translation id="4110772752544684964">الصفحة طويلة جدًا بالنسبة إلى Leo، فلن يكون قادرًا على مواكبة بعض السياقات في المحادثات.</translation>
+<translation id="4370698775470316661">هذه المحادثة طويلة جدًا ولا يمكن أن تستمر.  قد تكون هناك نماذج أخرى متوفرة يستطيع Leo من خلالها الحفاظ على الدقة المطلوبة لإجراء محادثات أطول.</translation>
+<translation id="6291843235651817590">دردشة حول أغراض عامة</translation>
+<translation id="8193130769524604031">مهام الدردشة المتقدمة</translation>
+<translation id="3185367320601718531">إنشاء المحادثات والنصوص</translation>
+<translation id="3965507912994218570">إعدادات Leo</translation>
 <translation id="6303294677342628402">طرق الحماية</translation>
 <translation id="8458987127502506209">تمكين دروع حماية  Brave</translation>
 <translation id="7509914170164691086">دروع حماية حتى <ph name="LINK_BEFORE"/> من أجل <ph name="LINK_AFTER"/></translation>
@@ -1891,21 +2007,6 @@
 <translation id="546481172717459539">مطابقة إعداد النظام</translation>
 <translation id="7799817062559422778">الوضع الفاتح</translation>
 <translation id="4117637339509843559">الوضع الداكن</translation>
-<translation id="8637805148029768813">تتاح ميزة الملخص في الوقت الراهن لمقالات مختارة وصفحات ويب طويلة أخرى فقط.</translation>
-<translation id="2346991295632453064">اقبل وابدأ</translation>
-<translation id="1223498995510244364">تلخيص</translation>
-<translation id="6966669506908435195">عن Brave Leo</translation>
-<translation id="1667863995484767951">توفر ميزة AI Chat ملخصات لصفحة الويب التي تتصفحها وتتضمن واجهة دردشة تتيح لك إرسال الأسئلة وتلقي الردود حول محتوى تلك الصفحة. دقة الملخصات غير مضمونة وقد تتضمن معلومات غير دقيقة ومضللة وكاذبة. يجب عليك عدم تقديم معلومات حساسة أو خاصة ويجب توخي الحذر مع أي نص يتعلق بالصحة أو المال أو السلامة الشخصية وأي حالات المشابهة.</translation>
-<translation id="7636915524386889836">تستخدم ميزة AI Chat الخاصة بـ Brave <ph name="LINK_BEFORE"/>نموذج لغة كبير ذاتي الاستتضافة <ph name="LINK_AFTER"/> ولا تقوم ميزة AI Chat بجمع أو معالجة المعرفات مثل عنوان الـ IP الذي يمكن ربطه بك. ولا يحتفظ نموذج الذكاء الاصطناعي بأي بيانات شخصية.</translation>
-<translation id="7839853125981164613">أدخل الأمر هنا</translation>
-<translation id="1171287413830401223">هل تريد تفعيل الأسئلة المقترحة؟</translation>
-<translation id="8723991872343294222">يمكن لـ Brave AI أن يقترح أسئلة تلقائيًا بناءً على محتوى الموقع. ويمكنك تعطيله لاحقًا في الإعدادات.</translation>
-<translation id="3435896845095436175">تفعيل الإضافات</translation>
-<translation id="7473891865547856676">لا، شكرًا</translation>
-<translation id="7932221068776853847">قم بإيقاف الاتصال لإيقاف إرسال محتوى هذه الصفحة إلى Leo، وابدأ محادثة جديدة</translation>
-<translation id="1167803637855350748">حدثت مشكلة في الشبكة أثناء الاتصال بـ Leo، تحقق من الاتصال بالإنترنت وحاول مرة أخرى.</translation>
-<translation id="5095201428204952524">Leo مشغول جدًا الآن. يرجى المحاولة مرة أخرى بعد بضع دقائق.</translation>
-<translation id="7144878232160441200">إعادة المحاولة</translation>
 <translation id="7821773512278295352">Brave Firewall + VPN: متصل</translation>
 <translation id="6019088868713395120">Brave Firewall + VPN: غير متصل</translation>
 <translation id="3541307549916475335">واجهة مستخدم لوحة Brave VPN</translation>
@@ -1920,7 +2021,6 @@
 <translation id="8814357473522731680">مشغل بواسطة</translation>
 <translation id="3960619311638643872">Brave VPN</translation>
 <translation id="5747552184818312860">تاريخ انتهاء الصلاحية</translation>
-<translation id="1691256669639196606">إدارة الاشتراك</translation>
 <translation id="434523916398030617">اتصل بالدعم الفني</translation>
 <translation id="1116694919640316211">حول</translation>
 <translation id="8670386189340362926">منع الإعلانات المتعقبة &amp; عبر جميع التطبيقات</translation>
@@ -1944,7 +2044,6 @@
 <translation id="9184988385244077767">لا يوجد إنترنت عند الاتصال</translation>
 <translation id="21570240866965662">اتصال بطيء</translation>
 <translation id="1219475260382643267">الموقع لا يعمل</translation>
-<translation id="7138678301420049075">أخرى</translation>
 <translation id="1387340358507240698">صِف مشكلتك</translation>
 <translation id="501818585183973587">حدد المعلومات التي ترغب في مشاركتها معنا</translation>
 <translation id="3195618332367441234">كلما زادت المعلومات التي تشاركها، سيسهل على موظفي الدعم تقديم المساعدة.</translation>
@@ -1990,4 +2089,8 @@
 <translation id="8048263175525832621">Brave VPN - غير متصل</translation>
 <translation id="1498770726476841108">إدارة الحساب</translation>
 <translation id="6825718953004242472">رمز "إزالة"</translation>
+<translation id="3287942014983548982">افتح هنا</translation>
+<translation id="8234327602319965815"><ph name="OPEN_HERE_SUFFIX"/>، مفتوحة حاليًا، اضغط على Tab ثم Enter للانتقال إلى علامة التبويب المفتوحة</translation>
+<translation id="1538335063514960365">زر الفتح من هنا، اضغط على Enter لفتح عنوان url في علامة التبويب الحالية، بدلًا من الانتقال إلى علامة التبويب الموجودة مسبقًا</translation>
+<translation id="451189393813405346">اسأل Leo</translation>
 </translationbundle>
