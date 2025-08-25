@@ -10,10 +10,11 @@
 #include <utility>
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "brave/components/brave_ads/core/internal/common/resources/language_components_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/resources/resources_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_util.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_path_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/resource/text_classification_resource_constants.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
@@ -46,8 +47,8 @@ TEST_F(BraveAdsTextClassificationResourceTest, IsNotInitialized) {
 
 TEST_F(BraveAdsTextClassificationResourceTest, DoNotLoadInvalidResource) {
   // Arrange
-  ASSERT_TRUE(CopyFileFromTestPathToTempPath(kInvalidResourceId,
-                                             kTextClassificationResourceId));
+  ASSERT_TRUE(CopyFileFromTestPathToTempPath(
+      kInvalidResourceId, kFlatBuffersTextClassificationResourceId));
 
   // Act & Assert
   EXPECT_FALSE(LoadResource(kLanguageComponentId));
@@ -55,18 +56,19 @@ TEST_F(BraveAdsTextClassificationResourceTest, DoNotLoadInvalidResource) {
 
 TEST_F(BraveAdsTextClassificationResourceTest, DoNotLoadMissingResource) {
   // Arrange
-  ON_CALL(ads_client_mock_, LoadFileResource(kTextClassificationResourceId,
-                                             ::testing::_, ::testing::_))
-      .WillByDefault(::testing::Invoke(
-          [](const std::string& /*id=*/, const int /*version=*/,
-             LoadFileCallback callback) {
-            const base::FilePath path =
-                GetFileResourcePath().AppendASCII(kMissingResourceId);
+  ON_CALL(ads_client_mock_,
+          LoadComponentResource(kFlatBuffersTextClassificationResourceId,
+                                ::testing::_, ::testing::_))
+      .WillByDefault(::testing::Invoke([](const std::string& /*id*/,
+                                          const int /*version*/,
+                                          LoadFileCallback callback) {
+        const base::FilePath path =
+            ComponentResourcesTestDataPath().AppendASCII(kMissingResourceId);
 
-            base::File file(path, base::File::Flags::FLAG_OPEN |
-                                      base::File::Flags::FLAG_READ);
-            std::move(callback).Run(std::move(file));
-          }));
+        base::File file(
+            path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+        std::move(callback).Run(std::move(file));
+      }));
 
   // Act & Assert
   EXPECT_FALSE(LoadResource(kLanguageComponentId));
@@ -87,7 +89,7 @@ TEST_F(BraveAdsTextClassificationResourceTest,
 TEST_F(BraveAdsTextClassificationResourceTest,
        DoNotLoadResourceWhenLocaleDidChangeIfOptedOutOfNotificationAds) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
+  test::OptOutOfNotificationAds();
 
   ASSERT_FALSE(LoadResource(kLanguageComponentId));
 
@@ -128,7 +130,7 @@ TEST_F(
   // Arrange
   ASSERT_TRUE(LoadResource(kLanguageComponentId));
 
-  OptOutOfNotificationAdsForTesting();
+  test::OptOutOfNotificationAds();
 
   // Act
   NotifyPrefDidChange(prefs::kOptedInToNotificationAds);
@@ -166,7 +168,7 @@ TEST_F(
     BraveAdsTextClassificationResourceTest,
     DoNotLoadResourceWhenDidUpdateResourceComponentIfOptedOutOfNotificationAds) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
+  test::OptOutOfNotificationAds();
 
   // Act & Assert
   EXPECT_FALSE(LoadResource(kLanguageComponentId));

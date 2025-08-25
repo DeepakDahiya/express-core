@@ -9,10 +9,11 @@
 #include <utility>
 
 #include "base/files/file.h"
+#include "base/files/file_path.h"
 #include "brave/components/brave_ads/core/internal/common/resources/country_components_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/resources/resources_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_util.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_path_util.h"
 #include "brave/components/brave_ads/core/internal/conversions/resource/conversion_resource_constants.h"
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 #include "brave/components/brave_ads/core/public/client/ads_client_callback.h"
@@ -54,18 +55,18 @@ TEST_F(BraveAdsConversionResourceTest, DoNotLoadInvalidResource) {
 
 TEST_F(BraveAdsConversionResourceTest, DoNotLoadMissingResource) {
   // Arrange
-  ON_CALL(ads_client_mock_,
-          LoadFileResource(kConversionResourceId, ::testing::_, ::testing::_))
-      .WillByDefault(::testing::Invoke(
-          [](const std::string& /*id=*/, const int /*version=*/,
-             LoadFileCallback callback) {
-            const base::FilePath path =
-                GetFileResourcePath().AppendASCII(kMissingResourceId);
+  ON_CALL(ads_client_mock_, LoadComponentResource(kConversionResourceId,
+                                                  ::testing::_, ::testing::_))
+      .WillByDefault(::testing::Invoke([](const std::string& /*id*/,
+                                          const int /*version*/,
+                                          LoadFileCallback callback) {
+        const base::FilePath path =
+            ComponentResourcesTestDataPath().AppendASCII(kMissingResourceId);
 
-            base::File file(path, base::File::Flags::FLAG_OPEN |
-                                      base::File::Flags::FLAG_READ);
-            std::move(callback).Run(std::move(file));
-          }));
+        base::File file(
+            path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
+        std::move(callback).Run(std::move(file));
+      }));
 
   // Act & Assert
   EXPECT_FALSE(LoadResource(kCountryComponentId));
@@ -84,8 +85,8 @@ TEST_F(
     BraveAdsConversionResourceTest,
     LoadResourceWhenLocaleDidChangeIfNotificationAdsAndBraveNewsAdsAreDisabled) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
-  OptOutOfBraveNewsAdsForTesting();
+  test::OptOutOfNotificationAds();
+  test::OptOutOfBraveNewsAds();
 
   // Act
   NotifyLocaleDidChange(/*locale=*/"en_GB");
@@ -112,8 +113,8 @@ TEST_F(
     BraveAdsConversionResourceTest,
     LoadResourceWhenDidUpdateResourceComponentIfNotificationAdsAndBraveNewsAdsAreDisabled) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
-  OptOutOfBraveNewsAdsForTesting();
+  test::OptOutOfNotificationAds();
+  test::OptOutOfBraveNewsAds();
 
   // Act & Assert
   EXPECT_TRUE(LoadResource(kCountryComponentId));

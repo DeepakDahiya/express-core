@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/resources/country_components.h"
 #include "brave/components/brave_ads/core/internal/common/resources/resources_util_impl.h"
@@ -19,11 +19,11 @@
 namespace brave_ads {
 
 ConversionResource::ConversionResource() {
-  AdsClientHelper::AddObserver(this);
+  AddAdsClientNotifierObserver(this);
 }
 
 ConversionResource::~ConversionResource() {
-  AdsClientHelper::RemoveObserver(this);
+  RemoveAdsClientNotifierObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -63,12 +63,12 @@ void ConversionResource::LoadCallback(
 }
 
 void ConversionResource::OnNotifyLocaleDidChange(
-    const std::string& /*locale=*/) {
+    const std::string& /*locale*/) {
   Load();
 }
 
 void ConversionResource::OnNotifyDidUpdateResourceComponent(
-    const std::string& /*manifest_version=*/,
+    const std::string& /*manifest_version*/,
     const std::string& id) {
   if (IsValidCountryComponentId(id)) {
     Load();

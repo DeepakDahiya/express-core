@@ -30,11 +30,11 @@ bool DoesRequireResource() {
 }  // namespace
 
 PurchaseIntentResource::PurchaseIntentResource() {
-  AdsClientHelper::AddObserver(this);
+  AddAdsClientNotifierObserver(this);
 }
 
 PurchaseIntentResource::~PurchaseIntentResource() {
-  AdsClientHelper::RemoveObserver(this);
+  RemoveAdsClientNotifierObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -94,7 +94,7 @@ void PurchaseIntentResource::Reset() {
 }
 
 void PurchaseIntentResource::OnNotifyLocaleDidChange(
-    const std::string& /*locale=*/) {
+    const std::string& /*locale*/) {
   MaybeLoad();
 }
 

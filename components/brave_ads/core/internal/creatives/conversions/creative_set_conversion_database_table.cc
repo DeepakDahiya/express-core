@@ -14,7 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_bind_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_column_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_table_util.h"
@@ -129,7 +129,7 @@ void MigrateToV23(mojom::DBTransactionInfo* transaction) {
 void MigrateToV28(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with renamed |expire_at| column.
+  // Create a temporary table with renamed `expire_at` column.
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -173,10 +173,10 @@ void MigrateToV29(mojom::DBTransactionInfo* transaction) {
 void MigrateToV30(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with a new |extract_verifiable_id| column
-  // defaulted to |true| for legacy conversions, remove the deprecated |type|
-  // column and rename the |advertiser_public_key| column to
-  // |verifiable_advertiser_public_key|.
+  // Create a temporary table with a new `extract_verifiable_id` column
+  // defaulted to `true` for legacy conversions, remove the deprecated `type`
+  // column and rename the `advertiser_public_key` column to
+  // `verifiable_advertiser_public_key`.
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -208,7 +208,7 @@ void MigrateToV30(mojom::DBTransactionInfo* transaction) {
 void MigrateToV31(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table deprecating |extract_verifiable_id| column.
+  // Create a temporary table deprecating `extract_verifiable_id` column.
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -262,9 +262,8 @@ void CreativeSetConversions::GetAll(GetConversionsCallback callback) const {
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  AdsClientHelper::GetInstance()->RunDBTransaction(
-      std::move(transaction),
-      base::BindOnce(&GetCallback, std::move(callback)));
+  RunDBTransaction(std::move(transaction),
+                   base::BindOnce(&GetCallback, std::move(callback)));
 }
 
 void CreativeSetConversions::PurgeExpired(ResultCallback callback) const {

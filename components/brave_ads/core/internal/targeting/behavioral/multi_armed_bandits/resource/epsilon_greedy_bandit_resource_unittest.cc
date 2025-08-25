@@ -8,11 +8,14 @@
 #include <memory>
 
 #include "base/strings/strcat.h"
+#include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog.h"
+#include "brave/components/brave_ads/core/internal/catalog/catalog_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_url_request_builder_util.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/targeting/behavioral/multi_armed_bandits/epsilon_greedy_bandit_feature.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "net/http/http_status_code.h"
 
@@ -24,6 +27,8 @@ class BraveAdsEpsilonGreedyBanditResourceTest : public UnitTestBase {
  protected:
   void SetUp() override {
     UnitTestBase::SetUp();
+
+    scoped_feature_list_.InitAndEnableFeature(kEpsilonGreedyBanditFeature);
 
     catalog_ = std::make_unique<Catalog>();
     resource_ = std::make_unique<EpsilonGreedyBanditResource>(*catalog_);
@@ -39,6 +44,8 @@ class BraveAdsEpsilonGreedyBanditResourceTest : public UnitTestBase {
     NotifyDidInitializeAds();
   }
 
+  base::test::ScopedFeatureList scoped_feature_list_;
+
   std::unique_ptr<Catalog> catalog_;
 
   std::unique_ptr<EpsilonGreedyBanditResource> resource_;
@@ -52,7 +59,7 @@ TEST_F(BraveAdsEpsilonGreedyBanditResourceTest, IsNotInitialized) {
 TEST_F(BraveAdsEpsilonGreedyBanditResourceTest,
        LoadResourceIfNotificationAdsAndBraveNewsAdsAreEnabled) {
   // Act
-  LoadResource("catalog.json");
+  LoadResource(kCatalogFilename);
 
   // Assert
   EXPECT_TRUE(resource_->IsInitialized());
@@ -61,22 +68,22 @@ TEST_F(BraveAdsEpsilonGreedyBanditResourceTest,
 TEST_F(BraveAdsEpsilonGreedyBanditResourceTest,
        LoadResourceIfOptedOutOfNotificationAdsAndOptedInToBraveNewsAds) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
+  test::OptOutOfNotificationAds();
 
   // Act
-  LoadResource("catalog.json");
+  LoadResource(kCatalogFilename);
 
   // Assert
-  EXPECT_TRUE(resource_->IsInitialized());
+  EXPECT_FALSE(resource_->IsInitialized());
 }
 
 TEST_F(BraveAdsEpsilonGreedyBanditResourceTest,
        LoadResourceIfOptedInToNotificationAdsAndOptedOutOfBraveNewsAds) {
   // Arrange
-  OptOutOfBraveNewsAdsForTesting();
+  test::OptOutOfBraveNewsAds();
 
   // Act
-  LoadResource("catalog.json");
+  LoadResource(kCatalogFilename);
 
   // Assert
   EXPECT_TRUE(resource_->IsInitialized());
@@ -84,7 +91,7 @@ TEST_F(BraveAdsEpsilonGreedyBanditResourceTest,
 
 TEST_F(BraveAdsEpsilonGreedyBanditResourceTest, LoadResourceIfEmptyCatalog) {
   // Act
-  LoadResource("empty_catalog.json");
+  LoadResource(kEmptyCatalogFilename);
 
   // Assert
   EXPECT_TRUE(resource_->IsInitialized());
@@ -93,11 +100,11 @@ TEST_F(BraveAdsEpsilonGreedyBanditResourceTest, LoadResourceIfEmptyCatalog) {
 TEST_F(BraveAdsEpsilonGreedyBanditResourceTest,
        DoNotLoadResourceIfNotificationAdsAndBraveNewsAdsAreDisabled) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
-  OptOutOfBraveNewsAdsForTesting();
+  test::OptOutOfNotificationAds();
+  test::OptOutOfBraveNewsAds();
 
   // Act
-  LoadResource("catalog.json");
+  LoadResource(kCatalogFilename);
 
   // Assert
   EXPECT_FALSE(resource_->IsInitialized());
@@ -107,10 +114,10 @@ TEST_F(
     BraveAdsEpsilonGreedyBanditResourceTest,
     ResetResourceWhenOptedInToNotificationAdsPrefDidChangeIfNotificationAdsAndBraveNewsAdsAreDisabled) {
   // Arrange
-  LoadResource("catalog.json");
+  LoadResource(kCatalogFilename);
 
-  OptOutOfNotificationAdsForTesting();
-  OptOutOfBraveNewsAdsForTesting();
+  test::OptOutOfNotificationAds();
+  test::OptOutOfBraveNewsAds();
 
   // Act
   NotifyPrefDidChange(prefs::kOptedInToNotificationAds);
@@ -123,7 +130,7 @@ TEST_F(
     BraveAdsEpsilonGreedyBanditResourceTest,
     DoNotResetResourceWhenOptedInToNotificationAdsPrefDidChangeIfNotificationAdsOrBraveNewsAdsAreEnabled) {
   // Arrange
-  LoadResource("catalog.json");
+  LoadResource(kCatalogFilename);
 
   // Act
   NotifyPrefDidChange(prefs::kOptedInToNotificationAds);
