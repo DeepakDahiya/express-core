@@ -36,6 +36,8 @@ static_library("common") {
     "brave_wallet_response_helpers.h",
     "brave_wallet_types.cc",
     "brave_wallet_types.h",
+    "btc_like_serializer_stream.cc",
+    "btc_like_serializer_stream.h",
     "common_utils.cc",
     "common_utils.h",
     "encoding_utils.cc",
@@ -64,7 +66,6 @@ static_library("common") {
     "solana_utils.h",
     "string_utils.cc",
     "string_utils.h",
-    "switches.cc",
     "switches.h",
     "value_conversion_utils.cc",
     "value_conversion_utils.h",
@@ -93,7 +94,6 @@ static_library("common") {
 source_set("common_constants") {
   sources = [
     "brave_wallet_constants.h",
-    "web3_provider_constants.cc",
     "web3_provider_constants.h",
   ]
   deps = [ ":mojom" ]
@@ -143,6 +143,7 @@ source_set("unit_tests") {
   sources = [
     "bitcoin_utils_unittest.cc",
     "brave_wallet_types_unittest.cc",
+    "btc_like_serializer_stream_unittest.cc",
     "common_utils_unittest.cc",
     "encoding_utils_unittest.cc",
     "eth_abi_utils_unittest.cc",

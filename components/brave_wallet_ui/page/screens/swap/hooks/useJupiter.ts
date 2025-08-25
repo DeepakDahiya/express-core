@@ -15,43 +15,44 @@ import { WRAPPED_SOL_CONTRACT_ADDRESS } from '../constants/magics'
 // Utils
 import Amount from '../../../../utils/amount'
 import { makeNetworkAsset } from '../../../../options/asset-options'
-import {
-  getTokenPriceAmountFromRegistry
-} from '../../../../utils/pricing-utils'
+import { getTokenPriceAmountFromRegistry } from '../../../../utils/pricing-utils'
+import { toMojoUnion } from '../../../../utils/mojo-utils'
 
 // Hooks
 import { useLib } from '../../../../common/hooks/useLib'
 
 // Query hooks
 import {
-  useGetSelectedChainQuery,
-  useGetDefaultFiatCurrencyQuery
+  useGetDefaultFiatCurrencyQuery //
 } from '../../../../common/slices/api.slice'
-import { useSelectedAccountQuery } from '../../../../common/slices/api.slice.extra'
 
 const networkFee = new Amount('0.000005')
 
-export function useJupiter (params: SwapParams) {
+export function useJupiter(params: SwapParams) {
+  const { selectedNetwork, selectedAccount } = params
+
   // Queries
   // FIXME(onyb): what happens when defaultFiatCurrency is empty
   const { data: defaultFiatCurrency } = useGetDefaultFiatCurrencyQuery()
-  const { data: selectedNetwork } = useGetSelectedChainQuery()
-  const { data: selectedAccount } = useSelectedAccountQuery()
-  const nativeAsset = useMemo(() =>
-    makeNetworkAsset(selectedNetwork),
+  const nativeAsset = useMemo(
+    () => makeNetworkAsset(selectedNetwork),
     [selectedNetwork]
   )
 
   // State
-  const [quote, setQuote] = useState<BraveWallet.JupiterQuote | undefined>(undefined)
-  const [error, setError] = useState<BraveWallet.JupiterErrorResponse | undefined>(undefined)
-  const [loading, setLoading] = useState<boolean>(false)
-  const [selectedRoute, setSelectedRoute] = useState<BraveWallet.JupiterRoute | undefined>(
+  const [quote, setQuote] = useState<BraveWallet.JupiterQuote | undefined>(
     undefined
   )
-  const [braveFee, setBraveFee] =
-    useState<BraveWallet.BraveSwapFeeResponse | undefined>(undefined)
-  const [abortController, setAbortController] = useState<AbortController | undefined>(undefined)
+  const [error, setError] = useState<BraveWallet.JupiterError | undefined>(
+    undefined
+  )
+  const [loading, setLoading] = useState<boolean>(false)
+  const [braveFee, setBraveFee] = useState<
+    BraveWallet.BraveSwapFeeResponse | undefined
+  >(undefined)
+  const [abortController, setAbortController] = useState<
+    AbortController | undefined
+  >(undefined)
 
   // Custom hooks
   // FIXME(josheleonard): use slices API
@@ -63,7 +64,6 @@ export function useJupiter (params: SwapParams) {
       setQuote(undefined)
       setError(undefined)
       setLoading(false)
-      setSelectedRoute(undefined)
       setBraveFee(undefined)
 
       if (abortController) {
@@ -104,16 +104,20 @@ export function useJupiter (params: SwapParams) {
       const fromAmountWrapped = new Amount(overriddenParams.fromAmount)
       const toAmountWrapped = new Amount(overriddenParams.toAmount)
       const isFromAmountEmpty =
-        fromAmountWrapped.isZero() || fromAmountWrapped.isNaN() || fromAmountWrapped.isUndefined()
+        fromAmountWrapped.isZero() ||
+        fromAmountWrapped.isNaN() ||
+        fromAmountWrapped.isUndefined()
       const isToAmountEmpty =
-        toAmountWrapped.isZero() || toAmountWrapped.isNaN() || toAmountWrapped.isUndefined()
+        toAmountWrapped.isZero() ||
+        toAmountWrapped.isNaN() ||
+        toAmountWrapped.isUndefined()
 
       if (isFromAmountEmpty && isToAmountEmpty) {
         await reset()
         return
       }
 
-      if (!overriddenParams.fromAddress) {
+      if (!overriddenParams.fromAccount) {
         return
       }
 
@@ -131,7 +135,7 @@ export function useJupiter (params: SwapParams) {
           outputToken:
             overriddenParams.toToken.contractAddress ||
             WRAPPED_SOL_CONTRACT_ADDRESS,
-          taker: overriddenParams.fromAddress,
+          taker: overriddenParams.fromAccount.address
         })
         setBraveFee(braveFeeResponse || undefined)
       } catch (e) {
@@ -145,21 +149,27 @@ export function useJupiter (params: SwapParams) {
 
       let jupiterQuoteResponse
       try {
-        jupiterQuoteResponse = await swapService.getJupiterQuote({
-          inputMint: overriddenParams.fromToken.contractAddress || WRAPPED_SOL_CONTRACT_ADDRESS,
-          outputMint: overriddenParams.toToken.contractAddress || WRAPPED_SOL_CONTRACT_ADDRESS,
-          amount: !isFromAmountEmpty
-            ? new Amount(overriddenParams.fromAmount)
-              .multiplyByDecimals(overriddenParams.fromToken.decimals)
-              .format()
-            : new Amount(overriddenParams.toAmount)
-              .multiplyByDecimals(overriddenParams.toToken.decimals)
-              .format(),
-          slippageBps: new Amount(overriddenParams.slippageTolerance)
-            .times(100)
-            .parseInteger()
-            .toNumber(),
-          userPublicKey: overriddenParams.fromAddress
+        jupiterQuoteResponse = await swapService.getQuote({
+          fromAccountId: overriddenParams.fromAccount.accountId,
+          fromChainId: selectedNetwork.chainId,
+          fromToken:
+            overriddenParams.fromToken.contractAddress ||
+            WRAPPED_SOL_CONTRACT_ADDRESS,
+          fromAmount: isFromAmountEmpty
+            ? new Amount(overriddenParams.toAmount)
+                .multiplyByDecimals(overriddenParams.toToken.decimals)
+                .format()
+            : new Amount(overriddenParams.fromAmount)
+                .multiplyByDecimals(overriddenParams.fromToken.decimals)
+                .format(),
+          toAccountId: overriddenParams.fromAccount.accountId,
+          toChainId: selectedNetwork.chainId,
+          toToken:
+            overriddenParams.toToken.contractAddress ||
+            WRAPPED_SOL_CONTRACT_ADDRESS,
+          toAmount: '',
+          slippagePercentage: overriddenParams.slippageTolerance,
+          routePriority: BraveWallet.RoutePriority.kRecommended
         })
       } catch (e) {
         console.log(`Error getting Jupiter quote: ${e}`)
@@ -171,27 +181,27 @@ export function useJupiter (params: SwapParams) {
         return
       }
 
-      if (jupiterQuoteResponse?.response) {
-        setQuote(jupiterQuoteResponse.response)
+      if (jupiterQuoteResponse?.response?.jupiterQuote) {
+        setQuote(jupiterQuoteResponse.response.jupiterQuote)
       }
 
-      if (jupiterQuoteResponse?.errorResponse) {
-        setError(jupiterQuoteResponse.errorResponse)
+      if (jupiterQuoteResponse?.error?.jupiterError) {
+        setError(jupiterQuoteResponse.error.jupiterError)
       }
 
       setLoading(false)
       setAbortController(undefined)
 
       // Return undefined if response is null.
-      return jupiterQuoteResponse?.response || undefined
+      return jupiterQuoteResponse?.response?.jupiterQuote || undefined
     },
-    [selectedNetwork?.coin, params, reset, swapService]
+    [selectedNetwork, params, reset, swapService]
   )
 
   const exchange = useCallback(
     async function (callback?: () => Promise<void>) {
       // Perform data validation and early-exit
-      if (!quote || quote?.routes.length === 0) {
+      if (!quote || quote?.routePlan.length === 0) {
         return
       }
       if (selectedNetwork?.coin !== BraveWallet.CoinType.SOL) {
@@ -205,47 +215,55 @@ export function useJupiter (params: SwapParams) {
       }
 
       setLoading(true)
-      let jupiterTransactionsPayloadResponse
+      let jupiterTransactionResponse
       try {
-        jupiterTransactionsPayloadResponse =
-          await swapService.getJupiterSwapTransactions({
-            userPublicKey: selectedAccount.address,
-            route: selectedRoute || quote.routes[0],
-            inputMint: params.fromToken.contractAddress ||
-              WRAPPED_SOL_CONTRACT_ADDRESS,
-            outputMint: params.toToken.contractAddress ||
-              WRAPPED_SOL_CONTRACT_ADDRESS
-          })
+        jupiterTransactionResponse = await swapService.getTransaction(
+          toMojoUnion(
+            {
+              jupiterTransactionParams: {
+                chainId: selectedNetwork.chainId,
+                userPublicKey: selectedAccount.address,
+                quote
+              },
+              zeroExTransactionParams: undefined
+            },
+            'jupiterTransactionParams'
+          )
+        )
       } catch (e) {
         console.log(`Error getting Jupiter swap transactions: ${e}`)
       }
 
-      if (jupiterTransactionsPayloadResponse?.errorResponse) {
-        setError(jupiterTransactionsPayloadResponse.errorResponse)
+      if (jupiterTransactionResponse?.error?.jupiterError) {
+        setError(jupiterTransactionResponse.error.jupiterError)
       }
 
-      if (!jupiterTransactionsPayloadResponse?.response) {
+      if (!jupiterTransactionResponse?.response?.jupiterTransaction) {
         setLoading(false)
         return
       }
 
-      const { swapTransaction } = jupiterTransactionsPayloadResponse.response
+      const swapTransaction =
+        jupiterTransactionResponse.response.jupiterTransaction
 
       try {
-        const { success, errorMessage } = await sendSolanaSerializedTransaction({
-          encodedTransaction: swapTransaction,
-          accountId: selectedAccount.accountId,
-          txType: BraveWallet.TransactionType.SolanaSwap,
-          sendOptions: {
-            skipPreflight: {
-              skipPreflight: true
-            },
-            maxRetries: {
-              maxRetries: BigInt(2)
-            },
-            preflightCommitment: undefined
+        const { success, errorMessage } = await sendSolanaSerializedTransaction(
+          {
+            encodedTransaction: swapTransaction,
+            chainId: selectedNetwork.chainId,
+            accountId: selectedAccount.accountId,
+            txType: BraveWallet.TransactionType.SolanaSwap,
+            sendOptions: {
+              skipPreflight: {
+                skipPreflight: true
+              },
+              maxRetries: {
+                maxRetries: BigInt(3)
+              },
+              preflightCommitment: 'processed'
+            }
           }
-        })
+        )
 
         if (!success) {
           console.error(`Error creating Solana transaction: ${errorMessage}`)
@@ -260,11 +278,10 @@ export function useJupiter (params: SwapParams) {
     },
     [
       quote,
-      selectedNetwork?.coin,
+      selectedNetwork,
       params.toToken,
       selectedAccount,
       swapService,
-      selectedRoute,
       sendSolanaSerializedTransaction,
       reset
     ]
@@ -279,67 +296,49 @@ export function useJupiter (params: SwapParams) {
       return []
     }
 
-    return quote.routes.map(
-      route =>
-        ({
-          label: route.marketInfos.map(marketInfo => marketInfo.label).join(' x '),
-          fromAmount: new Amount(route.inAmount.toString()).divideByDecimals(
-            // @ts-expect-error
-            params.fromToken.decimals
-          ),
-          toAmount: new Amount(route.outAmount.toString()).divideByDecimals(
-            // @ts-expect-error
-            params.toToken.decimals
-          ),
-          // TODO: minimumToAmount is applicable only for ExactIn swapMode.
-          // Create a maximumFromAmount field for ExactOut swapMode if needed.
-          minimumToAmount: new Amount(route.otherAmountThreshold.toString()).divideByDecimals(
-            // @ts-expect-error
-            params.toToken.decimals
-          ),
-          fromToken: params.fromToken,
-          toToken: params.toToken,
-          rate: new Amount(route.outAmount.toString())
-            // @ts-expect-error
-            .divideByDecimals(params.toToken.decimals)
-            .div(
-              new Amount(route.inAmount.toString())
-                // @ts-expect-error
-                .divideByDecimals(params.fromToken.decimals)
-            ),
-          impact: new Amount(route.priceImpactPct),
-          sources: route.marketInfos.flatMap(marketInfo =>
-            // Split "Cykura (95%) + Lifinity (5%)"
-            // into "Cykura (95%)" and "Lifinity (5%)"
-            marketInfo.label.split('+').map(label => {
-              // Extract name and proportion from Cykura (95%)
-              const match = label.match(/([\W\s]+)\s+\((\d+)%\)/)
-              if (match && match.length === 3) {
-                return {
-                  name: match[1].trim(),
-                  proportion: new Amount(match[2]).div(100)
-                }
-              }
-
-              return {
-                name: label.trim(),
-                proportion: new Amount(1)
-              }
-            })
-          ),
-          routing: route.marketInfos.length > 1 ? 'flow' : 'split',
-          networkFee: networkFee
-            .times(
-              nativeAsset && params.spotPrices
-                ? getTokenPriceAmountFromRegistry(
-                    params.spotPrices, nativeAsset
-                  )
-                : Amount.zero()
+    return [
+      {
+        label: '',
+        fromAmount: new Amount(quote.inAmount).divideByDecimals(
+          params.fromToken.decimals
+        ),
+        toAmount: new Amount(quote.outAmount).divideByDecimals(
+          params.toToken.decimals
+        ),
+        // TODO: minimumToAmount is applicable only for ExactIn swapMode.
+        // Create a maximumFromAmount field for ExactOut swapMode if needed.
+        minimumToAmount: new Amount(
+          quote.otherAmountThreshold
+        ).divideByDecimals(params.toToken.decimals),
+        fromToken: params.fromToken,
+        toToken: params.toToken,
+        rate: new Amount(quote.outAmount)
+          .divideByDecimals(params.toToken.decimals)
+          .div(
+            new Amount(quote.inAmount).divideByDecimals(
+              params.fromToken.decimals
             )
-            .formatAsFiat(defaultFiatCurrency),
-          braveFee
-        } as QuoteOption)
-    )
+          ),
+        impact: new Amount(quote.priceImpactPct),
+        sources: [
+          ...new Set(quote.routePlan.map((step) => step.swapInfo.label))
+        ].map((name) => ({
+          name,
+          proportion: new Amount(1)
+        })),
+        // TODO(onyb): this is a placeholder value until we have a better
+        // routing UI
+        routing: 'flow',
+        networkFee: networkFee
+          .times(
+            nativeAsset && params.spotPrices
+              ? getTokenPriceAmountFromRegistry(params.spotPrices, nativeAsset)
+              : Amount.zero()
+          )
+          .formatAsFiat(defaultFiatCurrency),
+        braveFee
+      } as QuoteOption
+    ]
   }, [
     quote,
     params.fromToken,
@@ -357,8 +356,6 @@ export function useJupiter (params: SwapParams) {
     exchange,
     refresh,
     reset,
-    selectedRoute,
-    setSelectedRoute,
     quoteOptions,
     networkFee
   }

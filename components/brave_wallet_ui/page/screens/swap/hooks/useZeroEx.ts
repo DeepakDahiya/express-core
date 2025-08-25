@@ -17,40 +17,49 @@ import Amount from '../../../../utils/amount'
 import { hexStrToNumberArray } from '../../../../utils/hex-utils'
 import { getTokenPriceAmountFromRegistry } from '../../../../utils/pricing-utils'
 import { makeNetworkAsset } from '../../../../options/asset-options'
+import { toMojoUnion } from '../../../../utils/mojo-utils'
 
 // Query hooks
 import {
-  useGetSelectedChainQuery,
-  useGetDefaultFiatCurrencyQuery
+  useApproveERC20AllowanceMutation,
+  useGetDefaultFiatCurrencyQuery,
+  useSendEthTransactionMutation
 } from '../../../../common/slices/api.slice'
-import { useSelectedAccountQuery } from '../../../../common/slices/api.slice.extra'
 import { useLib } from '../../../../common/hooks/useLib'
 
-export function useZeroEx (params: SwapParams) {
+export function useZeroEx(params: SwapParams) {
+  const { selectedNetwork, selectedAccount } = params
+
   // Queries
   // FIXME(onyb): what happens when defaultFiatCurrency is empty
   const { data: defaultFiatCurrency } = useGetDefaultFiatCurrencyQuery()
-  const { data: selectedNetwork } = useGetSelectedChainQuery()
-  const { data: selectedAccount } = useSelectedAccountQuery()
-  const nativeAsset = useMemo(() =>
-    makeNetworkAsset(selectedNetwork),
+  const nativeAsset = useMemo(
+    () => makeNetworkAsset(selectedNetwork),
     [selectedNetwork]
   )
 
   // State
-  const [quote, setQuote] = useState<BraveWallet.SwapResponse | undefined>(undefined)
-  const [error, setError] = useState<BraveWallet.SwapErrorResponse | undefined>(undefined)
+  const [quote, setQuote] = useState<BraveWallet.ZeroExQuote | undefined>(
+    undefined
+  )
+  const [error, setError] = useState<BraveWallet.ZeroExError | undefined>(
+    undefined
+  )
   const [hasAllowance, setHasAllowance] = useState<boolean>(false)
   const [loading, setLoading] = useState<boolean>(false)
-  const [braveFee, setBraveFee] =
-    useState<BraveWallet.BraveSwapFeeResponse | undefined>(undefined)
-  const [abortController, setAbortController] = useState<AbortController | undefined>(undefined)
+  const [braveFee, setBraveFee] = useState<
+    BraveWallet.BraveSwapFeeResponse | undefined
+  >(undefined)
+  const [abortController, setAbortController] = useState<
+    AbortController | undefined
+  >(undefined)
 
   // Custom hooks
   // FIXME(josheleonard): use slices API
-  const { getERC20Allowance, getEthTxManagerProxy, getSwapService, sendEthTransaction } = useLib()
+  const [sendEthTransaction] = useSendEthTransactionMutation()
+  const [approveERC20Allowance] = useApproveERC20AllowanceMutation()
+  const { getERC20Allowance, getSwapService } = useLib()
   const swapService = getSwapService()
-  const ethTxManagerProxy = getEthTxManagerProxy()
 
   const reset = useCallback(
     async (callback?: () => Promise<void>) => {
@@ -72,7 +81,7 @@ export function useZeroEx (params: SwapParams) {
   const refresh = useCallback(
     async function (
       overrides: Partial<SwapParams> = {}
-    ): Promise<BraveWallet.SwapResponse | undefined> {
+    ): Promise<BraveWallet.ZeroExQuote | undefined> {
       const overriddenParams: SwapParams = {
         ...params,
         ...overrides
@@ -92,16 +101,20 @@ export function useZeroEx (params: SwapParams) {
       const fromAmountWrapped = new Amount(overriddenParams.fromAmount)
       const toAmountWrapped = new Amount(overriddenParams.toAmount)
       const isFromAmountEmpty =
-        fromAmountWrapped.isZero() || fromAmountWrapped.isNaN() || fromAmountWrapped.isUndefined()
+        fromAmountWrapped.isZero() ||
+        fromAmountWrapped.isNaN() ||
+        fromAmountWrapped.isUndefined()
       const isToAmountEmpty =
-        toAmountWrapped.isZero() || toAmountWrapped.isNaN() || toAmountWrapped.isUndefined()
+        toAmountWrapped.isZero() ||
+        toAmountWrapped.isNaN() ||
+        toAmountWrapped.isUndefined()
 
       if (isFromAmountEmpty && isToAmountEmpty) {
         await reset()
         return
       }
 
-      if (!overriddenParams.fromAddress) {
+      if (!overriddenParams.fromAccount) {
         return
       }
 
@@ -110,30 +123,32 @@ export function useZeroEx (params: SwapParams) {
 
       setLoading(true)
 
-      let priceQuoteResponse
+      let quoteResponse
       try {
-        priceQuoteResponse = await swapService.getPriceQuote({
-          takerAddress: overriddenParams.fromAddress,
-          sellAmount:
+        quoteResponse = await swapService.getQuote({
+          fromAccountId: overriddenParams.fromAccount.accountId,
+          fromChainId: selectedNetwork.chainId,
+          fromAmount:
             overriddenParams.fromAmount &&
             new Amount(overriddenParams.fromAmount)
               .multiplyByDecimals(overriddenParams.fromToken.decimals)
               .format(),
-          sellToken:
+          fromToken:
             overriddenParams.fromToken.contractAddress ||
             NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
-          buyAmount:
+
+          toAccountId: overriddenParams.fromAccount.accountId,
+          toChainId: selectedNetwork.chainId,
+          toAmount:
             overriddenParams.toAmount &&
             new Amount(overriddenParams.toAmount)
               .multiplyByDecimals(overriddenParams.toToken.decimals)
               .format(),
-          buyToken:
+          toToken:
             overriddenParams.toToken.contractAddress ||
             NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
-          slippagePercentage: new Amount(overriddenParams.slippageTolerance)
-            .div(100)
-            .toNumber(),
-          gasPrice: ''
+          slippagePercentage: overriddenParams.slippageTolerance,
+          routePriority: BraveWallet.RoutePriority.kRecommended
         })
       } catch (e) {
         console.log(`Error getting 0x quote: ${e}`)
@@ -148,20 +163,20 @@ export function useZeroEx (params: SwapParams) {
           outputToken:
             overriddenParams.toToken.contractAddress ||
             NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
-          taker: overriddenParams.fromAddress
+          taker: overriddenParams.fromAccount.address
         })
 
-        if (priceQuoteResponse?.response && braveFeeResponse) {
+        if (quoteResponse?.response?.zeroExQuote && braveFeeResponse) {
           setBraveFee({
             ...braveFeeResponse,
-            protocolFeePct: priceQuoteResponse.response.fees.zeroExFee
+            protocolFeePct: quoteResponse.response.zeroExQuote.fees.zeroExFee
               ? braveFeeResponse.protocolFeePct
               : '0'
           })
         }
       } catch (e) {
         console.log(
-          `Error getting Brave fee (Jupiter):
+          `Error getting Brave fee (0x):
           ${overriddenParams.toToken.symbol}`
         )
       }
@@ -182,17 +197,19 @@ export function useZeroEx (params: SwapParams) {
 
       if (
         selectedAccount &&
-        priceQuoteResponse?.response &&
+        quoteResponse?.response?.zeroExQuote &&
         overriddenParams.fromToken.contractAddress
       ) {
         try {
           const allowance = await getERC20Allowance(
-            priceQuoteResponse.response.sellTokenAddress,
+            quoteResponse.response.zeroExQuote.sellTokenAddress,
             selectedAccount.address,
-            priceQuoteResponse.response.allowanceTarget,
-            selectedNetwork.chainId,
+            quoteResponse.response.zeroExQuote.allowanceTarget,
+            selectedNetwork.chainId
           )
-          hasAllowanceResult = new Amount(allowance).gte(priceQuoteResponse.response.sellAmount)
+          hasAllowanceResult = new Amount(allowance).gte(
+            quoteResponse.response.zeroExQuote.sellAmount
+          )
         } catch (e) {
           // bubble up error
           console.log(`Error getting ERC20 allowance: ${e}`)
@@ -205,12 +222,12 @@ export function useZeroEx (params: SwapParams) {
         return
       }
 
-      if (priceQuoteResponse?.response) {
-        setQuote(priceQuoteResponse.response)
+      if (quoteResponse?.response?.zeroExQuote) {
+        setQuote(quoteResponse.response.zeroExQuote)
       }
 
-      if (priceQuoteResponse?.errorResponse) {
-        setError(priceQuoteResponse.errorResponse)
+      if (quoteResponse?.error) {
+        setError(quoteResponse.error.zeroExError)
       }
 
       setHasAllowance(hasAllowanceResult)
@@ -219,11 +236,11 @@ export function useZeroEx (params: SwapParams) {
       setAbortController(undefined)
 
       // Return undefined if response is null.
-      return priceQuoteResponse?.response || undefined
+      return quoteResponse?.response?.zeroExQuote || undefined
     },
     [
       params,
-      selectedNetwork?.coin,
+      selectedNetwork,
       selectedAccount,
       reset,
       swapService,
@@ -232,7 +249,10 @@ export function useZeroEx (params: SwapParams) {
   )
 
   const exchange = useCallback(
-    async function (overrides: Partial<SwapParams> = {}, callback?: () => Promise<void>) {
+    async function (
+      overrides: Partial<SwapParams> = {},
+      callback?: () => Promise<void>
+    ) {
       const overriddenParams: SwapParams = {
         ...params,
         ...overrides
@@ -256,54 +276,69 @@ export function useZeroEx (params: SwapParams) {
       const fromAmountWrapped = new Amount(overriddenParams.fromAmount)
       const toAmountWrapped = new Amount(overriddenParams.toAmount)
       const isFromAmountEmpty =
-        fromAmountWrapped.isZero() || fromAmountWrapped.isNaN() || fromAmountWrapped.isUndefined()
+        fromAmountWrapped.isZero() ||
+        fromAmountWrapped.isNaN() ||
+        fromAmountWrapped.isUndefined()
       const isToAmountEmpty =
-        toAmountWrapped.isZero() || toAmountWrapped.isNaN() || toAmountWrapped.isUndefined()
+        toAmountWrapped.isZero() ||
+        toAmountWrapped.isNaN() ||
+        toAmountWrapped.isUndefined()
 
       if (isFromAmountEmpty && isToAmountEmpty) {
         return
       }
 
-      if (!overriddenParams.fromAddress) {
+      if (!overriddenParams.fromAccount) {
         return
       }
 
       setLoading(true)
-      let transactionPayloadResponse
+      let transactionResponse
       try {
-        transactionPayloadResponse = await swapService.getTransactionPayload({
-          takerAddress: overriddenParams.fromAddress,
-          sellAmount: new Amount(overriddenParams.fromAmount)
-            .multiplyByDecimals(overriddenParams.fromToken.decimals)
-            .format(),
-          sellToken:
-            overriddenParams.fromToken.contractAddress ||
-            NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
-          buyAmount: new Amount(overriddenParams.toAmount)
-            .multiplyByDecimals(overriddenParams.toToken.decimals)
-            .format(),
-          buyToken:
-            overriddenParams.toToken.contractAddress ||
-            NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
-          slippagePercentage: new Amount(overriddenParams.slippageTolerance)
-            .div(100)
-            .toNumber(),
-          gasPrice: ''
-        })
+        transactionResponse = await swapService.getTransaction(
+          toMojoUnion(
+            {
+              zeroExTransactionParams: {
+                fromAccountId: overriddenParams.fromAccount.accountId,
+                fromChainId: selectedNetwork.chainId,
+                fromAmount: new Amount(overriddenParams.fromAmount)
+                  .multiplyByDecimals(overriddenParams.fromToken.decimals)
+                  .format(),
+                fromToken:
+                  overriddenParams.fromToken.contractAddress ||
+                  NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
+
+                toAccountId: overriddenParams.fromAccount.accountId,
+                toChainId: selectedNetwork.chainId,
+                toAmount: new Amount(overriddenParams.toAmount)
+                  .multiplyByDecimals(overriddenParams.toToken.decimals)
+                  .format(),
+                toToken:
+                  overriddenParams.toToken.contractAddress ||
+                  NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
+                slippagePercentage: overriddenParams.slippageTolerance,
+                routePriority: BraveWallet.RoutePriority.kRecommended
+              },
+              jupiterTransactionParams: undefined
+            },
+            'zeroExTransactionParams'
+          )
+        )
       } catch (e) {
         console.log(`Error getting 0x swap quote: ${e}`)
       }
 
-      if (transactionPayloadResponse?.errorResponse) {
-        setError(transactionPayloadResponse?.errorResponse)
+      if (transactionResponse?.error?.zeroExError) {
+        setError(transactionResponse?.error.zeroExError)
       }
 
-      if (!transactionPayloadResponse?.response) {
+      if (!transactionResponse?.response?.zeroExTransaction) {
         setLoading(false)
         return
       }
 
-      const { data, to, value, estimatedGas } = transactionPayloadResponse.response
+      const { data, to, value, estimatedGas } =
+        transactionResponse.response.zeroExTransaction
 
       try {
         await sendEthTransaction({
@@ -322,7 +357,14 @@ export function useZeroEx (params: SwapParams) {
         setLoading(false)
       }
     },
-    [params, selectedNetwork, selectedAccount, swapService, sendEthTransaction, reset]
+    [
+      params,
+      selectedNetwork,
+      selectedAccount,
+      swapService,
+      sendEthTransaction,
+      reset
+    ]
   )
 
   const approve = useCallback(async () => {
@@ -337,24 +379,15 @@ export function useZeroEx (params: SwapParams) {
 
     const { allowanceTarget, sellTokenAddress } = quote
     try {
-      const { success, data } = await ethTxManagerProxy.makeERC20ApproveData(
-        allowanceTarget,
+      await approveERC20Allowance({
+        network: selectedNetwork,
+        fromAccount: selectedAccount,
+        contractAddress: sellTokenAddress,
+        spenderAddress: allowanceTarget,
+
         // FIXME(onyb): reduce allowance to the minimum required amount
         // for security reasons.
-        new Amount(MAX_UINT256).toHex()
-      )
-
-      if (!success) {
-        console.error(`Error creating ERC20 approve data.`)
-        return
-      }
-
-      await sendEthTransaction({
-        fromAccount: selectedAccount,
-        to: sellTokenAddress,
-        value: '0x0',
-        data,
-        network: selectedNetwork
+        allowance: new Amount(MAX_UINT256).toHex()
       })
     } catch (e) {
       // bubble up error
@@ -365,8 +398,7 @@ export function useZeroEx (params: SwapParams) {
     hasAllowance,
     selectedAccount,
     selectedNetwork,
-    sendEthTransaction,
-    ethTxManagerProxy.makeERC20ApproveData
+    approveERC20Allowance
   ])
 
   const networkFee = useMemo(() => {
@@ -374,7 +406,9 @@ export function useZeroEx (params: SwapParams) {
       return Amount.empty()
     }
 
-    return new Amount(quote.gasPrice).times(quote.gas).divideByDecimals(selectedNetwork.decimals)
+    return new Amount(quote.gasPrice)
+      .times(quote.gas)
+      .divideByDecimals(selectedNetwork.decimals)
   }, [quote, selectedNetwork?.decimals])
 
   const quoteOptions: QuoteOption[] = useMemo(() => {
@@ -421,10 +455,10 @@ export function useZeroEx (params: SwapParams) {
         networkFee: networkFee.isUndefined()
           ? ''
           : networkFee
-            .times(
-              getTokenPriceAmountFromRegistry(params.spotPrices, nativeAsset)
-            )
-            .formatAsFiat(defaultFiatCurrency),
+              .times(
+                getTokenPriceAmountFromRegistry(params.spotPrices, nativeAsset)
+              )
+              .formatAsFiat(defaultFiatCurrency),
         braveFee
       }
     ]
