@@ -81,8 +81,8 @@ class WidevinePermissionAndroidTest : public ChromeRenderViewHostTestHarness {
     ChromeRenderViewHostTestHarness::TearDown();
   }
 
-  TestingPrefServiceSimple* local_state() {
-    return profile_manager_->local_state()->Get();
+  PrefService* local_state() {
+    return TestingBrowserProcess::GetGlobal()->local_state();
   }
   Profile* profile() { return profile_; }
   content::WebContents* web_contents() const { return web_contents_.get(); }
@@ -182,11 +182,12 @@ TEST_F(WidevinePermissionAndroidTest, PermissionWidevineUtilsTest) {
   profile()->GetPrefs()->SetBoolean(kAskEnableWidvine, true);
   EXPECT_TRUE(profile()->GetPrefs()->GetBoolean(kAskEnableWidvine));
 
-  std::vector<permissions::PermissionRequest*> requests;
-  requests.push_back(new WidevinePermissionRequest(web_contents(), false));
+  std::vector<std::unique_ptr<permissions::PermissionRequest>> requests;
+  requests.push_back(std::make_unique<WidevinePermissionRequest>(
+      profile()->GetPrefs(), web_contents()->GetLastCommittedURL(), false));
   EXPECT_TRUE(HasWidevinePermissionRequest(requests));
 
-  requests.push_back(new DownloadPermissionRequest(
+  requests.push_back(std::make_unique<DownloadPermissionRequest>(
       nullptr, url::Origin::Create(GURL("https://example.com"))));
   EXPECT_FALSE(HasWidevinePermissionRequest(requests));
 

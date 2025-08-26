@@ -3,11 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/browser/widevine/widevine_permission_request.h"
+
 #include <memory>
 
+#include "base/check.h"
 #include "base/path_service.h"
 #include "brave/browser/brave_drm_tab_helper.h"
-#include "brave/browser/widevine/widevine_permission_request.h"
 #include "brave/browser/widevine/widevine_utils.h"
 #include "brave/components/constants/brave_paths.h"
 #include "brave/components/constants/pref_names.h"
@@ -20,10 +22,12 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "chrome/test/permissions/permission_request_manager_test_api.h"
 #include "components/prefs/pref_service.h"
+#include "components/update_client/crx_update_item.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
@@ -64,6 +68,11 @@ class WidevinePermissionRequestBrowserTest
   void TearDownOnMainThread() override {
     InProcessBrowserTest::TearDownOnMainThread();
     GetPermissionRequestManager()->RemoveObserver(&observer);
+  }
+
+  void SetUpDefaultCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpDefaultCommandLine(command_line);
+    command_line->RemoveSwitch(switches::kDisableComponentUpdate);
   }
 
   content::WebContents* GetActiveWebContents() {
@@ -189,9 +198,10 @@ IN_PROC_BROWSER_TEST_F(WidevinePermissionRequestBrowserTest,
   content::RunAllTasksUntilIdle();
 
   WidevinePermissionRequest::is_test_ = true;
-  GetBraveDrmTabHelper()->OnEvent(component_updater::ComponentUpdateService::
-                                      Observer ::Events::COMPONENT_UPDATED,
-                                  kWidevineComponentId);
+  update_client::CrxUpdateItem item;
+  item.id = kWidevineComponentId;
+  item.state = update_client::ComponentState::kUpdated;
+  GetBraveDrmTabHelper()->OnEvent(item);
   content::RunAllTasksUntilIdle();
 
   // Check two permission bubble are created.
@@ -272,7 +282,8 @@ IN_PROC_BROWSER_TEST_F(ScriptTriggerWidevinePermissionRequestBrowserTest,
   const std::string widevine_js = content::JsReplace(drm_js,
                                                      "com.widevine.alpha");
 
-  EXPECT_EQ(js_error, content::EvalJs(active_contents(), widevine_js).error);
+  EXPECT_THAT(content::EvalJs(active_contents(), widevine_js),
+              content::EvalJsResult::ErrorIs(testing::Eq(js_error)));
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsPermissionBubbleShown());
   ResetBubbleState();
@@ -293,16 +304,16 @@ IN_PROC_BROWSER_TEST_F(ScriptTriggerWidevinePermissionRequestBrowserTest,
   ResetBubbleState();
 
   // Check that non-widevine DRM is ignored.
-  EXPECT_EQ(js_error,
-            content::EvalJs(active_contents(),
-                            content::JsReplace(drm_js, "org.w3.clearkey"))
-                .error);
+  EXPECT_THAT(content::EvalJs(active_contents(),
+                              content::JsReplace(drm_js, "org.w3.clearkey")),
+              content::EvalJsResult::ErrorIs(testing::Eq(js_error)));
   content::RunAllTasksUntilIdle();
   EXPECT_FALSE(IsPermissionBubbleShown());
   ResetBubbleState();
 
   // Finally check the widevine request.
-  EXPECT_EQ(js_error, content::EvalJs(active_contents(), widevine_js).error);
+  EXPECT_THAT(content::EvalJs(active_contents(), widevine_js),
+              content::EvalJsResult::ErrorIs(testing::Eq(js_error)));
   content::RunAllTasksUntilIdle();
   EXPECT_TRUE(IsPermissionBubbleShown());
 }

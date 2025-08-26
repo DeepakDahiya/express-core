@@ -3,23 +3,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <algorithm>
 #include <memory>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
-#include "base/ranges/algorithm.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
 #include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
 #include "brave/components/constants/brave_paths.h"
 #include "brave/components/constants/brave_services_key.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "brave/components/translate/core/common/brave_translate_features.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
 #include "chrome/browser/translate/translate_test_utils.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_controller.h"
 #include "chrome/browser/ui/views/translate/translate_bubble_view.h"
@@ -43,7 +43,8 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "url/gurl.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
+#include "ui/base/l10n/l10n_util.h"
 
 using ::testing::_;
 using ::testing::MockFunction;
@@ -52,7 +53,7 @@ using ::testing::Return;
 namespace translate {
 
 namespace {
-const char kTestScript[] = R"(
+constexpr char kTestScript[] = R"(
 var api_key = undefined;
 var google = {};
 google.translate = (function() {
@@ -83,7 +84,7 @@ cr.googleTranslate.onLoadCSS("https://translate.googleapis.com/translate_static/
 cr.googleTranslate.onLoadJavascript("https://translate.googleapis.com/translate_static/js/element/main.js");
 )";
 
-const char kXhrPromiseTemplate[] = R"(
+constexpr char kXhrPromiseTemplate[] = R"(
   new Promise((resolve) => {
     const xhr = new XMLHttpRequest();
     xhr.onload = () => resolve(xhr.%s);
@@ -99,22 +100,23 @@ const char kXhrPromiseTemplate[] = R"(
 
 class BraveTranslateBrowserTest : public InProcessBrowserTest {
  public:
-  BraveTranslateBrowserTest() {
-    https_server_ = std::make_unique<net::EmbeddedTestServer>(
-        net::test_server::EmbeddedTestServer::TYPE_HTTPS);
+  BraveTranslateBrowserTest()
+      : https_server_(net::test_server::EmbeddedTestServer::TYPE_HTTPS) {}
 
-    brave::RegisterPathProvider();
+  void SetUp() override {
+    ASSERT_TRUE(https_server_.InitializeAndListen());
+    InProcessBrowserTest::SetUp();
+  }
+
+  void SetUpOnMainThread() override {
     base::FilePath test_data_dir;
     CHECK(base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir));
     embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
     CHECK(embedded_test_server()->Start());
-
-    https_server_->RegisterRequestHandler(base::BindRepeating(
+    https_server_.RegisterRequestHandler(base::BindRepeating(
         &BraveTranslateBrowserTest::HandleRequest, base::Unretained(this)));
-    CHECK(https_server_->Start());
-  }
+    https_server_.StartAcceptingConnections();
 
-  void SetUpOnMainThread() override {
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     ResetObserver();
   }
@@ -129,7 +131,7 @@ class BraveTranslateBrowserTest : public InProcessBrowserTest {
     mock_cert_verifier_.SetUpCommandLine(command_line);
 
     // Remap translate.brave.com requests to the https test server.
-    const std::string host_port = https_server_->host_port_pair().ToString();
+    const std::string host_port = https_server_.host_port_pair().ToString();
     command_line->AppendSwitchASCII(network::switches::kHostResolverRules,
                                     "MAP translate.brave.com:443 " + host_port +
                                         ", MAP translate.google.com:443 " +
@@ -159,9 +161,9 @@ class BraveTranslateBrowserTest : public InProcessBrowserTest {
 
     if (request.GetURL().path() == "/translate") {
       const auto query = request.GetURL().query();
-      EXPECT_NE(query.find(base::StringPrintf("&key=%s",
-                                              BUILDFLAG(BRAVE_SERVICES_KEY))),
-                std::string::npos)
+      EXPECT_NE(
+          query.find(absl::StrFormat("&key=%s", BUILDFLAG(BRAVE_SERVICES_KEY))),
+          std::string::npos)
           << "bad brave api key for request " << request.GetURL();
     }
 
@@ -218,9 +220,9 @@ class BraveTranslateBrowserTest : public InProcessBrowserTest {
   }
 
   content::EvalJsResult EvalTranslateJs(const std::string& script) {
-    return content::EvalJs(
-        browser()->tab_strip_model()->GetActiveWebContents(), script.c_str(),
-        content::EXECUTE_SCRIPT_DEFAULT_OPTIONS, ISOLATED_WORLD_ID_TRANSLATE);
+    return content::EvalJs(browser()->tab_strip_model()->GetActiveWebContents(),
+                           script, content::EXECUTE_SCRIPT_DEFAULT_OPTIONS,
+                           ISOLATED_WORLD_ID_TRANSLATE);
   }
 
   ::testing::AssertionResult HasNoBadFlagsInfobar() {
@@ -229,10 +231,10 @@ class BraveTranslateBrowserTest : public InProcessBrowserTest {
     if (!infobar_manager)
       return ::testing::AssertionFailure() << "!infobar_manager";
 
-    const auto it = base::ranges::find(
-        infobar_manager->infobars(),
-        infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE,
-        &infobars::InfoBar::GetIdentifier);
+    const auto it =
+        std::ranges::find(infobar_manager->infobars(),
+                          infobars::InfoBarDelegate::BAD_FLAGS_INFOBAR_DELEGATE,
+                          &infobars::InfoBar::GetIdentifier);
     if (it != infobar_manager->infobars().cend()) {
       return ::testing::AssertionFailure() << "Bad flags infobar found.";
     }
@@ -240,7 +242,7 @@ class BraveTranslateBrowserTest : public InProcessBrowserTest {
     return ::testing::AssertionSuccess();
   }
 
-  std::unique_ptr<net::EmbeddedTestServer> https_server_;
+  net::EmbeddedTestServer https_server_;
   MockFunction<std::tuple<net::HttpStatusCode, std::string, std::string>(
       std::string)>
       backend_request_;
@@ -259,16 +261,17 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserTest, InternalTranslation) {
 
   SetupTestScriptExpectations();
 
-  auto* bubble = TranslateBubbleController::FromWebContents(
-                     browser()->tab_strip_model()->GetActiveWebContents())
+  auto* bubble = browser()
+                     ->GetFeatures()
+                     .translate_bubble_controller()
                      ->GetTranslateBubble();
   ASSERT_TRUE(bubble);
 
   // Check that the we see the translation bubble (not about the extension
   // installation).
-  ASSERT_EQ(bubble->GetWindowTitle(),
-            brave_l10n::GetLocalizedResourceUTF16String(
-                IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE));
+  ASSERT_EQ(
+      bubble->GetWindowTitle(),
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE));
 
   // Translate the page. Note: the event onTranslateElementLoad() is
   // called from main.js (see SetupTestScriptExpectations()).
@@ -287,7 +290,7 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserTest, InternalTranslation) {
                                        "application/json", "[\"This\"]")));
   EXPECT_EQ(
       "[\"This\"]",
-      EvalTranslateJs(base::StringPrintf(
+      EvalTranslateJs(absl::StrFormat(
           kXhrPromiseTemplate, "response",
           "https://translate.googleapis.com/translate_a/t?query=something",
           "true")));
@@ -295,6 +298,7 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserTest, InternalTranslation) {
   // Check that we haven't tried to update the language lists.
   auto* language_list =
       TranslateDownloadManager::GetInstance()->language_list();
+  language_list->RequestLanguageList();
   EXPECT_FALSE(language_list->HasOngoingLanguageListLoadingForTesting());
 
   // Check used urls.
@@ -322,15 +326,16 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserTest, NoAutoTranslate) {
       browser(), embedded_test_server()->GetURL("/espanol_page.html")));
   WaitUntilLanguageDetermined();
 
-  auto* bubble = TranslateBubbleController::FromWebContents(
-                     browser()->tab_strip_model()->GetActiveWebContents())
+  auto* bubble = browser()
+                     ->GetFeatures()
+                     .translate_bubble_controller()
                      ->GetTranslateBubble();
   ASSERT_TRUE(bubble);
 
   // Check that the we see BEFORE translation bubble (not in-progress bubble).
-  ASSERT_EQ(bubble->GetWindowTitle(),
-            brave_l10n::GetLocalizedResourceUTF16String(
-                IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE));
+  ASSERT_EQ(
+      bubble->GetWindowTitle(),
+      l10n_util::GetStringUTF16(IDS_TRANSLATE_BUBBLE_BEFORE_TRANSLATE_TITLE));
 }
 
 class BraveTranslateBrowserGoogleRedirectTest
@@ -338,7 +343,7 @@ class BraveTranslateBrowserGoogleRedirectTest
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
     BraveTranslateBrowserTest::SetUpCommandLine(command_line);
-    const std::string host_port = https_server_->host_port_pair().ToString();
+    const std::string host_port = https_server_.host_port_pair().ToString();
     // Add translate.google.com redirection to the https test server.
     command_line->AppendSwitchASCII(network::switches::kHostResolverRules,
                                     "MAP translate.brave.com:443 " + host_port +
@@ -359,8 +364,9 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserGoogleRedirectTest,
   GetTranslateManager()->TranslatePage("es", "en", true);
   WaitUntilPageTranslated();
 
-  const char kTestURL[] = "https://translate.google.com/something.svg";
-  const char kTestSvg[] = R"(
+  static constexpr char kTestURL[] =
+      "https://translate.google.com/something.svg";
+  static constexpr char kTestSvg[] = R"(
     <svg xmlns="http://www.w3.org/2000/svg" width="300" height="300"></svg>
   )";
 
@@ -369,7 +375,7 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserGoogleRedirectTest,
                                              "image/svg+xml", kTestSvg)));
 
   const auto do_xhr_and_get_final_url =
-      base::StringPrintf(kXhrPromiseTemplate, "responseURL", kTestURL, "false");
+      absl::StrFormat(kXhrPromiseTemplate, "responseURL", kTestURL, "false");
 
   // Check that a page request is unaffected by the js redirections.
   EXPECT_EQ(kTestURL, content::EvalJs(
@@ -380,7 +386,7 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserGoogleRedirectTest,
   EXPECT_EQ("https://translate.brave.com/something.svg",
             EvalTranslateJs(do_xhr_and_get_final_url));
 
-  const char kLoadImageTemplate[] = R"(
+  static constexpr char kLoadImageTemplate[] = R"(
     new Promise((resolve) => {
       let p = new Image();
       p.onload = () => resolve(true);
@@ -389,7 +395,7 @@ IN_PROC_BROWSER_TEST_F(BraveTranslateBrowserGoogleRedirectTest,
     });
   )";
 
-  const auto load_image = base::StringPrintf(kLoadImageTemplate, kTestURL);
+  const auto load_image = absl::StrFormat(kLoadImageTemplate, kTestURL);
 
   // Check that the image is loaded in the main world correctly.
   EXPECT_EQ(true, content::EvalJs(

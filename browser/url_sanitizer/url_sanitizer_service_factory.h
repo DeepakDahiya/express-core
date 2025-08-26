@@ -6,6 +6,8 @@
 #ifndef BRAVE_BROWSER_URL_SANITIZER_URL_SANITIZER_SERVICE_FACTORY_H_
 #define BRAVE_BROWSER_URL_SANITIZER_URL_SANITIZER_SERVICE_FACTORY_H_
 
+#include <memory>
+
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -17,6 +19,7 @@ namespace base {
 template <typename T>
 class NoDestructor;
 }  // namespace base
+class Profile;
 
 namespace brave {
 
@@ -28,7 +31,7 @@ class URLSanitizerServiceFactory : public BrowserContextKeyedServiceFactory {
       content::BrowserContext* context);
 #if BUILDFLAG(IS_ANDROID)
   static mojo::PendingRemote<url_sanitizer::mojom::UrlSanitizerService>
-  GetForContext(content::BrowserContext* context);
+  GetRemoteForProfile(Profile* profile);
 #endif  // # BUILDFLAG(IS_ANDROID)
   static URLSanitizerServiceFactory* GetInstance();
 
@@ -39,7 +42,7 @@ class URLSanitizerServiceFactory : public BrowserContextKeyedServiceFactory {
   ~URLSanitizerServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(
       content::BrowserContext* context) const override;
   bool ServiceIsNULLWhileTesting() const override;
   content::BrowserContext* GetBrowserContextToUse(
