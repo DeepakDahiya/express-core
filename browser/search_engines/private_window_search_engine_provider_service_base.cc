@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
 #include "brave/browser/search_engines/search_engine_provider_util.h"
@@ -17,6 +19,7 @@
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/template_url_data_util.h"
 #include "components/search_engines/template_url_service.h"
+#include "extensions/browser/install_prefs_helper.h"
 #include "extensions/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -69,7 +72,7 @@ void PrivateWindowSearchEngineProviderServiceBase::
     auto extension_id = extension_provider_url->GetExtensionId();
     extensions::ExtensionPrefs* prefs =
         extensions::ExtensionPrefs::Get(otr_profile_->GetOriginalProfile());
-    auto time = prefs->GetLastUpdateTime(extension_id);
+    auto time = extensions::GetLastUpdateTime(prefs, extension_id);
 
     auto turl =
         std::make_unique<TemplateURL>(data, type, extension_id, time, true);
@@ -96,12 +99,12 @@ void PrivateWindowSearchEngineProviderServiceBase::
   // search provider.
   // Howeveer, we manually set |kDefaultSearchProviderDataPrefName|. So,
   // It's replaced with qwant provider. It was extension search provider.
-  // This only happens when |kSyncedDefaultSearchProviderGUID| and favicon
+  // This only happens when |kDefaultSearchProviderGUID| and favicon
   // udpated search provider is same. (See the condition in
   // TemplateURLService::MaybeUpdateDSEViaPrefs())
   // And there is no side-effect when this prefs update is skipped because
   // it can be updated again when qwant is default search provider.
-  otr_profile_->GetPrefs()->SetString(prefs::kSyncedDefaultSearchProviderGUID,
+  otr_profile_->GetPrefs()->SetString(prefs::kDefaultSearchProviderGUID,
                                       data.sync_guid);
 
   otr_profile_->GetPrefs()->SetDict(
@@ -119,7 +122,7 @@ bool PrivateWindowSearchEngineProviderServiceBase::CouldAddExtensionTemplateURL(
     const TemplateURL* url) {
   DCHECK(url);
   DCHECK_NE(TemplateURL::NORMAL, url->type());
-  for (const auto* turl : otr_template_url_service_->GetTemplateURLs()) {
+  for (const TemplateURL* turl : otr_template_url_service_->GetTemplateURLs()) {
     DCHECK(turl);
     if (url->type() == turl->type() &&
         url->GetExtensionId() == turl->GetExtensionId())

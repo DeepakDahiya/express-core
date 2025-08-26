@@ -3,6 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <tuple>
+#include <vector>
+
+#include "base/check.h"
 #include "base/path_service.h"
 #include "brave/browser/profile_resetter/brave_profile_resetter.h"
 #include "brave/browser/profiles/brave_profile_manager.h"
@@ -12,6 +16,7 @@
 #include "brave/browser/search_engines/search_engine_provider_util.h"
 #include "brave/browser/ui/browser_commands.h"
 #include "brave/components/constants/pref_names.h"
+#include "brave/components/l10n/common/test/scoped_default_locale.h"
 #include "brave/components/search_engines/brave_prepopulated_engines.h"
 #include "brave/components/tor/buildflags/buildflags.h"
 #include "build/build_config.h"
@@ -19,15 +24,22 @@
 #include "chrome/browser/profile_resetter/profile_resetter_test_base.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_window.h"
+#include "chrome/browser/regional_capabilities/regional_capabilities_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/country_codes/country_codes.h"
+#include "components/prefs/pref_service.h"
+#include "components/regional_capabilities/regional_capabilities_country_id.h"
+#include "components/regional_capabilities/regional_capabilities_service.h"
+#include "components/regional_capabilities/regional_capabilities_switches.h"
 #include "components/search_engines/search_engines_pref_names.h"
 #include "components/search_engines/search_engines_test_util.h"
 #include "components/search_engines/template_url_data_util.h"
@@ -70,61 +82,25 @@ TemplateURLData CreateTestSearchEngine() {
   return result;
 }
 
-std::string GetBraveSearchProviderSyncGUID(PrefService* prefs) {
+std::string GetBraveSearchProviderSyncGUID(Profile* profile) {
+  CHECK(profile);
   auto data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      prefs, TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE);
+      *profile->GetPrefs(),
+      regional_capabilities::RegionalCapabilitiesServiceFactory::GetForProfile(
+          profile)
+          ->GetRegionalPrepopulatedEngines(),
+      TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE);
   DCHECK(data);
   return data->sync_guid;
 }
 
-bool PrepopulatedDataHasDDG(PrefService* prefs) {
-  static constexpr TemplateURLPrepopulateData::BravePrepopulatedEngineID
-      alt_search_providers[] = {
-          TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO,
-          TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO_DE,
-          TemplateURLPrepopulateData::
-              PREPOPULATED_ENGINE_ID_DUCKDUCKGO_AU_NZ_IE};
-
-  for (const auto& id : alt_search_providers) {
-    if (TemplateURLPrepopulateData::GetPrepopulatedEngine(prefs, id)) {
-      return true;
-    }
-  }
-
-  return false;
-}
-
 }  // namespace
-
-// Set alternative search provider prefs and check it's cleared on next
-// launching.
-IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
-                       PRE_PrivateSearchProviderMigrationTest) {
-  auto* prefs = browser()->profile()->GetPrefs();
-  // Set "US" to make prepopluated data include DDG because this migration test
-  // is for checking alternative search provider(DDG) is set to private search
-  // provider properly.
-  prefs->SetInteger(country_codes::kCountryIDAtInstall, 'U' << 8 | 'S');
-
-  ASSERT_TRUE(PrepopulatedDataHasDDG(prefs));
-  prefs->SetBoolean(kShowAlternativePrivateSearchEngineProviderToggle, true);
-  prefs->SetBoolean(kUseAlternativePrivateSearchEngineProvider, true);
-}
-
-IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
-                       PrivateSearchProviderMigrationTest) {
-  auto* prefs = browser()->profile()->GetPrefs();
-  prefs->SetInteger(country_codes::kCountryIDAtInstall, 'U' << 8 | 'S');
-  ASSERT_TRUE(PrepopulatedDataHasDDG(prefs));
-
-  EXPECT_FALSE(
-      prefs->GetBoolean(kShowAlternativePrivateSearchEngineProviderToggle));
-  EXPECT_FALSE(prefs->GetBoolean(kUseAlternativePrivateSearchEngineProvider));
-}
 
 IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
                        PRE_InvalidPrivateSearchProviderRestoreTest) {
   auto* profile = browser()->profile();
+  auto* service = TemplateURLServiceFactory::GetForProfile(profile);
+  EXPECT_TRUE(VerifyTemplateURLServiceLoad(service));
   profile->GetPrefs()->SetString(prefs::kSyncedDefaultPrivateSearchProviderGUID,
                                  "invalid_id");
 }
@@ -135,7 +111,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
   auto* service = TemplateURLServiceFactory::GetForProfile(profile);
   EXPECT_TRUE(VerifyTemplateURLServiceLoad(service));
 
-  EXPECT_EQ(GetBraveSearchProviderSyncGUID(profile->GetPrefs()),
+  EXPECT_EQ(GetBraveSearchProviderSyncGUID(profile),
             profile->GetPrefs()->GetString(
                 prefs::kSyncedDefaultPrivateSearchProviderGUID));
 }
@@ -214,10 +190,10 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
   std::unique_ptr<BrandcodedDefaultSettings> master_settings(
       new BrandcodedDefaultSettings);
   ProfileResetterMockObject mock_object;
-  resetter.Reset(ProfileResetter::DEFAULT_SEARCH_ENGINE,
-                 std::move(master_settings),
-                 base::BindOnce(&ProfileResetterMockObject::StopLoop,
-                                base::Unretained(&mock_object)));
+  resetter.ResetSettings(ProfileResetter::DEFAULT_SEARCH_ENGINE,
+                         std::move(master_settings),
+                         base::BindOnce(&ProfileResetterMockObject::StopLoop,
+                                        base::Unretained(&mock_object)));
   mock_object.RunLoop();
   EXPECT_EQ(initial_private_provider_id,
             incognito_service->GetDefaultSearchProvider()->prepopulate_id());
@@ -226,7 +202,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
   // properly.
   profile->GetPrefs()->SetString(prefs::kSyncedDefaultPrivateSearchProviderGUID,
                                  "invalid_id");
-  EXPECT_EQ(GetBraveSearchProviderSyncGUID(profile->GetPrefs()),
+  EXPECT_EQ(GetBraveSearchProviderSyncGUID(profile),
             profile->GetPrefs()->GetString(
                 prefs::kSyncedDefaultPrivateSearchProviderGUID));
   EXPECT_EQ(initial_private_provider_id,
@@ -249,6 +225,135 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderServiceTest,
 #endif
 }
 
+class SearchSuggestionsEnabledTest : public InProcessBrowserTest,
+                                     public ::testing::WithParamInterface<
+                                         std::tuple<std::string, bool, bool>> {
+ public:
+  SearchSuggestionsEnabledTest() : default_locale(GetLocale()) {}
+  ~SearchSuggestionsEnabledTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) final {
+    if (IsNewUser()) {
+      command_line->AppendSwitch(switches::kForceFirstRun);
+    }
+  }
+
+  const std::string& GetLocale() const { return std::get<0>(GetParam()); }
+  bool IsNewUser() const { return std::get<1>(GetParam()); }
+  bool IsSearchSuggestionsEnabled() const { return std::get<2>(GetParam()); }
+
+  const brave_l10n::test::ScopedDefaultLocale default_locale;
+};
+
+IN_PROC_BROWSER_TEST_P(SearchSuggestionsEnabledTest,
+                       DefaultSearchSuggestEnabledTest) {
+  auto* prefs = browser()->profile()->GetPrefs();
+  auto* service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  auto brave_search_data = TemplateURLDataFromPrepopulatedEngine(
+      TemplateURLPrepopulateData::brave_search);
+  TemplateURL brave_template_url(*brave_search_data);
+
+  auto bing_search_data = TemplateURLDataFromPrepopulatedEngine(
+      TemplateURLPrepopulateData::brave_bing);
+  TemplateURL bing_template_url(*bing_search_data);
+
+  EXPECT_EQ(IsSearchSuggestionsEnabled(),
+            prefs->GetBoolean(prefs::kSearchSuggestEnabled));
+
+  service->SetUserSelectedDefaultSearchProvider(&bing_template_url);
+  EXPECT_EQ(IsSearchSuggestionsEnabled(),
+            prefs->GetBoolean(prefs::kSearchSuggestEnabled));
+
+  service->SetUserSelectedDefaultSearchProvider(&brave_template_url);
+  EXPECT_EQ(IsSearchSuggestionsEnabled(),
+            prefs->GetBoolean(prefs::kSearchSuggestEnabled));
+}
+
+// Check suggestions is enabled with supported(US) or non-supported(KR) country
+// per new user(or not). Only new user from supported country enables search
+// suggestions.
+INSTANTIATE_TEST_SUITE_P(
+    /*no prefix*/,
+    SearchSuggestionsEnabledTest,
+    testing::ValuesIn(std::vector<std::tuple<std::string /* locale */,
+                                             bool /* new user */,
+                                             bool /* suggestions enabled */>>{
+        {"en_US", true, true},
+        {"en_US", false, false},
+        {"ko_KR", true, false},
+        {"ko_KR", false, false}}));
+
+class MigrateSearchEnginePrefsInJPTest : public InProcessBrowserTest {
+ public:
+  MigrateSearchEnginePrefsInJPTest() = default;
+  ~MigrateSearchEnginePrefsInJPTest() override = default;
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    InProcessBrowserTest::SetUpCommandLine(command_line);
+
+    command_line->AppendSwitchASCII(switches::kSearchEngineChoiceCountry, "JP");
+  }
+
+  TemplateURLService* service() {
+    return TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  }
+
+  PrefService* prefs() { return browser()->profile()->GetPrefs(); }
+
+ private:
+  const brave_l10n::test::ScopedDefaultLocale default_locale{"ja_JP"};
+};
+
+IN_PROC_BROWSER_TEST_F(MigrateSearchEnginePrefsInJPTest,
+                       PRE_PRE_DefaultSearchProviderUpdateTest) {
+  EXPECT_TRUE(VerifyTemplateURLServiceLoad(service()));
+
+  // To simulate existing user at next launch, set 31
+  // as we set yahoo as a default in jp at 31.
+  // At the next launch, default provider will be yahoo with this setting.
+  prefs()->SetInteger(prefs::kBraveDefaultSearchVersion, 31);
+
+  // To run migration code again at the next launch.
+  prefs()->ClearPref(kMigratedSearchDefaultInJP);
+  prefs()->SetBoolean(prefs::kSearchSuggestEnabled, true);
+}
+
+// To verify migration code doesn't touch search suggestions if current provider
+// is yahoo jp.
+IN_PROC_BROWSER_TEST_F(MigrateSearchEnginePrefsInJPTest,
+                       PRE_DefaultSearchProviderUpdateTest) {
+  EXPECT_TRUE(VerifyTemplateURLServiceLoad(service()));
+
+  const int provider_id =
+      service()->GetDefaultSearchProvider()->prepopulate_id();
+  EXPECT_EQ(provider_id,
+            static_cast<int>(
+                TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_YAHOO_JP));
+  EXPECT_TRUE(prefs()->GetBoolean(prefs::kSearchSuggestEnabled));
+
+  // To simulate existing user at next launch, set older version than 31
+  // as we set yahoo as a default in jp at 31.
+  // At the next launch, default provider will be non-yahoo by setting old
+  // version number.
+  prefs()->SetInteger(prefs::kBraveDefaultSearchVersion, 30);
+
+  // To make migration code run at the next launch, clear related prefs.
+  prefs()->ClearPref(kMigratedSearchDefaultInJP);
+}
+
+IN_PROC_BROWSER_TEST_F(MigrateSearchEnginePrefsInJPTest,
+                       DefaultSearchProviderUpdateTest) {
+  EXPECT_TRUE(VerifyTemplateURLServiceLoad(service()));
+
+  const int provider_id =
+      service()->GetDefaultSearchProvider()->prepopulate_id();
+  EXPECT_EQ(provider_id,
+            static_cast<int>(
+                TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_YAHOO_JP));
+  EXPECT_FALSE(prefs()->GetBoolean(prefs::kSearchSuggestEnabled));
+}
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
 namespace extensions {
@@ -256,11 +361,29 @@ namespace extensions {
 // Copied from settings_overrides_browsertest.cc
 // On linux, search engine from extension is not set by default.
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-// Prepopulated id hardcoded in test_extension.
-const int kTestExtensionPrepopulatedId = 3;
+// Prepopulated id hardcoded in test_extension. We select it to be a
+// prepopulated ID unlikely to match an engine that is part of the TopEngines
+// tier for the environments where the test run, but still matches some
+// known engine (context around these requirements: https://crbug.com/1500526).
+// The default set of engines (when no country is available) has ids 1, 2
+// and 3. The ID 83 is associated with mail.ru, chosen because it's not part
+// of the prepopulated set where we run tests.
+// TODO(crbug.com/1500526): Update the test to fix the country in such a way
+// that we have more control on what is in the prepopulated set or not.
+constexpr int kTestExtensionPrepopulatedId = 83;
 // TemplateURLData with search engines settings from test extension manifest.
 // chrome/test/data/extensions/settings_override/manifest.json
-std::unique_ptr<TemplateURLData> TestExtensionSearchEngine(PrefService* prefs) {
+std::unique_ptr<TemplateURLData> TestExtensionSearchEngine(Profile* profile) {
+  PrefService* prefs = profile->GetPrefs();
+  // Enforcing that `kTestExtensionPrepopulatedId` is not part of the
+  // prepopulated set for the current profile's country.
+  for (auto& data : TemplateURLPrepopulateData::GetPrepopulatedEngines(
+           *prefs, regional_capabilities::RegionalCapabilitiesServiceFactory::
+                       GetForProfile(profile)
+                           ->GetRegionalPrepopulatedEngines())) {
+    EXPECT_NE(data->prepopulate_id, kTestExtensionPrepopulatedId);
+  }
+
   auto result = std::make_unique<TemplateURLData>();
   result->SetShortName(u"name.de");
   result->SetKeyword(u"keyword.de");
@@ -276,8 +399,13 @@ std::unique_ptr<TemplateURLData> TestExtensionSearchEngine(PrefService* prefs) {
   result->input_encodings.push_back("UTF-8");
 
   std::unique_ptr<TemplateURLData> prepopulated =
-      TemplateURLPrepopulateData::GetPrepopulatedEngine(
-          prefs, kTestExtensionPrepopulatedId);
+      TemplateURLPrepopulateData::GetPrepopulatedEngineFromFullList(
+          *prefs,
+          regional_capabilities::RegionalCapabilitiesServiceFactory::
+              GetForProfile(profile)
+                  ->GetRegionalPrepopulatedEngines(),
+          kTestExtensionPrepopulatedId);
+  CHECK(prepopulated);
   // Values below do not exist in extension manifest and are taken from
   // prepopulated engine with prepopulated_id set in extension manifest.
   result->contextual_search_url = prepopulated->contextual_search_url;
@@ -287,8 +415,6 @@ std::unique_ptr<TemplateURLData> TestExtensionSearchEngine(PrefService* prefs) {
 
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
                        ExtensionSearchProviderWithPrivateWindow) {
-  PrefService* prefs = profile()->GetPrefs();
-  ASSERT_TRUE(prefs);
   TemplateURLService* url_service =
       TemplateURLServiceFactory::GetForProfile(profile());
   ASSERT_TRUE(url_service);
@@ -304,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
   EXPECT_EQ(TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION, current_dse->type());
 
   std::unique_ptr<TemplateURLData> extension_dse =
-      TestExtensionSearchEngine(prefs);
+      TestExtensionSearchEngine(profile());
   ExpectSimilar(extension_dse.get(), &current_dse->data());
 
   Profile* incognito_profile =

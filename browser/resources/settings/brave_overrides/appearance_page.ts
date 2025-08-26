@@ -3,43 +3,21 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-// @ts-nocheck TODO(petemill): Define types and remove ts-nocheck
-
 import '../brave_appearance_page/super_referral.js'
-import '../brave_appearance_page/brave_theme.js'
+import '../brave_appearance_page/toolbar.js'
 
-import {html, RegisterPolymerTemplateModifications} from 'chrome://resources/brave/polymer_overriding.js'
-import {getTrustedHTML} from 'chrome://resources/js/static_types.js'
+import {
+  html,
+  RegisterPolymerTemplateModifications
+} from 'chrome://resources/brave/polymer_overriding.js'
 
-import {loadTimeData} from '../i18n_setup.js'
-import {Router} from '../router.js'
+import { loadTimeData } from '../i18n_setup.js'
+
 
 const superReferralStringId = 'superReferralThemeName'
 
 RegisterPolymerTemplateModifications({
   'settings-appearance-page': (templateContent) => {
-    const theme = templateContent.getElementById('themeRow')
-    if (!theme) {
-      console.error(`[Brave Settings Overrides] Couldn't find #themeRow`)
-    } else {
-      const useDefaultButtonTemplate = templateContent.querySelector(
-        'template[is=dom-if][if="[[prefs.extensions.theme.id.value]]"]')
-      if (!useDefaultButtonTemplate) {
-        console.error(
-          '[Brave Settings Overrides] Appearance Page cannot find use default' +
-          ' theme button template')
-      } else {
-        useDefaultButtonTemplate.setAttribute("restamp", "true")
-      }
-      theme.setAttribute("class", "settings-row hr")
-      theme.insertAdjacentHTML(
-        'beforebegin',
-        getTrustedHTML`
-          <settings-brave-appearance-theme prefs="{{prefs}}">
-          </settings-brave-appearance-theme>
-        `)
-    }
-
     // Super-referral
     // W/o super referral, we don't need to themes link option with themes sub
     // page.
@@ -48,24 +26,11 @@ RegisterPolymerTemplateModifications({
       loadTimeData.getString(superReferralStringId) !== ''
     )
     if (hasSuperReferral) {
-      // Routes
-      const r = Router.getInstance().routes_
-      if (!r.APPEARANCE) {
-        console.error(
-          '[Brave Settings Overrides] Routes: could not find APPEARANCE page')
-        return
-      } else {
-        r.THEMES = r.APPEARANCE.createChild('/themes');
-        // Hide chromium's theme section. It's replaced with our themes page.
-        if (theme) {
-          theme.remove()
-        }
-      }
       // Subpage
       const pages = templateContent.getElementById('pages')
       if (!pages) {
         console.error(
-          `[Brave Settings Overrides] Couldn't find appearance_page #pages`)
+          `[Settings] Couldn't find appearance_page #pages`)
       } else {
         pages.appendChild(
           html`
@@ -87,15 +52,15 @@ RegisterPolymerTemplateModifications({
       '[pref="{{prefs.browser.show_home_button}}"]')
     if (!homeButtonToggle) {
       console.error(
-        `[Brave Settings Overrides] Couldn't find home button toggle`)
+        `[Settings] Couldn't find home button toggle`)
     } else {
       homeButtonToggle.remove()
     }
     const homeButtonOptionsTemplate = templateContent.querySelector(
-        'template[is=dom-if][if="[[prefs.browser.show_home_button.value]]"]')
+      'template[is=dom-if][if="[[prefs.browser.show_home_button.value]]"]')
     if (!homeButtonOptionsTemplate) {
       console.error(
-        `[Brave Settings Overrides] Couldn't find home button options template`)
+        `[Settings] Couldn't find home button options template`)
     } else {
       homeButtonOptionsTemplate.remove()
     }
@@ -104,7 +69,7 @@ RegisterPolymerTemplateModifications({
       '[pref="{{prefs.bookmark_bar.show_on_all_tabs}}"]')
     if (!bookmarkBarToggle) {
       console.error(
-        `[Brave Settings Overrides] Couldn't find bookmark bar toggle`)
+        `[Settings] Couldn't find bookmark bar toggle`)
     } else {
       // Remove Chromium bookmark toggle becasue it is replaced by
       // settings-brave-appearance-bookmark-bar
@@ -115,31 +80,32 @@ RegisterPolymerTemplateModifications({
     const defaultFontSize = templateContent.querySelector(
       '.cr-row:has(#defaultFontSize)')
     if (!defaultFontSize) {
-      console.error(`[Brave Settings Overrides] Couldn't find default font size option`)
+      console.error(`[Settings] Couldn't find default font size option`)
     } else {
       // Just hide instead of removing as upstream js refers this.
-      defaultFontSize.setAttribute("hidden", "true")
+      defaultFontSize.setAttribute('hidden', 'true')
     }
     const customizeFontsSubpageTrigger = templateContent.getElementById('customize-fonts-subpage-trigger')
     if (!customizeFontsSubpageTrigger) {
-      console.error(`[Brave Settings Overrides] Couldn't find customize fonts subpage trigger`)
+      console.error(`[Settings] Couldn't find customize fonts subpage trigger`)
     } else {
       customizeFontsSubpageTrigger.remove()
     }
     const pageZoom = templateContent.querySelector('.cr-row:has(#pageZoom)')
     if (!pageZoom) {
-      console.error(`[Brave Settings Overrides] Couldn't find page zoom`)
+      console.error(`[Settings] Couldn't find page zoom`)
     } else {
       pageZoom.remove()
     }
 
-    const hrsToHide = templateContent.querySelectorAll('div.hr:not(#themeRow):not([hidden="[[!pageVisibility.bookmarksBar]]"])');
+    const hrsToHide = templateContent.querySelectorAll(
+      'div.hr:not(#themeRow):not([hidden="[[!pageVisibility.bookmarksBar]]"])')
     // We only want to hide two hrs now from upstream appearance_page.html.
     if (hrsToHide.length !== 2) {
-      console.error(`[Brave Settings Overrides] detected more than two hrs to hide`)
+      console.error(`[Settings] detected more than two hrs to hide`)
     } else {
       for (const hr of hrsToHide) {
-        hr.setAttribute("hidden", "true")
+        hr.setAttribute('hidden', 'true')
       }
     }
 
@@ -147,7 +113,7 @@ RegisterPolymerTemplateModifications({
     const confirmToQuit = templateContent.querySelector(
       '[pref="{{prefs.browser.confirm_to_quit}}"]')
     if (!confirmToQuit) {
-      console.error(`[Brave Settings Overrides] Couldn't find confirm to quit`)
+      console.error(`[Settings] Couldn't find confirm to quit`)
     } else {
       confirmToQuit.remove()
     }
@@ -155,22 +121,74 @@ RegisterPolymerTemplateModifications({
     const tabsToLinks = templateContent.querySelector(
       '[pref="{{prefs.webkit.webprefs.tabs_to_links}}"]')
     if (!tabsToLinks) {
-      console.error(`[Brave Settings Overrides] Couldn't find tabs to links`)
+      console.error(`[Settings] Couldn't find tabs to links`)
     } else {
       tabsToLinks.remove()
     }
     // </if>
 
-    // Remove show images on tab hover toggle as we already have a settings for
-    // this in the Tabs settings.
-    const hoverCardImagesTemplate = templateContent.querySelector(
-      'template[is=dom-if][if="[[showHoverCardImagesOption_]]"]')
-    if (!hoverCardImagesTemplate) {
+    // Remove show images on tab hover toggle and tab memory usage toggle as we
+    // already have settings for these in the Tabs settings.
+    const hoverCardImagesTemplateNotShow = templateContent.querySelector(
+      'template[is=dom-if][if="[[!showHoverCardImagesOption_]]"]')
+    if (!hoverCardImagesTemplateNotShow) {
       console.error(
-        '[Brave Settings Overrides] Appearance Page cannot find hover card' +
-        ' images template')
+        '[Settings] Appearance Page cannot find hover card' +
+        ' images template with !showHoverCardImagesOption_')
     } else {
-      hoverCardImagesTemplate.remove()
+      hoverCardImagesTemplateNotShow.remove()
     }
-  },
+    const hoverCardImagesTemplateShow = templateContent.querySelector(
+      'template[is=dom-if][if="[[showHoverCardImagesOption_]]"]')
+    if (!hoverCardImagesTemplateShow) {
+      console.error(
+        '[Settings] Appearance Page cannot find hover card' +
+        ' images template with showHoverCardImagesOption_')
+    } else {
+      hoverCardImagesTemplateShow.remove()
+    }
+    const colorSchemeModeRow = templateContent.getElementById(
+      'colorSchemeModeRow')
+    if (!colorSchemeModeRow) {
+      console.error(`[Settings] Couldn't find colorSchemeModeRow`)
+    } else {
+      colorSchemeModeRow.remove()
+    }
+
+    // Remove upstream side panel header and dropdown from Appearance as we
+    // have our own separate side panel section
+    const sidePanelPosition =
+      templateContent.getElementById('sidePanelPosition')
+    if (!sidePanelPosition) {
+      console.error(`[Settings] Couldn't find sidePanelPosition`)
+    } else if (sidePanelPosition.parentNode) {
+      sidePanelPosition.parentNode.setAttribute('hidden', 'true')
+    }
+
+    const section = templateContent.querySelector('settings-section')
+    if (!section) {
+      console.error(`[Settings] Couldn't find settings-section`)
+      return
+    }
+    // Append toolbar settings to the appearance section.
+    section.appendChild(html`
+      <settings-brave-appearance-toolbar
+        prefs="{{prefs}}">
+      </settings-brave-appearance-toolbar>
+    `)
+
+    // Remove a couple of items to from appearance page as we have them in
+    // <settings-brave-appearance-toolbar>
+    // - showSavedTabGroups and autoPinNewTabGroups should be after bookmark bar setting
+    const removeElementWithId = (id: string) => {
+      const elem = templateContent.querySelector(`#${id}`)
+      if (!elem) {
+        console.error(`[Settings] Couldn't find element with id: ${id}`)
+      } else {
+        elem.remove()
+      }
+    }
+    removeElementWithId('showSavedTabGroups')
+    removeElementWithId('autoPinNewTabGroups')
+  }
 })

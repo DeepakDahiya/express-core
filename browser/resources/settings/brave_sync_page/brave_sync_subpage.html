@@ -1,4 +1,4 @@
-<style include="cr-shared-style settings-shared iron-flex">
+<style include="cr-shared-style settings-shared">
   #sync-separator
   {
     border-bottom: var(--cr-separator-line);
@@ -22,11 +22,11 @@
     display: block;
     padding-block-end: 0;
     padding-block-start: 0;
-    padding-inline-end: var(--cr-section-padding);
-    padding-inline-start: var(--cr-section-indent-padding);
+    padding-inline-end: 0;
+    padding-inline-start: 0;
+    padding: var(--leo-spacing-2xl);
   }
 </style>
-
 <!-- Disabled content -->
 <div class="cr-row first" hidden="[[!syncDisabledByAdmin_]]">
   <iron-icon id="disabled-by-admin-icon" icon="cr20:domain"></iron-icon>
@@ -74,7 +74,7 @@
 
     <template is="dom-if" if="[[isStatus_('setup', pageStatus_)]]">
       <settings-brave-sync-setup on-setup-success="onSetupSuccess_"
-       sync-code-dialog-type="{{syncCodeDialogType}}">
+        sync-code-dialog-type="{{syncCodeDialogType}}">
       </settings-brave-sync-setup>
     </template>
   </div>

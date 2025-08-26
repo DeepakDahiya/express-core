@@ -3,28 +3,29 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
-import {MetricsReporting} from '/shared/settings/privacy_page/privacy_page_browser_proxy.js';
-import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
+import { PolymerElement } from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js'
 
-import {BaseMixin} from '../base_mixin.js'
-import {loadTimeData} from '../i18n_setup.js';
+import {
+  WebUiListenerMixin,
+  WebUiListenerMixinInterface,
+} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js'
+import { loadTimeData } from '../i18n_setup.js'
 
-import {getTemplate} from './brave_personalization_options.html.js'
-import {BravePrivacyBrowserProxy, BravePrivacyBrowserProxyImpl} from './brave_privacy_page_browser_proxy.js'
+import { getTemplate } from './brave_personalization_options.html.js'
+import {
+  BravePrivacyBrowserProxy,
+  BravePrivacyBrowserProxyImpl,
+} from './brave_privacy_page_browser_proxy.js'
 
-const SettingsBravePersonalizationOptionsBase =
-  WebUiListenerMixin(BaseMixin(PolymerElement)) as {
-    new(): PolymerElement & WebUiListenerMixinInterface
-  }
+import { assert } from 'chrome://resources/js/assert.js'
+import { SettingsToggleButtonElement } from '../controls/settings_toggle_button.js'
 
-export interface SettingsBravePersonalizationOptions {
-  $: {
-    p3aEnabled: SettingsToggleButtonElement,
-    statsUsagePingEnabled: SettingsToggleButtonElement,
-    metricsReportingControl: SettingsToggleButtonElement,
-  }
+import '../privacy_page/do_not_track_toggle.js'
+
+const SettingsBravePersonalizationOptionsBase = WebUiListenerMixin(
+  PolymerElement,
+) as {
+  new (): PolymerElement & WebUiListenerMixinInterface
 }
 
 export class SettingsBravePersonalizationOptions extends SettingsBravePersonalizationOptionsBase {
@@ -44,44 +45,35 @@ export class SettingsBravePersonalizationOptions extends SettingsBravePersonaliz
         value: function () {
           return [
             { value: 'default', name: loadTimeData.getString('webRTCDefault') },
-            { value: 'default_public_and_private_interfaces', name: loadTimeData.getString('defaultPublicAndPrivateInterfaces') },
-            { value: 'default_public_interface_only', name: loadTimeData.getString('defaultPublicInterfaceOnly') },
-            { value: 'disable_non_proxied_udp', name: loadTimeData.getString('disableNonProxiedUdp') }
+            {
+              value: 'default_public_and_private_interfaces',
+              name: loadTimeData.getString('defaultPublicAndPrivateInterfaces'),
+            },
+            {
+              value: 'default_public_interface_only',
+              name: loadTimeData.getString('defaultPublicInterfaceOnly'),
+            },
+            {
+              value: 'disable_non_proxied_udp',
+              name: loadTimeData.getString('disableNonProxiedUdp'),
+            },
           ]
         },
       },
       webRTCPolicy_: String,
-      p3aEnabledPref_: {
-        type: Object,
-        value() {
-          // TODO(dbeam): this is basically only to appease PrefControlMixin.
-          // Maybe add a no-validate attribute instead? This makes little sense.
-          return {};
+      isDebounceFeatureEnabled_: {
+        readOnly: true,
+        type: Boolean,
+        value: function () {
+          return loadTimeData.getBoolean('isDebounceFeatureEnabled')
         },
       },
-      statsUsagePingEnabledPref_: {
-        type: Object,
-        value() {
-          // TODO(dbeam): this is basically only to appease PrefControlMixin.
-          // Maybe add a no-validate attribute instead? This makes little sense.
-          return {};
-        },
-      },
-      metricsReportingPref_: {
-        type: Object,
-        value() {
-          // TODO(dbeam): this is basically only to appease PrefControlMixin.
-          // Maybe add a no-validate attribute instead? This makes little sense.
-          return {};
-        },
-      },
-      showRestartForMetricsReporting_: Boolean,
       isRequestOTRFeatureEnabled_: {
         readOnly: true,
         type: Boolean,
         value: function () {
           return loadTimeData.getBoolean('isRequestOTRFeatureEnabled')
-        }
+        },
       },
       requestOTRActions_: {
         readOnly: true,
@@ -95,110 +87,95 @@ export class SettingsBravePersonalizationOptions extends SettingsBravePersonaliz
         },
       },
       requestOTRAction_: String,
-    };
-  }
-
-  private webRTCPolicies_: Object[];
-  private webRTCPolicy_: String;
-  private p3aEnabledPref_: Object;
-  private statsUsagePingEnabledPref_: Object;
-  private metricsReportingPref_: chrome.settingsPrivate.PrefObject<boolean>;
-  private showRestartForMetricsReporting_: boolean;
-  private requestOTRActions_: Object[];
-  private requestOTRAction_: String;
-
-  browserProxy_: BravePrivacyBrowserProxy = BravePrivacyBrowserProxyImpl.getInstance();
-
-  override ready() {
-    super.ready()
-    // Used for first time initialization of checked state.
-    // Can't use `prefs` property of `settings-toggle-button` directly
-    // because p3a enabled is a local state setting, but PrefControlMixin
-    // checks for a pref being valid, so have to fake it, same as upstream.
-    const setP3AEnabledPref = (enabled: boolean) => this.setP3AEnabledPref_(enabled);
-    this.addWebUiListener('p3a-enabled-changed', setP3AEnabledPref);
-    this.browserProxy_.getP3AEnabled().then(
-      (enabled: boolean) => setP3AEnabledPref(enabled));
-
-    const setMetricsReportingPref = (metricsReporting: MetricsReporting) =>
-        this.setMetricsReportingPref_(metricsReporting);
-    this.addWebUiListener('metrics-reporting-change', setMetricsReportingPref);
-    this.browserProxy_.getMetricsReporting().then(setMetricsReportingPref);
-
-    const setStatsUsagePingEnabledPref = (enabled: boolean) => this.setStatsUsagePingEnabledPref_(enabled);
-    this.addWebUiListener(
-      'stats-usage-ping-enabled-changed', setStatsUsagePingEnabledPref);
-    this.browserProxy_.getStatsUsagePingEnabled().then(
-      (enabled: boolean) => setStatsUsagePingEnabledPref(enabled));
-  }
-
-  setP3AEnabledPref_(enabled: boolean) {
-    const pref = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: enabled,
-    };
-    this.p3aEnabledPref_ = pref;
-  }
-
-  onP3AEnabledChange_() {
-    this.browserProxy_.setP3AEnabled(this.$.p3aEnabled.checked);
-  }
-
-  setStatsUsagePingEnabledPref_(enabled: boolean) {
-    const pref = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: enabled,
-    };
-    this.statsUsagePingEnabledPref_ = pref;
-  }
-
-  onStatsUsagePingEnabledChange_() {
-    this.browserProxy_.setStatsUsagePingEnabled(this.$.statsUsagePingEnabled.checked);
-  }
-
-  // Metrics related code is copied from
-  // chrome/browser/resources/settings/privacy_page/personalization_options.ts as
-  // we hide that upstream option and put it in our this page.
-  onMetricsReportingChange_() {
-    const enabled = this.$.metricsReportingControl.checked;
-    this.browserProxy_.setMetricsReportingEnabled(enabled);
-  }
-
-  setMetricsReportingPref_(metricsReporting: MetricsReporting) {
-    const hadPreviousPref = this.metricsReportingPref_.value !== undefined;
-    const pref: chrome.settingsPrivate.PrefObject<boolean> = {
-      key: '',
-      type: chrome.settingsPrivate.PrefType.BOOLEAN,
-      value: metricsReporting.enabled,
-    };
-    if (metricsReporting.managed) {
-      pref.enforcement = chrome.settingsPrivate.Enforcement.ENFORCED;
-      pref.controlledBy = chrome.settingsPrivate.ControlledBy.USER_POLICY;
-    }
-
-    // Ignore the next change because it will happen when we set the pref.
-    this.metricsReportingPref_ = pref;
-
-    // TODO(dbeam): remember whether metrics reporting was enabled when Chrome
-    // started.
-    if (metricsReporting.managed) {
-      this.showRestartForMetricsReporting_ = false;
-    } else if (hadPreviousPref) {
-      this.showRestartForMetricsReporting_ = true;
+      isWindowsRecallAvailable_: {
+        readOnly: true,
+        type: Boolean,
+        value: () => {
+          return loadTimeData.getBoolean('isWindowsRecallAvailable')
+        },
+      },
+      windowsRecallDisabledPref_: {
+        type: Object,
+        value: () => {
+          return {}
+        },
+      },
     }
   }
+
+  declare private webRTCPolicies_: Object[]
+  declare private webRTCPolicy_: String
+  declare private isDebounceFeatureEnabled_: boolean
+  declare private isRequestOTRFeatureEnabled_: boolean
+  declare private requestOTRActions_: Object[]
+  declare private requestOTRAction_: String
+  declare private isWindowsRecallAvailable_: boolean
+  declare private windowsRecallDisabledPref_: chrome.settingsPrivate.PrefObject
+
+  browserProxy_: BravePrivacyBrowserProxy =
+    BravePrivacyBrowserProxyImpl.getInstance()
 
   shouldShowRestart_(enabled: boolean) {
-    return enabled != this.browserProxy_.wasPushMessagingEnabledAtStartup();
+    return enabled != this.browserProxy_.wasPushMessagingEnabledAtStartup()
+  }
+
+  shouldShowRestartWindowsRecall_(disabled: boolean) {
+    return disabled != this.browserProxy_.wasWindowsRecallDisabledAtStartup()
+  }
+
+  windowsRecallDisabledChange_(event: Event) {
+    const target = event.target
+    assert(target instanceof SettingsToggleButtonElement)
+    this.browserProxy_.setWindowsRecallDisabled(target.checked)
+  }
+
+  setWindowsRecallDisabled_(disabled: boolean) {
+    const pref = {
+      key: '',
+      type: chrome.settingsPrivate.PrefType.BOOLEAN,
+      value: disabled,
+    }
+    this.windowsRecallDisabledPref_ = pref
   }
 
   restartBrowser_(e: Event) {
-    e.stopPropagation();
-    window.open("chrome://restart", "_self");
+    e.stopPropagation()
+    window.open('chrome://restart', '_self')
+  }
+
+  override ready() {
+    super.ready()
+    // Add hr to the "Do not track" row.
+    const doNotTrack = this.shadowRoot?.querySelector('#doNotTrack')
+    if (doNotTrack) {
+      const toggle = doNotTrack.shadowRoot?.querySelector('#toggle')
+      if (toggle) {
+        const toggleClass = toggle.getAttribute('class')
+        toggle.setAttribute('class', toggleClass + ' hr')
+      } else {
+        console.log(
+          '[Brave Settings Overrides] Could not find doNotTrack toggle',
+        )
+      }
+    } else {
+      console.log(
+        '[Brave Settings Overrides] Could not find element with id doNotTrack',
+      )
+    }
+
+    if (this.isWindowsRecallAvailable_) {
+      this.addWebUiListener(
+        'windows-recall-disabled-changed',
+        this.setWindowsRecallDisabled_.bind(this),
+      )
+      this.browserProxy_
+        .isWindowsRecallDisabled()
+        .then(this.setWindowsRecallDisabled_.bind(this))
+    }
   }
 }
 
 customElements.define(
-  SettingsBravePersonalizationOptions.is, SettingsBravePersonalizationOptions)
+  SettingsBravePersonalizationOptions.is,
+  SettingsBravePersonalizationOptions,
+)

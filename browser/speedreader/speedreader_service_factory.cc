@@ -5,11 +5,16 @@
 
 #include "brave/browser/speedreader/speedreader_service_factory.h"
 
+#include <memory>
+
 #include "base/no_destructor.h"
 #include "brave/components/speedreader/speedreader_service.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 
 namespace speedreader {
 
@@ -37,16 +42,20 @@ SpeedreaderServiceFactory::~SpeedreaderServiceFactory() = default;
 
 content::BrowserContext* SpeedreaderServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextOwnInstanceInIncognito(context);
+  return GetBrowserContextOwnInstanceInIncognito(context);
 }
 
-KeyedService* SpeedreaderServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+SpeedreaderServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   if (!features::IsSpeedreaderEnabled()) {
-    return nullptr;
+    return {};
   }
-  return new SpeedreaderService(
-      context, HostContentSettingsMapFactory::GetForProfile(context));
+
+
+  return std::make_unique<SpeedreaderService>(
+      context, g_browser_process->local_state(),
+      HostContentSettingsMapFactory::GetForProfile(context));
 }
 
 bool SpeedreaderServiceFactory::ServiceIsCreatedWithBrowserContext() const {

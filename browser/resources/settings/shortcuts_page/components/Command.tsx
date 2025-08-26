@@ -12,7 +12,7 @@ import { commandsCache } from '../commands'
 import { stringToKeys } from '../utils/accelerator'
 import Button from '@brave/leo/react/button'
 import Icon from '@brave/leo/react/icon'
-import { color, spacing } from '@brave/leo/tokens/css'
+import { color, spacing } from '@brave/leo/tokens/css/variables'
 import { getLocale } from '$web-common/locale'
 
 const Grid = styled.div`
@@ -35,11 +35,13 @@ const Column = styled.div`
 
 const RemoveButton = styled(Button)`
   visibility: hidden;
+  flex-grow: 0;
 `
 
 const Row = styled.div`
   display: flex;
   flex-direction: row;
+  flex-wrap: wrap;
   align-items: center;
   gap: 4px;
 

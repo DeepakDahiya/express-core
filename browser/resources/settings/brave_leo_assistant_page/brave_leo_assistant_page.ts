@@ -4,14 +4,17 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import '//resources/cr_elements/md_select.css.js'
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js';
-import {PrefsMixin} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
-import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js';
+import 'chrome://resources/brave/leo.bundle.js'
+import {I18nMixin} from 'chrome://resources/cr_elements/i18n_mixin.js'
+import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js'
+import {WebUiListenerMixin} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js'
+import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js'
+import {Router} from '../router.js'
+import {loadTimeData} from '../i18n_setup.js'
+import {routes} from '../route.js';
 import {getTemplate} from './brave_leo_assistant_page.html.js'
-import {BraveLeoAssistantBrowserProxy, BraveLeoAssistantBrowserProxyImpl}
+import {BraveLeoAssistantBrowserProxy, BraveLeoAssistantBrowserProxyImpl, PremiumStatus, ModelWithSubtitle, PremiumInfo, ModelAccess, Model}
   from './brave_leo_assistant_browser_proxy.js'
-
 
 const BraveLeoAssistantPageBase =
   WebUiListenerMixin(I18nMixin(PrefsMixin(PolymerElement)))
@@ -36,12 +39,26 @@ class BraveLeoAssistantPageElement extends BraveLeoAssistantPageBase {
           value: false,
           notify: true,
         },
+        isPremiumUser_: {
+          type: Boolean,
+          value: false,
+          computed: 'computeIsPremiumUser_(premiumStatus_)'
+        },
+        isHistoryFeatureEnabled_: {
+          type: Boolean,
+          value: () => loadTimeData.getBoolean('isLeoAssistantHistoryAllowed')
+        },
       }
     }
 
-    leoAssistantShowOnToolbarPref_: boolean
+    private declare isPremiumUser_: boolean
+
+    declare isHistoryFeatureEnabled_: boolean
+    declare leoAssistantShowOnToolbarPref_: boolean
+    premiumStatus_: PremiumStatus = PremiumStatus.Unknown
     browserProxy_: BraveLeoAssistantBrowserProxy =
       BraveLeoAssistantBrowserProxyImpl.getInstance()
+    manageUrl_: string | undefined = undefined
 
     onResetAssistantData_() {
       const message =
@@ -55,10 +72,23 @@ class BraveLeoAssistantPageElement extends BraveLeoAssistantPageBase {
       super.ready()
 
       this.updateShowLeoAssistantIcon_()
+      this.updateCurrentPremiumStatus()
 
       this.addWebUiListener('settings-brave-leo-assistant-changed',
       (isLeoVisible: boolean) => {
         this.leoAssistantShowOnToolbarPref_ = isLeoVisible
+      })
+
+      this.browserProxy_.getSettingsHelper().getManageUrl()
+        .then((value: { url: string}) => {
+          this.manageUrl_ = value.url
+        })
+
+      // Since there is no server-side event for premium status changing,
+      // we should check often. And since purchase or login is performed in
+      // a separate WebContents, we can check when focus is returned here.
+      window.addEventListener('focus', () => {
+        this.updateCurrentPremiumStatus()
       })
     }
 
@@ -70,15 +100,47 @@ class BraveLeoAssistantPageElement extends BraveLeoAssistantPageBase {
       }
     }
 
+
     private updateShowLeoAssistantIcon_() {
       this.browserProxy_.getLeoIconVisibility().then((result) => {
         this.leoAssistantShowOnToolbarPref_ = result
       })
     }
 
+    private updateCurrentPremiumStatus() {
+      this.browserProxy_.getSettingsHelper().getPremiumStatus().then((value: { status: PremiumStatus; info: PremiumInfo | null; }) => {
+        this.premiumStatus_ = value.status
+      })
+    }
+
     onLeoAssistantShowOnToolbarChange_(e: any) {
       e.stopPropagation()
       this.browserProxy_.toggleLeoIcon()
+    }
+
+    openAutocompleteSetting_() {
+      Router.getInstance().navigateTo(routes.APPEARANCE, new URLSearchParams("highlight=#autocomplete-suggestion-sources"))
+    }
+
+    computeIsPremiumUser_() {
+      if (this.premiumStatus_ === PremiumStatus.Active || this.premiumStatus_ === PremiumStatus.ActiveDisconnected) {
+        return true
+      }
+
+      return false
+    }
+
+    openManageAccountPage_() {
+      window.open(this.manageUrl_, "_self", "noopener noreferrer")
+    }
+
+    openTabOrganizationLearnMore_() {
+      window.open(loadTimeData.getString('braveLeoAssistantTabOrganizationLearnMoreURL'), "_blank", "noopener noreferrer")
+    }
+
+    openCustomizationPage_() {
+      const router = Router.getInstance();
+      router.navigateTo(router.getRoutes().BRAVE_LEO_CUSTOMIZATION);
     }
 }
 

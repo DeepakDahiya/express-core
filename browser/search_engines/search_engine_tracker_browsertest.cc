@@ -3,24 +3,31 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <memory>
-
 #include "brave/browser/search_engines/search_engine_tracker.h"
 
+#include <memory>
+
 #include "base/test/metrics/histogram_tester.h"
-#include "brave/browser/profiles/profile_util.h"
 #include "brave/browser/ui/browser_commands.h"
+#include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/search_engines/brave_prepopulated_engines.h"
 #include "brave/components/tor/buildflags/buildflags.h"
+#include "brave/components/web_discovery/buildflags/buildflags.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/regional_capabilities/regional_capabilities_service_factory.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/search_test_utils.h"
 #include "components/country_codes/country_codes.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
+#include "components/regional_capabilities/regional_capabilities_country_id.h"
+#include "components/regional_capabilities/regional_capabilities_prefs.h"
+#include "components/regional_capabilities/regional_capabilities_service.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
 #include "content/public/test/browser_test.h"
+#include "extensions/buildflags/buildflags.h"
 
 class SearchEngineProviderP3ATest : public InProcessBrowserTest {
  public:
@@ -41,10 +48,9 @@ class SearchEngineProviderP3ATest : public InProcessBrowserTest {
  private:
   static void OverrideCountryID(const std::string& country_id,
                                 content::BrowserContext* context) {
-    const int32_t id = country_codes::CountryCharsToCountryID(country_id.at(0),
-                                                              country_id.at(1));
+    auto id = country_codes::CountryId(country_id);
     Profile::FromBrowserContext(context)->GetPrefs()->SetInteger(
-        country_codes::kCountryIDAtInstall, id);
+        regional_capabilities::prefs::kCountryIDAtInstall, id.Serialize());
   }
 
  protected:
@@ -61,9 +67,14 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, DefaultSearchEngineP3A) {
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   search_test_utils::WaitForTemplateURLServiceToLoad(service);
 
+  auto regional_engines =
+      regional_capabilities::RegionalCapabilitiesServiceFactory::GetForProfile(
+          browser()->profile())
+          ->GetRegionalPrepopulatedEngines();
+
   // Check that changing the default engine triggers emitting of a new value.
   auto ddg_data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      browser()->profile()->GetPrefs(),
+      *browser()->profile()->GetPrefs(), regional_engines,
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO);
   TemplateURL ddg_url(*ddg_data);
 
@@ -73,7 +84,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, DefaultSearchEngineP3A) {
 
   // Check switching back to original engine.
   auto brave_data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      browser()->profile()->GetPrefs(),
+      *browser()->profile()->GetPrefs(), regional_engines,
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE);
   TemplateURL brave_url(*brave_data);
   service->SetUserSelectedDefaultSearchProvider(&brave_url);
@@ -102,9 +113,13 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, SwitchSearchEngineP3A) {
       TemplateURLServiceFactory::GetForProfile(browser()->profile());
   search_test_utils::WaitForTemplateURLServiceToLoad(service);
 
+  auto regional_engines =
+      regional_capabilities::RegionalCapabilitiesServiceFactory::GetForProfile(
+          browser()->profile())
+          ->GetRegionalPrepopulatedEngines();
   // Check that changing the default engine triggers emission of a new value.
   auto ddg_data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      browser()->profile()->GetPrefs(),
+      *browser()->profile()->GetPrefs(), regional_engines,
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO);
   TemplateURL ddg_url(*ddg_data);
 
@@ -115,7 +130,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, SwitchSearchEngineP3A) {
 
   // Check additional changes.
   auto brave_data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      browser()->profile()->GetPrefs(),
+      *browser()->profile()->GetPrefs(), regional_engines,
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE);
   TemplateURL brave_url(*brave_data);
 
@@ -125,7 +140,7 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, SwitchSearchEngineP3A) {
 
   // Check additional changes.
   auto bing_data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
-      browser()->profile()->GetPrefs(),
+      *browser()->profile()->GetPrefs(), regional_engines,
       TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BING);
   TemplateURL bing_url(*bing_data);
 
@@ -148,14 +163,51 @@ IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, SwitchSearchEngineP3A) {
   histogram_tester_->ExpectTotalCount(kSwitchSearchEngineMetric, 8);
 }
 
+#if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
 IN_PROC_BROWSER_TEST_F(SearchEngineProviderP3ATest, WebDiscoveryEnabledP3A) {
   histogram_tester_->ExpectBucketCount(kWebDiscoveryEnabledMetric, 0, 1);
+  histogram_tester_->ExpectUniqueSample(kWebDiscoveryDefaultEngineMetric,
+                                        INT_MAX - 1, 1);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
   prefs->SetBoolean(kWebDiscoveryEnabled, true);
 
   histogram_tester_->ExpectBucketCount(kWebDiscoveryEnabledMetric, 1, 1);
+  histogram_tester_->ExpectBucketCount(kWebDiscoveryDefaultEngineMetric,
+                                       SearchEngineP3A::kBrave, 1);
+
+  // Test changing search engine while web discovery is enabled
+  auto* service =
+      TemplateURLServiceFactory::GetForProfile(browser()->profile());
+  search_test_utils::WaitForTemplateURLServiceToLoad(service);
+
+  auto regional_engines =
+      regional_capabilities::RegionalCapabilitiesServiceFactory::GetForProfile(
+          browser()->profile())
+          ->GetRegionalPrepopulatedEngines();
+
+  auto ddg_data = TemplateURLPrepopulateData::GetPrepopulatedEngine(
+      *browser()->profile()->GetPrefs(), regional_engines,
+      TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO);
+  TemplateURL ddg_url(*ddg_data);
+  service->SetUserSelectedDefaultSearchProvider(&ddg_url);
+
+  histogram_tester_->ExpectBucketCount(kWebDiscoveryDefaultEngineMetric,
+                                       SearchEngineP3A::kDuckDuckGo, 1);
+
+  histogram_tester_->ExpectUniqueSample(kWebDiscoveryAndAdsMetric, 0, 3);
+  prefs->SetBoolean(brave_ads::prefs::kOptedInToNotificationAds, true);
+  histogram_tester_->ExpectBucketCount(kWebDiscoveryAndAdsMetric, 1, 1);
+  histogram_tester_->ExpectBucketCount(kWebDiscoveryDefaultEngineMetric,
+                                       SearchEngineP3A::kDuckDuckGo, 2);
 
   prefs->SetBoolean(kWebDiscoveryEnabled, false);
   histogram_tester_->ExpectBucketCount(kWebDiscoveryEnabledMetric, 0, 2);
+  histogram_tester_->ExpectBucketCount(kWebDiscoveryDefaultEngineMetric,
+                                       INT_MAX - 1, 2);
+
+  histogram_tester_->ExpectBucketCount(kWebDiscoveryAndAdsMetric, 0, 4);
+  histogram_tester_->ExpectTotalCount(kWebDiscoveryAndAdsMetric, 5);
+  histogram_tester_->ExpectTotalCount(kWebDiscoveryDefaultEngineMetric, 5);
 }
+#endif

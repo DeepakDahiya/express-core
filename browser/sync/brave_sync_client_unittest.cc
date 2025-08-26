@@ -5,11 +5,10 @@
 
 #include <algorithm>
 
+#include "base/check.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/path_service.h"
-#include "base/ranges/algorithm.h"
-#include "brave/components/brave_component_updater/browser/brave_component.h"
-#include "brave/components/brave_shields/browser/ad_block_subscription_service_manager.h"
+#include "brave/components/brave_shields/content/browser/ad_block_subscription_service_manager.h"
 #include "brave/test/base/testing_brave_browser_process.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
@@ -115,7 +114,7 @@ TEST_F(BraveSyncClientTest, CreateDataTypeControllersSearchEngines) {
   const syncer::DataTypeController::TypeVector controllers =
       sync_client->CreateDataTypeControllers(&service);
 
-  EXPECT_TRUE(base::ranges::any_of(
+  EXPECT_TRUE(std::ranges::any_of(
       controllers,
       [](const std::unique_ptr<syncer::DataTypeController>& controller) {
         return controller->type() == syncer::SEARCH_ENGINES;
@@ -127,8 +126,8 @@ TEST_F(BraveSyncClientTest, PrefSyncedDefaultSearchProviderGUIDIsSyncable) {
   // components/search_engines/template_url_service.cc
   // But we have it here because we have profile here and both these tests are
   // related by the final purpose
-  const PrefService::Preference* pref = profile()->GetPrefs()->FindPreference(
-      prefs::kSyncedDefaultSearchProviderGUID);
+  const PrefService::Preference* pref =
+      profile()->GetPrefs()->FindPreference(prefs::kDefaultSearchProviderGUID);
   EXPECT_TRUE(pref->registration_flags() &
               user_prefs::PrefRegistrySyncable::SYNCABLE_PREF);
 }

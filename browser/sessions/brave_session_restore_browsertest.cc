@@ -15,9 +15,11 @@
 #include "components/sessions/core/serialized_navigation_entry.h"
 #include "components/sessions/core/session_types.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "third_party/blink/public/common/page_state/page_state.h"
 #include "third_party/blink/public/common/page_state/page_state_serialization.h"
 
@@ -127,8 +129,8 @@ class SessionCookiesCleanupOnSessionRestoreBrowserTest
     ASSERT_TRUE(embedded_test_server()->Start());
     command_line->AppendSwitchASCII(
         network::switches::kHostResolverRules,
-        base::StringPrintf("MAP *:80 127.0.0.1:%d",
-                           embedded_test_server()->port()));
+        absl::StrFormat("MAP *:80 127.0.0.1:%d",
+                        embedded_test_server()->port()));
   }
 
   void SetUpOnMainThread() override {

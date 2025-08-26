@@ -1,5 +1,5 @@
 <if expr="enable_brave_vpn_wireguard">
-<style include="settings-shared cr-shared-style iron-flex">
+<style include="settings-shared cr-shared-style">
   .title {
     font-size: 14px;
     font-weight: 600;
@@ -14,13 +14,7 @@
       pref="{{prefs.brave.brave_vpn.wireguard_enabled}}"
       label="$i18n{useWireguardLabel}"
       sub-label="[[toggleWireguardSubLabel_]]"
-      disabled="[[braveVpnConnected_]]"
-      on-change="onChange_">
-    <template is="dom-if" if="[[shouldShowRestart_]]">
-      <cr-button on-click="onRestartClick_" slot="more-actions">
-        $i18n{restart}
-      </cr-button>
-    </template>
+      disabled="[[braveVpnConnected_]]">
   </settings-toggle-button>
 
 </settings-vpn-page>

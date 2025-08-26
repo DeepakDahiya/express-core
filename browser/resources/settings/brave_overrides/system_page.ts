@@ -29,6 +29,11 @@ RegisterPolymerComponentBehaviors({
 
 RegisterPolymerTemplateModifications({
   'settings-system-page': (templateContent) => {
+    let settingsSection = templateContent.querySelector('settings-section')
+    if (!settingsSection) {
+      throw new Error('[Settings] Missing settings-section on system page')
+    }
+
     if (loadTimeData.getBoolean('areShortcutsSupported')) {
       // Chromium's system section only has a root section but we want to add a
       // subpage for shortcuts.
@@ -36,10 +41,10 @@ RegisterPolymerTemplateModifications({
       // default route, rather than always showing, otherwise when we navigate,
       // we'll get all the toggles showing up.
       const nonStyleChildren = (
-        Array.from(templateContent.children) as HTMLElement[]
-      ).filter((t) => t.tagName !== 'STYLE')
+        Array.from(settingsSection.children)
+      ).filter((t: any) => t.tagName !== 'STYLE')
 
-      templateContent.appendChild(html`
+      settingsSection.appendChild(html`
         <settings-animated-pages id="pages" section="system">
           <div route-path="default">
             <cr-link-row
@@ -60,7 +65,7 @@ RegisterPolymerTemplateModifications({
             </settings-subpage>
           </template>
         </settings-animated-pages>`)
-      const defaultRoute = templateContent.querySelector(
+      const defaultRoute = settingsSection.querySelector(
         '#pages div[route-path=default]'
       )
 
@@ -69,19 +74,53 @@ RegisterPolymerTemplateModifications({
       }
 
       // changes should happen inside the default route.
-      templateContent = defaultRoute
+      settingsSection = defaultRoute
     }
 
-    templateContent.appendChild(
+    settingsSection.appendChild(
       html`
         <settings-toggle-button
           class="cr-row"
           pref="{{prefs.brave.enable_closing_last_tab}}"
-          label="${loadTimeData.getString('braveHelpTipsClosingLastTab')}"
+          label="${loadTimeData.getString('braveClosingLastTab')}"
         >
         </settings-toggle-button>
       `
     )
+
+    settingsSection.appendChild(
+      html`
+        <settings-toggle-button
+          class="cr-row hr"
+          pref="{{prefs.brave.enable_window_closing_confirm}}"
+          label="${loadTimeData.getString('braveWarnBeforeClosingWindow')}">
+        </settings-toggle-button>
+      `
+    )
+
+    // <if expr="is_macosx">
+    settingsSection.appendChild(
+      html`
+        <settings-toggle-button
+          class="cr-row hr"
+          pref="{{prefs.browser.confirm_to_quit}}"
+          label="${loadTimeData.getString('warnBeforeQuitting')}">
+        </settings-toggle-button>
+      `
+    )
+    // </if>
+
+    settingsSection.appendChild(
+      html`
+        <settings-toggle-button
+          class="cr-row"
+          pref="{{prefs.brave.show_fullscreen_reminder}}"
+          label="${loadTimeData.getString('braveShowFullscreenReminder')}"
+        >
+        </settings-toggle-button>
+      `
+    )
+
     // <if expr="enable_brave_vpn_wireguard">
     let showVpnPage = loadTimeData.getBoolean('isBraveVPNEnabled')
     // <if expr="is_macosx">
@@ -89,7 +128,7 @@ RegisterPolymerTemplateModifications({
                   loadTimeData.getBoolean('isBraveVPNWireguardEnabledOnMac')
     // </if>
     if (showVpnPage) {
-      templateContent.appendChild(
+      settingsSection.appendChild(
         html`
           <settings-brave-vpn-page prefs="{{prefs}}">
           </settings-brave-vpn-page>
@@ -98,7 +137,7 @@ RegisterPolymerTemplateModifications({
     }
     // </if>
 
-    templateContent.appendChild(
+    settingsSection.appendChild(
       html`
         <settings-brave-performance-page prefs="{{prefs}}">
         </settings-brave-performance-page>

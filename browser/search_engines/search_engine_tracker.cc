@@ -5,11 +5,14 @@
 
 #include "brave/browser/search_engines/search_engine_tracker.h"
 
+#include <memory>
+
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/no_destructor.h"
 #include "base/strings/string_util.h"
-#include "brave/browser/search_engines/pref_names.h"
+#include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "brave/components/brave_search_conversion/features.h"
 #include "brave/components/brave_search_conversion/p3a.h"
 #include "brave/components/brave_search_conversion/utils.h"
@@ -50,14 +53,16 @@ SearchEngineP3A GetSearchEngineProvider(const GURL& search_engine_url,
     result = SearchEngineP3A::kDaum;
   } else if (type == SEARCH_ENGINE_NAVER) {
     result = SearchEngineP3A::kNaver;
+  } else if (type == SEARCH_ENGINE_YAHOO &&
+             search_engine_url.host_piece().ends_with(".jp")) {
+    result = SearchEngineP3A::kYahooJP;
   } else if (type == SEARCH_ENGINE_BRAVE) {
     result = SearchEngineP3A::kBrave;
+  } else if (type == SEARCH_ENGINE_STARTPAGE) {
+    result = SearchEngineP3A::kStartpage;
   } else if (type == SEARCH_ENGINE_OTHER) {
-    if (base::EndsWith(search_engine_url.host(), "startpage.com",
+    if (base::EndsWith(search_engine_url.host(), "brave.com",
                        base::CompareCase::INSENSITIVE_ASCII)) {
-      result = SearchEngineP3A::kStartpage;
-    } else if (base::EndsWith(search_engine_url.host(), "brave.com",
-                              base::CompareCase::INSENSITIVE_ASCII)) {
       result = SearchEngineP3A::kBrave;
     }
   }
@@ -120,18 +125,19 @@ SearchEngineTracker* SearchEngineTrackerFactory::GetForBrowserContext(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
 
-KeyedService* SearchEngineTrackerFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+SearchEngineTrackerFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
   auto* profile = Profile::FromBrowserContext(context);
   auto* template_url_service =
       TemplateURLServiceFactory::GetForProfile(profile);
   auto* profile_prefs = profile->GetPrefs();
   auto* local_state = g_browser_process->local_state();
-  if (template_url_service && profile_prefs && local_state) {
-    return new SearchEngineTracker(template_url_service, profile_prefs,
-                                   local_state);
+  if (!template_url_service || !profile_prefs || !local_state) {
+    return nullptr;
   }
-  return nullptr;
+  return std::make_unique<SearchEngineTracker>(template_url_service,
+                                               profile_prefs, local_state);
 }
 
 bool SearchEngineTrackerFactory::ServiceIsCreatedWithBrowserContext() const {
@@ -176,11 +182,15 @@ SearchEngineTracker::SearchEngineTracker(
     }
   }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
   RecordWebDiscoveryEnabledP3A();
   pref_change_registrar_.Init(profile_prefs);
   pref_change_registrar_.Add(
       kWebDiscoveryEnabled,
+      base::BindRepeating(&SearchEngineTracker::RecordWebDiscoveryEnabledP3A,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      brave_ads::prefs::kOptedInToNotificationAds,
       base::BindRepeating(&SearchEngineTracker::RecordWebDiscoveryEnabledP3A,
                           base::Unretained(this)));
 #endif
@@ -215,15 +225,32 @@ void SearchEngineTracker::OnTemplateURLServiceChanged() {
           last_default_engine == SearchEngineP3A::kBrave) {
         brave_search_conversion::p3a::RecordDefaultEngineChurn(local_state_);
       }
+
+#if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
+      // Update web discovery default engine metric when search engine changes
+      RecordWebDiscoveryEnabledP3A();
+#endif
     }
     RecordSwitchP3A(url);
   }
 }
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
 void SearchEngineTracker::RecordWebDiscoveryEnabledP3A() {
-  UMA_HISTOGRAM_BOOLEAN(kWebDiscoveryEnabledMetric,
-                        profile_prefs_->GetBoolean(kWebDiscoveryEnabled));
+  bool enabled = profile_prefs_->GetBoolean(kWebDiscoveryEnabled);
+  UMA_HISTOGRAM_BOOLEAN(kWebDiscoveryEnabledMetric, enabled);
+  UMA_HISTOGRAM_BOOLEAN(
+      kWebDiscoveryAndAdsMetric,
+      enabled && profile_prefs_->GetBoolean(
+                     brave_ads::prefs::kOptedInToNotificationAds));
+
+  // Record web discovery default engine metric
+  int answer = INT_MAX - 1;
+  if (enabled) {
+    answer = static_cast<int>(current_default_engine_);
+  }
+  UMA_HISTOGRAM_EXACT_LINEAR(kWebDiscoveryDefaultEngineMetric, answer,
+                             static_cast<int>(SearchEngineP3A::kMaxValue) + 1);
 }
 #endif
 

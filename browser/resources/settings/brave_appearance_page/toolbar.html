@@ -1,4 +1,4 @@
-<style include="cr-shared-style settings-shared md-select iron-flex">
+<style include="cr-shared-style settings-shared md-select">
   /* Lines up with cr-input. */
   #custom-input {
     /* (cr-input line-height + cr-input top/bottom padding) / 2 -
@@ -9,6 +9,7 @@
   }
 </style>
 <settings-toggle-button elide-label
+  class="cr-row"
   hidden="[[!pageVisibility.homeButton]]"
   pref="{{prefs.browser.show_home_button}}"
   label="$i18n{showHomeButton}"
@@ -44,41 +45,18 @@
     </settings-radio-group>
   </div>
 </template>
-<settings-toggle-button
-  class="cr-row"
-  pref="{{prefs.brave.show_bookmarks_button}}"
-  label="$i18n{appearanceSettingsShowBookmarksButton}">
-</settings-toggle-button>
 <settings-brave-appearance-bookmark-bar prefs="{{prefs}}">
 </settings-brave-appearance-bookmark-bar>
-<settings-toggle-button
-  class="cr-row"
-  pref="{{prefs.brave.today.should_show_toolbar_button}}"
-  label="$i18n{appearanceSettingsShowBraveNewsButtonLabel}">
+<settings-toggle-button class="hr" id="showSavedTabGroups"
+    pref="{{prefs.bookmark_bar.show_tab_groups}}"
+    label="$i18n{showTabGroupsInBookmarksBar}">
 </settings-toggle-button>
-<template is="dom-if" if="[[isNativeWalletEnabled_]]" restamp>
-  <settings-toggle-button id="showBraveWalletIconOnToolbar"
-    class="cr-row"
-    pref="{{prefs.brave.wallet.show_wallet_icon_on_toolbar}}"
-    label="$i18n{showBravewalletIconOnToolbar}">
-  </settings-toggle-button>
-</template>
-<settings-toggle-button
-  class="cr-row"
-  pref="{{prefs.brave.show_side_panel_button}}"
-  label="$i18n{appearanceSettingsShowSidebarButton}">
+<settings-toggle-button class="hr" id="autoPinNewTabGroups"
+    pref="{{prefs.auto_pin_new_tab_groups}}"
+    label="$i18n{autoPinNewTabGroups}">
 </settings-toggle-button>
-<if expr="enable_brave_vpn_wireguard">
-  <template is="dom-if" if="[[showBraveVPNOption_()]]">
-    <settings-toggle-button
-      pref="{{prefs.brave.brave_vpn.show_button}}"
-      class="cr-row"
-      label="$i18n{showBraveVPNButton}"
-      sub-label="$i18n{showBraveVPNButtonSubLabel}">
-    </settings-toggle-button>
-  </template>
-</if>
 <settings-toggle-button
+  id="autocomplete-suggestion-sources"
   class="cr-row"
   pref="{{prefs.brave.autocomplete_enabled}}"
   label="$i18n{appearanceSettingsShowAutocompleteInAddressBar}">
@@ -90,7 +68,7 @@
     <settings-checkbox
       class="cr-row list-item"
       pref="{{prefs.brave.top_site_suggestions_enabled}}"
-      label="$i18n{appearanceSettingsUseTopSiteSuggestions}">
+      label="$i18n{appearanceSettingsUseTopSuggestions}">
     </settings-checkbox>
     <settings-checkbox
       class="cr-row list-item"
@@ -102,6 +80,13 @@
       pref="{{prefs.brave.omnibox.bookmark_suggestions_enabled}}"
       label="$i18n{appearanceSettingsUseBookmarkSuggestions}">
     </settings-checkbox>
+    <template is="dom-if" if="[[showCommandsInOmnibox_()]]">
+      <settings-checkbox
+        class="cr-row list-item"
+        pref="{{prefs.brave.omnibox.commander_suggestions_enabled}}"
+        label="$i18n{appearanceSettingsUseCommanderSuggestions}">
+      </settings-checkbox>
+    </template>
     <template is="dom-if" if="[[showLeoAssistant_()]]">
       <settings-checkbox class="cr-row list-item"
         pref="{{prefs.brave.ai_chat.autocomplete_provider_enabled}}"

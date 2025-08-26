@@ -1,5 +1,9 @@
 <!-- This file will be converted into tabs.html.js using //tools/grit/preprocess_if_expr -->
-<style include="settings-shared iron-flex"></style>
+<style include="cr-shared-style settings-shared"></style>
+
+<settings-section
+  id="tabs"
+  page-title="$i18n{appearanceSettingsTabsSection}">
 
 <!-- Vertical Tab strip -->
 <settings-toggle-button
@@ -21,15 +25,44 @@
       pref="{{prefs.brave.tabs.vertical_tabs_floating_enabled}}"
       label="$i18n{appearanceSettingsTabsFloatOnMouseOver}">
     </settings-checkbox>
+    <settings-checkbox
+      class="list-item"
+      pref="{{prefs.brave.tabs.vertical_tabs_expanded_state_per_window}}"
+      label="$i18n{appearanceSettingsTabsVerticalTabExpandedStatePerWindow}">
+    </settings-checkbox>
+    <settings-checkbox
+      class="list-item"
+      pref="{{prefs.brave.tabs.vertical_tabs_show_scrollbar}}"
+      label="$i18n{appearanceSettingsTabsVerticalTabShowScrollbar}">
+    </settings-checkbox>
+    <template is="dom-if" if="[[isTreeTabsFlagEnabled()]]">
+      <settings-checkbox
+        class="list-item"
+        pref="{{prefs.brave.tabs.tree_tabs_enabled}}"
+        label="$i18n{SETTINGS_APPEARANCE_SETTINGS_TABS_USE_TREE_TABS}">
+      </settings-checkbox>
+    </template>
+    <settings-radio-group
+    class="list-item"
+    pref="{{prefs.brave.tabs.vertical_tabs_on_right}}"
+    group-aria-label="$i18n{appearanceSettingsTabsVerticalTabPosition}">
+      <controlled-radio-button
+        class="hr list-item"
+        pref="[[prefs.brave.tabs.vertical_tabs_on_right]]"
+        label="$i18n{appearanceSettingsTabsVerticalTabOnLeft}"
+        name="false"
+        no-extension-indicator>
+      </controlled-radio-button>
+      <controlled-radio-button
+        class="list-item"
+        pref="[[prefs.brave.tabs.vertical_tabs_on_right]]"
+        label="$i18n{appearanceSettingsTabsVerticalTabOnRight}"
+        name="true"
+        no-extension-indicator>
+      </controlled-radio-button>
+    </settings-radio-group>
   </div>
 </template> <!-- vertical_tabs_enabled.value -->
-
-<!-- Tab search button visibility -->
-<settings-toggle-button
-  pref="{{prefs.brave.tabs_search_show}}"
-  class="cr-row"
-  label="$i18n{showSearchTabsBtn}">
-</settings-toggle-button>
 
 <!-- Tab speaker icons function  -->
 <settings-toggle-button
@@ -48,3 +81,30 @@
     menu-options="[[tabTooltipModes_]]">
   </settings-dropdown-menu>
 </div>
+
+<!-- Shared Pinned Tabs -->
+<template is="dom-if" if="[[isSharedPinnedTabsEnabled_()]]">
+  <settings-toggle-button
+    pref="{{prefs.brave.tabs.shared_pinned_tab}}"
+    class="cr-row"
+    label="$i18n{appearanceSettingsSharedPinnedTab}">
+  </settings-toggle-button>
+</template>
+
+<!-- Tab memory usage -->
+<settings-toggle-button id="hoverCardMemoryUsageToggle"
+  pref="{{prefs.browser.hovercard.memory_usage_enabled}}"
+  class="cr-row"
+  label="$i18n{showHoverCardMemoryUsageStandalone}">
+</settings-toggle-button>
+
+<!-- Inactive tabs appearance  -->
+<settings-toggle-button
+  pref="{{prefs.performance_tuning.discard_ring_treatment.enabled}}"
+  class="cr-row"
+  label="$i18n{discardRingTreatmentEnabledLabel}"
+  sub-label-with-link="$i18n{discardRingTreatmentEnabledDescriptionWithLearnLink}"
+  on-sub-label-link-clicked="onDiscardRingTreatmentLearnMoreLinkClick_">
+</settings-toggle-button>
+
+</settings-section>

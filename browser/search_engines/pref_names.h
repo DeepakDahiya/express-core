@@ -6,9 +6,12 @@
 #ifndef BRAVE_BROWSER_SEARCH_ENGINES_PREF_NAMES_H_
 #define BRAVE_BROWSER_SEARCH_ENGINES_PREF_NAMES_H_
 
-constexpr char kUseAlternativePrivateSearchEngineProvider[] =
-    "brave.use_alternate_private_search_engine";
-constexpr char kShowAlternativePrivateSearchEngineProviderToggle[] =
-    "brave.show_alternate_private_search_engine_toggle";
+// local state
+inline constexpr char kEnableSearchSuggestionsByDefault[] =
+    "brave.enable_search_suggestions_by_default";
+
+// Profile prefs
+inline constexpr char kMigratedSearchDefaultInJP[] =
+    "brave.migrated_search_default_in_jp";
 
 #endif  // BRAVE_BROWSER_SEARCH_ENGINES_PREF_NAMES_H_

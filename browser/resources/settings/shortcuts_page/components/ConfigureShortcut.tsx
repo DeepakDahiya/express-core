@@ -7,7 +7,7 @@ import * as React from 'react'
 import styled from 'styled-components'
 import Keys from './Keys'
 import { keysToString } from '../utils/accelerator'
-import { color, font, spacing } from '@brave/leo/tokens/css'
+import { color, font, spacing } from '@brave/leo/tokens/css/variables'
 import Button from '@brave/leo/react/button'
 import Alert from '@brave/leo/react/alert'
 import { useCommands } from '../commands'
@@ -37,7 +37,7 @@ const HintText = styled.div`
   text-align: center;
   margin: ${spacing['4Xl']};
   color: ${color.text.tertiary};
-  font: ${font.primary.default.regular};
+  font: ${font.default.regular};
 `
 
 const InUseAlert = styled(Alert)`
@@ -54,7 +54,7 @@ const modifiers = ['Control', 'Alt', 'Shift', 'Meta', 'Command']
 const keyTransforms = {
   'Meta': navigator.platform?.includes('Mac') && 'Command'
 }
-const getKey = (key: string) => keyTransforms[key] || key
+const getKey = (key: string) => keyTransforms[key as keyof typeof keyTransforms] || key
 
 const keyCodeCache: { [code: string]: string } = {}
 const getKeyFromCode = (code: string) => {
@@ -86,7 +86,7 @@ export default function ConfigureShortcut(props: {
 }) {
   const [current, setCurrent] = React.useState<{ codes: string[], isValid: boolean }>({ codes: [], isValid: false })
   const commands = useCommands()
-  const acceleratorLookup = React.useMemo(() => {
+  const acceleratorLookup: { [key: string]: number } = React.useMemo(() => {
     return Object.values(commands)
       .flatMap((c) => c.accelerators.map((a) => [c.id, a.codes]))
       .reduce((prev, next) => ({ ...prev, [next[1]]: next[0] }), {})

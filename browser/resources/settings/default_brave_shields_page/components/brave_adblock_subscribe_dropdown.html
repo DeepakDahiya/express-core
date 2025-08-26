@@ -1,8 +1,4 @@
-<style include="cr-shared-style settings-shared iron-flex">
-  :root {
-    --brave-primary-hover: #ff977d;
-  }
-  
+<style include="cr-shared-style settings-shared">
   .box {
     width: 100%;
   }
@@ -13,8 +9,10 @@
     gap: 5px;
   }
 
-  .dropdown-item iron-icon {
-    --iron-icon-fill-color: currentColor;
+  .dropdown-item leo-icon {
+    --leo-icon-size: 20px;
+
+    color: currentColor;
   }
 </style>
 
@@ -25,15 +23,15 @@
   </cr-icon-button>
   <cr-action-menu id="menu" role-description="simple">
     <button class="dropdown-item" on-click="updateSubscription_">
-      <iron-icon icon="brave_leo:refresh"></iron-icon>
+      <leo-icon name="refresh"></leo-icon>
       <span>$i18n{adblockUpdateNowButtonLabel}</span>
     </button>
     <button class="dropdown-item" on-click="viewSubscription_">
-      <iron-icon icon="brave_leo:code"></iron-icon>
+      <leo-icon name="code"></leo-icon>
       <span>$i18n{adblockViewSourceButtonLabel}</span>
     </button>
     <button class="dropdown-item" on-click="deleteSubscription_">
-      <iron-icon icon="brave_leo:trash-can"></iron-icon>
+      <leo-icon name="trash"></leo-icon>
       <span>$i18n{adblockUnsubscribeButtonLabel}</span>
     </button>
   </cr-action-menu>

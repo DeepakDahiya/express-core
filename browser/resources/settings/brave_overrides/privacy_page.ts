@@ -3,15 +3,11 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-// @ts-nocheck TODO(petemill): Define types and remove ts-nocheck
-
-import {html, RegisterPolymerTemplateModifications, RegisterPolymerComponentReplacement} from 'chrome://resources/brave/polymer_overriding.js'
-import {BraveSettingsPrivacyPageElement} from '../brave_privacy_page/brave_privacy_page.js'
+import {html, RegisterPolymerTemplateModifications} from 'chrome://resources/brave/polymer_overriding.js'
+import {getTrustedHTML} from 'chrome://resources/js/static_types.js'
 import {loadTimeData} from '../i18n_setup.js'
 
-function InsertGoogleSignInSubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertGoogleSignInSubpage (pages: Element)
 {
   pages.appendChild(
     html`
@@ -44,9 +40,7 @@ function InsertGoogleSignInSubpage (
     `)
 }
 
-function InsertLocalhostAccessSubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertLocalhostAccessSubpage (pages: Element)
 {
   pages.appendChild(
     html`
@@ -79,9 +73,7 @@ function InsertLocalhostAccessSubpage (
     `)
 }
 
-function InsertAutoplaySubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertAutoplaySubpage (pages: Element)
 {
   pages.appendChild(
     html`
@@ -110,9 +102,7 @@ function InsertAutoplaySubpage (
     `)
 }
 
-function InsertEthereumSubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertEthereumSubpage (pages: Element)
 {
   pages.appendChild(
     html`
@@ -142,9 +132,7 @@ function InsertEthereumSubpage (
     `)
 }
 
-function InsertSolanaSubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertSolanaSubpage (pages: Element)
 {
   pages.appendChild(
     html`
@@ -174,9 +162,37 @@ function InsertSolanaSubpage (
     `)
 }
 
-function InsertShieldsSubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertCardanoSubpage (pages: Element)
+{
+  pages.appendChild(
+    html`
+      <template is="dom-if" route-path="/content/cardano" no-search>
+        <settings-subpage
+          associated-control="[[$$('#cardano')]]"
+          page-title="${loadTimeData.getString('siteSettingsCardano')}">
+          <settings-category-default-radio-group
+              id="cardanoDefault"
+              category="[[contentSettingsTypesEnum_.CARDANO]]"
+              block-option-label=
+                "${loadTimeData.getString('siteSettingsCardanoBlock')}"
+              allow-option-label=
+                "${loadTimeData.getString('siteSettingsCardanoAsk')}"
+              allow-option-icon="cardano-on"
+              block-option-icon="cardano-off">
+          </settings-category-default-radio-group>
+          <category-setting-exceptions
+            id="cardanoExceptions"
+            category="[[contentSettingsTypesEnum_.CARDANO]]"
+            block-header="${loadTimeData.getString('siteSettingsBlock')}"
+            allow-header="${loadTimeData.getString('siteSettingsAllow')}"
+            read-only-list>
+          </category-setting-exceptions>
+        </settings-subpage>
+      </template>
+    `)
+}
+
+function InsertShieldsSubpage (pages: Element)
 {
   pages.appendChild(
     html`
@@ -195,31 +211,35 @@ function InsertShieldsSubpage (
     `)
 }
 
-function InsertCookiesSubpage (
-  templateContent: DocumentFragment,
-  pages: Element)
+function InsertBraveOpenAIChatSubpage (pages: Element)
 {
   pages.appendChild(
     html`
-      <template is="dom-if" route-path="/cookies/detail" no-search>
+      <template is="dom-if" route-path="/content/braveOpenAIChat" no-search>
         <settings-subpage
-          associated-control="[[$$('#cookiesLink')]]"
-          page-title="[[pageTitle]]">
-          <cr-button slot="subpage-title-extra" id="remove-all-button"
-            on-click="onRemoveAllCookiesFromSite_">
-            ${loadTimeData.getString('siteSettingsCookieRemoveAll')}
-          </cr-button>
-          <brave-site-data-details-subpage page-title="{{pageTitle}}">
-          </brave-site-data-details-subpage>
+          associated-control="[[$$('#braveAIChat')]]"
+          page-title="${loadTimeData.getString('siteSettingsBraveOpenAIChat')}">
+          <settings-category-default-radio-group
+              id="braveAIChatDefault"
+              category="[[contentSettingsTypesEnum_.BRAVE_OPEN_AI_CHAT]]"
+              block-option-label=
+                "${loadTimeData.getString('siteSettingsBraveOpenAIChatBlock')}"
+              allow-option-label=
+                "${loadTimeData.getString('siteSettingsBraveOpenAIChatAsk')}"
+              allow-option-icon="user"
+              block-option-icon="user-off">
+          </settings-category-default-radio-group>
+          <category-setting-exceptions
+            id="braveAIChatExceptions"
+            category="[[contentSettingsTypesEnum_.BRAVE_OPEN_AI_CHAT]]"
+            block-header="${loadTimeData.getString('siteSettingsBlock')}"
+            allow-header="${loadTimeData.getString('siteSettingsAllow')}"
+            read-only-list>
+          </category-setting-exceptions>
         </settings-subpage>
       </template>
     `)
 }
-
-RegisterPolymerComponentReplacement(
-  'settings-privacy-page',
-  BraveSettingsPrivacyPageElement
-)
 
 RegisterPolymerTemplateModifications({
   'settings-privacy-page': (templateContent) => {
@@ -241,22 +261,55 @@ RegisterPolymerTemplateModifications({
       const isGoogleSignInFeatureEnabled =
         loadTimeData.getBoolean('isGoogleSignInFeatureEnabled')
       if (isGoogleSignInFeatureEnabled) {
-        InsertGoogleSignInSubpage(templateContent, pages)
+        InsertGoogleSignInSubpage(pages)
       }
       const isLocalhostAccessFeatureEnabled =
         loadTimeData.getBoolean('isLocalhostAccessFeatureEnabled')
       if (isLocalhostAccessFeatureEnabled) {
-        InsertLocalhostAccessSubpage(templateContent, pages)
+        InsertLocalhostAccessSubpage(pages)
       }
-      InsertAutoplaySubpage(templateContent, pages)
+      const isOpenAIChatFromBraveSearchEnabled =
+        loadTimeData.getBoolean('isOpenAIChatFromBraveSearchEnabled')
+      if (isOpenAIChatFromBraveSearchEnabled) {
+        InsertBraveOpenAIChatSubpage(pages)
+      }
+      InsertAutoplaySubpage(pages)
       const isNativeBraveWalletEnabled =
         loadTimeData.getBoolean('isNativeBraveWalletFeatureEnabled')
-      if (isNativeBraveWalletEnabled) {
-        InsertEthereumSubpage(templateContent, pages)
-        InsertSolanaSubpage(templateContent, pages)
+      const isCardanoDappSupportFeatureEnabled =
+        loadTimeData.getBoolean('isCardanoDappSupportFeatureEnabled')
+      const isBraveWalletAllowed =
+        loadTimeData.getBoolean('isBraveWalletAllowed')
+      if (isNativeBraveWalletEnabled && isBraveWalletAllowed) {
+        InsertEthereumSubpage(pages)
+        InsertSolanaSubpage(pages)
+        if (isCardanoDappSupportFeatureEnabled) {
+          InsertCardanoSubpage(pages)
+        }
       }
-      InsertShieldsSubpage(templateContent, pages)
-      InsertCookiesSubpage(templateContent, pages)
+      InsertShieldsSubpage(pages)
+      const permissionsLinkRow =
+        templateContent.getElementById('permissionsLinkRow')
+      if (!permissionsLinkRow) {
+        console.error(
+          '[Brave Settings Overrides] Couldn\'t find permissionsLinkRow')
+      } else {
+        permissionsLinkRow.insertAdjacentHTML(
+          'afterend',
+          getTrustedHTML`
+            <settings-brave-personalization-options prefs="{{prefs}}">
+            </settings-brave-personalization-options>
+          `)
+      }
+      const thirdPartyCookiesLinkRow =
+        templateContent.getElementById('thirdPartyCookiesLinkRow')
+      if (!thirdPartyCookiesLinkRow) {
+        console.error(
+          '[Brave Settings Overrides] Could not find ' +
+          'thirdPartyCookiesLinkRow id on privacy page.')
+      } else {
+        thirdPartyCookiesLinkRow.setAttribute('hidden', 'true')
+      }
     }
     if (!loadTimeData.getBoolean('isPrivacySandboxRestricted')) {
       const privacySandboxSettings3Template = templateContent.
@@ -320,6 +373,16 @@ RegisterPolymerTemplateModifications({
       } else {
         privacyGuideLinkRow.setAttribute('hidden', 'true')
       }
+    }
+
+    const storageAccessTemplate = templateContent.querySelector(
+      `template[is=dom-if][route-path='/content/storageAccess'`)
+    if (!storageAccessTemplate) {
+      console.error(
+        '[Brave Settings Overrides] Could not find template with' +
+        ' route-path=/content/storageAccess on privacy page.')
+    } else {
+      storageAccessTemplate.remove()
     }
   },
 })

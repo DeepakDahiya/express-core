@@ -8,14 +8,14 @@ import {loadTimeData} from '../i18n_setup.js';
 
 export type ExtensionV2 = {
   id: string
+  sources: string
   name: string
   description: string
+  installed: boolean
   enabled: boolean
 }
 
 export interface BraveDefaultExtensionsBrowserProxy  {
-  setWebTorrentEnabled(value: boolean): void
-  setHangoutsEnabled(value: boolean): void
   setWidevineEnabled(value: boolean): void
   setMediaRouterEnabled(value: boolean): void
   isWidevineEnabled(): Promise<boolean>
@@ -24,17 +24,10 @@ export interface BraveDefaultExtensionsBrowserProxy  {
   isMediaRouterEnabled(): boolean
   getExtensionsManifestV2(): Promise<ExtensionV2[]>
   enableExtensionManifestV2(id: string, enabled: boolean): Promise<boolean>
+  removeExtensionManifestV2(id: string): Promise<boolean>
 }
 
 export class BraveDefaultExtensionsBrowserProxyImpl implements BraveDefaultExtensionsBrowserProxy {
-  setWebTorrentEnabled(value: boolean) {
-    chrome.send('setWebTorrentEnabled', [value])
-  }
-
-  setHangoutsEnabled(value: boolean) {
-    chrome.send('setHangoutsEnabled', [value])
-  }
-
   setMediaRouterEnabled(value: boolean) {
     chrome.send('setMediaRouterEnabled', [value])
   }
@@ -64,7 +57,11 @@ export class BraveDefaultExtensionsBrowserProxyImpl implements BraveDefaultExten
   }
 
   enableExtensionManifestV2(id: string, enabled: boolean) {
-    return sendWithPromise('enableExtensionManifestV2', id, enabled);
+    return sendWithPromise('enableExtensionManifestV2', id, enabled)
+  }
+
+  removeExtensionManifestV2(id:string) {
+    return sendWithPromise('removeExtensionManifestV2', id)
   }
 
   static getInstance(): BraveDefaultExtensionsBrowserProxy {

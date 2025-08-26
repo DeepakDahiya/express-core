@@ -58,7 +58,7 @@ export class SettingsBraveSyncCodeDialogElement extends SettingsBraveSyncCodeDia
       },
       syncCodeWordCount_: {
         type: Number,
-        computed: 'computeSyncCodeWordCount_(syncCode)'
+        value: 0
       },
       hasCopiedSyncCode_: {
         type: Boolean,
@@ -74,24 +74,27 @@ export class SettingsBraveSyncCodeDialogElement extends SettingsBraveSyncCodeDia
   static get observers() {
     return [
       'getQRCode_(syncCode, codeType)',
+      'computeSyncCodeWordCount_(syncCode, codeType)',
     ];
   }
 
-  private syncCode: string;
-  private codeType: 'qr' | 'words' | 'choose' | 'input' | null;
-  private syncCodeValidationError: string;
-  private syncCodeWordCount_: number;
-  private hasCopiedSyncCode_: boolean;
-  private qrCodeImageUrl_: string;
+  private declare syncCode: string | undefined;
+  private declare codeType: 'qr' | 'words' | 'choose' | 'input' | null;
+  private declare syncCodeValidationError: string;
+  private declare syncCodeWordCount_: number;
+  private declare hasCopiedSyncCode_: boolean;
+  private declare qrCodeImageUrl_: string;
   private hasCopiedSyncCodeTimer_: ReturnType<typeof window.setTimeout>;
 
   syncBrowserProxy_: BraveSyncBrowserProxy = BraveSyncBrowserProxy.getInstance();
 
-  computeSyncCodeWordCount_() {
-    if (!this.syncCode) {
-      return 0
+  async computeSyncCodeWordCount_() {
+    if (this.codeType !== 'words' && this.codeType !== 'input') {
+      return
     }
-    return this.syncCode.trim().split(' ').length
+
+    this.syncCodeWordCount_ =
+      await this.syncBrowserProxy_.getWordsCount(this.syncCode ?? '')
   }
 
   isCodeType(askingType: string) {
@@ -118,6 +121,10 @@ export class SettingsBraveSyncCodeDialogElement extends SettingsBraveSyncCodeDia
   }
 
   handleSyncCodeCopy_() {
+    if (!this.syncCode) {
+      console.warn('Skip handleSyncCodeCopy because code words are empty')
+      return
+    }
     window.clearTimeout(this.hasCopiedSyncCodeTimer_)
     navigator.clipboard.writeText(this.syncCode)
     this.hasCopiedSyncCode_ = true

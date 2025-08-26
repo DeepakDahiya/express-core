@@ -3,11 +3,36 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-// @ts-nocheck TODO(petemill): Define types and remove ts-nocheck
+import {loadTimeData} from 'chrome://resources/js/load_time_data.js'
 
-import {loadTimeData} from 'chrome://resources/js/load_time_data.js';
+import {
+  type PageVisibility,
+  pageVisibility as chromiumPageVisibility,
+  resetPageVisibilityForTesting
+} from '../page_visibility.js'
 
-import {pageVisibility as chromiumPageVisibility, setPageVisibilityForTesting} from '../page_visibility.js'
+// Merge our interface additions with upstream's interface
+declare module '../page_visibility' {
+  export interface PageVisibility {
+    braveSync?: boolean
+    braveWallet?: boolean
+    // <if expr="enable_containers">
+    containers?: boolean
+    // </if>
+    content?: boolean
+    getStarted?: boolean
+    leoAssistant?: boolean
+    leoPersonalization?: boolean
+    leoModels?: boolean
+    newTab?: boolean
+    playlist?: boolean
+    shields?: boolean
+    socialBlocking?: boolean
+    speedreader?: boolean
+    surveyPanelist?: boolean,
+    braveTor?: boolean
+  }
+}
 
 const alwaysTrue = {
   get: () => true
@@ -22,15 +47,23 @@ function getPageVisibility () {
     // Hide appropriate brave sections as well as chromium ones
     return {
       ...chromiumPageVisibility,
+      braveSync: false,
+      braveWallet: false,
+      // <if expr="enable_containers">
+      containers: false,
+      // </if>
+      content: false,
+      getStarted: false,
+      leoAssistant: false,
+      leoPersonalization: false,
+      leoModels: false,
+      newTab: false,
+      playlist: false,
       shields: true,
       socialBlocking: true,
-      braveSync: false,
-      getStarted: false,
-      newTab: false,
-      braveIPFS: false,
-      braveWallet: false,
-      braveWeb3: false,
-      leoAssistant: false,
+      speedreader: false,
+      surveyPanelist: false,
+      braveTor: false,
     }
   }
   // We need to specify values for every attribute in pageVisibility instead of
@@ -45,7 +78,6 @@ function getPageVisibility () {
     // future-proof chromium actually defining something,
     ...chromiumPageVisibility,
     // overrides
-    a11y: false,
     people: false,
     defaultBrowser: false,
     onStartup: false,
@@ -55,20 +87,32 @@ function getPageVisibility () {
     braveSync: !loadTimeData.getBoolean('isSyncDisabled'),
     braveWallet: loadTimeData.getBoolean('isBraveWalletAllowed'),
     leoAssistant: loadTimeData.getBoolean('isLeoAssistantAllowed'),
+    leoPersonalization: loadTimeData.getBoolean('isLeoAssistantAllowed'),
+    leoModels: loadTimeData.getBoolean('isLeoAssistantAllowed'),
+    surveyPanelist: loadTimeData.getBoolean('isSurveyPanelistAllowed'),
+    // <if expr="enable_containers">
+    containers: loadTimeData.getBoolean('isContainersEnabled'),
+    // </if>
+    content: alwaysTrueProxy,
+    playlist: loadTimeData.getBoolean('isPlaylistAllowed'),
+    speedreader: loadTimeData.getBoolean('isSpeedreaderAllowed'),
+    braveTor: !loadTimeData.getBoolean('braveTorDisabledByPolicy') ||
+              loadTimeData.getBoolean('shouldExposeElementsForTesting'),
   }
   // Proxy so we can respond to any other property
   return new Proxy(staticProps, {
     get: function(target, prop) {
       if (prop in target) {
-        return target[prop]
+        return target[prop as keyof Object]
       }
       // default to allow, like chromium
       return true
     }
   })
 }
-// Provide an export in case our overrides want to explicitly import this override
-// Even though we are modifying chromium's override, the es module eval timing may
-// result in the unoverriden value being obtained.
+
+// Provide an export in case our overrides want to explicitly import this
+// override. Even though we are modifying chromium's override, the es module
+// eval timing may result in the unoverridden value being obtained.
 export const pageVisibility = getPageVisibility()
-setPageVisibilityForTesting(pageVisibility)
+resetPageVisibilityForTesting(pageVisibility as PageVisibility)

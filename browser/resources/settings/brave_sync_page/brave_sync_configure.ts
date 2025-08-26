@@ -72,11 +72,11 @@ export class SettingsBraveSyncConfigureElement extends SettingsBraveSyncConfigur
     };
   }
 
-  private syncStatus: SyncStatus;
-  private syncCode: string | undefined;
-  private deviceList_: BraveDeviceInfo[];
-  private syncCodeDialogType_: string | null;
-  private syncDoingDeleteAccount_: Boolean | false;
+  private declare syncStatus: SyncStatus;
+  private declare syncCode: string | undefined;
+  private declare deviceList_: BraveDeviceInfo[];
+  private declare syncCodeDialogType_: string | null;
+  private declare syncDoingDeleteAccount_: Boolean | false;
 
   browserProxy_: BraveSyncBrowserProxy = BraveSyncBrowserProxy.getInstance();
 
@@ -137,7 +137,7 @@ export class SettingsBraveSyncConfigureElement extends SettingsBraveSyncConfigur
     router.navigateTo((router.getRoutes() as {BRAVE_SYNC: Route}).BRAVE_SYNC);
   }
 
-  async onPermanentlyDeleteSyncAccount_() {
+  onPermanentlyDeleteSyncAccount_() {
     // Clear sync code because after permanently deleting the chain user might
     // use the same page to create a new sync chain without reload. In worse
     // case, we will reload the sync code

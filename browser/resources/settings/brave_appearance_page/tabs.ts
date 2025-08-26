@@ -6,9 +6,10 @@
 import '../settings_shared.css.js'
 import '../settings_vars.css.js'
 
-import {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {PrefsMixin, PrefsMixinInterface} from '/shared/settings/prefs/prefs_mixin.js';
 import {I18nMixin, I18nMixinInterface} from 'chrome://resources/cr_elements/i18n_mixin.js'
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js'
+import {OpenWindowProxyImpl} from 'chrome://resources/js/open_window_proxy.js';
 
 import {loadTimeData} from '../i18n_setup.js'
 
@@ -27,15 +28,47 @@ export class SettingsBraveAppearanceTabsElement extends SettingsBraveAppearanceT
     return getTemplate()
   }
 
-  private tabTooltipModes_ = [
-    { value: 1, name: this.i18n('appearanceSettingsTabHoverModeCard') },
-    {
-      value: 2,
-      name: this.i18n('appearanceSettingsTabHoverModeCardWithPreview')
-    },
-    { value: 0, name: this.i18n('appearanceSettingsTabHoverModeTooltip') }
-  ]
+  static get properties() {
+    return {
+      tabTooltipModes_: {
+        readyOnly: true,
+        type: Array,
+        value() {
+          return [
+            {
+              value: 1,
+              name: loadTimeData.getString('appearanceSettingsTabHoverModeCard')
+            },
+            {
+              value: 2,
+              name: loadTimeData.getString(
+                'appearanceSettingsTabHoverModeCardWithPreview')
+            },
+            {
+              value: 0,
+              name: loadTimeData.getString('appearanceSettingsTabHoverModeTooltip')
+            }
+          ]
+        }
+      }
+    }
+  }
 
+  declare private tabTooltipModes_:
+      Array<{value: number, name: string}>
+
+  private isSharedPinnedTabsEnabled_() {
+    return loadTimeData.getBoolean('isSharedPinnedTabsEnabled')
+  }
+
+  private onDiscardRingTreatmentLearnMoreLinkClick_() {
+    OpenWindowProxyImpl.getInstance().openUrl(
+      loadTimeData.getString('discardRingTreatmentLearnMoreUrl'));
+  }
+
+  private isTreeTabsFlagEnabled() {
+    return loadTimeData.getBoolean('isTreeTabsFlagEnabled');
+  }
 }
 
 customElements.define(SettingsBraveAppearanceTabsElement.is, SettingsBraveAppearanceTabsElement)

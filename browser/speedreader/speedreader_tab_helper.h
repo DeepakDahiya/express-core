@@ -14,9 +14,10 @@
 #include "brave/browser/speedreader/page_distiller.h"
 #include "brave/components/speedreader/common/speedreader.mojom.h"
 #include "brave/components/speedreader/common/speedreader_toolbar.mojom.h"
+#include "brave/components/speedreader/speedreader_delegate.h"
 #include "brave/components/speedreader/speedreader_service.h"
-#include "brave/components/speedreader/speedreader_throttle_delegate.h"
 #include "brave/components/speedreader/speedreader_util.h"
+#include "brave/components/speedreader/tts_player.h"
 #include "components/dom_distiller/content/browser/distillable_page_utils.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
@@ -48,15 +49,17 @@ class SpeedreaderTabHelper
     : public content::WebContentsObserver,
       public content::WebContentsUserData<SpeedreaderTabHelper>,
       public PageDistiller,
-      public SpeedreaderThrottleDelegate,
+      public SpeedreaderDelegate,
       public mojom::SpeedreaderHost,
       public SpeedreaderService::Observer,
-      public dom_distiller::DistillabilityObserver {
+      public dom_distiller::DistillabilityObserver,
+      public speedreader::TtsPlayer::Observer {
  public:
   struct Observer : public base::CheckedObserver {
     ~Observer() override = default;
 
     virtual void OnTuneBubbleClosed() {}
+    virtual void OnContentsReady() {}
   };
 
   ~SpeedreaderTabHelper() override;
@@ -100,9 +103,12 @@ class SpeedreaderTabHelper
   void OnShowOriginalPage() override;
   void OnTtsPlayPause(int index) override;
 
+  void OnToolbarStateChanged(mojom::MainButtonType button);
+
  private:
   friend class content::WebContentsUserData<SpeedreaderTabHelper>;
-  explicit SpeedreaderTabHelper(content::WebContents* web_contents);
+  explicit SpeedreaderTabHelper(content::WebContents* web_contents,
+                                SpeedreaderRewriterService* rewriter_service);
 
   void BindReceiver(
       mojo::PendingAssociatedReceiver<mojom::SpeedreaderHost> receiver);
@@ -113,26 +119,40 @@ class SpeedreaderTabHelper
   void ReloadContents();
 
   // Applies the distill state & updates UI for the navigation.
-  void ProcessNavigation(content::NavigationHandle* navigation_handle);
+  void ProcessNavigation(content::NavigationHandle* navigation_handle,
+                         bool finish_navigation = false);
 
   // Updates UI if the tab is visible.
   void UpdateUI();
 
   // content::WebContentsObserver:
+  void ReadyToCommitNavigation(
+      content::NavigationHandle* navigation_handle) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidRedirectNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void DidStopLoading() override;
   void DOMContentLoaded(content::RenderFrameHost* render_frame_host) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
   void WebContentsDestroyed() override;
 
-  // SpeedreaderThrottleDelegate:
+  // SpeedreaderDelegate:
   bool IsPageDistillationAllowed() override;
   bool IsPageContentPresent() override;
   std::string TakePageContent() override;
   void OnDistillComplete(DistillationResult result) override;
+  void OnDistilledDocumentSent() override;
+
+  // speedreader::TtsPlayer::Observer:
+  void OnReadingStart(content::WebContents* web_contents) override;
+  void OnReadingStop(content::WebContents* web_contents) override;
+  void OnReadingProgress(content::WebContents* web_contents,
+                         int paragraph_index,
+                         int char_index,
+                         int length) override;
 
   // SpeedreaderService::Observer:
   void OnSiteEnableSettingChanged(content::WebContents* site,
@@ -168,9 +188,15 @@ class SpeedreaderTabHelper
 
   DistillState distill_state_{DistillStates::ViewOriginal()};
 
+  const raw_ptr<SpeedreaderRewriterService> rewriter_service_ =
+      nullptr;  // NOT OWNED
   raw_ptr<SpeedreaderBubbleView> speedreader_bubble_ = nullptr;
 
   mojo::AssociatedReceiver<mojom::SpeedreaderHost> receiver_{this};
+
+  base::ScopedObservation<speedreader::TtsPlayer,
+                          speedreader::TtsPlayer::Observer>
+      tts_player_observation_{this};
 
   base::ScopedObservation<SpeedreaderService, SpeedreaderService::Observer>
       speedreader_service_observation_{this};

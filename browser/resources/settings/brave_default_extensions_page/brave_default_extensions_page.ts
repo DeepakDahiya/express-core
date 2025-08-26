@@ -5,27 +5,30 @@
 
 import './brave_extensions_manifest_v2_subpage.js';
 
-import {PrefsMixin, PrefsMixinInterface} from 'chrome://resources/cr_components/settings_prefs/prefs_mixin.js';
+import {PrefsMixin, PrefsMixinInterface} from '/shared/settings/prefs/prefs_mixin.js';
 import {WebUiListenerMixin, WebUiListenerMixinInterface} from 'chrome://resources/cr_elements/web_ui_listener_mixin.js'
 import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js'
+import type {CrViewManagerElement} from 'chrome://resources/cr_elements/cr_view_manager/cr_view_manager.js';
 
 import {SettingsCheckboxElement} from '../controls/settings_checkbox.js';
 import {loadTimeData} from '../i18n_setup.js';
-import {RouteObserverMixin, Router} from '../router.js';
+import {Router} from '../router.js';
+
+import {SettingsViewMixin, SettingsViewMixinInterface} from '../settings_page/settings_view_mixin.js';
+import {SearchableViewContainerMixin, SearchableViewContainerMixinInterface} from '../settings_page/searchable_view_container_mixin.js';
 
 import {BraveDefaultExtensionsBrowserProxyImpl} from './brave_default_extensions_browser_proxy.js'
 import {getTemplate} from './brave_default_extensions_page.html.js'
 
 const SettingBraveDefaultExtensionsPageElementBase =
-  WebUiListenerMixin(PrefsMixin(RouteObserverMixin(PolymerElement))) as {
-  new (): PolymerElement & WebUiListenerMixinInterface & PrefsMixinInterface
+  SearchableViewContainerMixin(SettingsViewMixin(WebUiListenerMixin(PrefsMixin(PolymerElement)))) as {
+  new (): PolymerElement & WebUiListenerMixinInterface & PrefsMixinInterface & SearchableViewContainerMixinInterface & SettingsViewMixinInterface
 }
 
 export interface SettingBraveDefaultExtensionsPageElement {
   $: {
     widevineEnabled: SettingsCheckboxElement,
-    webTorrentEnabled: SettingsCheckboxElement,
-    hangoutsEnabled: SettingsCheckboxElement
+    viewManager: CrViewManagerElement,
   }
 }
 
@@ -53,25 +56,19 @@ export class SettingBraveDefaultExtensionsPageElement extends SettingBraveDefaul
           return {}
         },
       },
-      isExtensionsManifestV2FeatureEnabled_: Boolean,
-      isExtensionsManifestV2Routed_: {
-        type: Boolean,
-        value: false,
-      },
+      isExtensionsManifestV2FeatureEnabled_: {
+        value: () => loadTimeData.getBoolean('extensionsManifestV2Feature'),
+      }
     }
   }
 
   private browserProxy_ = BraveDefaultExtensionsBrowserProxyImpl.getInstance()
-  showRestartToast_: boolean
-  widevineEnabledPref_: chrome.settingsPrivate.PrefObject
-  isExtensionsManifestV2FeatureEnabled_: boolean
-  isExtensionsManifestV2Routed_: boolean
+  declare showRestartToast_: boolean
+  declare widevineEnabledPref_: chrome.settingsPrivate.PrefObject
+  declare isExtensionsManifestV2FeatureEnabled_: boolean
 
   override ready() {
     super.ready()
-
-    this.isExtensionsManifestV2FeatureEnabled_ =
-      loadTimeData.getBoolean('extensionsManifestV2Feature')
 
     this.addWebUiListener(
       'brave-needs-restart-changed', (needsRestart: boolean) => {
@@ -88,19 +85,13 @@ export class SettingBraveDefaultExtensionsPageElement extends SettingBraveDefaul
     this.browserProxy_.isWidevineEnabled().then(setWidevineEnabledPref)
   }
 
-  /** @protected */
-  currentRouteChanged() {
-    const router = Router.getInstance();
-    this.isExtensionsManifestV2Routed_ =
-      router.getCurrentRoute() == router.getRoutes().EXTENSIONS_V2;
-  }
-
-  onWebTorrentEnabledChange_() {
-    this.browserProxy_.setWebTorrentEnabled(this.$.webTorrentEnabled.checked)
-  }
-
-  onHangoutsEnabledChange_() {
-    this.browserProxy_.setHangoutsEnabled(this.$.hangoutsEnabled.checked)
+  override getAssociatedControlFor(childViewId: string): HTMLElement {
+    switch (childViewId) {
+      case 'extensions-v2-subpage':
+        return this.shadowRoot!.querySelector('#manageV2Extensions')!;
+      default:
+        throw new Error(`Unknown child view id: ${childViewId}`)
+    }
   }
 
   restartBrowser_(e: Event) {
