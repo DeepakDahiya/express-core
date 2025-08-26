@@ -7,21 +7,25 @@
 #define BRAVE_BROWSER_MISC_METRICS_MISC_ANDROID_METRICS_H_
 
 #include "base/memory/raw_ptr.h"
+#include "base/time/time.h"
 #include "brave/components/misc_metrics/common/misc_metrics.mojom.h"
-#include "components/keyed_service/core/keyed_service.h"
 #include "mojo/public/cpp/bindings/receiver_set.h"
 
 class SearchEngineTracker;
 
 namespace misc_metrics {
 
+inline constexpr char kBraveCoreIsDefaultHistogramName[] =
+    "Brave.Core.IsDefault";
+inline constexpr char kBraveCoreIsDefaultDailyHistogramName[] =
+    "Brave.Core.IsDefaultDaily";
+
 class ProcessMiscMetrics;
 
-class MiscAndroidMetrics : public KeyedService,
-                           public mojom::MiscAndroidMetrics {
+class MiscAndroidMetrics : public mojom::MiscAndroidMetrics {
  public:
-  explicit MiscAndroidMetrics(ProcessMiscMetrics* misc_metrics,
-                              SearchEngineTracker* search_engine_tracker);
+  MiscAndroidMetrics(ProcessMiscMetrics* misc_metrics,
+                     SearchEngineTracker* search_engine_tracker);
   ~MiscAndroidMetrics() override;
 
   MiscAndroidMetrics(const MiscAndroidMetrics&) = delete;
@@ -32,7 +36,11 @@ class MiscAndroidMetrics : public KeyedService,
   // mojom::MiscAndroidMetrics:
   void RecordPrivacyHubView() override;
   void RecordPrivacyHubEnabledStatus(bool is_enabled) override;
-  void RecordLocationBarQuery() override;
+  void RecordBrowserUsageDuration(base::TimeDelta duration) override;
+  void RecordLocationBarChange(bool is_new_tab, bool is_search_query) override;
+  void RecordAppMenuNewTab() override;
+  void RecordTabSwitcherNewTab() override;
+  void RecordSetAsDefault(bool is_default) override;
 
  private:
   raw_ptr<ProcessMiscMetrics> misc_metrics_;

@@ -6,10 +6,11 @@
 #ifndef BRAVE_BROWSER_MISC_METRICS_DOH_METRICS_H_
 #define BRAVE_BROWSER_MISC_METRICS_DOH_METRICS_H_
 
-#include "base/timer/timer.h"
+#include <memory>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "base/timer/timer.h"
 #include "brave/components/time_period_storage/weekly_storage.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "services/network/public/mojom/network_service.mojom.h"
@@ -19,8 +20,16 @@ class PrefService;
 
 namespace misc_metrics {
 
-extern const char kAutoSecureRequestsHistogramName[];
-extern const char kSecureDnsSettingHistogramName[];
+inline constexpr char kAutoSecureRequestsHistogramName[] =
+    "Brave.DNS.AutoSecureRequests.2";
+inline constexpr char kQuad9AutoSecureRequestsHistogramName[] =
+    "Brave.DNS.AutoSecureRequests.Quad9.2";
+inline constexpr char kWikimediaAutoSecureRequestsHistogramName[] =
+    "Brave.DNS.AutoSecureRequests.Wikimedia.2";
+inline constexpr char kCloudflareAutoSecureRequestsHistogramName[] =
+    "Brave.DNS.AutoSecureRequests.Cloudflare.2";
+inline constexpr char kSecureDnsSettingHistogramName[] =
+    "Brave.DNS.SecureSetting";
 
 // Manages DNS-over-HTTPS metrics. Queries the DNS query counts
 // maintained by SecureDnsCounter in the network process on
@@ -52,8 +61,8 @@ class DohMetrics {
   void StopListeningToDnsRequests();
   void OnDnsRequestCounts(network::mojom::DnsRequestCountsPtr counts);
 
-  WeeklyStorage total_request_storage_;
-  WeeklyStorage upgraded_request_storage_;
+  std::unique_ptr<WeeklyStorage> total_request_storage_;
+  std::unique_ptr<WeeklyStorage> upgraded_request_storage_;
 
   PrefChangeRegistrar pref_change_registrar_;
   raw_ptr<PrefService> local_state_;

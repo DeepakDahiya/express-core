@@ -4,9 +4,13 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "brave/browser/misc_metrics/misc_android_metrics.h"
+
+#include "base/metrics/histogram_macros.h"
 #include "brave/browser/misc_metrics/process_misc_metrics.h"
+#include "brave/browser/misc_metrics/uptime_monitor_impl.h"
 #include "brave/browser/search_engines/search_engine_tracker.h"
 #include "brave/components/misc_metrics/privacy_hub_metrics.h"
+#include "brave/components/misc_metrics/tab_metrics.h"
 
 namespace misc_metrics {
 
@@ -33,8 +37,31 @@ void MiscAndroidMetrics::RecordPrivacyHubEnabledStatus(bool is_enabled) {
   misc_metrics_->privacy_hub_metrics()->RecordEnabledStatus(is_enabled);
 }
 
-void MiscAndroidMetrics::RecordLocationBarQuery() {
-  search_engine_tracker_->RecordLocationBarQuery();
+void MiscAndroidMetrics::RecordLocationBarChange(bool is_new_tab,
+                                                 bool is_search_query) {
+  if (is_search_query) {
+    search_engine_tracker_->RecordLocationBarQuery();
+  }
+  misc_metrics_->tab_metrics()->RecordLocationBarChange(is_new_tab);
+}
+
+void MiscAndroidMetrics::RecordAppMenuNewTab() {
+  misc_metrics_->tab_metrics()->RecordAppMenuNewTab();
+}
+
+void MiscAndroidMetrics::RecordTabSwitcherNewTab() {
+  misc_metrics_->tab_metrics()->RecordTabSwitcherNewTab();
+}
+
+void MiscAndroidMetrics::RecordBrowserUsageDuration(base::TimeDelta duration) {
+  misc_metrics_->uptime_monitor()->ReportUsageDuration(duration);
+}
+
+void MiscAndroidMetrics::RecordSetAsDefault(bool is_default) {
+  UMA_HISTOGRAM_BOOLEAN(kBraveCoreIsDefaultHistogramName, is_default);
+  int express_answer = is_default ? 1 : INT_MAX - 1;
+  UMA_HISTOGRAM_EXACT_LINEAR(kBraveCoreIsDefaultDailyHistogramName,
+                             express_answer, 2);
 }
 
 }  // namespace misc_metrics

@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
 #include "brave/components/misc_metrics/pref_names.h"
 #include "brave/components/p3a_utils/bucket.h"
@@ -22,8 +23,8 @@ namespace misc_metrics {
 
 namespace {
 
-const int kOpenTabsBuckets[] = {1, 5, 10, 50};
-const int kGroupAndPinnedTabsBuckets[] = {2, 5};
+constexpr int kOpenTabsBuckets[] = {1, 5, 10, 50};
+constexpr int kGroupAndPinnedTabsBuckets[] = {2, 5};
 
 const char* GetHistogramNameForCountType(TabCountType count_type) {
   switch (count_type) {
@@ -64,10 +65,6 @@ void RecordMaxToHistogramBucket(TabCountType count_type, uint64_t max_value) {
 
 }  // namespace
 
-const char kVerticalOpenTabsHistogramName[] = "Brave.VerticalTabs.OpenTabs";
-const char kVerticalGroupTabsHistogramName[] = "Brave.VerticalTabs.GroupTabs";
-const char kVerticalPinnedTabsHistogramName[] = "Brave.VerticalTabs.PinnedTabs";
-
 VerticalTabBrowserMetrics::VerticalTabBrowserMetrics(
     PrefService* profile_prefs,
     base::RepeatingClosure change_callback)
@@ -105,7 +102,11 @@ size_t VerticalTabBrowserMetrics::GetTabCount(TabCountType count_type) const {
   if (!vertical_tabs_enabled_) {
     return 0;
   }
-  return counts_.at(count_type);
+  auto it = counts_.find(count_type);
+  if (it == counts_.end()) {
+    return 0;
+  }
+  return it->second;
 }
 
 void VerticalTabBrowserMetrics::UpdateEnabledStatus() {
