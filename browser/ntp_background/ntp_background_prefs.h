@@ -7,11 +7,11 @@
 #define BRAVE_BROWSER_NTP_BACKGROUND_NTP_BACKGROUND_PREFS_H_
 
 #include <string>
+#include <variant>
 #include <vector>
 
+#include "base/memory/raw_ptr.h"
 #include "base/values.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
-#include "url/gurl.h"
 
 namespace user_prefs {
 class PrefRegistrySyncable;
@@ -82,7 +82,7 @@ class NTPBackgroundPrefs final {
   void SetSelectedValue(const std::string& value);
 
   // Return a value to use as NTP background.
-  absl::variant<GURL, std::string> GetSelectedValue() const;
+  std::string GetSelectedValue() const;
 
   void AddCustomImageToList(const std::string& file_name);
   void RemoveCustomImageFromList(const std::string& file_name);

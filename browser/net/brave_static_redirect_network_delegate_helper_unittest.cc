@@ -8,9 +8,9 @@
 #include <memory>
 #include <string>
 
-#include "base/strings/string_util.h"
-#include "brave/browser/net/brave_geolocation_buildflags.h"
 #include "brave/browser/net/url_context.h"
+#include "brave/components/geolocation/brave_geolocation_buildflags.h"
+#include "brave/components/static_redirect_helper/static_redirect_helper.h"
 #include "components/component_updater/component_updater_url_constants.h"
 #include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -275,6 +275,19 @@ TEST(BraveStaticRedirectNetworkDelegateHelperTest, DontModifyGvt1ForWidevine) {
   EXPECT_EQ(rc, net::OK);
 }
 
+TEST(BraveStaticRedirectNetworkDelegateHelperTest, DontModifyGvt1ForWidevine2) {
+  const GURL url(
+      "http://r2---sn-n4v7sn7y.gvt1.com/edgedl/release2/chrome_component/"
+      "adpwdrehowm2a6w7spq52lx3eyla_4.10.2891.0/"
+      "oimompecagnajdejgnnjijobebaeigek_4.10.2891.0_mac_arm64_"
+      "adebp6igda2i2udepjmfqykgfjja.crx3");
+  auto request_info = std::make_shared<brave::BraveRequestInfo>(url);
+  int rc =
+      OnBeforeURLRequest_StaticRedirectWork(ResponseCallback(), request_info);
+  EXPECT_EQ(request_info->new_url_spec, "");
+  EXPECT_EQ(rc, net::OK);
+}
+
 TEST(BraveStaticRedirectNetworkDelegateHelperTest,
      DontModifyGoogleDlForWidevine) {
   const GURL url(
@@ -282,6 +295,20 @@ TEST(BraveStaticRedirectNetworkDelegateHelperTest,
       "L2Nocm9tZV9leHRlbnNpb24vYmxvYnMvYjYxQUFXaFBmeUtPbVFUYUh"
       "mRGV0MS1Wdw/4.10.1610.0_oimompecagnajdejgnnjijobebaeigek"
       ".crx");
+  auto request_info = std::make_shared<brave::BraveRequestInfo>(url);
+  int rc =
+      OnBeforeURLRequest_StaticRedirectWork(ResponseCallback(), request_info);
+  EXPECT_EQ(request_info->new_url_spec, "");
+  EXPECT_EQ(rc, net::OK);
+}
+
+TEST(BraveStaticRedirectNetworkDelegateHelperTest,
+     DontModifyGoogleDlForWidevine2) {
+  const GURL url(
+      "http://dl.google.com/edgedl/release2/chrome_component/"
+      "adpwdrehowm2a6w7spq52lx3eyla_4.10.2891.0/"
+      "oimompecagnajdejgnnjijobebaeigek_4.10.2891.0_mac_arm64_"
+      "adebp6igda2i2udepjmfqykgfjja.crx3");
   auto request_info = std::make_shared<brave::BraveRequestInfo>(url);
   int rc =
       OnBeforeURLRequest_StaticRedirectWork(ResponseCallback(), request_info);

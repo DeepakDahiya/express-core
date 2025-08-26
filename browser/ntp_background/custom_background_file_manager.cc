@@ -7,16 +7,18 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
-#include "base/strings/stringprintf.h"
+#include "base/logging.h"
 #include "base/task/thread_pool.h"
 #include "brave/browser/ntp_background/constants.h"
 #include "chrome/browser/image_fetcher/image_decoder_impl.h"
 #include "chrome/browser/profiles/profile.h"
 #include "services/data_decoder/public/cpp/data_decoder.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image.h"
@@ -189,22 +191,21 @@ void CustomBackgroundFileManager::SaveImageAsPNG(
   }
   auto encode_and_save = base::BindOnce(
       [](const SkBitmap& bitmap, const base::FilePath& target_path) {
-        auto encoded = base::MakeRefCounted<base::RefCountedBytes>();
-        if (!gfx::PNGCodec::EncodeBGRASkBitmap(
-                bitmap, /*discard_transparency=*/false, &encoded->data())) {
+        std::optional<std::vector<uint8_t>> encoded =
+            gfx::PNGCodec::EncodeBGRASkBitmap(bitmap,
+                                              /*discard_transparency=*/false);
+        if (!encoded) {
           DVLOG(2) << "Failed to encode image as PNG";
           return base::FilePath();
         }
 
         base::FilePath modified_path = target_path;
         for (int i = 1; base::PathExists(modified_path); ++i) {
-          modified_path = target_path.InsertBeforeExtensionASCII(
-              base::StringPrintf("-%d", i));
+          modified_path =
+              target_path.InsertBeforeExtensionASCII(absl::StrFormat("-%d", i));
         }
 
-        if (!base::WriteFile(
-                modified_path,
-                base::span<const uint8_t>(encoded->front(), encoded->size()))) {
+        if (!base::WriteFile(modified_path, *encoded)) {
           DVLOG(2) << "Failed to write image to file " << modified_path;
           return base::FilePath();
         }

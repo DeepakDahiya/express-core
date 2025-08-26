@@ -15,12 +15,12 @@
 #include "base/threading/thread_restrictions.h"
 #include "brave/browser/ntp_background/constants.h"
 #include "brave/components/constants/brave_paths.h"
-#include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/test/browser_task_environment.h"
 #include "content/public/test/browser_test.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 
 // CustomBackgroundFileManager requires data decoder which can't be initialized
 // in unit tests.
@@ -37,7 +37,6 @@ class CustomBackgroundFileManagerBrowserTest : public InProcessBrowserTest {
     file_manager_ = std::make_unique<CustomBackgroundFileManager>(profile());
 
     base::ScopedAllowBlockingForTesting allow_blocking_call;
-    brave::RegisterPathProvider();
     base::FilePath test_data_dir;
     ASSERT_TRUE(base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir));
 
@@ -113,24 +112,16 @@ IN_PROC_BROWSER_TEST_F(CustomBackgroundFileManagerBrowserTest,
   EXPECT_TRUE(base::PathExists(test_file()));
 }
 
-#if BUILDFLAG(IS_MAC) && defined(ARCH_CPU_ARM_FAMILY)
-// On Mac ARM CI node, this test is flaky because of timeout.
-// https://github.com/brave/brave-browser/issues/29762
-#define MAYBE_SaveImageMultipleTimes DISABLED_SaveImageMultipleTimes
-#else
-#define MAYBE_SaveImageMultipleTimes SaveImageMultipleTimes
-#endif
-
 IN_PROC_BROWSER_TEST_F(CustomBackgroundFileManagerBrowserTest,
-                       MAYBE_SaveImageMultipleTimes) {
+                       SaveImageMultipleTimes) {
   for (int i = 0; i < 3; i++) {
     base::RunLoop run_loop;
     base::FilePath expected_path =
         custom_file_manager().GetCustomBackgroundDirectory().AppendASCII(
             kTestImageName);
     if (i > 0) {
-      expected_path = expected_path.InsertBeforeExtensionASCII(
-          base::StringPrintf("-%d", i));
+      expected_path =
+          expected_path.InsertBeforeExtensionASCII(absl::StrFormat("-%d", i));
     }
 
     auto check_res =

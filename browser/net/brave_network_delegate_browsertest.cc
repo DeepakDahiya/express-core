@@ -5,9 +5,8 @@
 
 #include "base/path_service.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
-#include "brave/components/brave_shields/common/brave_shield_constants.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
+#include "brave/components/brave_shields/core/common/brave_shield_constants.h"
 #include "brave/components/constants/brave_paths.h"
 #include "brave/components/constants/pref_names.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -28,6 +27,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/default_handlers.h"
 #include "net/test/embedded_test_server/http_request.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "url/gurl.h"
 
 using net::test_server::EmbeddedTestServer;
@@ -37,11 +37,11 @@ namespace {
 bool NavigateRenderFrameToURL(content::RenderFrameHost* frame,
                               std::string iframe_id,
                               const GURL& url) {
-  std::string script = base::StringPrintf(
+  std::string script = absl::StrFormat(
       "setTimeout(\""
       "var iframes = document.getElementById('%s');iframes.src='%s';"
       "\",0)",
-      iframe_id.c_str(), url.spec().c_str());
+      iframe_id, url.spec());
 
   content::TestNavigationManager navigation_manager(
       content::WebContents::FromRenderFrameHost(frame), url);
@@ -72,7 +72,6 @@ class BraveNetworkDelegateBrowserTest : public InProcessBrowserTest {
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    brave::RegisterPathProvider();
     base::FilePath test_data_dir;
     base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
 
@@ -111,8 +110,6 @@ class BraveNetworkDelegateBrowserTest : public InProcessBrowserTest {
 
     top_level_page_pattern_ =
         ContentSettingsPattern::FromString("https://a.com/*");
-    first_party_pattern_ =
-        ContentSettingsPattern::FromString("https://firstParty/*");
 
     wordpress_top_url_ =
         https_server_.GetURL("example.wordpress.com", "/cookie_iframe.html");
@@ -123,11 +120,6 @@ class BraveNetworkDelegateBrowserTest : public InProcessBrowserTest {
         "example.wp.com", "/set-cookie?frame=true;SameSite=None;Secure");
     a_frame_url_ = https_server_.GetURL(
         "a.com", "/set-cookie?frame=true;SameSite=None;Secure");
-
-    ipfs_cid1_url_ =
-        https_server_.GetURL("cid1.ipfs.localhost", "/ipfs_cookie_iframe.html");
-    ipfs_cid2_frame_url_ = https_server_.GetURL(
-        "cid2.ipfs.localhost", "/set-cookie?frame=true;SameSite=None;Secure");
   }
 
   HostContentSettingsMap* content_settings() {
@@ -230,15 +222,12 @@ class BraveNetworkDelegateBrowserTest : public InProcessBrowserTest {
   GURL wp_top_url_;
   GURL wp_frame_url_;
   GURL a_frame_url_;
-  GURL ipfs_cid1_url_;
-  GURL ipfs_cid2_frame_url_;
   content::ContentMockCertVerifier mock_cert_verifier_;
   net::test_server::EmbeddedTestServer https_server_;
   base::flat_map<GURL, std::string> seen_cookies_;
 
  private:
   ContentSettingsPattern top_level_page_pattern_;
-  ContentSettingsPattern first_party_pattern_;
   ContentSettingsPattern iframe_pattern_;
 };
 
@@ -584,7 +573,7 @@ IN_PROC_BROWSER_TEST_F(BraveNetworkDelegateBrowserTest,
   ExpectCookiesOnHost(GURL("https://example.wp.com"), "frame=true");
 
   // No network cookie should be sent on first request.
-  EXPECT_FALSE(base::Contains(seen_cookies(), wp_frame_url_));
+  EXPECT_FALSE(seen_cookies().contains(wp_frame_url_));
 
   // Navigate from WordPress elsewhere.
   NavigateToPageWithFrame(cookie_iframe_url_);
@@ -594,26 +583,6 @@ IN_PROC_BROWSER_TEST_F(BraveNetworkDelegateBrowserTest,
   NavigateToPageWithFrame(wordpress_top_url_);
   NavigateFrameTo(wp_top_url_);
 
-  ASSERT_TRUE(base::Contains(seen_cookies(), wp_top_url_));
+  ASSERT_TRUE(seen_cookies().contains(wp_top_url_));
   EXPECT_EQ(seen_cookies().at(wp_top_url_), "frame=true");
-}
-
-IN_PROC_BROWSER_TEST_F(BraveNetworkDelegateBrowserTest,
-                       BlockThirdPartyCookiesIPFSLocalhost) {
-  DefaultBlockThirdPartyCookies();
-
-  NavigateToPageWithFrame(ipfs_cid1_url_);
-  NavigateFrameTo(ipfs_cid2_frame_url_);
-  ExpectCookiesOnHost(ipfs_cid1_url_, "name=Good");
-  ExpectCookiesOnHost(ipfs_cid2_frame_url_, "");
-}
-
-IN_PROC_BROWSER_TEST_F(BraveNetworkDelegateBrowserTest,
-                       AllowAllCookiesIPFSLocalhost) {
-  DefaultAllowAllCookies();
-
-  NavigateToPageWithFrame(ipfs_cid1_url_);
-  NavigateFrameTo(ipfs_cid2_frame_url_);
-  ExpectCookiesOnHost(ipfs_cid1_url_, "name=Good");
-  ExpectCookiesOnHost(ipfs_cid2_frame_url_, "frame=true");
 }

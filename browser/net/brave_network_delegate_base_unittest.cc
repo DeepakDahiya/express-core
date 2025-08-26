@@ -16,19 +16,19 @@
 #include "net/url_request/url_request_test_util.h"
 #include "url/gurl.h"
 
+using brave::kTrackableSecurityHeaders;
 using brave::RemoveTrackableSecurityHeadersForThirdParty;
-using brave::TrackableSecurityHeaders;
 using net::HttpResponseHeaders;
 
 
 namespace {
 
-const char kFirstPartyDomain[] = "http://firstparty.com/";
-const char kThirdPartyDomain[] = "http://thirdparty.com/";
-const char kAcceptLanguageHeader[] = "Accept-Language";
-const char kXSSProtectionHeader[] = "X-XSS-Protection";
+constexpr char kFirstPartyDomain[] = "http://firstparty.com/";
+constexpr char kThirdPartyDomain[] = "http://thirdparty.com/";
+constexpr char kAcceptLanguageHeader[] = "Accept-Language";
+constexpr char kXSSProtectionHeader[] = "X-XSS-Protection";
 
-const char kRawHeaders[] =
+constexpr char kRawHeaders[] =
     "HTTP/1.0 200 OK\n"
     "Strict-Transport-Security: max-age=31557600\n"
     "Accept-Language: *\n"
@@ -68,7 +68,7 @@ TEST_F(BraveNetworkDelegateBaseTest, RemoveTrackableSecurityHeaders) {
   RemoveTrackableSecurityHeadersForThirdParty(request_url,
                                               url::Origin::Create(tab_url),
                                               nullptr, &headers);
-  for (auto header : *TrackableSecurityHeaders()) {
+  for (auto header : kTrackableSecurityHeaders) {
     EXPECT_FALSE(headers->HasHeader(std::string(header)));
   }
   EXPECT_TRUE(headers->HasHeader(kAcceptLanguageHeader));
@@ -86,7 +86,7 @@ TEST_F(BraveNetworkDelegateBaseTest, RemoveTrackableSecurityHeadersMixedCase) {
   RemoveTrackableSecurityHeadersForThirdParty(request_url,
                                               url::Origin::Create(tab_url),
                                               nullptr, &headers);
-  for (auto header : *TrackableSecurityHeaders()) {
+  for (auto header : kTrackableSecurityHeaders) {
     EXPECT_FALSE(headers->HasHeader(std::string(header)));
   }
   EXPECT_TRUE(headers->HasHeader(kAcceptLanguageHeader));
@@ -104,7 +104,7 @@ TEST_F(BraveNetworkDelegateBaseTest, RetainTrackableSecurityHeaders) {
   RemoveTrackableSecurityHeadersForThirdParty(request_url,
                                               url::Origin::Create(tab_url),
                                               nullptr, &headers);
-  for (auto header : *TrackableSecurityHeaders()) {
+  for (auto header : kTrackableSecurityHeaders) {
     EXPECT_TRUE(headers->HasHeader(std::string(header)));
   }
   EXPECT_TRUE(headers->HasHeader(kAcceptLanguageHeader));

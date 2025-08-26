@@ -6,13 +6,14 @@
 #ifndef BRAVE_BROWSER_NTP_BACKGROUND_ANDROID_NTP_BACKGROUND_IMAGES_BRIDGE_H_
 #define BRAVE_BROWSER_NTP_BACKGROUND_ANDROID_NTP_BACKGROUND_IMAGES_BRIDGE_H_
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/compiler_specific.h"
 #include "base/memory/raw_ptr.h"
 #include "brave/components/ntp_background_images/browser/ntp_background_images_service.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class Profile;
 
@@ -46,9 +47,10 @@ class NTPBackgroundImagesBridge : public NTPBackgroundImagesService::Observer,
   void WallpaperLogoClicked(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& jwallpaperId,
       const base::android::JavaParamRef<jstring>& jcreativeInstanceId,
       const base::android::JavaParamRef<jstring>& jdestinationUrl,
-      const base::android::JavaParamRef<jstring>& jwallpaperId);
+      bool shouldMetricsFallbackToP3a);
   base::android::ScopedJavaLocalRef<jobject> GetCurrentWallpaper(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -69,9 +71,8 @@ class NTPBackgroundImagesBridge : public NTPBackgroundImagesService::Observer,
   base::android::ScopedJavaLocalRef<jobject> GetJavaObject();
 
  private:
-  void OnUpdated(NTPBackgroundImagesData* data) override;
-  void OnUpdated(NTPSponsoredImagesData* data) override;
-  void OnSuperReferralEnded() override;
+  void OnBackgroundImagesDataDidUpdate(NTPBackgroundImagesData* data) override;
+  void OnSponsoredImagesDataDidUpdate(NTPSponsoredImagesData* data) override;
 
   base::android::ScopedJavaLocalRef<jobject> CreateWallpaper(
       const base::Value::Dict& data);
@@ -104,7 +105,7 @@ class NTPBackgroundImagesBridgeFactory
   ~NTPBackgroundImagesBridgeFactory() override;
 
   // BrowserContextKeyedServiceFactory:
-  KeyedService* BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(
       content::BrowserContext* context) const override;
   bool ServiceIsCreatedWithBrowserContext() const override;
 };

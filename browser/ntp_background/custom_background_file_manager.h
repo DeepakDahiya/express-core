@@ -10,11 +10,11 @@
 #include <string>
 #include <type_traits>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/weak_ptr.h"
-#include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/components/ntp_background_images/browser/url_constants.h"
 #include "url/gurl.h"
@@ -26,7 +26,7 @@
 
 namespace base {
 class FilePath;
-}
+}  // namespace base
 
 namespace gfx {
 class Image;
@@ -80,8 +80,7 @@ class CustomBackgroundFileManager final {
                        CustomBackgroundFileManager* file_manager = nullptr)
         : file_manager_(file_manager) {
       if constexpr (std::is_same_v<FromT, std::string>) {
-        DCHECK(!base::StartsWith(value,
-                                 ntp_background_images::kCustomWallpaperURL))
+        DCHECK(!value.starts_with(ntp_background_images::kCustomWallpaperURL))
             << "URLs should be passed in as a GURL";
         value_ = value;
       } else if constexpr (std::is_same_v<FromT, GURL>) {
@@ -111,7 +110,7 @@ class CustomBackgroundFileManager final {
 #if defined(OS_WIN)
         auto file_name = base::SysWideToUTF8(value.BaseName().value());
 #else
-        auto file_name = std::string(value.BaseName().value().c_str());
+        auto file_name = value.BaseName().value();
 #endif
         DCHECK(!file_name.empty())
             << "Couldn't extract file name from the given path " << value;

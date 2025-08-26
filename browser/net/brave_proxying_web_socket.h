@@ -7,13 +7,13 @@
 #define BRAVE_BROWSER_NET_BRAVE_PROXYING_WEB_SOCKET_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/raw_ref.h"
-#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "brave/browser/net/resource_context_data.h"
 #include "brave/browser/net/url_context.h"
@@ -22,11 +22,9 @@
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "mojo/public/cpp/bindings/remote.h"
 #include "services/network/public/cpp/resource_request.h"
-#include "services/network/public/mojom/ip_endpoint.mojom.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
 #include "services/network/public/mojom/websocket.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -49,10 +47,7 @@ class BraveProxyingWebSocket
   BraveProxyingWebSocket(
       WebSocketFactory factory,
       const network::ResourceRequest& request,
-      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
-          handshake_client,
-      int process_id,
-      int frame_tree_node_id,
+      content::FrameTreeNodeId frame_tree_node_id,
       content::BrowserContext* browser_context,
       scoped_refptr<RequestIDGenerator> request_id_generator,
       BraveRequestHandler& handler,
@@ -66,14 +61,12 @@ class BraveProxyingWebSocket
       content::ContentBrowserClient::WebSocketFactory factory,
       const GURL& url,
       const net::SiteForCookies& site_for_cookies,
-      const absl::optional<std::string>& user_agent,
-      mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
-          handshake_client);
+      const std::optional<std::string>& user_agent);
 
-  void Start();
+  void Start(mojo::PendingRemote<network::mojom::WebSocketHandshakeClient>
+                 handshake_client);
 
-  content::ContentBrowserClient::WebSocketFactory web_socket_factory();
-  mojo::Remote<network::mojom::WebSocketHandshakeClient> handshake_client();
+  content::ContentBrowserClient::WebSocketFactory CreateWebSocketFactory();
   bool proxy_has_extra_headers();
 
   // network::mojom::WebSocketHandshakeClient methods:
@@ -120,11 +113,11 @@ class BraveProxyingWebSocket
   void ContinueToHeadersReceived();
   void OnBeforeSendHeadersCompleteFromProxy(
       int error_code,
-      const absl::optional<net::HttpRequestHeaders>& headers);
+      const std::optional<net::HttpRequestHeaders>& headers);
   void OnHeadersReceivedCompleteFromProxy(
       int error_code,
-      const absl::optional<std::string>& headers,
-      const absl::optional<GURL>& url);
+      const std::optional<std::string>& headers,
+      const std::optional<GURL>& url);
 
   void PauseIncomingMethodCallProcessing();
   void ResumeIncomingMethodCallProcessing();
@@ -137,8 +130,7 @@ class BraveProxyingWebSocket
   // TODO(iefremov): Init this only once.
   std::shared_ptr<brave::BraveRequestInfo> ctx_;
 
-  const int process_id_;
-  const int frame_tree_node_id_;
+  const content::FrameTreeNodeId frame_tree_node_id_;
   content::ContentBrowserClient::WebSocketFactory factory_;
   const raw_ptr<content::BrowserContext> browser_context_;
   scoped_refptr<RequestIDGenerator> request_id_generator_;

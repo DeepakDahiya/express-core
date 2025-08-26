@@ -5,11 +5,11 @@
 
 #include "brave/browser/ntp_background/ntp_background_prefs.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 
-#include "base/notreached.h"
-#include "base/ranges/algorithm.h"
+#include "base/check.h"
 #include "brave/components/constants/pref_names.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_service.h"
@@ -35,14 +35,17 @@ const char* TypeToString(NTPBackgroundPrefs::Type type) {
 
 NTPBackgroundPrefs::Type StringToType(const std::string& type_string) {
   // See class description for details.
-  if (type_string == "brave")
+  if (type_string == "brave") {
     return NTPBackgroundPrefs::Type::kBrave;
-  if (type_string == "custom_image")
+  }
+  if (type_string == "custom_image") {
     return NTPBackgroundPrefs::Type::kCustomImage;
-  if (type_string == "solid_color" || type_string == "color")
+  }
+  if (type_string == "solid_color" || type_string == "color") {
     return NTPBackgroundPrefs::Type::kColor;
+  }
 
-  NOTREACHED();
+  // This shouldn't occur normally, but is possible if prefs are corrupted.
   return NTPBackgroundPrefs::Type::kBrave;
 }
 
@@ -66,11 +69,13 @@ void NTPBackgroundPrefs::RegisterPref(
 }
 
 void NTPBackgroundPrefs::MigrateOldPref() {
-  if (!service_->HasPrefPath(kDeprecatedPrefName))
+  if (!service_->HasPrefPath(kDeprecatedPrefName)) {
     return;
+  }
 
-  if (service_->GetBoolean(kDeprecatedPrefName))
+  if (service_->GetBoolean(kDeprecatedPrefName)) {
     SetType(Type::kCustomImage);
+  }
 
   service_->ClearPref(kDeprecatedPrefName);
 }
@@ -82,8 +87,9 @@ NTPBackgroundPrefs::Type NTPBackgroundPrefs::GetType() const {
 }
 
 void NTPBackgroundPrefs::SetType(Type type) {
-  if (type == GetType())
+  if (type == GetType()) {
     return;
+  }
 
   ScopedDictPrefUpdate update(service_, kPrefName);
   update->Set(kTypeKey, TypeToString(type));
@@ -117,15 +123,12 @@ void NTPBackgroundPrefs::SetSelectedValue(const std::string& value) {
   update->Set(kSelectedValueKey, value);
 }
 
-absl::variant<GURL, std::string> NTPBackgroundPrefs::GetSelectedValue() const {
+std::string NTPBackgroundPrefs::GetSelectedValue() const {
   const auto* value = GetPrefValue();
   const auto* selected_value = value->FindString(kSelectedValueKey);
   DCHECK(selected_value);
 
-  if (IsColorType() || IsCustomImageType())
-    return *selected_value;
-
-  return GURL(*selected_value);
+  return *selected_value;
 }
 
 void NTPBackgroundPrefs::AddCustomImageToList(const std::string& file_name) {
@@ -138,15 +141,19 @@ void NTPBackgroundPrefs::RemoveCustomImageFromList(
     const std::string& file_name) {
   ScopedListPrefUpdate update(service_,
                               NTPBackgroundPrefs::kCustomImageListPrefName);
-  update->erase(base::ranges::remove(update.Get(), file_name),
-                update.Get().end());
+  auto to_remove = std::ranges::remove_if(
+      update.Get(), [&file_name](const base::Value& value) {
+        return value.is_string() && value.GetString() == file_name;
+      });
+  update->erase(to_remove.begin(), to_remove.end());
 }
 
 std::vector<std::string> NTPBackgroundPrefs::GetCustomImageList() const {
   const auto& list = service_->GetList(kCustomImageListPrefName);
   std::vector<std::string> result;
-  for (const auto& item : list)
+  for (const auto& item : list) {
     result.push_back(item.GetString());
+  }
 
   return result;
 }

@@ -7,6 +7,7 @@
 
 #include <vector>
 
+#include "base/check_op.h"
 #include "brave/browser/brave_browser_process.h"
 #include "brave/components/localhost_permission/localhost_permission_component.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -14,14 +15,16 @@
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_controller.h"
+#include "content/public/browser/permission_descriptor_util.h"
 #include "content/public/browser/web_contents.h"
+#include "net/base/net_errors.h"
 #include "net/base/url_util.h"
 #include "third_party/blink/public/common/permissions/permission_utils.h"
 
 namespace brave {
 
 void OnPermissionRequestStatus(
-    int frame_tree_node_id,
+    content::FrameTreeNodeId frame_tree_node_id,
     const std::vector<blink::mojom::PermissionStatus>& permission_statuses) {
   DCHECK_EQ(1u, permission_statuses.size());
   // Once permission status has been updated, reload the page.
@@ -125,7 +128,9 @@ int OnBeforeURLRequest_LocalhostPermissionWork(
       contents->GetBrowserContext()->GetPermissionController();
   auto current_status =
       permission_controller->GetPermissionStatusForCurrentDocument(
-          blink::PermissionType::BRAVE_LOCALHOST_ACCESS,
+          content::PermissionDescriptorUtil::
+              CreatePermissionDescriptorForPermissionType(
+                  blink::PermissionType::BRAVE_LOCALHOST_ACCESS),
           /* rfh */ contents->GetPrimaryMainFrame());
 
   switch (current_status) {
@@ -144,7 +149,9 @@ int OnBeforeURLRequest_LocalhostPermissionWork(
         permission_controller->RequestPermissionsFromCurrentDocument(
             /* rfh */ contents->GetPrimaryMainFrame(),
             content::PermissionRequestDescription(
-                blink::PermissionType::BRAVE_LOCALHOST_ACCESS,
+                content::PermissionDescriptorUtil::
+                    CreatePermissionDescriptorForPermissionType(
+                        blink::PermissionType::BRAVE_LOCALHOST_ACCESS),
                 /*user_gesture*/ true),
             base::BindOnce(&OnPermissionRequestStatus,
                            ctx->frame_tree_node_id));

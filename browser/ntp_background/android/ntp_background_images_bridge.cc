@@ -9,6 +9,7 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -20,15 +21,14 @@
 #include "base/no_destructor.h"
 #include "brave/browser/brave_browser_process.h"
 #include "brave/browser/ntp_background/view_counter_service_factory.h"
-#include "brave/build/android/jni_headers/NTPBackgroundImagesBridge_jni.h"
 #include "brave/components/brave_referrals/browser/brave_referrals_service.h"
 #include "brave/components/brave_stats/browser/brave_stats_updater_util.h"
 #include "brave/components/ntp_background_images/browser/ntp_background_images_data.h"
 #include "brave/components/ntp_background_images/browser/ntp_sponsored_images_data.h"
 #include "brave/components/ntp_background_images/browser/url_constants.h"
 #include "brave/components/ntp_background_images/browser/view_counter_service.h"
+#include "chrome/android/chrome_jni_headers/NTPBackgroundImagesBridge_jni.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -63,9 +63,11 @@ NTPBackgroundImagesBridgeFactory::GetInstance() {
   return instance.get();
 }
 
-KeyedService* NTPBackgroundImagesBridgeFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+NTPBackgroundImagesBridgeFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  return new NTPBackgroundImagesBridge(Profile::FromBrowserContext(context));
+  return std::make_unique<NTPBackgroundImagesBridge>(
+      Profile::FromBrowserContext(context));
 }
 
 bool NTPBackgroundImagesBridgeFactory::ServiceIsCreatedWithBrowserContext()
@@ -99,7 +101,7 @@ static base::android::ScopedJavaLocalRef<jobject>
 JNI_NTPBackgroundImagesBridge_GetInstance(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_profile) {
-  auto* profile = ProfileAndroid::FromProfileAndroid(j_profile);
+  auto* profile = Profile::FromJavaObject(j_profile);
   return ntp_background_images::NTPBackgroundImagesBridgeFactory::GetInstance()
       ->GetForProfile(profile)
       ->GetJavaObject();
@@ -121,15 +123,17 @@ void NTPBackgroundImagesBridge::RegisterPageView(
 void NTPBackgroundImagesBridge::WallpaperLogoClicked(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& jwallpaperId,
     const base::android::JavaParamRef<jstring>& jcreativeInstanceId,
     const base::android::JavaParamRef<jstring>& jdestinationUrl,
-    const base::android::JavaParamRef<jstring>& jwallpaperId) {
+    bool shouldMetricsFallbackToP3a) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (view_counter_service_) {
     view_counter_service_->BrandedWallpaperLogoClicked(
+        base::android::ConvertJavaStringToUTF8(env, jwallpaperId),
         base::android::ConvertJavaStringToUTF8(env, jcreativeInstanceId),
         base::android::ConvertJavaStringToUTF8(env, jdestinationUrl),
-        base::android::ConvertJavaStringToUTF8(env, jwallpaperId));
+        shouldMetricsFallbackToP3a);
   }
 }
 
@@ -138,7 +142,7 @@ NTPBackgroundImagesBridge::CreateWallpaper(const base::Value::Dict& data) {
   JNIEnv* env = AttachCurrentThread();
 
   auto* image_path =
-      data.FindString(ntp_background_images::kWallpaperImagePathKey);
+      data.FindString(ntp_background_images::kWallpaperFilePathKey);
   auto* author = data.FindString(ntp_background_images::kImageAuthorKey);
   auto* link = data.FindString(ntp_background_images::kImageLinkKey);
 
@@ -154,7 +158,7 @@ NTPBackgroundImagesBridge::CreateBrandedWallpaper(
   JNIEnv* env = AttachCurrentThread();
 
   auto* image_path =
-      data.FindString(ntp_background_images::kWallpaperImagePathKey);
+      data.FindString(ntp_background_images::kWallpaperFilePathKey);
   auto* logo_image_path =
       data.FindStringByDottedPath(ntp_background_images::kLogoImagePath);
   if (!image_path || !logo_image_path)
@@ -171,12 +175,26 @@ NTPBackgroundImagesBridge::CreateBrandedWallpaper(
       data.FindBool(ntp_background_images::kIsSponsoredKey).value_or(false);
   auto* creative_instance_id =
       data.FindString(ntp_background_images::kCreativeInstanceIDKey);
+  auto* campaign_id = data.FindString(ntp_background_images::kCampaignIdKey);
   const std::string* wallpaper_id =
       data.FindString(ntp_background_images::kWallpaperIDKey);
 
+  bool is_rich_media = false;
+  if (const std::string* sponsored_rich_media_type =
+          data.FindString(ntp_background_images::kWallpaperTypeKey)) {
+    is_rich_media = *sponsored_rich_media_type ==
+                    ntp_background_images::kRichMediaWallpaperType;
+  }
+
+  const bool should_metrics_fallback_to_p3a =
+      data.FindBool(
+              ntp_background_images::kWallpaperShouldMetricsFallbackToP3aKey)
+          .value_or(false);
+
   view_counter_service_->BrandedWallpaperWillBeDisplayed(
-      wallpaper_id ? *wallpaper_id : "",
-      creative_instance_id ? *creative_instance_id : "");
+      wallpaper_id ? *wallpaper_id : "", campaign_id ? *campaign_id : "",
+      creative_instance_id ? *creative_instance_id : "",
+      should_metrics_fallback_to_p3a);
 
   return Java_NTPBackgroundImagesBridge_createBrandedWallpaper(
       env, ConvertUTF8ToJavaString(env, *image_path), focal_point_x,
@@ -186,7 +204,8 @@ NTPBackgroundImagesBridge::CreateBrandedWallpaper(
       ConvertUTF8ToJavaString(env, *theme_name), is_sponsored,
       ConvertUTF8ToJavaString(
           env, creative_instance_id ? *creative_instance_id : ""),
-      ConvertUTF8ToJavaString(env, wallpaper_id ? *wallpaper_id : ""));
+      ConvertUTF8ToJavaString(env, wallpaper_id ? *wallpaper_id : ""),
+      is_rich_media, should_metrics_fallback_to_p3a);
 }
 
 void NTPBackgroundImagesBridge::GetTopSites(JNIEnv* env,
@@ -246,7 +265,7 @@ NTPBackgroundImagesBridge::GetCurrentWallpaper(
     const JavaParamRef<jobject>& obj) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  absl::optional<base::Value::Dict> data;
+  std::optional<base::Value::Dict> data;
   if (view_counter_service_)
     data = view_counter_service_->GetCurrentWallpaperForDisplay();
 
@@ -262,20 +281,19 @@ NTPBackgroundImagesBridge::GetCurrentWallpaper(
   }
 }
 
-void NTPBackgroundImagesBridge::OnUpdated(NTPBackgroundImagesData* data) {
+void NTPBackgroundImagesBridge::OnBackgroundImagesDataDidUpdate(
+    NTPBackgroundImagesData* data) {
   JNIEnv* env = AttachCurrentThread();
   Java_NTPBackgroundImagesBridge_onUpdated(env, java_object_);
 }
 
-void NTPBackgroundImagesBridge::OnUpdated(NTPSponsoredImagesData* data) {
+void NTPBackgroundImagesBridge::OnSponsoredImagesDataDidUpdate(
+    NTPSponsoredImagesData* data) {
   // Don't have interest about in-effective component data update.
-  if (data != view_counter_service_->GetCurrentBrandedWallpaperData())
+  if (data != view_counter_service_->GetSponsoredImagesData()) {
     return;
+  }
 
   JNIEnv* env = AttachCurrentThread();
   Java_NTPBackgroundImagesBridge_onUpdated(env, java_object_);
-}
-
-void NTPBackgroundImagesBridge::OnSuperReferralEnded() {
-  // Android doesn't need to get this update.
 }
