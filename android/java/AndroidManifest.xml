@@ -2,6 +2,10 @@
     android:exported="false">
 </receiver>
 
+<receiver android:name="org.chromium.chrome.browser.vpn.timer.TimerVpnActionReceiver"
+    android:exported="false">
+</receiver>
+
 <activity
     android:name="org.chromium.chrome.browser.rewards.tipping.RewardsTippingBannerActivity"
     android:theme="@style/TippingBraveTranslucent"
@@ -10,12 +14,20 @@
     android:exported="false" />
 
 <activity
-    android:name="org.chromium.chrome.browser.BraveRewardsVerifyWalletActivity"
-    android:theme="@style/Theme.Chromium.Activity.Fullscreen"/>
-
-<activity
     android:name="org.chromium.chrome.browser.BraveRewardsUserWalletActivity"
     android:theme="@style/BraveTranslucent"/>
+
+<activity
+    android:name="org.chromium.chrome.browser.customtabs.BraveAccountCustomTabActivity"
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|navigation"
+    android:theme="@style/BraveAccountTheme"
+    android:exported="false"/>
+
+<activity
+    android:name="org.chromium.chrome.browser.customtabs.FullScreenCustomTabActivity"
+    android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize|uiMode|navigation"
+    android:theme="@style/BottomSheetActivityTheme"
+    android:exported="false"/>
 
 <!-- Onboarding notification -->
 <receiver android:name="org.chromium.chrome.browser.notifications.BraveOnboardingNotification"
@@ -32,11 +44,6 @@
     android:theme="@style/Theme.Chromium.Activity.Fullscreen"
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-<activity
-    android:name="org.chromium.chrome.browser.onboarding.SearchActivity"
-    android:theme="@style/Theme.Chromium.Activity.Fullscreen"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
 <activity
     android:name="org.chromium.chrome.browser.firstrun.WelcomeOnboardingActivity"
@@ -49,27 +56,7 @@
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
-<activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AssetDetailActivity"
-    android:theme="@style/Theme.Chromium.Activity"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-
 <activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AddAccountActivity"
-    android:theme="@style/Theme.Chromium.Activity"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-
-<activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AccountDetailActivity"
-    android:theme="@style/Theme.Chromium.Activity"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-
-<activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AccountPrivateKeyActivity"
-    android:theme="@style/Theme.Chromium.Activity"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-
-<activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AccountDetailsWithQrActivity"
     android:theme="@style/Theme.Chromium.Activity"
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
@@ -84,23 +71,13 @@
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
-<activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AddAssetActivity"
-    android:theme="@style/Theme.Chromium.Activity"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-
 <activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.AdvanceTxSettingActivity"
     android:theme="@style/Theme.Chromium.Activity"
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
 <activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.BraveWalletDAppsActivity"
-    android:theme="@style/BraveTranslucentMaterial"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
-
-<activity android:name="org.chromium.chrome.browser.crypto_wallet.activities.NftDetailActivity"
-    android:theme="@style/Theme.Chromium.Activity"
+    android:theme="@style/Theme.Chromium.Activity.FakeTranslucent"
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
@@ -111,7 +88,13 @@
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
 <activity
-    android:name="org.chromium.chrome.browser.vpn.activities.BraveVpnPlansActivity"
+    android:name="org.chromium.chrome.browser.vpn.activities.VpnPaywallActivity"
+    android:theme="@style/Theme.Chromium.Activity"
+    android:noHistory="true"
+    android:launchMode="singleTask" />
+
+<activity
+    android:name="org.chromium.chrome.browser.vpn.activities.BraveVpnProfileActivity"
     android:theme="@style/Theme.Chromium.Activity"
     android:noHistory="true"
     android:launchMode="singleTask"
@@ -119,10 +102,22 @@
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
 <activity
-    android:name="org.chromium.chrome.browser.vpn.activities.BraveVpnProfileActivity"
+    android:name="org.chromium.chrome.browser.vpn.activities.VpnAlwaysOnActivity"
     android:theme="@style/Theme.Chromium.Activity"
     android:noHistory="true"
     android:launchMode="singleTask"
+    android:screenOrientation="sensorPortrait"
+    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
+
+<activity
+    android:name="org.chromium.chrome.browser.vpn.activities.VpnServerSelectionActivity"
+    android:theme="@style/Theme.Chromium.Activity"
+    android:screenOrientation="sensorPortrait"
+    tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
+
+<activity
+    android:name="org.chromium.chrome.browser.vpn.activities.VpnServerActivity"
+    android:theme="@style/Theme.Chromium.Activity"
     android:screenOrientation="sensorPortrait"
     tools:ignore="LockedOrientationActivity,DiscouragedApi"/>
 
@@ -160,16 +155,16 @@
     android:configChanges="orientation|keyboardHidden|keyboard|screenSize|mcc|mnc|screenLayout|smallestScreenSize"/>
 
 <activity
-    android:name="org.chromium.chrome.browser.brave_leo.BraveLeoActivity"
-    android:theme="@style/Theme.Chromium.Activity.FakeTranslucent"
-    android:exported="false"/>
+    android:name="org.chromium.chrome.browser.brave_leo.BraveLeoPlansActivity"
+    android:theme="@style/Theme.Chromium.Activity"
+    android:noHistory="true"
+    android:launchMode="singleTask"/>
 
-<activity android:name="com.android.billingclient.api.ProxyBillingActivity"
-    android:theme="@style/BraveProxyBillingActivityTheme"
-    android:exported="false"
-    android:screenOrientation="sensorPortrait"
-    tools:ignore="LockedOrientationActivity,DiscouragedApi"
-    tools:node="replace"/>
+<activity
+    android:name="org.chromium.chrome.browser.brave_origin.BraveOriginPlansActivity"
+    android:theme="@style/Theme.Chromium.Activity"
+    android:noHistory="true"
+    android:launchMode="singleTask"/>
 
 <!-- Upgrade related -->
 <receiver android:name="org.chromium.chrome.browser.upgrade.BravePackageReplacedBroadcastReceiver"
@@ -208,7 +203,11 @@
     android:exported="false">
 </service>
 
-<!-- Removing VPN SERVICE for now as we are not using this. -->
+<service
+    android:name="org.chromium.chrome.browser.playlist.hls_content.HlsService"
+    android:exported="false">
+</service>
+
 <!-- <service
     android:name="com.wireguard.android.backend.GoBackend$VpnService"
     android:permission="android.permission.BIND_VPN_SERVICE"
@@ -223,8 +222,23 @@
     android:exported="false"
     android:launchMode="singleTask"
     android:theme="@style/Theme.Chromium.Activity.Fullscreen" />
-<service android:name="com.brave.playlist.PlaylistVideoService"
-    android:exported="false"/>
+
+<service
+    android:name="com.brave.playlist.playback_service.VideoPlaybackService"
+    android:foregroundServiceType="mediaPlayback"
+    android:exported="false">
+    <intent-filter>
+        <action android:name="androidx.media3.session.MediaSessionService"/>
+        <action android:name="android.media.browse.MediaBrowserService"/>
+    </intent-filter>
+</service>
+
+<service android:name="org.chromium.chrome.browser.media.ui.BraveMediaNotificationControllerServices$PlaybackListenerMicService"
+    android:foregroundServiceType="mediaPlayback|microphone" android:exported="false">
+    <intent-filter>
+        <action android:name="android.intent.action.MEDIA_BUTTON" />
+    </intent-filter>
+</service>
 
 <!-- This activity is used for search provider widget -->
 <activity android:name="org.chromium.chrome.browser.searchwidget.SearchWidgetProviderActivity"
