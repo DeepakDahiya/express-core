@@ -6,9 +6,12 @@
 #include "brave/browser/extensions/api/identity/brave_web_auth_flow.h"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "base/notreached.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/extensions/api/identity/identity_api.h"
@@ -27,7 +30,7 @@ BraveWebAuthFlow::BraveWebAuthFlow() {}
 BraveWebAuthFlow::~BraveWebAuthFlow() {}
 
 // static
-absl::optional<std::string> BraveWebAuthFlow::token_for_testing_;
+std::optional<std::string> BraveWebAuthFlow::token_for_testing_;
 // static
 void BraveWebAuthFlow::SetTokenForTesting(const std::string& token) {
   token_for_testing_ = token;
@@ -98,7 +101,6 @@ void BraveWebAuthFlow::OnAuthFlowFailure(WebAuthFlow::Failure failure) {
       break;
     default:
       NOTREACHED() << "Unexpected error from web auth flow: " << failure;
-      break;
   }
   if (web_auth_flow_) {
     web_auth_flow_.release()->DetachDelegateAndDelete();

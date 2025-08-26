@@ -5,30 +5,30 @@
 
 #include "brave/browser/extensions/api/settings_private/brave_prefs_util.h"
 
-#include "base/feature_list.h"
-#include "brave/browser/ethereum_remote_client/buildflags/buildflags.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
-#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
-#include "brave/components/brave_ads/core/public/prefs/pref_names.h"
+#include "brave/components/ai_chat/core/common/pref_names.h"
 #include "brave/components/brave_news/common/pref_names.h"
-#include "brave/components/brave_rewards/common/pref_names.h"
-#include "brave/components/brave_shields/common/pref_names.h"
+#include "brave/components/brave_rewards/core/pref_names.h"
+#include "brave/components/brave_shields/core/common/pref_names.h"
 #include "brave/components/brave_vpn/common/buildflags/buildflags.h"
 #include "brave/components/brave_wallet/browser/pref_names.h"
 #include "brave/components/brave_wayback_machine/buildflags/buildflags.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/de_amp/common/pref_names.h"
-#include "brave/components/debounce/common/pref_names.h"
+#include "brave/components/debounce/core/common/pref_names.h"
 #include "brave/components/decentralized_dns/core/pref_names.h"
-#include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/common/pref_names.h"
 #include "brave/components/omnibox/browser/brave_omnibox_prefs.h"
+#include "brave/components/playlist/common/buildflags/buildflags.h"
 #include "brave/components/request_otr/common/pref_names.h"
 #include "brave/components/speedreader/common/buildflags/buildflags.h"
 #include "brave/components/tor/buildflags/buildflags.h"
+#include "brave/components/web_discovery/buildflags/buildflags.h"
+#include "brave/components/webcompat_reporter/common/pref_names.h"
 #include "chrome/browser/extensions/api/settings_private/prefs_util.h"
 #include "chrome/common/extensions/api/settings_private.h"
 #include "chrome/common/pref_names.h"
+#include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/browsing_data/core/pref_names.h"
 #include "components/gcm_driver/gcm_buildflags.h"
 #include "components/omnibox/browser/omnibox_prefs.h"
@@ -39,20 +39,8 @@
 #include "brave/components/brave_wayback_machine/pref_names.h"
 #endif
 
-#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
-#include "brave/browser/ethereum_remote_client/pref_names.h"
-#endif
-
-#if BUILDFLAG(ENABLE_IPFS)
-#include "brave/components/ipfs/pref_names.h"
-#endif
-
-#if BUILDFLAG(ENABLE_AI_CHAT)
-#include "brave/components/ai_chat/core/common/pref_names.h"
-#endif
-
 #if defined(TOOLKIT_VIEWS)
-#include "brave/components/sidebar/pref_names.h"
+#include "brave/components/sidebar/browser/pref_names.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
@@ -67,6 +55,14 @@
 #include "brave/components/brave_vpn/common/pref_names.h"
 #endif
 
+#if BUILDFLAG(ENABLE_PLAYLIST)
+#include "brave/components/playlist/browser/pref_names.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "brave/components/windows_recall/windows_recall.h"
+#endif
+
 namespace extensions {
 
 using ntp_background_images::prefs::kNewTabPageShowBackgroundImage;
@@ -79,8 +75,9 @@ namespace settings_api = api::settings_private;
 const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
   // Static cache, similar to parent class
   static PrefsUtil::TypedPrefMap* s_brave_allowlist = nullptr;
-  if (s_brave_allowlist)
+  if (s_brave_allowlist) {
     return *s_brave_allowlist;
+  }
   s_brave_allowlist = new PrefsUtil::TypedPrefMap();
   // Start with parent class allowlist
   const auto chromium_prefs = PrefsUtil::GetAllowlistedKeys();
@@ -108,6 +105,12 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[brave_shields::prefs::kReduceLanguageEnabled] =
       settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[brave_shields::prefs::kAdBlockDeveloperMode] =
+      settings_api::PrefType::kBoolean;
+
+  // Webcompat Reporter
+  (*s_brave_allowlist)[webcompat_reporter::prefs::kContactInfoSaveFlagPrefs] =
+      settings_api::PrefType::kBoolean;
 
   // Rewards/Ads prefs
   (*s_brave_allowlist)[brave_rewards::prefs::kEnabled] =
@@ -118,8 +121,6 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
   // Search engine prefs
   (*s_brave_allowlist)[prefs::kAddOpenSearchEngines] =
       settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[prefs::kSyncedDefaultPrivateSearchProviderGUID] =
-      settings_api::PrefType::kNumber;
 
   // autofill prefs
   (*s_brave_allowlist)[kBraveAutofillPrivateWindows] =
@@ -133,11 +134,13 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
   (*s_brave_allowlist)[kLocationBarIsWide] = settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[omnibox::kAutocompleteEnabled] =
       settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[omnibox::kTopSiteSuggestionsEnabled] =
+  (*s_brave_allowlist)[omnibox::kTopSuggestionsEnabled] =
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[omnibox::kHistorySuggestionsEnabled] =
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[omnibox::kBookmarkSuggestionsEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[omnibox::kCommanderSuggestionsEnabled] =
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kAskEnableWidvine] = settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kNewTabPageSuperReferralThemesOption] =
@@ -164,7 +167,9 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kNumber;
 #endif
 #if BUILDFLAG(ENABLE_SPEEDREADER)
-  (*s_brave_allowlist)[speedreader::kSpeedreaderPrefEnabled] =
+  (*s_brave_allowlist)[speedreader::kSpeedreaderPrefFeatureEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[speedreader::kSpeedreaderPrefEnabledForAllSites] =
       settings_api::PrefType::kBoolean;
 #endif
   // De-AMP feature
@@ -184,9 +189,11 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kNewTabPageShowBraveTalk] =
       settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[kNewTabPageShowBraveVPN] =
+      settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kNewTabPageShowsOptions] =
       settings_api::PrefType::kNumber;
-#if BUILDFLAG(ENABLE_EXTENSIONS)
+#if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
   // Web discovery prefs
   (*s_brave_allowlist)[kWebDiscoveryEnabled] = settings_api::PrefType::kBoolean;
 #endif
@@ -211,11 +218,9 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[browsing_data::prefs::kDeleteBraveLeoHistoryOnExit] =
       settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[kAlwaysShowBookmarkBarOnNTP] =
+  (*s_brave_allowlist)[bookmarks::prefs::kAlwaysShowBookmarkBarOnNTP] =
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kMRUCyclingEnabled] = settings_api::PrefType::kBoolean;
-  // WebTorrent pref
-  (*s_brave_allowlist)[kWebTorrentEnabled] = settings_api::PrefType::kBoolean;
 #if BUILDFLAG(ENABLE_BRAVE_WAYBACK_MACHINE)
   (*s_brave_allowlist)[kBraveWaybackMachineEnabled] =
       settings_api::PrefType::kBoolean;
@@ -224,10 +229,7 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kEnableClosingLastTab] =
       settings_api::PrefType::kBoolean;
-  // Hangouts pref
-  (*s_brave_allowlist)[kHangoutsEnabled] = settings_api::PrefType::kBoolean;
-  // IPFS Companion pref
-  (*s_brave_allowlist)[kIPFSCompanionEnabled] =
+  (*s_brave_allowlist)[kShowFullscreenReminder] =
       settings_api::PrefType::kBoolean;
 
   // Brave Wallet pref
@@ -236,6 +238,7 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
   (*s_brave_allowlist)[kDefaultEthereumWallet] =
       settings_api::PrefType::kNumber;
   (*s_brave_allowlist)[kDefaultSolanaWallet] = settings_api::PrefType::kNumber;
+  (*s_brave_allowlist)[kDefaultCardanoWallet] = settings_api::PrefType::kNumber;
   (*s_brave_allowlist)[kDefaultBaseCurrency] = settings_api::PrefType::kString;
   (*s_brave_allowlist)[kDefaultBaseCryptocurrency] =
       settings_api::PrefType::kString;
@@ -243,33 +246,33 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[kBraveWalletAutoLockMinutes] =
       settings_api::PrefType::kNumber;
+  (*s_brave_allowlist)[kBraveWalletTransactionSimulationOptInStatus] =
+      settings_api::PrefType::kNumber;
   (*s_brave_allowlist)[kBraveWalletNftDiscoveryEnabled] =
       settings_api::PrefType::kBoolean;
-
-  // IPFS pref
-#if BUILDFLAG(ENABLE_IPFS)
-  (*s_brave_allowlist)[kIPFSResolveMethod] = settings_api::PrefType::kNumber;
-  (*s_brave_allowlist)[kIPFSAutoFallbackToGateway] =
+  (*s_brave_allowlist)[kBraveWalletPrivateWindowsEnabled] =
       settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[kIPFSPublicGatewayAddress] =
-      settings_api::PrefType::kString;
-  (*s_brave_allowlist)[kIPFSPublicNFTGatewayAddress] =
-      settings_api::PrefType::kString;
-  (*s_brave_allowlist)[kIPFSAutoRedirectToConfiguredGateway] =
-      settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[kIPFSAlwaysStartMode] = settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[kIpfsStorageMax] = settings_api::PrefType::kNumber;
-#endif
 
-// Leo Assistant pref
-#if BUILDFLAG(ENABLE_AI_CHAT)
-  (*s_brave_allowlist)[ai_chat::prefs::kBraveChatAutoGenerateQuestions] =
-      settings_api::PrefType::PREF_TYPE_BOOLEAN;
+  // Leo Assistant pref
+  (*s_brave_allowlist)[ai_chat::prefs::kBraveChatStorageEnabled] =
+      settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[ai_chat::prefs::kBraveChatAutocompleteProviderEnabled] =
       settings_api::PrefType::kBoolean;
-  (*s_brave_allowlist)[ai_chat::prefs::kDefaultModelKey] =
-      settings_api::PrefType::kString;
-#endif
+  (*s_brave_allowlist)[ai_chat::prefs::kBraveAIChatContextMenuEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[ai_chat::prefs::kBraveAIChatShowToolbarButton] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[ai_chat::prefs::kBraveAIChatTabOrganizationEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[ai_chat::prefs::kBraveAIChatUserCustomizationEnabled] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[ai_chat::prefs::kBraveAIChatUserMemoryEnabled] =
+      settings_api::PrefType::kBoolean;
+
+  // Survey Panelist pref
+  (*s_brave_allowlist)
+      [ntp_background_images::prefs::kNewTabPageSponsoredImagesSurveyPanelist] =
+          settings_api::PrefType::kBoolean;
 
 #if !BUILDFLAG(USE_GCM_FROM_PLATFORM)
   // Push Messaging Pref
@@ -280,8 +283,6 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
   (*s_brave_allowlist)[omnibox::kPreventUrlElisionsInOmnibox] =
       settings_api::PrefType::kBoolean;
 #if BUILDFLAG(ENABLE_TOR)
-  (*s_brave_allowlist)[tor::prefs::kAutoOnionRedirect] =
-      settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[tor::prefs::kOnionOnlyInTorWindows] =
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[tor::prefs::kBridgesConfig] =
@@ -306,9 +307,6 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
   (*s_brave_allowlist)[kEnableMediaRouterOnRestart] =
       settings_api::PrefType::kBoolean;
 
-  // NFT pinning pref
-  (*s_brave_allowlist)[kAutoPinEnabled] = settings_api::PrefType::kBoolean;
-
 #if defined(TOOLKIT_VIEWS)
   // Vertical tab strip prefs
   (*s_brave_allowlist)[brave_tabs::kVerticalTabsEnabled] =
@@ -317,12 +315,28 @@ const PrefsUtil::TypedPrefMap& BravePrefsUtil::GetAllowlistedKeys() {
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[brave_tabs::kVerticalTabsShowTitleOnWindow] =
       settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[brave_tabs::kVerticalTabsOnRight] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[brave_tabs::kVerticalTabsShowScrollbar] =
+      settings_api::PrefType::kBoolean;
+  (*s_brave_allowlist)[brave_tabs::kVerticalTabsExpandedStatePerWindow] =
+      settings_api::PrefType::kBoolean;
 #endif
 
 #if BUILDFLAG(ENABLE_PLAYLIST)
   (*s_brave_allowlist)[playlist::kPlaylistEnabledPref] =
       settings_api::PrefType::kBoolean;
   (*s_brave_allowlist)[playlist::kPlaylistCacheByDefault] =
+      settings_api::PrefType::kBoolean;
+#endif
+
+#if !BUILDFLAG(IS_ANDROID)
+  (*s_brave_allowlist)[brave_tabs::kSharedPinnedTab] =
+      settings_api::PrefType::kBoolean;
+#endif
+
+#if BUILDFLAG(IS_WIN)
+  (*s_brave_allowlist)[windows_recall::prefs::kWindowsRecallDisabled] =
       settings_api::PrefType::kBoolean;
 #endif
 

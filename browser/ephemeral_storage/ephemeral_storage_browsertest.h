@@ -14,6 +14,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "services/network/public/mojom/clear_data_filter.mojom.h"
@@ -60,6 +61,7 @@ class EphemeralStorageBrowserTest : public InProcessBrowserTest {
       delete;
   ~EphemeralStorageBrowserTest() override;
 
+  void SetUp() override;
   void SetUpOnMainThread() override;
   void SetUpCommandLine(base::CommandLine* command_line) override;
   void SetUpInProcessBrowserTestFixture() override;
@@ -86,7 +88,7 @@ class EphemeralStorageBrowserTest : public InProcessBrowserTest {
                                                StorageType storage_type);
   void SetCookieInFrame(content::RenderFrameHost* host, std::string cookie);
   content::EvalJsResult GetCookiesInFrame(content::RenderFrameHost* host);
-  size_t WaitForCleanupAfterKeepAlive(Browser* browser = nullptr);
+  size_t WaitForCleanupAfterKeepAlive(Profile* profile = nullptr);
   void ExpectValuesFromFramesAreEmpty(const base::Location& location,
                                       const ValuesFromFrames& values);
   void ExpectValuesFromFrameAreEmpty(const base::Location& location,
@@ -103,15 +105,13 @@ class EphemeralStorageBrowserTest : public InProcessBrowserTest {
 
   // Helper to load easy-to-use Indexed DB API.
   void LoadIndexedDbHelper(content::RenderFrameHost* host);
-  bool SetIDBValue(content::RenderFrameHost* host);
+  content::EvalJsResult SetIDBValue(content::RenderFrameHost* host);
 
   HostContentSettingsMap* content_settings();
   network::mojom::CookieManager* CookieManager();
   std::vector<net::CanonicalCookie> GetAllCookies();
 
  protected:
-  void SetUpHttpsServer();
-
   net::test_server::EmbeddedTestServer https_server_;
   content::ContentMockCertVerifier mock_cert_verifier_;
   GURL a_site_ephemeral_storage_url_;

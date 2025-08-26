@@ -8,16 +8,21 @@
 #include <stdint.h>
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/files/file_path.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/version.h"
 #include "brave/components/constants/brave_switches.h"
 #include "build/build_config.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
 #include "components/component_updater/component_updater_command_line_config_policy.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -28,6 +33,7 @@
 #include "components/update_client/crx_downloader_factory.h"
 #include "components/update_client/net/network_chromium.h"
 #include "components/update_client/patch/patch_impl.h"
+#include "components/update_client/persisted_data.h"
 #include "components/update_client/protocol_handler.h"
 #include "components/update_client/unzip/unzip_impl.h"
 #include "components/update_client/unzipper.h"
@@ -52,7 +58,19 @@ BraveConfigurator::BraveConfigurator(
     : configurator_impl_(ComponentUpdaterCommandLineConfigPolicy(cmdline),
                          false),
       pref_service_(raw_ref<PrefService>::from_ptr(pref_service)),
-      url_loader_factory_(std::move(url_loader_factory)) {}
+      persisted_data_(update_client::CreatePersistedData(
+          base::BindRepeating(
+              [](PrefService* pref_service) { return pref_service; },
+              pref_service),
+          nullptr)),
+      url_loader_factory_(std::move(url_loader_factory)) {
+  base::FilePath path;
+  bool result = base::PathService::Get(chrome::DIR_USER_DATA, &path);
+  crx_cache_ = base::MakeRefCounted<update_client::CrxCache>(
+      result ? std::optional<base::FilePath>(
+                   path.AppendASCII("component_crx_cache"))
+             : std::nullopt);
+}
 
 BraveConfigurator::~BraveConfigurator() = default;
 
@@ -91,7 +109,7 @@ std::vector<GURL> BraveConfigurator::PingUrl() const {
 }
 
 std::string BraveConfigurator::GetProdId() const {
-  return std::string();
+  return "BraveComponentUpdater";
 }
 
 base::Version BraveConfigurator::GetBrowserVersion() const {
@@ -160,25 +178,20 @@ BraveConfigurator::GetPatcherFactory() {
   return patch_factory_;
 }
 
-bool BraveConfigurator::EnabledDeltas() const {
-  return configurator_impl_.EnabledDeltas();
-}
-
 bool BraveConfigurator::EnabledBackgroundDownloader() const {
   return configurator_impl_.EnabledBackgroundDownloader();
 }
 
 bool BraveConfigurator::EnabledCupSigning() const {
-  return false;
+  return configurator_impl_.EnabledCupSigning();
 }
 
 PrefService* BraveConfigurator::GetPrefService() const {
   return base::to_address(pref_service_);
 }
 
-update_client::ActivityDataService* BraveConfigurator::GetActivityDataService()
-    const {
-  return nullptr;
+update_client::PersistedData* BraveConfigurator::GetPersistedData() const {
+  return persisted_data_.get();
 }
 
 bool BraveConfigurator::IsPerUserInstall() const {
@@ -190,8 +203,8 @@ BraveConfigurator::GetProtocolHandlerFactory() const {
   return configurator_impl_.GetProtocolHandlerFactory();
 }
 
-absl::optional<bool> BraveConfigurator::IsMachineExternallyManaged() const {
-  return absl::nullopt;
+std::optional<bool> BraveConfigurator::IsMachineExternallyManaged() const {
+  return std::nullopt;
 }
 
 update_client::UpdaterStateProvider BraveConfigurator::GetUpdaterStateProvider()
@@ -202,8 +215,12 @@ update_client::UpdaterStateProvider BraveConfigurator::GetUpdaterStateProvider()
   return configurator_impl_.GetUpdaterStateProvider();
 }
 
-absl::optional<base::FilePath> BraveConfigurator::GetCrxCachePath() const {
-  return absl::nullopt;
+scoped_refptr<update_client::CrxCache> BraveConfigurator::GetCrxCache() const {
+  return crx_cache_;
+}
+
+bool BraveConfigurator::IsConnectionMetered() const {
+  return configurator_impl_.IsConnectionMetered();
 }
 
 }  // namespace component_updater

@@ -11,10 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "base/types/expected.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
-#include "brave/components/brave_rewards/common/mojom/rewards_types.mojom.h"
-#include "brave/components/brave_rewards/core/mojom_structs.h"
+#include "brave/components/brave_rewards/core/mojom/rewards.mojom.h"
 #include "extensions/browser/extension_function.h"
 
 namespace extensions {
@@ -26,16 +24,6 @@ class BraveRewardsIsSupportedFunction : public ExtensionFunction {
 
  protected:
   ~BraveRewardsIsSupportedFunction() override;
-
-  ResponseAction Run() override;
-};
-
-class BraveRewardsIsUnsupportedRegionFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.isUnsupportedRegion", UNKNOWN)
-
- protected:
-  ~BraveRewardsIsUnsupportedRegionFunction() override;
 
   ResponseAction Run() override;
 };
@@ -60,36 +48,6 @@ class BraveRewardsOpenRewardsPanelFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class BraveRewardsShowRewardsSetupFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.showRewardsSetup", UNKNOWN)
-
- protected:
-  ~BraveRewardsShowRewardsSetupFunction() override;
-
-  ResponseAction Run() override;
-};
-
-class BraveRewardsShowGrantCaptchaFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.showGrantCaptcha", UNKNOWN)
-
- protected:
-  ~BraveRewardsShowGrantCaptchaFunction() override;
-
-  ResponseAction Run() override;
-};
-
-class BraveRewardsUpdateMediaDurationFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.updateMediaDuration", UNKNOWN)
-
- protected:
-  ~BraveRewardsUpdateMediaDurationFunction() override;
-
-  ResponseAction Run() override;
-};
-
 class BraveRewardsGetPublisherInfoFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("braveRewards.getPublisherInfo", UNKNOWN)
@@ -104,15 +62,6 @@ class BraveRewardsGetPublisherInfoFunction : public ExtensionFunction {
                           brave_rewards::mojom::PublisherInfoPtr info);
 };
 
-class BraveRewardsSetPublisherIdForTabFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.setPublisherIdForTab", UNKNOWN)
-
- protected:
-  ~BraveRewardsSetPublisherIdForTabFunction() override;
-  ResponseAction Run() override;
-};
-
 class BraveRewardsGetPublisherInfoForTabFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("braveRewards.getPublisherInfoForTab", UNKNOWN)
@@ -125,69 +74,6 @@ class BraveRewardsGetPublisherInfoForTabFunction : public ExtensionFunction {
  private:
   void OnGetPublisherPanelInfo(brave_rewards::mojom::Result result,
                                brave_rewards::mojom::PublisherInfoPtr info);
-};
-
-class BraveRewardsGetPublisherPanelInfoFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.getPublisherPanelInfo", UNKNOWN)
-
- protected:
-  ~BraveRewardsGetPublisherPanelInfoFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnGetPublisherPanelInfo(const brave_rewards::mojom::Result result,
-                               brave_rewards::mojom::PublisherInfoPtr info);
-};
-
-class BraveRewardsSavePublisherInfoFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.savePublisherInfo", UNKNOWN)
-
- protected:
-  ~BraveRewardsSavePublisherInfoFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnSavePublisherInfo(const brave_rewards::mojom::Result result);
-};
-
-class BraveRewardsTipSiteFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.tipSite", UNKNOWN)
-
- protected:
-  ~BraveRewardsTipSiteFunction() override;
-
-  ResponseAction Run() override;
-};
-
-class BraveRewardsTipUserFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.tipUser", UNKNOWN)
-
- protected:
-  ~BraveRewardsTipUserFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnTipUserGetPublisherInfo(const brave_rewards::mojom::Result result,
-                                 brave_rewards::mojom::PublisherInfoPtr info);
-  void OnTipUserSavePublisherInfo(const brave_rewards::mojom::Result result);
-  void ShowTipDialog();
-};
-
-class BraveRewardsGetPublisherDataFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.getPublisherData", UNKNOWN)
-
- protected:
-  ~BraveRewardsGetPublisherDataFunction() override;
-
-  ResponseAction Run() override;
 };
 
 class BraveRewardsGetRewardsParametersFunction : public ExtensionFunction {
@@ -288,85 +174,6 @@ class BraveRewardsGetBalanceReportFunction : public ExtensionFunction {
                        brave_rewards::mojom::BalanceReportInfoPtr report);
 };
 
-class BraveRewardsIncludeInAutoContributionFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.includeInAutoContribution", UNKNOWN)
-
- protected:
-  ~BraveRewardsIncludeInAutoContributionFunction() override;
-
-  ResponseAction Run() override;
-};
-
-class BraveRewardsFetchPromotionsFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.fetchPromotions", UNKNOWN)
-
- protected:
-  ~BraveRewardsFetchPromotionsFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnPromotionsFetched(
-      std::vector<brave_rewards::mojom::PromotionPtr> promotions);
-};
-
-class BraveRewardsClaimPromotionFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.claimPromotion", UNKNOWN)
-
- protected:
-  ~BraveRewardsClaimPromotionFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnClaimPromotion(const std::string& promotion_id,
-                        const brave_rewards::mojom::Result result,
-                        const std::string& captcha_image,
-                        const std::string& hint,
-                        const std::string& captcha_id);
-};
-
-class BraveRewardsAttestPromotionFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.attestPromotion", UNKNOWN)
-
- protected:
-  ~BraveRewardsAttestPromotionFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnAttestPromotion(const std::string& promotion_id,
-                         const brave_rewards::mojom::Result result,
-                         brave_rewards::mojom::PromotionPtr promotion);
-};
-
-class BraveRewardsSetAutoContributeEnabledFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.setAutoContributeEnabled", UNKNOWN)
-
- protected:
-  ~BraveRewardsSetAutoContributeEnabledFunction() override;
-
-  ResponseAction Run() override;
-};
-
-class BraveRewardsGetACEnabledFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.getACEnabled", UNKNOWN)
-
- protected:
-  ~BraveRewardsGetACEnabledFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnGetACEnabled(bool enabled);
-};
-
 class BraveRewardsSaveRecurringTipFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("braveRewards.saveRecurringTip", UNKNOWN)
@@ -429,22 +236,6 @@ class BraveRewardsGetAllNotificationsFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
-class BraveRewardsGetInlineTippingPlatformEnabledFunction :
-    public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION(
-      "braveRewards.getInlineTippingPlatformEnabled",
-      UNKNOWN)
-
- protected:
-  ~BraveRewardsGetInlineTippingPlatformEnabledFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void OnInlineTipSetting(bool value);
-};
-
 class BraveRewardsFetchBalanceFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("braveRewards.fetchBalance", UNKNOWN)
@@ -455,9 +246,7 @@ class BraveRewardsFetchBalanceFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnFetchBalance(
-      base::expected<brave_rewards::mojom::BalancePtr,
-                     brave_rewards::mojom::FetchBalanceError> result);
+  void OnFetchBalance(brave_rewards::mojom::BalancePtr balance);
 };
 
 class BraveRewardsGetExternalWalletProvidersFunction
@@ -481,9 +270,7 @@ class BraveRewardsGetExternalWalletFunction : public ExtensionFunction {
   ResponseAction Run() override;
 
  private:
-  void OnGetExternalWallet(
-      base::expected<brave_rewards::mojom::ExternalWalletPtr,
-                     brave_rewards::mojom::GetExternalWalletError> result);
+  void OnGetExternalWallet(brave_rewards::mojom::ExternalWalletPtr wallet);
 };
 
 class BraveRewardsGetRewardsEnabledFunction : public ExtensionFunction {
@@ -519,6 +306,50 @@ class BraveRewardsIsInitializedFunction : public ExtensionFunction {
   ResponseAction Run() override;
 };
 
+class BraveRewardsSelfCustodyInviteDismissedFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("braveRewards.selfCustodyInviteDismissed", UNKNOWN)
+
+ protected:
+  ~BraveRewardsSelfCustodyInviteDismissedFunction() override;
+
+  ResponseAction Run() override;
+};
+
+class BraveRewardsDismissSelfCustodyInviteFunction : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("braveRewards.dismissSelfCustodyInvite", UNKNOWN)
+
+ protected:
+  ~BraveRewardsDismissSelfCustodyInviteFunction() override;
+
+  ResponseAction Run() override;
+};
+
+class BraveRewardsIsTermsOfServiceUpdateRequiredFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("braveRewards.isTermsOfServiceUpdateRequired",
+                             UNKNOWN)
+
+ protected:
+  ~BraveRewardsIsTermsOfServiceUpdateRequiredFunction() override;
+
+  ResponseAction Run() override;
+};
+
+class BraveRewardsAcceptTermsOfServiceUpdateFunction
+    : public ExtensionFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("braveRewards.acceptTermsOfServiceUpdate", UNKNOWN)
+
+ protected:
+  ~BraveRewardsAcceptTermsOfServiceUpdateFunction() override;
+
+  ResponseAction Run() override;
+};
+
 class BraveRewardsGetScheduledCaptchaInfoFunction : public ExtensionFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("braveRewards.getScheduledCaptchaInfo", UNKNOWN)
@@ -539,20 +370,6 @@ class BraveRewardsUpdateScheduledCaptchaResultFunction
   ~BraveRewardsUpdateScheduledCaptchaResultFunction() override;
 
   ResponseAction Run() override;
-};
-
-class BraveRewardsGetPrefsFunction : public ExtensionFunction {
- public:
-  DECLARE_EXTENSION_FUNCTION("braveRewards.getPrefs", UNKNOWN)
-
- protected:
-  ~BraveRewardsGetPrefsFunction() override;
-
-  ResponseAction Run() override;
-
- private:
-  void GetAutoContributePropertiesCallback(
-      brave_rewards::mojom::AutoContributePropertiesPtr properties);
 };
 
 }  // namespace api

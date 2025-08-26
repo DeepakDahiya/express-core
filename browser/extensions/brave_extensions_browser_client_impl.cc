@@ -8,6 +8,7 @@
 #include <memory>
 #include <tuple>
 
+#include "base/check.h"
 #include "brave/browser/extensions/brave_extensions_browser_api_provider.h"
 #include "chrome/browser/extensions/chrome_component_extension_resource_manager.h"
 
@@ -15,6 +16,11 @@ namespace extensions {
 
 BraveExtensionsBrowserClientImpl::BraveExtensionsBrowserClientImpl() {
   AddAPIProvider(std::make_unique<BraveExtensionsBrowserAPIProvider>());
+}
+
+void BraveExtensionsBrowserClientImpl::Init() {
+  ChromeExtensionsBrowserClient::Init();
+
   // ChromeComponentExtensionResourceManager's Data needs to be LazyInit'ed on
   // the UI thread (due to pdf_extension_util::AddStrings calling
   // g_browser_process->GetApplicationLocale() that has a DCHECK to that

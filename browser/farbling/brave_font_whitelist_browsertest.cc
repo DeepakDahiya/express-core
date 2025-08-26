@@ -6,7 +6,7 @@
 #include <string_view>
 
 #include "base/test/scoped_feature_list.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/content_settings/renderer/brave_content_settings_agent_impl.h"
 #include "brave/third_party/blink/renderer/brave_font_whitelist.h"
 #include "content/public/renderer/render_frame.h"
@@ -20,7 +20,7 @@ using brave_shields::features::kBraveReduceLanguage;
 
 namespace {
 
-const char kFontLocalSourceHTML[] =
+constexpr char kFontLocalSourceHTML[] =
     "<html><head><style>@font-face{font-family:Helvetica "
     "Shadow;src:local('Helvetica')}</style></head><body><p><span id='test1' "
     "style=\"font-family: 'Helvetica'\">mmMwWLliI0fiflO&1</span></p><p><span "
@@ -39,7 +39,6 @@ class MockContentSettingsAgentImpl : public BraveContentSettingsAgentImpl {
   explicit MockContentSettingsAgentImpl(content::RenderFrame* render_frame)
       : BraveContentSettingsAgentImpl(
             render_frame,
-            false,
             std::make_unique<ContentSettingsAgentImpl::Delegate>()) {}
 
   bool IsReduceLanguageEnabled() override { return true; }
@@ -67,12 +66,10 @@ class BraveFontWhitelistRenderViewTest : public content::RenderViewTest {
 #define MAYBE_FontLocalSource DISABLED_FontLocalSource
 #endif
 TEST_F(BraveFontWhitelistRenderViewTest, MAYBE_FontLocalSource) {
-  // Clear the font whitelist. This creates a situation where we know there is a
-  // font installed locally (Helvetica, preinstalled on every Mac) that is not
-  // on the font whitelist.
-  brave::set_font_whitelist_for_testing(
-      true,
-      base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{}));
+  // Simulate an empty font whitelist. This creates a situation where we know
+  // there is a font installed locally (Helvetica, preinstalled on every Mac)
+  // that is not on the font whitelist.
+  brave::SetSimulateEmptyFontWhitelistForTesting(true);
 
   // Use mock content settings agent that unconditionally enables font
   // whitelisting.
@@ -85,8 +82,7 @@ TEST_F(BraveFontWhitelistRenderViewTest, MAYBE_FontLocalSource) {
   // previously succeeded (thereby bypassing the font whitelist) because
   // src:local CSS font processing was not hooked into the font whitelist logic
   // in brave::AllowFontFamily.
-  LoadHTMLWithUrlOverride(kFontLocalSourceHTML,
-                          GURL("http://b.test/").spec().c_str());
+  LoadHTMLWithUrlOverride(kFontLocalSourceHTML, GURL("http://b.test/").spec());
   blink::WebDocument document = GetMainFrame()->GetDocument();
   blink::WebElement p1 =
       document.GetElementById(blink::WebString::FromUTF8("test1"));
@@ -98,6 +94,8 @@ TEST_F(BraveFontWhitelistRenderViewTest, MAYBE_FontLocalSource) {
   // If the width of both spans is the same, that means they were both blocked
   // from using the specified font (Helvetica), which is what we want.
   EXPECT_EQ(p1.BoundsInWidget().width(), p2.BoundsInWidget().width());
+
+  brave::SetSimulateEmptyFontWhitelistForTesting(false);
 }
 
 }  // namespace content_settings

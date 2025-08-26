@@ -6,9 +6,8 @@
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/strcat.h"
-#include "base/strings/string_util.h"
 #include "base/test/bind.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -26,6 +25,7 @@
 #include "services/network/public/cpp/network_switches.h"
 #include "services/network/public/mojom/network_context.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -76,10 +76,9 @@ class HSTSPartitioningBrowserTestBase : public InProcessBrowserTest {
     mock_cert_verifier_.SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         network::switches::kHostResolverRules,
-        base::StringPrintf("MAP *:80 127.0.0.1:%d,"
-                           "MAP *:443 127.0.0.1:%d",
-                           embedded_test_server()->port(),
-                           https_server_.port()));
+        absl::StrFormat("MAP *:80 127.0.0.1:%d,"
+                        "MAP *:443 127.0.0.1:%d",
+                        embedded_test_server()->port(), https_server_.port()));
   }
 
   void SetUpOnMainThread() override {
@@ -145,19 +144,34 @@ class HSTSPartitioningBrowserTestBase : public InProcessBrowserTest {
     run_loop.Run();
   }
 
-  bool NetworkContextIsHSTSActiveForHost(const std::string& host) {
+  bool NetworkContextIsHSTSActiveForHostWithTopLevelNav(const std::string& host,
+                                                        bool is_top_level_nav) {
     content::StoragePartition* partition =
         browser()->profile()->GetDefaultStoragePartition();
     base::RunLoop run_loop;
     bool result = false;
     partition->GetNetworkContext()->IsHSTSActiveForHost(
-        host,
+        host, is_top_level_nav,
         base::BindLambdaForTesting([&run_loop, &result](bool is_hsts_active) {
           result = is_hsts_active;
           run_loop.Quit();
         }));
     run_loop.Run();
     return result;
+  }
+
+  bool NetworkContextIsHSTSActiveForHost(const std::string& host) {
+    if (!NetworkContextIsHSTSActiveForHostWithTopLevelNav(
+            host,
+            /*is_top_level_nav=*/true)) {
+      return false;
+    }
+    if (!NetworkContextIsHSTSActiveForHostWithTopLevelNav(
+            host,
+            /*is_top_level_nav=*/false)) {
+      return false;
+    }
+    return true;
   }
 
   base::Value::Dict NetworkContextGetHSTSState(const std::string& host) {
@@ -538,7 +552,7 @@ class HSTSSameDomainPartitionUsesOldFormatBrowserTest
   static bool IsPreTest() {
     const ::testing::TestInfo* const test_info =
         ::testing::UnitTest::GetInstance()->current_test_info();
-    return base::StartsWith(test_info->name(), "PRE_");
+    return std::string_view(test_info->name()).starts_with("PRE_");
   }
 
  private:

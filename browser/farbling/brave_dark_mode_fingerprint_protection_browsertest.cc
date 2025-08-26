@@ -3,27 +3,29 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/path_service.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/thread_test_helper.h"
 #include "brave/browser/brave_content_browser_client.h"
 #include "brave/browser/extensions/brave_base_local_data_files_browsertest.h"
 #include "brave/components/brave_component_updater/browser/local_data_files_service.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/constants/brave_paths.h"
 #include "brave/components/constants/pref_names.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/common/chrome_content_client.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/dns/mock_host_resolver.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "ui/color/color_provider.h"
 #include "ui/color/color_provider_key.h"
 #include "ui/color/color_provider_manager.h"
@@ -33,12 +35,17 @@
 using brave_shields::ControlType;
 using brave_shields::features::kBraveDarkModeBlock;
 
-const char kEmbeddedTestServerDirectory[] = "dark_mode_block";
-const char kMatchDarkModeFormatString[] =
+constexpr char kEmbeddedTestServerDirectory[] = "dark_mode_block";
+constexpr char kMatchDarkModeFormatString[] =
     "window.matchMedia('(prefers-color-scheme: %s)').matches;";
 
 class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
  public:
+  BraveDarkModeFingerprintProtectionTest() {
+    feature_list_.InitAndEnableFeature(
+        brave_shields::features::kBraveShowStrictFingerprintingMode);
+  }
+
   class BraveContentBrowserClientWithWebTheme
       : public BraveContentBrowserClient {
    public:
@@ -49,7 +56,7 @@ class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
     const ui::NativeTheme* GetWebTheme() const override { return theme_; }
 
    private:
-    const raw_ptr<const ui::NativeTheme> theme_;
+    const raw_ptr<const ui::NativeTheme, DanglingUntriaged> theme_;
   };
 
   class MockColorProviderSource : public ui::ColorProviderSource {
@@ -57,7 +64,6 @@ class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
     explicit MockColorProviderSource(bool is_dark) {
       key_.color_mode = is_dark ? ui::ColorProviderKey::ColorMode::kDark
                                 : ui::ColorProviderKey::ColorMode::kLight;
-      provider_.GenerateColorMap();
     }
     MockColorProviderSource(const MockColorProviderSource&) = delete;
     MockColorProviderSource& operator=(const MockColorProviderSource&) = delete;
@@ -69,7 +75,7 @@ class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
     }
     ui::ColorProviderKey GetColorProviderKey() const override { return key_; }
 
-    const ui::RendererColorMap GetRendererColorMap(
+    ui::RendererColorMap GetRendererColorMap(
         ui::ColorProviderKey::ColorMode color_mode,
         ui::ColorProviderKey::ForcedColors forced_colors) const override {
       auto key = GetColorProviderKey();
@@ -95,7 +101,6 @@ class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
     host_resolver()->AddRule("*", "127.0.0.1");
     content::SetupCrossSiteRedirector(embedded_test_server());
 
-    brave::RegisterPathProvider();
     base::FilePath test_data_dir;
     base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
     test_data_dir = test_data_dir.AppendASCII(kEmbeddedTestServerDirectory);
@@ -145,15 +150,15 @@ class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
   bool IsReportingDarkMode() {
     bool light_mode_result =
         content::EvalJs(contents(),
-                        base::StringPrintf(kMatchDarkModeFormatString, "light"))
+                        absl::StrFormat(kMatchDarkModeFormatString, "light"))
             .ExtractBool();
 
     if (!light_mode_result) {
       // Sanity check to make sure that 'dark' is reported for
       // prefers-color-scheme when 'light' was not found before.
-      EXPECT_EQ(true, content::EvalJs(contents(),
-                                      base::StringPrintf(
-                                          kMatchDarkModeFormatString, "dark")));
+      EXPECT_EQ(true, content::EvalJs(
+                          contents(),
+                          absl::StrFormat(kMatchDarkModeFormatString, "dark")));
 
       // Report dark mode.
       return true;
@@ -175,6 +180,7 @@ class BraveDarkModeFingerprintProtectionTest : public InProcessBrowserTest {
  private:
   GURL top_level_page_url_;
   GURL dark_mode_url_;
+  base::test::ScopedFeatureList feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(BraveDarkModeFingerprintProtectionTest, DarkModeCheck) {

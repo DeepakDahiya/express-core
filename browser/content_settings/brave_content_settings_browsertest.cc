@@ -4,7 +4,8 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "base/containers/contains.h"
-#include "base/strings/stringprintf.h"
+#include "base/containers/fixed_flat_set.h"
+#include "base/notreached.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -18,6 +19,7 @@
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "services/network/public/cpp/network_switches.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "url/gurl.h"
 
 class BraveContentSettingsBrowserTest : public InProcessBrowserTest {
@@ -35,7 +37,7 @@ class BraveContentSettingsBrowserTest : public InProcessBrowserTest {
     InProcessBrowserTest::SetUpCommandLine(command_line);
     command_line->AppendSwitchASCII(
         network::switches::kHostResolverRules,
-        base::StringPrintf("MAP *:443 127.0.0.1:%d", https_server_.port()));
+        absl::StrFormat("MAP *:443 127.0.0.1:%d", https_server_.port()));
   }
 
   void SetUpOnMainThread() override {
@@ -47,13 +49,14 @@ class BraveContentSettingsBrowserTest : public InProcessBrowserTest {
       ContentSettingsType content_type,
       ContentSetting current_setting,
       ContentSetting incognito_default_setting) {
-    const ContentSettingsType kOffTheRecordAwareTypes[] = {
-        ContentSettingsType::NOTIFICATIONS,
-        ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
-        ContentSettingsType::IDLE_DETECTION,
-        ContentSettingsType::BRAVE_HTTPS_UPGRADE,
-    };
-    if (base::Contains(kOffTheRecordAwareTypes, content_type)) {
+    static constexpr auto kOffTheRecordAwareTypes =
+        base::MakeFixedFlatSet<ContentSettingsType>({
+            ContentSettingsType::NOTIFICATIONS,
+            ContentSettingsType::PROTECTED_MEDIA_IDENTIFIER,
+            ContentSettingsType::IDLE_DETECTION,
+            ContentSettingsType::BRAVE_HTTPS_UPGRADE,
+        });
+    if (kOffTheRecordAwareTypes.contains(content_type)) {
       return current_setting;
     }
     return incognito_default_setting;
@@ -80,12 +83,10 @@ IN_PROC_BROWSER_TEST_F(BraveContentSettingsBrowserTest,
     const ContentSettingsType type = info->website_settings_info()->type();
     SCOPED_TRACE(testing::Message()
                  << "ContentSettingsType=" << static_cast<int>(type));
-    // Ignore unusual settings and settings that use CONTENT_SETTING_DEFAULT as
-    // a default value (it DCHECKs as invalid default value).
+    // Ignore unusual settings and settings that have no default value.
     if (!info->IsSettingValid(CONTENT_SETTING_ALLOW) ||
         !info->IsSettingValid(CONTENT_SETTING_BLOCK) ||
-        info->website_settings_info()->initial_default_value().GetInt() ==
-            CONTENT_SETTING_DEFAULT) {
+        info->website_settings_info()->initial_default_value().is_none()) {
       continue;
     }
 
@@ -113,17 +114,19 @@ IN_PROC_BROWSER_TEST_F(BraveContentSettingsBrowserTest,
         info->incognito_behavior() ==
         content_settings::ContentSettingsInfo::INHERIT_IN_INCOGNITO;
     if (!unchecked_inherit_in_incognito) {
-      EXPECT_EQ(
-          info->incognito_behavior(),
-          content_settings::ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE)
-          << "Unexpected inheritance setting found. Most likely you should "
-             "make adjustments to the logic to handle it properly.";
-
-      EXPECT_NE(info->GetInitialDefaultSetting(), CONTENT_SETTING_ALLOW)
-          << "INHERIT_IF_LESS_PERMISSIVE setting should not default to ALLOW, "
-             "otherwise it's a privacy issue. Please review this setting and "
-             "most likely add an exception for it to always use upstream "
-             "IsMorePermissive() call.";
+      switch (info->incognito_behavior()) {
+        case content_settings::ContentSettingsInfo::INHERIT_IN_INCOGNITO:
+          NOTREACHED();
+        case content_settings::ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE:
+          EXPECT_NE(info->GetInitialDefaultSetting(), CONTENT_SETTING_ALLOW)
+              << "INHERIT_IF_LESS_PERMISSIVE setting should not default to "
+                 "ALLOW, otherwise it's a privacy issue. Please review this "
+                 "setting and most likely add an exception for it to always "
+                 "use upstream IsMorePermissive() call.";
+          break;
+        case content_settings::ContentSettingsInfo::DONT_INHERIT_IN_INCOGNITO:
+          break;
+      }
     }
 
     // Set ALLOW value in normal profile.

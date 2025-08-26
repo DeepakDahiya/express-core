@@ -3,26 +3,36 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <optional>
+
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
-#include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_wallet/browser/ens_resolver_task.h"
-#include "brave/components/brave_wallet/common/features.h"
+#include "brave/components/brave_wallet/common/common_utils.h"
+#include "brave/components/brave_wallet/common/pref_names.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_opt_in_page.h"
 #include "brave/components/decentralized_dns/content/ens_offchain_lookup_opt_in_page.h"
 #include "brave/components/decentralized_dns/core/constants.h"
 #include "brave/components/decentralized_dns/core/pref_names.h"
 #include "brave/components/decentralized_dns/core/utils.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/policy/core/browser/browser_policy_connector.h"
+#include "components/policy/core/common/mock_configuration_policy_provider.h"
+#include "components/policy/core/common/policy_map.h"
+#include "components/policy/policy_constants.h"
 #include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_page.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_navigation_observer.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -84,10 +94,6 @@ class DecentralizedDnsNavigationThrottleBrowserTest
   ~DecentralizedDnsNavigationThrottleBrowserTest() override = default;
 
   PrefService* local_state() { return g_browser_process->local_state(); }
-
- private:
-  base::test::ScopedFeatureList scoped_feature{
-      brave_wallet::features::kBraveWalletSnsFeature};
 };
 
 IN_PROC_BROWSER_TEST_F(DecentralizedDnsNavigationThrottleBrowserTest,
@@ -181,31 +187,27 @@ class EnsL2OffchanLookupNavigationThrottleBrowserTest
   PrefService* local_state() { return g_browser_process->local_state(); }
 
  protected:
-  void SetEnsResolverResult(absl::optional<EnsResolverTaskResult> task_result,
-                            absl::optional<EnsResolverTaskError> task_error) {
+  void SetEnsResolverResult(std::optional<EnsResolverTaskResult> task_result,
+                            std::optional<EnsResolverTaskError> task_error) {
     ens_resolved_task_result_ = std::move(task_result);
     ens_resolved_task_error_ = std::move(task_error);
   }
 
-  absl::optional<EnsResolverTaskResult> ens_resolved_task_result_;
-  absl::optional<EnsResolverTaskError> ens_resolved_task_error_;
-
- private:
-  base::test::ScopedFeatureList scoped_feature{
-      brave_wallet::features::kBraveWalletENSL2Feature};
+  std::optional<EnsResolverTaskResult> ens_resolved_task_result_;
+  std::optional<EnsResolverTaskError> ens_resolved_task_error_;
 };
 
 IN_PROC_BROWSER_TEST_F(EnsL2OffchanLookupNavigationThrottleBrowserTest,
                        ShowENSOffchainLookupInterstitialAndProceed) {
   local_state()->SetInteger(kENSResolveMethod,
                             static_cast<int>(ResolveMethodTypes::ENABLED));
-  SetEnsResolverResult(EnsResolverTaskResult({}, true), absl::nullopt);
+  SetEnsResolverResult(EnsResolverTaskResult({}, true), std::nullopt);
 
   EnsResolverTask::GetWorkOnTaskForTesting() =
       base::BindLambdaForTesting([](EnsResolverTask* task) {
         EXPECT_FALSE(task->allow_offchain().has_value());
         task->SetResultForTesting(EnsResolverTaskResult({}, true),
-                                  absl::nullopt);
+                                  std::nullopt);
       });
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("http://test.eth")));
@@ -232,13 +234,13 @@ IN_PROC_BROWSER_TEST_F(EnsL2OffchanLookupNavigationThrottleBrowserTest,
                        ShowENSOffchainLookupInterstitialAndDontProceed) {
   local_state()->SetInteger(kENSResolveMethod,
                             static_cast<int>(ResolveMethodTypes::ENABLED));
-  SetEnsResolverResult(EnsResolverTaskResult({}, true), absl::nullopt);
+  SetEnsResolverResult(EnsResolverTaskResult({}, true), std::nullopt);
 
   EnsResolverTask::GetWorkOnTaskForTesting() =
       base::BindLambdaForTesting([](EnsResolverTask* task) {
         EXPECT_FALSE(task->allow_offchain().has_value());
         task->SetResultForTesting(EnsResolverTaskResult({}, true),
-                                  absl::nullopt);
+                                  std::nullopt);
       });
 
   ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("http://test.eth")));
@@ -299,6 +301,89 @@ IN_PROC_BROWSER_TEST_F(DecentralizedDnsNavigationThrottleBrowserTest,
       security_interstitials::SecurityInterstitialCommand::CMD_DONT_PROCEED);
   EXPECT_EQ(static_cast<int>(ResolveMethodTypes::DISABLED),
             local_state()->GetInteger(kSnsResolveMethod));
+}
+
+IN_PROC_BROWSER_TEST_F(DecentralizedDnsNavigationThrottleBrowserTest,
+                       ClickjackingProtectionPreventsEarlyClicks) {
+  ASSERT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("http://test.eth")));
+
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  EXPECT_TRUE(WaitForRenderFrameReady(web_contents->GetPrimaryMainFrame()));
+  EXPECT_EQ(DecentralizedDnsOptInPage::kTypeForTesting,
+            GetInterstitialType(web_contents));
+
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
+
+  EXPECT_TRUE(content::ExecJs(
+      main_frame,
+      "window.domAutomationController.send(typeof proceedClicksEnabled !== "
+      "'undefined' && !proceedClicksEnabled);"));
+
+  EXPECT_TRUE(content::EvalJs(main_frame,
+                              "typeof proceedClicksEnabled !== 'undefined' && "
+                              "!proceedClicksEnabled")
+                  .ExtractBool());
+
+  // Wait for proceedClicksEnabled to become true
+  EXPECT_TRUE(content::EvalJs(main_frame, R"(
+    new Promise((resolve) => {
+      function checkCondition() {
+        if (typeof proceedClicksEnabled !== 'undefined' &&
+            proceedClicksEnabled) {
+          resolve(true);
+        } else {
+          setTimeout(checkCondition, 50);
+        }
+      }
+      checkCondition();
+    })
+  )")
+                  .ExtractBool());
+}
+
+class DecentralizedDnsNavigationThrottlePolicyTest
+    : public InProcessBrowserTest {
+ public:
+  DecentralizedDnsNavigationThrottlePolicyTest() = default;
+  ~DecentralizedDnsNavigationThrottlePolicyTest() override = default;
+
+  void SetUpInProcessBrowserTestFixture() override {
+    EXPECT_CALL(provider_, IsInitializationComplete(testing::_))
+        .WillRepeatedly(testing::Return(true));
+    policy::BrowserPolicyConnector::SetPolicyProviderForTesting(&provider_);
+    policy::PolicyMap policies;
+    policies.Set(policy::key::kBraveWalletDisabled,
+                 policy::POLICY_LEVEL_MANDATORY, policy::POLICY_SCOPE_USER,
+                 policy::POLICY_SOURCE_PLATFORM, base::Value(true), nullptr);
+    provider_.UpdateChromePolicy(policies);
+  }
+
+ private:
+  testing::NiceMock<policy::MockConfigurationPolicyProvider> provider_;
+};
+
+IN_PROC_BROWSER_TEST_F(DecentralizedDnsNavigationThrottlePolicyTest,
+                       NoInterstitialWhenWalletDisabledByPolicy) {
+  content::WebContents* web_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+
+  // Navigate to ENS domain - should succeed but show no interstitial
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("http://test.eth")));
+  // No interstitial should be shown when wallet is disabled by policy
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
+
+  // Navigate to Unstoppable Domains - should succeed but show no interstitial
+  EXPECT_TRUE(
+      ui_test_utils::NavigateToURL(browser(), GURL("http://test.crypto")));
+  // No interstitial should be shown when wallet is disabled by policy
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
+
+  // Navigate to SNS domain - should succeed but show no interstitial
+  EXPECT_TRUE(ui_test_utils::NavigateToURL(browser(), GURL("http://test.sol")));
+  // No interstitial should be shown when wallet is disabled by policy
+  EXPECT_EQ(nullptr, GetCurrentInterstitial(web_contents));
 }
 
 }  // namespace decentralized_dns

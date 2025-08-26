@@ -7,7 +7,7 @@
 
 #include <string_view>
 
-#include "brave/components/constants/url_constants.h"
+#include "base/strings/string_util.h"
 #include "extensions/common/permissions/permissions_data.h"
 #include "extensions/common/url_pattern.h"
 #include "url/origin.h"

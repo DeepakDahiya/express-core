@@ -30,13 +30,21 @@ source_set("component_updater") {
   }
 
   if (is_android) {
-    sources += [
-      "brave_component_updater_android.cc",
-      "brave_component_updater_android.h",
-    ]
-    deps += [
-      "//brave/build/android:jni_headers",
-      "//chrome/browser:browser_process",
-    ]
+    public_deps = [ ":zxcvbn_data_component_installer" ]
   }
+}
+
+source_set("zxcvbn_data_component_installer") {
+  sources = [
+    "//chrome/browser/component_updater/zxcvbn_data_component_installer.cc",
+    "//chrome/browser/component_updater/zxcvbn_data_component_installer.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/component_updater",
+    "//components/password_manager/core/common:features",
+    "//components/update_client",
+    "//third_party/zxcvbn-cpp",
+  ]
 }

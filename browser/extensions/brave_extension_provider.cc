@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/notreached.h"
 #include "extensions/common/constants.h"
 
 namespace extensions {
@@ -18,7 +19,6 @@ BraveExtensionProvider::~BraveExtensionProvider() = default;
 std::string BraveExtensionProvider::GetDebugPolicyProviderName() const {
 #if defined(NDEBUG)
   NOTREACHED();
-  return std::string();
 #else
   return "Brave Extension Provider";
 #endif

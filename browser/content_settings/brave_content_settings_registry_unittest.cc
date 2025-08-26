@@ -42,7 +42,7 @@ TEST_F(BraveContentSettingsRegistryTest, Properties) {
       registry()->Get(ContentSettingsType::BRAVE_COOKIES);
   ASSERT_TRUE(info);
 
-  EXPECT_THAT(info->allowlisted_primary_schemes(),
+  EXPECT_THAT(info->permission_settings_info()->allowlisted_primary_schemes(),
               ElementsAre("chrome", "devtools"));
 
   // Check the other properties are populated correctly.
@@ -59,9 +59,7 @@ TEST_F(BraveContentSettingsRegistryTest, Properties) {
             website_settings_info->pref_name());
   EXPECT_EQ("profile.default_content_setting_values.shieldsCookiesV3",
             website_settings_info->default_value_pref_name());
-  ASSERT_TRUE(website_settings_info->initial_default_value().is_int());
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
-            website_settings_info->initial_default_value().GetInt());
+  ASSERT_TRUE(website_settings_info->initial_default_value().is_none());
 #if BUILDFLAG(IS_ANDROID) || BUILDFLAG(IS_IOS)
   EXPECT_EQ(PrefRegistry::NO_REGISTRATION_FLAGS,
             website_settings_info->GetPrefRegistrationFlags());
@@ -95,6 +93,25 @@ TEST_F(BraveContentSettingsRegistryTest, Inheritance) {
       ContentSettingsType::BRAVE_GOOGLE_SIGN_IN,
       ContentSettingsType::BRAVE_HTTPS_UPGRADE,
       ContentSettingsType::BRAVE_REMEMBER_1P_STORAGE,
+      ContentSettingsType::BRAVE_WEBCOMPAT_NONE,
+      ContentSettingsType::BRAVE_WEBCOMPAT_AUDIO,
+      ContentSettingsType::BRAVE_WEBCOMPAT_CANVAS,
+      ContentSettingsType::BRAVE_WEBCOMPAT_DEVICE_MEMORY,
+      ContentSettingsType::BRAVE_WEBCOMPAT_EVENT_SOURCE_POOL,
+      ContentSettingsType::BRAVE_WEBCOMPAT_FONT,
+      ContentSettingsType::BRAVE_WEBCOMPAT_HARDWARE_CONCURRENCY,
+      ContentSettingsType::BRAVE_WEBCOMPAT_KEYBOARD,
+      ContentSettingsType::BRAVE_WEBCOMPAT_LANGUAGE,
+      ContentSettingsType::BRAVE_WEBCOMPAT_MEDIA_DEVICES,
+      ContentSettingsType::BRAVE_WEBCOMPAT_PLUGINS,
+      ContentSettingsType::BRAVE_WEBCOMPAT_SCREEN,
+      ContentSettingsType::BRAVE_WEBCOMPAT_SPEECH_SYNTHESIS,
+      ContentSettingsType::BRAVE_WEBCOMPAT_USB_DEVICE_SERIAL_NUMBER,
+      ContentSettingsType::BRAVE_WEBCOMPAT_USER_AGENT,
+      ContentSettingsType::BRAVE_WEBCOMPAT_WEBGL,
+      ContentSettingsType::BRAVE_WEBCOMPAT_WEBGL2,
+      ContentSettingsType::BRAVE_WEBCOMPAT_WEB_SOCKETS_POOL,
+      ContentSettingsType::BRAVE_WEBCOMPAT_ALL,
   };
 
   for (const ContentSettingsInfo* info : *registry()) {
@@ -156,6 +173,12 @@ TEST_F(BraveContentSettingsRegistryTest, GetInitialDefaultSetting) {
   {
     SCOPED_TRACE("Content setting: BRAVE_SOLANA");
     info = registry()->Get(ContentSettingsType::BRAVE_SOLANA);
+    EXPECT_EQ(CONTENT_SETTING_ASK, info->GetInitialDefaultSetting());
+  }
+
+  {
+    SCOPED_TRACE("Content setting: BRAVE_CARDANO");
+    info = registry()->Get(ContentSettingsType::BRAVE_CARDANO);
     EXPECT_EQ(CONTENT_SETTING_ASK, info->GetInitialDefaultSetting());
   }
 
