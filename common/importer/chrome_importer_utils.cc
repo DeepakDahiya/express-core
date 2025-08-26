@@ -6,15 +6,17 @@
 #include "brave/common/importer/chrome_importer_utils.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "brave/common/importer/importer_constants.h"
 #include "brave/common/importer/scoped_copy_file.h"
-#include "chrome/common/importer/importer_data_types.h"
+#include "components/user_data_importer/common/importer_data_types.h"
 #include "components/webdata/common/webdata_constants.h"
 #include "sql/database.h"
 #include "sql/statement.h"
@@ -32,23 +34,24 @@ using extensions::Manifest;
 namespace {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 
-absl::optional<base::Value::Dict> GetChromeExtensionsListFromFile(
+std::optional<base::Value::Dict> GetChromeExtensionsListFromFile(
     const base::FilePath& preference_path) {
   if (!base::PathExists(preference_path))
-    return absl::nullopt;
+    return std::nullopt;
 
   std::string preference_content;
   base::ReadFileToString(preference_path, &preference_content);
 
-  absl::optional<base::Value> preference =
-      base::JSONReader::Read(preference_content);
-  DCHECK(preference);
-  DCHECK(preference->is_dict());
-  if (auto* extensions = preference->GetDict().FindDictByDottedPath(
-          kChromeExtensionsListPath)) {
+  std::optional<base::Value::Dict> preference =
+      base::JSONReader::ReadDict(preference_content);
+  if (!preference) {
+    return std::nullopt;
+  }
+  if (auto* extensions =
+          preference->FindDictByDottedPath(kChromeExtensionsListPath)) {
     return std::move(*extensions);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool HasImportableExtensions(const base::FilePath& profile_path) {
@@ -59,19 +62,31 @@ std::vector<std::string> GetImportableListFromChromeExtensionsList(
     const base::Value::Dict& extensions_list) {
   std::vector<std::string> extensions;
   for (const auto [key, value] : extensions_list) {
-    DCHECK(value.is_dict());
+    if (!value.is_dict()) {
+      continue;
+    }
     const base::Value::Dict& dict = value.GetDict();
     // Only import if type is extension, it's came from webstore and it's not
     // installed by default.
     if (dict.FindBool("was_installed_by_default").value_or(true))
       continue;
 
-    // `"state": 0` means disabled state
-    if (!dict.FindInt("state").value_or(false))
+    const auto state = dict.FindInt("state");
+    if (state.has_value()) {
+      // If `state` exists, probably it is an old browser version.
+      if (state == 0) {
+        // explicit `"state": 0` means disabled state
+        continue;
+      }
+    } else if (const auto* disable_reasons = dict.FindList("disable_reasons");
+               disable_reasons && !disable_reasons->empty()) {
+      // For new browsers an extension is enabled if there is no disable reason.
       continue;
+    }
 
-    if (!dict.FindBool("from_webstore").value_or(false))
+    if (!dict.FindBool("from_webstore").value_or(false)) {
       continue;
+    }
 
     if (auto* manifest_dict = dict.FindDict("manifest")) {
       if (Manifest::GetTypeFromManifestValue(*manifest_dict) ==
@@ -84,7 +99,7 @@ std::vector<std::string> GetImportableListFromChromeExtensionsList(
   return extensions;
 }
 
-absl::optional<base::Value::Dict> GetChromeExtensionsList(
+std::optional<base::Value::Dict> GetChromeExtensionsList(
     const base::FilePath& profile_path) {
   auto list_from_secure_preference = GetChromeExtensionsListFromFile(
       profile_path.AppendASCII(kChromeSecurePreferencesFile));
@@ -113,7 +128,7 @@ bool HasPaymentMethods(const base::FilePath& payments_path) {
   if (!copy_payments_file.copy_success())
     return false;
 
-  sql::Database db;
+  sql::Database db(sql::Database::Tag("Payments"));
   if (!db.Open(copy_payments_file.copied_file_path())) {
     return false;
   }
@@ -134,6 +149,25 @@ bool IsLastActiveProfile(const std::string& profile,
   return false;
 }
 
+bool CanImportPasswordsForType(user_data_importer::ImporterType type) {
+  // We can't import passwords from Chrome due to encryption. See
+  // https://github.com/brave/brave-browser/issues/34046
+  // #issuecomment-2857856039
+  if (type == user_data_importer::TYPE_CHROME) {
+    return false;
+  }
+
+  // We can import password from Whale only on macOS. Decryption fails on
+  // Windows and Linux.
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
+  if (type == user_data_importer::TYPE_WHALE) {
+    return false;
+  }
+#endif
+
+  return true;
+}
+
 }  // namespace
 
 base::Value::List GetChromeSourceProfiles(
@@ -142,12 +176,8 @@ base::Value::List GetChromeSourceProfiles(
   if (base::PathExists(local_state_path)) {
     std::string local_state_content;
     base::ReadFileToString(local_state_path, &local_state_content);
-    absl::optional<base::Value> local_state =
-        base::JSONReader::Read(local_state_content);
-    if (!local_state)
-      return profiles;
-
-    const auto* local_state_dict = local_state->GetIfDict();
+    std::optional<base::Value::Dict> local_state_dict =
+        base::JSONReader::ReadDict(local_state_content);
     if (!local_state_dict)
       return profiles;
 
@@ -164,7 +194,9 @@ base::Value::List GetChromeSourceProfiles(
             continue;
 
           auto* name = profile->FindString("name");
-          DCHECK(name);
+          if (!name) {
+            continue;
+          }
           base::Value::Dict entry;
           entry.Set("id", value.first);
           entry.Set("name", *name);
@@ -195,41 +227,52 @@ base::Value::List GetChromeSourceProfiles(
 }
 
 bool ChromeImporterCanImport(const base::FilePath& profile,
+                             user_data_importer::ImporterType type,
                              uint16_t* services_supported) {
   DCHECK(services_supported);
-  *services_supported = importer::NONE;
+  *services_supported = user_data_importer::NONE;
 
-  base::FilePath bookmarks =
-    profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("Bookmarks")));
-  base::FilePath history =
-    profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("History")));
-  base::FilePath passwords = profile.Append(
-      base::FilePath::StringType(FILE_PATH_LITERAL("Login Data")));
-  base::FilePath passwords_for_account = profile.Append(
-      base::FilePath::StringType(FILE_PATH_LITERAL("Login Data For Account")));
-  if (base::PathExists(bookmarks))
-    *services_supported |= importer::FAVORITES;
-  if (base::PathExists(history))
-    *services_supported |= importer::HISTORY;
-  if (base::PathExists(passwords) || base::PathExists(passwords_for_account)) {
-    *services_supported |= importer::PASSWORDS;
+  base::FilePath bookmarks = profile.Append(
+      base::FilePath::StringType(FILE_PATH_LITERAL("Bookmarks")));
+  if (base::PathExists(bookmarks)) {
+    *services_supported |= user_data_importer::FAVORITES;
   }
+
+  base::FilePath history =
+      profile.Append(base::FilePath::StringType(FILE_PATH_LITERAL("History")));
+  if (base::PathExists(history)) {
+    *services_supported |= user_data_importer::HISTORY;
+  }
+
+  if (CanImportPasswordsForType(type)) {
+    base::FilePath passwords = profile.Append(
+        base::FilePath::StringType(FILE_PATH_LITERAL("Login Data")));
+    base::FilePath passwords_for_account =
+        profile.Append(base::FilePath::StringType(
+            FILE_PATH_LITERAL("Login Data For Account")));
+    if (base::PathExists(passwords) ||
+        base::PathExists(passwords_for_account)) {
+      *services_supported |= user_data_importer::PASSWORDS;
+    }
+  }
+
   if (HasPaymentMethods(profile.Append(kWebDataFilename)))
-    *services_supported |= importer::PAYMENTS;
+    *services_supported |= user_data_importer::PAYMENTS;
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   if (HasImportableExtensions(profile))
-    *services_supported |= importer::EXTENSIONS;
+    *services_supported |= user_data_importer::EXTENSIONS;
 #endif
 
-  return *services_supported != importer::NONE;
+  return *services_supported != user_data_importer::NONE;
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-absl::optional<std::vector<std::string>> GetImportableChromeExtensionsList(
+std::optional<std::vector<std::string>> GetImportableChromeExtensionsList(
     const base::FilePath& profile_path) {
   if (auto extensions = GetChromeExtensionsList(profile_path)) {
     return GetImportableListFromChromeExtensionsList(extensions.value());
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 #endif

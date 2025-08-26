@@ -1,7 +1,7 @@
 {
   "disabled_checks": {
     // Checks defined in the //PRESUBMIT.py global scope.
-    "PRESUBMIT.py": [
+    "//PRESUBMIT.py": [
       // We don't use OWNERS files.
       "CheckSecurityOwners",
       // This validates added strings with screenshot tests which we don't use.
@@ -30,12 +30,14 @@
       "CheckTreeIsOpen",
       // We run our own format check.
       "CheckPatchFormatted",
+      // We don't use Chromium LSC process for Brave repository.
+      "CheckLargeScaleChange",
     ],
   },
 
   // Checks that should trigger presubmit errors instead of warnings.
   "checks_to_force_presubmit_errors": {
-    "PRESUBMIT.py": [
+    "//PRESUBMIT.py": [
       "CheckBuildConfigMacrosWithoutInclude",
       "CheckForSuperfluousStlIncludesInHeaders",
       "CheckForIncludeGuards",
@@ -57,11 +59,14 @@
   // Files to skip in all checks.
   "default_files_to_skip": [
     "\\.storybook/",
+    "ios/brave-ios/Sources/Brave/Frontend/UserContent/UserScripts/Scripts_Dynamic/Scripts/Sandboxed/DarkReaderScript.js",
     "components/brave_wallet/resources/solana_web3_script\\.js",
-    "ios/browser/api/brave_rewards/legacy_database/core_data_models/",
     "third_party/rust/",
+    "tools/cr/test/plasters/",
     "tools/crates/",
     "win_build_output/",
+    "ios/third_party/",
+    "ui/webui/resources/wasm/vendor/",
   ],
 
   // Regex to match function names in the current presubmit stack trace. Matched
@@ -74,12 +79,25 @@
     "CheckNewHeaderWithoutGnChangeOnUpload": ["chromium_src/"],
     "CheckForCcIncludes": ["chromium_src/"],
     "CheckForRelativeIncludes": ["chromium_src/"],
+    "CheckLongLines": [
+      "components/p3a/metric_names\\.h",
+      ".*/res/.*/.*\\.xml",
+    ],
     "CheckParseErrors": [
       ".*tsconfig\\.json",
       "components/brave_ads/core/test/data/invalid\\.json",
     ],
     "CheckNoBannedFunctions": [
       // Use `ban_rule_excluded_paths` instead.
+    ],
+    "CheckNoJsInIos": ["ios/brave-ios/"],
+    "CheckNoDeprecatedCss": ["ios/brave-ios/"],
+    "CheckLicense":[
+      // These have AOSP license header
+      "android/java/org/chromium/chrome/browser/qrreader/BarcodeTracker.java",
+      "android/java/org/chromium/chrome/browser/qrreader/BarcodeTrackerFactory.java",
+      "android/java/org/chromium/chrome/browser/qrreader/CameraSource.java",
+      "android/java/org/chromium/chrome/browser/qrreader/CameraSourcePreview.java",
     ],
 
     // Checks to be fixed.
@@ -88,12 +106,9 @@
       "browser/browsing_data/brave_clear_browsing_data\\.cc",
       "chromium_src/chrome/browser/ui/startup/startup_browser_creator\\.cc",
       "components/brave_vpn/winvpntool\\.cc",
-      "components/greaselion/browser/greaselion_download_service\\.cc",
       "components/permissions/permission_lifetime_utils\\.cc",
       "components/tor/tor_launcher_factory\\.cc",
       "components/webcompat_reporter/browser/webcompat_report_uploader\\.cc",
-      "ios/browser/api/brave_rewards/legacy_database/legacy_ledger_database\\.mm",
-      "ios/browser/api/brave_rewards/promotion_solution\\.mm",
     ],
     "CheckUniquePtrOnUpload": [
       "components/brave_sync/qr_code_data\\.cc",
@@ -109,7 +124,6 @@
       "android/java/org/chromium/chrome/browser/help/BraveHelpAndFeedbackLauncher\\.java",
       "android/java/org/chromium/chrome/browser/search_engines/settings/BraveSearchEngineAdapter\\.java",
       "android/java/org/chromium/chrome/browser/settings/BravePreferenceDialogFragment\\.java",
-      "android/java/org/chromium/chrome/browser/upgrade/BraveUpgradeJobIntentServiceImpl\\.java",
     ],
     "_CheckAndroidToastUsage": [
       "android/java/org/chromium/chrome/browser/brave_news/BraveNewsBottomSheetDialogFragment\\.java",
@@ -144,18 +158,45 @@
       "components/cosmetic_filters/renderer/cosmetic_filters_js_handler\\.h",
       "components/speedreader/renderer/speedreader_js_handler\\.h",
     ],
-    // A temporary fix to silence a failing presubmit check on file renames.
-    "CheckStableMojomChanges": [
-      "components/brave_rewards/common/mojom/.*",
-      "components/services/bat_ads/public/interfaces/bat_ads\\.mojom",
-      "components/services/bat_ledger/public/interfaces/.*",
-      "components/services/bat_rewards/public/interfaces/.*",
-    ],
     "CheckWebDevStyle": [
       "components/speedreader/resources/speedreader-desktop.css",
       "components/speedreader/resources/third_party/",
       "components/webpack/gen-webpack-grd\\.js",
       "test/data/speedreader/",
+    ],
+    "CheckStableMojomChanges": [
+      "components/brave_rewards/core/mojom/.*\\.mojom",
+    ],
+    // TODO(alexeybarabash): https://github.com/brave/brave-browser/issues/45245
+    "_CheckAndroidNullAwayAnnotatedClasses": [
+      "android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/BraveIncognitoTabSwitcherPane.java",
+      "android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/BraveTabGroupUiCoordinator.java",
+      "android/features/tab_ui/java/src/org/chromium/chrome/browser/tasks/tab_management/BraveTabSwitcherPaneBase.java",
+      "android/feed/core/java/src/org/chromium/chrome/browser/feed/BraveFeedSurfaceCoordinator.java",
+      "android/feed/core/java/src/org/chromium/chrome/browser/feed/BraveFeedSurfaceMediator.java",
+      "android/java/org/chromium/chrome/browser/BraveAppHooks.java",
+      "android/java/org/chromium/chrome/browser/app/BraveActivity.java",
+      "android/java/org/chromium/chrome/browser/brave_origin/BraveOriginPlansActivity.java",
+      "android/java/org/chromium/chrome/browser/ntp/BraveNewTabPageLayout.java",
+      "android/java/org/chromium/chrome/browser/bookmarks/BraveBookmarkManagerCoordinator.java",
+      "android/java/org/chromium/chrome/browser/bookmarks/BraveBookmarkManagerMediator.java",
+      "android/java/org/chromium/chrome/browser/bookmarks/BraveBookmarkToolbarCoordinator.java",
+      "android/java/org/chromium/chrome/browser/bookmarks/BraveBookmarkUtils.java",
+      "android/java/org/chromium/chrome/browser/customtabs/FullScreenCustomTabActivity.java",
+      "android/java/org/chromium/chrome/browser/customtabs/FullScreenCustomTabRootUiCoordinator.java",
+      "android/java/org/chromium/chrome/browser/firstrun/WelcomeOnboardingActivity.java",
+      "android/java/org/chromium/chrome/browser/infobar/BraveInfoBarContainerView.java",
+      "android/java/org/chromium/chrome/browser/settings/AppearancePreferences.java",
+      "android/java/org/chromium/chrome/browser/settings/BraveNewsPreferencesDetails.java",
+      "android/java/org/chromium/chrome/browser/settings/BraveNewsPreferencesV2.java",
+      "android/java/org/chromium/chrome/browser/suggestions/tile/BraveMostVisitedTilesLayoutBase.java",
+      "android/java/org/chromium/chrome/browser/toolbar/BraveToolbarManager.java",
+      "android/java/org/chromium/chrome/browser/toolbar/bottom/BottomToolbarCoordinator.java",
+      "android/java/org/chromium/chrome/browser/toolbar/bottom/BraveBottomControlsCoordinator.java",
+      "android/java/org/chromium/chrome/browser/toolbar/top/BraveToolbarLayoutImpl.java",
+      "android/java/org/chromium/chrome/browser/toolbar/top/BraveTopToolbarCoordinator.java",
+      "browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/BraveHubManagerImpl.java",
+      "browser/hub/internal/android/java/src/org/chromium/chrome/browser/hub/BraveHubToolbarView.java",
     ]
   },
 
@@ -164,44 +205,26 @@
   // Maps BanRule.pattern -> BanRule.excluded_paths.
   "ban_rule_excluded_paths": {
     "import android.annotation.TargetApi;": [
-      "android/java/org/chromium/chrome/browser/notifications/BraveNotificationSettingsBridge\\.java",
       "android/java/org/chromium/chrome/browser/qrreader/CameraSource\\.java",
       "browser/notifications/android/java/src/org/chromium/chrome/browser/notifications/BraveNotificationManagerProxyImpl\\.java",
-    ],
-    "leveldb::DB::Open": [
-      "components/brave_shields/browser/https_everywhere_service\\.cc",
     ],
     "/\\s+UTF8String\\s*]": [
       "base/mac/conversions\\.h",
       "browser/mac/sparkle_glue\\.mm",
     ],
-    "/\\bstd::bind\\b": [
-      "components/brave_rewards/.*",
-    ],
     "/\\bstd::function\\b": [
       "chromium_src/chrome/browser/ui/views/frame/browser_non_client_frame_view_factory_views\\.cc",
-      "components/brave_rewards/core/.*",
       "ios/browser/api/bookmarks/exporter/brave_bookmarks_exporter\\.mm",
       "ios/browser/api/bookmarks/importer/brave_bookmarks_importer\\.mm",
     ],
     "/\\bstd::shared_ptr\\b": [
       "browser/net/.*",
-      "components/brave_rewards/core/.*",
       "ios/browser/api/certificate/brave_certificate\\.mm",
       "ios/browser/api/net/certificate_utility\\.mm",
     ],
-    "/\\bstd::sto(f|d|ld)\\b": [
-      "browser/ui/webui/brave_rewards_page_ui\\.cc",
-      "components/brave_rewards/core/legacy/bat_util\\.cc",
-      "components/brave_rewards/core/legacy/media/youtube\\.cc",
-    ],
     "/\\bstd::sto(i|l|ul|ll|ull)\\b": [
-      "components/brave_rewards/browser/test/rewards_state_browsertest\\.cc",
-      "components/brave_rewards/core/legacy/media/github\\.cc",
-      "components/brave_rewards/core/report/report\\.cc",
       "components/brave_wallet/browser/rlp_encode_unittest\\.cc",
       "components/brave_wallet/common/eth_address\\.cc",
-      "components/ipfs/ipfs_json_parser\\.cc",
       "utility/importer/chrome_importer\\.cc",
     ],
     "/\\busing namespace ": [

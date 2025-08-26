@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/check.h"
 #include "base/command_line.h"
 #include "base/path_service.h"
 #include "build/build_config.h"
@@ -98,7 +99,6 @@ bool SubprocessNeedsResourceBundle() {
 #if BUILDFLAG(IS_MAC)
       // Mac needs them too for scrollbar related images and for sandbox
       // profiles.
-      process_type == switches::kPpapiPluginProcess ||
       process_type == switches::kGpuProcess ||
 #endif  // BUILDFLAG(IS_MAC)
       process_type == switches::kRendererProcess ||

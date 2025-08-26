@@ -7,7 +7,11 @@
 
 #include <string_view>
 
-#include "brave/common/extensions/api/generated_includes.h"
+#include "brave/common/extensions/api/api_features.h"
+#include "brave/common/extensions/api/behavior_features.h"
+#include "brave/common/extensions/api/generated_schemas.h"
+#include "brave/common/extensions/api/grit/brave_api_resources.h"
+#include "brave/common/extensions/api/manifest_features.h"
 #include "extensions/common/features/json_feature_provider_source.h"
 #include "extensions/common/permissions/permissions_info.h"
 
@@ -27,7 +31,6 @@ void BraveExtensionsAPIProvider::AddManifestFeatures(
 
 void BraveExtensionsAPIProvider::AddPermissionFeatures(
     FeatureProvider* provider) {
-  AddBravePermissionFeatures(provider);
 }
 
 void BraveExtensionsAPIProvider::AddBehaviorFeatures(
@@ -40,8 +43,7 @@ void BraveExtensionsAPIProvider::AddAPIJSONSources(
   json_source->LoadJSON(IDR_BRAVE_EXTENSION_API_FEATURES);
 }
 
-bool BraveExtensionsAPIProvider::IsAPISchemaGenerated(
-    const std::string& name) {
+bool BraveExtensionsAPIProvider::IsAPISchemaGenerated(const std::string& name) {
   return api::BraveGeneratedSchemas::IsGenerated(name);
 }
 

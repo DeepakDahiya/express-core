@@ -6,11 +6,13 @@
 #ifndef BRAVE_COMMON_IMPORTER_CHROME_IMPORTER_UTILS_H_
 #define BRAVE_COMMON_IMPORTER_CHROME_IMPORTER_UTILS_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/user_data_importer/common/importer_type.h"
 #include "extensions/buildflags/buildflags.h"
 
 namespace base {
@@ -40,10 +42,11 @@ base::FilePath GetOperaSnapUserDataFolder();
 #endif
 base::Value::List GetChromeSourceProfiles(const base::FilePath& local_state);
 bool ChromeImporterCanImport(const base::FilePath& profile,
+                             user_data_importer::ImporterType type,
                              uint16_t* services_supported);
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-absl::optional<std::vector<std::string>> GetImportableChromeExtensionsList(
+std::optional<std::vector<std::string>> GetImportableChromeExtensionsList(
     const base::FilePath& profile_path);
 #endif
 
