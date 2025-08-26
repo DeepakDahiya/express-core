@@ -7,19 +7,19 @@ import("//build/config/android/rules.gni")
 import("//chrome/android/features/tab_ui/tab_management_java_sources.gni")
 
 android_library("java") {
-  sources = [
-    "java/src/org/chromium/chrome/browser/tasks/tab_management/BraveTabGroupUiCoordinator.java",
-    "java/src/org/chromium/chrome/browser/tasks/tab_management/BraveTabUiThemeProvider.java",
-  ]
+  sources = [ "java/src/org/chromium/chrome/browser/tasks/tab_management/BraveTabGroupUiCoordinator.java" ]
   deps = [
     "//base:base_java",
     "//chrome/android:chrome_java",
-    "//chrome/android/features/tab_ui:tab_suggestions_java",
     "//chrome/browser/android/lifecycle:java",
     "//chrome/browser/browser_controls/android:java",
     "//chrome/browser/commerce/merchant_viewer/android:java",
+    "//chrome/browser/data_sharing:data_sharing_public_java",
     "//chrome/browser/flags:java",
     "//chrome/browser/preferences:java",
+    "//chrome/browser/profiles/android:java",
+    "//chrome/browser/share:java",
+    "//chrome/browser/tab_ui/android:java",
     "//chrome/browser/tabmodel:java",
     "//chrome/browser/ui/android/layouts:java",
     "//chrome/browser/ui/android/theme:java",

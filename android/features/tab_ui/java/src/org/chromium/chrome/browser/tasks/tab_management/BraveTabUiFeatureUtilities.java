@@ -6,12 +6,19 @@
 package org.chromium.chrome.browser.tasks.tab_management;
 
 import org.chromium.base.BravePreferenceKeys;
+import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 
+@NullMarked
 public class BraveTabUiFeatureUtilities {
     public static boolean isBraveTabGroupsEnabled() {
         return false;
-        // return ChromeSharedPreferences.getInstance().readBoolean(
-        //         BravePreferenceKeys.BRAVE_TAB_GROUPS_ENABLED, true);
+        // return ChromeSharedPreferences.getInstance()
+        //         .readBoolean(
+        //                 BravePreferenceKeys.BRAVE_TAB_GROUPS_ENABLED,
+        //                 ChromeSharedPreferences.getInstance()
+        //                         .readBoolean(
+        //                                 BravePreferenceKeys.BRAVE_TAB_GROUPS_ENABLED_DEFAULT_VALUE,
+        //                                 true));
     }
 }
