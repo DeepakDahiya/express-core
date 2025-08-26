@@ -5,16 +5,17 @@
 
 package org.chromium.base;
 
-import java.util.Arrays;
-import java.util.List;
+import org.chromium.build.annotations.NullMarked;
 
+@NullMarked
 public final class BravePreferenceKeys {
+    public static final String BRAVE_TOOLBAR_TOP_ANCHORED = "Chrome.Toolbar.TopAnchored";
     public static final String BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY =
             "brave_bottom_toolbar_enabled_key";
     public static final String BRAVE_BOTTOM_TOOLBAR_SET_KEY = "brave_bottom_toolbar_enabled";
+    public static final String BRAVE_IS_MENU_FROM_BOTTOM = "brave_is_menu_from_bottom";
     public static final String BRAVE_USE_CUSTOM_TABS = "use_custom_tabs";
     public static final String BRAVE_APP_OPEN_COUNT = "brave_app_open_count";
-    public static final String BRAVE_ROLE_MANAGER_DIALOG_COUNT = "brave_role_manager_dialog_count";
     public static final String BRAVE_IS_DEFAULT = "brave_is_default";
     public static final String BRAVE_WAS_DEFAULT_ASK_COUNT = "brave_was_default_ask_count";
     public static final String BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT =
@@ -34,9 +35,10 @@ public final class BravePreferenceKeys {
             "org.chromium.chrome.browser.Brave_Double_Restart";
     public static final String BRAVE_TAB_GROUPS_ENABLED =
             "org.chromium.chrome.browser.Brave_Tab_Groups_Enabled";
+    public static final String BRAVE_TAB_GROUPS_ENABLED_DEFAULT_VALUE =
+            "org.chromium.chrome.browser.Brave_Tab_Groups_Enabled_Default_Value";
     public static final String BRAVE_DISABLE_SHARING_HUB =
             "org.chromium.chrome.browser.Brave_Disable_Sharing_Hub";
-    public static final String BRAVE_NEWS_CARDS_VISITED = "brave_news_cards_visited";
     public static final String BRAVE_NEWS_CHANGE_SOURCE = "brave_news_change_source";
     public static final String BRAVE_NEWS_FEED_HASH = "brave_news_feed_hash";
     public static final String BRAVE_NEWS_PREF_SHOW_NEWS = "kNewTabPageShowToday";
@@ -49,13 +51,6 @@ public final class BravePreferenceKeys {
             "org.chromium.chrome.browser.Brave_Biometrics_For_Wallet_Encrypted";
     public static final String BRAVE_AD_FREE_CALLOUT_DIALOG = "brave_ad_free_callout_dialog";
     public static final String BRAVE_OPENED_YOUTUBE = "brave_opened_youtube";
-    public static final String SHOULD_SHOW_COOKIE_CONSENT_NOTICE =
-            "should_show_cookie_consent_notice";
-    public static final String LOADED_SITE_COUNT = "loaded_site_count";
-    public static final String BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE =
-            "brave_background_video_playback_converted_to_feature";
-    public static final String BRAVE_APP_OPEN_COUNT_FOR_WIDGET_PROMO =
-            "brave_app_open_count_for_widget_promo";
     public static final String BRAVE_DEFERRED_DEEPLINK_PLAYLIST =
             "brave_deferred_deeplink_playlist";
     public static final String BRAVE_DEFERRED_DEEPLINK_VPN = "brave_deferred_deeplink_vpn";
@@ -75,66 +70,54 @@ public final class BravePreferenceKeys {
     public static final String BRAVE_CLEAR_ON_EXIT = "clear_on_exit";
     public static final String BRAVE_QUICK_ACTION_SEARCH_AND_BOOKMARK_WIDGET_TILES =
             "org.chromium.chrome.browser.widget.quickactionsearchandbookmark.QuickActionSearchAndBookmarkWidgetProvider.TILES";
+    public static final String ENABLE_MULTI_WINDOWS = "enable_multi_windows";
+    public static final String ENABLE_MULTI_WINDOWS_UPGRADE = "enable_multi_windows_upgrade";
+
+    public static final String BRAVE_LEO_AUTOCOMPLETE =
+            "org.chromium.chrome.browser.Brave_Leo_AutoComplete";
+
+    // Playlist preference keys
+    public static final String PREF_ENABLE_PLAYLIST = "enable_playlist";
+    public static final String PREF_ADD_TO_PLAYLIST_BUTTON = "add_to_playlist_button";
+    public static final String PREF_REMEMBER_FILE_PLAYBACK_POSITION =
+            "remember_file_playback_position";
+    public static final String PREF_REMEMBER_LIST_PLAYBACK_POSITION =
+            "remember_list_playback_position";
+    public static final String PREF_CONTINUOUS_LISTENING = "continuous_listening";
+    public static final String PREF_RESET_PLAYLIST = "reset_playlist";
 
     // These are dynamic keys
     public static final String BRAVE_RECYCLERVIEW_POSITION = "recyclerview_visible_position_";
     public static final String BRAVE_RECYCLERVIEW_OFFSET_POSITION = "recyclerview_offset_position_";
 
-    /*
-     * Returns the list of Brave's preference keys.
-     */
-    private static List<String> getKeysInUse() {
-        return Arrays.asList(
-                BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY,
-                BRAVE_BOTTOM_TOOLBAR_SET_KEY,
-                BRAVE_USE_CUSTOM_TABS,
-                BRAVE_APP_OPEN_COUNT,
-                BRAVE_ROLE_MANAGER_DIALOG_COUNT,
-                BRAVE_IS_DEFAULT,
-                BRAVE_WAS_DEFAULT_ASK_COUNT,
-                BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT,
-                BRAVE_DEFAULT_DONT_ASK,
-                BRAVE_UPDATE_EXTRA_PARAM,
-                BRAVE_NOTIFICATION_PREF_NAME,
-                BRAVE_MILLISECONDS_NAME,
-                BRAVE_DOWNLOADS_AUTOMATICALLY_OPEN_WHEN_POSSIBLE,
-                BRAVE_DOWNLOADS_DOWNLOAD_PROGRESS_NOTIFICATION_BUBBLE,
-                BRAVE_DOUBLE_RESTART,
-                BRAVE_TAB_GROUPS_ENABLED,
-                BRAVE_DISABLE_SHARING_HUB,
-                BRAVE_NEWS_CARDS_VISITED,
-                BRAVE_NEWS_CHANGE_SOURCE,
-                BRAVE_NEWS_FEED_HASH,
-                BRAVE_NEWS_PREF_SHOW_NEWS,
-                BRAVE_NEWS_PREF_TURN_ON_NEWS,
-                BRAVE_USE_BIOMETRICS_FOR_WALLET,
-                BRAVE_BIOMETRICS_FOR_WALLET_IV,
-                BRAVE_BIOMETRICS_FOR_WALLET_ENCRYPTED,
-                BRAVE_AD_FREE_CALLOUT_DIALOG,
-                BRAVE_OPENED_YOUTUBE,
-                SHOULD_SHOW_COOKIE_CONSENT_NOTICE,
-                LOADED_SITE_COUNT,
-                BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE,
-                BRAVE_APP_OPEN_COUNT_FOR_WIDGET_PROMO,
-                BRAVE_DEFERRED_DEEPLINK_PLAYLIST,
-                BRAVE_DEFERRED_DEEPLINK_VPN,
-                BRAVE_CLOSE_TABS_ON_EXIT,
-                BRAVE_CLEAR_ON_EXIT,
-                BRAVE_QUICK_ACTION_SEARCH_AND_BOOKMARK_WIDGET_TILES);
-    }
+    public static final String BRAVE_IN_APP_UPDATE_TIMING = "in_app_update_timing";
 
-    /*
-     * Checks if preference key is among Brave's dynamic keys.
-     */
-    private static boolean isBraveDynamicKeyInUse(String key) {
-        return key.startsWith(BRAVE_RECYCLERVIEW_POSITION)
-                || key.startsWith(BRAVE_RECYCLERVIEW_OFFSET_POSITION);
-    }
+    public static final String DAY_ZERO_EXPT_VARIANT = "day_zero_expt_variant";
+
+    public static final String SHOW_UNDO_WHEN_TABS_CLOSED = "show_undo_when_tabs_closed";
+
+    public static final String OPEN_YT_IN_BRAVE_DIALOG = "open_yt_in_brave_dialog";
+
+    public static final String BRAVE_QUICK_SEARCH_ENGINES = "quick_search_engines";
+    public static final String BRAVE_QUICK_SEARCH_ENGINES_FEATURE = "quick_search_engines_feature";
+    public static final String BRAVE_QUICK_SEARCH_ENGINES_PREVIOUS_DSE =
+            "quick_search_engines_previous_dse";
+    public static final String MIGRATE_YAHOO_JP_QSE = "migrate_yahoo_jp_qse";
+
+    public static final String BRAVE_SAFE_BROWSING_ERRORS =
+            "org.chromium.brave.browser.Brave_SAFE_BROWSING_ERRORS";
+
+    public static final String DEFAULT_SEARCH_ENGINE_CHANGED = "default_search_engine_changed";
+
+    public static final String BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP =
+            "brave_default_search_engine_migrated_jp";
 
     /*
      * Checks if preference key is used in Brave.
+     * It's no op currently. We might reconsider
+     * using it in the future for keys sanitation
      */
     public static boolean isBraveKeyInUse(String key) {
-        return getKeysInUse().contains(key) || isBraveDynamicKeyInUse(key);
+        return true;
     }
 }

@@ -5,18 +5,23 @@
 
 package org.chromium.base;
 
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.build.annotations.Nullable;
+
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+@NullMarked
 public class BraveReflectionUtil {
-    private static String TAG = "BraveReflectionUtil";
+    private static final String TAG = "BraveReflectionUtil";
 
     // NOTE: For each method for invocation add appropriate test to `testMethodsForInvocationExist`
     // method in 'brave/android/javatests/org/chromium/chrome/browser/BytecodeTest.java' file with
     // checking parameter types.
-    public static Object InvokeMethod(
-            Class methodOwner, Object obj, String method, Object... typesAndArgs) {
+    @Nullable
+    public static Object invokeMethod(
+            Class methodOwner, @Nullable Object obj, String method, Object... typesAndArgs) {
         try {
             Class<?>[] parameterTypes = null;
             Object[] args = null;
@@ -40,18 +45,19 @@ public class BraveReflectionUtil {
                 return toInvoke.invoke(obj, args);
             } catch (IllegalAccessException e) {
                 Log.e(TAG, "Illegal access for method: " + e);
-                assert (false);
+                assert false;
             } catch (InvocationTargetException e) {
                 Log.e(TAG, "Method invocation error e: " + e);
-                assert (false);
+                assert false;
             }
         } catch (NoSuchMethodException e) {
             Log.e(TAG, "Method not found: " + e);
-            assert (false);
+            assert false;
         }
         return null;
     }
 
+    @Nullable
     public static Object getField(Class ownerClass, String fieldName, Object obj) {
         try {
             Field field = ownerClass.getDeclaredField(fieldName);
@@ -59,17 +65,31 @@ public class BraveReflectionUtil {
             return field.get(obj);
         } catch (NoSuchFieldException e) {
             Log.e(TAG, "Field not found: " + e);
-            assert (false);
+            assert false;
         } catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
             Log.e(TAG, "Get field failed: " + e);
-            assert (false);
+            assert false;
         }
         return null;
     }
 
+    public static void setField(Class ownerClass, String fieldName, Object obj, Object newValue) {
+        try {
+            Field field = ownerClass.getDeclaredField(fieldName);
+            field.setAccessible(true);
+            field.set(obj, newValue);
+        } catch (NoSuchFieldException e) {
+            Log.e(TAG, "Field not found: " + e);
+            assert false;
+        } catch (SecurityException | IllegalArgumentException | IllegalAccessException e) {
+            Log.e(TAG, "Get field failed: " + e);
+            assert false;
+        }
+    }
+
     // Types should be compatible after bytecode patching
     @SuppressWarnings("EqualsIncompatibleType")
-    public static Boolean EqualTypes(Class type1, Class type2) {
+    public static Boolean equalTypes(Class type1, Class type2) {
         return type1.equals(type2);
     }
 }
