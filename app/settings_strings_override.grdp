@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
-  <if expr="not chromeos_ash">
+  <if expr="not is_chromeos">
     <message name="IDS_RELAUNCH_CONFIRMATION_DIALOG_BODY" desc="The body of the modal dialog that we show when users click on relaunch and they have open Private windows. The dialog serves to warn the users about losing their Private windows if they proceed with the relaunch.">
       {COUNT, plural,
       =1 {Your Private window won't open after you relaunch}
@@ -9,7 +9,7 @@
     </message>
   </if>
 
-  <if expr="not chromeos_ash">
+  <if expr="not is_chromeos">
     </if>
   <if expr="_google_chrome">
     </if>
@@ -19,21 +19,19 @@
   <message name="IDS_SETTINGS_ACCESSIBILITY_WEB_STORE" desc="Text for an external link explaining that additional accessibility features are found on the Web Store.">
     Open Web Store
   </message>
-  <if expr="chromeos_ash">
+  <if expr="not is_chromeos">
     </if>
-  <if expr="not chromeos_ash">
+  <if expr="is_chromeos">
     </if>
-  <if expr="chromeos_ash">
-    </if>
-  <if expr="not chromeos_ash">
-    </if>
-  <if expr="chromeos_lacros">
+  <if expr="not is_chromeos">
     </if>
   <if expr="is_win or is_linux or is_macosx">
     </if>
   <if expr="is_win or is_linux">
     </if>
   <if expr="is_macosx">
+    </if>
+  <if expr="not is_chromeos">
     </if>
 
   <if expr="is_chromeos">
@@ -42,19 +40,23 @@
     </if>
   <if expr="is_linux">
     </if>
-  <if expr="not is_linux or is_chromeos or is_fuchsia">
+  <if expr="not is_linux">
     </if>
   <message name="IDS_SETTINGS_SHOW_BOOKMARKS_BAR" desc="Label for the checkbox which enables or disables showing the bookmarks bar in the toolbar.">
     Show bookmarks
   </message>
-  <message name="IDS_SETTINGS_WEB_STORE" desc="Sub-label about choosing something from the Web Store.">
-    Open Web Store
+  <message name="IDS_SETTINGS_SHOW_TAB_GROUPS_IN_BOOKMARKS_BAR" desc="Label for the checkbox which enables or disables showing saved tab groups in bookmarks bar.">
+    Show tab groups in bookmarks
+  </message>
+  <message name="IDS_SETTINGS_AUTO_PIN_NEW_TAB_GROUPS" desc="Label for the checkbox which enables or disables auto pin new tab groups.">
+    Automatically pin new tab groups created on any device to the bookmarks
   </message>
   <if expr="is_macosx">
     </if>
-  <if expr="not chromeos_ash">
+
+  <if expr="not is_chromeos">
     </if>
-  <if expr="chromeos_ash">
+  <if expr="is_chromeos">
     </if>
   <if expr="is_win or is_macosx">
     <if expr="is_win">
@@ -63,31 +65,16 @@
     </if>
     </if>
 
-  <if expr="is_macosx">
-  </if>
-
-  <if expr="is_win">
-  </if>
-
   <if expr="not is_chromeos">
     </if>
 
-  <if expr="use_nss_certs">
-    <if expr="is_chromeos">
-      </if>
-  </if>
-
-  <if expr="not is_macosx">
+  <if expr="not is_chromeos">
     </if>
-  <if expr="is_macosx">
-    </if>
-  <if expr="not chromeos_ash">
-    </if>
-  <if expr="not chromeos_ash">
+  <if expr="not is_chromeos">
     <if expr="not is_macosx">
       </if>
   </if>
-  <if expr="chromeos_ash">
+  <if expr="is_chromeos">
     <if expr="reven">
       </if>
     <if expr="not reven">
@@ -101,15 +88,6 @@
       </if>
   </if>
 
-  <message name="IDS_SETTINGS_ANTI_ABUSE_DESCRIPTION" desc="The label used for the anti-abuse site settings description.">
-    Sites you visit can verify that you're a real profile and not a bot
-  </message>
-  <message name="IDS_SETTINGS_ANTI_ABUSE_WHEN_ON_SECTION_TWO" desc="A description that informs users how the anti-abuse features work.">
-    As you keep browsing, sites can check with Brave and verify with a previous site you've visited that you're likely a real profile
-  </message>
-  <message name="IDS_SETTINGS_ANTI_ABUSE_WHEN_ON_SECTION_THREE" desc="A description that informs users how their browsing could be helped by the anti-abuse features.">
-    Browsing is faster because a site is less likely to ask you to verify you're a real profile
-  </message>
   <message name="IDS_SETTINGS_PRIVACY_GUIDE_COOKIES_CARD_BLOCK_TPC_INCOGNITO_SUBHEADER" desc="A subheader for the cookies card of the 'Privacy guide', for blocking third party cookies in private.">
     Block third-party cookies in Private
   </message>
@@ -121,35 +99,18 @@
   </message>
   <if expr="_google_chrome">
     </if>
-  <message name="IDS_SETTINGS_PRIVACY_GUIDE_SEARCH_SUGGESTIONS_FEATURE_DESCRIPTION1" desc="A part of the feature description of 'search suggestions' in the 'Privacy Guide'.">
-    When you click or type in the address bar or search box, you'll see suggestions from your default search engine. This is off in Private.
-  </message>
 
-  <message name="IDS_SETTINGS_SAFETY_CHECK_REVIEW_EXTENSIONS" desc="This text describes that potentially harmful extensions need to be reviewed by the user. The placeholder will be a numeral.">
-    {NUM_EXTENSIONS, plural,
-     =1 {Review 1 extension that was taken down from the Web Store}
-     other {Review {NUM_EXTENSIONS} extensions that were taken down from the Web Store}}
-  </message>
   <if expr="_google_chrome">
     </if>
-  <message name="IDS_SETTINGS_ADVANCED_PROTECTION_PROGRAM_DESC" desc="Description of the Brave     Advanced Protection Program">
-    Provides Brave’s strongest account security for profiles at risk of targeted attacks
-  </message>
   <message name="IDS_SETTINGS_HTTPS_FIRST_MODE_ENABLED_INCOGNITO_LABEL" desc="Label for radio button to enable HTTPS-First Mode in Private">
     See warnings before going to insecure sites in Private mode
   </message>
-  <message name="IDS_SETTINGS_SECURE_DNS_DESCRIPTION" desc="Secondary, continued explanation of secure DNS in Privacy options">
-    Use secure Domain Name System (DNS) to prevent profiles with access to your internet traffic from seeing which sites you visit
-  </message>
-  <if expr="chromeos_ash">
-    <message name="IDS_SETTINGS_SECURE_DNS_WITH_IDENTIFIERS_DESCRIPTION" desc="Secondary, continued explanation of secure DNS in Privacy options">
-      Use secure Domain Name System (DNS) to prevent profiles with access to your internet traffic from seeing which sites you visit. This uses a managed service provider at <ph name="DNS_SERVER_TEMPLATE_WITH_IDENTIFIER">$1<ex>https://dns.example.net/dns-query{?dns}</ex></ph>
-    </message>
-  </if>
+  <if expr="is_chromeos">
+    </if>
   <if expr="is_win and _google_chrome">
     </if>
 
-  <if expr="chromeos_ash or chromeos_lacros or is_win">
+  <if expr="is_chromeos or is_win">
     </if>
   <if expr="is_win and _google_chrome">
     </if>
@@ -165,10 +126,10 @@
   <message name="IDS_SETTINGS_THIRD_PARTY_COOKIES_PAGE_BLOCK_INCOGNITO_BULLET_2" desc="2 of 2 bullets that describes the 'Block third-party cookies in Private mode' option.">
     While in Private, sites can't use your cookies to see your browsing activity across sites. Your browsing activity isn't used for things like personalizing ads. Features on some sites may not work.
   </message>
-  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO_BULLET_TWO_FPS" desc="Description for the first bullet of block third party cookies in Private radio toggle">
+  <message name="IDS_SETTINGS_COOKIES_BLOCK_THIRD_PARTY_INCOGNITO_BULLET_TWO_RWS" desc="Description for the first bullet of block third party cookies in Private radio toggle">
     While in Private, sites can't use your cookies to see your browsing activity across sites, even related sites. Your browsing activity isn't used for things like personalizing ads. Features on some sites may not work.
   </message>
-  <message name="IDS_SETTINGS_COOKIES_FIRST_PARTY_SETS_TOGGLE_SUB_LABEL" desc="Sub-label for the toggle that allows the user to control first-party sets enabled sharing between related sites">
+  <message name="IDS_SETTINGS_COOKIES_RELATED_WEBSITE_SETS_TOGGLE_SUB_LABEL" desc="Sub-label for the toggle that allows the user to control related website sets enabled sharing between related sites">
     A company can define a group of sites that can use cookies to share your activity in the group. This is off in Private.
   </message>
   <message name="IDS_SETTINGS_TRACKING_PROTECTION_BULLET_ONE_DESCRIPTION" desc="Description of the first bullet for tracking protection settings. Explains what limiting third-party cookies means.">
@@ -183,17 +144,20 @@
   <message name="IDS_SETTINGS_SITE_SETTINGS_INCOGNITO_SITE_EXCEPTION_DESC" desc="The text displayed in order to explain to a user that a content setting only applies to the current Private session.">
     This custom setting will be removed when you close all your Private windows
   </message>
-  <if expr="not chromeos_ash">
+  <if expr="not is_chromeos">
+    </if>
+
+  <if expr="not use_titlecase">
+    </if>
+  <if expr="use_titlecase">
     </if>
 
   <if expr="not is_chromeos">
     </if>
 
-  <if expr="not chromeos_ash">
-    </if>
   <if expr="not is_chromeos">
     </if>
-  <if expr="chromeos_lacros">
+  <if expr="not is_chromeos">
     </if>
 
   <if expr="is_win and _google_chrome">
