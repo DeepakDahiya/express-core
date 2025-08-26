@@ -8,19 +8,18 @@ package org.chromium.chrome.browser.tabmodel;
 import android.app.Activity;
 import android.os.Build;
 
-import androidx.annotation.Nullable;
-
 import org.chromium.base.BraveReflectionUtil;
 import org.chromium.base.supplier.OneshotSupplier;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.build.annotations.Nullable;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
-import org.chromium.chrome.browser.new_tab_url.DseNewTabUrlManager;
+import org.chromium.chrome.browser.multiwindow.MultiInstanceManager;
 import org.chromium.chrome.browser.ntp_background_images.NTPBackgroundImagesBridge;
 import org.chromium.chrome.browser.ntp_background_images.util.SponsoredImageUtil;
 import org.chromium.chrome.browser.preferences.BravePref;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.profiles.ProfileProvider;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabDelegateFactory;
@@ -37,22 +36,20 @@ public class BraveTabCreator extends ChromeTabCreator {
             Supplier<TabDelegateFactory> tabDelegateFactory,
             OneshotSupplier<ProfileProvider> profileProviderSupplier,
             boolean incognito,
-            OverviewNtpCreator overviewNTPCreator,
             AsyncTabParamsManager asyncTabParamsManager,
             Supplier<TabModelSelector> tabModelSelectorSupplier,
             Supplier<CompositorViewHolder> compositorViewHolderSupplier,
-            @Nullable DseNewTabUrlManager dseNewTabUrlManager) {
+            @Nullable MultiInstanceManager multiInstanceManager) {
         super(
                 activity,
                 nativeWindow,
                 tabDelegateFactory,
                 profileProviderSupplier,
                 incognito,
-                overviewNTPCreator,
                 asyncTabParamsManager,
                 tabModelSelectorSupplier,
                 compositorViewHolderSupplier,
-                dseNewTabUrlManager);
+                multiInstanceManager);
     }
 
     @Override
@@ -65,13 +62,19 @@ public class BraveTabCreator extends ChromeTabCreator {
             if (chromeTabbedActivity != null && Build.VERSION.SDK_INT <= Build.VERSION_CODES.M) {
                 TabModel tabModel = chromeTabbedActivity.getCurrentTabModel();
                 if (tabModel.getCount() >= SponsoredImageUtil.MAX_TABS
-                        && UserPrefs.get(Profile.getLastUsedRegularProfile())
-                                   .getBoolean(BravePref.NEW_TAB_PAGE_SHOW_BACKGROUND_IMAGE)) {
-                    Tab tab = BraveActivity.class.cast(chromeTabbedActivity)
-                                      .selectExistingTab(UrlConstants.NTP_URL);
+                        && UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
+                                .getBoolean(BravePref.NEW_TAB_PAGE_SHOW_BACKGROUND_IMAGE)) {
+                    Tab tab =
+                            BraveActivity.class
+                                    .cast(chromeTabbedActivity)
+                                    .selectExistingTab(UrlConstants.NTP_URL);
                     if (tab != null) {
-                        BraveReflectionUtil.InvokeMethod(
-                                ChromeTabbedActivity.class, chromeTabbedActivity, "hideOverview");
+                        BraveReflectionUtil.invokeMethod(
+                                ChromeTabbedActivity.class,
+                                chromeTabbedActivity,
+                                "hideOverview",
+                                boolean.class,
+                                false);
                         return tab;
                     }
                 }
@@ -90,7 +93,7 @@ public class BraveTabCreator extends ChromeTabCreator {
     }
 
     private void registerPageView() {
-        NTPBackgroundImagesBridge.getInstance(Profile.getLastUsedRegularProfile())
+        NTPBackgroundImagesBridge.getInstance(ProfileManager.getLastUsedRegularProfile())
                 .registerPageView();
     }
 }

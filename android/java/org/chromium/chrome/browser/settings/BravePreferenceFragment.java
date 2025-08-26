@@ -20,12 +20,12 @@ import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
-import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.settings.developer.BraveRewardsDebugPreferences;
 
-public class BravePreferenceFragment extends ChromeBaseSettingsFragment {
+public abstract class BravePreferenceFragment extends ChromeBaseSettingsFragment {
     protected static final int STORAGE_PERMISSION_EXPORT_REQUEST_CODE = 8000;
-    protected static final int STORAGE_PERMISSION_IMPORT_REQUEST_CODE = STORAGE_PERMISSION_EXPORT_REQUEST_CODE + 1;
+    protected static final int STORAGE_PERMISSION_IMPORT_REQUEST_CODE =
+            STORAGE_PERMISSION_EXPORT_REQUEST_CODE + 1;
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
@@ -50,11 +50,15 @@ public class BravePreferenceFragment extends ChromeBaseSettingsFragment {
     }
 
     @Override
+    public @AnimationType int getAnimationType() {
+        return AnimationType.PROPERTY;
+    }
+
+    @Override
     public void onResume() {
         super.onResume();
         BraveRewardsNativeWorker braveRewardsNativeWorker = BraveRewardsNativeWorker.getInstance();
-        if (braveRewardsNativeWorker == null || !braveRewardsNativeWorker.IsSupported()
-                || BravePrefServiceBridge.getInstance().getSafetynetCheckFailed()) {
+        if (braveRewardsNativeWorker == null || !braveRewardsNativeWorker.isSupported()) {
             if (getPreferenceScreen() == null) return;
             Preference braveRewardsDebugPreference =
                     getPreferenceScreen().findPreference(BraveRewardsDebugPreferences.KEY);

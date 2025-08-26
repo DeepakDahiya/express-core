@@ -19,11 +19,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
@@ -32,7 +32,9 @@ import org.chromium.chrome.browser.crypto_wallet.util.KeystoreHelper;
 import org.chromium.chrome.browser.crypto_wallet.util.Utils;
 import org.chromium.chrome.browser.crypto_wallet.util.WalletConstants;
 import org.chromium.chrome.browser.crypto_wallet.util.WalletNativeUtils;
+import org.chromium.chrome.browser.crypto_wallet.util.WalletUtils;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.ui.KeyboardVisibilityDelegate;
 
 /**
@@ -42,18 +44,16 @@ public class BraveWalletResetPreference
         extends Preference implements Preference.OnPreferenceClickListener {
     private static final String TAG = "BraveWalletResetPref";
 
-    private int mPrefAccentColor;
+    private final int mPrefAccentColor;
     private final String mConfirmationPhrase;
+    private Profile mProfile;
 
-    /**
-     * Constructor for BraveWalletResetPreference.
-     */
+    /** Constructor for BraveWalletResetPreference. */
     public BraveWalletResetPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
         Resources resources = getContext().getResources();
-        mPrefAccentColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.wallet_error_text_color);
+        mPrefAccentColor = getContext().getColor(R.color.wallet_error_text_color);
         mConfirmationPhrase =
                 resources.getString(R.string.brave_wallet_reset_settings_confirmation_phrase);
         setOnPreferenceClickListener(this);
@@ -72,6 +72,10 @@ public class BraveWalletResetPreference
         return true;
     }
 
+    public void setProfile(@NonNull final Profile profile) {
+        mProfile = profile;
+    }
+
     private void showBraveWalletResetDialog() {
         LayoutInflater inflater =
                 (LayoutInflater) getContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
@@ -83,27 +87,28 @@ public class BraveWalletResetPreference
                 R.string.brave_wallet_reset_settings_confirmation, mConfirmationPhrase));
 
         DialogInterface.OnClickListener onClickListener =
-                new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int button) {
-                        if (button == AlertDialog.BUTTON_POSITIVE) {
-                            String inputText = input.getText().toString().trim();
-                            if (TextUtils.equals(inputText, mConfirmationPhrase)) {
-                                Log.w(TAG, "Reset");
-                                WalletNativeUtils.resetWallet(Utils.getProfile(false));
-                                KeystoreHelper.resetBiometric();
-                                Utils.setCryptoOnboarding(true);
+                (dialog, button) -> {
+                    assert mProfile != null;
+                    if (button == AlertDialog.BUTTON_POSITIVE) {
+                        String inputText = input.getText().toString().trim();
+                        if (TextUtils.equals(inputText, mConfirmationPhrase)) {
+                            Log.w(TAG, "Reset");
+                            WalletNativeUtils.resetWallet(mProfile);
+                            KeystoreHelper.resetBiometric();
+                            Utils.setCryptoOnboarding(true);
 
-                                for (String key : WalletConstants.BRAVE_WALLET_PREFS) {
-                                    ChromeSharedPreferences.getInstance().removeKey(key);
-                                }
+                            for (String key : WalletConstants.BRAVE_WALLET_PREFS) {
+                                ChromeSharedPreferences.getInstance().removeKey(key);
                             }
-
-                            // Force clear activity stack
-                            launchBraveTabbedActivity();
-                        } else {
-                            dialog.dismiss();
                         }
+
+                        // Close Wallet pages, if any.
+                        WalletUtils.closeWebWallet();
+
+                        // Force clear activity stack
+                        launchBraveTabbedActivity();
+                    } else {
+                        dialog.dismiss();
                     }
                 };
 
@@ -144,10 +149,13 @@ public class BraveWalletResetPreference
     }
 
     private void launchBraveTabbedActivity() {
-        Intent intent =
-                new Intent(BraveActivity.getChromeTabbedActivity(), ChromeTabbedActivity.class);
+        ChromeTabbedActivity activity = BraveActivity.getChromeTabbedActivity();
+        if (activity == null) {
+            return;
+        }
+        Intent intent = new Intent(activity, ChromeTabbedActivity.class);
         intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.setAction(Intent.ACTION_VIEW);
-        BraveActivity.getChromeTabbedActivity().startActivity(intent);
+        activity.startActivity(intent);
     }
 }

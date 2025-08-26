@@ -1,25 +1,24 @@
-/**
- * Copyright (c) 2021 The Brave Authors. All rights reserved.
+/* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 package org.chromium.chrome.browser.vpn.utils;
 
 import android.app.Activity;
-import android.text.TextUtils;
 import android.util.Pair;
 
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import org.chromium.brave_vpn.mojom.BraveVpnConstants;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.billing.InAppPurchaseWrapper;
+import org.chromium.chrome.browser.billing.PurchaseModel;
 import org.chromium.chrome.browser.util.LiveDataUtil;
 import org.chromium.chrome.browser.vpn.BraveVpnNativeWorker;
-import org.chromium.chrome.browser.vpn.billing.InAppPurchaseWrapper;
-import org.chromium.chrome.browser.vpn.billing.PurchaseModel;
 import org.chromium.chrome.browser.vpn.models.BraveVpnPrefModel;
+import org.chromium.chrome.browser.vpn.models.BraveVpnServerRegion;
 
 import java.util.TimeZone;
 
@@ -34,6 +33,7 @@ public class BraveVpnApiResponseUtils {
         }
         BraveVpnUtils.showToast(
                 activity.getResources().getString(R.string.purchase_token_verification_failed));
+        BraveVpnUtils.dismissProgressDialog();
     }
 
     public static void handleOnGetSubscriberCredential(Activity activity, boolean isSuccess) {
@@ -41,7 +41,9 @@ public class BraveVpnApiResponseUtils {
             if (!BraveVpnNativeWorker.getInstance().isPurchasedUser()) {
                 MutableLiveData<PurchaseModel> _activePurchases = new MutableLiveData();
                 LiveData<PurchaseModel> activePurchases = _activePurchases;
-                InAppPurchaseWrapper.getInstance().queryPurchases(_activePurchases);
+                InAppPurchaseWrapper.getInstance()
+                        .queryPurchases(
+                                _activePurchases, InAppPurchaseWrapper.SubscriptionProduct.VPN);
                 LiveDataUtil.observeOnce(activePurchases, activePurchaseModel -> {
                     InAppPurchaseWrapper.getInstance().processPurchases(
                             activity, activePurchaseModel.getPurchase());
@@ -58,30 +60,44 @@ public class BraveVpnApiResponseUtils {
     public static void handleOnGetTimezonesForRegions(Activity activity,
             BraveVpnPrefModel braveVpnPrefModel, String jsonTimezones, boolean isSuccess) {
         if (isSuccess) {
-            String region = BraveVpnUtils.getRegionForTimeZone(
-                    jsonTimezones, TimeZone.getDefault().getID());
-            if (TextUtils.isEmpty(region)) {
-                BraveVpnUtils.showToast(String.format(
-                        activity.getResources().getString(R.string.couldnt_get_matching_timezone),
-                        TimeZone.getDefault().getID()));
+            BraveVpnServerRegion braveVpnServerRegion =
+                    BraveVpnUtils.getServerRegionForTimeZone(
+                            jsonTimezones, TimeZone.getDefault().getID());
+            if (braveVpnServerRegion == null || braveVpnServerRegion.getRegionName().isEmpty()) {
+                BraveVpnUtils.showToast(
+                        String.format(
+                                activity.getResources()
+                                        .getString(R.string.couldnt_get_matching_timezone),
+                                TimeZone.getDefault().getID()));
+                BraveVpnUtils.dismissProgressDialog();
                 return;
             }
-            if (!TextUtils.isEmpty(BraveVpnUtils.selectedServerRegion)
-                    && BraveVpnUtils.selectedServerRegion != null) {
-                region = BraveVpnUtils.selectedServerRegion.equals(
-                                 BraveVpnPrefUtils.PREF_BRAVE_VPN_AUTOMATIC)
-                        ? region
-                        : BraveVpnUtils.selectedServerRegion;
-                BraveVpnUtils.selectedServerRegion = null;
-            } else {
-                String serverRegion = BraveVpnPrefUtils.getServerRegion();
-                region = serverRegion.equals(BraveVpnPrefUtils.PREF_BRAVE_VPN_AUTOMATIC)
-                        ? region
-                        : serverRegion;
-            }
+            String regionFromTimeZone = braveVpnServerRegion.getRegionName();
+            String regionForHostName = regionFromTimeZone;
+            String regionPrecision = braveVpnServerRegion.getRegionPrecision();
 
-            BraveVpnNativeWorker.getInstance().getHostnamesForRegion(region);
-            braveVpnPrefModel.setServerRegion(region);
+            // Determine the region for host name and precision
+            if (BraveVpnUtils.selectedServerRegion != null) {
+                if (!BraveVpnUtils.selectedServerRegion
+                        .getRegionName()
+                        .equals(BraveVpnPrefUtils.PREF_BRAVE_VPN_AUTOMATIC)) {
+                    regionForHostName = BraveVpnUtils.selectedServerRegion.getRegionName();
+                    braveVpnServerRegion = BraveVpnUtils.selectedServerRegion;
+                    regionPrecision = braveVpnServerRegion.getRegionPrecision();
+                } else {
+                    regionPrecision = BraveVpnConstants.REGION_PRECISION_DEFAULT;
+                }
+            } else {
+                String serverRegion = BraveVpnPrefUtils.getRegionName();
+                if (serverRegion.equals(BraveVpnPrefUtils.PREF_BRAVE_VPN_AUTOMATIC)) {
+                    regionPrecision = BraveVpnConstants.REGION_PRECISION_DEFAULT;
+                } else {
+                    regionForHostName = serverRegion;
+                }
+            }
+            BraveVpnNativeWorker.getInstance()
+                    .getHostnamesForRegion(regionForHostName, regionPrecision);
+            braveVpnPrefModel.setServerRegion(braveVpnServerRegion);
         } else {
             BraveVpnUtils.showToast(
                     activity.getResources().getString(R.string.vpn_profile_creation_failed));

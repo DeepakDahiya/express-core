@@ -17,9 +17,9 @@ public final class BraveConstants {
     // used in BravseSetDefaultBrowserUtils
     public static final int DEFAULT_BROWSER_ROLE_REQUEST_CODE = 37;
 
-    public static final String BRAVE_PRODUCTION_PACKAGE_NAME = "com.discourse.browser";
-    public static final String BRAVE_BETA_PACKAGE_NAME = "com.discourse.browser_beta";
-    public static final String BRAVE_NIGHTLY_PACKAGE_NAME = "com.discourse.browser_nightly";
+    public static final String BRAVE_PRODUCTION_PACKAGE_NAME = "com.brave.browser";
+    public static final String BRAVE_BETA_PACKAGE_NAME = "com.brave.browser_beta";
+    public static final String BRAVE_NIGHTLY_PACKAGE_NAME = "com.brave.browser_nightly";
 
     // used in BraveNtpAdapter
     public static final String BRAVE_REF_URL = "https://brave.com/r/";
@@ -27,10 +27,13 @@ public final class BraveConstants {
             "https://brave.com/privacy/browser/#brave-news";
 
     public static final String INDIA_COUNTRY_CODE = "IN";
+    public static final String JAPAN_COUNTRY_CODE = "JP";
 
     public static final String BRAVE_NEWS_PREFERENCES_TYPE = "BraveNewsPreferencesType";
 
     // Deeplinks
     public static final String DEEPLINK_ANDROID_PLAYLIST = "deeplink-android-playlist";
     public static final String DEEPLINK_ANDROID_VPN = "deeplink-android-vpn";
+
+    public static final String YOUTUBE_DOMAIN = "youtube.com";
 }

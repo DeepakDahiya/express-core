@@ -16,7 +16,6 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.BraveRewardsObserver;
-import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.rewards.BraveRewardsPanel;
 import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
 import org.chromium.components.browser_ui.settings.SettingsUtils;
@@ -62,7 +61,7 @@ public class BraveRewardsPreferences extends BravePreferenceFragment
     public void onStart() {
         mBraveRewardsNativeWorker = BraveRewardsNativeWorker.getInstance();
         if (mBraveRewardsNativeWorker != null) {
-            mBraveRewardsNativeWorker.AddObserver(this);
+            mBraveRewardsNativeWorker.addObserver(this);
         }
         super.onStart();
     }
@@ -70,7 +69,7 @@ public class BraveRewardsPreferences extends BravePreferenceFragment
     @Override
     public void onStop() {
         if (mBraveRewardsNativeWorker != null) {
-            mBraveRewardsNativeWorker.RemoveObserver(this);
+            mBraveRewardsNativeWorker.removeObserver(this);
         }
         super.onStop();
     }
@@ -122,7 +121,6 @@ public class BraveRewardsPreferences extends BravePreferenceFragment
             sharedPreferencesEditor.putBoolean(
                     BraveRewardsPanel.PREF_WAS_BRAVE_REWARDS_TURNED_ON, false);
             sharedPreferencesEditor.apply();
-            BravePrefServiceBridge.getInstance().setSafetynetCheckFailed(false);
             BraveRelaunchUtils.askForRelaunch(getActivity());
         } else {
             BraveRelaunchUtils.askForRelaunchCustom(getActivity());

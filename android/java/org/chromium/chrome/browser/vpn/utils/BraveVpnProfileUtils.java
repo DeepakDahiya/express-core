@@ -1,9 +1,7 @@
-/**
- * Copyright (c) 2021 The Brave Authors. All rights reserved.
+/* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/.
- */
+ * License, v. 2.0. If a copy of the MPL was not distributed with this file,
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 package org.chromium.chrome.browser.vpn.utils;
 
@@ -16,19 +14,21 @@ import android.os.Build;
 
 import androidx.core.content.ContextCompat;
 
+import org.chromium.chrome.browser.notifications.BravePermissionUtils;
+import org.chromium.chrome.browser.vpn.timer.TimerUtils;
 import org.chromium.chrome.browser.vpn.wireguard.WireguardService;
 import org.chromium.chrome.browser.vpn.wireguard.WireguardUtils;
 
 public class BraveVpnProfileUtils {
     private static volatile BraveVpnProfileUtils sBraveVpnProfileUtils;
-    private static Object mutex = new Object();
+    private static final Object sMutex = new Object();
 
     private BraveVpnProfileUtils() {}
 
     public static BraveVpnProfileUtils getInstance() {
         BraveVpnProfileUtils result = sBraveVpnProfileUtils;
         if (result == null) {
-            synchronized (mutex) {
+            synchronized (sMutex) {
                 result = sBraveVpnProfileUtils;
                 if (result == null) sBraveVpnProfileUtils = result = new BraveVpnProfileUtils();
             }
@@ -61,6 +61,8 @@ public class BraveVpnProfileUtils {
 
     public void startVpn(Context context) {
         ContextCompat.startForegroundService(context, new Intent(context, WireguardService.class));
+        TimerUtils.cancelScheduledVpnAction(context);
+        BravePermissionUtils.showNotificationPermissionDialog(context);
     }
 
     public void stopVpn(Context context) {

@@ -13,7 +13,7 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 public class BraveNewsSettingsDividerItemDecoration extends RecyclerView.ItemDecoration {
-    private Drawable mDivider;
+    private final Drawable mDivider;
 
     public BraveNewsSettingsDividerItemDecoration(Drawable divider) {
         mDivider = divider;
@@ -26,7 +26,6 @@ public class BraveNewsSettingsDividerItemDecoration extends RecyclerView.ItemDec
 
         for (int i = 0; i < parent.getChildCount() - 1; i++) {
             View child = parent.getChildAt(i);
-            int position = parent.getChildAdapterPosition(child);
 
             int left = parent.getPaddingLeft();
             int right = parent.getWidth() - parent.getPaddingRight();

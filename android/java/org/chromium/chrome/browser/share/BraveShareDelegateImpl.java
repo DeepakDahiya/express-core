@@ -5,8 +5,12 @@
 
 package org.chromium.chrome.browser.share;
 
+import android.content.Context;
+
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.chrome.browser.data_sharing.DataSharingTabManager;
 import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -14,13 +18,28 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 
+@NullMarked
 public class BraveShareDelegateImpl extends ShareDelegateImpl {
-    public BraveShareDelegateImpl(BottomSheetController controller,
-            ActivityLifecycleDispatcher lifecycleDispatcher, Supplier<Tab> tabProvider,
-            Supplier<TabModelSelector> tabModelSelectorProvider, Supplier<Profile> profileSupplier,
-            ShareSheetDelegate delegate, boolean isCustomTab) {
-        super(controller, lifecycleDispatcher, tabProvider, tabModelSelectorProvider,
-                profileSupplier, delegate, isCustomTab);
+    public BraveShareDelegateImpl(
+            Context context,
+            BottomSheetController controller,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            Supplier<Tab> tabProvider,
+            Supplier<TabModelSelector> tabModelSelectorProvider,
+            Supplier<Profile> profileSupplier,
+            ShareSheetDelegate delegate,
+            boolean isCustomTab,
+            DataSharingTabManager dataSharingTabManager) {
+        super(
+                context,
+                controller,
+                lifecycleDispatcher,
+                tabProvider,
+                tabModelSelectorProvider,
+                profileSupplier,
+                delegate,
+                isCustomTab,
+                dataSharingTabManager);
     }
 
     @Override

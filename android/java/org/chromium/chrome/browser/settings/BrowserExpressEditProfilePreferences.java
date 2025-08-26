@@ -1,7 +1,6 @@
 package org.chromium.chrome.browser.settings;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.graphics.PorterDuff;
 import android.graphics.PorterDuffColorFilter;
 import android.os.Bundle;
@@ -60,6 +59,9 @@ import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
 
+import org.chromium.base.supplier.ObservableSupplier;
+import org.chromium.base.supplier.ObservableSupplierImpl;
+
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
@@ -67,9 +69,7 @@ import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import java.util.List;
 
 public class BrowserExpressEditProfilePreferences extends BravePreferenceFragment
-        implements BraveNewsPreferencesDataListener, ConnectionErrorHandler,
-                   FragmentSettingsLauncher {
-    public static final String PREF_SHOW_OPTIN = "show_optin";
+        implements Preference.OnPreferenceChangeListener {
     private static final int REQUEST_IMAGE_PICK = 1;
 
     private LinearLayout mParentLayout;
@@ -81,29 +81,21 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
     private EditText mUsernameEditText;
     private TextView mErrorTextView;
 
-    private boolean mIsSuggestionAvailable;
-    private boolean mIsChannelAvailable;
-    private boolean mIsPublisherAvailable;
-    private BraveNewsController mBraveNewsController;
-
-    // SettingsLauncher injected from main Settings Activity.
-    private SettingsLauncher mSettingsLauncher;
+    private final ObservableSupplierImpl<String> mPageTitle = new ObservableSupplierImpl<>();
 
     @Override
     public View onCreateView(
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mPageTitle.set("");
         return inflater.inflate(R.layout.browser_express_edit_profile_settings, container, false);
     }
 
     @Override
+    public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {}
+
+    @Override
     public void onActivityCreated(Bundle savedInstanceState) {
-        if (getActivity() != null) {
-            getActivity().setTitle("");
-        }
-
         super.onActivityCreated(savedInstanceState);
-
-        initBraveNewsController();
 
         View view = getView();
         if (view != null) {
@@ -201,104 +193,13 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 }
             });
 
-            setData();
             onClickViews();
         }
     }
 
-    private void setData() {
-        if (!GlobalNightModeStateProviderHolder.getInstance().isInNightMode()
-                && getView() != null) {
-            LottieAnimationView lottieAnimationVIew =
-                    (LottieAnimationView) getView().findViewById(R.id.animation_view);
-
-            try {
-                lottieAnimationVIew.addValueCallback(new KeyPath("newspaper", "**"),
-                        LottieProperty.COLOR_FILTER,
-                        frameInfo
-                        -> new PorterDuffColorFilter(ContextCompat.getColor(getActivity(),
-                                                             R.color.news_settings_optin_color),
-                                PorterDuff.Mode.SRC_ATOP));
-            } catch (Exception exception) {
-                // if newspaper keypath changed in animation json
-            }
-        }
-
-        if (BraveNewsUtils.getLocale() != null
-                && BraveNewsUtils.getSuggestionsPublisherList().size() > 0) {
-            mIsSuggestionAvailable = true;
-        }
-
-        boolean isNewsEnable = BraveNewsUtils.shouldDisplayNewsFeed();
-        onShowNewsToggle(isNewsEnable);
-    }
-
-    private void onClickViews() {
-    }
-
-    private void onShowNewsToggle(boolean isEnable) {
-        BravePrefServiceBridge.getInstance().setShowNews(isEnable);
-
-        ChromeSharedPreferences.getInstance().writeBoolean(
-                BravePreferenceKeys.BRAVE_NEWS_PREF_SHOW_NEWS, isEnable);
-
-        FrameLayout.LayoutParams parentLayoutParams = new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.WRAP_CONTENT);
-
-        parentLayoutParams.gravity = Gravity.NO_GRAVITY;
-        mParentLayout.setLayoutParams(parentLayoutParams);
-    }
-
-    private void openBraveNewsPreferencesDetails(
-            BraveNewsPreferencesType braveNewsPreferencesType) {
-        Bundle fragmentArgs = new Bundle();
-        fragmentArgs.putString(
-                BraveConstants.BRAVE_NEWS_PREFERENCES_TYPE, braveNewsPreferencesType.toString());
-        mSettingsLauncher.launchSettingsActivity(
-                getActivity(), BraveNewsPreferencesDetails.class, fragmentArgs);
-    }
-
-    private void initBraveNewsController() {
-        if (mBraveNewsController != null) {
-            return;
-        }
-
-        mBraveNewsController =
-                BraveNewsControllerFactory.getInstance().getBraveNewsController(this);
-    }
-
     @Override
-    public void onChannelReceived() {
-    }
-
-    @Override
-    public void onPublisherReceived() {
-    }
-
-    @Override
-    public void onSuggestionsReceived() {
-    }
-
-    @Override
-    public void setSettingsLauncher(SettingsLauncher settingsLauncher) {
-        mSettingsLauncher = settingsLauncher;
-    }
-
-    @Override
-    public void onConnectionError(MojoException e) {
-        if (mBraveNewsController != null) {
-            mBraveNewsController.close();
-        }
-        mBraveNewsController = null;
-        initBraveNewsController();
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        if (mBraveNewsController != null) {
-            mBraveNewsController.close();
-        }
+    public boolean onPreferenceChange(@NonNull Preference preference, Object o) {
+        return true;
     }
 
     private void openImagePicker() {
