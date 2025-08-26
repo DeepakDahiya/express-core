@@ -22,6 +22,7 @@
 #include <string>
 #include <utility>
 
+#include "base/byte_count.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/location.h"
@@ -42,7 +43,7 @@ namespace brave_ads {
 namespace {
 
 using IsValidMacAddressCallback =
-    base::RepeatingCallback<bool(const void* bytes, size_t size)>;
+    base::RepeatingCallback<bool(base::span<const uint8_t> bytes)>;
 
 class MacAddressProcessor {
  public:
@@ -82,10 +83,13 @@ class MacAddressProcessor {
     if (index >= found_index_ || size == 0)
       return;
 
-    if (!is_valid_mac_address_callback_.Run(bytes, size))
+    auto mac_address_bytes =
+        UNSAFE_TODO(base::span(static_cast<const uint8_t*>(bytes), size));
+    if (!is_valid_mac_address_callback_.Run(mac_address_bytes)) {
       return;
+    }
 
-    mac_address_ = base::ToLowerASCII(base::HexEncode(bytes, size));
+    mac_address_ = base::ToLowerASCII(base::HexEncode(mac_address_bytes));
 
     found_index_ = index;
   }
@@ -101,7 +105,7 @@ std::string GetMacAddressFromGetAdaptersAddresses(
                                                 base::BlockingType::MAY_BLOCK);
 
   // Microsoft recommend a default size of 15k.
-  ULONG buffer_size = 15 * 1024;
+  ULONG buffer_size = base::KiB(15).InBytes();
 
   // Disable as much as we can, since all we want is MAC addresses.
   const ULONG flags = GAA_FLAG_SKIP_ANYCAST | GAA_FLAG_SKIP_DNS_SERVER |
@@ -162,7 +166,7 @@ std::string GetMacAddressFromGetIfTable2(
 
   MacAddressProcessor processor(std::move(is_valid_mac_address_callback));
   for (size_t i = 0; i < if_table->NumEntries; i++) {
-    processor.ProcessInterfaceRow(&(if_table->Table[i]));
+    processor.ProcessInterfaceRow(&UNSAFE_TODO((if_table->Table[i])));
   }
 
   if (if_table != NULL) {
@@ -203,7 +207,8 @@ void GetMacAddressCallback(DeviceIdCallback callback, std::string mac_address) {
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&metrics::MachineIdProvider::GetMachineId),
+      base::BindOnce(
+          []() { return metrics::MachineIdProvider().GetMachineId(); }),
       base::BindOnce(&GetMachineIdCallback, mac_address, std::move(callback)));
 }
 

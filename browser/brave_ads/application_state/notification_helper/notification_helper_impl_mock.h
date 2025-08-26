@@ -19,17 +19,15 @@ class NotificationHelperImplMock : public NotificationHelperImpl {
   NotificationHelperImplMock& operator=(const NotificationHelperImplMock&) =
       delete;
 
-  NotificationHelperImplMock(NotificationHelperImplMock&&) noexcept = delete;
-  NotificationHelperImplMock& operator=(NotificationHelperImplMock&&) noexcept =
-      delete;
-
   ~NotificationHelperImplMock() override;
 
-  MOCK_METHOD0(CanShowNotifications, bool());
-  MOCK_CONST_METHOD0(CanShowSystemNotificationsWhileBrowserIsBackgrounded,
-                     bool());
+  MOCK_METHOD(bool, CanShowNotifications, ());
+  MOCK_METHOD(bool,
+              CanShowSystemNotificationsWhileBrowserIsBackgrounded,
+              (),
+              (const));
 
-  MOCK_METHOD0(ShowOnboardingNotification, bool());
+  MOCK_METHOD(bool, ShowOnboardingNotification, ());
 };
 
 }  // namespace brave_ads

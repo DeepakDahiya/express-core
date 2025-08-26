@@ -7,23 +7,23 @@
 #define BRAVE_BROWSER_BRAVE_ADS_ANALYTICS_P3A_BRAVE_STATS_HELPER_H_
 
 #include "base/scoped_observation.h"
-#include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_manager.h"
+#include "base/time/time.h"
 #include "chrome/browser/profiles/profile_manager_observer.h"
 #include "chrome/browser/profiles/profile_observer.h"
 #include "components/prefs/pref_change_registrar.h"
-#include "components/prefs/pref_service.h"
 
 class PrefRegistrySimple;
+class PrefService;
+class ProfileManager;
 class Profile;
 
 namespace brave_ads {
-
-extern const char kAdsEnabledInstallationTimeHistogramName[];
+inline constexpr char kAdsEnabledInstallationTimeHistogramName[] =
+    "Brave.Rewards.EnabledInstallationTime";
 
 class BraveStatsHelper : public ProfileManagerObserver, public ProfileObserver {
  public:
-  BraveStatsHelper();
+  BraveStatsHelper(PrefService* local_state, ProfileManager* profile_manager);
   ~BraveStatsHelper() override;
 
   static void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
@@ -48,13 +48,14 @@ class BraveStatsHelper : public ProfileManagerObserver, public ProfileObserver {
   PrefChangeRegistrar last_used_profile_pref_change_registrar_;
 #endif
   PrefChangeRegistrar ads_enabled_pref_change_registrar_;
-  raw_ptr<Profile> current_profile_ = nullptr;
+  base::ScopedObservation<Profile, ProfileObserver>
+      current_profile_observation_{this};
 
   base::ScopedObservation<ProfileManager, ProfileManagerObserver>
       profile_manager_observer_{this};
 
-  raw_ptr<PrefService> local_state_;
-  raw_ptr<ProfileManager> profile_manager_;
+  const raw_ptr<PrefService> local_state_;         // Not owned.
+  const raw_ptr<ProfileManager> profile_manager_;  // Not owned.
 
   base::Time testing_first_run_time_;
 };

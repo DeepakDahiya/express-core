@@ -6,7 +6,9 @@
 #ifndef BRAVE_BROWSER_BRAVE_SHIELDS_FILTER_LIST_SERVICE_FACTORY_H_
 #define BRAVE_BROWSER_BRAVE_SHIELDS_FILTER_LIST_SERVICE_FACTORY_H_
 
-#include "brave/components/brave_shields/common/filter_list.mojom.h"
+#include <memory>
+
+#include "brave/components/brave_shields/core/common/filter_list.mojom.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/browser_context.h"
@@ -16,6 +18,7 @@ namespace base {
 template <typename T>
 class NoDestructor;
 }  // namespace base
+class Profile;
 
 namespace brave_shields {
 
@@ -26,8 +29,8 @@ class FilterListServiceFactory : public BrowserContextKeyedServiceFactory {
   FilterListServiceFactory(const FilterListServiceFactory&) = delete;
   FilterListServiceFactory& operator=(const FilterListServiceFactory&) = delete;
 
-  static mojo::PendingRemote<mojom::FilterListAndroidHandler> GetForContext(
-      content::BrowserContext* context);
+  static mojo::PendingRemote<mojom::FilterListAndroidHandler>
+  GetRemoteForProfile(Profile* profile);
   static FilterListService* GetServiceForContext(
       content::BrowserContext* context);
   static FilterListServiceFactory* GetInstance();
@@ -41,7 +44,7 @@ class FilterListServiceFactory : public BrowserContextKeyedServiceFactory {
   FilterListServiceFactory();
   ~FilterListServiceFactory() override;
 
-  KeyedService* BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(
       content::BrowserContext* context) const override;
   content::BrowserContext* GetBrowserContextToUse(
       content::BrowserContext* context) const override;

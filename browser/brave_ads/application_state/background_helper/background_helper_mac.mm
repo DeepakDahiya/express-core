@@ -9,13 +9,12 @@
 
 #include "base/apple/foundation_util.h"
 #include "base/apple/osstatus_logging.h"
-#include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/memory/raw_ptr.h"
 
 @interface BackgroundHelperDelegateMac : NSObject {
  @private
-  raw_ptr<brave_ads::BackgroundHelper> helper_;  // NOT OWNED
+  raw_ptr<brave_ads::BackgroundHelper> helper_;  // Not owned.
 }
 
 - (void)appDidBecomeActive:(NSNotification*)notification;

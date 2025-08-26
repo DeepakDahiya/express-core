@@ -6,37 +6,39 @@
 #include "base/path_service.h"
 #include "base/strings/pattern.h"
 #include "base/strings/utf_string_conversions.h"
+#include "brave/components/brave_wallet/browser/pref_names.h"
 #include "brave/components/constants/brave_paths.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/omnibox/browser/location_bar_model.h"
+#include "components/prefs/pref_service.h"
+#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/navigation_entry.h"
-#include "content/public/browser/notification_service.h"
-#include "content/public/browser/notification_types.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/no_renderer_crashes_assertion.h"
 #include "net/dns/mock_host_resolver.h"
 
 class BraveSchemeLoadBrowserTest : public InProcessBrowserTest,
                                    public TabStripModelObserver {
  public:
   void SetUpOnMainThread() override {
-    InProcessBrowserTest::SetUpOnMainThread();
-    host_resolver()->AddRule("*", "127.0.0.1");
-
-    brave::RegisterPathProvider();
-    base::FilePath test_data_dir;
-    base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
-    embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
-
+    embedded_test_server()->ServeFilesFromDirectory(
+        base::PathService::CheckedGet(brave::DIR_TEST_DATA));
     ASSERT_TRUE(embedded_test_server()->Start());
+    host_resolver()->AddRule("*", "127.0.0.1");
+  }
+
+  PrefService* prefs() {
+    return user_prefs::UserPrefs::Get(browser()->profile());
   }
 
   // TabStripModelObserver overrides:
@@ -53,11 +55,22 @@ class BraveSchemeLoadBrowserTest : public InProcessBrowserTest,
     return browser()->tab_strip_model()->GetActiveWebContents();
   }
 
+  bool NavigateToURLUntilLoadStop(GURL url) {
+    ui_test_utils::UrlLoadObserver load_complete(url);
+    browser()->OpenURL(
+        content::OpenURLParams(url, content::Referrer(),
+                               WindowOpenDisposition::CURRENT_TAB,
+                               ui::PAGE_TRANSITION_TYPED, false),
+        /*navigation_handle_callback=*/{});
+    load_complete.Wait();
+    EXPECT_EQ(active_contents()->GetLastCommittedURL(), url);
+    return true;
+  }
+
   bool NavigateToURLUntilLoadStop(const std::string& origin,
                                   const std::string& path) {
-    EXPECT_TRUE(ui_test_utils::NavigateToURL(
-        browser(), embedded_test_server()->GetURL(origin, path)));
-    return WaitForLoadStop(active_contents());
+    GURL url = embedded_test_server()->GetURL(origin, path);
+    return NavigateToURLUntilLoadStop(url);
   }
 
   // Check loading |url| in guest window is not allowed for an url.
@@ -78,10 +91,10 @@ class BraveSchemeLoadBrowserTest : public InProcessBrowserTest,
                       ->GetController()
                       .GetLastCommittedEntry();
     EXPECT_EQ(entry->GetPageType(), content::PageType::PAGE_TYPE_ERROR);
-    EXPECT_STREQ("about:blank",
-                 base::UTF16ToUTF8(
-                     browser()->location_bar_model()->GetFormattedFullURL())
-                     .c_str());
+    EXPECT_EQ("about:blank", base::UTF16ToUTF8(browser()
+                                                   ->GetFeatures()
+                                                   .location_bar_model()
+                                                   ->GetFormattedFullURL()));
     EXPECT_EQ(1, browser()->tab_strip_model()->count());
   }
 
@@ -112,14 +125,56 @@ class BraveSchemeLoadBrowserTest : public InProcessBrowserTest,
 
     browser()->tab_strip_model()->RemoveObserver(this);
 
-    EXPECT_STREQ(url.c_str(),
-                 base::UTF16ToUTF8(browser()->location_bar_model()
-                      ->GetFormattedFullURL()).c_str());
+    EXPECT_EQ(url, base::UTF16ToUTF8(browser()
+                                         ->GetFeatures()
+                                         .location_bar_model()
+                                         ->GetFormattedFullURL()));
     EXPECT_EQ(2, browser()->tab_strip_model()->count());
     // Private window stays as initial state.
     EXPECT_EQ("about:blank",
               private_model->GetActiveWebContents()->GetVisibleURL().spec());
     EXPECT_EQ(1, private_browser->tab_strip_model()->count());
+  }
+
+  // Check loading |url| wallet URL in private window results in a load failure
+  void TestURLIsNotLoadedInPrivateWindowOrRedirected(const std::string& url) {
+    Browser* private_browser = CreateIncognitoBrowser(nullptr);
+    TabStripModel* private_model = private_browser->tab_strip_model();
+
+    // Check normal & private window have one blank tab.
+    EXPECT_EQ("about:blank",
+              private_model->GetActiveWebContents()->GetVisibleURL().spec());
+    EXPECT_EQ(1, private_model->count());
+    EXPECT_EQ("about:blank", active_contents()->GetVisibleURL().spec());
+    EXPECT_EQ(1, browser()->tab_strip_model()->count());
+
+    // Unable to navigate expected url.
+    EXPECT_FALSE(content::NavigateToURL(private_model->GetActiveWebContents(),
+                                        GURL(url)));
+    auto* entry = private_model->GetActiveWebContents()
+                      ->GetController()
+                      .GetLastCommittedEntry();
+    EXPECT_EQ(entry->GetPageType(), content::PageType::PAGE_TYPE_ERROR);
+    EXPECT_EQ("about:blank", base::UTF16ToUTF8(browser()
+                                                   ->GetFeatures()
+                                                   .location_bar_model()
+                                                   ->GetFormattedFullURL()));
+    EXPECT_EQ(1, browser()->tab_strip_model()->count());
+  }
+
+  void TestURLIsLoadedInPrivateWindow(const std::string& url) {
+    Browser* private_browser = CreateIncognitoBrowser();
+    TabStripModel* private_model = private_browser->tab_strip_model();
+    EXPECT_EQ("about:blank",
+              private_model->GetActiveWebContents()->GetVisibleURL().spec());
+
+    content::WebContents* web_contents = private_model->GetActiveWebContents();
+    EXPECT_TRUE(content::NavigateToURL(web_contents, GURL(url)));
+
+    content::WaitForLoadStop(web_contents);
+
+    EXPECT_EQ(url, web_contents->GetVisibleURL().spec());
+    EXPECT_EQ(web_contents->GetVisibleURL().spec(), url);
   }
 
   base::RepeatingClosure quit_closure_;
@@ -251,7 +306,8 @@ IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest, MAYBE_CrashURLTest) {
   browser()->OpenURL(
       content::OpenURLParams(GURL("brave://crash/"), content::Referrer(),
                              WindowOpenDisposition::CURRENT_TAB,
-                             ui::PAGE_TRANSITION_TYPED, false));
+                             ui::PAGE_TRANSITION_TYPED, false),
+      /*navigation_handle_callback=*/{});
   crash_observer.Wait();
 }
 
@@ -273,20 +329,17 @@ IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest,
   // window. chrome scheme is used because brave scheme is already replaced with
   // chrome when IsURLAllowedInIncognito() is called. Verify brave scheme url
   // with TestURLIsNotLoadedInPrivateWindow().
-  EXPECT_FALSE(
-      IsURLAllowedInIncognito(GURL("chrome://rewards"), browser()->profile()));
-  EXPECT_TRUE(
-      IsURLAllowedInIncognito(GURL("http://rewards"), browser()->profile()));
+  EXPECT_FALSE(IsURLAllowedInIncognito(GURL("chrome://rewards")));
+  EXPECT_TRUE(IsURLAllowedInIncognito(GURL("http://rewards")));
   TestURLIsNotLoadedInPrivateWindow("brave://rewards");
 }
 
 IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest,
                        WalletPageIsNotAllowedInPrivateWindow) {
-  EXPECT_FALSE(
-      IsURLAllowedInIncognito(GURL("chrome://wallet"), browser()->profile()));
-  EXPECT_TRUE(
-      IsURLAllowedInIncognito(GURL("http://wallet"), browser()->profile()));
-  TestURLIsNotLoadedInPrivateWindow("brave://wallet");
+  EXPECT_TRUE(IsURLAllowedInIncognito(GURL("http://wallet")));
+  TestURLIsNotLoadedInPrivateWindowOrRedirected("brave://wallet");
+  prefs()->SetBoolean(kBraveWalletPrivateWindowsEnabled, true);
+  TestURLIsLoadedInPrivateWindow("chrome://wallet/crypto/onboarding/welcome");
 }
 
 IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest,
@@ -296,19 +349,15 @@ IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest,
                        BraveSyncPageIsNotAllowedInPrivateWindow) {
-  EXPECT_FALSE(
-      IsURLAllowedInIncognito(GURL("chrome://sync"), browser()->profile()));
-  EXPECT_TRUE(
-      IsURLAllowedInIncognito(GURL("http://sync"), browser()->profile()));
+  EXPECT_FALSE(IsURLAllowedInIncognito(GURL("chrome://sync")));
+  EXPECT_TRUE(IsURLAllowedInIncognito(GURL("http://sync")));
   TestURLIsNotLoadedInPrivateWindow("brave://sync");
 }
 
 IN_PROC_BROWSER_TEST_F(BraveSchemeLoadBrowserTest,
                        BraveWelcomePageIsNotAllowedInPrivateWindow) {
-  EXPECT_FALSE(
-      IsURLAllowedInIncognito(GURL("chrome://welcome"), browser()->profile()));
-  EXPECT_TRUE(
-      IsURLAllowedInIncognito(GURL("http://welcome"), browser()->profile()));
+  EXPECT_FALSE(IsURLAllowedInIncognito(GURL("chrome://welcome")));
+  EXPECT_TRUE(IsURLAllowedInIncognito(GURL("http://welcome")));
   TestURLIsNotLoadedInPrivateWindow("brave://welcome");
 }
 

@@ -5,13 +5,15 @@
 
 #include "brave/browser/brave_shields/filter_list_service_factory.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/no_destructor.h"
 #include "brave/browser/brave_browser_process.h"
-#include "brave/components/brave_shields/browser/filter_list_service.h"
+#include "brave/components/brave_shields/content/browser/filter_list_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/incognito_helpers.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
 
 namespace brave_shields {
@@ -24,10 +26,15 @@ FilterListServiceFactory* FilterListServiceFactory::GetInstance() {
 
 // static
 mojo::PendingRemote<mojom::FilterListAndroidHandler>
-FilterListServiceFactory::GetForContext(content::BrowserContext* context) {
-  return static_cast<FilterListService*>(
-             GetInstance()->GetServiceForBrowserContext(context, true))
-      ->MakeRemote();
+FilterListServiceFactory::GetRemoteForProfile(Profile* profile) {
+  auto* service = static_cast<FilterListService*>(
+      GetInstance()->GetServiceForBrowserContext(profile, true));
+
+  if (!service) {
+    return mojo::PendingRemote<mojom::FilterListAndroidHandler>();
+  }
+
+  return service->MakeRemote();
 }
 
 // static
@@ -55,15 +62,16 @@ FilterListServiceFactory::FilterListServiceFactory()
 
 FilterListServiceFactory::~FilterListServiceFactory() = default;
 
-KeyedService* FilterListServiceFactory::BuildServiceInstanceFor(
+std::unique_ptr<KeyedService>
+FilterListServiceFactory::BuildServiceInstanceForBrowserContext(
     content::BrowserContext* context) const {
-  auto* ad_block_service = g_brave_browser_process->ad_block_service();
-  return new FilterListService(ad_block_service);
+  return std::make_unique<FilterListService>(
+      g_brave_browser_process->ad_block_service());
 }
 
 content::BrowserContext* FilterListServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  return chrome::GetBrowserContextRedirectedInIncognito(context);
+  return GetBrowserContextRedirectedInIncognito(context);
 }
 
 }  // namespace brave_shields

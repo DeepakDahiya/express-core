@@ -12,16 +12,12 @@
 
 namespace brave_ads {
 
-class BatAdsServiceFactoryImpl : public BatAdsServiceFactory {
+class BatAdsServiceFactoryImpl final : public BatAdsServiceFactory {
  public:
   BatAdsServiceFactoryImpl();
 
   BatAdsServiceFactoryImpl(const BatAdsServiceFactoryImpl&) = delete;
   BatAdsServiceFactoryImpl& operator=(const BatAdsServiceFactoryImpl&) = delete;
-
-  BatAdsServiceFactoryImpl(BatAdsServiceFactoryImpl&&) noexcept = delete;
-  BatAdsServiceFactoryImpl& operator=(BatAdsServiceFactoryImpl&&) noexcept =
-      delete;
 
   ~BatAdsServiceFactoryImpl() override;
 

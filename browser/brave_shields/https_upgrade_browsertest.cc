@@ -5,8 +5,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "brave/browser/brave_browser_process.h"
-#include "brave/browser/brave_content_browser_client.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
 #include "brave/components/https_upgrade_exceptions/browser/https_upgrade_exceptions_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -16,8 +15,8 @@
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "chrome/test/base/platform_browser_test.h"
 #include "components/prefs/pref_service.h"
-#include "content/public/common/content_client.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
@@ -27,11 +26,8 @@
 #include "net/dns/mock_host_resolver.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "chrome/test/base/android/android_browser_test.h"
-#else
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #endif
 
@@ -65,9 +61,9 @@ constexpr TestCase kTestCases[] = {
     {false, "broken1.com", kNonexistent, ControlType::ALLOW, false,
      PageResult::kHttp},
     {false, "broken2.com", kNonexistent, ControlType::BLOCK_THIRD_PARTY, false,
-     PageResult::kHttp},
+     PageResult::kHttps},
     {false, "broken3.com", kNonexistent, ControlType::BLOCK, false,
-     PageResult::kInterstitial},
+     PageResult::kHttps},
     {false, "upgradable1.com", kSimple, ControlType::ALLOW, false,
      PageResult::kHttp},
     {false, "upgradable2.com", kSimple, ControlType::BLOCK_THIRD_PARTY, false,
@@ -105,7 +101,6 @@ class HttpsUpgradeBrowserTest : public PlatformBrowserTest {
 
   void SetUpOnMainThread() override {
     PlatformBrowserTest::SetUpOnMainThread();
-    content::SetBrowserClientForTesting(&client_);
     g_brave_browser_process->https_upgrade_exceptions_service()
         ->SetIsReadyForTesting();
     // By default allow all hosts on HTTPS.
@@ -208,7 +203,6 @@ class HttpsUpgradeBrowserTest : public PlatformBrowserTest {
   net::EmbeddedTestServer http_server_{net::EmbeddedTestServer::TYPE_HTTP};
   net::EmbeddedTestServer https_server_{net::EmbeddedTestServer::TYPE_HTTPS};
   content::ContentMockCertVerifier mock_cert_verifier_;
-  BraveContentBrowserClient client_;
 };
 
 class HttpsUpgradeBrowserTest_FlagDisabled : public HttpsUpgradeBrowserTest {

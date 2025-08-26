@@ -6,8 +6,9 @@
 #include <string_view>
 
 #include "base/path_service.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
 #include "brave/components/constants/brave_paths.h"
+#include "brave/components/webcompat/core/common/features.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -19,7 +20,8 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/install_default_websocket_handlers.h"
 #include "net/test/test_data_directory.h"
 #include "third_party/blink/public/common/features.h"
 #include "url/gurl.h"
@@ -32,7 +34,7 @@
 
 namespace {
 
-const int kWebSocketsPoolLimit = 30;
+constexpr int kWebSocketsPoolLimit = 30;
 
 constexpr char kWsOpenScript[] = R"(
   if (typeof sockets == 'undefined') {
@@ -47,7 +49,11 @@ constexpr char kWsOpenScript[] = R"(
 )";
 
 constexpr char kWsCloseScript[] = R"(
-  sockets[$1].close();
+  new Promise(resolve => {
+    socket = sockets[$1];
+    socket.addEventListener('close', (ev) => resolve('close'));
+    socket.close();
+  });
 )";
 
 constexpr char kRegisterSwScript[] = R"(
@@ -73,7 +79,13 @@ constexpr char kWsOpenInSwScript[] = R"(
 constexpr char kWsCloseInSwScript[] = R"(
   (async () => {
     const registration = await navigator.serviceWorker.ready;
+    const result = new Promise(resolve => {
+      navigator.serviceWorker.onmessage = event => {
+        resolve(event.data);
+      };
+    });
     registration.active.postMessage({cmd: 'close_ws', idx: $1});
+    return await result;
   })();
 )";
 
@@ -81,25 +93,29 @@ constexpr char kWsCloseInSwScript[] = R"(
 
 class WebSocketsPoolLimitBrowserTest : public InProcessBrowserTest {
  public:
-  WebSocketsPoolLimitBrowserTest() = default;
+  WebSocketsPoolLimitBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        webcompat::features::kBraveWebcompatExceptionsService);
+  }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
 
-    brave::RegisterPathProvider();
     base::FilePath test_data_dir;
     base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
     https_server_.ServeFilesFromDirectory(test_data_dir);
     content::SetupCrossSiteRedirector(&https_server_);
     ASSERT_TRUE(https_server_.Start());
 
-    ws_server_ = std::make_unique<net::SpawnedTestServer>(
-        net::SpawnedTestServer::TYPE_WSS, net::GetWebSocketTestDataDirectory());
+    ws_server_ = std::make_unique<net::EmbeddedTestServer>(
+        net::EmbeddedTestServer::TYPE_HTTPS);
+    net::test_server::InstallDefaultWebSocketHandlers(ws_server_.get());
     ASSERT_TRUE(ws_server_->Start());
 
-    ws_url_ = ws_server_->GetURL("a.com", "echo-with-no-extension");
+    ws_url_ = net::test_server::GetWebSocketURL(*ws_server_, "a.com",
+                                                "/echo-with-no-extension");
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -181,9 +197,11 @@ class WebSocketsPoolLimitBrowserTest : public InProcessBrowserTest {
   content::ContentMockCertVerifier mock_cert_verifier_;
   net::test_server::EmbeddedTestServer https_server_{
       net::test_server::EmbeddedTestServer::TYPE_HTTPS};
-  std::unique_ptr<net::SpawnedTestServer> ws_server_;
-
+  std::unique_ptr<net::EmbeddedTestServer> ws_server_;
   GURL ws_url_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(WebSocketsPoolLimitBrowserTest, PoolIsLimitedByDefault) {
@@ -311,6 +329,29 @@ IN_PROC_BROWSER_TEST_F(WebSocketsPoolLimitBrowserTest,
   OpenWebSockets(a_com_rfh, kWsOpenInSwScript, kWebSocketsPoolLimit + 5);
 }
 
+IN_PROC_BROWSER_TEST_F(WebSocketsPoolLimitBrowserTest,
+                       PoolIsNotLimitedWithWebcompatException) {
+  const GURL url(https_server_.GetURL("a.com", "/ephemeral_storage.html"));
+
+  // Enable shields.
+  brave_shields::SetBraveShieldsEnabled(content_settings(), true, url);
+  // Enable webcompat exception.
+  brave_shields::SetWebcompatEnabled(
+      content_settings(), ContentSettingsType::BRAVE_WEBCOMPAT_WEB_SOCKETS_POOL,
+      true, https_server_.GetURL("a.com", "/"), nullptr);
+
+  auto* a_com_rfh = ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // No limits should be active.
+  OpenWebSockets(a_com_rfh, kWsOpenScript, kWebSocketsPoolLimit + 5);
+
+  // No limits should be active in a 3p frame.
+  auto* b_com_in_a_com_rfh = GetNthChildFrameWithHost(a_com_rfh, "b.com");
+  OpenWebSockets(b_com_in_a_com_rfh, kWsOpenScript, kWebSocketsPoolLimit + 5);
+}
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_F(WebSocketsPoolLimitBrowserTest,
                        PoolIsNotLimitedForExtensions) {
@@ -327,7 +368,7 @@ IN_PROC_BROWSER_TEST_F(WebSocketsPoolLimitBrowserTest,
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   scoped_refptr<const extensions::Extension> extension =
       extension_loader.LoadExtension(test_extension_dir.UnpackedPath());
-  const GURL url = extension->GetResourceURL("/empty.html");
+  const GURL url = extension->ResolveExtensionURL("/empty.html");
   auto* extension_rfh = ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);

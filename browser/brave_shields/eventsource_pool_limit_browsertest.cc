@@ -7,14 +7,16 @@
 #include <string_view>
 
 #include "base/path_service.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
 #include "brave/components/constants/brave_paths.h"
+#include "brave/components/webcompat/core/common/features.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "extensions/buildflags/buildflags.h"
 #include "net/dns/mock_host_resolver.h"
@@ -39,7 +41,7 @@ using net::test_server::HttpConnection;
 using net::test_server::HttpRequest;
 using net::test_server::HttpResponse;
 
-const int kEventSourcesPoolLimit = 250;
+constexpr int kEventSourcesPoolLimit = 250;
 
 constexpr char kEventSourcesOpenScript[] = R"(
   if (typeof sources === "undefined") {
@@ -92,12 +94,14 @@ constexpr char kEventSourceCloseInSwScript[] = R"(
 
 class EventSourcePoolLimitBrowserTest : public InProcessBrowserTest {
  public:
-  EventSourcePoolLimitBrowserTest() = default;
+  EventSourcePoolLimitBrowserTest() {
+    scoped_feature_list_.InitAndEnableFeature(
+        webcompat::features::kBraveWebcompatExceptionsService);
+  }
 
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
     host_resolver()->AddRule("*", "127.0.0.1");
-    brave::RegisterPathProvider();
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     base::FilePath test_data_dir;
     base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
@@ -204,6 +208,9 @@ class EventSourcePoolLimitBrowserTest : public InProcessBrowserTest {
   content::ContentMockCertVerifier mock_cert_verifier_;
   EmbeddedTestServer https_server_{EmbeddedTestServer::TYPE_HTTPS};
   GURL es_url_;
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
 };
 
 IN_PROC_BROWSER_TEST_F(EventSourcePoolLimitBrowserTest,
@@ -348,6 +355,33 @@ IN_PROC_BROWSER_TEST_F(EventSourcePoolLimitBrowserTest,
                    kEventSourcesPoolLimit + 5);
 }
 
+IN_PROC_BROWSER_TEST_F(EventSourcePoolLimitBrowserTest,
+                       PoolIsNotLimitedWithWebcompatException) {
+  const GURL url(https_server_.GetURL("a.com", "/ephemeral_storage.html"));
+
+  // Enable shields.
+  brave_shields::SetBraveShieldsEnabled(content_settings(), true, url);
+
+  // Enable webcompat exception.
+  brave_shields::SetWebcompatEnabled(
+      content_settings(),
+      ContentSettingsType::BRAVE_WEBCOMPAT_EVENT_SOURCE_POOL, true,
+      https_server_.GetURL("a.com", "/"), nullptr);
+
+  auto* a_com_rfh = ui_test_utils::NavigateToURLWithDisposition(
+      browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
+
+  // No limits should be active.
+  OpenEventSources(a_com_rfh, kEventSourcesOpenScript,
+                   kEventSourcesPoolLimit + 5);
+
+  // No limits should be active in a 3p frame.
+  auto* b_com_in_a_com_rfh = GetNthChildFrameWithHost(a_com_rfh, "b.com");
+  OpenEventSources(b_com_in_a_com_rfh, kEventSourcesOpenScript,
+                   kEventSourcesPoolLimit + 5);
+}
+
 #if BUILDFLAG(ENABLE_EXTENSIONS)
 IN_PROC_BROWSER_TEST_F(EventSourcePoolLimitBrowserTest,
                        PoolIsNotLimitedForExtensions) {
@@ -365,7 +399,7 @@ IN_PROC_BROWSER_TEST_F(EventSourcePoolLimitBrowserTest,
   extensions::ChromeTestExtensionLoader extension_loader(browser()->profile());
   scoped_refptr<const extensions::Extension> extension =
       extension_loader.LoadExtension(test_extension_dir.UnpackedPath());
-  const GURL url = extension->GetResourceURL("/empty.html");
+  const GURL url = extension->ResolveExtensionURL("/empty.html");
   auto* extension_rfh = ui_test_utils::NavigateToURLWithDisposition(
       browser(), url, WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);

@@ -5,16 +5,18 @@
 
 #include "brave/browser/brave_ads/application_state/notification_helper/notification_helper.h"
 
+#include <utility>
+
 #include "base/functional/bind.h"
+#include "base/functional/callback.h"
 #include "base/no_destructor.h"
+#include "base/trace_event/trace_event.h"
 #include "brave/browser/brave_ads/application_state/notification_helper/notification_helper_impl.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/notifications/notification_platform_bridge.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_features.h"
-#include "chrome/common/pref_names.h"
-#include "components/prefs/pref_service.h"
 
 #if BUILDFLAG(IS_ANDROID)
 #include "brave/browser/brave_ads/application_state/notification_helper/notification_helper_impl_android.h"
@@ -22,6 +24,8 @@
 
 #if BUILDFLAG(IS_LINUX)
 #include "brave/browser/brave_ads/application_state/notification_helper/notification_helper_impl_linux.h"
+#include "chrome/common/pref_names.h"
+#include "components/prefs/pref_service.h"
 #endif  // BUILDFLAG(IS_LINUX)
 
 #if BUILDFLAG(IS_MAC)
@@ -36,7 +40,6 @@
 namespace {
 
 bool SystemNotificationsEnabled(Profile* profile) {
-#if BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS)
 #if BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
   return true;
 #elif BUILDFLAG(IS_WIN)
@@ -54,9 +57,6 @@ bool SystemNotificationsEnabled(Profile* profile) {
   return base::FeatureList::IsEnabled(features::kNativeNotifications) &&
          base::FeatureList::IsEnabled(features::kSystemNotifications);
 #endif  // BUILDFLAG(IS_CHROMEOS) || BUILDFLAG(IS_ANDROID)
-#else
-  return false;
-#endif  // BUILDFLAG(ENABLE_SYSTEM_NOTIFICATIONS)
 }
 
 NotificationPlatformBridge* GetSystemNotificationPlatformBridge(
@@ -74,6 +74,7 @@ NotificationPlatformBridge* GetSystemNotificationPlatformBridge(
 namespace brave_ads {
 
 NotificationHelper::NotificationHelper() {
+  TRACE_EVENT("brave.ads", "NotificationHelper::NotificationHelper");
 #if BUILDFLAG(IS_ANDROID)
   impl_.reset(new NotificationHelperImplAndroid());
 #elif BUILDFLAG(IS_LINUX)
@@ -96,25 +97,35 @@ NotificationHelper* NotificationHelper::GetInstance() {
   return instance.get();
 }
 
-void NotificationHelper::InitForProfile(Profile* profile) {
+void NotificationHelper::MaybeInitForProfile(Profile* profile,
+                                             base::OnceClosure callback) {
+  if (is_initialized_) {
+    return std::move(callback).Run();
+  }
+  is_initialized_ = true;
+
   NotificationPlatformBridge* system_bridge =
       GetSystemNotificationPlatformBridge(profile);
   if (!system_bridge) {
     does_support_system_notifications_ = false;
-    return;
+    return std::move(callback).Run();
   }
 
   system_bridge->SetReadyCallback(base::BindOnce(
       &NotificationHelper::OnSystemNotificationPlatformBridgeReady,
-      weak_factory_.GetWeakPtr()));
+      weak_factory_.GetWeakPtr(), std::move(callback)));
 }
 
 bool NotificationHelper::CanShowNotifications() {
+  TRACE_EVENT("brave.ads", "NotificationHelper::CanShowNotifications");
   return impl_->CanShowNotifications();
 }
 
 bool NotificationHelper::CanShowSystemNotificationsWhileBrowserIsBackgrounded()
     const {
+  TRACE_EVENT("brave.ads",
+              "NotificationHelper::"
+              "CanShowSystemNotificationsWhileBrowserIsBackgrounded");
   if (!does_support_system_notifications_) {
     return false;
   }
@@ -122,6 +133,7 @@ bool NotificationHelper::CanShowSystemNotificationsWhileBrowserIsBackgrounded()
 }
 
 bool NotificationHelper::ShowOnboardingNotification() {
+  TRACE_EVENT("brave.ads", "NotificationHelper::ShowOnboardingNotification");
   return impl_->ShowOnboardingNotification();
 }
 
@@ -130,8 +142,11 @@ bool NotificationHelper::DoesSupportSystemNotifications() const {
 }
 
 void NotificationHelper::OnSystemNotificationPlatformBridgeReady(
-    const bool success) {
+    base::OnceClosure callback,
+    bool success) {
   does_support_system_notifications_ = success;
+
+  impl_->InitSystemNotifications(std::move(callback));
 }
 
 }  // namespace brave_ads

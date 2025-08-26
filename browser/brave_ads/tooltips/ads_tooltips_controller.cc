@@ -11,16 +11,12 @@
 #include "brave/browser/brave_ads/tooltips/ads_captcha_tooltip.h"
 #include "brave/browser/ui/brave_tooltips/brave_tooltip_attributes.h"
 #include "brave/browser/ui/brave_tooltips/brave_tooltip_popup_handler.h"
-#include "brave/components/l10n/common/localization_util.h"
-#include "chrome/browser/profiles/profile.h"
 #include "components/grit/brave_components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace brave_ads {
 
-AdsTooltipsController::AdsTooltipsController(Profile* profile)
-    : profile_(profile) {
-  CHECK(profile_);
-}
+AdsTooltipsController::AdsTooltipsController() = default;
 
 AdsTooltipsController::~AdsTooltipsController() = default;
 
@@ -30,16 +26,14 @@ void AdsTooltipsController::ShowCaptchaTooltip(
     bool include_cancel_button,
     ShowScheduledCaptchaCallback show_captcha_callback,
     SnoozeScheduledCaptchaCallback snooze_captcha_callback) {
-  const std::u16string title = brave_l10n::GetLocalizedResourceUTF16String(
+  const std::u16string title = l10n_util::GetStringUTF16(
       IDS_BRAVE_ADS_SCHEDULED_CAPTCHA_NOTIFICATION_TITLE);
-  const std::u16string body = brave_l10n::GetLocalizedResourceUTF16String(
+  const std::u16string body = l10n_util::GetStringUTF16(
       IDS_BRAVE_ADS_SCHEDULED_CAPTCHA_NOTIFICATION_BODY);
-  const std::u16string ok_button_text =
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_BRAVE_ADS_SCHEDULED_CAPTCHA_NOTIFICATION_OK_BUTTON_TEXT);
-  std::u16string cancel_button_text =
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_BRAVE_ADS_SCHEDULED_CAPTCHA_NOTIFICATION_CANCEL_BUTTON_TEXT);
+  const std::u16string ok_button_text = l10n_util::GetStringUTF16(
+      IDS_BRAVE_ADS_SCHEDULED_CAPTCHA_NOTIFICATION_OK_BUTTON_TEXT);
+  std::u16string cancel_button_text = l10n_util::GetStringUTF16(
+      IDS_BRAVE_ADS_SCHEDULED_CAPTCHA_NOTIFICATION_CANCEL_BUTTON_TEXT);
 
   brave_tooltips::BraveTooltipAttributes tooltip_attributes(
       title, body, ok_button_text,
@@ -53,16 +47,20 @@ void AdsTooltipsController::ShowCaptchaTooltip(
   // handler
   captcha_tooltip->set_delegate(AsWeakPtr());
 
-  brave_tooltips::BraveTooltipPopupHandler::Show(profile_,
-                                                 std::move(captcha_tooltip));
+  brave_tooltips::BraveTooltipPopupHandler::Show(std::move(captcha_tooltip));
 }
 
 void AdsTooltipsController::CloseCaptchaTooltip() {
   brave_tooltips::BraveTooltipPopupHandler::Close(kScheduledCaptchaTooltipId);
 }
 
+base::WeakPtr<brave_tooltips::BraveTooltipDelegate>
+AdsTooltipsController::AsWeakPtr() {
+  return weak_ptr_factory_.GetWeakPtr();
+}
+
 void AdsTooltipsController::OnTooltipWidgetDestroyed(
-    const std::string& tooltip_id) {
+    const std::string& /*tooltip_id*/) {
   brave_tooltips::BraveTooltipPopupHandler::Destroy(kScheduledCaptchaTooltipId);
 }
 

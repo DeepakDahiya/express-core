@@ -3,21 +3,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/browser/brave_shields/ad_block_service_browsertest.h"
-
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/bind.h"
 #include "brave/browser/brave_browser_process.h"
-#include "brave/components/brave_shields/browser/ad_block_custom_filters_provider.h"
-#include "brave/components/brave_shields/browser/ad_block_service.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/browser/brave_shields/ad_block_service_browsertest.h"
+#include "brave/components/brave_shields/content/browser/ad_block_custom_filters_provider.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/constants/pref_names.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/interstitials/security_interstitial_page_test_utils.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/ui_test_utils.h"
+#include "components/prefs/pref_service.h"
 #include "components/security_interstitials/content/security_interstitial_tab_helper.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
@@ -27,7 +27,6 @@
 #include "url/gurl.h"
 
 using brave_shields::ControlType;
-using brave_shields::ResetBraveShieldsEnabled;
 using brave_shields::SetBraveShieldsEnabled;
 using brave_shields::SetCosmeticFilteringControlType;
 using brave_shields::features::kBraveDomainBlock;
@@ -52,13 +51,6 @@ class DomainBlockTestBase : public AdBlockServiceTest {
     UpdateAdBlockInstanceWithRules("||" + url.host() + "^");
   }
 
-  content::WebContents* web_contents() {
-    content::WebContents* web_contents =
-        browser()->tab_strip_model()->GetActiveWebContents();
-    DCHECK(web_contents);
-    return web_contents;
-  }
-
   bool IsShowingInterstitial() {
     return chrome_browser_interstitials::IsShowingInterstitial(web_contents());
   }
@@ -73,7 +65,7 @@ class DomainBlockTestBase : public AdBlockServiceTest {
     content::RenderFrameHost* frame = web_contents()->GetPrimaryMainFrame();
     frame->ExecuteJavaScriptForTests(
         base::ASCIIToUTF16("document.getElementById('" + id + "').click();\n"),
-        base::NullCallback());
+        base::NullCallback(), content::ISOLATED_WORLD_ID_GLOBAL);
   }
 
   void ClickAndWaitForNavigation(const std::string& id) {
@@ -105,7 +97,6 @@ class DomainBlockDisabledTest : public DomainBlockTestBase {
 };
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitial) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -121,7 +112,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitial) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitialAndProceed) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -145,7 +135,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitialAndProceed) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitialAndReload) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -166,7 +155,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitialAndReload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ProceedAndReload) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -199,7 +187,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ProceedAndReload) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ProceedDoesNotAffectNewTabs) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -233,7 +220,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ProceedDoesNotAffectNewTabs) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, DontWarnAgainAndProceed) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -274,7 +260,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, DontWarnAgainAndProceed) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitialAndGoBack) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url_a = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK,
                                   url_a);
@@ -300,7 +285,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ShowInterstitialAndGoBack) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, NoFetch) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   ASSERT_EQ(0, request_count_);
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
@@ -319,7 +303,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, NoFetch) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, NoThirdPartyInterstitial) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   ASSERT_TRUE(g_brave_browser_process->ad_block_service()
                   ->custom_filters_provider()
                   ->UpdateCustomFilters("||b.com^$third-party"));
@@ -354,7 +337,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, NoThirdPartyInterstitial) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, NoInterstitialUnlessAggressive) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -387,7 +369,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, NoInterstitialUnlessAggressive) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockDisabledTest, NoInterstitial) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK, url);
 
@@ -409,7 +390,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockDisabledTest, NoInterstitial) {
 }
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest, ProceedDoesNotAffectOtherDomains) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url_a = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK,
                                   url_a);
@@ -450,7 +430,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest, ProceedDoesNotAffectOtherDomains) {
 
 IN_PROC_BROWSER_TEST_F(DomainBlockTest,
                        DontWarnAgainDoesNotAffectOtherDomains) {
-  ASSERT_TRUE(InstallDefaultAdBlockExtension());
   GURL url_a = embedded_test_server()->GetURL("a.com", "/simple.html");
   SetCosmeticFilteringControlType(content_settings(), ControlType::BLOCK,
                                   url_a);
@@ -488,8 +467,7 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest,
 
   // Attempt to load a 3rd party iframe from a.com. It should not be allowed by
   // the exception created from proceeding.
-  uint64_t ads_blocked_count =
-      browser()->profile()->GetPrefs()->GetUint64(kAdsBlocked);
+  uint64_t ads_blocked_count = profile()->GetPrefs()->GetUint64(kAdsBlocked);
   std::string iframe_script =
       "new Promise(resolve => {"
       "  const e = document.createElement('iframe');"
@@ -502,6 +480,6 @@ IN_PROC_BROWSER_TEST_F(DomainBlockTest,
       "})";
   EXPECT_EQ(true, EvalJs(web_contents(), iframe_script));
   WaitForAdBlockServiceThreads();
-  EXPECT_EQ(browser()->profile()->GetPrefs()->GetUint64(kAdsBlocked),
+  EXPECT_EQ(profile()->GetPrefs()->GetUint64(kAdsBlocked),
             ads_blocked_count + 1);
 }

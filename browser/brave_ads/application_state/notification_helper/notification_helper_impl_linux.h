@@ -6,22 +6,15 @@
 #ifndef BRAVE_BROWSER_BRAVE_ADS_APPLICATION_STATE_NOTIFICATION_HELPER_NOTIFICATION_HELPER_IMPL_LINUX_H_
 #define BRAVE_BROWSER_BRAVE_ADS_APPLICATION_STATE_NOTIFICATION_HELPER_NOTIFICATION_HELPER_IMPL_LINUX_H_
 
-#include "base/memory/weak_ptr.h"
 #include "brave/browser/brave_ads/application_state/notification_helper/notification_helper_impl.h"
 
 namespace brave_ads {
 
-class NotificationHelperImplLinux
-    : public NotificationHelperImpl,
-      public base::SupportsWeakPtr<NotificationHelperImplLinux> {
+class NotificationHelperImplLinux final : public NotificationHelperImpl {
  public:
   NotificationHelperImplLinux(const NotificationHelperImplLinux&) = delete;
   NotificationHelperImplLinux& operator=(const NotificationHelperImplLinux&) =
       delete;
-
-  NotificationHelperImplLinux(NotificationHelperImplLinux&&) noexcept = delete;
-  NotificationHelperImplLinux& operator=(
-      NotificationHelperImplLinux&&) noexcept = delete;
 
   ~NotificationHelperImplLinux() override;
 

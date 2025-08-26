@@ -9,52 +9,42 @@
 #include <windows.ui.notifications.h>
 #include <wrl/event.h>
 
+#include "base/functional/callback_forward.h"
 #include "base/memory/weak_ptr.h"
 #include "brave/browser/brave_ads/application_state/notification_helper/notification_helper_impl.h"
 
 namespace brave_ads {
 
-class NotificationHelperImplWin
-    : public NotificationHelperImpl,
-      public base::SupportsWeakPtr<NotificationHelperImplWin> {
+class NotificationHelperImplWin final : public NotificationHelperImpl {
  public:
   NotificationHelperImplWin(const NotificationHelperImplWin&) = delete;
   NotificationHelperImplWin& operator=(const NotificationHelperImplWin&) =
       delete;
 
-  NotificationHelperImplWin(NotificationHelperImplWin&&) noexcept = delete;
-  NotificationHelperImplWin& operator=(NotificationHelperImplWin&&) noexcept =
-      delete;
-
   ~NotificationHelperImplWin() override;
+
+  // NotificationHelperImpl:
+  void InitSystemNotifications(base::OnceClosure callback) override;
+  bool CanShowNotifications() override;
+  bool CanShowSystemNotificationsWhileBrowserIsBackgrounded() const override;
+  bool ShowOnboardingNotification() override;
 
  protected:
   friend class NotificationHelper;
-
   NotificationHelperImplWin();
 
- private:
+  void InitSystemNotificationsCallback(
+      base::OnceClosure callback,
+      Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier>
+          toast_notifier);
+
   bool IsFocusAssistEnabled() const;
 
   bool IsNotificationsEnabled();
 
-  std::wstring GetAppId() const;
-
-  HRESULT InitializeToastNotifier();
-
-  template <unsigned int size>
-  HRESULT CreateActivationFactory(wchar_t const (&class_name)[size],
-                                  const IID& iid,
-                                  void** factory) const;
-
   Microsoft::WRL::ComPtr<ABI::Windows::UI::Notifications::IToastNotifier>
       toast_notifier_;
-
-  // NotificationHelperImpl:
-  bool CanShowNotifications() override;
-  bool CanShowSystemNotificationsWhileBrowserIsBackgrounded() const override;
-
-  bool ShowOnboardingNotification() override;
+  base::WeakPtrFactory<NotificationHelperImplWin> weak_factory_{this};
 };
 
 }  // namespace brave_ads

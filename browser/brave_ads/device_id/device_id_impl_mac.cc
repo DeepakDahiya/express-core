@@ -24,6 +24,7 @@
 #include "base/location.h"
 #include "base/mac/mac_util.h"
 #include "base/mac/scoped_ioobject.h"
+#include "base/numerics/safe_conversions.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
@@ -37,11 +38,38 @@
 namespace brave_ads {
 
 using IsValidMacAddressCallback =
-    base::RepeatingCallback<bool(const void* bytes, size_t size)>;
+    base::RepeatingCallback<bool(base::span<const uint8_t> bytes)>;
 
 namespace {
 
 constexpr char kRootDirectory[] = "/";
+
+// This is a little wrapper for the buffer provided by `getmntinfo_r_np`, to
+// make sure we release it.
+class MountedVolumes {
+ public:
+  MountedVolumes() {
+    struct statfs* mounted_volumes = nullptr;
+    count_ = getmntinfo_r_np(&mounted_volumes, 0);
+    mounted_volumes_ = mounted_volumes;
+  }
+  MountedVolumes(const MountedVolumes&) = delete;
+  MountedVolumes& operator=(const MountedVolumes&) = delete;
+  ~MountedVolumes() = default;
+
+  int count() const { return count_; }
+
+  base::span<const struct statfs> as_span() {
+    // SAFETY: This is the nature of this API, where `count_` represents the
+    // number of elements for the `mounted_volumes_` pointer.
+    return UNSAFE_BUFFERS(
+        base::span<const struct statfs>(mounted_volumes_.get(), count_));
+  }
+
+ private:
+  size_t count_ = 0;
+  raw_ptr<struct statfs> mounted_volumes_ = nullptr;
+};
 
 // Return the BSD name (e.g. '/dev/disk1') of the root directory by enumerating
 // through the mounted volumes. Returns an empty string if an error occurred.
@@ -49,27 +77,23 @@ std::string FindBSDNameOfSystemDisk() {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  struct statfs* mounted_volumes;
-  const int count = getmntinfo_r_np(&mounted_volumes, 0);
-  if (count == 0) {
+  MountedVolumes mounted_volumes;
+  if (mounted_volumes.count() == 0) {
     return {};
   }
 
   std::string root_bsd_name;
-  for (int i = 0; i < count; i++) {
-    const struct statfs& volume = mounted_volumes[i];
+  for (auto volume : mounted_volumes.as_span()) {
     if (std::string(volume.f_mntonname) == kRootDirectory) {
       root_bsd_name = std::string(volume.f_mntfromname);
       break;
     }
   }
-
-  free(mounted_volumes);
   return root_bsd_name;
 }
 
 // Return the Volume UUID property of a BSD disk name (e.g. '/dev/disk1').
-// Returns an empty string if an error occured.
+// Returns an empty string if an error occurred.
 std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
@@ -83,19 +107,19 @@ std::string GetVolumeUUIDFromBSDName(const std::string& bsd_name) {
   }
 
   const base::apple::ScopedCFTypeRef<DADiskRef> disk(
-      DADiskCreateFromBSDName(allocator, session, bsd_name.c_str()));
+      DADiskCreateFromBSDName(allocator, session.get(), bsd_name.c_str()));
   if (!disk) {
     return {};
   }
 
   const base::apple::ScopedCFTypeRef<CFDictionaryRef> disk_description(
-      DADiskCopyDescription(disk));
+      DADiskCopyDescription(disk.get()));
   if (!disk_description) {
     return {};
   }
 
   const CFUUIDRef volume_uuid = base::apple::GetValueFromDictionary<CFUUIDRef>(
-      disk_description, kDADiskDescriptionVolumeUUIDKey);
+      disk_description.get(), kDADiskDescriptionVolumeUUIDKey);
   if (volume_uuid == nullptr) {
     return {};
   }
@@ -137,22 +161,20 @@ class MacAddressProcessor {
       return keep_going;
     }
 
-    const UInt8* mac_address = CFDataGetBytePtr(mac_address_data);
-    const size_t mac_address_size = CFDataGetLength(mac_address_data);
-    if (!is_valid_mac_address_callback_.Run(mac_address, mac_address_size)) {
+    auto mac_address_bytes = base::apple::CFDataToSpan(mac_address_data.get());
+    if (!is_valid_mac_address_callback_.Run(mac_address_bytes)) {
       return keep_going;
     }
 
-    mac_address_ =
-        base::ToLowerASCII(base::HexEncode(mac_address, mac_address_size));
+    mac_address_ = base::ToLowerASCII(base::HexEncode(mac_address_bytes));
 
     base::apple::ScopedCFTypeRef<CFStringRef> provider_class_string(
         static_cast<CFStringRef>(IORegistryEntryCreateCFProperty(
             network_controller, CFSTR(kIOProviderClassKey), kCFAllocatorDefault,
             0)));
     if (provider_class_string) {
-      if (CFStringCompare(provider_class_string, CFSTR("IOPCIDevice"), 0) ==
-          kCFCompareEqualTo) {
+      if (CFStringCompare(provider_class_string.get(), CFSTR("IOPCIDevice"),
+                          0) == kCFCompareEqualTo) {
         // MAC address from built-in network card is always the best choice.
         keep_going = false;
       }
@@ -173,12 +195,6 @@ std::string GetMacAddress(
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::MAY_BLOCK);
 
-  mach_port_t main_port;
-  kern_return_t result = IOMasterPort(MACH_PORT_NULL, &main_port);
-  if (result != KERN_SUCCESS) {
-    return {};
-  }
-
   CFMutableDictionaryRef matching =
       IOServiceMatching(kIOEthernetInterfaceClass);
   if (!matching) {
@@ -186,7 +202,8 @@ std::string GetMacAddress(
   }
 
   io_iterator_t iterator;
-  result = IOServiceGetMatchingServices(main_port, matching, &iterator);
+  kern_return_t result =
+      IOServiceGetMatchingServices(kIOMainPortDefault, matching, &iterator);
   if (result != KERN_SUCCESS) {
     return {};
   }
@@ -194,8 +211,8 @@ std::string GetMacAddress(
 
   MacAddressProcessor processor(std::move(is_valid_mac_address_callback));
   while (true) {
-    // NOTE: |service| should not be released.
-    const io_object_t service = IOIteratorNext(scoped_iterator);
+    // NOTE: `service` should not be released.
+    const io_object_t service = IOIteratorNext(scoped_iterator.get());
     if (!service) {
       break;
     }
@@ -204,8 +221,7 @@ std::string GetMacAddress(
     result = IORegistryEntryGetParentEntry(service, kIOServicePlane, &parent);
     if (result == KERN_SUCCESS) {
       const base::mac::ScopedIOObject<io_object_t> scoped_parent(parent);
-      const bool keep_going = processor.ProcessNetworkController(scoped_parent);
-      if (!keep_going) {
+      if (!processor.ProcessNetworkController(scoped_parent.get())) {
         break;
       }
     }

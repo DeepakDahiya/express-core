@@ -8,16 +8,15 @@
 
 #include <string>
 
-#include "base/functional/callback.h"
 #include "brave/browser/ui/brave_tooltips/brave_tooltip.h"
 #include "brave/browser/ui/brave_tooltips/brave_tooltip_attributes.h"
 #include "brave/components/brave_ads/browser/tooltips/ads_tooltips_delegate.h"
 
 namespace brave_ads {
 
-extern const char kScheduledCaptchaTooltipId[];
+inline constexpr char kScheduledCaptchaTooltipId[] = "scheduled-captcha";
 
-class AdsCaptchaTooltip : public brave_tooltips::BraveTooltip {
+class AdsCaptchaTooltip final : public brave_tooltips::BraveTooltip {
  public:
   AdsCaptchaTooltip(ShowScheduledCaptchaCallback show_captcha_callback,
                     SnoozeScheduledCaptchaCallback snooze_captcha_callback,
@@ -27,9 +26,6 @@ class AdsCaptchaTooltip : public brave_tooltips::BraveTooltip {
 
   AdsCaptchaTooltip(const AdsCaptchaTooltip&) = delete;
   AdsCaptchaTooltip& operator=(const AdsCaptchaTooltip&) = delete;
-
-  AdsCaptchaTooltip(AdsCaptchaTooltip&&) noexcept = delete;
-  AdsCaptchaTooltip& operator=(AdsCaptchaTooltip&&) noexcept = delete;
 
   ~AdsCaptchaTooltip() override;
 

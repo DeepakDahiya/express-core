@@ -1,7 +1,7 @@
 /* Copyright (c) 2019 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #ifndef BRAVE_BROWSER_BRAVE_REWARDS_EXTENSION_REWARDS_SERVICE_OBSERVER_H_
 #define BRAVE_BROWSER_BRAVE_REWARDS_EXTENSION_REWARDS_SERVICE_OBSERVER_H_
@@ -11,8 +11,8 @@
 #include <vector>
 
 #include "base/memory/raw_ptr.h"
-#include "brave/components/brave_rewards/browser/rewards_service_observer.h"
-#include "brave/components/brave_rewards/core/mojom_structs.h"
+#include "brave/components/brave_rewards/content/rewards_service_observer.h"
+#include "brave/components/brave_rewards/core/mojom/rewards.mojom.h"
 
 class Profile;
 
@@ -36,6 +36,8 @@ class ExtensionRewardsServiceObserver : public RewardsServiceObserver {
   void OnRewardsInitialized(RewardsService* rewards_service) override;
 
   void OnRewardsWalletCreated() override;
+
+  void OnTermsOfServiceUpdateAccepted() override;
 
   void OnPublisherListNormalized(
       RewardsService* rewards_service,
@@ -64,19 +66,6 @@ class ExtensionRewardsServiceObserver : public RewardsServiceObserver {
   void OnExternalWalletLoggedOut() override;
 
   void OnExternalWalletDisconnected() override;
-
-  void OnUnblindedTokensReady(
-      brave_rewards::RewardsService* rewards_service) override;
-
-  void OnFetchPromotions(
-      RewardsService* rewards_service,
-      const brave_rewards::mojom::Result result,
-      const std::vector<brave_rewards::mojom::PromotionPtr>& list) override;
-
-  void OnPromotionFinished(
-      RewardsService* rewards_service,
-      const brave_rewards::mojom::Result result,
-      brave_rewards::mojom::PromotionPtr promotion) override;
 
   void OnCompleteReset(const bool success) override;
 

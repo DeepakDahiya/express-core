@@ -4,18 +4,16 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "base/feature_list.h"
-#include "brave/browser/ethereum_remote_client/buildflags/buildflags.h"
 #include "brave/browser/metrics/buildflags/buildflags.h"
-#include "brave/components/brave_rewards/common/pref_names.h"
-#include "brave/components/brave_shields/common/features.h"
-#include "brave/components/brave_shields/common/pref_names.h"
+#include "brave/components/brave_rewards/core/pref_names.h"
+#include "brave/components/brave_shields/core/common/features.h"
+#include "brave/components/brave_shields/core/common/pref_names.h"
 #include "brave/components/brave_vpn/common/buildflags/buildflags.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/pref_names.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/brave_wayback_machine/buildflags/buildflags.h"
 #include "brave/components/constants/pref_names.h"
-#include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/ntp_background_images/buildflags/buildflags.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
@@ -25,8 +23,10 @@
 #include "chrome/browser/ui/webui/new_tab_page/ntp_pref_names.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "chrome/test/base/platform_browser_test.h"
 #include "components/embedder_support/pref_names.h"
 #include "components/gcm_driver/gcm_buildflags.h"
+#include "components/omnibox/browser/omnibox_prefs.h"
 #include "components/policy/core/common/policy_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/core/common/safe_browsing_prefs.h"
@@ -34,15 +34,6 @@
 #include "components/spellcheck/browser/pref_names.h"
 #include "components/sync/base/pref_names.h"
 #include "content/public/test/browser_test.h"
-
-#if BUILDFLAG(ENABLE_IPFS)
-#include "brave/components/ipfs/ipfs_constants.h"
-#include "brave/components/ipfs/pref_names.h"
-#endif
-
-#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
-#include "brave/browser/ethereum_remote_client/pref_names.h"
-#endif
 
 #if BUILDFLAG(ENABLE_BRAVE_WAYBACK_MACHINE)
 #include "brave/components/brave_wayback_machine/pref_names.h"
@@ -52,10 +43,9 @@
 #include "brave/components/brave_vpn/common/pref_names.h"
 #endif
 
-#if BUILDFLAG(IS_ANDROID)
-#include "chrome/test/base/android/android_browser_test.h"
-#else
-#include "chrome/test/base/in_process_browser_test.h"
+#if !BUILDFLAG(IS_ANDROID)
+#include "chrome/browser/ui/webui/bookmarks/bookmark_prefs.h"
+#include "chrome/browser/ui/webui/side_panel/bookmarks/bookmarks.mojom.h"
 #endif
 
 #if BUILDFLAG(ENABLE_CUSTOM_BACKGROUND)
@@ -94,37 +84,19 @@ IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest, MiscBravePrefs) {
                 brave_shields::features::kBraveReduceLanguage));
 #if BUILDFLAG(ENABLE_BRAVE_WAYBACK_MACHINE)
   EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
-      kWebTorrentEnabled));
-  EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       kBraveWaybackMachineEnabled));
 #endif
   EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
-      kHangoutsEnabled));
-  EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       brave_rewards::prefs::kShowLocationBarButton));
-#if BUILDFLAG(ENABLE_IPFS)
-  EXPECT_EQ(chrome_test_utils::GetProfile(this)->GetPrefs()->GetInteger(
-                kIPFSResolveMethod),
-            static_cast<int>((ipfs::IPFSResolveMethodTypes::IPFS_ASK)));
-  EXPECT_TRUE(chrome_test_utils::GetProfile(this)
-                  ->GetPrefs()
-                  ->GetFilePath(kIPFSBinaryPath)
-                  .empty());
-  EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
-      kIPFSAutoRedirectToConfiguredGateway));
-#endif
-  EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
-      kIPFSCompanionEnabled));
-#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
-  EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
-      kERCOptedIntoCryptoWallets));
-#endif
   EXPECT_EQ(brave_wallet::GetDefaultEthereumWallet(
                 chrome_test_utils::GetProfile(this)->GetPrefs()),
             brave_wallet::mojom::DefaultWallet::BraveWalletPreferExtension);
   EXPECT_EQ(brave_wallet::GetDefaultSolanaWallet(
                 chrome_test_utils::GetProfile(this)->GetPrefs()),
             brave_wallet::mojom::DefaultWallet::BraveWalletPreferExtension);
+  EXPECT_EQ(brave_wallet::GetDefaultCardanoWallet(
+                chrome_test_utils::GetProfile(this)->GetPrefs()),
+            brave_wallet::mojom::DefaultWallet::BraveWallet);
   EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       kShowWalletIconOnToolbar));
   EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
@@ -143,6 +115,12 @@ IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest, MiscBravePrefs) {
   EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->HasPrefPath(
       NTPBackgroundPrefs::kDeprecatedPrefName));
 #endif
+
+#if !BUILDFLAG(IS_ANDROID)
+  EXPECT_EQ(static_cast<int>(side_panel::mojom::ViewType::kCompact),
+            chrome_test_utils::GetProfile(this)->GetPrefs()->GetInteger(
+                bookmarks_webui::prefs::kBookmarksViewType));
+#endif
 }
 
 IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest,
@@ -158,8 +136,10 @@ IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest,
       spellcheck::prefs::kSpellCheckUseSpellingService));
   EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       prefs::kSafeBrowsingExtendedReportingOptInAllowed));
+#if !BUILDFLAG(IS_ANDROID)
   EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       prefs::kSearchSuggestEnabled));
+#endif
   EXPECT_EQ(chrome_test_utils::GetProfile(this)->GetPrefs()->GetInteger(
                 prefetch::prefs::kNetworkPredictionOptions),
             static_cast<int>(prefetch::NetworkPredictionOptions::kDisabled));
@@ -177,10 +157,17 @@ IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest, MediaRouterPrefTest) {
-  EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
+  EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       ::prefs::kEnableMediaRouter));
-  EXPECT_FALSE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
+  EXPECT_TRUE(chrome_test_utils::GetProfile(this)->GetPrefs()->GetBoolean(
       kEnableMediaRouterOnRestart));
+}
+
+IN_PROC_BROWSER_TEST_F(BraveProfilePrefsBrowserTest, AIModePrefTest) {
+  EXPECT_EQ(-1, chrome_test_utils::GetProfile(this)->GetPrefs()->GetInteger(
+                    ::omnibox::kAIModeSettings));
+  EXPECT_FALSE(omnibox::IsAimAllowedByPolicy(
+      chrome_test_utils::GetProfile(this)->GetPrefs()));
 }
 
 IN_PROC_BROWSER_TEST_F(BraveLocalStatePrefsBrowserTest, DefaultLocalStateTest) {
