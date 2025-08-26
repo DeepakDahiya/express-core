@@ -39,6 +39,14 @@
                         android:id="@+id/brave_rewards_onboarding_layout_id"
                         layout="@layout/brave_rewards_onboarding_layout"/>
 
+                    <include
+                        android:id="@+id/brave_rewards_solana_eligible_ui_layout_id"
+                        layout="@layout/rewards_solana_eligible_layout"/>
+
+                    <include
+                        android:id="@+id/rewards_tos_layout_id"
+                        layout="@layout/rewards_tos_layout" />
+
                     <FrameLayout
                         android:id="@+id/panel_shadow"
                         android:layout_width="match_parent"
@@ -64,6 +72,8 @@
 
                         <include
                             layout="@layout/wallet_balance_layout" />
+
+                        <include layout="@layout/brave_rewards_panel_payout_layout" />
 
                         <include
                             android:id="@+id/brave_rewards_panel_tip_layout_id"

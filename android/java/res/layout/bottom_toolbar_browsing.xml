@@ -56,18 +56,17 @@
 
     </LinearLayout>
 
-    <!--
-        <org.chromium.chrome.browser.toolbar.bottom.BottomToolbarNewTabButton
-            android:id="@+id/bottom_new_tab_button"
-            android:contentDescription="@string/accessibility_toolbar_btn_new_tab"
-            app:tint="@color/default_icon_color_tint_list"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            app:srcCompat="@drawable/new_tab_icon"
-            android:visibility="gone"
-            style="@style/SplitToolbarButton" />
-    -->
+<!--
+    <org.chromium.chrome.browser.toolbar.bottom.BottomToolbarNewTabButton
+        android:id="@+id/bottom_new_tab_button"
+        android:contentDescription="@string/accessibility_toolbar_btn_new_tab"
+        app:tint="@color/default_icon_color_tint_list"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        app:srcCompat="@drawable/new_tab_icon"
+        android:visibility="gone"
+        style="@style/SplitToolbarButton" />
+-->
 
-    <!-- <include layout="@layout/toolbar_space" /> -->
     <include layout="@layout/toolbar_space" />
 
     <LinearLayout

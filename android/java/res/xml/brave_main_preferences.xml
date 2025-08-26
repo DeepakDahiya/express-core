@@ -6,17 +6,26 @@
 
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android"
     android:orderingFromXml="false">
-    <!-- <PreferenceCategory
-        android:key="features_section"
+    <PreferenceCategory
+        android:key="brave_account_section"
         android:order="1"
-        android:title="@string/prefs_section_features"/> -->
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:title="@string/prefs_section_brave_account"/>
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:key="get_started"
+        android:order="1"
+        android:icon="@drawable/ic_brave"
+        android:title="@string/get_started"/>
+    <PreferenceCategory
+        android:key="features_section"
+        android:order="2"
+        android:title="@string/prefs_section_features"/>
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.privacy.BravePrivacySettings"
         android:key="brave_shields_and_privacy"
-        android:icon="@drawable/ic_closing_all_closes_brave"
-        android:title="@string/prefs_closing_all_tabs_closes_brave"
-        android:order="1"/> -->
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:icon="@drawable/ic_brave"
+        android:order="1"
+        android:title="@string/brave_shields_and_privacy"/>
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BraveNewsPreferencesV2"
         android:key="brave_news_v2"
         android:icon="@drawable/ic_news"
@@ -29,7 +38,7 @@
         android:order="3"
         android:title="@string/brave_ui_brave_wallet"/>
     <org.chromium.components.browser_ui.settings.ChromeBasePreference
-        android:fragment="org.chromium.chrome.browser.settings.BraveVpnPreferences"
+        android:fragment="org.chromium.chrome.browser.vpn.settings.BraveVpnPreferences"
         android:key="brave_vpn"
         android:icon="@drawable/ic_vpn"
         android:order="4"
@@ -45,7 +54,7 @@
         android:key="brave_playlist"
         android:icon="@drawable/ic_open_playlist"
         android:order="4"
-        android:title="@string/brave_playlist"/> -->
+        android:title="@string/brave_playlist"/>
     <PreferenceCategory
         android:key="general_section"
         android:order="5"
@@ -57,19 +66,19 @@
         android:icon="@drawable/ic_search_vector"
         android:title="@string/brave_search_engines"/>
 
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BraveSearchEnginesPreferences"
         android:key="home_screen_widget"
         android:order="7"
         android:icon="@drawable/ic_home_screen_widget"
-        android:title="@string/home_screen_widget"/> -->
+        android:title="@string/home_screen_widget"/>
 
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BraveStatsPreferences"
         android:key="brave_stats"
         android:order="9"
         android:icon="@drawable/ic_privacy_reports"
-        android:title="@string/brave_stats"/> -->
+        android:title="@string/brave_stats"/>
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="closing_all_tabs_closes_brave"
         android:order="13"
@@ -86,28 +95,30 @@
         android:order="16"
         android:icon="@drawable/ic_media"
         android:title="@string/prefs_media"/>
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.AppearancePreferences"
         android:key="appearance"
         android:order="17"
         android:icon="@drawable/ic_appearance"
-        android:title="@string/prefs_appearance"/> -->
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+        android:title="@string/prefs_appearance"/>
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BackgroundImagesPreferences"
         android:key="background_images"
         android:order="18"
         android:icon="@drawable/ic_new_tab_page"
-        android:title="@string/prefs_new_tab_page"/> -->
-    <!-- <PreferenceCategory
-        android:key="online_checkout_section"
+        android:title="@string/prefs_new_tab_page"/>
+    <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
+        android:key="autofill_private_window"
         android:order="21"
-        android:title="@string/prefs_section_online_checkout"/> -->
-    <!-- <PreferenceCategory
+        android:icon="@drawable/ic_autofill"
+        android:title="@string/prefs_autofill_private_window_title"
+        android:summary="@string/prefs_autofill_private_window_summary"/>
+    <PreferenceCategory
         android:key="support_section"
         android:order="24"
-        android:title="@string/prefs_support_section"/> -->
+        android:title="@string/prefs_support_section"/>
 
-    <!-- <org.chromium.components.browser_ui.settings.ChromeBasePreference
+    <org.chromium.components.browser_ui.settings.ChromeBasePreference
         android:fragment="org.chromium.chrome.browser.settings.BraveSyncScreensPreference"
         android:key="brave_sync_layout"
         android:order="22"
@@ -117,7 +128,7 @@
         android:key="rate_brave"
         android:order="28"
         android:icon="@drawable/ic_rate"
-        android:title="@string/prefs_rate_brave"/> -->
+        android:title="@string/prefs_rate_brave"/>
     <org.chromium.components.browser_ui.settings.ChromeSwitchPreference
         android:key="use_custom_tabs"
         android:order="20"
@@ -143,8 +154,8 @@
         android:order="24"
         android:icon="@drawable/ic_downloads"
         android:title="@string/menu_downloads"/>
-    <!-- <PreferenceCategory
+    <PreferenceCategory
         android:key="about_section"
         android:order="24"
-        android:title="@string/prefs_about_section"/> -->
+        android:title="@string/prefs_about_section"/>
 </PreferenceScreen>
