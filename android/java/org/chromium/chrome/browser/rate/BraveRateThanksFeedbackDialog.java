@@ -26,7 +26,7 @@ import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.R;
 
 public class BraveRateThanksFeedbackDialog extends BottomSheetDialogFragment {
-    final public static String TAG_FRAGMENT = "brave_rate_thanks_feedback_dialog_tag";
+    public static final String TAG_FRAGMENT = "brave_rate_thanks_feedback_dialog_tag";
     private static final String TAG = "RateThanksFeedback";
     private static final String SAD = "sad";
 
@@ -71,14 +71,15 @@ public class BraveRateThanksFeedbackDialog extends BottomSheetDialogFragment {
 
     private void clickOnDoneButton(View view) {
         Button doneButton = view.findViewById(R.id.rate_done_button);
-        doneButton.setOnClickListener((v) -> {
-            TextInputEditText feedbackEditText = view.findViewById(R.id.feedbackEditText);
-            String feedBack = feedbackEditText.getText().toString();
-            RateFeedbackUtils.RateFeedbackWorkerTask workerTask =
-                    new RateFeedbackUtils.RateFeedbackWorkerTask(
-                            SAD, feedBack, rateFeedbackCallback);
-            workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-        });
+        doneButton.setOnClickListener(
+                (v) -> {
+                    TextInputEditText feedbackEditText = view.findViewById(R.id.feedbackEditText);
+                    String feedBack = feedbackEditText.getText().toString();
+                    RateFeedbackUtils.RateFeedbackWorkerTask workerTask =
+                            new RateFeedbackUtils.RateFeedbackWorkerTask(
+                                    SAD, feedBack, mRateFeedbackCallback);
+                    workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+                });
     }
 
     private void addSuggestionEditText(View view) {
@@ -94,7 +95,7 @@ public class BraveRateThanksFeedbackDialog extends BottomSheetDialogFragment {
         }
     }
 
-    private RateFeedbackUtils.RateFeedbackCallback rateFeedbackCallback =
+    private final RateFeedbackUtils.RateFeedbackCallback mRateFeedbackCallback =
             new RateFeedbackUtils.RateFeedbackCallback() {
                 @Override
                 public void rateFeedbackSubmitted() {

@@ -6,37 +6,26 @@
 package org.chromium.chrome.browser.playlist.settings;
 
 import android.content.Context;
-import android.content.res.Resources;
 import android.util.AttributeSet;
 import android.widget.TextView;
 
 import androidx.preference.Preference;
 import androidx.preference.PreferenceViewHolder;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
 
-/**
- * The preference used to reset Brave Playlist.
- */
-public class BravePlaylistResetPreference
-        extends Preference implements Preference.OnPreferenceClickListener {
-    private String TAG = "BravePlaylistResetPreference";
+/** The preference used to reset Brave Playlist. */
+public class BravePlaylistResetPreference extends Preference
+        implements Preference.OnPreferenceClickListener {
+    private static final String TAG = "BravePlaylistResetPreference";
 
-    private int mPrefAccentColor;
-    private final String mConfirmationPhrase;
+    private final int mPrefAccentColor;
 
-    /**
-     * Constructor for BravePlaylistResetPreference.
-     */
+    /** Constructor for BravePlaylistResetPreference. */
     public BravePlaylistResetPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
 
-        Resources resources = getContext().getResources();
-        mPrefAccentColor =
-                ApiCompatibilityUtils.getColor(resources, R.color.wallet_error_text_color);
-        mConfirmationPhrase =
-                resources.getString(R.string.brave_wallet_reset_settings_confirmation_phrase);
+        mPrefAccentColor = getContext().getColor(R.color.wallet_error_text_color);
         setOnPreferenceClickListener(this);
     }
 

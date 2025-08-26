@@ -8,78 +8,91 @@ package org.chromium.chrome.browser.omnibox.suggestions;
 import android.content.Context;
 import android.os.Handler;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
 import org.chromium.base.Callback;
 import org.chromium.base.supplier.Supplier;
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.build.annotations.Nullable;
+import org.chromium.chrome.browser.brave_leo.BraveLeoPrefUtils;
+import org.chromium.chrome.browser.brave_leo.BraveLeoUtils;
+import org.chromium.chrome.browser.lifecycle.ActivityLifecycleDispatcher;
+import org.chromium.chrome.browser.omnibox.DeferredIMEWindowInsetApplicationCallback;
 import org.chromium.chrome.browser.omnibox.LocationBarDataProvider;
 import org.chromium.chrome.browser.omnibox.UrlBarEditingTextStateProvider;
 import org.chromium.chrome.browser.omnibox.suggestions.basic.BasicSuggestionProcessor.BookmarkState;
-import org.chromium.chrome.browser.omnibox.suggestions.history_clusters.HistoryClustersProcessor.OpenHistoryClustersDelegate;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler;
+import org.chromium.chrome.browser.omnibox.voice.VoiceRecognitionHandler.VoiceResult;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.profiles.ProfileManager;
 import org.chromium.chrome.browser.share.ShareDelegate;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tabmodel.TabWindowManager;
+import org.chromium.chrome.browser.tabwindow.TabWindowManager;
 import org.chromium.components.omnibox.action.OmniboxActionDelegate;
 import org.chromium.components.user_prefs.UserPrefs;
+import org.chromium.content_public.browser.WebContents;
+import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.modaldialog.ModalDialogManager;
 import org.chromium.ui.modelutil.PropertyModel;
 
-class BraveAutocompleteMediator extends AutocompleteMediator implements BraveSuggestionHost {
+import java.util.List;
+import java.util.Locale;
+
+@NullMarked
+class BraveAutocompleteMediator extends AutocompleteMediator
+        implements BraveSuggestionHost, BraveLeoAutocompleteDelegate {
     private static final String AUTOCOMPLETE_ENABLED = "brave.autocomplete_enabled";
+    private static final String LEO_START_WORD_UPPER_CASE = "LEO";
 
-    private Context mContext;
-    private AutocompleteDelegate mDelegate;
-
-    /** Will be deleted in bytecode, value from the parent class will be used instead. */
-    private boolean mNativeInitialized;
+    private final AutocompleteDelegate mDelegate;
+    private final Supplier<@Nullable Tab> mActivityTabSupplier;
 
     /** Will be deleted in bytecode, value from the parent class will be used instead. */
+    @SuppressWarnings("NullAway") // Actual instance is at the parent
     private DropdownItemViewInfoListManager mDropdownViewInfoListManager;
 
     /** Will be deleted in bytecode, value from the parent class will be used instead. */
-    private DropdownItemViewInfoListBuilder mDropdownViewInfoListBuilder;
+    private @Nullable DropdownItemViewInfoListBuilder mDropdownViewInfoListBuilder;
 
-    public BraveAutocompleteMediator(@NonNull Context context,
-            @NonNull AutocompleteControllerProvider controllerProvider,
-            @NonNull AutocompleteDelegate delegate,
-            @NonNull UrlBarEditingTextStateProvider textProvider,
-            @NonNull PropertyModel listPropertyModel, @NonNull Handler handler,
-            @NonNull Supplier<ModalDialogManager> modalDialogManagerSupplier,
-            @NonNull Supplier<Tab> activityTabSupplier,
-            @Nullable Supplier<ShareDelegate> shareDelegateSupplier,
-            @NonNull LocationBarDataProvider locationBarDataProvider,
-            @NonNull Callback<Tab> bringTabToFrontCallback,
-            @NonNull Supplier<TabWindowManager> tabWindowManagerSupplier,
-            @NonNull BookmarkState bookmarkState,
-            @NonNull OmniboxActionDelegate omniboxActionDelegate,
-            @NonNull OpenHistoryClustersDelegate openHistoryClustersDelegate) {
-        super(context, controllerProvider, delegate, textProvider, listPropertyModel, handler,
-                modalDialogManagerSupplier, activityTabSupplier, shareDelegateSupplier,
-                locationBarDataProvider, bringTabToFrontCallback, tabWindowManagerSupplier,
-                bookmarkState, omniboxActionDelegate, openHistoryClustersDelegate);
-        mContext = context;
+    public BraveAutocompleteMediator(
+            Context context,
+            AutocompleteDelegate delegate,
+            UrlBarEditingTextStateProvider textProvider,
+            PropertyModel listPropertyModel,
+            Handler handler,
+            Supplier<ModalDialogManager> modalDialogManagerSupplier,
+            Supplier<@Nullable Tab> activityTabSupplier,
+            Supplier<ShareDelegate> shareDelegateSupplier,
+            LocationBarDataProvider locationBarDataProvider,
+            Callback<Tab> bringTabToFrontCallback,
+            Callback<String> bringTabGroupToFrontCallback,
+            Supplier<TabWindowManager> tabWindowManagerSupplier,
+            BookmarkState bookmarkState,
+            OmniboxActionDelegate omniboxActionDelegate,
+            ActivityLifecycleDispatcher lifecycleDispatcher,
+            OmniboxSuggestionsDropdownEmbedder embedder,
+            WindowAndroid windowAndroid,
+            DeferredIMEWindowInsetApplicationCallback deferredIMEWindowInsetApplicationCallback) {
+        super(
+                context,
+                delegate,
+                textProvider,
+                listPropertyModel,
+                handler,
+                modalDialogManagerSupplier,
+                activityTabSupplier,
+                shareDelegateSupplier,
+                locationBarDataProvider,
+                bringTabToFrontCallback,
+                bringTabGroupToFrontCallback,
+                tabWindowManagerSupplier,
+                bookmarkState,
+                omniboxActionDelegate,
+                lifecycleDispatcher,
+                embedder,
+                windowAndroid,
+                deferredIMEWindowInsetApplicationCallback);
+
         mDelegate = delegate;
-    }
-
-    @Override
-    public void onTextChanged(String textWithoutAutocomplete) {
-        if (ProfileManager.isInitialized()
-                && !UserPrefs.get(Profile.getLastUsedRegularProfile())
-                            .getBoolean(AUTOCOMPLETE_ENABLED)) {
-            return;
-        }
-
-        super.onTextChanged(textWithoutAutocomplete);
-    }
-
-    @Override
-    public void onOmniboxSessionStateChange(boolean activated) {
-        if (!mNativeInitialized) return;
-
-        super.onOmniboxSessionStateChange(activated);
+        mActivityTabSupplier = activityTabSupplier;
     }
 
     @Override
@@ -93,10 +106,70 @@ class BraveAutocompleteMediator extends AutocompleteMediator implements BraveSug
     /** We override parent to move back ability to set AutocompleteDelegate. */
     @Override
     void initDefaultProcessors() {
-        if (mDropdownViewInfoListBuilder instanceof BraveDropdownItemViewInfoListBuilder) {
+        if (mDropdownViewInfoListBuilder != null
+                && mDropdownViewInfoListBuilder instanceof BraveDropdownItemViewInfoListBuilder) {
             ((BraveDropdownItemViewInfoListBuilder) mDropdownViewInfoListBuilder)
                     .setAutocompleteDelegate(mDelegate);
+            ((BraveDropdownItemViewInfoListBuilder) mDropdownViewInfoListBuilder)
+                    .setLeoAutocompleteDelegate(this);
         }
         super.initDefaultProcessors();
     }
+
+    @Override
+    public boolean isAutoCompleteEnabled(WebContents webContents) {
+        if (ProfileManager.isInitialized()) {
+            Profile profile = Profile.fromWebContents(webContents);
+            if (profile != null && !UserPrefs.get(profile).getBoolean(AUTOCOMPLETE_ENABLED)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @Override
+    public boolean isLeoEnabled() {
+        return BraveLeoPrefUtils.isLeoEnabled();
+    }
+
+    @Override
+    public void openLeoQuery(WebContents webContents, String conversationUuid, String query) {
+        mDelegate.clearOmniboxFocus();
+        BraveLeoUtils.openLeoQuery(webContents, conversationUuid, query, true);
+    }
+
+    @Override
+    void onVoiceResults(@Nullable List<VoiceRecognitionHandler.VoiceResult> voiceResults) {
+        Tab tab = mActivityTabSupplier.get();
+        if (tab != null && voiceResults != null) {
+            VoiceResult topResult = (voiceResults.size() > 0) ? voiceResults.get(0) : null;
+            if (topResult != null) {
+                String topResultQuery = topResult.getMatch();
+                // Check if the query starts with the start word for Leo.
+                if (topResultQuery
+                        .toUpperCase(Locale.ENGLISH)
+                        .startsWith(LEO_START_WORD_UPPER_CASE)) {
+                    // Remove the start word from the query and process it.
+                    topResultQuery =
+                            topResultQuery.substring(LEO_START_WORD_UPPER_CASE.length()).trim();
+                    if (tab.getWebContents() != null) {
+                        openLeoQuery(tab.getWebContents(), "", topResultQuery);
+                    }
+
+                    // Clear the voice results to prevent the query from being processed by Chromium
+                    // since it's already handled by Leo.
+                    voiceResults.clear();
+                }
+            }
+        }
+
+        super.onVoiceResults(voiceResults);
+    }
+
+    // Prevents from clearing URL bar text and suggestions when
+    // in multi-window/split-mode or when switch away from Brave.
+    // It was introduced in that chromium commit
+    // https://github.com/chromium/chromium/commit/7bcc9de3972ca4ba6feb6a136edce9d49ec30daf
+    @Override
+    public void onTopResumedActivityChanged(boolean isTopResumedActivity) {}
 }

@@ -16,7 +16,6 @@
 package org.chromium.chrome.browser.qrreader;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.ImageFormat;
 import android.graphics.SurfaceTexture;
@@ -31,6 +30,7 @@ import android.view.SurfaceView;
 import android.view.WindowManager;
 
 import androidx.annotation.Nullable;
+import androidx.annotation.RequiresApi;
 import androidx.annotation.RequiresPermission;
 import androidx.annotation.StringDef;
 
@@ -143,7 +143,9 @@ public class CameraSource {
     // These instances need to be held onto to avoid GC of their underlying resources.  Even though
     // these aren't used outside of the method that creates them, they still must have hard
     // references maintained to them.
+    @SuppressWarnings("UnusedVariable")
     private SurfaceView mDummySurfaceView;
+
     private SurfaceTexture mDummySurfaceTexture;
 
     /**
@@ -151,29 +153,28 @@ public class CameraSource {
      * frames become available from the camera.
      */
     private Thread mProcessingThread;
+
     private FrameProcessingRunnable mFrameProcessor;
 
     /**
      * Map to convert between a byte array, received from the camera, and its associated byte
-     * buffer.  We use byte buffers internally because this is a more efficient way to call into
+     * buffer. We use byte buffers internally because this is a more efficient way to call into
      * native code later (avoids a potential copy).
      */
     @SuppressWarnings("ArrayAsKeyOfSetOrMap")
-    private Map<byte[], ByteBuffer> mBytesToByteBuffer = new HashMap<>();
+    private final Map<byte[], ByteBuffer> mBytesToByteBuffer = new HashMap<>();
 
-    //==============================================================================================
+    // ============================================================================================
     // Builder
-    //==============================================================================================
+    // ============================================================================================
 
-    /**
-     * Builder for configuring and creating an associated camera source.
-     */
+    /** Builder for configuring and creating an associated camera source. */
     public static class Builder {
         private final Detector<?> mDetector;
-        private CameraSource mCameraSource = new CameraSource();
+        private final CameraSource mCameraSource = new CameraSource();
 
         /**
-         * Creates a camera source builder with the supplied context and detector.  Camera preview
+         * Creates a camera source builder with the supplied context and detector. Camera preview
          * images will be streamed to the associated detector upon starting the camera source.
          */
         public Builder(Context context, Detector<?> detector) {
@@ -458,7 +459,7 @@ public class CameraSource {
             currentZoom = parameters.getZoom() + 1;
             float newZoom;
             if (scale > 1) {
-                newZoom = currentZoom + scale * (maxZoom / 10);
+                newZoom = currentZoom + scale * (maxZoom / 10f);
             } else {
                 newZoom = currentZoom * scale;
             }
@@ -629,9 +630,10 @@ public class CameraSource {
      * Sets camera auto-focus move callback.
      *
      * @param cb the callback to run
-     * @return {@code true} if the operation is supported (i.e. from Jelly Bean), {@code false} otherwise
+     * @return {@code true} if the operation is supported (i.e. from Jelly Bean), {@code false}
+     *     otherwise
      */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
     public boolean setAutoFocusMoveCallback(@Nullable AutoFocusMoveCallback cb) {
         synchronized (mCameraLock) {
             if (mCamera != null) {
@@ -647,20 +649,15 @@ public class CameraSource {
         return true;
     }
 
-    //==============================================================================================
+    // ==============================================================================================
     // Private
-    //==============================================================================================
+    // ==============================================================================================
 
-    /**
-     * Only allow creation via the builder class.
-     */
-    private CameraSource() {
-    }
+    /** Only allow creation via the builder class. */
+    private CameraSource() {}
 
-    /**
-     * Wraps the camera1 shutter callback so that the deprecated API isn't exposed.
-     */
-    private class PictureStartCallback implements Camera.ShutterCallback {
+    /** Wraps the camera1 shutter callback so that the deprecated API isn't exposed. */
+    private static class PictureStartCallback implements Camera.ShutterCallback {
         private ShutterCallback mDelegate;
 
         @Override
@@ -691,10 +688,8 @@ public class CameraSource {
         }
     }
 
-    /**
-     * Wraps the camera1 auto focus callback so that the deprecated API isn't exposed.
-     */
-    private class CameraAutoFocusCallback implements Camera.AutoFocusCallback {
+    /** Wraps the camera1 auto focus callback so that the deprecated API isn't exposed. */
+    private static class CameraAutoFocusCallback implements Camera.AutoFocusCallback {
         private AutoFocusCallback mDelegate;
 
         @Override
@@ -705,11 +700,9 @@ public class CameraSource {
         }
     }
 
-    /**
-     * Wraps the camera1 auto focus move callback so that the deprecated API isn't exposed.
-     */
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
-    private class CameraAutoFocusMoveCallback implements Camera.AutoFocusMoveCallback {
+    /** Wraps the camera1 auto focus move callback so that the deprecated API isn't exposed. */
+    @RequiresApi(Build.VERSION_CODES.JELLY_BEAN)
+    private static class CameraAutoFocusMoveCallback implements Camera.AutoFocusMoveCallback {
         private AutoFocusMoveCallback mDelegate;
 
         @Override
@@ -764,7 +757,9 @@ public class CameraSource {
                     mFocusMode)) {
                 parameters.setFocusMode(mFocusMode);
             } else {
-                Log.i(TAG, "Camera focus mode: " + mFocusMode + " is not supported on this device.");
+                Log.i(
+                        TAG,
+                        "Camera focus mode: " + mFocusMode + " is not supported on this device.");
             }
         }
 
@@ -776,7 +771,9 @@ public class CameraSource {
                     mFlashMode)) {
                 parameters.setFlashMode(mFlashMode);
             } else {
-                Log.i(TAG, "Camera flash mode: " + mFlashMode + " is not supported on this device.");
+                Log.i(
+                        TAG,
+                        "Camera flash mode: " + mFlashMode + " is not supported on this device.");
             }
         }
 
@@ -852,13 +849,13 @@ public class CameraSource {
     }
 
     /**
-     * Stores a preview size and a corresponding same-aspect-ratio picture size.  To avoid distorted
+     * Stores a preview size and a corresponding same-aspect-ratio picture size. To avoid distorted
      * preview images on some devices, the picture size must be set to a size that is the same
-     * aspect ratio as the preview size or the preview may end up being distorted.  If the picture
+     * aspect ratio as the preview size or the preview may end up being distorted. If the picture
      * size is null, then there is no picture size with the same aspect ratio as the preview size.
      */
     private static class SizePair {
-        private Size mPreview;
+        private final Size mPreview;
         private Size mPicture;
 
         public SizePair(Camera.Size previewSize,
@@ -1007,14 +1004,15 @@ public class CameraSource {
     }
 
     /**
-     * Creates one buffer for the camera preview callback.  The size of the buffer is based off of
+     * Creates one buffer for the camera preview callback. The size of the buffer is based off of
      * the camera preview size and the format of the camera image.
      *
      * @return a new preview buffer of the appropriate size for the current camera settings
      */
     private byte[] createPreviewBuffer(Size previewSize) {
         int bitsPerPixel = ImageFormat.getBitsPerPixel(ImageFormat.NV21);
-        long sizeInBits = previewSize.getHeight() * previewSize.getWidth() * bitsPerPixel;
+        long sizeInBits =
+                previewSize.getHeight() * (long) previewSize.getWidth() * (long) bitsPerPixel;
         int bufferSize = (int) Math.ceil(sizeInBits / 8.0d) + 1;
 
         //
@@ -1051,17 +1049,17 @@ public class CameraSource {
 
     /**
      * This runnable controls access to the underlying receiver, calling it to process frames when
-     * available from the camera.  This is designed to run detection on frames as fast as possible
+     * available from the camera. This is designed to run detection on frames as fast as possible
      * (i.e., without unnecessary context switching or waiting on the next frame).
-     * <p/>
-     * While detection is running on a frame, new frames may be received from the camera.  As these
-     * frames come in, the most recent frame is held onto as pending.  As soon as detection and its
-     * associated processing are done for the previous frame, detection on the mostly recently
+     *
+     * <p>While detection is running on a frame, new frames may be received from the camera. As
+     * these frames come in, the most recent frame is held onto as pending. As soon as detection and
+     * its associated processing are done for the previous frame, detection on the mostly recently
      * received frame will immediately start on the same thread.
      */
     private class FrameProcessingRunnable implements Runnable {
         private Detector<?> mDetector;
-        private long mStartTimeMillis = SystemClock.elapsedRealtime();
+        private final long mStartTimeMillis = SystemClock.elapsedRealtime();
 
         // This lock guards all of the member variables below.
         private final Object mLock = new Object();

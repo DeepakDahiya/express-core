@@ -18,12 +18,11 @@ import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.app.BraveActivity.BraveActivityNotFoundException;
 import org.chromium.chrome.browser.notifications.BraveOnboardingNotification;
 import org.chromium.chrome.browser.notifications.retention.RetentionNotificationUtil;
-import org.chromium.chrome.browser.profiles.Profile;
+import org.chromium.chrome.browser.profiles.ProfileManager;
+import org.chromium.misc_metrics.mojom.MiscAndroidMetrics;
 
 import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * Provides information regarding onboarding.
@@ -33,13 +32,7 @@ public class OnboardingPrefManager {
 
     private static final String PREF_ONBOARDING = "onboarding";
     private static final String PREF_P3A_ONBOARDING = "p3a_onboarding";
-    private static final String PREF_CROSS_PROMO_MODAL = "cross_promo_modal";
     private static final String PREF_ONBOARDING_V2 = "onboarding_v2";
-    private static final String PREF_NEXT_ONBOARDING_DATE = "next_onboarding_date";
-    private static final String PREF_NEXT_CROSS_PROMO_MODAL_DATE = "next_cross_promo_modal_date";
-    private static final String PREF_SEARCH_ENGINE_ONBOARDING = "search_engine_onboarding";
-    private static final String PREF_SHOW_DEFAULT_BROWSER_MODAL_AFTER_P3A =
-            "show_default_browser_modal_after_p3a";
     public static final String PREF_BRAVE_STATS = "brave_stats";
     public static final String PREF_BRAVE_STATS_NOTIFICATION = "brave_stats_notification";
     public static final String FROM_NOTIFICATION = "from_notification";
@@ -48,15 +41,15 @@ public class OnboardingPrefManager {
     public static final String DORMANT_USERS_NOTIFICATION = "dormant_users_notification";
     public static final String SHOW_BADGE_ANIMATION = "show_badge_animation";
     public static final String PREF_DORMANT_USERS_ENGAGEMENT = "dormant_users_engagement";
-    private static final String PREF_SHOW_SEARCHBOX_TOOLTIP = "show_searchbox_tooltip";
     private static final String PREF_P3A_CRASH_REPORTING_MESSAGE_SHOWN =
             "p3a_crash_reporting_message_shown";
-    private static final String PREF_URL_FOCUS_COUNT = "url_focus_count";
     private static final String PREF_NOTIFICATION_PERMISSION_ENABLING_DIALOG =
             "notification_permission_enabling_dialog";
 
     private static final String PREF_NOTIFICATION_PERMISSION_ENABLING_DIALOG_FROM_SETTING =
             "notification_permission_enabling_dialog_from_setting";
+
+    public static final String SHOULD_SHOW_SEARCH_WIDGET_PROMO = "should_show_search_widget_promo";
 
     private static final String PREF_APP_LAUNCH_COUNT = "APP_LAUNCH_COUNT";
 
@@ -72,16 +65,9 @@ public class OnboardingPrefManager {
 
     public static boolean isNotification;
 
-    private static final String GOOGLE = "Google";
     public static final String BRAVE = "Brave";
-    public static final String DUCKDUCKGO = "DuckDuckGo";
-    private static final String QWANT = "Qwant";
-    private static final String BING = "Bing";
-    private static final String STARTPAGE = "Startpage";
     public static final String YANDEX = "Yandex";
-    public static final String ECOSIA = "Ecosia";
-    public static final String DAUM = "Daum";
-    public static final String NAVER = "\ub124\uc774\ubc84";
+    public static final String YAHOO_JP = "Yahoo! JAPAN";
 
     private OnboardingPrefManager() {
         mSharedPreferences = ContextUtils.getAppSharedPreferences();
@@ -110,16 +96,6 @@ public class OnboardingPrefManager {
     public void setOnboardingShown(boolean isShown) {
         SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
         sharedPreferencesEditor.putBoolean(PREF_ONBOARDING, isShown);
-        sharedPreferencesEditor.apply();
-    }
-
-    public boolean isOnboardingSearchBoxTooltip() {
-        return mSharedPreferences.getBoolean(PREF_SHOW_SEARCHBOX_TOOLTIP, false);
-    }
-
-    public void setOnboardingSearchBoxTooltip(boolean shouldTooltipShow) {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putBoolean(PREF_SHOW_SEARCHBOX_TOOLTIP, shouldTooltipShow);
         sharedPreferencesEditor.apply();
     }
 
@@ -175,7 +151,10 @@ public class OnboardingPrefManager {
         sharedPreferencesEditor.apply();
         try {
             BraveActivity activity = BraveActivity.getBraveActivity();
-            activity.getMiscAndroidMetrics().recordPrivacyHubEnabledStatus(enabled);
+            MiscAndroidMetrics miscAndroidMetrics = activity.getMiscAndroidMetrics();
+            if (miscAndroidMetrics != null) {
+                miscAndroidMetrics.recordPrivacyHubEnabledStatus(enabled);
+            }
         } catch (BraveActivityNotFoundException e) {
             Log.e(TAG, "Could not report privacy hub enabled change to P3A: " + e);
         }
@@ -191,28 +170,9 @@ public class OnboardingPrefManager {
         sharedPreferencesEditor.apply();
     }
 
-    public boolean hasSearchEngineOnboardingShown() {
-        return mSharedPreferences.getBoolean(PREF_SEARCH_ENGINE_ONBOARDING, false);
-    }
-
-    public void setSearchEngineOnboardingShown(boolean isShown) {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putBoolean(PREF_SEARCH_ENGINE_ONBOARDING, isShown);
-        sharedPreferencesEditor.apply();
-    }
-
-    public int getUrlFocusCount() {
-        return mSharedPreferences.getInt(PREF_URL_FOCUS_COUNT, 0);
-    }
-
-    public void updateUrlFocusCount() {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putInt(PREF_URL_FOCUS_COUNT, 1);
-        sharedPreferencesEditor.apply();
-    }
-
     public boolean isAdsAvailable() {
-        return BraveAdsNativeHelper.nativeIsSupportedRegion(Profile.getLastUsedRegularProfile());
+        return BraveAdsNativeHelper.nativeIsSupportedRegion(
+                ProfileManager.getLastUsedRegularProfile());
     }
 
     public void showOnboarding(Context context) {
@@ -235,49 +195,6 @@ public class OnboardingPrefManager {
             setOnboardingNotificationShown(true);
         }
     }
-
-    private long getNextCrossPromoModalDate() {
-        return mSharedPreferences.getLong(PREF_NEXT_CROSS_PROMO_MODAL_DATE, 0);
-    }
-
-    public void setNextCrossPromoModalDate(long nextDate) {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putLong(PREF_NEXT_CROSS_PROMO_MODAL_DATE, nextDate);
-        sharedPreferencesEditor.apply();
-    }
-
-    public void setCrossPromoModalShown(boolean isShown) {
-        SharedPreferences.Editor sharedPreferencesEditor = mSharedPreferences.edit();
-        sharedPreferencesEditor.putBoolean(PREF_CROSS_PROMO_MODAL, isShown);
-        sharedPreferencesEditor.apply();
-    }
-
-    private boolean hasCrossPromoModalShown() {
-        return mSharedPreferences.getBoolean(PREF_CROSS_PROMO_MODAL, false);
-    }
-
-    public boolean showCrossPromoModal() {
-        boolean shouldShow = !hasCrossPromoModalShown()
-                             && (getNextCrossPromoModalDate() > 0
-                                 && System.currentTimeMillis() > getNextCrossPromoModalDate());
-        return shouldShow;
-    }
-
-    public static Map<String, SearchEngineEnum> searchEngineMap =
-    new HashMap<String, SearchEngineEnum>() {
-        {
-            put(GOOGLE, SearchEngineEnum.GOOGLE);
-            put(BRAVE, SearchEngineEnum.BRAVE);
-            put(DUCKDUCKGO, SearchEngineEnum.DUCKDUCKGO);
-            put(QWANT, SearchEngineEnum.QWANT);
-            put(BING, SearchEngineEnum.BING);
-            put(STARTPAGE, SearchEngineEnum.STARTPAGE);
-            put(YANDEX, SearchEngineEnum.YANDEX);
-            put(ECOSIA, SearchEngineEnum.ECOSIA);
-            put(DAUM, SearchEngineEnum.DAUM);
-            put(NAVER, SearchEngineEnum.NAVER);
-        }
-    };
 
     public boolean isFromNotification() {
         return mSharedPreferences.getBoolean(FROM_NOTIFICATION, false);

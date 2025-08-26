@@ -60,14 +60,6 @@ public class BravePrefServiceBridge {
         return BravePrefServiceBridgeJni.get().getDesktopModeEnabled();
     }
 
-    public void setBackgroundVideoPlaybackEnabled(boolean enabled) {
-        BravePrefServiceBridgeJni.get().setBackgroundVideoPlaybackEnabled(enabled);
-    }
-
-    public boolean getBackgroundVideoPlaybackEnabled() {
-        return BravePrefServiceBridgeJni.get().getBackgroundVideoPlaybackEnabled();
-    }
-
     public long getTrackersBlockedCount(Profile profile) {
         return BravePrefServiceBridgeJni.get().getTrackersBlockedCount(profile);
     }
@@ -78,17 +70,6 @@ public class BravePrefServiceBridge {
 
     public long getDataSaved(Profile profile) {
         return BravePrefServiceBridgeJni.get().getDataSaved(profile);
-    }
-
-    /**
-     * @param whether SafetyNet check failed.
-     */
-    public void setSafetynetCheckFailed(boolean value) {
-        BravePrefServiceBridgeJni.get().setSafetynetCheckFailed(value);
-    }
-
-    public boolean getSafetynetCheckFailed() {
-        return BravePrefServiceBridgeJni.get().getSafetynetCheckFailed();
     }
 
     public void resetPromotionLastFetchStamp() {
@@ -107,8 +88,8 @@ public class BravePrefServiceBridge {
         BravePrefServiceBridgeJni.get().setOldHttpsUpgradesCount(profile, count);
     }
 
-    public boolean GetBooleanForContentSetting(int content_type) {
-        return BravePrefServiceBridgeJni.get().getBooleanForContentSetting(content_type);
+    public boolean getBooleanForContentSetting(int contentType) {
+        return BravePrefServiceBridgeJni.get().getBooleanForContentSetting(contentType);
     }
 
     public void setWebrtcPolicy(int policy) {
@@ -124,9 +105,9 @@ public class BravePrefServiceBridge {
     }
 
     public boolean getNewsOptIn() {
-        boolean getNewsOptIn = BravePrefServiceBridgeJni.get().getNewsOptIn();
         return BravePrefServiceBridgeJni.get().getNewsOptIn();
     }
+
     public void setShowNews(boolean value) {
         BravePrefServiceBridgeJni.get().setShowNews(value);
     }
@@ -141,37 +122,41 @@ public class BravePrefServiceBridge {
         String getCookiesBlockType();
 
         void setPlayYTVideoInBrowserEnabled(boolean enabled);
+
         boolean getPlayYTVideoInBrowserEnabled();
 
         void setDesktopModeEnabled(boolean enabled);
+
         boolean getDesktopModeEnabled();
 
-        void setBackgroundVideoPlaybackEnabled(boolean enabled);
-        boolean getBackgroundVideoPlaybackEnabled();
-
         long getTrackersBlockedCount(Profile profile);
+
         long getAdsBlockedCount(Profile profile);
+
         long getDataSaved(Profile profile);
 
         // Used to pass total stat from upgrading old tabs based browser
         // to a new core based
         void setOldTrackersBlockedCount(Profile profile, long count);
+
         void setOldAdsBlockedCount(Profile profile, long count);
+
         void setOldHttpsUpgradesCount(Profile profile, long count);
 
-        void setSafetynetCheckFailed(boolean value);
-        boolean getSafetynetCheckFailed();
-
         void resetPromotionLastFetchStamp();
-        boolean getBooleanForContentSetting(int content_type);
+
+        boolean getBooleanForContentSetting(int contentType);
 
         void setWebrtcPolicy(int policy);
+
         int getWebrtcPolicy();
 
         void setNewsOptIn(boolean value);
+
         boolean getNewsOptIn();
 
         void setShowNews(boolean value);
+
         boolean getShowNews();
     }
 }

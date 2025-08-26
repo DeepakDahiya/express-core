@@ -15,12 +15,14 @@ import android.text.method.ScrollingMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.fragment.app.Fragment;
 
 import com.bumptech.glide.Glide;
@@ -29,9 +31,10 @@ import org.json.JSONException;
 
 import org.chromium.base.Log;
 import org.chromium.chrome.R;
-import org.chromium.chrome.browser.BraveRewardsHelper;
+import org.chromium.chrome.browser.BraveRewardsExternalWallet;
 import org.chromium.chrome.browser.BraveRewardsNativeWorker;
 import org.chromium.chrome.browser.BraveRewardsObserver;
+import org.chromium.chrome.browser.BraveWalletProvider;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
 import org.chromium.chrome.browser.rewards.BraveRewardsBannerInfo;
@@ -50,8 +53,6 @@ public class RewardsTippingBannerFragment extends Fragment implements BraveRewar
     private static final String TAG = "TippingBanner";
     private int mCurrentTabId = -1;
     private BraveRewardsBannerInfo mBannerInfo;
-
-    private BraveRewardsHelper mIconFetcher;
 
     private static final String TWITTER = "twitter";
     private static final String YOUTUBE = "youtube";
@@ -83,9 +84,9 @@ public class RewardsTippingBannerFragment extends Fragment implements BraveRewar
         View view = inflater.inflate(R.layout.rewards_tipping_banner_fragment, container, false);
         mCurrentTabId = getArguments().getInt(TAB_ID_EXTRA);
         mBraveRewardsNativeWorker = BraveRewardsNativeWorker.getInstance();
-        mBraveRewardsNativeWorker.AddObserver(this);
-        mBraveRewardsNativeWorker.GetPublisherBanner(
-                mBraveRewardsNativeWorker.GetPublisherId(mCurrentTabId));
+        mBraveRewardsNativeWorker.addObserver(this);
+        mBraveRewardsNativeWorker.getPublisherBanner(
+                mBraveRewardsNativeWorker.getPublisherId(mCurrentTabId));
         mContentView = view;
         return view;
     }
@@ -154,22 +155,52 @@ public class RewardsTippingBannerFragment extends Fragment implements BraveRewar
             setLogo();
             background();
             checkForShowSocialLinkIcons();
-            setWeb3WalletClick();
+            mBraveRewardsNativeWorker.getExternalWallet();
         } catch (JSONException e) {
             Log.e(TAG, "TippingBanner -> CreatorPanel:onAttach JSONException error " + e);
         }
     }
 
-    private void setWeb3WalletClick() {
-        if (mBannerInfo == null) return;
-        String web3Url = mBannerInfo.getWeb3Url();
-        if (!TextUtils.isEmpty(web3Url)) {
-            View web3Button = mContentView.findViewById(R.id.use_web3_wallet_button);
-            web3Button.setVisibility(View.VISIBLE);
-            web3Button.setOnClickListener(v -> {
-                TabUtils.openUrlInNewTab(false, web3Url);
-                dismissRewardsPanel();
-            });
+    @Override
+    public void onGetExternalWallet(String externalWallet) {
+        if (!TextUtils.isEmpty(externalWallet)) {
+            try {
+                BraveRewardsExternalWallet braveRewardsExternalWallet =
+                        new BraveRewardsExternalWallet(externalWallet);
+                String custodianType = braveRewardsExternalWallet.getType();
+                boolean isSolanaWallet =
+                        (!TextUtils.isEmpty(custodianType)
+                                && custodianType.equals(BraveWalletProvider.SOLANA));
+                Button sendTipButton = mContentView.findViewById(R.id.send_tip_button);
+                Button web3Button = mContentView.findViewById(R.id.use_web3_wallet_button);
+                if (mBannerInfo != null) {
+                    String web3Url = mBannerInfo.getWeb3Url();
+                    if (!TextUtils.isEmpty(web3Url)
+                            && !DeviceFormFactor.isNonMultiDisplayContextOnTablet(getActivity())) {
+                        web3Button.setVisibility(View.VISIBLE);
+                        web3Button.setOnClickListener(
+                                v -> {
+                                    TabUtils.openUrlInNewTab(false, web3Url);
+                                    dismissRewardsPanel();
+                                });
+                    } else {
+                        if (isSolanaWallet) {
+                            showWarningMessage(mContentView);
+                        }
+                    }
+                }
+                if (isSolanaWallet) {
+                    sendTipButton.setVisibility(View.GONE);
+                    web3Button.setBackgroundDrawable(
+                            ResourcesCompat.getDrawable(
+                                    getResources(),
+                                    R.drawable.tipping_send_button_background,
+                                    null));
+                    web3Button.setTextColor(getActivity().getColor(android.R.color.white));
+                }
+            } catch (JSONException e) {
+                Log.e(TAG, "TippingBanner -> OnGetExternalWallet " + e.getMessage());
+            }
         }
     }
 
@@ -305,21 +336,19 @@ public class RewardsTippingBannerFragment extends Fragment implements BraveRewar
 
     public void sendTipButtonClick() {
         View sendTipButton = mContentView.findViewById(R.id.send_tip_button);
-        sendTipButton.setOnClickListener((v) -> {
-            if (mBannerInfo == null) return;
-            String web3Url = mBannerInfo.getWeb3Url();
-            if (!TextUtils.isEmpty(web3Url)) {
-                RewardsTippingPanelBottomsheet.showTippingPanelBottomSheet(
-                        (AppCompatActivity) mActivity, mCurrentTabId, web3Url);
-            }
-        });
+        sendTipButton.setOnClickListener(
+                (v) -> {
+                    RewardsTippingPanelBottomsheet.showTippingPanelBottomSheet(
+                            (AppCompatActivity) mActivity, mCurrentTabId);
+                });
+
     }
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         if (null != mBraveRewardsNativeWorker) {
-            mBraveRewardsNativeWorker.RemoveObserver(this);
+            mBraveRewardsNativeWorker.removeObserver(this);
         }
     }
 
@@ -337,5 +366,27 @@ public class RewardsTippingBannerFragment extends Fragment implements BraveRewar
             mActivity.setResult(Activity.RESULT_OK);
             mActivity.finish();
         }
+    }
+
+    private void showWarningMessage(View view) {
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(getActivity())) {
+            return;
+        }
+        View warningLayout = view.findViewById(R.id.tipping_warning_message_layout);
+        warningLayout.setVisibility(View.VISIBLE);
+        warningLayout.setBackground(
+                ResourcesCompat.getDrawable(
+                        getResources(),
+                        R.drawable.rewards_tipping_web3_error_background,
+                        /* theme= */ null));
+        ImageView tippingWarningIcon = view.findViewById(R.id.tipping_warning_icon);
+        tippingWarningIcon.setVisibility(View.VISIBLE);
+        TextView warningTitle = view.findViewById(R.id.tipping_warning_title_text);
+        warningTitle.setText(getResources().getString(R.string.can_not_send_your_contribution));
+        warningTitle.setTextColor(getActivity().getColor(R.color.tipping_web3_error_text_color));
+        TextView warningDescription = view.findViewById(R.id.tipping_warning_description_text);
+        warningDescription.setText(getResources().getString(R.string.creator_isnt_setup_web3));
+        warningDescription.setTextColor(
+                getActivity().getColor(R.color.tipping_web3_error_text_color));
     }
 }

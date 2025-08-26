@@ -17,9 +17,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneshotSupplier;
+import org.chromium.build.annotations.NullUnmarked;
+import org.chromium.chrome.browser.browser_controls.BrowserControlsStateProvider;
 import org.chromium.chrome.browser.lens.LensController;
 import org.chromium.chrome.browser.locale.LocaleManager;
-import org.chromium.chrome.browser.privacy.settings.PrivacyPreferencesManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.theme.ThemeUtils;
@@ -30,6 +31,7 @@ import org.chromium.ui.permissions.PermissionCallback;
 
 import java.util.function.BooleanSupplier;
 
+@NullUnmarked // Waiting for upstream parent class to be NullMarked
 public class BraveLocationBarMediator extends LocationBarMediator {
     private WindowAndroid mWindowAndroid;
     private LocationBarLayout mLocationBarLayout;
@@ -38,16 +40,17 @@ public class BraveLocationBarMediator extends LocationBarMediator {
     private boolean mIsTablet;
     private boolean mNativeInitialized;
     private boolean mIsLocationBarFocusedFromNtpScroll;
-    private boolean mShouldClearOmniboxOnFocus;
     private Context mContext;
-    private @BrandedColorScheme int mBrandedColorScheme = BrandedColorScheme.APP_DEFAULT;
+    private static final @BrandedColorScheme int BRANDED_COLOR_SCHEME =
+            BrandedColorScheme.APP_DEFAULT;
+    private OneshotSupplier<TemplateUrlService> mTemplateUrlServiceSupplier;
 
     public BraveLocationBarMediator(
             @NonNull Context context,
             @NonNull LocationBarLayout locationBarLayout,
             @NonNull LocationBarDataProvider locationBarDataProvider,
+            @NonNull LocationBarEmbedderUiOverrides embedderUiOverrides,
             @NonNull ObservableSupplier<Profile> profileSupplier,
-            @NonNull PrivacyPreferencesManager privacyPreferencesManager,
             @NonNull OverrideUrlLoadingDelegate overrideUrlLoadingDelegate,
             @NonNull LocaleManager localeManager,
             @NonNull OneshotSupplier<TemplateUrlService> templateUrlServiceSupplier,
@@ -55,17 +58,17 @@ public class BraveLocationBarMediator extends LocationBarMediator {
             @NonNull WindowAndroid windowAndroid,
             boolean isTablet,
             @NonNull LensController lensController,
-            @NonNull SaveOfflineButtonState saveOfflineButtonState,
             @NonNull OmniboxUma omniboxUma,
             @NonNull BooleanSupplier isToolbarMicEnabledSupplier,
             @NonNull OmniboxSuggestionsDropdownEmbedderImpl dropdownEmbedder,
-            @Nullable ObservableSupplier<TabModelSelector> tabModelSelectorSupplier) {
+            @Nullable ObservableSupplier<TabModelSelector> tabModelSelectorSupplier,
+            @Nullable BrowserControlsStateProvider browserControlsStateProvider) {
         super(
                 context,
                 locationBarLayout,
                 locationBarDataProvider,
+                embedderUiOverrides,
                 profileSupplier,
-                privacyPreferencesManager,
                 overrideUrlLoadingDelegate,
                 localeManager,
                 templateUrlServiceSupplier,
@@ -73,19 +76,15 @@ public class BraveLocationBarMediator extends LocationBarMediator {
                 windowAndroid,
                 isTablet,
                 lensController,
-                saveOfflineButtonState,
                 omniboxUma,
                 isToolbarMicEnabledSupplier,
                 dropdownEmbedder,
-                tabModelSelectorSupplier);
+                tabModelSelectorSupplier,
+                browserControlsStateProvider);
     }
 
     public static Class<OmniboxUma> getOmniboxUmaClass() {
         return OmniboxUma.class;
-    }
-
-    public static Class<SaveOfflineButtonState> getSaveOfflineButtonStateClass() {
-        return SaveOfflineButtonState.class;
     }
 
     public static Class<LensController> getLensControllerClass() {
@@ -96,12 +95,8 @@ public class BraveLocationBarMediator extends LocationBarMediator {
         return LocaleManager.class;
     }
 
-    public static Class<PrivacyPreferencesManager> getPrivacyPreferencesManagerClass() {
-        return PrivacyPreferencesManager.class;
-    }
-
     public static Class<OmniboxSuggestionsDropdownEmbedderImpl>
-    getOmniboxSuggestionsDropdownEmbedderImplClass() {
+            getOmniboxSuggestionsDropdownEmbedderImplClass() {
         return OmniboxSuggestionsDropdownEmbedderImpl.class;
     }
 
@@ -117,11 +112,26 @@ public class BraveLocationBarMediator extends LocationBarMediator {
         updateQRButtonColors();
     }
 
+    @Override
+    public void onResumeWithNative() {
+        if (mTemplateUrlServiceSupplier.hasValue()
+                && !mTemplateUrlServiceSupplier.get().isLoaded()) {
+            mTemplateUrlServiceSupplier
+                    .get()
+                    .runWhenLoaded(
+                            () -> {
+                                super.onResumeWithNative();
+                            });
+            return;
+        }
+        super.onResumeWithNative();
+    }
+
     void updateQRButtonColors() {
         if (mLocationBarLayout instanceof BraveLocationBarLayout) {
             ((BraveLocationBarLayout) mLocationBarLayout)
                     .setQRButtonTint(
-                            ThemeUtils.getThemedToolbarIconTint(mContext, mBrandedColorScheme));
+                            ThemeUtils.getThemedToolbarIconTint(mContext, BRANDED_COLOR_SCHEME));
         }
     }
 
@@ -146,7 +156,7 @@ public class BraveLocationBarMediator extends LocationBarMediator {
     }
 
     protected boolean shouldShowDeleteButton() {
-        assert (false);
+        assert false;
         return false;
     }
 
@@ -184,12 +194,5 @@ public class BraveLocationBarMediator extends LocationBarMediator {
                     ((AppCompatActivity) mContext).getSupportFragmentManager(),
                     "BraveLocationBarQRDialogFragment");
         }
-    }
-
-    @Override
-    /*package */ void onUrlFocusChange(boolean hasFocus) {
-        // We don't want to clear omnibox for focus.
-        mShouldClearOmniboxOnFocus = false;
-        super.onUrlFocusChange(hasFocus);
     }
 }

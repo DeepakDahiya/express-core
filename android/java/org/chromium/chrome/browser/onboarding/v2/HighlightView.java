@@ -29,8 +29,8 @@ public class HighlightView extends FrameLayout {
     private static final int ALPHA_60_PERCENT = 153;
     private static final int DEFAULT_ANIMATION_DURATION = 1000;
 
-    private Paint mEraserPaint;
-    private Paint mBasicPaint;
+    private final Paint mEraserPaint;
+    private final Paint mBasicPaint;
 
     private HighlightItem mItem;
     private int mItemWidth;
@@ -41,15 +41,12 @@ public class HighlightView extends FrameLayout {
     private boolean mIsHighlightTransparent;
     private AnimatorSet mAnimatorSet;
 
-    private Context mContext;
-
     private float mInnerRadius;
     private float mOuterRadius;
     private int mColor = -1;
 
     public HighlightView(Context context, AttributeSet attrs) {
         super(context, attrs);
-        mContext = context;
         PorterDuffXfermode xfermode = new PorterDuffXfermode(PorterDuff.Mode.MULTIPLY);
         mBasicPaint = new Paint();
         mEraserPaint = new Paint();

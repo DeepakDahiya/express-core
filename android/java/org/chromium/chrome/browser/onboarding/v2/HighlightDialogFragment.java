@@ -28,29 +28,34 @@ import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.brave_stats.BraveStatsUtil;
 import org.chromium.chrome.browser.notifications.retention.RetentionNotificationUtil;
 import org.chromium.chrome.browser.onboarding.OnboardingPrefManager;
+import org.chromium.chrome.browser.util.BraveConstants;
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
 public class HighlightDialogFragment extends DialogFragment {
-    final public static String TAG_FRAGMENT = "HIGHLIGHT_FRAG";
-    private final static String NTP_TUTORIAL_PAGE = "https://brave.com/ja/android-ntp-tutorial";
+    public static final String TAG_FRAGMENT = "HIGHLIGHT_FRAG";
+    private static final String NTP_TUTORIAL_PAGE = "https://brave.com/ja/android-ntp-tutorial";
 
     public interface HighlightDialogListener {
         void onNextPage();
+
         void onLearnMore();
     }
 
-    private static final List<Integer> highlightViews = Arrays.asList(R.id.brave_stats_ads,
-            R.id.brave_stats_data_saved, R.id.brave_stats_time, R.id.ntp_stats_layout);
+    private static final List<Integer> sHighlightViews =
+            Arrays.asList(
+                    R.id.brave_stats_ads,
+                    R.id.brave_stats_data_saved,
+                    R.id.brave_stats_time,
+                    R.id.ntp_stats_layout);
 
-    private HighlightItem item;
-    private HighlightView highlightView;
-    private ViewPager viewpager;
-    private boolean isFromStats;
+    private HighlightView mHighlightView;
+    private ViewPager mViewpager;
+    private boolean mIsFromStats;
 
-    private OnboardingV2PagerAdapter onboardingV2PagerAdapter;
+    private OnboardingV2PagerAdapter mOnboardingV2PagerAdapter;
 
     @Override
     public Dialog onCreateDialog(Bundle savedInstanceState) {
@@ -64,35 +69,34 @@ public class HighlightDialogFragment extends DialogFragment {
     public void onSaveInstanceState(Bundle outState) {}
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public View onCreateView(
+            LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.highlight_layout, container);
-        highlightView = view.findViewById(R.id.highlight_view);
+        mHighlightView = view.findViewById(R.id.highlight_view);
 
-        onboardingV2PagerAdapter = new OnboardingV2PagerAdapter(getChildFragmentManager());
-        onboardingV2PagerAdapter.setHighlightListener(highlightDialogListener);
-        onboardingV2PagerAdapter.setFromStats(isFromStats);
+        mOnboardingV2PagerAdapter = new OnboardingV2PagerAdapter(getChildFragmentManager());
+        mOnboardingV2PagerAdapter.setHighlightListener(mHighlightDialogListener);
+        mOnboardingV2PagerAdapter.setFromStats(mIsFromStats);
 
         // Set up the ViewPager with the sections adapter.
-        viewpager = view.findViewById(R.id.viewpager);
-        viewpager.setAdapter(onboardingV2PagerAdapter);
-        viewpager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-                if (positionOffset == 0) {
-                    highlightView(isFromStats ? 3 : position);
-                }
-            }
+        mViewpager = view.findViewById(R.id.viewpager);
+        mViewpager.setAdapter(mOnboardingV2PagerAdapter);
+        mViewpager.addOnPageChangeListener(
+                new ViewPager.OnPageChangeListener() {
+                    @Override
+                    public void onPageScrolled(
+                            int position, float positionOffset, int positionOffsetPixels) {
+                        if (positionOffset == 0) {
+                            highlightView(mIsFromStats ? 3 : position);
+                        }
+                    }
 
-            @Override
-            public void onPageSelected(int position) {
+                    @Override
+                    public void onPageSelected(int position) {}
 
-            }
-
-            @Override
-            public void onPageScrollStateChanged(int state) {
-
-            }
-        });
+                    @Override
+                    public void onPageScrollStateChanged(int state) {}
+                });
 
         ImageView btnClose = view.findViewById(R.id.onboarding_bottom_sheet_close);
         btnClose.setOnClickListener(new View.OnClickListener() {
@@ -130,7 +134,7 @@ public class HighlightDialogFragment extends DialogFragment {
 
         Bundle bundle = getArguments();
         if (bundle != null) {
-            isFromStats = bundle.getBoolean(OnboardingPrefManager.FROM_STATS, false);
+            mIsFromStats = bundle.getBoolean(OnboardingPrefManager.FROM_STATS, false);
         }
     }
 
@@ -151,55 +155,59 @@ public class HighlightDialogFragment extends DialogFragment {
         if (position == 3) {
             viewId = R.id.ntp_stats_layout;
         } else {
-            viewId = highlightViews.get(position);
+            viewId = sHighlightViews.get(position);
         }
         View view = getActivity().findViewById(viewId);
         if (view != null) {
             HighlightItem item = new HighlightItem(view);
-            highlightView.setHighlightItem(item);
+            mHighlightView.setHighlightItem(item);
             if (position == 3) {
-                highlightView.setShouldShowHighlight(false);
+                mHighlightView.setShouldShowHighlight(false);
             } else {
-                highlightView.setShouldShowHighlight(true);
+                mHighlightView.setShouldShowHighlight(true);
             }
         }
     }
 
-    private HighlightDialogListener highlightDialogListener = new HighlightDialogListener() {
-        @Override
-        public void onNextPage() {
-            if (viewpager != null) {
-                if (!OnboardingPrefManager.getInstance().isBraveStatsEnabled()) {
-                    OnboardingPrefManager.getInstance().setBraveStatsEnabled(true);
-                    RetentionNotificationUtil.scheduleNotificationForEverySunday(getActivity(), RetentionNotificationUtil.EVERY_SUNDAY);
-                    if (onboardingV2PagerAdapter != null) {
-                        onboardingV2PagerAdapter.notifyDataSetChanged();
+    private final HighlightDialogListener mHighlightDialogListener =
+            new HighlightDialogListener() {
+                @Override
+                public void onNextPage() {
+                    if (mViewpager != null) {
+                        if (!OnboardingPrefManager.getInstance().isBraveStatsEnabled()) {
+                            OnboardingPrefManager.getInstance().setBraveStatsEnabled(true);
+                            RetentionNotificationUtil.scheduleNotificationForEverySunday(
+                                    getActivity(), RetentionNotificationUtil.EVERY_SUNDAY);
+                            if (mOnboardingV2PagerAdapter != null) {
+                                mOnboardingV2PagerAdapter.notifyDataSetChanged();
+                            }
+                        }
+                        int currentPage = mViewpager.getCurrentItem();
+                        if ((OnboardingPrefManager.getInstance().isBraveStatsEnabled()
+                                        && currentPage == 2)
+                                || currentPage == 3
+                                || mIsFromStats) {
+                            dismiss();
+                            BraveStatsUtil.showBraveStats();
+                            checkAndOpenNtpPage();
+                        } else {
+                            mViewpager.setCurrentItem(currentPage + 1);
+                        }
                     }
                 }
-                int currentPage = viewpager.getCurrentItem();
-                if ((OnboardingPrefManager.getInstance().isBraveStatsEnabled() && currentPage == 2)
-                        || currentPage == 3
-                        || isFromStats) {
-                    dismiss();
-                    BraveStatsUtil.showBraveStats();
-                    checkAndOpenNtpPage();
-                } else {
-                    viewpager.setCurrentItem(currentPage + 1);
-                }
-            }
-        }
 
-        @Override
-        public void onLearnMore() {
-            dismiss();
-            //Start from beginning
-            ((BraveActivity)getActivity()).showOnboardingV2(false);
-        }
-    };
+                @Override
+                public void onLearnMore() {
+                    dismiss();
+                    // Start from beginning
+                    ((BraveActivity) getActivity()).showOnboardingV2(false);
+                }
+            };
 
     private void checkAndOpenNtpPage() {
         String countryCode = Locale.getDefault().getCountry();
-        if (((BraveActivity) getActivity()) != null && countryCode.equals("JP")) {
+        if (((BraveActivity) getActivity()) != null
+                && countryCode.equals(BraveConstants.JAPAN_COUNTRY_CODE)) {
             ((BraveActivity) getActivity()).openNewOrSelectExistingTab(NTP_TUTORIAL_PAGE);
         }
     }

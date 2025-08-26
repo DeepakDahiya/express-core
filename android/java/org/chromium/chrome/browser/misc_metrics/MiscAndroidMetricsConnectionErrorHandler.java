@@ -16,39 +16,22 @@ public class MiscAndroidMetricsConnectionErrorHandler implements ConnectionError
      *This is a delegate that is implemented in the object where the connection is created
      */
     public interface MiscAndroidMetricsConnectionErrorHandlerDelegate {
-        default void initMiscAndroidMetrics() {}
+        default void initMiscAndroidMetricsFromAWorkerThread() {}
+
         default void cleanUpMiscAndroidMetrics() {}
     }
 
-    private MiscAndroidMetricsConnectionErrorHandlerDelegate
-            mMiscAndroidMetricsConnectionErrorHandlerDelegate;
-    private static final Object sLock = new Object();
-    private static MiscAndroidMetricsConnectionErrorHandler sInstance;
+    private final MiscAndroidMetricsConnectionErrorHandlerDelegate mDelegate;
 
-    public static MiscAndroidMetricsConnectionErrorHandler getInstance() {
-        synchronized (sLock) {
-            if (sInstance == null) {
-                sInstance = new MiscAndroidMetricsConnectionErrorHandler();
-            }
-        }
-        return sInstance;
-    }
-
-    public void setDelegate(MiscAndroidMetricsConnectionErrorHandlerDelegate
-                    privacyHubMetricsConnectionErrorHandlerDelegate) {
-        mMiscAndroidMetricsConnectionErrorHandlerDelegate =
-                privacyHubMetricsConnectionErrorHandlerDelegate;
-        assert mMiscAndroidMetricsConnectionErrorHandlerDelegate
-                != null : "mMiscAndroidMetricsConnectionErrorHandlerDelegate has to be initialized";
+    public MiscAndroidMetricsConnectionErrorHandler(
+            MiscAndroidMetricsConnectionErrorHandlerDelegate delegate) {
+        assert delegate != null : "delegate has to be initialized";
+        mDelegate = delegate;
     }
 
     @Override
     public void onConnectionError(MojoException e) {
-        if (mMiscAndroidMetricsConnectionErrorHandlerDelegate == null) {
-            return;
-        }
-
-        mMiscAndroidMetricsConnectionErrorHandlerDelegate.cleanUpMiscAndroidMetrics();
-        mMiscAndroidMetricsConnectionErrorHandlerDelegate.initMiscAndroidMetrics();
+        mDelegate.cleanUpMiscAndroidMetrics();
+        mDelegate.initMiscAndroidMetricsFromAWorkerThread();
     }
 }

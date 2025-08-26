@@ -30,14 +30,13 @@ import java.util.Locale;
 
 public class BraveOnboardingNotification extends BroadcastReceiver {
     public Context mContext;
-    private Intent mIntent;
     private static final String TAG = "OnboardingNoti";
 
     private static final int BRAVE_ONBOARDING_NOTIFICATION_ID = -2;
     public static String BRAVE_ONBOARDING_NOTIFICATION_TAG = "brave_onboarding_notification_tag";
-    private static String BRAVE_ONBOARDING_ORIGIN_EN = "https://brave.com/my-first-ad/";
-    private static String BRAVE_ONBOARDING_ORIGIN_DE = "https://brave.com/de/my-first-ad/";
-    private static String BRAVE_ONBOARDING_ORIGIN_FR = "https://brave.com/fr/my-first-ad/";
+    private static final String BRAVE_ONBOARDING_ORIGIN_EN = "https://brave.com/my-first-ad/";
+    private static final String BRAVE_ONBOARDING_ORIGIN_DE = "https://brave.com/de/my-first-ad/";
+    private static final String BRAVE_ONBOARDING_ORIGIN_FR = "https://brave.com/fr/my-first-ad/";
     public static final String DEEP_LINK = "deep_link";
     public static final String USE_CUSTOM_NOTIFICATION = "use_custom_notification";
 
@@ -59,8 +58,7 @@ public class BraveOnboardingNotification extends BroadcastReceiver {
     public static void showOnboardingNotification() {
         Context context = ContextUtils.getApplicationContext();
         if (context == null) return;
-        NotificationManagerProxyImpl notificationManager =
-            new NotificationManagerProxyImpl(context);
+        NotificationManagerProxyImpl notificationManager = new NotificationManagerProxyImpl();
 
         NotificationBuilderBase notificationBuilder =
                 new BraveNotificationBuilder(context)
@@ -130,10 +128,9 @@ public class BraveOnboardingNotification extends BroadcastReceiver {
         }
     }
 
-    public static void cancelOnboardingNotification(Context context) {
-        NotificationManagerProxyImpl notificationManager =
-            new NotificationManagerProxyImpl(context);
+    public static void cancelOnboardingNotification() {
+        NotificationManagerProxyImpl notificationManager = new NotificationManagerProxyImpl();
         notificationManager.cancel(
-            BRAVE_ONBOARDING_NOTIFICATION_TAG, BRAVE_ONBOARDING_NOTIFICATION_ID);
+                BRAVE_ONBOARDING_NOTIFICATION_TAG, BRAVE_ONBOARDING_NOTIFICATION_ID);
     }
 }
