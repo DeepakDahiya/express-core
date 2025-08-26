@@ -5,9 +5,9 @@
 
 #include "brave/browser/web_discovery/web_discovery_cta_util.h"
 
+#include "base/check.h"
 #include "base/check_is_test.h"
 #include "base/json/values_util.h"
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/time/clock.h"
 #include "base/values.h"
@@ -19,7 +19,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_service.h"
 #include "net/base/url_util.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -87,8 +86,9 @@ bool ShouldShowWebDiscoveryInfoBar(TemplateURLService* service,
                                    PrefService* prefs,
                                    const WebDiscoveryCTAState& state,
                                    base::Clock* test_clock) {
-  if (prefs->GetBoolean(kWebDiscoveryEnabled))
+  if (prefs->GetBoolean(kWebDiscoveryEnabled)) {
     return false;
+  }
 
   if (!service || !IsBraveSearchDefault(service))
     return false;

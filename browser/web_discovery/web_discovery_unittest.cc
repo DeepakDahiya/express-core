@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_test_util.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
@@ -26,6 +27,8 @@
 #include "content/public/test/web_contents_tester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace web_discovery {
+
 class WebDiscoveryCTATest : public testing::Test {
  public:
   WebDiscoveryCTATest() = default;
@@ -33,21 +36,11 @@ class WebDiscoveryCTATest : public testing::Test {
   void SetUp() override {
     // Setup g_browser_process because local_state() is refered during the
     // TemplateURLServiceTestUtil initialization.
-    RegisterLocalState(test_local_state_.registry());
-    TestingBrowserProcess::GetGlobal()->SetLocalState(&test_local_state_);
     test_clock_.SetNow(base::Time::Now());
     test_util_ = std::make_unique<TemplateURLServiceTestUtil>();
-    test_util_->profile()
-        ->GetTestingPrefService()
-        ->registry()
-        ->RegisterBooleanPref(prefs::kDefaultSearchProviderByExtension, false);
     web_contents_ =
         content::WebContentsTester::CreateTestWebContents(profile(), nullptr);
     ASSERT_TRUE(web_contents_.get());
-  }
-
-  void TearDown() override {
-    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
   }
 
   WebDiscoveryTabHelper* tab_helper() {
@@ -59,7 +52,7 @@ class WebDiscoveryCTATest : public testing::Test {
     std::unique_ptr<TemplateURL> brave = CreateTestTemplateURL(
         u"brave", "https://search.brave.com/", std::string(),
         base::Time::FromTimeT(100), false,
-        TemplateURLData::CreatedByPolicy::kNoPolicy,
+        TemplateURLData::PolicyOrigin::kNoPolicy,
         TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE);
     service()->SetUserSelectedDefaultSearchProvider(brave.get());
     ASSERT_TRUE(IsBraveSearchDefault());
@@ -70,7 +63,7 @@ class WebDiscoveryCTATest : public testing::Test {
     std::unique_ptr<TemplateURL> google = CreateTestTemplateURL(
         u"google", "https://www.google.com/", std::string(),
         base::Time::FromTimeT(100), false,
-        TemplateURLData::CreatedByPolicy::kNoPolicy,
+        TemplateURLData::PolicyOrigin::kNoPolicy,
         TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_GOOGLE);
     service()->SetUserSelectedDefaultSearchProvider(google.get());
     ASSERT_FALSE(IsBraveSearchDefault());
@@ -101,10 +94,11 @@ class WebDiscoveryCTATest : public testing::Test {
 
   base::SimpleTestClock test_clock_;
   content::BrowserTaskEnvironment task_environment_;
+  ScopedTestingLocalState scoped_testing_local_state_{
+      TestingBrowserProcess::GetGlobal()};
   content::RenderViewHostTestEnabler render_view_host_test_enabler_;
   std::unique_ptr<TemplateURLServiceTestUtil> test_util_;
   std::unique_ptr<content::WebContents> web_contents_;
-  TestingPrefServiceSimple test_local_state_;
 };
 
 TEST_F(WebDiscoveryCTATest, InitialDataTest) {
@@ -176,3 +170,5 @@ TEST_F(WebDiscoveryCTATest, ShouldShowInfoBarTest) {
   GetWebDiscoveryCTAIDForTesting() = "v2";
   EXPECT_TRUE(ShouldShowWebDiscoveryInfoBar());
 }
+
+}  // namespace web_discovery
