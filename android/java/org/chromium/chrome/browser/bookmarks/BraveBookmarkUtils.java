@@ -6,19 +6,14 @@
 package org.chromium.chrome.browser.bookmarks;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.net.Uri;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 
 import org.chromium.base.Callback;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.chrome.browser.IntentHandler;
-import org.chromium.chrome.browser.app.bookmarks.BraveBookmarkActivity;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
 import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkItem;
 import org.chromium.components.bookmarks.BookmarkType;
@@ -30,46 +25,42 @@ import org.chromium.components.browser_ui.bottomsheet.BottomSheetController;
 public class BraveBookmarkUtils extends BookmarkUtils {
     private static final String TAG = "BraveBookmarkUtils";
 
-    public static void addOrEditBookmark(@Nullable BookmarkItem existingBookmarkItem,
-            BookmarkModel bookmarkModel, Tab tab, SnackbarManager snackbarManager,
-            BottomSheetController bottomSheetController, Activity activity, boolean fromCustomTab,
-            @BookmarkType int bookmarkType, Callback<BookmarkId> callback,
-            boolean fromExplicitTrackUi) {
+    public static void addOrEditBookmark(
+            @Nullable BookmarkItem existingBookmarkItem,
+            BookmarkModel bookmarkModel,
+            Tab tab,
+            BottomSheetController bottomSheetController,
+            Activity activity,
+            @BookmarkType int bookmarkType,
+            Callback<BookmarkId> callback,
+            boolean fromExplicitTrackUi,
+            BookmarkManagerOpener bookmarkManagerOpener,
+            PriceDropNotificationManager priceDropNotificationManager) {
         assert bookmarkModel.isBookmarkModelLoaded();
         if (existingBookmarkItem != null) {
-            if (snackbarManager.isShowing()) {
-                snackbarManager.dismissAllSnackbars();
-            }
             bookmarkModel.deleteBookmark(existingBookmarkItem.getId());
             callback.onResult(existingBookmarkItem.getId());
             return;
         }
 
-        BookmarkUtils.addOrEditBookmark(existingBookmarkItem, bookmarkModel, tab, snackbarManager,
-                bottomSheetController, activity, fromCustomTab, bookmarkType, callback,
-                fromExplicitTrackUi);
+        BookmarkUtils.addOrEditBookmark(
+                existingBookmarkItem,
+                bookmarkModel,
+                tab,
+                bottomSheetController,
+                activity,
+                bookmarkType,
+                callback,
+                fromExplicitTrackUi,
+                bookmarkManagerOpener,
+                priceDropNotificationManager);
     }
 
-    public static void showBookmarkManagerOnPhone(
-            Activity activity, String url, boolean isIncognito) {
-        Intent intent =
-                new Intent(activity == null ? ContextUtils.getApplicationContext() : activity,
-                        BraveBookmarkActivity.class);
-        intent.putExtra(IntentHandler.EXTRA_INCOGNITO_MODE, isIncognito);
-        intent.setData(Uri.parse(url));
-        if (activity != null) {
-            // Start from an existing activity.
-            intent.putExtra(IntentHandler.EXTRA_PARENT_COMPONENT, activity.getComponentName());
-            activity.startActivity(intent);
-        } else {
-            // Start a new task.
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            IntentHandler.startActivityForTrustedIntent(intent);
-        }
-    }
-
-    public static void showBookmarkImportExportDialog(AppCompatActivity appCompatActivity,
-            boolean isImport, boolean isSuccess, String exportFilePath) {
+    public static void showBookmarkImportExportDialog(
+            AppCompatActivity appCompatActivity,
+            boolean isImport,
+            boolean isSuccess,
+            String exportFilePath) {
         try {
             BraveBookmarkImportExportDialogFragment dialogFragment =
                     BraveBookmarkImportExportDialogFragment.newInstance(

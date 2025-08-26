@@ -5,22 +5,45 @@
 
 package org.chromium.chrome.browser.bookmarks;
 
-import android.content.ComponentName;
 import android.content.Context;
+import android.view.View;
 
+import androidx.annotation.Nullable;
+
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.chrome.browser.price_tracking.PriceDropNotificationManager;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.messages.snackbar.SnackbarManager;
+import org.chromium.components.browser_ui.edge_to_edge.EdgeToEdgePadAdjuster;
 import org.chromium.ui.base.ActivityWindowAndroid;
 
+import java.util.function.Function;
+
+@NullMarked
 public class BraveBookmarkManagerCoordinator extends BookmarkManagerCoordinator {
     // Overridden Chromium's BookmarkManagerCoordinator.mMediator
-    private BookmarkManagerMediator mMediator;
+    private @Nullable BookmarkManagerMediator mMediator;
 
-    public BraveBookmarkManagerCoordinator(Context context, ComponentName openBookmarkComponentName,
-            boolean isDialogUi, boolean isIncognito, SnackbarManager snackbarManager,
-            Profile profile, BookmarkUiPrefs bookmarkUiPrefs) {
-        super(context, openBookmarkComponentName, isDialogUi, isIncognito, snackbarManager, profile,
-                bookmarkUiPrefs);
+    public BraveBookmarkManagerCoordinator(
+            Context context,
+            boolean isDialogUi,
+            SnackbarManager snackbarManager,
+            Profile profile,
+            BookmarkUiPrefs bookmarkUiPrefs,
+            BookmarkOpener bookmarkOpener,
+            BookmarkManagerOpener bookmarkManagerOpener,
+            PriceDropNotificationManager priceDropNotificationManager,
+            @Nullable Function<View, EdgeToEdgePadAdjuster> edgeToEdgePadAdjusterGenerator) {
+        super(
+                context,
+                isDialogUi,
+                snackbarManager,
+                profile,
+                bookmarkUiPrefs,
+                bookmarkOpener,
+                bookmarkManagerOpener,
+                priceDropNotificationManager,
+                edgeToEdgePadAdjusterGenerator);
     }
 
     public void setWindow(ActivityWindowAndroid window) {

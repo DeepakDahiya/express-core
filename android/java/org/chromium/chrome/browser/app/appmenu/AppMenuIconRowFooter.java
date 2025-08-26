@@ -34,7 +34,8 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
     private ImageButton mForwardButton;
     private ImageButton mBookmarkButton;
     private ImageButton mDownloadButton;
-    private ImageButton mPageInfoButton;
+    private ImageButton mShareButton;
+    private ImageButton mHomeButton;
     private ImageButton mReloadButton;
 
     public AppMenuIconRowFooter(Context context, AttributeSet attrs) {
@@ -54,8 +55,11 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
         mDownloadButton = findViewById(R.id.offline_page_id);
         mDownloadButton.setOnClickListener(this);
 
-        mPageInfoButton = findViewById(R.id.info_menu_id);
-        mPageInfoButton.setOnClickListener(this);
+        mShareButton = findViewById(R.id.share_menu_id);
+        mShareButton.setOnClickListener(this);
+
+        mHomeButton = findViewById(R.id.home_menu_id);
+        mHomeButton.setOnClickListener(this);
 
         mReloadButton = findViewById(R.id.reload_menu_id);
         mReloadButton.setOnClickListener(this);
@@ -121,7 +125,7 @@ public class AppMenuIconRowFooter extends LinearLayout implements View.OnClickLi
                     AppCompatResources.getColorStateList(
                             getContext(), R.color.default_icon_color_accent1_tint_list));
         } else {
-            mBookmarkButton.setImageResource(R.drawable.btn_star);
+            mBookmarkButton.setImageResource(R.drawable.star_outline_24dp);
             mBookmarkButton.setContentDescription(
                     getContext().getString(R.string.accessibility_menu_bookmark));
         }

@@ -17,7 +17,7 @@ import org.chromium.base.BundleUtils;
  * present in the base module, while the Impl can be in the chrome module.
  */
 public class SplitCompatJobIntentService extends JobIntentService {
-    private String mServiceClassName;
+    private final String mServiceClassName;
     private String mSplitName;
     private Impl mImpl;
 
@@ -33,12 +33,11 @@ public class SplitCompatJobIntentService extends JobIntentService {
     @Override
     protected void attachBaseContext(Context context) {
         // Make sure specified split is installed, otherwise fall back to chrome split.
+        String splitName = SplitCompatApplication.CHROME_SPLIT_NAME;
         if (mSplitName != null && BundleUtils.isIsolatedSplitInstalled(mSplitName)) {
-            context = BundleUtils.createIsolatedSplitContext(context, mSplitName);
-        } else {
-            context = SplitCompatApplication.createChromeContext(context);
+            splitName = mSplitName;
         }
-        mImpl = (Impl) BundleUtils.newInstance(context, mServiceClassName);
+        mImpl = (Impl) BundleUtils.newInstance(mServiceClassName, splitName);
         mImpl.setService(this);
         super.attachBaseContext(context);
     }

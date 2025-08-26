@@ -8,7 +8,14 @@ package org.chromium.chrome.browser.brave_news;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
 
+import org.chromium.base.Promise;
+import org.chromium.base.task.PostTask;
+import org.chromium.base.task.TaskRunner;
+import org.chromium.base.task.TaskTraits;
 import org.chromium.brave_news.mojom.BraveNewsController;
+import org.chromium.build.annotations.NullMarked;
+import org.chromium.build.annotations.Nullable;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.bindings.Interface;
 import org.chromium.mojo.bindings.Interface.Proxy.Handler;
@@ -16,9 +23,11 @@ import org.chromium.mojo.system.MessagePipeHandle;
 import org.chromium.mojo.system.impl.CoreImpl;
 
 @JNINamespace("chrome::android")
+@NullMarked
 public class BraveNewsControllerFactory {
     private static final Object sLock = new Object();
-    private static BraveNewsControllerFactory sInstance;
+    private static @Nullable BraveNewsControllerFactory sInstance;
+    private final TaskRunner mTaskRunner;
 
     public static BraveNewsControllerFactory getInstance() {
         synchronized (sLock) {
@@ -29,18 +38,35 @@ public class BraveNewsControllerFactory {
         return sInstance;
     }
 
-    private BraveNewsControllerFactory() {}
+    private BraveNewsControllerFactory() {
+        mTaskRunner = PostTask.createSequencedTaskRunner(TaskTraits.UI_DEFAULT);
+    }
 
-    public BraveNewsController getBraveNewsController(
-            ConnectionErrorHandler connectionErrorHandler) {
-        long nativeHandle = BraveNewsControllerFactoryJni.get().getInterfaceToBraveNewsController();
-        MessagePipeHandle handle = wrapNativeHandle(nativeHandle);
-        BraveNewsController braveNewsController =
-                BraveNewsController.MANAGER.attachProxy(handle, 0);
-        Handler handler = ((Interface.Proxy) braveNewsController).getProxyHandler();
-        handler.setErrorHandler(connectionErrorHandler);
+    public Promise<@Nullable BraveNewsController> getForProfile(
+            Profile profile, @Nullable ConnectionErrorHandler connectionErrorHandler) {
+        final Promise<@Nullable BraveNewsController> promise = new Promise<>();
 
-        return braveNewsController;
+        mTaskRunner.execute(
+                () -> {
+                    long nativeHandle =
+                            BraveNewsControllerFactoryJni.get()
+                                    .getInterfaceToBraveNewsController(profile);
+                    MessagePipeHandle handle = wrapNativeHandle(nativeHandle);
+                    if (!handle.isValid()) {
+                        promise.fulfill(null);
+                        return;
+                    }
+                    BraveNewsController braveNewsController =
+                            BraveNewsController.MANAGER.attachProxy(handle, 0);
+                    if (connectionErrorHandler != null) {
+                        Handler handler = ((Interface.Proxy) braveNewsController).getProxyHandler();
+                        handler.setErrorHandler(connectionErrorHandler);
+                    }
+
+                    promise.fulfill(braveNewsController);
+                });
+
+        return promise;
     }
 
     private MessagePipeHandle wrapNativeHandle(long nativeHandle) {
@@ -49,6 +75,6 @@ public class BraveNewsControllerFactory {
 
     @NativeMethods
     interface Natives {
-        long getInterfaceToBraveNewsController();
+        long getInterfaceToBraveNewsController(Profile profile);
     }
 }

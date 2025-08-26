@@ -38,6 +38,7 @@ import org.xmlpull.v1.XmlPullParserException;
 import org.xmlpull.v1.XmlPullParserFactory;
 import org.xmlpull.v1.XmlSerializer;
 
+import org.chromium.base.Callbacks;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.content.WebContentsFactory;
@@ -46,12 +47,13 @@ import org.chromium.chrome.browser.crypto_wallet.util.WalletConstants;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ui.favicon.FaviconHelper;
 import org.chromium.chrome.browser.util.ConfigurationUtils;
+import org.chromium.components.image_fetcher.ImageDataFetchResult;
 import org.chromium.components.image_fetcher.ImageFetcher;
 import org.chromium.components.image_fetcher.ImageFetcher.Params;
 import org.chromium.components.image_fetcher.ImageFetcherConfig;
 import org.chromium.components.image_fetcher.ImageFetcherFactory;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.mojo.bindings.Callbacks;
+import org.chromium.net.NetId;
 import org.chromium.url.GURL;
 
 import java.io.IOException;
@@ -60,16 +62,13 @@ import java.io.StringWriter;
 import java.lang.ref.WeakReference;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
-import java.util.Arrays;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class ImageLoader {
     private static final String TAG = "ImageLoader";
-    private static final List<String> ANIMATED_LIST = Arrays.asList(".gif");
     private static final String UNUSED_CLIENT_NAME = "unused";
     private static final String BASE64_ENCODING_PATTERN =
             "^([A-Za-z0-9+/]{4})*([A-Za-z0-9+/]{4}|[A-Za-z0-9+/]{3}=|[A-Za-z0-9+/]{2}==)$";
@@ -120,10 +119,14 @@ public class ImageLoader {
                 validUrl = url;
             }
 
-            WebContentsFactory webContentsFactory = new WebContentsFactory();
             WebContents webContents =
-                    webContentsFactory.createWebContentsWithWarmRenderer(profile, true);
-            webContents.downloadImage(new GURL(validUrl), // Url
+                    WebContentsFactory.createWebContentsWithWarmRenderer(
+                            profile,
+                            /* initiallyHidden= */ false,
+                            /* usesPlatformAutofill= */ true,
+                            /* targetNetwork= */ NetId.INVALID);
+            webContents.downloadImage(
+                    new GURL(validUrl), // Url
                     false, // isFavIcon
                     WalletConstants.MAX_BITMAP_SIZE_FOR_DOWNLOAD, // maxBitmapSize
                     false, // bypassCache
@@ -149,28 +152,49 @@ public class ImageLoader {
                                     new BitmapDrawable(resources, bestBitmap);
                             imageFetcherFacade = new ImageFetcherFacade(bitmapDrawable);
                         }
-                        loadImage(imageFetcherFacade, requestManager, isCircular, roundedCorners,
-                                imageView, customTarget, callback);
+                        loadImage(
+                                imageFetcherFacade,
+                                requestManager,
+                                isCircular,
+                                roundedCorners,
+                                imageView,
+                                customTarget,
+                                callback);
                     });
         } else {
-            ImageFetcher imageFetcher = ImageFetcherFactory.createImageFetcher(
-                    ImageFetcherConfig.NETWORK_ONLY, profile.getProfileKey());
+            ImageFetcher imageFetcher =
+                    ImageFetcherFactory.createImageFetcher(
+                            ImageFetcherConfig.NETWORK_ONLY, profile.getProfileKey());
             if (isGif(url)) {
                 imageFetcher.fetchGif(
-                        Params.create(new GURL(url), UNUSED_CLIENT_NAME), gifImage -> {
+                        Params.create(new GURL(url), UNUSED_CLIENT_NAME),
+                        (ImageDataFetchResult gifImage) -> {
                             ImageFetcherFacade imageFetcherFacade =
-                                    new ImageFetcherFacade(gifImage.getData());
-                            loadImage(imageFetcherFacade, requestManager, isCircular,
-                                    roundedCorners, imageView, customTarget, callback);
+                                    new ImageFetcherFacade(gifImage.imageData);
+                            loadImage(
+                                    imageFetcherFacade,
+                                    requestManager,
+                                    isCircular,
+                                    roundedCorners,
+                                    imageView,
+                                    customTarget,
+                                    callback);
                         });
             } else {
                 imageFetcher.fetchImage(
-                        Params.create(new GURL(url), UNUSED_CLIENT_NAME), bitmap -> {
+                        Params.create(new GURL(url), UNUSED_CLIENT_NAME),
+                        bitmap -> {
                             BitmapDrawable bitmapDrawable = new BitmapDrawable(resources, bitmap);
                             ImageFetcherFacade imageFetcherFacade =
                                     new ImageFetcherFacade(bitmapDrawable);
-                            loadImage(imageFetcherFacade, requestManager, isCircular,
-                                    roundedCorners, imageView, customTarget, callback);
+                            loadImage(
+                                    imageFetcherFacade,
+                                    requestManager,
+                                    isCircular,
+                                    roundedCorners,
+                                    imageView,
+                                    customTarget,
+                                    callback);
                         });
             }
         }
@@ -317,36 +341,50 @@ public class ImageLoader {
         }
     }
 
-    private static void loadImage(ImageFetcherFacade imageFetcherFacade,
-            RequestManager requestManager, boolean isCircular, final int roundedCorners,
-            ImageView imageView, CustomTarget<Drawable> customTarget, Callback callback) {
+    private static void loadImage(
+            ImageFetcherFacade imageFetcherFacade,
+            RequestManager requestManager,
+            boolean isCircular,
+            final int roundedCorners,
+            ImageView imageView,
+            CustomTarget<Drawable> customTarget,
+            Callback callback) {
         if (imageFetcherFacade == null
-                || (imageFetcherFacade.data == null && imageFetcherFacade.drawable == null)) {
+                || (imageFetcherFacade.mData == null && imageFetcherFacade.mDrawable == null)) {
             if (callback != null) callback.onLoadFailed();
             return;
         }
         RequestBuilder<Drawable> request =
                 requestManager
-                        .load(imageFetcherFacade.data != null ? imageFetcherFacade.data
-                                                              : imageFetcherFacade.drawable)
+                        .load(
+                                imageFetcherFacade.mData != null
+                                        ? imageFetcherFacade.mData
+                                        : imageFetcherFacade.mDrawable)
                         .transform(getTransformations(isCircular, roundedCorners))
                         .diskCacheStrategy(DiskCacheStrategy.NONE)
                         .priority(Priority.IMMEDIATE)
-                        .listener(new RequestListener<Drawable>() {
-                            @Override
-                            public boolean onLoadFailed(GlideException glideException, Object model,
-                                    Target<Drawable> target, boolean isFirstResource) {
-                                return callback != null && callback.onLoadFailed();
-                            }
+                        .listener(
+                                new RequestListener<Drawable>() {
+                                    @Override
+                                    public boolean onLoadFailed(
+                                            GlideException glideException,
+                                            Object model,
+                                            Target<Drawable> target,
+                                            boolean isFirstResource) {
+                                        return callback != null && callback.onLoadFailed();
+                                    }
 
-                            @Override
-                            public boolean onResourceReady(Drawable resource, Object model,
-                                    Target<Drawable> target, DataSource dataSource,
-                                    boolean isFirstResource) {
-                                return callback != null
-                                        && callback.onResourceReady(resource, target);
-                            }
-                        });
+                                    @Override
+                                    public boolean onResourceReady(
+                                            Drawable resource,
+                                            Object model,
+                                            Target<Drawable> target,
+                                            DataSource dataSource,
+                                            boolean isFirstResource) {
+                                        return callback != null
+                                                && callback.onResourceReady(resource, target);
+                                    }
+                                });
 
         if (imageView != null) {
             request.into(imageView);
@@ -500,16 +538,17 @@ public class ImageLoader {
     }
 
     private static class ImageFetcherFacade {
-        final byte[] data;
-        final Drawable drawable;
+        final byte[] mData;
+        final Drawable mDrawable;
+
         public ImageFetcherFacade(byte[] data) {
-            this.data = data;
-            this.drawable = null;
+            mData = data;
+            mDrawable = null;
         }
 
         ImageFetcherFacade(Drawable drawable) {
-            this.drawable = drawable;
-            this.data = null;
+            mDrawable = drawable;
+            mData = null;
         }
     }
 }

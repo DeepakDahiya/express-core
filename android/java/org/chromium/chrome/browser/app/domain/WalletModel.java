@@ -7,6 +7,8 @@ package org.chromium.chrome.browser.app.domain;
 
 import android.content.Context;
 
+import androidx.annotation.NonNull;
+
 import org.chromium.brave_wallet.mojom.AssetRatioService;
 import org.chromium.brave_wallet.mojom.BlockchainRegistry;
 import org.chromium.brave_wallet.mojom.BraveWalletService;
@@ -31,17 +33,22 @@ public class WalletModel {
     private AssetRatioService mAssetRatioService;
     private SwapService mSwapService;
     private final CryptoModel mCryptoModel;
-    private final DappsModel mDappsModel;
+    @NonNull private final DappsModel mDappsModel;
     private final KeyringModel mKeyringModel;
-    private final MarketModel mMarketModel;
     private Context mContext;
-    private CryptoActions mCryptoActions;
+    private final CryptoActions mCryptoActions;
 
-    public WalletModel(Context context, KeyringService keyringService,
-            BlockchainRegistry blockchainRegistry, JsonRpcService jsonRpcService,
-            TxService txService, EthTxManagerProxy ethTxManagerProxy,
-            SolanaTxManagerProxy solanaTxManagerProxy, AssetRatioService assetRatioService,
-            BraveWalletService braveWalletService, SwapService swapService) {
+    public WalletModel(
+            Context context,
+            KeyringService keyringService,
+            BlockchainRegistry blockchainRegistry,
+            JsonRpcService jsonRpcService,
+            TxService txService,
+            EthTxManagerProxy ethTxManagerProxy,
+            SolanaTxManagerProxy solanaTxManagerProxy,
+            AssetRatioService assetRatioService,
+            BraveWalletService braveWalletService,
+            SwapService swapService) {
         mContext = context;
         mKeyringService = keyringService;
         mBlockchainRegistry = blockchainRegistry;
@@ -54,14 +61,26 @@ public class WalletModel {
         mSwapService = swapService;
         // Do not change the object initialisation order without discussion
         mCryptoActions = new CryptoActions();
-        mCryptoModel = new CryptoModel(mContext, mTxService, mKeyringService, mBlockchainRegistry,
-                mJsonRpcService, mEthTxManagerProxy, mSolanaTxManagerProxy, mBraveWalletService,
-                mAssetRatioService, mCryptoActions, mSwapService);
-        mDappsModel = new DappsModel(mJsonRpcService, mBraveWalletService, mKeyringService,
-                mCryptoModel.getPendingTxHelper());
-        mKeyringModel =
-                new KeyringModel(mContext, mKeyringService, mBraveWalletService, mCryptoActions);
-        mMarketModel = new MarketModel(mAssetRatioService);
+        mCryptoModel =
+                new CryptoModel(
+                        mContext,
+                        mTxService,
+                        mKeyringService,
+                        mBlockchainRegistry,
+                        mJsonRpcService,
+                        mEthTxManagerProxy,
+                        mSolanaTxManagerProxy,
+                        mBraveWalletService,
+                        mAssetRatioService,
+                        mCryptoActions,
+                        mSwapService);
+        mDappsModel =
+                new DappsModel(
+                        mJsonRpcService,
+                        mBraveWalletService,
+                        mKeyringService,
+                        mCryptoModel.getPendingTxHelper());
+        mKeyringModel = new KeyringModel(mKeyringService, mBraveWalletService, mCryptoActions);
         // be careful with dependencies, must avoid cycles
         mCryptoModel.setAccountInfosFromKeyRingModel(mKeyringModel.mAccountInfos);
         init();
@@ -87,8 +106,7 @@ public class WalletModel {
                 mAssetRatioService);
         mDappsModel.resetServices(
                 mJsonRpcService, mBraveWalletService, mCryptoModel.getPendingTxHelper());
-        mKeyringModel.resetService(mContext, mKeyringService, braveWalletService);
-        mMarketModel.resetService(mAssetRatioService);
+        mKeyringModel.resetService(mKeyringService, braveWalletService);
         init();
     }
 
@@ -130,12 +148,9 @@ public class WalletModel {
         return mCryptoModel.getNetworkModel();
     }
 
+    @NonNull
     public DappsModel getDappsModel() {
         return mDappsModel;
-    }
-
-    public MarketModel getMarketModel() {
-        return mMarketModel;
     }
 
     public KeyringService getKeyringService() {
