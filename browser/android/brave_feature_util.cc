@@ -6,12 +6,14 @@
 #include <string>
 
 #include "base/android/jni_string.h"
+#include "base/check.h"
 #include "base/feature_list.h"
-#include "brave/build/android/jni_headers/BraveFeatureUtil_jni.h"
+#include "base/strings/string_number_conversions.h"
+#include "chrome/android/chrome_jni_headers/BraveFeatureUtil_jni.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/browser_process.h"
-#include "components/flags_ui/feature_entry.h"
-#include "components/flags_ui/pref_service_flags_storage.h"
+#include "components/webui/flags/feature_entry.h"
+#include "components/webui/flags/pref_service_flags_storage.h"
 
 namespace chrome {
 namespace android {
@@ -36,11 +38,12 @@ static void JNI_BraveFeatureUtil_EnableFeature(
     const base::android::JavaParamRef<jstring>& featureName,
     jboolean enabled,
     jboolean fallback_to_default) {
-  std::string feature_name = ConvertJavaStringToUTF8(env, featureName);
+  std::string feature_name =
+      base::android::ConvertJavaStringToUTF8(env, featureName);
   std::string disabled_value =
       fallback_to_default
           ? "0"
-          : std::to_string(GetNumberOfOptions(feature_name) - 1);
+          : base::NumberToString(GetNumberOfOptions(feature_name) - 1);
   enabled ? feature_name += "@1" : feature_name += "@" + disabled_value;
   flags_ui::PrefServiceFlagsStorage flags_storage(
       g_browser_process->local_state());
