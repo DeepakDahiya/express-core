@@ -3,86 +3,113 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "base/feature_list.h"
+#include <optional>
+
 #include "brave/components/update_client/buildflags.h"
 #include "build/build_config.h"
-#include "chrome/browser/browser_features.h"
-#include "chrome/browser/companion/core/features.h"
 #include "chrome/browser/domain_reliability/service_factory.h"
-#include "chrome/browser/enterprise/connectors/analysis/content_analysis_features.h"
-#include "chrome/browser/preloading/preloading_features.h"
-#include "chrome/browser/promos/promos_features.h"
-#include "chrome/browser/signin/signin_features.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/companion/visual_query/features.h"
-#include "chrome/test/base/chrome_test_utils.h"
-#include "components/aggregation_service/features.h"
-#include "components/attribution_reporting/features.h"
-#include "components/autofill/core/common/autofill_features.h"
-#include "components/autofill/core/common/autofill_payments_features.h"
-#include "components/commerce/core/commerce_feature_list.h"
+#include "chrome/test/base/platform_browser_test.h"
 #include "components/component_updater/component_updater_switches.h"
-#include "components/content_settings/core/common/features.h"
 #include "components/embedder_support/switches.h"
-#include "components/history/core/browser/features.h"
-#include "components/history_clusters/core/features.h"
-#include "components/history_clusters/core/on_device_clustering_features.h"
-#include "components/language/core/common/language_experiments.h"
-#include "components/lens/lens_features.h"
-#include "components/metrics/structured/structured_metrics_features.h"
-#include "components/network_time/network_time_tracker.h"
-#include "components/omnibox/common/omnibox_features.h"
-#include "components/optimization_guide/core/optimization_guide_features.h"
-#include "components/page_image_service/features.h"
-#include "components/page_info/core/features.h"
-#include "components/password_manager/core/common/password_manager_features.h"
-#include "components/performance_manager/public/features.h"
-#include "components/permissions/features.h"
-#include "components/privacy_sandbox/privacy_sandbox_features.h"
-#include "components/reading_list/features/reading_list_switches.h"
-#include "components/safe_browsing/core/common/features.h"
-#include "components/search/ntp_features.h"
-#include "components/segmentation_platform/public/features.h"
-#include "components/send_tab_to_self/features.h"
-#include "components/shared_highlighting/core/common/shared_highlighting_features.h"
-#include "components/signin/public/base/signin_buildflags.h"
-#include "components/subresource_filter/core/common/common_features.h"
-#include "content/common/features.h"
-#include "content/public/common/content_features.h"
-#include "content/public/common/dips_utils.h"
+#include "components/sync/base/command_line_switches.h"
 #include "content/public/test/browser_test.h"
-#include "gpu/config/gpu_finch_features.h"
-#include "media/base/media_switches.h"
-#include "net/base/features.h"
-#include "services/device/public/cpp/device_features.h"
-#include "services/network/public/cpp/features.h"
-#include "third_party/blink/public/common/features.h"
-#include "ui/base/ui_base_features.h"
-
-#if BUILDFLAG(IS_ANDROID)
-#include "android_webview/common/aw_features.h"
-#include "chrome/test/base/android/android_browser_test.h"
-#else
-#include "chrome/browser/sharing_hub/sharing_hub_features.h"
-#include "chrome/browser/ui/profiles/profile_picker.h"
-#include "chrome/browser/ui/ui_features.h"
-#include "chrome/test/base/in_process_browser_test.h"
-#include "components/translate/core/common/translate_util.h"
-#include "extensions/common/extension_features.h"
-#include "ui/accessibility/accessibility_features.h"
-#endif
-
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-#include "chrome/browser/apps/link_capturing/link_capturing_features.h"
-#include "components/device_signals/core/common/signals_features.h"
-#endif
+#include "services/network/public/cpp/network_switches.h"
 
 using BraveMainDelegateBrowserTest = PlatformBrowserTest;
 
-const char kBraveOriginTrialsPublicKey[] =
+constexpr char kBraveOriginTrialsPublicKey[] =
     "bYUKPJoPnCxeNvu72j4EmPuK7tr1PAC7SHh8ld9Mw3E=,"
     "fMS4mpO6buLQ/QMd+zJmxzty/VQ6B1EUZqoCU04zoRU=";
+
+struct SyncUrlTestCase {
+  // Input parameters for SetUpCommandLine
+  std::optional<std::string> input_sync_url;
+  std::optional<std::string> input_unsafe_origin;
+
+  // Expected results after command line processing
+  bool expect_sync_url_switch;
+  std::optional<std::string> expected_sync_url_value;
+
+  // Test case name suffix
+  const char* test_name_suffix;
+};
+
+class BraveMainDelegateSyncUrlBrowserTest
+    : public PlatformBrowserTest,
+      public testing::WithParamInterface<SyncUrlTestCase> {
+ public:
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    PlatformBrowserTest::SetUpCommandLine(command_line);
+    const SyncUrlTestCase& test_case = GetParam();
+    if (test_case.input_sync_url) {
+      command_line->AppendSwitchASCII(syncer::kSyncServiceURL,
+                                      *test_case.input_sync_url);
+    }
+    if (test_case.input_unsafe_origin) {
+      command_line->AppendSwitchASCII(
+          network::switches::kUnsafelyTreatInsecureOriginAsSecure,
+          *test_case.input_unsafe_origin);
+    }
+  }
+};
+
+const SyncUrlTestCase kSyncUrlTestCases[] = {
+    // Test Case 1: HTTPS URL (secure)
+    // A secure HTTPS URL should be accepted and retained unchanged
+    {"https://some-sync-server.com/v2", std::nullopt, true,
+     "https://some-sync-server.com/v2", "Secure"},
+
+    // Test Case 2: No URL provided
+    // When no sync URL is provided, the switch should be removed entirely
+    {std::nullopt, std::nullopt, false, std::nullopt, "None"},
+
+    // Test Case 3: HTTP URL (insecure)
+    // An insecure HTTP URL should be rejected and the switch removed
+    // unless the origin is explicitly marked as safe
+    {"http://insecure-sync-server.com/v2", std::nullopt,
+     false,  // Should be removed
+     std::nullopt, "Insecure"},
+
+    // Test Case 4: Localhost HTTP URL
+    // Localhost is considered a potentially trustworthy origin,
+    // so HTTP is allowed for localhost URLs
+    {"http://localhost:8295/v2", std::nullopt,
+     true,  // Localhost is always allowed
+     "http://localhost:8295/v2", "Localhost"},
+
+    // Test Case 5: Insecure HTTP URL with origin explicitly marked as safe
+    // When an origin is explicitly marked as safe via the
+    // |--unsafely-treat-insecure-origin-as-secure| switch, HTTP is allowed
+    {"http://insecure-sync-server.com/v2", "http://insecure-sync-server.com",
+     true,  // Allowed via unsafe origin switch
+     "http://insecure-sync-server.com/v2", "InsecureButAllowed"}};
+
+IN_PROC_BROWSER_TEST_P(BraveMainDelegateSyncUrlBrowserTest, SyncUrlHandling) {
+  const SyncUrlTestCase& test_case = GetParam();
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+
+  EXPECT_EQ(test_case.expect_sync_url_switch,
+            command_line->HasSwitch(syncer::kSyncServiceURL));
+
+  if (test_case.expect_sync_url_switch) {
+    ASSERT_TRUE(test_case.expected_sync_url_value.has_value());
+    EXPECT_EQ(*test_case.expected_sync_url_value,
+              command_line->GetSwitchValueASCII(syncer::kSyncServiceURL));
+  } else {
+    // If the switch is not expected, the value should also not be expected.
+    ASSERT_FALSE(test_case.expected_sync_url_value.has_value());
+  }
+}
+
+INSTANTIATE_TEST_SUITE_P(
+    SyncUrlTests,
+    BraveMainDelegateSyncUrlBrowserTest,
+    testing::ValuesIn(kSyncUrlTestCases),
+    [](const testing::TestParamInfo<SyncUrlTestCase>& info) {
+      return info.param.test_name_suffix;
+    });
 
 IN_PROC_BROWSER_TEST_F(BraveMainDelegateBrowserTest,
                        DomainReliabilityServiceDisabled) {
@@ -106,244 +133,4 @@ IN_PROC_BROWSER_TEST_F(BraveMainDelegateBrowserTest, OriginTrialsTest) {
   EXPECT_EQ(kBraveOriginTrialsPublicKey,
             base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
                 embedder_support::kOriginTrialPublicKey));
-}
-
-IN_PROC_BROWSER_TEST_F(BraveMainDelegateBrowserTest, DisabledFeatures) {
-  // Please, keep alphabetized
-  const base::Feature* disabled_features[] = {
-      &aggregation_service::kAggregationServiceMultipleCloudProviders,
-#if BUILDFLAG(IS_ANDROID)
-      &android_webview::features::kWebViewAppsPackageNamesServerSideAllowlist,
-      &android_webview::features::kWebViewEnumerateDevicesCache,
-      &android_webview::features::kWebViewServerSideSampling,
-      &android_webview::features::kWebViewMeasureScreenCoverage,
-#endif
-      &attribution_reporting::features::kAttributionReportingTriggerConfig,
-      &attribution_reporting::features::kAttributionReportingTriggerContextId,
-      &attribution_reporting::features::kConversionMeasurement,
-      &autofill::features::kAutofillEnableRemadeDownstreamMetrics,
-      &autofill::features::test::kAutofillServerCommunication,
-#if BUILDFLAG(IS_ANDROID)
-      &base::features::kCollectAndroidFrameTimelineMetrics,
-#endif
-      &blink::features::kAdAuctionReportingWithMacroApi,
-      &blink::features::kAdInterestGroupAPI,
-      &blink::features::kAllowURNsInIframes,
-      &blink::features::kAttributionReportingInBrowserMigration,
-      &blink::features::kBackgroundResourceFetch,
-      &blink::features::kBiddingAndScoringDebugReportingAPI,
-      &blink::features::kBrowsingTopics,
-      &blink::features::kClientHintsFormFactor,
-      &blink::features::kClientHintsMetaEquivDelegateCH,
-      &blink::features::kComputePressure,
-      &blink::features::kCssSelectorFragmentAnchor,
-      &blink::features::kEventTimingReportAllEarlyEntriesOnPaintedPresentation,
-      &blink::features::kFencedFrames,
-      &blink::features::kFledge,
-      &blink::features::kFledgeBiddingAndAuctionServer,
-      &blink::features::kFledgeConsiderKAnonymity,
-      &blink::features::kFledgeEnforceKAnonymity,
-      &blink::features::kInterestGroupStorage,
-      &blink::features::kParakeet,
-      &blink::features::kPrerender2,
-      &blink::features::kPrivacySandboxAdsAPIs,
-      &blink::features::kPrivateAggregationApi,
-      &blink::features::kPrivateAggregationApiMultipleCloudProviders,
-      &blink::features::kSharedStorageAPI,
-      &blink::features::kSharedStorageAPIM118,
-      &blink::features::kSharedStorageSelectURLLimit,
-      &blink::features::kSpeculationRulesHeaderEnableThirdPartyOriginTrial,
-      &blink::features::kSpeculationRulesPrefetchFuture,
-      &blink::features::kTextFragmentAnchor,
-      &commerce::kCommerceAllowOnDemandBookmarkUpdates,
-      &commerce::kCommerceDeveloper,
-      &commerce::kCommerceMerchantViewer,
-      &commerce::kCommercePriceTracking,
-      &commerce::kShoppingList,
-      &commerce::kShoppingPDPMetrics,
-      &commerce::kRetailCoupons,
-      &companion::features::internal::
-          kCompanionEnabledByObservingExpsNavigations,
-      &companion::features::internal::kSidePanelCompanion,
-      &companion::features::internal::kSidePanelCompanion2,
-      &companion::visual_query::features::kVisualQuerySuggestions,
-      &content_settings::features::kTrackingProtection3pcd,
-      &content_settings::features::kUserBypassUI,
-      &enterprise_connectors::kLocalContentAnalysisEnabled,
-#if BUILDFLAG(IS_LINUX) || BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC)
-      &enterprise_signals::features::kDeviceSignalsConsentDialog,
-#endif
-#if !BUILDFLAG(IS_ANDROID)
-      &extensions_features::kExtensionsManifestV3Only,
-#endif
-#if BUILDFLAG(IS_WIN)
-      &features::kAppBoundEncryptionMetrics,
-#endif
-      &features::kAttributionFencedFrameReportingBeacon,
-      &features::kBookmarkTriggerForPrerender2,
-      &features::kChromeLabs,
-      &features::kChromeRefresh2023,
-      &features::kCookieDeprecationFacilitatedTesting,
-#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
-      &features::kDesktopPWAsLinkCapturing,
-#endif
-      &features::kDigitalGoodsApi,
-      &features::kDIPS,
-      &features::kFedCm,
-      &features::kFedCmWithoutThirdPartyCookies,
-      &features::kFirstPartySets,
-#if !BUILDFLAG(IS_ANDROID)
-      &features::kHaTSWebUI,
-#endif
-      &features::kIdleDetection,
-      &features::kKAnonymityService,
-      &features::kKAnonymityServiceOHTTPRequests,
-      &features::kLegacyTechReportEnableCookieIssueReports,
-      &features::kLegacyTechReportTopLevelUrl,
-      &features::kNotificationTriggers,
-      &features::kOmniboxTriggerForNoStatePrefetch,
-      &features::kOmniboxTriggerForPrerender2,
-      &features::kPerformanceSettingsPreloadingSubpage,
-      &features::kPrivacyGuide3,
-#if BUILDFLAG(IS_ANDROID)
-      &features::kPrivacyGuideAndroidPostMVP,
-#endif
-      &features::kPrivacyGuidePreload,
-#if BUILDFLAG(IS_ANDROID)
-      &features::kPrivacyGuidePreloadAndroid,
-#endif
-      &features::kPrivacySandboxAdsAPIsOverride,
-#if !BUILDFLAG(IS_ANDROID)
-      &features::kReadAnything,
-#endif
-      &features::kResourceTimingForCancelledNavigationInFrame,
-      &features::kSCTAuditing,
-      &features::kServiceWorkerAutoPreload,
-      &features::kSignedExchangeReportingForDistributors,
-      &features::kSignedHTTPExchange,
-      &features::kSupportSearchSuggestionForPrerender2,
-      &features::kTabHoverCardImages,
-#if !BUILDFLAG(IS_ANDROID)
-      &features::kTrustSafetySentimentSurvey,
-      &features::kTrustSafetySentimentSurveyV2,
-#endif
-#if BUILDFLAG(IS_MAC)
-      &features::kUseChromiumUpdater,
-#endif
-      &features::kWebOTP,
-      &history::kOrganicRepeatableQueries,
-      &history::kSyncSegmentsData,
-      &history_clusters::kRenameJourneys,
-      &history_clusters::kSidePanelJourneys,
-      &history_clusters::features::kOnDeviceClustering,
-      &history_clusters::features::kOnDeviceClusteringKeywordFiltering,
-      &history_clusters::internal::kHistoryClustersInternalsPage,
-      &history_clusters::internal::kHistoryClustersNavigationContextClustering,
-      &history_clusters::internal::kJourneys,
-      &history_clusters::internal::kJourneysImages,
-      &history_clusters::internal::kJourneysNamedNewTabGroups,
-      &history_clusters::internal::kJourneysPersistCachesToPrefs,
-      &history_clusters::internal::kJourneysZeroStateFiltering,
-      &history_clusters::internal::kOmniboxAction,
-      &history_clusters::internal::kOmniboxHistoryClusterProvider,
-      &history_clusters::internal::kPersistedClusters,
-      &history_clusters::internal::kPersistContextAnnotationsInHistoryDb,
-#if !BUILDFLAG(IS_ANDROID)
-      &kForYouFre,
-#endif
-#if BUILDFLAG(ENABLE_MIRROR)
-      &kVerifyRequestInitiatorForMirrorHeaders,
-#endif
-      &lens::features::kEnableLensPing,
-      &lens::features::kLensStandalone,
-      &media::kLiveCaption,
-      &metrics::structured::kEnabledStructuredMetricsService,
-      &metrics::structured::kNearbyShareMetrics,
-      &metrics::structured::kPhoneHubStructuredMetrics,
-      &net::features::kEnableWebTransportDraft07,
-      &net::features::kPartitionedCookies,
-      &net::features::kThirdPartyPartitionedStorageAllowedByDefault,
-      &net::features::kThirdPartyStoragePartitioning,
-      &net::features::kTpcdMetadataGrants,
-      &net::features::kWaitForFirstPartySetsInit,
-      &network::features::kFledgePst,
-      &network::features::kPrivateStateTokens,
-      &network_time::kNetworkTimeServiceQuerying,
-      &ntp_features::kCustomizeChromeSidePanelExtensionsCard,
-      &ntp_features::kCustomizeChromeWallpaperSearch,
-      &ntp_features::kNtpAlphaBackgroundCollections,
-      &ntp_features::kNtpBackgroundImageErrorDetection,
-      &ntp_features::kNtpChromeCartModule,
-      &ntp_features::kNtpHistoryClustersModule,
-      &ntp_features::kNtpHistoryClustersModuleDiscounts,
-      &ntp_features::kNtpHistoryClustersModuleLoad,
-      &omnibox::kDocumentProviderNoSetting,
-      &omnibox::kDocumentProviderNoSyncRequirement,
-      &omnibox::kExpandedStateHeight,
-      &omnibox::kExpandedStateShape,
-      &omnibox::kOmniboxSteadyStateHeight,
-      &omnibox::kRichAutocompletion,
-      &optimization_guide::features::kOptimizationGuideFetchingForSRP,
-      &optimization_guide::features::kOptimizationHints,
-      &optimization_guide::features::kRemoteOptimizationGuideFetching,
-      &optimization_guide::features::
-          kRemoteOptimizationGuideFetchingAnonymousDataConsent,
-      &optimization_guide::features::kTextEmbeddingPageContentAnnotations,
-      &page_image_service::kImageService,
-      &page_image_service::kImageServiceSuggestPoweredImages,
-#if !BUILDFLAG(IS_ANDROID)
-      &permissions::features::kPermissionsPromptSurvey,
-#endif
-      &permissions::features::kPermissionOnDeviceNotificationPredictions,
-      &permissions::features::kPermissionStorageAccessAPI,
-      &permissions::features::kShowRelatedWebsiteSetsPermissionGrants,
-      &privacy_sandbox::kEnforcePrivacySandboxAttestations,
-      &privacy_sandbox::kOverridePrivacySandboxSettingsLocalTesting,
-      &privacy_sandbox::kPrivacySandboxFirstPartySetsUI,
-      &privacy_sandbox::kPrivacySandboxProactiveTopicsBlocking,
-      &privacy_sandbox::kPrivacySandboxSettings4,
-      &promos_features::kIOSPromoPasswordBubble,
-      &safe_browsing::kExtensionTelemetryDisableOffstoreExtensions,
-      &safe_browsing::kExtensionTelemetryTabsApiSignal,
-      &segmentation_platform::features::kSegmentationPlatformCollectTabRankData,
-      &segmentation_platform::features::kSegmentationPlatformDeviceTier,
-      &segmentation_platform::features::kSegmentationPlatformFeature,
-      &segmentation_platform::features::kSegmentationPlatformTimeDelaySampling,
-      &shared_highlighting::kIOSSharedHighlightingV2,
-      &shared_highlighting::kSharedHighlightingManager,
-      &subresource_filter::kAdTagging,
-#if !BUILDFLAG(IS_ANDROID)
-      &translate::kTFLiteLanguageDetectionEnabled,
-#endif
-  };
-
-  for (const auto* feature : disabled_features)
-    EXPECT_FALSE(base::FeatureList::IsEnabled(*feature)) << feature->name;
-}
-
-IN_PROC_BROWSER_TEST_F(BraveMainDelegateBrowserTest, EnabledFeatures) {
-  const base::Feature* enabled_features[] = {
-    &autofill::features::kAutofillDisableShadowHeuristics,
-    &blink::features::kPrefetchPrivacyChanges,
-    &blink::features::kReducedReferrerGranularity,
-    &blink::features::kReduceUserAgentMinorVersion,
-    &blink::features::kUACHOverrideBlank,
-    &features::kCertificateTransparencyAskBeforeEnabling,
-#if BUILDFLAG(IS_WIN)
-    &features::kWinrtGeolocationImplementation,
-#endif
-#if !BUILDFLAG(IS_ANDROID)
-    &sharing_hub::kDesktopScreenshots,
-#endif
-    &media::kEnableTabMuting,
-    &net::features::kPartitionConnectionsByNetworkIsolationKey,
-    &net::features::kPartitionHttpServerPropertiesByNetworkIsolationKey,
-    &net::features::kPartitionSSLSessionsByNetworkIsolationKey,
-    &net::features::kSplitHostCacheByNetworkIsolationKey,
-  };
-
-  for (const auto* feature : enabled_features)
-    EXPECT_TRUE(base::FeatureList::IsEnabled(*feature)) << feature->name;
-
-  EXPECT_TRUE(features::kDnsOverHttpsShowUiParam.default_value);
 }

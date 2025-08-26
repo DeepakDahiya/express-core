@@ -1,10 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <grit base_dir="." latest_public_release="0" current_release="1"
-      output_all_resource_defines="false" source_lang_id="en" enc_check="möl">
+      source_lang_id="en" enc_check="möl">
   <outputs>
     <output filename="grit/brave_generated_resources.h" type="rc_header">
       <emit emit_type='prepend'></emit>
     </output>
+    <output filename="grit/brave_generated_resources_webui_strings.h" type="webui_header" />
+    <output filename="grit/brave_generated_resources_webui_strings.ts" type="webui_ts" />
     <output filename="brave_generated_resources.pak" type="data_package" />
     <output filename="brave_generated_resources_af.pak" type="data_package" lang="af" />
     <output filename="brave_generated_resources_am.pak" type="data_package" lang="am" />
@@ -103,6 +105,7 @@
   <translations>
     <file path="resources/brave_generated_resources_am.xtb" lang="am" />
     <file path="resources/brave_generated_resources_ar.xtb" lang="ar" />
+    <file path="resources/brave_generated_resources_az.xtb" lang="az" />
     <file path="resources/brave_generated_resources_bg.xtb" lang="bg" />
     <file path="resources/brave_generated_resources_bn.xtb" lang="bn" />
     <file path="resources/brave_generated_resources_ca.xtb" lang="ca" />
@@ -129,13 +132,18 @@
     <!-- The translation console uses 'iw' for Hebrew, but we use 'he'. -->
     <file path="resources/brave_generated_resources_iw.xtb" lang="he" />
     <file path="resources/brave_generated_resources_ja.xtb" lang="ja" />
+    <file path="resources/brave_generated_resources_ka.xtb" lang="ka" />
+    <file path="resources/brave_generated_resources_km.xtb" lang="km" />
     <file path="resources/brave_generated_resources_kn.xtb" lang="kn" />
     <file path="resources/brave_generated_resources_ko.xtb" lang="ko" />
     <file path="resources/brave_generated_resources_lt.xtb" lang="lt" />
     <file path="resources/brave_generated_resources_lv.xtb" lang="lv" />
+    <file path="resources/brave_generated_resources_mk.xtb" lang="mk" />
     <file path="resources/brave_generated_resources_ml.xtb" lang="ml" />
+    <file path="resources/brave_generated_resources_mn.xtb" lang="mn" />
     <file path="resources/brave_generated_resources_mr.xtb" lang="mr" />
     <file path="resources/brave_generated_resources_ms.xtb" lang="ms" />
+    <file path="resources/brave_generated_resources_my.xtb" lang="my" />
     <file path="resources/brave_generated_resources_nl.xtb" lang="nl" />
     <file path="resources/brave_generated_resources_no.xtb" lang="no" />
     <file path="resources/brave_generated_resources_pl.xtb" lang="pl" />
@@ -143,9 +151,12 @@
     <file path="resources/brave_generated_resources_pt-PT.xtb" lang="pt-PT" />
     <file path="resources/brave_generated_resources_ro.xtb" lang="ro" />
     <file path="resources/brave_generated_resources_ru.xtb" lang="ru" />
+    <file path="resources/brave_generated_resources_si.xtb" lang="si" />
     <file path="resources/brave_generated_resources_sk.xtb" lang="sk" />
     <file path="resources/brave_generated_resources_sl.xtb" lang="sl" />
+    <file path="resources/brave_generated_resources_sq.xtb" lang="sq" />
     <file path="resources/brave_generated_resources_sr.xtb" lang="sr" />
+    <file path="resources/brave_generated_resources_sr-Latn.xtb" lang="sr-Latn" />
     <file path="resources/brave_generated_resources_sv.xtb" lang="sv" />
     <file path="resources/brave_generated_resources_sw.xtb" lang="sw" />
     <file path="resources/brave_generated_resources_ta.xtb" lang="ta" />
@@ -153,6 +164,7 @@
     <file path="resources/brave_generated_resources_th.xtb" lang="th" />
     <file path="resources/brave_generated_resources_tr.xtb" lang="tr" />
     <file path="resources/brave_generated_resources_uk.xtb" lang="uk" />
+    <file path="resources/brave_generated_resources_uz.xtb" lang="uz" />
     <file path="resources/brave_generated_resources_vi.xtb" lang="vi" />
     <file path="resources/brave_generated_resources_zh-CN.xtb" lang="zh-CN" />
     <file path="resources/brave_generated_resources_zh-TW.xtb" lang="zh-TW" />
@@ -162,7 +174,15 @@
       <!-- Brave Settings WebUI strings -->
       <part file="brave_settings_strings.grdp" />
 
+      <!-- Brave App Management strings -->
+      <part file="brave_app_management.grdp" />
+
       <!--Add new items to the appropriate sections below -->
+
+      <!-- Profile menu -->
+      <message name="IDS_PROFILE_MENU_BRAVE_PLACEHOLDER_PROFILE_NAME" desc="Placeholder profile name, used when the user did not enter a name for their profile.">
+        Personal
+      </message>
 
       <!-- App Menu -->
       <message name="IDS_SHOW_BRAVE_REWARDS" desc="The show Brave Rewards menu in the app menu">
@@ -174,6 +194,16 @@
       <message name="IDS_BOOKMAR_BAR_MENU_SHOW_NEVER" desc="The name of the context menu item to never show bookmark bar">
         Never
       </message>
+      <if expr="use_titlecase">
+        <message name="IDS_SHOW_ALL_BOOKMARKS_BUTTON" desc="The name of an checked menu item to toggle visibility of All Bookmarks button on the bookmarks bar">
+          Show All Bookmarks Button
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_SHOW_ALL_BOOKMARKS_BUTTON" desc="The name of an checked menu item to toggle visibility of All Bookmarks button on the bookmarks bar">
+          Show all bookmarks button
+        </message>
+      </if>
       <message name="IDS_COPY_CLEAN_LINK_SHARING_HUB" desc="The name of the Sharing Hub's menu item to copy clean link">
         Copy clean link
       </message>
@@ -210,6 +240,9 @@
       </message>
       <message name="IDS_SHOW_BRAVE_WALLET" desc="The show Brave Wallet menu item (app menu)">
         Wallet
+      </message>
+      <message name="IDS_TOGGLE_AI_CHAT" desc="The show Brave Leo AI Chat menu item (app menu)">
+        Leo AI
       </message>
       <message name="IDS_OPEN_MORE_OTHER_DEVICES_SESSIONS" desc="The history sub-menu item to show sessions from other devices">
         More…
@@ -307,23 +340,14 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
       <message name="IDS_PROFILES_OPEN_TOR_PROFILE_BUTTON" desc="Button in the avatar menu bubble view to open a Tor window.">
         Open Private Window with Tor
       </message>
-      <message name="IDS_LOCATION_BAR_OPEN_IN_TOR" desc="Button in location bar to open onion available site in tor window.">
-        Tor
-      </message>
-      <message name="IDS_LOCATION_BAR_OPEN_IN_TOR_TOOLTIP_TEXT" desc="The tooltip text of tor button in location bar.">
-        Open in Tor
+      <message name="IDS_LOCATION_BAR_OPEN_IN_TOR_TOOLTIP_TEXT" desc="The tooltip text for open available onion site in tor window.">
+        Open in Tor: <ph name="ADDRESS">$1</ph>
       </message>
       <message name="IDS_PROFILES_TOR_PROFILE_NAME" desc="Name of the Tor profile.">
         Tor
       </message>
 
       <!-- Sync Infobars -->
-      <message name="IDS_BRAVE_SYNC_V2_MIGRATE_INFOBAR_MESSAGE" desc="Message text shown to users who used a previous version of Brave Sync and need to perform setup again for the new version.">
-        Brave Sync has been upgraded and requires setup
-      </message>
-      <message name="IDS_BRAVE_SYNC_V2_MIGRATE_INFOBAR_COMMAND" desc="Command text shown to users who used a previous version of Brave Sync and need to perform setup again for the new version.">
-        Begin Setup
-      </message>
       <message name="IDS_BRAVE_SYNC_ACCOUNT_DELETED_INFOBAR_MESSAGE" desc="Message text shown to users who's Sync account was deleted. Is used along with IDS_BRAVE_SYNC_ACCOUNT_DELETED_INFOBAR_LINK_TEXT">
         This Brave Sync account was deleted from another device. If you didn’t mean to disable Sync,<ph name="LINK_TEXT">$1<ex>re-create the account</ex></ph>
       </message>
@@ -343,56 +367,42 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         Check details
       </message>
 
-      <!-- IPFS -->
-      <message name="IDS_LOCATION_BAR_OPEN_USING_IPFS" desc="Button in location bar to open ipfs available site.">
-        IPFS
+      <!-- Adblock contenxt menu -->
+      <message name="IDS_ADBLOCK_CONTEXT_BLOCK_ELEMENTS" desc="Message for context menu that enables the element picker UI to apply cosmetic filter rules to the page">
+        Block elements
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_IPFS" desc="Permisson string for access to ipfs api.">
-        Publish and retrieve files from IPFS
+
+      <!-- Element Picker -->
+      <message name="IDS_BRAVE_ELEMENT_PICKER_CREATE_BTN_DISABLED_LABEL" desc="Label for Element picker's create button in disabled state">
+        Select element you want to block
       </message>
-      <message name="IDS_EXTENSION_PROMPT_WARNING_IPFS_PRIVATE" desc="Permisson string for access to private ipfs api.">
-        Read and modify IPFS settings
+      <message name="IDS_BRAVE_ELEMENT_PICKER_CREATE_BTN_ENABLED_LABEL" desc="Label for Element picker's create button in enabled state">
+        Block Elements
       </message>
+      <message name="IDS_BRAVE_ELEMENT_PICKER_MANAGE_BTN_LABEL" desc="Label for Element picker's manage button">
+        Manage filters
+      </message>
+      <message name="IDS_BRAVE_ELEMENT_PICKER_SHOW_RULES_BTN_LABEL" desc="Label for Element picker's show rules button">
+        Show rules
+      </message>
+      <message name="IDS_BRAVE_ELEMENT_PICKER_HIDE_RULES_BTN_LABEL" desc="Label for Element picker's hide rules button">
+        Hide rules
+      </message>
+      <message name="IDS_BRAVE_ELEMENT_PICKER_QUIT_BTN_LABEL" desc="Label for Element picker's quit button">
+        Cancel
+      </message>
+
       <message name="IDS_LOCATION_BAR_ONION_AVAILABLE" desc="Button in location bar to indicate onion available site to open a new tab in tor window.">
         .onion
       </message>
       <message name="IDS_LOCATION_BAR_ONION_AVAILABLE_TOOLTIP_TEXT" desc="The tooltip text for onion available button.">
-        Open using .onion address
+        Open using .onion address: <ph name="ADDRESS">$1</ph>
       </message>
       <message name="IDS_CONTENT_CONTEXT_FORCE_PASTE" desc="The name of the context menu item to paste without triggering onpaste handlers">
         Force Paste
       </message>
-      <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS" desc="The name of the IPFS context menu item for renderer">
-        Import to IPFS
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_PAGE" desc="The name of the IPFS context menu item to import current page using IPFS">
-        This page
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_IMAGE" desc="The name of the IPFS context menu item to import selected image using IPFS">
-        Selected image
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_VIDEO" desc="The name of the IPFS context menu item to import selected video using IPFS">
-        Selected video
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_AUDIO" desc="The name of the IPFS context menu item to import selected audio using IPFS">
-        Selected audio
-      </message>
-      <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_LINK" desc="The name of the IPFS context menu item to import linked content using IPFS">
-        Linked content
-      </message>
-      <message name="IDS_IMPORT_USING_IPNS_KEYS_TITLE" desc="The name of the IPFS import menu item to publish content using IPNS keys">
-        Publish with IPNS key
-      </message>
-      <message name="IDS_APP_MENU_IPFS" desc="The text label of a menu item to open a new app menu ipfs item.">
-        IPFS
-      </message>
+
       <if expr="use_titlecase">
-        <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_SELECTED_TEXT" desc="The name of the IPFS context menu item to import selected text using IPFS">
-          Import Selected Text to IPFS
-        </message>
-        <message name="IDS_IMPORT_WITHOUT_PUBLISHING" desc="The name of the IPFS context menu item to import content without publishing">
-          Import and Copy Link to IPFS Snapshot
-        </message>
         <message name="IDS_NEW_OFFTHERECORD_WINDOW_TOR" desc="Title case: The text label of a menu item to open a new off-the-record window with Tor.">
           New Private Window with Tor
         </message>
@@ -402,41 +412,11 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_CONTENT_CONTEXT_OPENLINKTOR_INAPP" desc="Title case: The name of the open a link in private window with Tor command">
           Open Link in Brave Private Window with Tor
         </message>
-        <message name="IDS_APP_MENU_IPFS_SHARE_LOCAL_FILE" desc="Title case: The text label of a menu item to share local file using IPFS.">
-          Import and Share a File
-        </message>
-        <message name="IDS_APP_MENU_IPFS_OPEN_FILES" desc="Title case: The text label of a menu item to open IPFS webui files page.">
-          Open Files
-        </message>
-        <message name="IDS_APP_MENU_IPFS_SHARE_LOCAL_FOLDER" desc="Title case: The text label of a menu item to share local fodler using IPFS.">
-          Import and Share a Directory
-        </message>
-        <message name="IDS_APP_MENU_IPFS_PUBLISH_LOCAL_FILE" desc="Title case: The text label of a menu item to publish local file under IPFS key.">
-          With a File
-        </message>
-        <message name="IDS_APP_MENU_IPFS_PUBLISH_LOCAL_FOLDER" desc="Title case: The text label of a menu item to publish local fodler under IPFS key.">
-          With a Directory
-        </message>
-        <message name="IDS_APP_MENU_IPFS_UPDATE_IPNS" desc="Title case: The text label of a menu item to update IPNS.">
-          Update IPNS
+        <message name="IDS_CONTENT_CONTEXT_SPLIT_VIEW" desc="Title case: The name of the open a link in split view command">
+          Open Link in Split View
         </message>
       </if>
       <if expr="not use_titlecase">
-        <message name="IDS_CONTENT_CONTEXT_IMPORT_IPFS_SELECTED_TEXT" desc="The name of the IPFS context menu item to import selected text using IPFS">
-          Import selected text to IPFS
-        </message>
-        <message name="IDS_IMPORT_WITHOUT_PUBLISHING" desc="The name of the IPFS context menu item to import content without publishing">
-          Import and copy link to IPFS snapshot
-        </message>
-        <message name="IDS_APP_MENU_IPFS_SHARE_LOCAL_FILE" desc="The text label of a menu item to share local file using IPFS.">
-          Import and share a file
-        </message>
-        <message name="IDS_APP_MENU_IPFS_OPEN_FILES" desc="Title case: The text label of a menu item to open IPFS webui files page.">
-          Open files
-        </message>
-        <message name="IDS_APP_MENU_IPFS_UPDATE_IPNS" desc="Title case: The text label of a menu item to update IPNS.">
-          Update IPNS
-        </message>
         <message name="IDS_NEW_OFFTHERECORD_WINDOW_TOR" desc="The text label of a menu item to open a new off-the-record window with Tor.">
           New private window with Tor
         </message>
@@ -446,17 +426,14 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_CONTENT_CONTEXT_OPENLINKTOR_INAPP" desc="The name of the open a link in private window with Tor command">
           Open link in Brave private window with Tor
         </message>
-        <message name="IDS_APP_MENU_IPFS_SHARE_LOCAL_FOLDER" desc="The text label of a menu item to share local folder using IPFS.">
-          Import and share a directory
-        </message>
-        <message name="IDS_APP_MENU_IPFS_PUBLISH_LOCAL_FILE" desc="Title case: The text label of a menu item to publish local file under IPFS key.">
-          With a File
-        </message>
-        <message name="IDS_APP_MENU_IPFS_PUBLISH_LOCAL_FOLDER" desc="Title case: The text label of a menu item to publish local fodler under IPFS key.">
-          With a Directory
+        <message name="IDS_CONTENT_CONTEXT_SPLIT_VIEW" desc="The name of the open a link in split view command">
+          Open link in split view
         </message>
       </if>
-
+      <!-- Dev channel deprecation infobar -->
+      <message name="IDS_DEV_CHANNEL_DEPRECATION_INFOBAR_MESSAGE" desc="The text label of dev channel deprecation announcement.">
+        Beginning on December 1, 2023, Brave Dev channel will no longer receive browser updates. We recommend users migrate to the Nightly, Beta, or Release versions of Brave.
+      </message>
       <!-- Mac Menubar Menus -->
       <if expr="is_macosx">
         <message name="IDS_REPORT_BROKEN_SITE_MAC" desc="The Mac menu item to report a broken site in the Help menu.">
@@ -491,6 +468,40 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         </message>
       </if>
 
+      <if expr="use_titlecase">
+        <message name="IDS_HIDE_BRAVE_AI_CHAT_ICON_ON_TOOLBAR" desc="The description for hiding the Brave AI Chat icon on the toolbar">
+          Hide Leo AI Icon
+        </message>
+        <message name="IDS_OPEN_BRAVE_AI_CHAT_FULL_PAGE" desc="The description for opening the Brave AI Chat in a new tab">
+          Open Leo AI in a New Tab
+        </message>
+        <message name="IDS_OPEN_BRAVE_AI_CHAT_SIDE_PANEL" desc="The description for opening the Brave AI Chat in the sidebar">
+          Open Leo AI in the Sidebar
+        </message>
+        <message name="IDS_MANAGE_BRAVE_AI_CHAT" desc="The description for opening the Brave AI Chat settings">
+          Manage Leo AI Settings
+        </message>
+      </if>
+      <if expr="not use_titlecase">
+        <message name="IDS_HIDE_BRAVE_AI_CHAT_ICON_ON_TOOLBAR" desc="The description for hiding the Brave AI Chat icon on the toolbar">
+          Hide Leo AI icon
+        </message>
+        <message name="IDS_OPEN_BRAVE_AI_CHAT_FULL_PAGE" desc="The description for opening the Brave AI Chat in a new tab">
+          Open Leo AI in a new tab
+        </message>
+        <message name="IDS_OPEN_BRAVE_AI_CHAT_SIDE_PANEL" desc="The description for opening the Brave AI Chat in the sidebar">
+          Open Leo AI in the sidebar
+        </message>
+        <message name="IDS_MANAGE_BRAVE_AI_CHAT" desc="The description for opening the Brave AI Chat settings">
+          Manage Leo AI settings
+        </message>
+      </if>
+      <message name="IDS_ABOUT_BRAVE_AI_CHAT" desc="The description for loading the Brave AI Chat about page">
+        About Leo AI
+      </message>
+      <message name="IDS_TOOLTIP_AI_CHAT_TOOLBAR_BUTTON" desc="Text for Leo toolbar button for toggling Leo side panel">
+        Leo AI
+      </message>
 
       <!-- Extensions page strings -->
       <message name="IDS_EXTENSIONS_BRAVE_ITEM_SOURCE_WEBSTORE" desc="The text to indicate that an extension is from the Web Extensions Store.">
@@ -507,6 +518,9 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
       </message>
       <message name="IDS_EXTENSIONS_BRAVE_PRIVATE_AND_TOR_WARNING" desc="Displayed in extensions management UI after an extension is selected to be run in private mode and Tor mode.">
         To disable this extension in private mode and Tor mode, unselect this option.
+      </message>
+      <message name="IDS_EXTENSIONS_BRAVE_HOSTED" desc="Displayed in extensions management UI if an extension is hosted on the Brave server.">
+        Brave-hosted
       </message>
 
       <!-- App shortcuts -->
@@ -554,6 +568,18 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_FOOTNOTE_TEXT_SETTING_PART" desc="This is used for replacing SETTING_TEXT from above FOOTNOTE_TEXT.">
           this setting
         </message>
+
+        <!-- Geolocation permission bubble -->
+        <message name="IDS_GEOLOCATION_PERMISSION_BUBBLE_LOW_ACCURACY_LABEL" desc="The text for geolocation permission bubble with low accuracy. Each part will be used to get offset in the string">
+          This site has requested your <ph name="PART_ONE">$1</ph>general location<ph name="PART_ONE_END">$1</ph>. <ph name="PART_TWO">$1</ph>Learn more<ph name="PART_TWO_END">$1</ph>
+        </message>
+        <message name="IDS_GEOLOCATION_PERMISSION_BUBBLE_HIGH_ACCURACY_WITH_LOCATION_SERVICE_LABEL" desc="The text for geolocation permission bubble with high accuracy. Each part will be used to get offset in the string">
+          This site has requested your <ph name="PART_ONE">$1</ph>precise location<ph name="PART_ONE_END">$1</ph>. <ph name="PART_TWO">$1</ph>Learn more<ph name="PART_TWO_END">$1</ph>
+        </message>
+        <message name="IDS_GEOLOCATION_PERMISSION_BUBBLE_HIGH_ACCURACY_WITHOUT_LOCATION_SERVICE_LABEL" desc="The text for geolocation permission bubble with high accuracy. Each part will be used to get offset in the string">
+          This site has requested your <ph name="PART_ONE">$1</ph>precise location<ph name="PART_ONE_END">$1</ph>. Brave will only able to provide <ph name="PART_TWO">$1</ph>general location<ph name="PART_TWO_END">$1</ph> data due to <ph name="PART_THREE">$1</ph>Location Services<ph name="PART_THREE_END">$1</ph> being disabled. <ph name="PART_FOUR">$1</ph>Learn more<ph name="PART_FOUR_END">$1</ph>
+        </message>
+
         <!-- Closing confirm dialog -->
         <message name="IDS_WINDOW_CLOSING_CONFIRM_DLG_OK_BUTTON_LABEL" desc="The text for ok button in the dialog">
           Close all
@@ -574,32 +600,17 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
           Don't ask me again
         </message>
         <!-- Brave search conversion promotion -->
-        <message name="IDS_BRAVE_SEARCH_CONVERSION_INPUT_APPEND_LABEL" desc="The text that appended to the input query in button type match">
-          - Brave Search
-        </message>
-        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_DESC_LABEL" desc="The text for detailed description about brave search in promotion match">
-          Support independent search with better privacy. Brave search doesn't track you, your queries, or your clicks.
-        </message>
-        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_DESC_LABEL_FIRST_PART" desc="The text for finding the first sentence from above. Both should have the same translation.">
-          Support independent search with better privacy.
-        </message>
-        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_A_TITLE" desc="The text for the banner type title">
-          Time to ditch big tech.
-        </message>
-        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_A_DESC" desc="The text for the banner type description">
-          Brave doesn't track you, your queries, or your clicks. And it's 100% independent of Big Tech.
-        </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_B_TITLE" desc="The text for the banner type title">
           Don't Google it. Can't Bing it. Just Brave it.
         </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_B_DESC" desc="The text for the banner type description">
-          Brave doesn't track you, your queries, or your clicks. And it's 100% independent.
+          Brave Search doesn't profile you. And it's 100% independent.
         </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_C_TITLE" desc="The text for the banner type title">
           Search and you will find. Privately.
         </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_C_DESC" desc="The text for the banner type description">
-          Brave doesn't track you, your queries, or your clicks. And it's 100% independent of Big Tech.
+          Brave Search doesn't profile you. And it's 100% independent of Big Tech.
         </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_D_TITLE" desc="The text for the banner type title">
           AI-infused search with a unique index.
@@ -607,11 +618,26 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_D_DESC" desc="The text for the banner type description">
           Fully private, 100% independent, and with great AI features.
         </message>
+        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_C_DDG_TITLE" desc="The text for the banner type title">
+          Get better results
+        </message>
+        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_C_DDG_DESC" desc="The text for the banner type description">
+          Brave Search is independently verified to have better results than Bing (or Bing clones like DuckDuckGo).
+        </message>
+        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_D_DDG_TITLE" desc="The text for the banner type title">
+          Improve search results
+        </message>
+        <message name="IDS_BRAVE_SEARCH_CONVERSION_PROMOTION_BANNER_TYPE_D_DDG_DESC" desc="The text for the banner type description">
+          Brave Search has better results than DuckDuckGo for most queries. And it’s truly private.
+        </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_TRY_BUTTON_LABEL" desc="The text for the try button in the promotion match">
           Try Brave Search
         </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_CLOSE_BUTTON_TOOLTIP" desc="The tooltip text for the dismiss button in a promotion match">
           Dismiss
+        </message>
+        <message name="IDS_BRAVE_SEARCH_CONVERSION_SET_AS_DEFAULT_BUTTON_LABEL" desc="The text for the set as default button in a promotion match">
+          Set Brave as default
         </message>
         <message name="IDS_BRAVE_SEARCH_CONVERSION_MAYBE_LATER_BUTTON_TOOLTIP" desc="The tooltip text for the maybe later button in a promotion match">
           Maybe later
@@ -622,6 +648,10 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_ACC_BRAVE_SEARCH_CONVERSION_DISMISS_BUTTON" desc="Announcement when the dismiss button is focused.">
           Dismiss Brave search conversion, press Enter to remove this suggestion
         </message>
+        <message name="IDS_BRAVE_SEARCH_CONVERSION_BUTTON_LABEL" desc="The text for the search conversion promotion button">
+          Switch to Brave Search
+        </message>
+
         <!-- web Discovery InfoBar -->
         <message name="IDS_WEB_DISCOVERY_INFOBAR_MESSAGE" desc="The text for web discovery infobar message">
           Help improve <ph name="SEARCH_NAME">$1<ex>Brave Search</ex></ph> by sending anonymous usage data.  <ph name="MORE_INFO">$2<ex>More info</ex></ph>
@@ -659,15 +689,22 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_DOWNLOAD_BUBBLE_ITEM_CTX_MENU_REMOVE_ITEM" desc="Text for the download bubble context menu item for removing item from the list">
           Remove from list
         </message>
+
+        <!-- Shared Pinned Tabs -->
+        <message name="IDS_SHARED_PINNED_TABS_DUMMY_TAB_VIEW_TITLE" desc="A title for a page that shows up when a dummy tab is visible">
+          This tab is active in another window
+        </message>
+        <message name="IDS_SHARED_PINNED_TABS_DUMMY_TAB_VIEW_DESCRIPTION" desc="The description explaning how to bring the tab to this window when dummy tab is visible">
+          Clicking this tab will bring its contents to this window
+        </message>
+
+        <!-- Split View -->
+        <message name="IDS_SPLIT_VIEW_A11Y_SEPARATOR_MENU_BUTTON" desc="The a11y text for the separator menu button in split view">
+          Split view menu button
+        </message>
       </if>
 
       <!-- Brave Ads -->
-      <message name="IDS_SERVICE_BAT_ADS" desc="The bat ads utility process">
-        Bat Ads Service
-      </message>
-      <message name="IDS_UTILITY_PROCESS_REWARDS_NAME" desc="The utility process running rewards">
-        Bat Rewards Service
-      </message>
       <message name="IDS_BRAVE_ADS_NOTIFICATION_AD_CLOSE_BUTTON" desc="Text to be spoken for the notification ad close button">
         Close
       </message>
@@ -685,6 +722,18 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
       </message>
       <message name="IDS_BRAVE_ADS_NOTIFICATION_CLICKED_SAME_AD_MULTIPLE_TIMES_BODY" desc="The notification body to show when a user clicks an ad multiple times">
         You don't need to click to earn, but do click if you're interested!
+      </message>
+      <message name="IDS_BRAVE_ADS_SEARCH_RESULT_AD_CLICKED_INFOBAR_MESSAGE" desc="The text label of creative search result ad infobar message">
+        Thanks for supporting Brave Search by clicking a private ad. Unlike Big Tech, we measure ad performance anonymously to preserve your privacy.
+      </message>
+      <message name="IDS_BRAVE_ADS_SEARCH_RESULT_AD_LEARN_MORE_OPT_OUT_CHOICES_LABEL" desc="The text label of creative search result ad learn more / opt out choices link">
+        Learn more / opt out choices
+      </message>
+      <message name="IDS_NEW_TAB_TAKEOVER_INFOBAR_MESSAGE" desc="The text label of new tab takeover infobar message">
+        Sponsored background images support Brave's mission to build an independent, user-first Web. And unlike Big Tech, we measure ad performance anonymously to preserve your privacy.
+      </message>
+      <message name="IDS_NEW_TAB_TAKEOVER_INFOBAR_LEARN_MORE_OPT_OUT_CHOICES" desc="The text of new tab takeover infobar learn more / opt out choices link">
+        Learn more / opt out choices
       </message>
 
       <!-- Brave Search -->
@@ -748,6 +797,18 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_SIDEBAR_ADD_ITEM_BUBBLE_TITLE" desc="Title of sidebar add item bubble">
           Add to Sidebar
         </message>
+        <message name="IDS_APP_MENU_SIDEBAR_TITLE" desc="Tile of a group of buttons to set visibility of sidebar">
+          Sidebar
+        </message>
+        <message name="IDS_APP_MENU_SIDEBAR_ON" desc="Label for a button to always show sidebar">
+          On
+        </message>
+        <message name="IDS_APP_MENU_SIDEBAR_OFF" desc="Label for a button to hide sidebar">
+          Off
+        </message>
+        <message name="IDS_APP_MENU_SIDEBAR_HOVER" desc="Label for a button to show sidebar on hover">
+          Autohide
+        </message>
         <message name="IDS_SIDEBAR_SHOW_OPTION_TITLE" desc="Title of sidebar show option menu">
           Show Sidebar
         </message>
@@ -799,6 +860,9 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_SIDEBAR_READING_LIST_PANEL_HEADER_TITLE" desc="Text of readling list panel header">
           Reading List
         </message>
+        <message name="IDS_SIDEBAR_PANEL_CLOSE_BUTTON_TOOLTIP" desc="Text of side panel's close button">
+          Close
+        </message>
         <if expr="not use_titlecase">
           <message name="IDS_SIDEBAR_READING_LIST_PANEL_HEADER_BOOKMARKS_BUTTON_TOOLTIP" desc="Text of bookmarks panel header button tooltip">
             Bookmarks manager
@@ -816,7 +880,7 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         Automatically send daily usage ping to Brave
       </message>
       <message name="IDS_BRAVE_STATS_USAGE_PING_SETTING_SUBITEM" desc="Description that shows under main toggle setting for usage pings">
-        This anonymous, private ping lets Brave estimate active users.
+        This private ping lets Brave estimate active users
       </message>
 
       <!-- P3A -->
@@ -833,34 +897,12 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         Allow privacy-preserving product analytics (P3A)
       </message>
       <message name="IDS_BRAVE_P3A_ENABLE_SETTING_SUBITEM" desc="Description that shows under main toggle setting for P3A">
-        This completely anonymized info helps Brave estimate the overall usage of certain features and make them better for you.
+        These private responses help Brave estimate the overall usage of certain features and make them better for you
       </message>
 
       <!-- Web3 detection -->
-      <message name="IDS_BRAVE_CRYPTO_WALLETS_LAZY_LOAD_TEXT" desc="Text that shows on the info bar when a Dapp is detected">
-        Would you like to start Crypto Wallets for Ethereum support?
-      </message>
-      <message name="IDS_BRAVE_CRYPTO_WALLETS_INFOBAR_TEXT" desc="Text that shows on the info bar when a Dapp is detected">
-        Set up Crypto Wallets to interact with this app and others like it.
-      </message>
-      <message name="IDS_BRAVE_CRYPTO_WALLETS_SETUP_CRYPTO_WALLETS" desc="Set up Crypto Wallets">
-        Set up Crypto Wallets
-      </message>
-       <message name="IDS_BRAVE_CRYPTO_WALLETS_START_AND_RELOAD" desc="Start Crypto Wallets and reload">
-        Start Crypto Wallets and reload
-      </message>
-      <message name="IDS_BRAVE_CRYPTO_WALLETS_SETTINGS" desc="Open Crypto Wallets settings">
-        Settings
-      </message>
-      <message name="IDS_BRAVE_CRYPTO_WALLETS_DONT_ASK" desc="Sets provider to none">
-        Don't ask again
-      </message>
-      <!-- IPFS -->
       <message name="IDS_BRAVE_WALLET_SETTINGS_SECTION" desc="Open Wallet settings section">
         Wallet
-      </message>
-      <message name="IDS_BRAVE_IPFS_SETTINGS_SECTION" desc="Open IPFS settings section">
-        IPFS
       </message>
       <message name="IDS_BRAVE_WEB3_SETTINGS_SECTION" desc="Open Web3 settings section">
         Web3
@@ -868,40 +910,24 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
       <message name="IDS_BRAVE_WEB3_DOMAINS_SETTINGS_SECTION" desc="Open Web3 Domains settings section">
         Web3 Domains
       </message>
-      <message name="IDS_BRAVE_IPFS_LEARN_MORE">
-        Learn more about IPFS and privacy
-      </message>
-      <message name="IDS_BRAVE_IPFS_INFOBAR_TEXT" desc="Text that promotes turning on autoredirect to the configured gateway setting">
-        This page is available on the IPFS network. Would you like to load IPFS pages using Brave's built-in support (via ipfs:// or ipns://)?
-      </message>
-      <message name="IDS_BRAVE_IPFS_INFOBAR_APPROVE" desc="Turns on promoted setting">
-        Always
-      </message>
-      <message name="IDS_BRAVE_IPFS_INFOBAR_APPROVE_ONCE" desc="Redirects to the ipfs:// or ipns:// resource for once">
-        Only This Time
-      </message>
-      <message name="IDS_BRAVE_IPFS_INFOBAR_NEVER" desc="Closed infobar and disables it showing">
-        No Thanks
-      </message>
-      <message name="IDS_BRAVE_IPFS_INFOBAR_LINK" desc="Link redirects to the privacy description article">
-        Learn how this affects my privacy
-      </message>
-
       <!-- Brave Wayback Machine -->
-      <message name="IDS_BRAVE_WAYBACK_MACHINE_INFOBAR_PAGE_MISSING_TEXT" desc="The label for sorry message when page is not available on infobar">
+      <message name="IDS_BRAVE_WAYBACK_MACHINE_BUBBLE_SORRY_HEADER_TEXT" desc="The label for sorry message when page is not available on bubble">
         Sorry, that page is missing.
       </message>
-      <message name="IDS_BRAVE_WAYBACK_MACHINE_INFOBAR_ASK_ABOUT_CHECK_TEXT" desc="The label for asking to check from wayback machine">
+      <message name="IDS_BRAVE_WAYBACK_MACHINE_BUBBLE_CANT_FIND_HEADER_TEXT" desc="The label for sorry message when page is not available on bubble">
+        Couldn't load saved version
+      </message>
+      <message name="IDS_BRAVE_WAYBACK_MACHINE_BUBBLE_ASK_ABOUT_CHECK_TEXT" desc="The label for asking to check from wayback machine">
         Do you want to check if a saved version is available on the Wayback Machine?
       </message>
-      <message name="IDS_BRAVE_WAYBACK_MACHINE_INFOBAR_NOT_AVAILABLE_TEXT" desc="The label for wayback machine doesn't have saved version">
-        Sorry, there is no saved version available.
+      <message name="IDS_BRAVE_WAYBACK_MACHINE_BUBBLE_NOT_AVAILABLE_TEXT" desc="The label for wayback machine doesn't have saved version">
+        Wayback Machine couldn't find a saved version of this site.
       </message>
-      <message name="IDS_BRAVE_WAYBACK_MACHINE_CHECK_BUTTON_TEXT" desc="The label for check button on wayback infobar">
-        Check for saved version
+      <message name="IDS_BRAVE_WAYBACK_MACHINE_BUBBLE_CHECK_BUTTON_TEXT" desc="The label for check button on wayback infobar">
+        Check saved version
       </message>
-      <message name="IDS_BRAVE_WAYBACK_MACHINE_DONT_ASK_AGAIN_TEXT" desc="Text to show for the don't ask again button.">
-        Don't ask me again
+      <message name="IDS_BRAVE_WAYBACK_MACHINE_BUBBLE_DISMISS_BUTTON_TEXT" desc="Text to show for the no thanks button.">
+        Dismiss
       </message>
 
       <!-- Brave's copyright statement -->
@@ -930,6 +956,21 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT_VERTICAL_TABS" desc="The label of the 'Close Tabs below' Tab context menu item for vertical tabs.">
           Close tabs below
         </message>
+        <message name="IDS_TAB_CXMENU_BRING_ALL_TABS_TO_THIS_WINDOW" desc="The label of the 'Bring all tabs to this window' tab context menu item">
+          Bring all tabs to this window
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSE_DUPLICATE_TABS" desc="The label of the 'Close duplicate tabs' tab context menu item">
+          Close duplicate tabs
+        </message>
+        <message name="IDS_CXMENU_OPEN_IN_CONTAINER" desc="The label of the 'Open in Container' context menu item">
+          Open in container
+        </message>
+        <message name="IDS_CXMENU_OPEN_CONTAINERS_SETTINGS" desc="The label of the context menu item for opening the Containers settings page.">
+          Manage containers
+        </message>
+        <message name="IDS_TAB_CXMENU_RENAME_TAB" desc="The label of the tab context menu item for renaming a tab.">
+          Rename tab
+        </message>
       </if>
       <if expr="use_titlecase">
         <message name="IDS_TAB_CXMENU_BOOKMARK_ALL_TABS" desc="In Title Case: The label of the tab context menu item for creating a bookmark folder containing an entry for each open tab.">
@@ -949,6 +990,21 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         </message>
         <message name="IDS_TAB_CXMENU_CLOSETABSTORIGHT_VERTICAL_TABS" desc="The label of the 'Close Tabs below' Tab context menu item for vertical tabs.">
           Close Tabs Below
+        </message>
+        <message name="IDS_TAB_CXMENU_BRING_ALL_TABS_TO_THIS_WINDOW" desc="The label of the 'Bring all tabs to this window' tab context menu item">
+          Bring All Tabs to This Window
+        </message>
+        <message name="IDS_TAB_CXMENU_CLOSE_DUPLICATE_TABS" desc="The label of the 'Close duplicate tabs' tab context menu item">
+          Close Duplicate Tabs
+        </message>
+        <message name="IDS_CXMENU_OPEN_IN_CONTAINER" desc="The label of the 'Open in Container' context menu item">
+          Open in Container
+        </message>
+        <message name="IDS_CXMENU_OPEN_CONTAINERS_SETTINGS" desc="The label of the tab context menu item for opening the Containers settings page.">
+          Manage Containers
+        </message>
+        <message name="IDS_TAB_CXMENU_RENAME_TAB" desc="The label of the tab context menu item for renaming a tab.">
+          Rename Tab
         </message>
       </if>
 
@@ -981,9 +1037,6 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         </message>
         <message name="IDS_SETTINGS_VPN_PAGE_SUBLABEL_VPN_CONNECTED" desc="Title of the WireGuard sub label on the vpn settings page when brave vpn connected">
           This setting cannot be changed while Brave VPN is connected.
-        </message>
-        <message name="IDS_SETTINGS_VPN_PAGE_SUBLABEL_VPN_DISCONNECTED" desc="Title of the WireGuard sub label on the vpn settings page when brave vpn connected">
-          Requires browser restart.
         </message>
         <message name="IDS_SETTINGS_SHOW_VPN_BUTTON" desc="The label for showing vpn button in the toolbar">
           Show VPN button
@@ -1065,6 +1118,11 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         Open System Preferences
       </message>
 
+      <!-- Downloads -->
+      <message name="IDS_DOWNLOADS_TITLE" desc="Title for the downloads page and navigation bar label.">
+        Downloads
+      </message>
+
       <!-- Bookmarks -->
       <message name="IDS_BRAVE_BOOKMARK_MANAGER_EMPTY_LIST" desc="">
         To add a bookmark, click the bookmark button next to the address bar
@@ -1110,10 +1168,23 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
       <message name="IDS_BRAVE_IMPORT_FROM_EDGE" desc="browser combo box: Microsoft Edge Legacy">
         Microsoft Edge Legacy
       </message>
-
       <message name="IDS_IMPORTED_FROM_BOOKMARK_FOLDER" desc="Name for bookmark panel folder imported from another browser">
         Imported from <ph name="BROWSER_NAME">$1<ex>Chrome</ex></ph>.
       </message>
+      <!-- These strings below are used by the Chromium importer. Chromium only
+           builds the importer on Desktop, but Brave also has the importer - and
+           builds the code - on Android. In Chromium's generated_resources.grd
+           this strings are under `<if expr="not is_android">`. To avoid
+           patching generated_resources.grd we add these strings to our own
+           string here, but with the opposite <if..> - just for Android.-->
+      <if expr="is_android">
+        <message name="IDS_IMPORT_FROM_FIREFOX" desc="browser combo box: Mozilla Firefox">
+          Mozilla Firefox
+        </message>
+        <message name="IDS_IMPORT_FROM_ICEWEASEL" desc="browser combo box: Iceweasel">
+          Iceweasel
+        </message>
+      </if>
 
       <!-- Vertical tab strip -->
       <if expr="toolkit_views">
@@ -1135,6 +1206,13 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         </if>
       </if>
 
+      <message name="IDS_BOOKMARKS_SORT_CUSTOM" desc="Label for the custom order sort type">
+        Custom order
+      </message>
+      <message name="IDS_BOOKMARKS_SORT_CUSTOM_LOWER" desc="Lowercase label for the custom order sort type">
+        custom order
+      </message>
+
       <!-- Playlist -->
       <if expr="enable_playlist_webui">
           <message name="IDS_PLAYLIST_ADD_TO_PLAYLIST" desc="A title label on a bubble to add media files to Playlist">
@@ -1143,13 +1221,13 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
           <message name="IDS_PLAYLIST_MEDIA_FOUND_IN_THIS_PAGE" desc="A sub title in a bubble to add media files to playlist">
             Media found in this page
           </message>
-          <message name="IDS_PLAYLIST_DEFAULT_PLAYLIST_NAME" desc="A default playlist folder's name">
-            Play Later
-          </message>
-          <message name="IDS_PLAYLIST_ADDED_TO_PLAYLIST_FOLDER" desc="A label on a bubble that shows up when items were added from the current page">
-            Added to <ph name="PLAYLIST_FOLDER_NAME">$1<ex>Play Later</ex></ph>
+          <message name="IDS_PLAYLIST_MEDIA_NOT_FOUND_IN_THIS_PAGE" desc="An error message that shows up when we fail to extract media from a page">
+            Sorry, we couldn't find any media on this page.
           </message>
         <if expr="use_titlecase">
+          <message name="IDS_PLAYLIST_ADDED_TO_PLAYLIST" desc="A title label on a bubble to show media file is added to Playlist">
+            Added to Playlist
+          </message>
           <message name="IDS_PLAYLIST_OPEN_IN_PLAYLIST" desc="A menu name to open added media files on Playlist">
             Open in Playlist
           </message>
@@ -1167,6 +1245,9 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
           </message>
         </if>
         <if expr="not use_titlecase">
+          <message name="IDS_PLAYLIST_ADDED_TO_PLAYLIST" desc="A title label on a bubble to show media file is added to Playlist">
+            Added to playlist
+          </message>
           <message name="IDS_PLAYLIST_OPEN_IN_PLAYLIST" desc="A menu name to open added media files on Playlist">
             Open in playlist
           </message>
@@ -1174,7 +1255,7 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
             Change folder
           </message>
           <message name="IDS_PLAYLIST_REMOVE_FROM_PLAYLIST" desc="A menu name to remove items">
-            Remove from Playlist
+            Remove from playlist
           </message>
           <message name="IDS_PLAYLIST_MORE_MEDIA_IN_THIS_PAGE" desc="A menu name to see found media files">
             More media on this page...
@@ -1261,37 +1342,147 @@ Or change later at <ph name="SETTINGS_EXTENIONS_LINK">$2<ex>brave://settings/ext
         <message name="IDS_PLAYLIST_EMPTY_FOLDER_MESSAGE" desc="A message that shows up when a playlist folder is empty">
           The fun starts when you have something to play. Add your favorite media and playback anytime, anywhere. Even offline.
         </message>
-        <message name="IDS_PLAYLIST_A11Y_CREATE_PLAYLIST_FOLDER" desc="An a11y name for a button to create new playlist folder">
+        <message name="IDS_PLAYLIST_TOOLTIP_CREATE_PLAYLIST_FOLDER" desc="An a11y name for a button to create new playlist folder">
           Create a new folder
         </message>
-        <message name="IDS_PLAYLIST_A11Y_OPEN_PLAYLIST_SETTINGS" desc="An a11y name for a button to open playlist settings">
+        <message name="IDS_PLAYLIST_TOOLTIP_OPEN_PLAYLIST_SETTINGS" desc="An a11y name for a button to open playlist settings">
           Open Playlist settings
         </message>
-        <message name="IDS_PLAYLIST_A11Y_PLAY" desc="An a11y name for a 'play' button in media player">
+        <message name="IDS_PLAYLIST_TOOLTIP_PLAY" desc="An a11y name for a 'play' button in media player">
           Play
         </message>
-        <message name="IDS_PLAYLIST_A11Y_PAUSE" desc="An a11y name for a 'pause' button in media player">
+        <message name="IDS_PLAYLIST_TOOLTIP_PAUSE" desc="An a11y name for a 'pause' button in media player">
           Pause
         </message>
-        <message name="IDS_PLAYLIST_A11Y_NEXT" desc="An a11y name for a 'next' button in media player">
-          Next Track
+        <message name="IDS_PLAYLIST_TOOLTIP_NEXT" desc="An a11y name for a 'next' button in media player">
+          Next track
         </message>
-        <message name="IDS_PLAYLIST_A11Y_PREVIOUS" desc="An a11y name for a 'prev' button in media player">
-          Previous Track
+        <message name="IDS_PLAYLIST_TOOLTIP_PREVIOUS" desc="An a11y name for a 'prev' button in media player">
+          Previous track
         </message>
-        <message name="IDS_PLAYLIST_A11Y_SHUFFLE" desc="An a11y name for a 'shuffle' button in media player">
+        <message name="IDS_PLAYLIST_TOOLTIP_TOGGLE_MUTED" desc="An a11y name for a 'mute' button in media player">
+          Toggle mute
+        </message>
+        <message name="IDS_PLAYLIST_TOOLTIP_SHUFFLE" desc="An a11y name for a 'shuffle' button in media player">
           Shuffle
         </message>
-        <message name="IDS_PLAYLIST_A11Y_REWIND" desc="An a11y name for a 'rewind' button in media player">
+        <message name="IDS_PLAYLIST_TOOLTIP_REWIND" desc="An a11y name for a 'rewind' button in media player">
           Rewind
         </message>
-        <message name="IDS_PLAYLIST_A11Y_FORWARD" desc="An a11y name for a 'forward' button in media player">
+        <message name="IDS_PLAYLIST_TOOLTIP_FORWARD" desc="An a11y name for a 'forward' button in media player">
           Forward
         </message>
-        <message name="IDS_PLAYLIST_A11Y_CLOSE" desc="An a11y name for a 'close' button in media player when it's mini player mode">
+        <message name="IDS_PLAYLIST_TOOLTIP_CLOSE" desc="An a11y name for a 'close' button in media player when it's mini player mode">
           Close
         </message>
+        <message name="IDS_PLAYLIST_TOOLTIP_LOOP_OFF" desc="An a11y name for a 'loop' button in media player when the loop is off">
+          Repeat off
+        </message>
+        <message name="IDS_PLAYLIST_TOOLTIP_LOOP_ONE" desc="An a11y name for a 'loop' button in media player when repeating one item">
+          Repeat one
+        </message>
+        <message name="IDS_PLAYLIST_TOOLTIP_LOOP_ALL" desc="An a11y name for a 'loop' button in media player when repeating all items">
+          Repeat all
+        </message>
+        <message name="IDS_PLAYLIST_FAILED_TO_PLAY_TITLE" desc="A title for alert that shows up when an item is not playable">
+          Failed to play item
+        </message>
+        <message name="IDS_PLAYLIST_FAILED_TO_PLAY_DESCRIPTION" desc="Description for alert that shows up when an item is not playable">
+          [<ph name="ITEM_NAME">$1<ex>Awesome video</ex></ph>] may be expired. Would you like to recover it?
+        </message>
+        <message name="IDS_PLAYLIST_FAILED_TO_PLAY_RECOVER" desc="A label for 'Recover' button">
+          Recover
+        </message>
+        <message name="IDS_PLAYLIST_ALERT_DISMISS" desc="A label for 'Dismiss' button on alert">
+          Dismiss
+        </message>
+        <message name="IDS_PLAYLIST_ADD_MEDIA_FROM_PAGE" desc="A label for 'Add media from page' button">
+          Add media from page
+        </message>
       </if> <!-- enable_playlist_webui -->
+
+      <!-- File select -->
+      <message name="IDS_BRAVE_FILE_SELECT_OPEN_TITLE" desc="">
+        <ph name="SITE">$1<ex>http://foo.com</ex></ph> wants to open
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_OPEN_TITLE_IFRAME" desc="">
+        An embedded page at <ph name="SITE">$1<ex>http://foo.com</ex></ph> wants to open
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_OPEN_TITLE_NONSTANDARD_URL" desc="">
+        This page wants to open
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_OPEN_TITLE_NONSTANDARD_URL_IFRAME" desc="">
+        An embedded page on this page wants to open
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_SAVE_TITLE" desc="">
+        <ph name="SITE">$1<ex>http://foo.com</ex></ph> wants to save
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_SAVE_TITLE_IFRAME" desc="">
+        An embedded page at <ph name="SITE">$1<ex>http://foo.com</ex></ph> wants to save
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_SAVE_TITLE_NONSTANDARD_URL" desc="">
+        This page wants to save
+      </message>
+      <message name="IDS_BRAVE_FILE_SELECT_SAVE_TITLE_NONSTANDARD_URL_IFRAME" desc="">
+        An embedded page on this page wants to save
+      </message>
+
+      <!-- Tab Search -->
+      <message name="IDS_BRAVE_ORGANIZE_TAB_TITLE" desc="Title for the tab organizer page">
+        Tab focus
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_SUBTITLE" desc="Subtitle for the tab organizer page">
+        Gather all related tabs into a new window
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_SUGGESTED_TOPICS_SUBTITLE" desc="Subtitle for the suggested topics section">
+        Suggested topics
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_TOPIC_INPUT_PLACEHOLDER" desc="Placeholder text for the input field to enter a topic">
+        Enter a topic to focus on...
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_SUBMIT_BUTTON_LABEL" desc="Label for the submit topic input button">
+        Go
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_UNDO_BUTTON_LABEL" desc="Label for the undo button">
+        Undo
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_WINDOW_CREATED_MESSAGE" desc="Message shown when a new window is created">
+        New window created for <ph name="TOPIC">$1<ex>Social media</ex></ph>
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_SEND_TAB_DATA_MESSAGE" desc="Description of how tab data is shared with Leo">
+        This feature sends data about your open tabs to Leo, Brave's AI-powered browser assistant.
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_LEARN_MORE_LABEL" desc="Text of the learn more link">
+        Learn more
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_GO_PREMIUM_BUTTON_LABEL" desc="Text of go premium button">
+        Go Premium
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_DISMISS_BUTTON_LABEL" desc="Text of the dismiss button">
+        Dismiss
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_PRIVACY_DISCLAIMER" desc="Disclaimer text for enabling the tab focus feature">
+        When opened, this will automatically send the titles and origin of all non-private tabs to Leo to classify them.
+      </message>
+      <message name="IDS_BRAVE_ORGANIZE_TAB_ENABLE_BUTTON_LABEL" desc="Text of enable tab focus button">
+        Enable
+      </message>
+
+      <!--Customize Chrome Panel -->
+      <message name="IDS_BRAVE_CUSTOMIZE_MENU_TOOLBAR_LABEL" desc="The label for the option to customize toolbar icons in the customization menu on the New Tab Page. This is a button which opens a panel for customizing toolbar icons when clicked.">
+        Customize toolbar
+      </message>
+      <message name="IDS_BRAVE_NTP_CUSTOMIZE_APPEARANCE_LABEL" desc="The label for header of the customize appearance section in customize chrome side panel">
+        Theme and colors
+      </message>
+
+      <!--Password Manager -->
+      <message name="IDS_BRAVE_PASSWORD_MANAGER_UI_EMPTY_STATE_SIGNEDOUT_USERS" desc="A label shown if there are no saved passwords prompting user to import them.">
+        Saved passwords will appear here. To import passwords to <ph name="BRAND">$1<ex>Brave Password Manager</ex></ph> on this device, <ph name="BEGIN_LINK">&lt;a href="#" &gt;</ph> select a CSV file<ph name="END_LINK">&lt;/a&gt;</ph>
+      </message>
+      <message name="IDS_BRAVE_PASSWORD_MANAGER_UI_IMPORT_DESCRIPTION_SIGNEDOUT_USERS" desc="The description for the password import banner in Password Manager settings.">
+        To import passwords to <ph name="BRAND">$1<ex>Brave Password Manager</ex></ph> on this device, select a CSV file
+      </message>
       <!--Add new items to the appropriate sections above -->
     </messages>
   </release>

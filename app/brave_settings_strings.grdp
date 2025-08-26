@@ -11,11 +11,37 @@
   <message name="IDS_SETTINGS_RELAUNCH_BUTTON_LABEL" desc="Notifies the user that they need to relaunch Brave">
     Relaunch Now
   </message>
+  <message name="IDS_SETTINGS_SELECT_VALUE_YES" desc="Select value">
+    Yes
+  </message>
+  <message name="IDS_SETTINGS_SELECT_VALUE_NO" desc="Select value">
+    No
+  </message>
+  <message name="IDS_SETTINGS_SELECT_VALUE_ASK" desc="Select value">
+    Ask
+  </message>
 
   <!-- Settings / Get started -->
   <message name="IDS_SETTINGS_BRAVE_GET_STARTED_TITLE" desc="The title for the Get Started section in settings">
     Get started
   </message>
+
+  <!-- <Brave Account Row> -->
+  <message name="IDS_SETTINGS_BRAVE_ACCOUNT_ROW_TITLE" translateable="false" desc="Title of the Brave Account row in the Get Started section">
+    Sign in or create a Brave account
+  </message>
+  <message name="IDS_SETTINGS_BRAVE_ACCOUNT_ROW_DESCRIPTION" translateable="false" desc="Description of the Brave Account row in the Get Started section">
+    A Brave account will allow you to easily sync your settings, passwords, bookmarks, etc. across all your devices and access our full range of premium products.
+  </message>
+  <message name="IDS_SETTINGS_BRAVE_ACCOUNT_GET_STARTED_BUTTON_LABEL" translateable="false" desc="Label for the button that takes the user to the 'Entry' dialog">
+    Get started
+  </message>
+  <message name="IDS_SETTINGS_BRAVE_ACCOUNT_MANAGE_ACCOUNT_BUTTON_LABEL" translateable="false" desc="Label for the button that takes the user to their Brave Account settings">
+    Manage account
+  </message>
+  <!-- </Brave Account Row> -->
+
+  <!-- Settings / Get started / Profile name and icon -->
   <message name="IDS_SETTINGS_BRAVE_EDIT_PROFILE" desc="Title to edit the profile user name and picture">
     Profile name and icon
   </message>
@@ -26,6 +52,12 @@
   </message>
   <message name="IDS_SETTINGS_IMPORT_PAYMENTS_CHECKBOX" desc="Checkbox for importing payments info">
     Payment methods
+  </message>
+  <message name="IDS_EXTENSIONS_IMPORTER_LOCK_TITLE" desc="Dialog title for importer lock dialog">
+    Import profile still in use
+  </message>
+  <message name="IDS_EXTENSIONS_IMPORTER_LOCK_TEXT" desc="The message to be displayed in the importer-lock dialog">
+    To import extensions or other settings, please first close the browser you're importing from.
   </message>
 
   <!-- Settings / Appearance -->
@@ -56,6 +88,12 @@
       Always show toolbar in full screen
     </message>
   </if>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_THEMES_GALLERY_URL" translateable="false">
+    https://chrome.google.com/webstore?hl=[GRITLANGCODE]&amp;category=theme
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_OPEN_WEB_STORE" desc="Sub-label about choosing something from the Chrome Web Store.">
+    Open Web Store
+  </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_GET_MORE_THEMES" desc="The label for opening theme web store">
     Get more themes
   </message>
@@ -71,8 +109,49 @@
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_CONTENT_SECTION" desc="The label for section containing settings related to content">
     Content
   </message>
+  <if expr="enable_containers">
+    <message name="IDS_SETTINGS_CONTAINERS_SECTION_LABEL" desc="The label for section containing settings related to containers" formatter_data="webui=Containers">
+      Containers
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_SECTION_DESCRIPTION" desc="The description for section containing settings related to containers" formatter_data="webui=Containers">
+      Organize your browsing with containers. <ph name="BEGIN_LINK">&lt;a target="_blank" href="#"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_ADD_CONTAINER_LABEL" desc="The label for dialog title for adding a container" formatter_data="webui=Containers">
+      Add new container
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_EDIT_CONTAINER_LABEL" desc="The label for dialog title for editing a container" formatter_data="webui=Containers">
+      Edit container
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_DELETE_CONTAINER_LABEL" desc="The label for dialog title for deleting a container" formatter_data="webui=Containers">
+      Delete container
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_DELETE_CONTAINER_DESCRIPTION" desc="The description for dialog title for deleting a container" formatter_data="webui=Containers">
+      Are you sure you want to delete container <ph name="CONTAINER_NAME">"$1"<ex>"Work"</ex></ph>? This will remove all the data associated with it.
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_CONTAINER_NAME_LABEL" desc="The label for container name input field" formatter_data="webui=Containers">
+      Name
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_CONTAINER_ICON_LABEL" desc="The label for container section to select icon" formatter_data="webui=Containers">
+      Icon
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_CONTAINER_COLOR_LABEL" desc="The label for container section to select color" formatter_data="webui=Containers">
+      Color
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_CONTAINER_NAME_PLACEHOLDER" desc="The placeholder for container name input field" formatter_data="webui=Containers">
+      Give your container a name like Work or Personal
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_ERROR_TEMPLATE" desc="The error message template for container operations" formatter_data="webui=Containers">
+      Error: <ph name="ERROR_MESSAGE">$1<ex>Container is not found</ex></ph>
+    </message>
+    <message name="IDS_SETTINGS_CONTAINERS_ERROR_NOT_FOUND" desc="The error if container is not found" formatter_data="webui=Containers">
+      Container is not found
+    </message>
+  </if>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_TABS_SHOW_VERTICAL_TABS" desc="The label for showing tabs vertically">
     Use vertical tabs
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_TABS_USE_TREE_TABS" desc="The label for using tree tabs" formatter_data="webui=BraveSettings">
+    Use tree tabs
   </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_TABS_SHOW_TITLE_BAR" desc="The label for showing window title when vertical tab strip is enabled.">
     Show title bar
@@ -83,6 +162,21 @@
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_HOVER_MODE" desc="The label for the settings select controlling what happens when a user hovers over a tab.">
     Tab hover mode
   </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_VERTICAL_TAB_POSITION" desc="Title for radio group to set vertical tab position">
+    Position
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_VERTICAL_TAB_EXPANDED_STATE_PER_WINDOW" desc="Title for checkbox to set expanded state per window">
+    Expand vertical tabs independently per window
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_VERTICAL_TAB_SHOW_SCROLLBAR" desc="Title for checkbox to show scrollbar on vertical tabs">
+    Show scrollbar
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_VERTICAL_TAB_ON_RIGHT" desc="The label for radio button to show vertical tab on right">
+    Show on the right
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_VERTICAL_TAB_ON_LEFT" desc="The label for radio button to show vertical tab on left">
+    Show on the left
+  </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_HOVER_MODE_CARD" desc="The label name of the tab hover mode where a card with the title and origin of the site is shown.">
     Card
   </message>
@@ -91,6 +185,9 @@
   </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_TAB_HOVER_MODE_TOOLTIP" desc="The label name of the tab hover mode where a tooltip with the site title is shown.">
     Tooltip
+  </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_BRAVE_SHARED_PINNED_TAB" desc="The label name of a toggle button for Shared Pinned Tab feature">
+    Show pinned tabs in all windows
   </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_BOOKMARKS_BUTTON" desc="The label for whether the bookmarks button should be shown or not">
     Show bookmarks button
@@ -101,8 +198,8 @@
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_AUTOCOMPLETE_IN_ADDRESS_BAR" desc="The label for settings switch controlling the showing of autocomplete in address bar">
     Show autocomplete suggestions in address bar
   </message>
-  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_TOP_SITES" desc="The label for settings checkbox controlling whether or not top sites show up in autocomplete">
-    Top sites
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_TOP_SUGGESTIONS" desc="The label for settings checkbox controlling whether or not top suggestions show up in autocomplete">
+    Top Suggestions
   </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_HISTORY" desc="The label for settings checkbox controlling whether or not browsing history shows up in autocomplete">
     Browsing History
@@ -110,11 +207,17 @@
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_BOOKMARKS" desc="The label for settings checkbox controlling whether or not bookmarks show up in autocomplete">
     Bookmarks
   </message>
+  <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_COMMANDER" desc="The label for settings checkbox controlling whether or not commander suggestions show up in autocomplete">
+    Quick commands
+  </message>
   <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_USE_AUTOCOMPLETE_LEO" desc="The label for settings checkbox en/disabling autcomplete provider with Leo assistant">
     Leo AI Assistant
   </message>
   <message name="IDS_SETTINGS_SHOW_BRAVE_NEWS_BUTTON_LABEL" desc="The label for the settings switch controlling whether the Brave News button is shown in the toolbar">
     Show Brave News button
+  </message>
+  <message name="IDS_SETTINGS_SHOW_LEO_BUTTON_LABEL" desc="The label for the settings switch controlling whether the Leo button is shown in the toolbar">
+    Show Leo AI button
   </message>
   <message name="IDS_SETTINGS_SHOW_BOOKMARK_BAR" desc="The label for settings switch controlling the permanent visibility of bookmarks bar">
     Show bookmarks
@@ -143,14 +246,23 @@
   <message name="IDS_SETTINGS_TABS_SEARCH_SHOW" desc="The button for searching tabs on the left of tab strip region.">
     Show tab search button
   </message>
-  <message name="IDS_SETTINGS_BRAVE_MRU_CYCLING_LABEL" desc="The label to activate MRU cycling with Ctrl-tab">
-    Cycle through the most recently used tabs with Ctrl-Tab
-  </message>
-  <message name="IDS_SETTINGS_SPEEDREADER_LABEL" desc="The label to activate Speedreader">
+  <message name="IDS_SETTINGS_SPEEDREADER_SETTING_LABEL" desc="The main label for the Speedreader settings section">
     Speedreader
   </message>
-  <message name="IDS_SETTINGS_SPEEDREADER_SUB_LABEL" desc="The sub-label describing Speedreader">
+  <message name="IDS_SETTINGS_SPEEDREADER_FEATURE_LABEL" desc="The label for the Speedreader feature toggle">
+    Speedreader
+  </message>
+  <message name="IDS_SETTINGS_SPEEDREADER_FEATURE_SUB_LABEL" desc="The sub-label describing the Speedreader feature">
+    Enable the Speedreader feature
+  </message>
+  <message name="IDS_SETTINGS_SPEEDREADER_ENABLED_FOR_ALL_SITES_LABEL" desc="The label for enabling Speedreader on all sites">
+    Automatically use Speedreader when possible
+  </message>
+  <message name="IDS_SETTINGS_SPEEDREADER_ENABLED_FOR_ALL_SITES_SUB_LABEL" desc="The sub-label for enabling Speedreader on all sites">
     Articles automatically load in reader mode, saving you time
+  </message>
+  <message name="IDS_SETTINGS_DISABLE_CLICKABLE_MUTE_INDICATORS" desc="The text for the settings option for disabling clickable tab mute indicators">
+    Disable mute function in tab speaker icons
   </message>
 
   <if expr="toolkit_views">
@@ -159,6 +271,12 @@
     </message>
     <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_SHOW_SIDEBAR_BUTTON" desc="The label for whether the side panel button should be shown or not">
       Show Sidebar button
+    </message>
+    <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_UI_FEATURE_ALIGN_LEFT" desc="Label for the button that allows UI features to appear on the left side of the browser. Translate this verbatim, do not localize for RTL languages.">
+      Show on the left
+    </message>
+    <message name="IDS_SETTINGS_APPEARANCE_SETTINGS_UI_FEATURE_ALIGN_RIGHT" desc="Label for the button that allows UI features to appear on the right side of the browser. Translate this verbatim, do not localize for RTL languages.">
+      Show on the right
     </message>
   </if>
 
@@ -202,6 +320,9 @@
       <message name="IDS_SETTINGS_PIN_SHORTCUT" desc="The label for pin to taskbar button">
         Pin
       </message>
+      <message name="IDS_SETTINGS_PIN_SHORTCUT_SUBLABEL" desc="The sub label for pin to taskbar button">
+        Click Pin and confirm in the following Windows notification
+      </message>
       <message name="IDS_SETTINGS_SHORTCUT_PINNED" desc="The label for pinned state description">
         Brave is already pinned
       </message>
@@ -227,7 +348,7 @@
     Shields status
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SHIELDS_DESCRIPTION" desc="Label for shields status on site settings.">
-    Sites can block trackers, ads, and fingerprinting using Shields
+    Shields can block trackers, ads, and fingerprinting
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_SHIELDS_UP" desc="Label for shields status up site settings.">
     Shields Up
@@ -245,9 +366,6 @@
     These are the default Shields settings. They apply to all websites unless you change something in the Shields panel on a particular site. Changing these won't affect your existing per-site settings.
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_DEFAULTS_DESCRIPTION_2" desc="The description for Brave shields Defaults sub-section in settings.">
-    This will block most ads on websites, not Brave Private Ads — those are controlled in the <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Brave Rewards<ph name="END_LINK">&lt;/a&gt;</ph> settings.
-  </message>
-  <message name="IDS_SETTINGS_BRAVE_SHIELDS_DEFAULTS_DESCRIPTION_2_REWARDS_DISABLED" desc="The description for Brave shields Defaults sub-section in settings when Brave Rewards is disabled.">
     This will block most ads on websites.
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_SHOW_STATS_BLOCKED_BADGE_LABEL" desc="Default Brave show stats blocked badge control setting label">
@@ -269,7 +387,7 @@
     Prevent sites from fingerprinting me based on my language preferences
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_REDUCE_LANGUAGE_SUBITEM" desc="Description that shows under main toggle setting for reduce language control setting label">
-    Enabling this setting reduces how much web sites can learn about your language preferences.
+    Enabling this setting reduces how much web sites can learn about your language preferences
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_AD_CONTROL_LABEL" desc="Default Brave block cross-site trackers control setting label">
     Trackers &amp; ads blocking
@@ -313,14 +431,17 @@
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_COOKIE_CONTROL_LABEL" desc="Default Brave cookies control setting label">
     Block cookies
   </message>
+  <message name="IDS_SETTINGS_BRAVE_SHIELDS_COOKIE_CONTROL_BLOCK_ALL_DEPRECATED_LABEL" desc="Block all cookies deprecation warning">
+    The "Block all Cookies" option has been deprecated. To learn how to force-enable this option, visit <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>our help page<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
   <message name="IDS_SETTINGS_BLOCK_3RD_PARTY_COOKIES" desc="Select value">
-    Only cross-site
+    Block third-party cookies
   </message>
   <message name="IDS_SETTINGS_ALLOW_ALL_COOKIES" desc="Select value">
-    Disabled
+    Allow all cookies
   </message>
   <message name="IDS_SETTINGS_BLOCK_ALL_COOKIES" desc="Select value">
-    All
+    Block all cookies
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_DEFAULTS_DEFAULT_VIEW_LABEL" desc="Default Brave view title label">
     Default view
@@ -337,7 +458,7 @@
     Content filtering
   </message>
   <message name="IDS_BRAVE_ADBLOCK_CONTENT_FILTER_LABEL_DESCRIPTION" desc="Long description describing what Content Filtering does">
-    Enable custom filters that block regional and language-specific trackers and Annoyances.
+    Enable custom filters that block regional and language-specific trackers and Annoyances
   </message>
   <message name="IDS_BRAVE_ADBLOCK_ADD_CUSTOM_FILTERS_LISTS_LABEL" desc="Label for custom filters lists section">
     Add custom filter lists
@@ -393,6 +514,18 @@
   <message name="IDS_BRAVE_ADBLOCK_SHOW_FULL_LISTS_BUTTON_LABEL" desc="A button label to expand full custom filter lists">
     Show full list
   </message>
+  <message name="IDS_BRAVE_ADBLOCK_UPDATE_LISTS_BUTTON_LABEL" desc="A button label to update all active filter lists">
+    Update lists
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_UPDATE_LISTS_RETRY_BUTTON_LABEL" desc="A button label to retry the update of all active filter lists">
+    Update failed - Retry
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_UPDATE_LISTS_UPDATED_BUTTON_LABEL" desc="A button label when list updates have finished">
+    Lists updated
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_UPDATE_LISTS_UPDATING_BUTTON_LABEL" desc="A button label when lists are updating">
+    Lists updating
+  </message>
   <message name="IDS_BRAVE_ADBLOCK_CUSTOM_FILTER_LISTS_INPUT_PLACEHOLDER" desc="A placeholder label for the input form to ask the user to enter a URL">
     Enter filter list URL
   </message>
@@ -401,6 +534,51 @@
   </message>
   <message name="IDS_BRAVE_ADBLOCK_FILTER_LISTS_INPUT_PLACEHOLDER" desc="A placeholder label for the input form to allow the user to filter from a list of content filters">
     Filter lists
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_DEVELOPER_MODE_LABEL" desc="Label for custom scriptlets lists section">
+    Developer mode
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_DEVELOPER_MODE_DESC" desc="Label for custom scriptlets lists section">
+    Allow adding custom filters and scriptlets
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLETS_LIST_LABEL" desc="Label for custom scriptlets lists section">
+    Custom scriptlets
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_ADD_CUSTOM_SCRIPTLET_BUTTON" desc="A label for the add custom scriptlet button">
+    Add new scriptlet
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_ADD_CUSTOM_SCRIPTLET_DIALOG_TITLE" desc="A title for the add custom scriptlet dialog">
+    Add new scriptlet
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_EDIT_CUSTOM_SCRIPTLET_DIALOG_TITLE" desc="A title for the edit custom scriptlet dialog">
+    Edit scriptlet
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_DIALOG_NAME_LABEL" desc="A label for the custom scriptlet name field">
+    Name
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_DIALOG_CONTENT_LABEL" desc="A label for the custom scriptlet content field">
+    Content
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_DIALOG_CANCEL_BUTTON" desc="A label for the custom scriptlet content cancel button">
+    Cancel
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_DIALOG_SAVE_BUTTON" desc="A label for the custom scriptlet content save button">
+    Save
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_DELETE_CONFIRMATION" desc="A confirmation message for the custom scriptlet deletion">
+    Are you sure you want to delete this scriptlet? If this scriptlet is used in any custom filter, it will no longer work.
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_ALREADY_EXISTS_ERROR" desc="Error message">
+    Scriptlet already exists.
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_INVALID_NAME_ERROR" desc="Error message">
+    Invalid scriptlet name.
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_NOT_FOUND_ERROR" desc="Error message">
+    Scriptlet is not found.
+  </message>
+  <message name="IDS_BRAVE_ADBLOCK_CUSTOM_SCRIPTLET_WARNING" desc="A warning message in Scriptlet editor.">
+    Don’t paste code here that you don’t understand or haven’t reviewed yourself. This could allow attackers to steal your identity or take control of your computer.
   </message>
 
   <message name="IDS_SETTINGS_BRAVE_SHORTCUTS_TITLE" desc="The text label for the shortcuts settings page">
@@ -421,19 +599,7 @@
     Open full Brave Rewards settings
   </message>
   <message name="IDS_SETTINGS_BRAVE_REWARDS_SHOW_BRAVE_REWARDS_BUTTON_LABEL" desc="The label for settings switch controlling the visibility of Brave Rewards button">
-    Show Brave Rewards icon in address bar
-  </message>
-  <message name="IDS_SETTINGS_BRAVE_REWARDS_SHOW_TIP_BUTTONS_LABEL" desc="The text label for the setting switch controlling showing inline tip buttons">
-    Show Tip buttons on sites
-  </message>
-  <message name="IDS_SETTINGS_BRAVE_REWARDS_INLINE_TIP_REDDIT_LABEL" desc="The text label for the setting switch controlling showing inline tip buttons on Reddit">
-    Reddit
-  </message>
-  <message name="IDS_SETTINGS_BRAVE_REWARDS_INLINE_TIP_TWITTER_LABEL" desc="The text label for the setting switch controlling showing inline tip buttons on Twitter">
-    Twitter
-  </message>
-  <message name="IDS_SETTINGS_BRAVE_REWARDS_INLINE_TIP_GITHUB_LABEL" desc="The text label for the setting switch controlling showing inline tip buttons on GitHub">
-    GitHub
+    Show Brave Rewards button
   </message>
 
   <!-- Settings / Social media blocking -->
@@ -444,7 +610,7 @@
     Allow Facebook logins and embedded posts
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_TWITTER_EMBEDDED_TWEETS_LABEL" desc="Label for a switch control which allows Twitter embedded tweets">
-    Allow Twitter embedded tweets
+    Allow X (previously Twitter) embedded tweets
   </message>
   <message name="IDS_SETTINGS_BRAVE_SHIELDS_LINKEDIN_EMBEDDED_POSTS_LABEL" desc="Label for a switch control which allows LinkedIn embedded posts">
     Allow LinkedIn embedded posts
@@ -452,6 +618,18 @@
 
 
   <!-- Settings / Privacy and security -->
+  <message name="IDS_SETTINGS_COOKIE_CONTROLLED_BY_SHIELDS_HEADER_TEXT" desc="Text for the header explaining some cookies controlled by Shields settings.">
+    Some cookie settings are controlled by Brave Shields. You can see them &lt;a href="/content/braveShields"&gt;here&lt;/a&gt;.
+  </message>
+  <message name="IDS_SETTINGS_BRAVE_BLOCK_COOKIES_LINK_ROW_LABEL" desc="This text is the label of a page. Here, it serves as a button that opens the new page.">
+    Block cookies
+  </message>
+  <message name="IDS_SETTINGS_COOKIE_CONTROLLED_BY_SHIELDS_TOOLTIP_TEXT" desc="Text for the tooltip explaining cookies generated by Shields settings.">
+    This setting is controlled by Brave Shields.
+  </message>
+  <message name="IDS_SETTINGS_COOKIE_CONTROLLED_BY_GOOGLE_SIGN_IN_TOOLTIP_TEXT" desc="Text for the tooltip explaining cookies generated by Google Sign-in settings.">
+    This setting is controlled by Google Sign-in.
+  </message>
   <!-- WebRTC Policy Setting -->
   <message name="IDS_SETTINGS_WEBRTC_POLICY_LABEL" desc="WebRTC policy setting label">
     WebRTC IP handling policy
@@ -480,7 +658,7 @@
     Automatically send diagnostic reports
   </message>
   <message name="IDS_BRAVE_DIAGNOSTIC_REPORTS_PREF_DESC" desc="The description of the checkbox to enable/disable sending diagnostic reports (crashes, hangs).">
-    Help improve Brave's product stability by automatically sending diagnostic reports when the Brave Browser crashes or freezes.
+    Help improve Brave's product stability by automatically sending diagnostic reports when the Brave Browser crashes or freezes
   </message>
   <!-- Request OTR -->
   <if expr="enable_request_otr">
@@ -500,10 +678,25 @@
       Never
     </message>
   </if>
+  <if expr="is_win">
+    <message name="IDS_SETTINGS_WINDOWS_RECALL_DISABLED_LABEL" desc="Windows Recall setting label">
+      Block Microsoft Recall
+    </message>
+    <message name="IDS_SETTINGS_WINDOWS_RECALL_DISABLED_SUBLABEL" desc="Windows Recall setting sub-label">
+      Block the Recall feature on Microsoft Windows computers from automatically taking screenshots of any open Brave tabs.
+    </message>
+  </if>
+  <!-- Data collection -->
+  <message name="IDS_BRAVE_DATA_COLLECTION_SETTINGS_SECTION" desc="Open Data collection settings section">
+    Data collection
+  </message>
 
   <!-- Settings / Privacy and security / Clear Browsing Data dialog -->
   <message name="IDS_SETTINGS_BRAVE_ON_EXIT" desc="Clear Browsing Data dialog On exit tab label">
     On exit
+  </message>
+  <message name="IDS_SETTINGS_CLEAR_BRAVE_ADS_DATA" desc="The label for the link to clear 'Brave Ads' data">
+    Clear Brave Ads data...
   </message>
   <message name="IDS_SETTINGS_RESET_REWARDS_DATA" desc="The label for opening rewards manage wallet dialog">
     Reset Brave Rewards data...
@@ -515,18 +708,6 @@
   </message>
   <message name="IDS_SETTINGS_SITE_SETTINGS_USE_EPHEMERAL_STORAGE" desc="Label for sites in site settings enabling cookies cleanup when all windows with the site are clsoed.">
     Clear on site close
-  </message>
-  <message name="IDS_SETTINGS_SITE_COOKIES_LINK_TITLE" desc="The title of a link to navigate to site cookies subpage.">
-    Cookies and Site Data
-  </message>
-  <message name="IDS_SETTINGS_SITE_COOKIES_LINK_DESC" desc="The description of a link to navigate to site cookies subpage.">
-    Show all cookies and locally stored data for this site
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIE_SUBPAGE" desc="A label for cookie subpage, stating which site we're showing data for.">
-    <ph name="SITE">$1<ex>www.example.com</ex></ph> locally stored data
-  </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_COOKIES_REMOVE_ALL" desc="A label for remove all cookies button.">
-    Remove All
   </message>
 
   <!-- Settings / Privacy and security / Cookies and other site data / See all site data and permissions -->
@@ -606,6 +787,9 @@
   <message name="IDS_SETTINGS_BRAVE_SAFEBROWSING_NONE_DESC" desc="Description for safe browsing no protection mode">
     Does not protect you against dangerous websites, downloads, and extensions.
   </message>
+  <message name="IDS_SETTINGS_BRAVE_SAFEBROWSING_STANDARD_DESC" desc="Description for safe browsing standard protection mode">
+    Protects against sites, downloads, and extensions that are known to be dangerous.
+  </message>
 
   <!-- Settings / Privacy and security / Site and Shields Settings -->
   <message name="IDS_SETTINGS_SITE_AND_SHIELDS_SETTINGS" desc="Label for site and shields settings in clear browsing data dialog">
@@ -622,24 +806,34 @@
     Block sites from autoplaying videos
   </message>
   <!-- Ethereum -->
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM" desc="Label for ethereum site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM" desc="Title for ethereum site settings.">
     Ethereum
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM_ASK" desc="Label for ethereum site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM_ASK" desc="Label for ethereum site settings as group.">
     Ask when a site wants to access the Ethereum provider API
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM_BLOCK" desc="Label for ethereum site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_ETHEREUM_BLOCK" desc="Label for ethereum site settings block group.">
     Block sites from accessing the Ethereum provider API
   </message>
   <!-- Solana -->
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SOLANA" desc="Label for solana site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SOLANA" desc="Title for solana site settings.">
     Solana
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SOLANA_ASK" desc="Label for solana site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SOLANA_ASK" desc="Label for solana site settings ask group.">
     Ask when a site wants to access the Solana provider API
   </message>
-  <message name="IDS_SETTINGS_SITE_SETTINGS_SOLANA_BLOCK" desc="Label for solana site settings.">
+  <message name="IDS_SETTINGS_SITE_SETTINGS_SOLANA_BLOCK" desc="Label for solana site settings block group.">
     Block sites from accessing the Solana provider API
+  </message>
+  <!-- Cardano -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CARDANO" desc="Title for cardano site settings.">
+    Cardano
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CARDANO_ASK" desc="Label for cardano site settings ask group.">
+    Ask when a site wants to access the Cardano provider API
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_CARDANO_BLOCK" desc="Label for cardano site settings block group.">
+    Block sites from accessing the Cardano provider API
   </message>
   <!-- Google Sign-In setting -->
   <message name="IDS_SETTINGS_SITE_SETTINGS_GOOGLE_SIGN_IN" desc="Label for G sign-in site settings.">
@@ -675,9 +869,15 @@
     Allowed to access localhost resources
   </message>
 
-  <!-- Settings / Privacy and security / Safety Check -->
-  <message name="IDS_SETTINGS_BRAVE_SAFETY_CHECK_SAFE_BROWSING_ENABLED_STANDARD_AVAILABLE_ENHANCED" desc="This text points out that Safe Browsing is enabled as standard protection.">
-    Standard protection is on.
+  <!-- AI chat setting -->
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BRAVE_OPEN_AI_CHAT" desc="Label for opening Leo AI chat site settings.">
+    Leo AI chat
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BRAVE_OPEN_AI_CHAT_ASK" desc="Label for the enabled option of opening Leo AI chat site settings.">
+    Sites can ask to open Leo AI chat
+  </message>
+  <message name="IDS_SETTINGS_SITE_SETTINGS_BRAVE_OPEN_AI_CHAT_BLOCK" desc="Label for the disabled option of opening Leo AI chat site settings.">
+    Don't allow site to open Leo AI chat
   </message>
 
   <!-- Settings / Sync -->
@@ -881,19 +1081,46 @@
   <message name="IDS_SETTINGS_BRAVE_APPS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing apps between multiple browser instances.">
     Web apps (PWAs)
   </message>
+  <message name="IDS_SETTINGS_BRAVE_PASSWORDS_CHECKBOX_LABEL" desc="Label for the checkbox which enables or disables syncing passwords between multiple browser instances.">
+    Passwords
+  </message>
 
   <!-- Settings / Search engine -->
+  <message name="IDS_SETTINGS_BRAVE_SEARCH_ENGINES_SEARCH_SUGGEST_LABEL" desc="The label of the option to enable/disable sending omnibox input to the user's default search engine to get additional suggestions.">
+    Improve search suggestions
+  </message>
+  <message name="IDS_SETTINGS_BRAVE_SEARCH_ENGINES_SEARCH_SUGGEST_DESC" desc="The desc of the option to enable/disable sending omnibox input to the user's default search engine to get additional suggestions.">
+    When on, Brave sends what you type in the address bar or search box to your default search engine to get better suggestions. When off, Brave only shows suggestions generated on your device. This is always off in private windows.
+  </message>
   <message name="IDS_SETTINGS_BRAVE_OTHER_SEARCH_ENGINES_LABEL" desc="The label for the settings switch controlling the addition of custom search engines">
     Index other search engines
   </message>
   <message name="IDS_SETTINGS_BRAVE_OTHER_SEARCH_ENGINES_DESC" desc="The description for the settings switch controlling the addition of custom search engines">
-    Automatically indexes websites that follow the OpenSearch spec.
+    Automatically indexes websites that follow the OpenSearch spec
   </message>
-  <message name="IDS_SETTINGS_NORMAL_PROFILE_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
-    Normal Window - Search engine used in the address bar
+  <message name="IDS_SETTINGS_NORMAL_PROFILE_SEARCH_EXPLANATION" desc="Explanation for the search engine setting.">
+    Search engine used in the address bar.
   </message>
-  <message name="IDS_SETTINGS_PRIVATE_PROFILE_SEARCH_EXPLANATION" desc="Explanation for the search engine dropdown setting.">
-    Private Window - Search engine used in the address bar
+  <message name="IDS_SETTINGS_PRIVATE_PROFILE_SEARCH_EXPLANATION" desc="Explanation for the search engine setting used by private profiles.">
+    Search engine used in the address bar for private windows.
+  </message>
+  <message name="IDS_SETTINGS_NORMAL_PROFILE_SEARCH_ENGINE_HEADING" desc="Heading for the search engine setting for normal profiles.">
+    Normal Window
+  </message>
+  <message name="IDS_SETTINGS_PRIVATE_PROFILE_SEARCH_ENGINE_HEADING" desc="Heading for the search engine setting for private profiles.">
+    Private Window
+  </message>
+  <message name="IDS_SETTINGS_PRIVATE_PROFILE_SEARCH_ENGINE_TITLE" desc="Name of the settings page which displays search engine preferences for private profiles.">
+    Search engine for Private Windows
+  </message>
+  <message name="IDS_SETTINGS_PRIVATE_PROFILE_SEARCH_ENGINE_CHOICE_SETTINGS_CONFIRMATION_TOAST_LABEL" desc="This confirmation message is intended to help users understand that their choice is now saved. It appears after the user changes their default private search engine in Brave settings. (A search engine provides answers to search queries; this is different from a browser, which displays web pages. A search engine powers many experiences within a browser.)">
+    <ph name="SEARCH_ENGINE_NAME">$1<ex>Brave</ex></ph> is now your default search engine for private windows
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINE_LIST_BRAVE_SEARCH_DESCRIPTION" desc="The description shown with the Brave Search radio button in the search engines list.">
+    Brave Search is recommended for the best browsing experience while using Brave browser.
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_ENGINE_LIST_BRAVE_SEARCH_RECOMMENDED" desc="The label shown in the Brave Search radio button in the search engines list.">
+    Recommended
   </message>
 
   <!-- Settings / Extensions -->
@@ -903,17 +1130,14 @@
   <message name="IDS_SETTINGS_GOOGLE_LOGIN_FOR_EXTENSIONS" desc="Label for a switch control which allows Google login for extension">
     Allow Google login for extensions
   </message>
-  <message name="IDS_SETTINGS_HANGOUTS_ENABLED_DESC" desc="The description for Hangouts switch in settings">
-    Uses Hangouts component to enable screen sharing and other features in the browser.
-  </message>
   <message name="IDS_SETTINGS_MEDIA_ROUTER_ENABLED_DESC" desc="The description for media router switch in settings">
-    Media router enables cast feature in the browser.
+    Media router enables cast feature in the browser
   </message>
   <message name="IDS_SETTINGS_RESOLVE_UNSTOPPABLE_DOMAINS_DESC" desc="The description for how to handle Unstoppable Domains">
     Resolve Unstoppable Domains domain names
   </message>
   <message name="IDS_SETTINGS_RESOLVE_UNSTOPPABLE_DOMAINS_SUB_DESC" desc="The sub-description for how to handle Unstoppable Domains">
-    <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph> about Unstoppable Domains privacy considerations.
+    <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn More<ph name="END_LINK">&lt;/a&gt;</ph> about Unstoppable Domains privacy considerations
   </message>
   <message name="IDS_SETTINGS_RESOLVE_ENS_DESC" desc="The description for how to handle ENS">
     Resolve Ethereum Name Service (ENS) domain names
@@ -943,7 +1167,7 @@
     Use Bridges
   </message>
   <message name="IDS_SETTINGS_TOR_USE_BRIDGES_DESC" desc="">
-    Bridges help you access the Tor Network in places where Tor is blocked. Depending on where you are located, one bridge may work better than others.
+    Bridges help you access the Tor Network in places where Tor is blocked. Depending on where you're located, one bridge may work better than others.
   </message>
   <message name="IDS_SETTINGS_TOR_CONNECTION_SETTINGS_TITLE" desc="">
     Tor connection settings
@@ -996,17 +1220,14 @@
   <message name="IDS_SETTINGS_TOR_CANCEL_DIALOG_BUTTON" desc="Text fragment for enabling tor component">
     Cancel
   </message>
-  <message name="IDS_SETTINGS_AUTO_ONION_LOCATION_TITLE" desc="Text fragment for onion site component">
-    Automatically redirect .onion sites
+  <message name="IDS_SETTINGS_ONION_ONLY_IN_TOR_WINDOWS_TITLE" desc="">
+    Only resolve .onion addresses in Tor windows
   </message>
-  <message name="IDS_SETTINGS_AUTO_ONION_LOCATION_DESC" desc="Text fragment for onion site component">
-    Brave will switch to the .onion version of a website when available, and automatically open all .onion domains in a Tor window.
-  </message>
-  <message name="IDS_SETTINGS_WEBTORRENT_ENABLED_DESC" desc="The description for WebTorrent switch in settings">
-    Uses WebTorrent to display torrents directly in the browser. Supports torrent files and magnet links.
+  <message name="IDS_SETTINGS_ONION_ONLY_IN_TOR_WINDOWS_DESC" desc="">
+    Onion services won't be available outside of Tor windows
   </message>
   <message name="IDS_SETTINGS_ENABLE_WIDEVINE_DESC" desc="Text fragment for enabling widevine component. 'Widevine' is the name of a plugin and should not be translated.">
-    Use Widevine digital rights management (DRM) component to view protected streaming video and other content in the browser.
+    Use Widevine digital rights management (DRM) component to view protected streaming video and other content in the browser
   </message>
   <message name="IDS_SETTINGS_MANAGE_EXTENSIONS_V2_LABEL" desc="The label of manage v2 extensions link in settings">
     Manifest V2 extensions
@@ -1014,8 +1235,14 @@
   <message name="IDS_SETTINGS_MANAGE_EXTENSIONS_V2_SUBLABEL" desc="The sub label of manage v2 extensions link in settings">
     The following Manifest V2 extensions will be removed from the Chrome Web Store, but are still supported in Brave. Toggle to download and install, or to uninstall.
   </message>
+  <message name="IDS_SETTINGS_MANAGE_EXTENSIONS_V2_WARN" desc="The warning message in v2 extensions in settings.">
+    Brave hosts these Manifest V2 extensions on Brave servers, but does not review or verify their content, security, or behavior. Please see each extension's official page for help. Read Brave's plans for Manifest V2 <ph name="BEGIN_LINK">&lt;a target="_blank" rel="noreferrer" href="$1"&gt;</ph>here<ph name="END_LINK">&lt;/a&gt;</ph>.
+  </message>
   <message name="IDS_SETTINGS_MANAGE_EXTENSIONS_V2_TOAST_CONFIRM" desc="The label of the error toast button in settings">
     Close
+  </message>
+  <message name="IDS_SETTINGS_MANAGE_EXTENSIONS_V2_REMOVE_BUTTON" desc="The label of the remove button in settings">
+    Remove
   </message>
   <message name="IDS_SETTINGS_MANAGE_EXTENSIONS_V2_NO_SCRIPT_NAME" desc="Manifest V2 extension toggle's label">
     Enable NoScript&#x2122;
@@ -1058,6 +1285,9 @@
   <message name="IDS_SETTINGS_DEFAULT_SOLANA_WALLET_DESC" desc="The default cryptocurrency wallet for the Solana blockchain">
     Default Solana wallet
   </message>
+  <message name="IDS_SETTINGS_DEFAULT_CARDANO_WALLET_DESC" desc="The default cryptocurrency wallet for the Cardano blockchain">
+    Default Cardano wallet
+  </message>
   <message name="IDS_BRAVE_WALLET_WEB3_PROVIDER_BRAVE" desc="Select control value for which web3 provider to use">
     Brave Wallet
   </message>
@@ -1066,9 +1296,6 @@
   </message>
   <message name="IDS_BRAVE_WALLET_WEB3_PROVIDER_NONE" desc="Select control value for which web3 provider to use">
     Extensions (no fallback)
-  </message>
-  <message name="IDS_BRAVE_WALLET_WEB3_PROVIDER_CRYPTO_WALLETS_DEPRECATED" desc="Select control value for which web3 provider to use">
-    Crypto Wallets (Deprecated)
   </message>
   <message name="IDS_BRAVE_WALLET_WEB3_PROVIDER_BRAVE_PREFER_EXTENSIONS" desc="Select control value for which web3 provider to use">
     Extensions (Brave Wallet fallback)
@@ -1088,6 +1315,12 @@
   <message name="IDS_SETTINGS_ENABLE_NFT_DISCOVERY_DESC" desc="The description for enabling NFT discovery">
     Automatically add NFTs you own to the Wallet using third party APIs.
   </message>
+  <message name="IDS_SETTINGS_ENABLE_BRAVE_WALLET_IN_PRIVATE_WINDOWS_LABEL" desc="The label for enabling private window support">
+    Enable Brave Wallet in Private Windows
+  </message>
+  <message name="IDS_SETTINGS_ENABLE_BRAVE_WALLET_IN_PRIVATE_WINDOWS_DESC" desc="The description for enabling private window support">
+    Warning: Reusing a wallet address in a private window session can enable a site to link a private window session to a non-private window session
+  </message>
   <message name="IDS_SETTINGS_AUTO_LOCK_MINUTES" desc="The title for the amount of minutes it takes for the Brave Wallet to automatically lock">
     Automatically lock Brave Wallet
   </message>
@@ -1103,31 +1336,26 @@
   <message name="IDS_SETTINGS_WALLET_RESET_TRANSACTION_INFO_DESC" desc="Reset wallet transactions description">
     Clearing transactions may be useful for developers or when clearing state on a local server
   </message>
-  <message name="IDS_SETTINGS_WALLET_ENABLE_NFT_PINNING" desc="Enable NFT pinning">
-    Automatically pin NFTs
+  <message name="IDS_SETTINGS_WALLET_RESET_ZCASH_SYNC_STATE_INFO" desc="Reset zcash sync state settings item text">
+    Reset Zcash sync state
   </message>
-  <message name="IDS_SETTINGS_WALLET_ENABLE_NFT_PINNING_DESC" desc="Enable NFT pinning description">
-    NFTs which are added to the Brave Wallet may be automatically pinned to the local IPFS node.
-    Note: IPFS daemon may be started for the pinning purposes so your local node will share cached data and pinned NFTs to the IPFS network.
+  <message name="IDS_SETTINGS_WALLET_RESET_ZCASH_SYNC_STATE_DESC" desc="Reset zcash sync state settings item description text">
+    Resets Zcash sync progress for all shielded accounts
   </message>
-  <message name="IDS_SETTINGS_WALLET_RESET" desc="Reset wallet settings item text">
-    Reset and clear wallet data
+  <message name="IDS_SETTINGS_WALLET_RESET_ZCASH_SYNC_STATE_CONFIRMATION" desc="Reset Zcash sync state confirmation message text">
+    Are you sure you want to reset Zcash sync state? Sync progress for all shielded accounts will be dropped. Type "<ph name="CONFIRMATION_PHRASE">$1<ex>Yes</ex></ph>" to confirm.
   </message>
-  <message name="IDS_SETTINGS_CLEAR_PINNED_NFT" desc="Clear pinned NFTs item text">
-    Clear pinned NFTs
-  </message>
-  <message name="IDS_SETTINGS_CLEAR_PINNED_NFT_DESC" desc="CL item text">
-    Pinned NFTs are hosted to the IPFS network when local IPFS node is launched.
-    You have <ph name="NFT_COUNT">$1<ex>2</ex></ph> pinned NFTs at the moment.
+  <message name="IDS_SETTINGS_WALLET_RESET_ZCASH_SYNC_STATE_CONFIRMED" desc="Reset Zcash sync state confirmed message text">
+    Your sync state for Zcash accounts was reset.
   </message>
   <message name="IDS_SETTINGS_WALLET_RESET_TRANSACTION_INFO_CONFIRMATION" desc="Reset wallet settings confirmation for resetting transaction info message text">
     Are you sure you want to reset all of your wallet transaction and nonce information? This option is mostly used by developers running a local test server. Type "<ph name="CONFIRMATION_PHRASE">$1<ex>Yes</ex></ph>" to confirm.
   </message>
+  <message name="IDS_SETTINGS_WALLET_RESET" desc="Reset wallet settings item text">
+    Reset and clear wallet data
+  </message>
   <message name="IDS_SETTINGS_WALLET_RESET_CONFIRMATION" desc="Reset wallet settings confirmation message text">
     Are you sure you want to reset your wallet? If your wallet is not backed up, resetting will cause you to lose all account data (including any associated funds). Type "<ph name="CONFIRMATION_PHRASE">$1<ex>Yes</ex></ph>" to confirm.
-  </message>
-  <message name="IDS_SETTINGS_WALLET_CLEAR_PINNED_NFT_CONFIRMATION" desc="Clear pinned NFTs confirmation message text">
-    Are you sure you want to clear your pinned NFTs? Some of NFTs may be lost forever if there is no other hosters in the IPFS network. Type "<ph name="CONFIRMATION_PHRASE">$1<ex>Yes</ex></ph>" to confirm.
   </message>
   <message name="IDS_SETTINGS_WALLET_RESET_CONFIRMED" desc="Reset wallet settings confirmed message text">
     Your wallet was reset.
@@ -1135,11 +1363,11 @@
   <message name="IDS_SETTINGS_WALLET_RESET_TRANSACTION_INFO_CONFIRMED" desc="Reset wallet settings confirmed message text">
     Your wallet transaction information was reset.
   </message>
-  <message name="IDS_SETTINGS_WALLET_CLEAR_PINNED_NFT_INFO_CONFIRMED" desc="Clear pinned NFTs confirmed message text">
-    Your pinned NFTs were reset.
-  </message>
   <message name="IDS_SETTINGS_WALLET_RESET_CONFIRMATION_PHRASE" desc="The phrase users should type to reset wallet">
     Yes
+  </message>
+  <message name="IDS_BRAVE_WALLET_TRANSACTION_SIMULATIONS_DESC" desc="The description for the user's opt-in status of the transaction simulations service">
+    See the results of transactions before you sign. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>&lt;u&gt;Learn more&lt;/u&gt;<ph name="END_LINK">&lt;/a&gt;</ph>
   </message>
 
   <!-- Settings / Wallet / Networks -->
@@ -1151,6 +1379,15 @@
   </message>
   <message name="IDS_SETTINGS_WALLET_SOL_NETWORK_LIST_TITLE" desc="The title of the list with wallet solana networks">
     Solana networks
+  </message>
+  <message name="IDS_SETTINGS_WALLET_BTC_NETWORK_LIST_TITLE" desc="The title of the list with wallet bitcoin networks">
+    Bitcoin networks
+  </message>
+  <message name="IDS_SETTINGS_WALLET_ZEC_NETWORK_LIST_TITLE" desc="The title of the list with wallet Zcash networks">
+    Zcash networks
+  </message>
+  <message name="IDS_SETTINGS_WALLET_CARDANO_NETWORK_LIST_TITLE" desc="The title of the list with wallet Cardano networks">
+    Cardano networks
   </message>
   <message name="IDS_SETTINGS_SHOW_BRAVE_WALLET_TEST_NETWORKS" desc="The description for showing the Brave wallet test networks">
     Show test networks
@@ -1215,7 +1452,7 @@
     Invalid address
   </message>
   <message name="IDS_SETTINGS_WALLET_NETWORKS_MANDATORY_ERROR" desc="The error text of the wallet network dialog about empty mandatory fields">
-    This field cannot be blank.
+    This field can't be blank.
   </message>
   <message name="IDS_SETTINGS_WALLET_NETWORKS_CHAID_ID_ERROR" desc="The error text of the wallet network dialog for invalid chain id fields">
     Invalid format, the chain id is a positive number
@@ -1248,170 +1485,23 @@
     Do you want to update the existing network?
   </message>
 
-  <!-- Settings / IPFS -->
-  <message name="IDS_SETTINGS_RESOLVE_IPFS_URLS_DESC" desc="The description for how to handle IPFS URIs">
-    Method to resolve IPFS resources
+  <!-- Settings / Content -->
+  <message name="IDS_SETTINGS_BRAVE_MRU_CYCLING_LABEL" desc="The label to activate MRU cycling with Ctrl-tab">
+    Cycle through the most recently used tabs with Ctrl-Tab
   </message>
-  <message name="IDS_IPFS_RESOLVE_OPTION_ASK" desc="Select control value for which IPFS resolve method to use">
-    Ask
-  </message>
-  <message name="IDS_IPFS_RESOLVE_OPTION_GATEWAY" desc="Select control value for which IPFS resolve method to use">
-    Gateway
-  </message>
-  <message name="IDS_IPFS_RESOLVE_OPTION_LOCAL" desc="Select control value for which IPFS resolve method to use">
-    Brave local IPFS node
-  </message>
-  <message name="IDS_IPFS_RESOLVE_OPTION_DISABLED" desc="Select control value for which IPFS resolve method to use">
-    Disabled
-  </message>
-  <message name="IDS_SETTINGS_IPFS_METHOD_DESC" desc="The description of IPFS protocol on settings page">
-    <ph name="BEGIN_LINK_MPL">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK_MPL">&lt;/a&gt;</ph> about Brave local IPFS node and gateway privacy considerations.
-  </message>
-  <message name="IDS_SETTINGS_IPFS_PUBLIC_GATEWAY_DESC" desc="The description of changing IPFS public gateway">
-    IPFS public gateway address
-  </message>
-  <message name="IDS_SETTINGS_IPFS_PUBLIC_NFT_GATEWAY_DESC" desc="The description of changing NFT IPFS public gateway">
-    IPFS public gateway address for NFT
-  </message>
-  <message name="IDS_SETTINGS_IPFS_CHANGE_GATEWAY_BUTTON_LABEL" desc="The label of the button for changing IPFS gateway address">
-    Change
-  </message>
-  <message name="IDS_SETTINGS_IPFS_AUTO_FALLBACK_TO_GATEWAY_LABEL" desc="The text label for IPFS public gateway fallback switch">
-    IPFS public gateway fallback
-  </message>
-  <message name="IDS_SETTINGS_IPFS_AUTO_FALLBACK_TO_GATEWAY_DESC" desc="The description for the switch of automatically fallback to IPFS public gateway">
-    Automatically fall back to public IPFS gateway if your Brave local IPFS node cannot be reached.
-  </message>
-  <message name="IDS_SETTINGS_IPFS_AUTO_REDIRECT_TO_GATEWAY_WHEN_POSSIBLE_LABEL">
-    Automatically redirect requests for IPFS network resources to the configured gateway.
-  </message>
-  <message name="IDS_SETTINGS_IPFS_AUTO_REDIRECT_TO_GATEWAY_WHEN_POSSIBLE_DESC">
-    Requests for IPFS resources hosted on third-party IPFS gateways or DNSLINK resources will be routed via the selected local or remote gateway.
-    Note: If local node is selected, resource will be requested directly from your computer and cached data may be provided to the IPFS network for some time.
-  </message>
-  <message name="IDS_SETTINGS_IPFS_COMPANION_ENABLED_DESC" desc="The description for IPFS companion switch in settings">
-    Uses the IPFS Companion extension for enhanced IPFS support in Brave, including access to common IPFS tasks from your browser bar.
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_IPFS_STORAGE_MAX_LABEL" desc="The text label for Maximum IPFS cache size field">
-    Maximum IPFS cache size (GB)
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_IPFS_STORAGE_MAX_DESC" desc="The text label for Maximum IPFS cache size field">
-    A soft upper limit for the size of the IPFS repository's datastore.
-  </message>
-  <message name="IDS_SETTINGS_IPFS_PEERS_LINK_TITLE" desc="The ipfs peers page link title on IPFS settings page">
-    Modify the peers list
-  </message>
-  <message name="IDS_SETTINGS_IPNS_ADD_PEER_DIALOG_TITLE" desc="The title of the dialog to add new peer on IPFS Settings page">
-    Add new peer connection string
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_EDITOR_LINK" desc="The title of the link to open keys management block in IPFS settings">
-    Set up your IPNS keys
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_EDITOR_LINK_DESC" desc="The description for the link to open keys management block in IPFS settings">
-    Sign content by the corresponding private key and publish it to IPNS
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_LIST_TITLE" desc="The title of the keys management list in IPFS settings">
-    Keys available for publishing
-  </message>
-  <message name="IDS_SETTINGS_IPNS_ADD_KEY_DIALOG_TITLE" desc="The title of the dialog to add new key on IPFS Settings page">
-    Enter a name for the new key
-  </message>
-  <message name="IDS_SETTINGS_IPNS_ADD_KEY_DIALOG_ERROR" desc="The error message for the add key dialog on IPFS Settings page if key name is invalid">
-    This name cannot be used
-  </message>
-  <message name="IDS_SETTINGS_IPFS_ROTATE_KEY_DIALOG_TITLE" desc="The title of the dialog to rotate key on IPFS Settings page">
-    Rotate key
-  </message>
-  <message name="IDS_SETTINGS_IPFS_ROTATION_STOP_ERROR" desc="The error message of the dialog when unable to stop ipfs node">
-    Unable to stop Brave local IPFS node
-  </message>
-  <message name="IDS_SETTINGS_IPFS_ROTATION_LAUNCH_ERROR" desc="The error message of the dialog when unable to launch ipfs node">
-    Unable to launch Brave local IPFS node
-  </message>
-  <message name="IDS_SETTINGS_IPFS_PEER_NODE_RESTART" desc="The message to restart node if peers were chagned on IPFS Settings page">
-    Restart node to apply changes
-  </message>
-  <message name="IDS_SETTINGS_IPFS_PEER_NODE_RESTART_BUTTON" desc="The button title to restart node if peers were chagned on IPFS Settings page">
-    Restart node
-  </message>
-  <message name="IDS_SETTINGS_IPFS_ROTATE_BUTTON" desc="The button title to rotate key on IPFS Settings page">
-    Rotate
-  </message>
-  <message name="IDS_SETTINGS_ADD_PEER_DIALOG_PLACEHOLDER" desc="The placholder of the dialog to add new peer on IPFS Settings page">
-    /ip4/46.21.210.45/udp/14406/quic/p2p/12D3KooWBdmLJjhpgJ9KZgLM3f894ff9xyBfPvPjFNn7MKJpyrC2
-  </message>
-  <message name="IDS_SETTINGS_IPNS_ADD_PEER_DIALOG_ERROR" desc="The error message for the add peer dialog on IPFS Settings page if the peer name is not valid">
-    This name is not valid
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEY_EXPORT_ITEM" desc="The text for ipfs key export item">
-    Export key
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEY_REMOVE_ITEM" desc="The text for ipfs key remove item">
-    Remove key
-  </message>
-  <message name="IDS_SETTINGS_IPFS_PEERS_LINK_TITLE_DESC" desc="The ipfs peers page link description on IPFS settings page">
-    Set up ipfs peers description
-  </message>
-  <message name="IDS_SETTINGS_IPFS_DELETE_PEER_CONFIRMATION" desc="Confirmation text for deleting a peer from IPFS peers manager page">
-    Do you really want to delete <ph name="KEY_NAME">$1<ex>MyCustomPeerId</ex></ph>?
-  </message>
-  <message name="IDS_SETTINGS_IPNS_DELETE_KEY_CONFIRMATION" desc="Confirmation text for deleting a key from IPFS keys manager page">
-    Do you really want to delete <ph name="KEY_NAME">$1<ex>MyCustomKey</ex></ph>?
-  </message>
-  <message name="IDS_SETTINGS_IPFS_NODE_NOT_LAUNCHED" desc="The message when node is not running on IPFS keys manager page">
-    Node is not launched
-  </message>
-  <message name="IDS_SETTINGS_IPFS_START_NODE_ERROR" desc="The error message when node was unable to start on IPFS keys manager page">
-    IPFS service launch error, more information is available on the <ph name="BEGIN_LINK">&lt;a target="_blank" style="text-decoration: underline;" href="chrome://ipfs-internals/"&gt;</ph>diagnostic page<ph name="END_LINK">&lt;/a&gt;</ph>
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_IMPORT_ERROR" desc="The error text if ipns keys import failed">
-    '<ph name="KEY_NAME">$1<ex>MyCustomKey</ex></ph>' key import failed
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_EXPORT_ERROR" desc="The error text if ipns keys export failed">
-    '<ph name="KEY_NAME">$1<ex>MyCustomKey</ex></ph>' key export failed
-  </message>
-  <message name="IDS_IPFS_LOCAL_NODE_WARNING" desc="The warning about possible dns\proxy leak when use ipfs">
-    Note: Network requests may not use browser proxy and DNS settings.
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_IMPORT_BUTTON_TITLE" desc="The title of the button to import ipns keys">
-    Import
-  </message>
-  <message name="IDS_SETTINGS_IPNS_KEYS_GENERATE_BUTTON_TITLE" desc="The title of the button to generate ipns keys">
-    Generate
-  </message>
-  <message name="IDS_SETTINGS_IPFS_START_NODE" desc="The button text to start node on IPFS keys manager page">
-    Start node
-  </message>
-
-  <!-- Settings / IPFS / IPFS public gateway address dialog -->
-  <message name="IDS_SETTINGS_CHANGE_IPFS_GATEWAY_DIALOG_TITLE" desc="The title of dialog for changing IPFS gateway">
-    Set IPFS gateway
-  </message>
-  <message name="IDS_SETTINGS_CHANGE_IPFS_GATEWAY_DIALOG_LABEL" desc="The text label for IPFS gateway input field">
-    Gateway address
-  </message>
-  <message name="IDS_SETTINGS_IPFS_ERROR_INVALID_ADDRESS" desc="The error message used when user input an invalid gateway address">
-    Invalid gateway address
-  </message>
-  <message name="IDS_SETTINGS_IPFS_ERROR_INVALID_ADDRESS_ORIGIN_ISOLATION" desc="The error message used when user input an invalid gateway address without origin isolation">
-    Only a valid IPFS gateway with Origin isolation enabled can be used in Brave
-  </message>
-
-  <!-- Settings / Help tips -->
-  <message name="IDS_SETTINGS_HELP_TIPS" desc="Title for an item in the 'Help tips' section of Brave Settings">
-    Help tips
-  </message>
-  <message name="IDS_SETTINGS_HELP_TIPS_SHOW_BRAVE_WAYBACK_MACHINE_PROMPT" desc="The label describing the 'wayback machine' toggle option">
+  <message name="IDS_SETTINGS_SHOW_BRAVE_WAYBACK_MACHINE_PROMPT" desc="The label describing the 'wayback machine' toggle option">
     Show Wayback Machine prompt on 404 pages
   </message>
+
+  <!-- Settings / System -->
   <message name="IDS_SETTINGS_WINDOW_CLOSING_CONFIRM_OPTION_LABEL" desc="The text for settings option">
     Warn me before closing window with multiple tabs
   </message>
   <message name="IDS_SETTINGS_CLOSING_LAST_TAB_OPTION_LABEL" desc="The text for settings option">
     Close window when closing last tab
   </message>
-  <message name="IDS_SETTINGS_DISABLE_CLICKABLE_MUTE_INDICATORS" desc="The text for the settings option for disabling clickable tab mute indicators">
-    Disable mute function in tab speaker icons
+  <message name="IDS_SETTINGS_SHOW_FULLSCREEN_REMINDER_OPTION_LABEL" desc="The text for fullscreen reminder settings option">
+    Show full screen reminder to press Esc on exit
   </message>
 
   <!-- Settings / Leo Assistant -->
@@ -1421,24 +1511,286 @@
   <message name="IDS_SETTINGS_LEO_ASSISTANT_SHOW_ICON_ON_TOOLBAR_LABEL" desc="The text for settings option">
     Show Leo icon in the sidebar
   </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_SHOW_IN_CONTEXT_MENU_LABEL" desc="The text for settings option to show Leo in context menu">
+    Show Leo in the context menu on websites
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_SHOW_IN_CONTEXT_MENU_DESC" desc="The description for settings option to show Leo in context menu">
+    Leo will appear in the context menu when you right-click on a website. This will send context from the current web page to Leo.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_TAB_ORGANIZATION_LABEL" desc="The text for settings option to enable tab focus mode">
+    Tab Focus Mode
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_TAB_ORGANIZATION_DESC" desc="The description for settings option to enable tab focus mode">
+    Enable tab organization in Tab Search page. When opened, this will automatically send the titles and origins of all non-private tabs to Leo to classify them. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
   <message name="IDS_SETTINGS_LEO_ASSISTANT_SHOW_SUGGESTED_PROMPTS_LABEL" desc="The text for settings option">
     Show suggested prompts in the conversation
   </message>
-  <message name="IDS_SETTINGS_LEO_ASSISTANT_RESET_AND_CLEAR_DATA_LABEL" desc="The text for settings option">
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_HISTORY_PREFERENCE_LABEL" desc="The label for the checkbox determining whether to store AI Chat conversations">
+    Store my conversation history
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_HISTORY_PREFERENCE_CONFIRM" desc="The confirmation prompt about disabling the AI Chat history preference">
+    Disabling conversation storage will permanently erase all previously stored conversations. This action can't be undone.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_RESET_AND_CLEAR_DATA_LABEL" desc="The button label for resetting AI Chat data">
     Clear Leo data
   </message>
   <message name="IDS_SETTINGS_LEO_ASSISTANT_RESET_AND_CLEAR_DATA_CONFIRMATION_LABEL" desc="The confirmation window message for reset option">
-    Resetting the Leo assistant will require you to opt-in to use Brave
-Leo in the future and will also clear your chat history. Clearing your
-chat history will delete all your previous conversations with Brave
-Leo. This action cannot be undone.
+    Resetting Leo AI will require you to opt-in to use Brave Leo AI in the future and will also clear your chat history, customizations, and memories. Clearing your chat history will delete all your previous conversations with Brave Leo AI. This action can't be undone.
   </message>
-  <message name="IDS_SETTINGS_LEO_ASSISTANT_CLEAR_HISTORY_DATA_LABEL" desc="The text for settings option">
-    Leo
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_AUTOCOMPLETE_LINK" desc="A label for a link to settings page to adjust autocomplete suggestion based on Leo">
+    Adjust autocomplete suggestions
   </message>
-  <message name="IDS_SETTINGS_LEO_ASSISTANT_CLEAR_HISTORY_DATA_SUBLABEL" desc="The text for settings option">
-    Data and chat history
+  <message name="IDS_SETTINGS_AI_CHAT_CLEAR_HISTORY_DATA_LABEL" desc="Label for checkbox to select AI assistant conversations for deletion when deleting browser data">
+    Leo AI
   </message>
+  <message name="IDS_SETTINGS_AI_CHAT_CLEAR_HISTORY_DATA_SUBLABEL" desc="Label description for checkbox to select AI assistant conversations for deletion when deleting browser data">
+    Chat history
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ABOUT_LEO_LABEL" desc="Label for the about Leo assistant section">
+    About Leo AI
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ABOUT_LEO_DESC_1" desc="Description for the about Leo assistant section">
+    Brave Leo provides privacy-first AI chat and other AI-powered interfaces in the browser. Leo never learns from your data or uses it for model training. All requests are proxied through an anonymizing server.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ABOUT_LEO_DESC_2" desc="Description for learning more about Leo privacy policy">
+    Read more about how Brave protects your use of AI in Leo's privacy policy. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MODEL_SELECTION_LABEL" desc="Label for selecting default model">
+    Default model for new conversations
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_PERSONALIZATION_LABEL" desc="Label for the personalization section">
+    Personalization
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_LINK_LABEL" desc="Label for a link to Leo customization page">
+    Customize Leo's responses and memories
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MANAGE_URL" desc="Label for managing accounts url">
+    Manage premium subscription
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_BYOM_LABEL" desc="A generic title to use for headings">
+    Bring your own model
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_DELETE_MODEL_CONFIRMATION" desc="Confirmation message for deleting a model">
+    Are you sure you want to delete this model? If this model is being used in any active conversation then that conversation will change to use Leo's default model.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ADD_MODEL_LABEL" desc="A title for adding a custom model">
+    Add model
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_EDIT_MODEL_LABEL" desc="A title for adding a custom model">
+    Edit model
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_LABEL" desc="An input title for adding a custom model">
+    Label
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_REQUEST_NAME" desc="An input title for models request name. This is gets sent to the remote server.">
+    Model request name
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_SERVER_ENDPOINT" desc="An input title for server url.">
+    Server endpoint
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_API_KEY" desc="An input title for server API key.">
+    API Key
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_VISION_SUPPORT" desc="An input title for model vision support.">
+    Vision Support
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_VISION_SUPPORT_TOOLTIP_INFO" desc="A brief description for model vision support for adding a custom model.">
+    If this model takes image as input, e.g. llama 3.2b vision
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_LABEL_TOOLTIP_INFO" desc="A brief description for the input title for adding a custom model">
+    The name of the model as it will appear in the model selection menu
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_REQUEST_NAME_TOOLTIP_INFO" desc="A brief description for the input title for adding model request name">
+    The name of the model as it should appear in the request to the serving framework, e.g. phi-3 (note that if this name doesn’t match exactly what is expected by the serving framework the integration won't work)
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_SERVER_ENDPOINT_TOOLTIP_INFO" desc="A brief description for the input title for adding server endpoint url">
+    The URL where your serving framework is listening for requests. If you're not sure, check the serving framework documentation. E.g. for Ollama, this is always http://localhost:11434/v1/chat/completions
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_MODEL_API_KEY_TOOLTIP_INFO" desc="A brief description for the input title for adding API key">
+    Some serving frameworks may require authentication credentials, such as an API key or an access token. These will be added to the request header.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_CONTEXT_SIZE" desc="An input title for context size, which refers to the maximum number of tokens (small units of text, usually a few characters or words) that an AI model can process in one go. The context size determines how much data the model can consider simultaneously. For example, the Phi 3.5 model can process up to 131072 tokens in its context window.">
+    Context size
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_CONTEXT_SIZE_TOOLTIP_INFO" desc="A brief description for context size, as well as a concise explanation for how it relates to the the user's experience.">
+    The maximum number of tokens the model can process in a single interaction. A larger context size allows the model to handle longer conversations. Different models support different maximum context sizes.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CLOSE_BUTTON_LABEL" desc="A label for a button that closes configuration UI">
+    Close
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_PROXY_NOTE" desc="A note for users when adding model server info">
+    Brave doesn't proxy these requests, please read privacy terms of the chosen provider.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ENDPOINT_ERROR" desc="An error note for users when url is invalidated">
+    Non-local endpoints should employ the HTTPS protocol for secure data transmission.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ENDPOINT_INVALID_ERROR" desc="An error message when the url is invalid">
+    You have entered an invalid URL. Please enter a valid URL.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ENDPOINT_POTENTIALLY_UNSAFE_ERROR" desc="An error message when the url is potentially unsafe">
+    This endpoint is potentially unsafe.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_PRIVATE_IP_NOT_ALLOWED_TITLE" desc="Title for private IP not allowed dialog">
+    Private IPs Not Allowed
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_PRIVATE_IP_NOT_ALLOWED_BODY" desc="Body text for private IP not allowed dialog">
+    The address you entered appears to be from a private network—like your router or a local server. Brave blocks these automatically to keep you safe, but you can enable them if you're confident it's secure.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_PRIVATE_IP_NOT_ALLOWED_INSTRUCTIONS" desc="Instructions on how to enable private IPs">
+    To proceed, visit brave://flags/, search for "brave-ai-chat-allow-private-ips," and enable the feature. Once enabled, you can use private network addresses in Leo settings.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ADD_NEW_BUTTON_LABEL" desc="A label for a button that opens a panel with input forms for a user to add model">
+    Add new model
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MODEL_LIST_EMPTY_LABEL" desc="A label an alert when the model list is empty.">
+    You haven't connected a model yet.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_YOUR_MODELS_TITLE" desc="A header title for model list section">
+    Your models
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_YOUR_MODELS_DESC_1" desc="A description explaning to connect models within the browser">
+    Connect your self-hosted or third-party hosted LLM to Leo and use them within the browser.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_YOUR_MODELS_DESC_2" desc="A description explaning what protocols are accepted">
+    Use any OpenAI Chat Protocol compatible framework such as Ollama. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ADD_MODEL_BUTTON_LABEL" desc="A button label for user to click when they want to add a new model">
+    Add model
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_SAVE_MODEL_BUTTON_LABEL" desc="A button label for user to click when they want to save a new model">
+    Save model
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MODEL_SYSTEM_PROMPT_TITLE" desc="A header title for the model system prompt">
+    System Prompt
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MODEL_SYSTEM_PROMPT_DESC" desc="A description message for the custom model system prompt">
+    Custom instructions and/or context given to the model to guide its responses in a specific direction or style. Use &#x25;datetime&#x25; where you would like the current date and time to be inserted.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_TOKENS_COUNT" desc="A label for the (estimated) number of tokens in the system prompt">
+    ≈<ph name="TOKENS_COUNT">$1<ex>175</ex></ph> tokens
+  </message>
+   <!-- Leo Customization -->
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_PAGE_TITLE" desc="The title for Leo Assistant customization page">
+    Customize Leo
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_TITLE" desc="The title for Leo Assistant customization section">
+    About you
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_DESCRIPTION" desc="The description for Leo Assistant customization section">
+    Tell Leo about yourself to get more personalized answers. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_ENABLED_LABEL" desc="The label for enabling Leo Assistant customization">
+    Enable Leo Customization
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_USER_MEMORY_ENABLED_LABEL" desc="The label for enabling user memory in Leo Assistant">
+    Enable User Memory
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_NAME_LABEL" desc="Label for the input where the user specifies what Leo should call them">
+    What should Leo call you?
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_NAME_PLACEHOLDER" desc="Placeholder for the input where the user specifies what Leo should call them">
+    Enter your preferred name for Leo to call you by
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_JOB_LABEL" desc="Label for the input where the user describes what they do">
+    What do you do?
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_JOB_PLACEHOLDER" desc="Placeholder for the input where the user describes what they do">
+    Tell Leo a little bit about what you do
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_TONE_LABEL" desc="Label for the input where the user describes how Leo should answer">
+    How should Leo answer your questions?
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_TONE_PLACEHOLDER" desc="Placeholder for the input where the user describes how Leo should answer">
+    Describe the tone and traits you would like Leo to use when answering
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_OTHER_LABEL" desc="Label for the input where the user can add anything else Leo should know">
+    Anything else Leo should know about you?
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_OTHER_PLACEHOLDER" desc="Placeholder for the input where the user can add anything else Leo should know">
+    Let Leo know about any preferences you want it to keep in mind when answering
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_SAVE_BUTTON" desc="Label for the save changes button in Leo customization">
+    Save changes
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CUSTOMIZATION_CHANGES_SAVED" desc="Label for the save changes button in Leo customization when the changes are saved">
+    Changes saved
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_INPUT_LENGTH_ERROR" desc="General error message shown when any input exceeds the maximum length">
+    Input is too long
+  </message>
+
+  <!-- Leo Assistant Memory Section -->
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_YOUR_MEMORIES_TITLE" desc="The title for Leo Assistant memory section">
+    Memories
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_YOUR_MEMORIES_DESC" desc="The description for Leo Assistant memory section">
+    All the things that Leo learned about you and won't forget about. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MEMORY_LIST_EMPTY_TITLE" desc="The title shown when the memory list is empty">
+    No memories created yet
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MEMORY_LIST_EMPTY_DESCRIPTION" desc="The description shown when the memory list is empty">
+    Add a memory to help Leo get to know you better.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_ADD_NEW_MEMORY_BUTTON_LABEL" desc="The label for the button to add a new memory">
+    Add new memory
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_EDIT_MEMORY_DIALOG_TITLE" desc="The title for the edit memory dialog">
+    Edit this memory
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_CREATE_MEMORY_DIALOG_TITLE" desc="The title for the create new memory dialog">
+    Create a new memory
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_MEMORY_INPUT_PLACEHOLDER" desc="The placeholder text for the memory input field">
+    What do you want Leo to remember?
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_DELETE_MEMORY_CONFIRMATION_TITLE" desc="The title for delete memory dialog">
+    Delete this memory
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_DELETE_MEMORY_CONFIRMATION" desc="The confirmation message for deleting a memory">
+    Are you sure you want to delete this memory? This action cannot be undone.
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_DELETE_ALL_MEMORIES_CONFIRMATION_TITLE" desc="The title for delete all memories dialog and the label for delete all memories action button">
+    Delete all memories
+  </message>
+  <message name="IDS_SETTINGS_LEO_ASSISTANT_DELETE_ALL_MEMORIES_CONFIRMATION" desc="The confirmation message for deleting all memories">
+    Are you sure you want to delete all memories? This action cannot be undone.
+  </message>
+
+  <!-- Settings / Survey Panelist -->
+  <message name="IDS_SETTINGS_SURVEY_PANELIST" desc="Title for an item in the 'Survey Panelist' section of Brave Settings">
+    Survey Panelist
+  </message>
+  <message name="IDS_SETTINGS_SURVEY_PANELIST_LABEL" desc="The text for settings option to enable survey panelist">
+    Allow Brave surveys
+  </message>
+  <message name="IDS_SETTINGS_SURVEY_PANELIST_DESC" desc="The description for settings option to enable survey panelist">
+    Allows Brave to show links to private surveys in the new tab page. Surveys help us build better features and measure the effectiveness of browser-based ad campaigns. <ph name="BEGIN_LINK">&lt;a target="_blank" href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
+  </message>
+
+  <!-- Settings / Playlist -->
+  <message name="IDS_SETTINGS_PLAYLIST_ENABLE_PLAYLIST_LABEL" desc="The text for setting to en/disable Playlist feature">
+    Enable Playlist
+  </message>
+  <message name="IDS_SETTINGS_PLAYLIST_CACHE_BY_DEFAULT_LABEL" desc="The text for setting to en/disable media cache behavior">
+    Automatically add files for offline viewing
+  </message>
+  <message name="IDS_SETTINGS_PLAYLIST_CACHE_BY_DEFAULT_SUB_LABEL" desc="A description for setting to en/disable media cache behavior">
+    This option will automatically cache media files so you can play them without an Internet connection
+  </message>
+
+  <!-- Settings / Secure DNS -->
+  <message name="IDS_SETTINGS_AUTOMATIC_MODE_WITH_QUAD9_DESCRIPTION" desc="Text of the select option that puts secure DNS in auto-upgrade mode that falls back to Quad9">
+    OS default or Quad9
+  </message>
+  <message name="IDS_SETTINGS_AUTOMATIC_MODE_WITH_WIKIMEDIA_DESCRIPTION" desc="Text of the select option that puts secure DNS in auto-upgrade mode that falls back to Wikimedia">
+    OS default or Wikimedia
+  </message>
+  <message name="IDS_SETTINGS_AUTOMATIC_MODE_WITH_CLOUDFLARE_DESCRIPTION" desc="Text of the select option that puts secure DNS in auto-upgrade mode that falls back to Cloudflare">
+    OS default or Cloudflare
+  </message>
+
 
 <!-- Avatars. Generated via zsh and node:
         declare -i a=56
