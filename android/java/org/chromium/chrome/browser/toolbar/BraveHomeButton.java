@@ -12,15 +12,13 @@ import android.content.res.ColorStateList;
 import android.util.AttributeSet;
 
 import androidx.core.widget.ImageViewCompat;
-import android.view.View;
 
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.theme.ThemeColorProvider.TintObserver;
 import org.chromium.chrome.browser.toolbar.home_button.HomeButton;
+import org.chromium.chrome.browser.ui.theme.BrandedColorScheme;
 
-/**
- * Brave's extension of HomeButton.
- */
+/** Brave's extension of HomeButton. */
 public class BraveHomeButton extends HomeButton implements TintObserver {
     private ThemeColorProvider mThemeColorProvider;
 
@@ -38,16 +36,11 @@ public class BraveHomeButton extends HomeButton implements TintObserver {
     }
 
     @Override
-    public void onTintChanged(ColorStateList tint, int brandedColorScheme) {
+    public void onTintChanged(
+            ColorStateList tint,
+            ColorStateList activityFocusTint,
+            @BrandedColorScheme int brandedColorScheme) {
         ImageViewCompat.setImageTintList(this, tint);
-    }
-
-    @Override
-    public void setVisibility(int visibility) {
-        if (visibility != View.GONE) {
-            return;
-        }
-        super.setVisibility(View.GONE);
     }
 
     public void destroy() {

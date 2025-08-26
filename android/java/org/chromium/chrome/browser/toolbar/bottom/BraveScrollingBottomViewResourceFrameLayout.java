@@ -59,7 +59,8 @@ public class BraveScrollingBottomViewResourceFrameLayout
 
         mBottomContainerSlot = findViewById(R.id.bottom_container_slot);
         assert mBottomContainerSlot != null : "Something has changed in upstream!";
-        if (mBottomContainerSlot != null && BottomToolbarConfiguration.isBottomToolbarEnabled()) {
+        if (mBottomContainerSlot != null
+                && BottomToolbarConfiguration.isBraveBottomControlsEnabled()) {
             mBottomContainerSlot.setVisibility(View.GONE);
         }
     }
@@ -154,6 +155,8 @@ public class BraveScrollingBottomViewResourceFrameLayout
 
     @SuppressLint("VisibleForTests")
     public void triggerBitmapCapture(boolean dropCachedBitmap) {
+        if (isInTabSwitcherMode()) return;
+
         synchronized (mCallbackController) {
             if (dropCachedBitmap) {
                 getResourceAdapter().dropCachedBitmap();
@@ -162,5 +165,11 @@ public class BraveScrollingBottomViewResourceFrameLayout
                 getResourceAdapter().triggerBitmapCapture();
             }
         }
+    }
+
+    private boolean isInTabSwitcherMode() {
+        BraveBottomControlsCoordinator bottomControlsCoordinator = braveBottomControlsCoordinator();
+        if (bottomControlsCoordinator == null) return false;
+        return bottomControlsCoordinator.isInTabSwitcherMode();
     }
 }

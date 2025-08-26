@@ -15,17 +15,18 @@ import org.json.JSONObject;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.brave_rewards.mojom.WalletStatus;
+import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.R;
 
+@NullMarked
 public class BraveRewardsExternalWallet {
-    //fields
+    // fields
     public static final String ACCOUNT_URL = "account_url";
     public static final String ADDRESS = "address";
     public static final String STATUS = "status";
     public static final String TOKEN = "token";
     public static final String TYPE = "type";
     public static final String USER_NAME = "user_name";
-    public static final String LOGIN_URL = "login_url";
 
     private String mAccountUrl;
     private String mAddress;
@@ -33,7 +34,6 @@ public class BraveRewardsExternalWallet {
     private String mToken;
     private String mType;
     private String mUserName;
-    private String mLoginUrl;
 
     public String getAccountUrl() {
         return mAccountUrl;
@@ -59,41 +59,47 @@ public class BraveRewardsExternalWallet {
         return mUserName;
     }
 
-    public String getLoginUrl() {
-        return mLoginUrl;
+    public BraveRewardsExternalWallet(String jsonExternalWallet) throws JSONException {
+        fromJson(jsonExternalWallet);
     }
 
-    public BraveRewardsExternalWallet(String json_external_wallet) throws JSONException {
-        fromJson (json_external_wallet);
-    }
-
-    private void fromJson(String json_external_wallet) throws JSONException {
-        JSONObject jsonObj = new JSONObject(json_external_wallet);
+    private void fromJson(String jsonExternalWallet) throws JSONException {
+        JSONObject jsonObj = new JSONObject(jsonExternalWallet);
         mAccountUrl = jsonObj.getString(ACCOUNT_URL);
         mAddress = jsonObj.getString(ADDRESS);
         mStatus = jsonObj.getInt(STATUS);
         mToken = jsonObj.getString(TOKEN);
         mType = jsonObj.getString(TYPE);
         mUserName = jsonObj.getString(USER_NAME);
-        mLoginUrl = jsonObj.getString(LOGIN_URL);
     }
 
     @VisibleForTesting
     @Override
     public String toString() {
         return "BraveRewardsExternalWallet{"
-                + "mAccountUrl='" + mAccountUrl + '\'' + ", mAddress='" + mAddress + '\''
-                + ", mStatus=" + mStatus + ", mToken='" + mToken + '\'' + ", mUserName='"
-                + mUserName + '\'' + ", mLoginUrl='" + mLoginUrl + '\'' + '}';
+                + "mAccountUrl='"
+                + mAccountUrl
+                + '\''
+                + ", mAddress='"
+                + mAddress
+                + '\''
+                + ", mStatus="
+                + mStatus
+                + ", mToken='"
+                + mToken
+                + '\''
+                + ", mUserName='"
+                + mUserName
+                + '\''
+                + '}';
     }
 
-    public static String WalletStatusToString(int status) {
+    public static String walletStatusToString(int status) {
         String value = "";
         Context context = ContextUtils.getApplicationContext();
-        switch (status){
+        switch (status) {
             case WalletStatus.NOT_CONNECTED:
-                value = context.getResources().getString(
-                    R.string.user_wallet_status_not_connected);
+                value = context.getResources().getString(R.string.user_wallet_status_not_connected);
                 break;
             case WalletStatus.CONNECTED:
                 value = context.getResources().getString(R.string.brave_ui_wallet_button_connected);

@@ -19,7 +19,7 @@ import android.net.Uri;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.base.Callback;
-import org.chromium.base.CallbackController;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.OneShotCallback;
@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.toolbar.menu_button.MenuButton;
 import org.chromium.chrome.browser.toolbar.menu_button.MenuButtonState;
 import org.chromium.chrome.browser.ui.appmenu.AppMenuButtonHelper;
 import org.chromium.chrome.browser.util.BraveTouchUtils;
+import org.chromium.components.browser_ui.styles.ChromeColors;
 import org.chromium.ui.modelutil.PropertyModelChangeProcessor;
 import android.widget.Button;
 import android.widget.ImageButton;
@@ -54,9 +55,9 @@ import android.util.Base64;
 import org.json.JSONObject;
 
 /**
- * The coordinator for the browsing mode bottom toolbar. This class has two primary components,
- * an Android view that handles user actions and a composited texture that draws when the controls
- * are being scrolled off-screen. The Android version does not draw unless the controls offset is 0.
+ * The coordinator for the browsing mode bottom toolbar. This class has two primary components, an
+ * Android view that handles user actions and a composited texture that draws when the controls are
+ * being scrolled off-screen. The Android version does not draw unless the controls offset is 0.
  */
 public class BrowsingModeBottomToolbarCoordinator {
     private static final String TAG = "BrowsingMode";
@@ -101,7 +102,6 @@ public class BrowsingModeBottomToolbarCoordinator {
     /** The activity tab provider that used for making the IPH. */
     private final ActivityTabProvider mTabProvider;
 
-    private CallbackController mCallbackController = new CallbackController();
     private final BookmarksButton mBookmarkButton;
     private final MenuButton mMenuButton;
     private ThemeColorProvider mThemeColorProvider;
@@ -210,21 +210,21 @@ public class BrowsingModeBottomToolbarCoordinator {
         mTabSwitcherButtonCoordinator = new TabSwitcherButtonCoordinator(mTabSwitcherButtonView);
 
         mTabSwitcherButtonView.setOnLongClickListener(tabSwitcherLongClickListener);
-        if (BottomToolbarVariationManager.isNewTabButtonOnBottom()) {
+        if (BottomToolbarVariationManager.isNewTabButtonOnBottomControls()) {
             mNewTabButton.setVisibility(View.VISIBLE);
         }
-        if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+        if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
             mBraveHomeButton.setVisibility(View.VISIBLE);
             mBraveHomeText.setVisibility(View.VISIBLE);
             mBeHomeButton.setVisibility(View.VISIBLE);
         }
 
-        if (BottomToolbarVariationManager.isTabSwitcherOnBottom()) {
+        if (BottomToolbarVariationManager.isTabSwitcherOnBottomControls()) {
             // mTabSwitcherButtonView.setVisibility(View.VISIBLE);
         }
 
         mBookmarkButton = mToolbarRoot.findViewById(R.id.bottom_bookmark_button);
-        if (BottomToolbarVariationManager.isBookmarkButtonOnBottom()) {
+        if (BottomToolbarVariationManager.isBookmarkButtonOnBottomControls()) {
             // mBookmarkButton.setVisibility(View.VISIBLE);
             getNewTabButtonParent().setVisibility(View.GONE);
             OnClickListener bookmarkClickHandler =
@@ -245,15 +245,6 @@ public class BrowsingModeBottomToolbarCoordinator {
         }
 
         mMenuButton = mToolbarRoot.findViewById(R.id.menu_button_wrapper);
-        if (mMenuButton != null) {
-            Supplier<MenuButtonState> menuButtonStateSupplier =
-                    () -> UpdateMenuItemHelper.getInstance().getUiState().buttonState;
-            BraveMenuButtonCoordinator.setupPropertyModel(mMenuButton, menuButtonStateSupplier);
-            // mMenuButton.setVisibility(View.VISIBLE);
-            if (!BottomToolbarVariationManager.isMenuButtonOnBottom()) {
-                mMenuButton.setVisibility(View.GONE);
-            }
-        }
     }
 
     /**
@@ -282,24 +273,51 @@ public class BrowsingModeBottomToolbarCoordinator {
             TabModelSelector tabModelSelector,
             ThemeColorProvider themeColorProvider,
             IncognitoStateProvider incognitoStateProvider) {
+        if (mMenuButton != null) {
+            Supplier<MenuButtonState> menuButtonStateSupplier =
+                    () ->
+                            UpdateMenuItemHelper.getInstance(
+                                            tabModelSelector.getModel(false).getProfile())
+                                    .getUiState()
+                                    .buttonState;
+            BraveMenuButtonCoordinator.setupPropertyModel(mMenuButton, menuButtonStateSupplier);
+            if (!BottomToolbarVariationManager.isMenuButtonOnBottomControls()) {
+                mMenuButton.setVisibility(View.GONE);
+            }
+        }
         mThemeColorProvider = themeColorProvider;
         mMediator.setThemeColorProvider(themeColorProvider);
-        if (BottomToolbarVariationManager.isNewTabButtonOnBottom()) {
+        if (incognitoStateProvider.isIncognitoSelected()) {
+            mMediator.onThemeColorChanged(
+                    ChromeColors.getDefaultThemeColor(ContextUtils.getApplicationContext(), true),
+                    false);
+        }
+        if (BottomToolbarVariationManager.isNewTabButtonOnBottomControls()) {
             mNewTabButton.setOnClickListener(newTabListener);
             mNewTabButton.setThemeColorProvider(themeColorProvider);
             mNewTabButton.setIncognitoStateProvider(incognitoStateProvider);
+            mNewTabButton.onTintChanged(
+                    mThemeColorProvider.getTint(),
+                    mThemeColorProvider.getTint(),
+                    mThemeColorProvider.getBrandedColorScheme());
         }
 
-        if (BottomToolbarVariationManager.isHomeButtonOnBottom()) {
+        if (BottomToolbarVariationManager.isHomeButtonOnBottomControls()) {
             mBraveHomeButton.setThemeColorProvider(themeColorProvider);
+            mBraveHomeButton.onTintChanged(
+                    mThemeColorProvider.getTint(),
+                    mThemeColorProvider.getTint(),
+                    mThemeColorProvider.getBrandedColorScheme());
         }
 
         mSearchAccelerator.setThemeColorProvider(themeColorProvider);
         mSearchAccelerator.setIncognitoStateProvider(incognitoStateProvider);
         mSearchAccelerator.onTintChanged(
-                mThemeColorProvider.getTint(), mThemeColorProvider.getBrandedColorScheme());
+                mThemeColorProvider.getTint(),
+                mThemeColorProvider.getTint(),
+                mThemeColorProvider.getBrandedColorScheme());
 
-        if (BottomToolbarVariationManager.isTabSwitcherOnBottom()) {
+        if (BottomToolbarVariationManager.isTabSwitcherOnBottomControls()) {
             mTabSwitcherButtonCoordinator.setTabSwitcherListener(tabSwitcherListener);
             mTabSwitcherButtonCoordinator.setThemeColorProvider(themeColorProvider);
             mTabSwitcherButtonCoordinator.setTabCountSupplier(
@@ -308,9 +326,15 @@ public class BrowsingModeBottomToolbarCoordinator {
 
         mBookmarkButton.setThemeColorProvider(themeColorProvider);
         mBookmarkButton.onTintChanged(
-                mThemeColorProvider.getTint(), mThemeColorProvider.getBrandedColorScheme());
+                mThemeColorProvider.getTint(),
+                mThemeColorProvider.getTint(),
+                mThemeColorProvider.getBrandedColorScheme());
 
         mThemeColorProvider.addTintObserver(mMenuButton);
+        mMenuButton.onTintChanged(
+                mThemeColorProvider.getTint(),
+                mThemeColorProvider.getTint(),
+                mThemeColorProvider.getBrandedColorScheme());
 
         new OneShotCallback<>(
                 menuButtonHelperSupplier,

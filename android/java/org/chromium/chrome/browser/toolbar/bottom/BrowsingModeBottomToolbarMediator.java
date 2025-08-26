@@ -5,8 +5,6 @@
 
 package org.chromium.chrome.browser.toolbar.bottom;
 
-import androidx.annotation.ColorInt;
-
 import org.chromium.chrome.browser.theme.ThemeColorProvider;
 import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
 
@@ -16,12 +14,6 @@ import org.chromium.chrome.browser.theme.ThemeColorProvider.ThemeColorObserver;
  * toolbar, and updating the model accordingly.
  */
 class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
-    /** The transparency fraction of the IPH bubble. */
-    private static final float DUET_IPH_BUBBLE_ALPHA_FRACTION = 0.9f;
-
-    /** The transparency fraction of the IPH background. */
-    private static final float DUET_IPH_BACKGROUND_ALPHA_FRACTION = 0.3f;
-
     /** The dismissable parameter name of the IPH. */
     static final String DUET_IPH_TAP_TO_DISMISS_PARAM_NAME = "duet_iph_tap_to_dismiss_enabled";
 
@@ -58,15 +50,5 @@ class BrowsingModeBottomToolbarMediator implements ThemeColorObserver {
     @Override
     public void onThemeColorChanged(int primaryColor, boolean shouldAnimate) {
         mModel.set(BrowsingModeBottomToolbarModel.PRIMARY_COLOR, primaryColor);
-    }
-
-    /**
-     * Set the alpha for the color.
-     * @param baseColor The color which alpha will apply to.
-     * @param alpha The desired alpha for the color. The value should between 0 to 1. 0 means total
-     *         transparency, 1 means total non-transparency.
-     */
-    private @ColorInt int applyCustomAlphaToColor(@ColorInt int baseColor, float alpha) {
-        return (baseColor & 0x00FFFFFF) | ((int) (alpha * 255) << 24);
     }
 }

@@ -30,7 +30,8 @@ public class BraveRewardsUserWalletActivity
     private static final String TAG = "BraveRewards";
     public static final int UNDEFINED_WALLET_STATUS = -1;
 
-    private String walletType = BraveRewardsNativeWorker.getInstance().getExternalWalletType();
+    private final String mWalletType =
+            BraveRewardsNativeWorker.getInstance().getExternalWalletType();
 
     @Override
     protected void triggerLayoutInflation() {
@@ -56,19 +57,24 @@ public class BraveRewardsUserWalletActivity
         TextView txtUserStatus = (TextView) findViewById(R.id.user_status);
         Button btnGotoProvider = (Button) findViewById(R.id.provider_action);
         btnGotoProvider.setOnClickListener(this);
-        String providerText = (status == WalletStatus.CONNECTED)
-                ? String.format(getResources().getString(R.string.user_wallet_goto_provider),
-                        getWalletString(walletType))
-                : String.format(getResources().getString(R.string.login_provider),
-                        getWalletString(walletType));
+        String providerText =
+                (status == WalletStatus.CONNECTED)
+                        ? String.format(
+                                getResources().getString(R.string.user_wallet_goto_provider),
+                                getWalletString(mWalletType))
+                        : String.format(
+                                getResources().getString(R.string.login_provider),
+                                getWalletString(mWalletType));
         btnGotoProvider.setText(providerText);
+        btnGotoProvider.setCompoundDrawablesWithIntrinsicBounds(
+                0, 0, R.drawable.ic_rewards_external_link, 0);
 
         switch (status) {
             case WalletStatus.CONNECTED:
-                txtUserStatus.setText(BraveRewardsExternalWallet.WalletStatusToString(status));
+                txtUserStatus.setText(BraveRewardsExternalWallet.walletStatusToString(status));
                 break;
             case WalletStatus.LOGGED_OUT:
-                txtUserStatus.setText(BraveRewardsExternalWallet.WalletStatusToString(status));
+                txtUserStatus.setText(BraveRewardsExternalWallet.walletStatusToString(status));
                 break;
             case UNDEFINED_WALLET_STATUS:
                 finish();
@@ -77,7 +83,7 @@ public class BraveRewardsUserWalletActivity
 
         String userId = intent.getStringExtra(BraveRewardsExternalWallet.USER_NAME);
         txtUserId.setText(userId);
-        txtUserId.setCompoundDrawablesWithIntrinsicBounds(getWalletIcon(walletType), 0, 0, 0);
+        txtUserId.setCompoundDrawablesWithIntrinsicBounds(getWalletIcon(mWalletType), 0, 0, 0);
     }
 
     private int getWalletIcon(String walletType) {
@@ -87,8 +93,10 @@ public class BraveRewardsUserWalletActivity
             return R.drawable.ic_gemini_logo_cyan;
         } else if (walletType.equals(BraveWalletProvider.BITFLYER)) {
             return R.drawable.ic_logo_bitflyer_colored;
-        } else {
+        } else if (walletType.equals(BraveWalletProvider.ZEBPAY)) {
             return R.drawable.ic_logo_zebpay;
+        } else {
+            return R.drawable.ic_logo_solana;
         }
     }
 
@@ -99,8 +107,10 @@ public class BraveRewardsUserWalletActivity
             return getResources().getString(R.string.gemini);
         } else if (walletType.equals(BraveWalletProvider.BITFLYER)) {
             return getResources().getString(R.string.bitflyer);
-        } else {
+        } else if (walletType.equals(BraveWalletProvider.ZEBPAY)) {
             return getResources().getString(R.string.zebpay);
+        } else {
+            return getResources().getString(R.string.wallet_sol_name);
         }
     }
 
@@ -120,8 +130,9 @@ public class BraveRewardsUserWalletActivity
                     }
                 } else if (walletStatus == WalletStatus.LOGGED_OUT) {
                     Intent intent = new Intent();
-                    intent.putExtra(BraveActivity.OPEN_URL,
-                            getIntent().getStringExtra(BraveRewardsExternalWallet.LOGIN_URL));
+                    intent.putExtra(
+                            BraveActivity.OPEN_URL,
+                            BraveActivity.BRAVE_REWARDS_WALLET_RECONNECT_URL);
                     setResult(RESULT_OK, intent);
                 }
                 finish();

@@ -6,7 +6,6 @@
 package org.chromium.chrome.browser.toolbar.bottom;
 
 import android.app.Activity;
-import android.content.SharedPreferences;
 import android.graphics.Point;
 import android.view.Display;
 
@@ -14,6 +13,8 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.BravePreferenceKeys;
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.flags.ChromeFeatureList;
+import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -21,17 +22,20 @@ public class BottomToolbarConfiguration {
     private static final int SMALL_SCREEN_WIDTH = 360;
     private static final int SMALL_SCREEN_HEIGHT = 640;
 
-    public static boolean isBottomToolbarEnabled() {
-        // return false;
+    public static boolean isBraveBottomControlsEnabled() {
+        // We do not use the bottom controls on tablets.
         if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(
-                    ContextUtils.getApplicationContext())) {
+                ContextUtils.getApplicationContext())) {
             return false;
         }
-        SharedPreferences sharedPreferences = ContextUtils.getAppSharedPreferences();
-        if (sharedPreferences.getBoolean(
-                    BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, false)) {
-            return sharedPreferences.getBoolean(
-                    BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY, true);
+        // We do not use the bottom controls with address bar on bottom.
+        if (isToolbarBottomAnchored()) {
+            return false;
+        }
+        if (ChromeSharedPreferences.getInstance()
+                .readBoolean(BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, false)) {
+            return ChromeSharedPreferences.getInstance()
+                    .readBoolean(BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_ENABLED_KEY, true);
         } else {
             ChromeSharedPreferences.getInstance()
                     .writeBoolean(BravePreferenceKeys.BRAVE_BOTTOM_TOOLBAR_SET_KEY, true);
@@ -62,5 +66,15 @@ public class BottomToolbarConfiguration {
 
         return (width <= SMALL_SCREEN_WIDTH) && (height <= SMALL_SCREEN_HEIGHT);
     }
-}
 
+    public static boolean isToolbarTopAnchored() {
+        return ChromeSharedPreferences.getInstance()
+                .readBoolean(
+                        ChromePreferenceKeys.TOOLBAR_TOP_ANCHORED,
+                        ChromeFeatureList.sAndroidBottomToolbarDefaultToTop.getValue());
+    }
+
+    public static boolean isToolbarBottomAnchored() {
+        return !isToolbarTopAnchored();
+    }
+}
