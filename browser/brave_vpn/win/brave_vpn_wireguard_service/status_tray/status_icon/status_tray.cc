@@ -10,6 +10,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/win/windows_types.h"
 #include "base/win/wrapped_window_proc.h"
@@ -20,9 +21,10 @@
 
 namespace brave_vpn {
 
-static const UINT kStatusIconMessage = WM_APP + 1;
-
 namespace {
+
+constexpr UINT kStatusIconMessage = WM_APP + 1;
+
 const base::FilePath::CharType kBraveVpnTaskbarMessageName[] =
     FILE_PATH_LITERAL("TaskbarCreated");
 

@@ -5,8 +5,11 @@
 
 #include "brave/browser/brave_wallet/brave_wallet_service_delegate_impl.h"
 
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
+#include "base/types/expected.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/permission_utils.h"
 #include "brave/components/constants/webui_url_constants.h"
@@ -51,7 +54,7 @@ void ClearWalletStoragePartition(content::BrowserContext* context,
 
 BraveWalletServiceDelegateImpl::BraveWalletServiceDelegateImpl(
     content::BrowserContext* context)
-    : context_(context),
+    : BraveWalletServiceDelegateBase(context),
       browser_tab_strip_tracker_(this, this),
       weak_ptr_factory_(this) {
   browser_tab_strip_tracker_.Init();
@@ -75,8 +78,9 @@ void BraveWalletServiceDelegateImpl::RemoveObserver(
   observer_list_.RemoveObserver(observer);
 }
 
-bool BraveWalletServiceDelegateImpl::ShouldTrackBrowser(Browser* browser) {
-  return browser->profile() == Profile::FromBrowserContext(context_);
+bool BraveWalletServiceDelegateImpl::ShouldTrackBrowser(
+    BrowserWindowInterface* browser) {
+  return browser->GetProfile() == Profile::FromBrowserContext(context_);
 }
 
 void BraveWalletServiceDelegateImpl::IsExternalWalletInstalled(
@@ -145,47 +149,8 @@ void BraveWalletServiceDelegateImpl::ContinueGetImportInfoFromExternalWallet(
     DCHECK(importers_[type]->IsInitialized());
     importers_[type]->GetImportInfo(password, std::move(callback));
   } else {
-    std::move(callback).Run(false, ImportInfo(), ImportError::kInternalError);
+    std::move(callback).Run(base::unexpected(ImportError::kInternalError));
   }
-}
-
-bool BraveWalletServiceDelegateImpl::HasPermission(mojom::CoinType coin,
-                                                   const url::Origin& origin,
-                                                   const std::string& account) {
-  bool has_permission = false;
-  auto type = CoinTypeToPermissionType(coin);
-  if (!type) {
-    return false;
-  }
-
-  bool success = permissions::BraveWalletPermissionContext::HasPermission(
-      *type, context_, origin, account, &has_permission);
-  return success && has_permission;
-}
-
-bool BraveWalletServiceDelegateImpl::ResetPermission(
-    mojom::CoinType coin,
-    const url::Origin& origin,
-    const std::string& account) {
-  auto type = CoinTypeToPermissionType(coin);
-  if (!type) {
-    return false;
-  }
-
-  return permissions::BraveWalletPermissionContext::ResetPermission(
-      *type, context_, origin, account);
-}
-
-bool BraveWalletServiceDelegateImpl::IsPermissionDenied(
-    mojom::CoinType coin,
-    const url::Origin& origin) {
-  auto type = CoinTypeToPermissionType(coin);
-  if (!type) {
-    return false;
-  }
-
-  return permissions::BraveWalletPermissionContext::IsPermissionDenied(
-      *type, context_, origin);
 }
 
 void BraveWalletServiceDelegateImpl::OnTabStripModelChanged(
@@ -214,14 +179,14 @@ void BraveWalletServiceDelegateImpl::FireActiveOriginChanged() {
   }
 }
 
-absl::optional<url::Origin>
+std::optional<url::Origin>
 BraveWalletServiceDelegateImpl::GetActiveOriginInternal() {
   content::WebContents* contents = GetActiveWebContents();
   return contents ? contents->GetPrimaryMainFrame()->GetLastCommittedOrigin()
-                  : absl::optional<url::Origin>();
+                  : std::optional<url::Origin>();
 }
 
-absl::optional<url::Origin> BraveWalletServiceDelegateImpl::GetActiveOrigin() {
+std::optional<url::Origin> BraveWalletServiceDelegateImpl::GetActiveOrigin() {
   return GetActiveOriginInternal();
 }
 

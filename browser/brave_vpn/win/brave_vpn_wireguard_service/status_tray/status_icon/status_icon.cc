@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/strings/string_util_win.h"
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/status_tray/status_icon/native_popup_menu.h"
@@ -28,8 +29,7 @@ std::unique_ptr<NOTIFYICONDATA> GetIconData(HWND window, UINT uFlags = 0) {
 }  // namespace
 
 StatusIcon::StatusIcon(HWND window, UINT message)
-    : window_(window), message_id_(message) {
-}
+    : window_(window), message_id_(message) {}
 
 StatusIcon::~StatusIcon() {
   // Remove our icon
@@ -99,7 +99,7 @@ void StatusIcon::UpdateIcon() {
 
 void StatusIcon::SetToolTip(const std::u16string& tool_tip) {
   auto icon_data = GetIconData(window_, NIF_TIP);
-  wcscpy_s(icon_data->szTip, base::as_wcstr(tool_tip));
+  UNSAFE_TODO(wcscpy_s(icon_data->szTip, base::as_wcstr(tool_tip)));
   if (!Shell_NotifyIcon(NIM_MODIFY, icon_data.get())) {
     LOG(WARNING) << "Unable to set tooltip for status tray icon";
   }

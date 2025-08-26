@@ -8,7 +8,9 @@
 #include <memory>
 #include <string>
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/tx_service.h"
 #include "chrome/browser/notifications/notification_display_service.h"
 #include "chrome/browser/notifications/notification_display_service_factory.h"
@@ -72,10 +74,13 @@ void PushNotification(content::BrowserContext* context,
 namespace brave_wallet {
 
 WalletNotificationService::WalletNotificationService(
-    TxService* tx_service,
+    BraveWalletService* brave_wallet_service,
     content::BrowserContext* context)
-    : context_(context) {
-  tx_service->AddObserver(tx_observer_receiver_.BindNewPipeAndPassRemote());
+    : brave_wallet_service_(brave_wallet_service), context_(context) {
+  if (brave_wallet_service_) {
+    brave_wallet_service_->tx_service()->AddObserver(
+        tx_observer_receiver_.BindNewPipeAndPassRemote());
+  }
 }
 
 WalletNotificationService::~WalletNotificationService() = default;
@@ -101,9 +106,13 @@ void WalletNotificationService::DisplayUserNotification(
 void WalletNotificationService::OnTransactionStatusChanged(
     mojom::TransactionInfoPtr tx_info) {
   if (ShouldDisplayUserNotification(tx_info->tx_status)) {
-    // TODO(apaymyshev): handle address for bitcoin notificaion
-    DisplayUserNotification(tx_info->tx_status,
-                            tx_info->from_address.value_or(""), tx_info->id);
+    auto account = brave_wallet_service_->keyring_service()->FindAccount(
+        tx_info->from_account_id);
+    if (!account) {
+      return;
+    }
+
+    DisplayUserNotification(tx_info->tx_status, account->name, tx_info->id);
   }
 }
 

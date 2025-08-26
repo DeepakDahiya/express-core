@@ -18,12 +18,12 @@ class BrowserContext;
 }  // namespace content
 
 namespace brave_wallet {
-class TxService;
+class BraveWalletService;
 
 class WalletNotificationService : public KeyedService,
                                   public mojom::TxServiceObserver {
  public:
-  WalletNotificationService(TxService* tx_service,
+  WalletNotificationService(BraveWalletService* brave_wallet_service,
                             content::BrowserContext* context);
   ~WalletNotificationService() override;
   WalletNotificationService(const WalletNotificationService&) = delete;
@@ -44,6 +44,7 @@ class WalletNotificationService : public KeyedService,
                                const std::string& address,
                                const std::string& tx_id);
 
+  raw_ptr<BraveWalletService> brave_wallet_service_;
   raw_ptr<content::BrowserContext> context_;
   mojo::Receiver<mojom::TxServiceObserver> tx_observer_receiver_{this};
 };

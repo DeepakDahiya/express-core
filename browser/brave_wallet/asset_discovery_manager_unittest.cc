@@ -5,14 +5,14 @@
 
 #include "brave/components/brave_wallet/browser/asset_discovery_manager.h"
 
+#include "base/containers/contains.h"
 #include "base/memory/raw_ptr.h"
 #include "base/test/bind.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/time/time.h"
-#include "brave/browser/brave_wallet/json_rpc_service_factory.h"
-#include "brave/browser/brave_wallet/keyring_service_factory.h"
-#include "brave/browser/brave_wallet/tx_service_factory.h"
+#include "brave/components/api_request_helper/api_request_helper.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service_delegate.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service_observer_base.h"
@@ -25,13 +25,13 @@
 #include "brave/components/brave_wallet/common/features.h"
 #include "brave/components/brave_wallet/common/test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
-#include "chrome/test/base/scoped_testing_local_state.h"
-#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
+#include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
+#include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
@@ -107,50 +107,53 @@ class AssetDiscoveryManagerUnitTest : public testing::Test {
     scoped_feature_list_.InitAndEnableFeature(
         features::kNativeBraveWalletFeature);
 
+    brave_wallet::RegisterLocalStatePrefs(local_state_.registry());
+
     TestingProfile::Builder builder;
     auto prefs =
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     RegisterUserProfilePrefs(prefs->registry());
     builder.SetPrefService(std::move(prefs));
     profile_ = builder.Build();
-    local_state_ = std::make_unique<ScopedTestingLocalState>(
-        TestingBrowserProcess::GetGlobal());
-    keyring_service_ =
-        KeyringServiceFactory::GetServiceForContext(profile_.get());
-    json_rpc_service_ =
-        JsonRpcServiceFactory::GetServiceForContext(profile_.get());
-    json_rpc_service_->SetAPIRequestHelperForTesting(
-        shared_url_loader_factory_);
-    tx_service_ = TxServiceFactory::GetServiceForContext(profile_.get());
     wallet_service_ = std::make_unique<BraveWalletService>(
         shared_url_loader_factory_,
-        BraveWalletServiceDelegate::Create(profile_.get()), keyring_service_,
-        json_rpc_service_, tx_service_, nullptr, GetPrefs(), GetLocalState());
+        BraveWalletServiceDelegate::Create(profile_.get()), GetPrefs(),
+        GetLocalState());
+    network_manager_ = wallet_service_->network_manager();
+    json_rpc_service_ = wallet_service_->json_rpc_service();
+    keyring_service_ = wallet_service_->keyring_service();
+    tx_service_ = wallet_service_->tx_service();
     simple_hash_client_ =
         std::make_unique<SimpleHashClient>(shared_url_loader_factory_);
     asset_discovery_manager_ = std::make_unique<AssetDiscoveryManager>(
-        shared_url_loader_factory_, wallet_service_.get(), json_rpc_service_,
-        keyring_service_, simple_hash_client_.get(), GetPrefs());
+        shared_url_loader_factory_, *wallet_service_, *json_rpc_service_,
+        *keyring_service_, *simple_hash_client_, GetPrefs());
     wallet_service_observer_ = std::make_unique<
         TestBraveWalletServiceObserverForAssetDiscoveryManager>();
     wallet_service_->AddObserver(wallet_service_observer_->GetReceiver());
+
+    api_request_helper_ =
+        std::make_unique<api_request_helper::APIRequestHelper>(
+            TRAFFIC_ANNOTATION_FOR_TESTS, shared_url_loader_factory_);
   }
 
   PrefService* GetPrefs() { return profile_->GetPrefs(); }
-  TestingPrefServiceSimple* GetLocalState() { return local_state_->Get(); }
+  TestingPrefServiceSimple* GetLocalState() { return &local_state_; }
   GURL GetNetwork(const std::string& chain_id, mojom::CoinType coin) {
-    return brave_wallet::GetNetworkURL(GetPrefs(), chain_id, coin);
+    return network_manager_->GetNetworkURL(chain_id, coin);
   }
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   std::unique_ptr<TestBraveWalletServiceObserverForAssetDiscoveryManager>
       wallet_service_observer_;
   content::BrowserTaskEnvironment task_environment_;
-  std::unique_ptr<ScopedTestingLocalState> local_state_;
+  std::unique_ptr<api_request_helper::APIRequestHelper> api_request_helper_;
+  TestingPrefServiceSimple local_state_;
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<BraveWalletService> wallet_service_;
   std::unique_ptr<SimpleHashClient> simple_hash_client_;
   std::unique_ptr<AssetDiscoveryManager> asset_discovery_manager_;
+  raw_ptr<NetworkManager> network_manager_ = nullptr;
   raw_ptr<KeyringService> keyring_service_ = nullptr;
   raw_ptr<JsonRpcService> json_rpc_service_;
   raw_ptr<TxService> tx_service_;
@@ -158,21 +161,20 @@ class AssetDiscoveryManagerUnitTest : public testing::Test {
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
 
   void TestDiscoverAssetsOnAllSupportedChains(
-      const std::map<mojom::CoinType, std::vector<std::string>>&
-          account_addresses,
+      std::vector<mojom::AccountIdPtr> accounts,
       bool bypass_rate_limit,
       bool expect_events_fired,
       const std::vector<std::string>& expected_token_contract_addresses,
       size_t expected_ending_queue_size = 0u) {
     asset_discovery_manager_->DiscoverAssetsOnAllSupportedChains(
-        account_addresses, bypass_rate_limit);
+        std::move(accounts), bypass_rate_limit);
     if (expect_events_fired) {
       wallet_service_observer_->WaitForOnDiscoverAssetsCompleted(
           expected_token_contract_addresses);
       EXPECT_TRUE(wallet_service_observer_->OnDiscoverAssetsStartedFired());
       EXPECT_TRUE(wallet_service_observer_->OnDiscoverAssetsCompletedFired());
     } else {
-      base::RunLoop().RunUntilIdle();
+      task_environment_.RunUntilIdle();
       EXPECT_FALSE(wallet_service_observer_->OnDiscoverAssetsStartedFired());
       EXPECT_FALSE(wallet_service_observer_->OnDiscoverAssetsCompletedFired());
     }
@@ -185,47 +187,47 @@ class AssetDiscoveryManagerUnitTest : public testing::Test {
 TEST_F(AssetDiscoveryManagerUnitTest, GetFungibleSupportedChains) {
   // GetFungibleSupportedChains should return a map of the same size
   // vectors every time
-  const std::map<mojom::CoinType, std::vector<std::string>> chains1 =
-      asset_discovery_manager_->GetFungibleSupportedChains();
-  const std::map<mojom::CoinType, std::vector<std::string>> chains2 =
-      asset_discovery_manager_->GetFungibleSupportedChains();
-  const std::map<mojom::CoinType, std::vector<std::string>> chains3 =
-      asset_discovery_manager_->GetFungibleSupportedChains();
-  EXPECT_GT(chains1.at(mojom::CoinType::ETH).size(), 0u);
-  EXPECT_GT(chains1.at(mojom::CoinType::SOL).size(), 0u);
+  auto chains1 = asset_discovery_manager_->GetFungibleSupportedChains();
+  auto chains2 = asset_discovery_manager_->GetFungibleSupportedChains();
+  auto chains3 = asset_discovery_manager_->GetFungibleSupportedChains();
+  EXPECT_TRUE(base::Contains(
+      chains1,
+      mojom::ChainId::New(mojom::CoinType::ETH, mojom::kMainnetChainId)));
+  EXPECT_TRUE(base::Contains(
+      chains1,
+      mojom::ChainId::New(mojom::CoinType::SOL, mojom::kSolanaMainnet)));
 
-  EXPECT_EQ(chains2.at(mojom::CoinType::ETH).size(),
-            chains1.at(mojom::CoinType::ETH).size());
-  EXPECT_EQ(chains2.at(mojom::CoinType::SOL).size(),
-            chains1.at(mojom::CoinType::SOL).size());
+  EXPECT_EQ(chains1, chains2);
+  EXPECT_EQ(chains1, chains3);
 }
 
 TEST_F(AssetDiscoveryManagerUnitTest, GetNonFungibleSupportedChains) {
   // Gnosis chain ID should not be included if it's not a custom network
-  std::map<mojom::CoinType, std::vector<std::string>> chains =
-      asset_discovery_manager_->GetNonFungibleSupportedChains();
-  EXPECT_EQ(chains.at(mojom::CoinType::ETH).size(), 6UL);
-  EXPECT_EQ(chains.at(mojom::CoinType::SOL).size(), 1UL);
+  auto chains = asset_discovery_manager_->GetNonFungibleSupportedChains();
+  EXPECT_EQ(chains.size(), 8UL);
+  EXPECT_TRUE(base::Contains(
+      chains,
+      mojom::ChainId::New(mojom::CoinType::ETH, mojom::kMainnetChainId)));
+  EXPECT_TRUE(base::Contains(
+      chains,
+      mojom::ChainId::New(mojom::CoinType::SOL, mojom::kSolanaMainnet)));
 
   // Verify none of the chain IDs == mojom::kGnosisChainId
-  EXPECT_EQ(
-      std::find(chains.at(mojom::CoinType::ETH).begin(),
-                chains.at(mojom::CoinType::ETH).end(), mojom::kGnosisChainId),
-      chains.at(mojom::CoinType::ETH).end());
+  EXPECT_FALSE(base::Contains(
+      chains,
+      mojom::ChainId::New(mojom::CoinType::ETH, mojom::kGnosisChainId)));
 
   // Add a custom network (Gnosis) and verify it is included
   auto gnosis_network = GetTestNetworkInfo1(mojom::kGnosisChainId);
-  AddCustomNetwork(GetPrefs(), gnosis_network);
+  network_manager_->AddCustomNetwork(gnosis_network);
 
   chains = asset_discovery_manager_->GetNonFungibleSupportedChains();
-  EXPECT_EQ(chains.at(mojom::CoinType::ETH).size(), 7UL);
-  EXPECT_EQ(chains.at(mojom::CoinType::SOL).size(), 1UL);
+  EXPECT_EQ(chains.size(), 9UL);
 
   // Verify one of the chain IDs is mojom::kGnosisChainId
-  EXPECT_NE(
-      std::find(chains.at(mojom::CoinType::ETH).begin(),
-                chains.at(mojom::CoinType::ETH).end(), mojom::kGnosisChainId),
-      chains.at(mojom::CoinType::ETH).end());
+  EXPECT_TRUE(base::Contains(
+      chains,
+      mojom::ChainId::New(mojom::CoinType::ETH, mojom::kGnosisChainId)));
 }
 
 TEST_F(AssetDiscoveryManagerUnitTest, DiscoverAssetsOnAllSupportedChains) {
@@ -280,8 +282,9 @@ TEST_F(AssetDiscoveryManagerUnitTest, DiscoverAssetsOnAllSupportedChains) {
   task_environment_.FastForwardBy(
       base::Minutes(kAssetDiscoveryMinutesPerRequest));
   std::queue<std::unique_ptr<AssetDiscoveryTask>> tasks;
-  tasks.push(std::make_unique<AssetDiscoveryTask>(nullptr, nullptr, nullptr,
-                                                  nullptr, nullptr));
+  tasks.push(std::make_unique<AssetDiscoveryTask>(
+      *api_request_helper_, *simple_hash_client_, *wallet_service_,
+      *json_rpc_service_, GetPrefs()));
   asset_discovery_manager_->SetQueueForTesting(std::move(tasks));
   TestDiscoverAssetsOnAllSupportedChains({}, true, true, {}, 1);
 

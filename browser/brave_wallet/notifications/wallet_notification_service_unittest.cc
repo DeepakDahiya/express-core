@@ -6,15 +6,16 @@
 #include "brave/browser/brave_wallet/notifications/wallet_notification_service.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/task/sequenced_task_runner.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/eth_transaction.h"
 #include "brave/components/brave_wallet/browser/eth_tx_meta.h"
-#include "brave/components/brave_wallet/browser/json_rpc_service.h"
 #include "brave/components/brave_wallet/browser/keyring_service.h"
 #include "brave/components/brave_wallet/browser/test_utils.h"
 #include "brave/components/brave_wallet/browser/tx_service.h"
@@ -26,7 +27,6 @@
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_wallet {
 
@@ -40,27 +40,23 @@ class WalletNotificationServiceUnitTest : public testing::Test {
 
   void SetUp() override {
     RegisterLocalStatePrefs(local_state_.registry());
+    RegisterLocalStatePrefsForMigration(local_state_.registry());
 
-    json_rpc_service_ =
-        std::make_unique<JsonRpcService>(shared_url_loader_factory_, prefs());
-    keyring_service_ = std::make_unique<KeyringService>(json_rpc_service_.get(),
-                                                        prefs(), local_state());
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    tx_service_ = std::make_unique<TxService>(
-        json_rpc_service_.get(), nullptr, keyring_service_.get(), prefs(),
-        temp_dir_.GetPath(), base::SequencedTaskRunner::GetCurrentDefault());
+    brave_wallet_service_ = std::make_unique<BraveWalletService>(
+        shared_url_loader_factory_, TestBraveWalletServiceDelegate::Create(),
+        prefs(), local_state());
+
     notification_service_ = std::make_unique<WalletNotificationService>(
-        tx_service_.get(), profile());
+        brave_wallet_service_.get(), profile());
     tester_ = std::make_unique<NotificationDisplayServiceTester>(profile());
-    keyring_service_->CreateWallet(kMnemonicDivideCruise, "brave",
-                                   base::DoNothing());
+    GetAccountUtils().CreateWallet(kMnemonicDivideCruise, kTestWalletPassword);
   }
   Profile* profile() { return &profile_; }
   PrefService* prefs() { return profile_.GetPrefs(); }
   PrefService* local_state() { return &local_state_; }
 
   AccountUtils GetAccountUtils() {
-    return AccountUtils(keyring_service_.get());
+    return AccountUtils(brave_wallet_service_->keyring_service());
   }
 
   mojom::AccountIdPtr EthAccount(size_t index) {
@@ -76,7 +72,7 @@ class WalletNotificationServiceUnitTest : public testing::Test {
         *EthTransaction::FromTxData(mojom::TxData::New(
             "0x01", "0x4a817c800", "0x5208",
             "0x3535353535353535353535353535353535353535", "0x0de0b6b3a7640000",
-            std::vector<uint8_t>(), false, absl::nullopt)));
+            std::vector<uint8_t>(), false, std::nullopt)));
     EthTxMeta meta(EthAccount(0), std::move(tx));
     meta.set_status(status);
     notification_service_->OnTransactionStatusChanged(meta.ToTransactionInfo());
@@ -94,10 +90,8 @@ class WalletNotificationServiceUnitTest : public testing::Test {
   TestingPrefServiceSimple local_state_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  std::unique_ptr<BraveWalletService> brave_wallet_service_;
   std::unique_ptr<WalletNotificationService> notification_service_;
-  std::unique_ptr<JsonRpcService> json_rpc_service_;
-  std::unique_ptr<KeyringService> keyring_service_;
-  std::unique_ptr<TxService> tx_service_;
 };
 
 TEST_F(WalletNotificationServiceUnitTest, ShouldShowNotifications) {

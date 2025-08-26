@@ -14,7 +14,7 @@
 #include "base/notreached.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
-#include "brave/components/brave_vpn/common/wireguard/win/service_details.h"
+#include "brave/browser/brave_vpn/win/service_details.h"
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/product_install_details.h"
@@ -73,11 +73,6 @@ void BraveWireguardCrashReporterClient::InitializeCrashReportingForProcess(
       base::FilePath());
 }
 
-bool BraveWireguardCrashReporterClient::ShouldCreatePipeName(
-    const std::wstring& process_type) {
-  return false;
-}
-
 bool BraveWireguardCrashReporterClient::GetAlternativeCrashDumpLocation(
     std::wstring* crash_dir) {
   return false;
@@ -104,33 +99,9 @@ void BraveWireguardCrashReporterClient::GetProductNameAndVersion(
       install_static::GetChromeChannelName(/*with_extended_stable=*/true);
 }
 
-bool BraveWireguardCrashReporterClient::ShouldShowRestartDialog(
-    std::wstring* title,
-    std::wstring* message,
-    bool* is_rtl_locale) {
-  // There is no UX associated with brave_vpn_wireguard_service, so no dialog
-  // should be shown.
-  return false;
-}
-
-bool BraveWireguardCrashReporterClient::AboutToRestart() {
-  // The brave_vpn_wireguard_service should never be restarted after a crash.
-  return false;
-}
-
-bool BraveWireguardCrashReporterClient::GetIsPerUserInstall() {
-  return !install_static::IsSystemInstall();
-}
-
 bool BraveWireguardCrashReporterClient::GetShouldDumpLargerDumps() {
   // Use large dumps for all but the stable channel.
   return install_static::GetChromeChannel() != version_info::Channel::STABLE;
-}
-
-int BraveWireguardCrashReporterClient::GetResultCodeRespawnFailed() {
-  // The restart dialog is never shown.
-  NOTREACHED();
-  return 0;
 }
 
 bool BraveWireguardCrashReporterClient::GetCrashDumpLocation(
@@ -173,5 +144,4 @@ bool BraveWireguardCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
   // This is not used by Crashpad (at least on Windows).
   NOTREACHED();
-  return true;
 }

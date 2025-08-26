@@ -16,9 +16,11 @@
 #include <atlsecurity.h>
 #include <sddl.h>
 #include <wrl/module.h>
+
 #include <type_traits>
 #include <utility>
 
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/run_loop.h"
@@ -26,8 +28,8 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/win/scoped_com_initializer.h"
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/service/brave_wireguard_manager.h"
-#include "brave/components/brave_vpn/common/wireguard/win/service_details.h"
-#include "brave/components/brave_vpn/common/wireguard/win/wireguard_utils_win.h"
+#include "brave/browser/brave_vpn/win/service_details.h"
+#include "brave/browser/brave_vpn/win/wireguard_utils_win.h"
 
 namespace brave_vpn {
 
@@ -185,6 +187,11 @@ HRESULT WireguardServiceRunner::InitializeComSecurity() {
   if (!dacl.AddAllowedAce(Sids::System(), com_rights_execute_local) ||
       !dacl.AddAllowedAce(Sids::Admins(), com_rights_execute_local) ||
       !dacl.AddAllowedAce(Sids::Interactive(), com_rights_execute_local)) {
+    return E_ACCESSDENIED;
+  }
+
+  // Don't allow guest account to instantiate.
+  if (!dacl.AddDeniedAce(Sids::Guests(), com_rights_execute_local)) {
     return E_ACCESSDENIED;
   }
 

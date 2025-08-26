@@ -10,13 +10,7 @@
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
-#include "brave/components/ipfs/buildflags/buildflags.h"
 #include "chrome/browser/browsing_data/chrome_browsing_data_remover_delegate.h"
-
-namespace base {
-class Process;
-}  // namespace base
 
 namespace content_settings {
 class BravePrefProvider;
@@ -31,8 +25,8 @@ class BraveBrowsingDataRemoverDelegate
       content::BrowserContext* browser_context);
   ~BraveBrowsingDataRemoverDelegate() override;
 
-  BraveBrowsingDataRemoverDelegate(
-      const BraveBrowsingDataRemoverDelegate&) = delete;
+  BraveBrowsingDataRemoverDelegate(const BraveBrowsingDataRemoverDelegate&) =
+      delete;
   BraveBrowsingDataRemoverDelegate operator=(
       const BraveBrowsingDataRemoverDelegate&) = delete;
 
@@ -46,17 +40,9 @@ class BraveBrowsingDataRemoverDelegate
                           uint64_t remove_mask,
                           content::BrowsingDataFilterBuilder* filter_builder,
                           uint64_t origin_type_mask,
-                          base::OnceCallback<void(uint64_t)> callback)
-                          override;
+                          base::OnceCallback<void(uint64_t)> callback) override;
 
   void ClearShieldsSettings(base::Time begin_time, base::Time end_time);
-#if BUILDFLAG(ENABLE_AI_CHAT)
-  void ClearAiChatHistory(base::Time begin_time, base::Time end_time);
-#endif  // BUILDFLAG(ENABLE_AI_CHAT)
-#if BUILDFLAG(ENABLE_IPFS)
-  void ClearIPFSCache();
-  void WaitForIPFSRepoGC(base::Process process);
-#endif
 
   raw_ptr<Profile> profile_ = nullptr;
   base::WeakPtrFactory<BraveBrowsingDataRemoverDelegate> weak_ptr_factory_{

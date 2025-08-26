@@ -5,13 +5,12 @@
 
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
-#include "base/logging.h"
+#include "base/check.h"
 #include "brave/browser/brave_wallet/brave_wallet_service_factory.h"
-#include "brave/build/android/jni_headers/WalletNativeUtils_jni.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/decentralized_dns/core/utils.h"
+#include "chrome/android/chrome_jni_headers/WalletNativeUtils_jni.h"
 #include "chrome/browser/profiles/profile.h"
-#include "chrome/browser/profiles/profile_android.h"
 
 namespace chrome {
 namespace android {
@@ -19,7 +18,7 @@ namespace android {
 static void JNI_WalletNativeUtils_ResetWallet(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& profile_android) {
-  auto* profile = ProfileAndroid::FromProfileAndroid(profile_android);
+  auto* profile = Profile::FromJavaObject(profile_android);
   DCHECK(profile);
 
   auto* brave_wallet_service =

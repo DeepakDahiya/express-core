@@ -5,11 +5,14 @@
 
 #include "brave/browser/brave_wallet/brave_wallet_provider_delegate_impl.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/strings/string_util.h"
 #include "brave/browser/brave_wallet/brave_wallet_provider_delegate_impl_helper.h"
 #include "brave/browser/brave_wallet/brave_wallet_tab_helper.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
@@ -50,7 +53,7 @@ void OnRequestPermissions(
   // The responses array will be empty if operation failed.
   if (responses.empty()) {
     std::move(callback).Run(mojom::RequestPermissionsError::kInternal,
-                            absl::nullopt);
+                            std::nullopt);
   } else {
     std::move(callback).Run(mojom::RequestPermissionsError::kNone,
                             granted_accounts);
@@ -61,10 +64,10 @@ void OnRequestPermissions(
 
 BraveWalletProviderDelegateImpl::BraveWalletProviderDelegateImpl(
     content::WebContents* web_contents,
-    content::RenderFrameHost* const render_frame_host)
+    content::GlobalRenderFrameHostId render_frame_host_id)
     : WebContentsObserver(web_contents),
       web_contents_(web_contents),
-      host_id_(render_frame_host->GetGlobalId()),
+      host_id_(render_frame_host_id),
       weak_ptr_factory_(this) {}
 
 BraveWalletProviderDelegateImpl::~BraveWalletProviderDelegateImpl() = default;
@@ -84,6 +87,14 @@ void BraveWalletProviderDelegateImpl::ShowPanel() {
   ::brave_wallet::ShowPanel(web_contents_);
 }
 
+void BraveWalletProviderDelegateImpl::ShowWalletBackup() {
+  ::brave_wallet::ShowWalletBackup();
+}
+
+void BraveWalletProviderDelegateImpl::UnlockWallet() {
+  ::brave_wallet::UnlockWallet();
+}
+
 void BraveWalletProviderDelegateImpl::WalletInteractionDetected() {
   ::brave_wallet::WalletInteractionDetected(web_contents_);
 }
@@ -97,7 +108,7 @@ void BraveWalletProviderDelegateImpl::ShowAccountCreation(
   ::brave_wallet::ShowAccountCreation(web_contents_, type);
 }
 
-absl::optional<std::vector<std::string>>
+std::optional<std::vector<std::string>>
 BraveWalletProviderDelegateImpl::GetAllowedAccounts(
     mojom::CoinType type,
     const std::vector<std::string>& accounts) {
@@ -107,7 +118,7 @@ BraveWalletProviderDelegateImpl::GetAllowedAccounts(
 
   auto permission = CoinTypeToPermissionType(type);
   if (!permission) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return permissions::BraveWalletPermissionContext::GetAllowedAccounts(
@@ -127,7 +138,7 @@ void BraveWalletProviderDelegateImpl::RequestPermissions(
   auto permission = CoinTypeToPermissionType(type);
   if (!request_type || !permission) {
     std::move(callback).Run(mojom::RequestPermissionsError::kInternal,
-                            absl::nullopt);
+                            std::nullopt);
     return;
   }
   // Check if there's already a permission request in progress
@@ -135,7 +146,7 @@ void BraveWalletProviderDelegateImpl::RequestPermissions(
   if (rfh && permissions::BraveWalletPermissionContext::HasRequestsInProgress(
                  rfh, *request_type)) {
     std::move(callback).Run(mojom::RequestPermissionsError::kRequestInProgress,
-                            absl::nullopt);
+                            std::nullopt);
     return;
   }
 

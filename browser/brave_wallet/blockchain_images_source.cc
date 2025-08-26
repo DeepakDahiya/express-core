@@ -5,12 +5,14 @@
 
 #include "brave/browser/brave_wallet/blockchain_images_source.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
+#include "base/strings/string_util.h"
 #include "base/task/thread_pool.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/wallet_data_files_installer.h"
@@ -21,10 +23,10 @@ namespace brave_wallet {
 
 namespace {
 
-absl::optional<std::string> ReadFileToString(const base::FilePath& path) {
+std::optional<std::string> ReadFileToString(const base::FilePath& path) {
   std::string contents;
   if (!base::ReadFileToString(path, &contents)) {
-    return absl::optional<std::string>();
+    return std::optional<std::string>();
   }
   return contents;
 }
@@ -48,7 +50,7 @@ void BlockchainImagesSource::StartDataRequest(
 
   const std::string path = URLDataSource::URLToRequestPath(url);
 
-  absl::optional<base::Version> version =
+  std::optional<base::Version> version =
       brave_wallet::GetLastInstalledWalletVersion();
   if (!version) {
     scoped_refptr<base::RefCountedMemory> bytes;
@@ -68,16 +70,15 @@ void BlockchainImagesSource::StartDataRequest(
 }
 
 void BlockchainImagesSource::OnGotImageFile(GotDataCallback callback,
-                                            absl::optional<std::string> input) {
+                                            std::optional<std::string> input) {
   scoped_refptr<base::RefCountedMemory> bytes;
   if (!input) {
     std::move(callback).Run(std::move(bytes));
     return;
   }
 
-  bytes = new base::RefCountedBytes(
-      reinterpret_cast<const unsigned char*>(input->c_str()), input->length());
-  std::move(callback).Run(std::move(bytes));
+  std::move(callback).Run(
+      new base::RefCountedBytes(base::as_byte_span(*input)));
 }
 
 std::string BlockchainImagesSource::GetMimeType(const GURL& url) {

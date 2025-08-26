@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/notreached.h"
 #include "brave/browser/brave_wallet/brave_wallet_tab_helper.h"
 #include "brave/browser/ui/brave_pages.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -31,6 +32,14 @@ void ShowPanel(content::WebContents* web_contents) {
   if (tab_helper) {
     tab_helper->ShowBubble();
   }
+}
+
+void ShowWalletBackup() {
+  NOTREACHED();
+}
+
+void UnlockWallet() {
+  NOTREACHED();
 }
 
 void ShowWalletOnboarding(content::WebContents* web_contents) {

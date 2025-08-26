@@ -4,18 +4,18 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include <memory>
+#include <optional>
 
-#include "base/path_service.h"
-#include "base/test/bind.h"
+#include "base/notreached.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/thread_test_helper.h"
+#include "brave/browser/brave_wallet/brave_wallet_service_factory.h"
 #include "brave/browser/brave_wallet/brave_wallet_tab_helper.h"
-#include "brave/browser/brave_wallet/json_rpc_service_factory.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/json_rpc_service.h"
+#include "brave/components/brave_wallet/browser/test_utils.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/brave_wallet/common/features.h"
-#include "brave/components/constants/brave_paths.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -23,7 +23,6 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/network_session_configurator/common/network_switches.h"
-#include "content/public/browser/browser_task_traits.h"
 #include "content/public/test/browser_test.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_mock_cert_verifier.h"
@@ -34,10 +33,9 @@
 
 namespace {
 
-const char kEmbeddedTestServerDirectory[] = "brave-wallet";
-const char kSomeChainId[] = "0xabcde";
+constexpr char kSomeChainId[] = "0xabcde";
 
-const char kScriptWaitForEvent[] = R"(
+constexpr char kScriptWaitForEvent[] = R"(
     new Promise(resolve => {
       const timer = setInterval(function () {
         if (request_finished) {
@@ -48,7 +46,7 @@ const char kScriptWaitForEvent[] = R"(
     });
   )";
 
-const char kScriptRunAndCheckAddChainResult[] = R"(
+constexpr char kScriptRunAndCheckAddChainResult[] = R"(
     new Promise(resolve => {
       const timer = setInterval(function () {
         if (!window.ethereum)
@@ -68,7 +66,7 @@ const char kScriptRunAndCheckAddChainResult[] = R"(
     });
   )";
 
-const char kScriptRunEmptyAndCheckChainResult[] = R"(
+constexpr char kScriptRunEmptyAndCheckChainResult[] = R"(
     new Promise(resolve => {
       const timer = setInterval(function () {
         if (!window.ethereum)
@@ -128,14 +126,11 @@ class TestJsonRpcServiceObserver
 
   void ChainChangedEvent(const std::string& chain_id,
                          brave_wallet::mojom::CoinType coin,
-                         const absl::optional<::url::Origin>& origin) override {
+                         const std::optional<::url::Origin>& origin) override {
     chain_changed_called_ = true;
     EXPECT_EQ(chain_id, expected_chain_id_);
     EXPECT_EQ(coin, expected_coin_);
   }
-
-  void OnIsEip1559Changed(const std::string& chain_id,
-                          bool is_eip1559) override {}
 
   bool chain_changed_called() {
     base::RunLoop().RunUntilIdle();
@@ -185,11 +180,8 @@ class BraveWalletEthereumChainTest : public InProcessBrowserTest {
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
     https_server_->SetSSLConfig(net::EmbeddedTestServer::CERT_OK);
 
-    brave::RegisterPathProvider();
-    base::FilePath test_data_dir;
-    base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
-    test_data_dir = test_data_dir.AppendASCII(kEmbeddedTestServerDirectory);
-    https_server_->ServeFilesFromDirectory(test_data_dir);
+    https_server_->ServeFilesFromDirectory(
+        brave_wallet::BraveWalletTestDataFolder());
     https_server_->RegisterRequestHandler(
         base::BindRepeating(&BraveWalletEthereumChainTest::HandleChainRequest,
                             base::Unretained(this)));
@@ -241,13 +233,14 @@ class BraveWalletEthereumChainTest : public InProcessBrowserTest {
   }
 
   brave_wallet::JsonRpcService* GetJsonRpcService() {
-    return brave_wallet::JsonRpcServiceFactory::GetInstance()
-        ->GetServiceForContext(browser()->profile());
+    return brave_wallet::BraveWalletServiceFactory::GetInstance()
+        ->GetServiceForContext(browser()->profile())
+        ->json_rpc_service();
   }
 
   std::vector<brave_wallet::mojom::NetworkInfoPtr> GetAllEthCustomChains() {
-    return brave_wallet::GetAllCustomChains(browser()->profile()->GetPrefs(),
-                                            brave_wallet::mojom::CoinType::ETH);
+    return GetJsonRpcService()->network_manager()->GetAllCustomChains(
+        brave_wallet::mojom::CoinType::ETH);
   }
 
   void CallAndWaitForEthereumChainRequestCompleted(
@@ -302,7 +295,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, AddEthereumChainApproved) {
   GetJsonRpcService()->NotifySwitchChainRequestProcessed(
       GetPendingSwitchChainRequestId(), true);
   auto result_first = EvalJs(contents, kScriptWaitForEvent);
-  EXPECT_EQ(base::Value(true), result_first.value);
+  EXPECT_EQ(base::Value(true), result_first);
   ASSERT_FALSE(GetAllEthCustomChains().empty());
   auto chain = GetAllEthCustomChains().front().Clone();
   EXPECT_EQ(chain->chain_id, kSomeChainId);
@@ -332,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, AddEthereumChainRejected) {
                   ->IsShowingBubble());
   GetJsonRpcService()->AddEthereumChainRequestCompleted(kSomeChainId, false);
   auto result_first = EvalJs(contents, kScriptWaitForEvent);
-  EXPECT_EQ(base::Value(false), result_first.value);
+  EXPECT_EQ(base::Value(false), result_first);
 }
 
 IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, AddChainSameOrigin) {
@@ -352,7 +345,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, AddChainSameOrigin) {
   ASSERT_FALSE(tab_helper->IsShowingBubble());
   auto result_first = EvalJs(contents, kScriptRunAndCheckAddChainResult);
   ASSERT_FALSE(tab_helper->IsShowingBubble());
-  EXPECT_EQ(base::Value(true), result_first.value);
+  EXPECT_EQ(base::Value(true), result_first);
 }
 
 IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest,
@@ -381,7 +374,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest,
       brave_wallet::BraveWalletTabHelper::FromWebContents(web_contentsB);
   ASSERT_FALSE(tab_helperB->IsShowingBubble());
   auto rejected_same_id = EvalJs(web_contentsB, kScriptWaitForEvent);
-  EXPECT_EQ(base::Value(false), rejected_same_id.value);
+  EXPECT_EQ(base::Value(false), rejected_same_id);
   ASSERT_FALSE(tab_helperB->IsShowingBubble());
   ASSERT_FALSE(tab_helperA->IsShowingBubble());
 }
@@ -427,7 +420,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest,
   GetJsonRpcService()->NotifySwitchChainRequestProcessed(
       GetPendingSwitchChainRequestId(), false);
   auto rejected_same_id = EvalJs(web_contentsB, kScriptWaitForEvent);
-  EXPECT_EQ(base::Value(false), rejected_same_id.value);
+  EXPECT_EQ(base::Value(false), rejected_same_id);
   base::RunLoop().RunUntilIdle();
   // Chain should still exist though
   ASSERT_FALSE(GetAllEthCustomChains().empty());
@@ -478,7 +471,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, AddDifferentChainsSwitch) {
   GetJsonRpcService()->NotifySwitchChainRequestProcessed(
       GetPendingSwitchChainRequestId(), true);
   auto rejected_same_id = EvalJs(web_contentsB, kScriptWaitForEvent);
-  EXPECT_EQ(base::Value(true), rejected_same_id.value);
+  EXPECT_EQ(base::Value(true), rejected_same_id);
   base::RunLoop().RunUntilIdle();
   ASSERT_FALSE(GetAllEthCustomChains().empty());
   EXPECT_EQ(GetAllEthCustomChains().front()->chain_id, "0x11");
@@ -542,7 +535,7 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, AddBrokenChain) {
   ASSERT_FALSE(tab_helper->IsShowingBubble());
   auto result_first = EvalJs(contents, kScriptRunEmptyAndCheckChainResult);
   ASSERT_FALSE(tab_helper->IsShowingBubble());
-  EXPECT_EQ(base::Value(true), result_first.value);
+  EXPECT_EQ(base::Value(true), result_first);
 }
 
 IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, CheckIncognitoTab) {
@@ -557,5 +550,5 @@ IN_PROC_BROWSER_TEST_F(BraveWalletEthereumChainTest, CheckIncognitoTab) {
   EXPECT_EQ(content::EvalJs(contents, "document.title;"),
             "PAGE_SCRIPT_STARTED");
   auto result_first = EvalJs(contents, "window.ethereum != null");
-  EXPECT_EQ(base::Value(false), result_first.value);
+  EXPECT_EQ(base::Value(false), result_first);
 }

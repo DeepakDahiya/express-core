@@ -7,13 +7,14 @@
 
 #include <vector>
 
-#include "base/strings/string_util.h"
+#include "base/check.h"
+#include "base/logging.h"
+#include "brave/browser/brave_vpn/win/brave_vpn_helper/brave_vpn_helper_utils.h"
 #include "brave/browser/ui/views/brave_vpn/brave_vpn_dns_settings_notificiation_dialog_view.h"
-#include "brave/components/brave_vpn/browser/connection/ikev2/win/brave_vpn_helper/brave_vpn_helper_constants.h"
-#include "brave/components/brave_vpn/browser/connection/ikev2/win/brave_vpn_helper/brave_vpn_helper_state.h"
 #include "brave/components/brave_vpn/common/brave_vpn_utils.h"
 #include "brave/components/brave_vpn/common/pref_names.h"
 #include "brave/components/brave_vpn/common/win/utils.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/net/secure_dns_config.h"
 #include "chrome/browser/net/stub_resolver_config_reader.h"
 #include "chrome/browser/net/system_network_context_manager.h"
@@ -80,7 +81,7 @@ void BraveVpnDnsObserverService::ShowPolicyWarningMessage() {
     return;
   }
 
-  chrome::ShowWarningMessageBoxWithCheckbox(
+  chrome::ShowWarningMessageBoxWithCheckboxAsync(
       GetAnchorBrowserWindow(), l10n_util::GetStringUTF16(IDS_PRODUCT_NAME),
       l10n_util::GetStringUTF16(IDS_BRAVE_VPN_DNS_POLICY_ALERT),
       l10n_util::GetStringUTF16(IDS_BRAVE_VPN_DNS_POLICY_CHECKBOX),
@@ -196,6 +197,12 @@ void BraveVpnDnsObserverService::LockDNS() {
 
 void BraveVpnDnsObserverService::OnConnectionStateChanged(
     brave_vpn::mojom::ConnectionState state) {
+  // Check because WG settings could be changed in runtime.
+  if (brave_vpn::IsBraveVPNWireguardEnabled(g_browser_process->local_state())) {
+    return;
+  }
+
+  VLOG(2) << __func__ << state;
   connection_state_ = state;
   if (state == brave_vpn::mojom::ConnectionState::CONNECTED) {
     if (IsDNSHelperLive()) {

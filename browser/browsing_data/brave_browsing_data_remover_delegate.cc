@@ -5,10 +5,15 @@
 
 #include "brave/browser/browsing_data/brave_browsing_data_remover_delegate.h"
 
-#include <memory>
 #include <utility>
+#include <vector>
 
+#include "base/containers/flat_map.h"
+#include "base/no_destructor.h"
+#include "base/notreached.h"
+#include "brave/browser/ai_chat/ai_chat_service_factory.h"
 #include "brave/browser/brave_news/brave_news_controller_factory.h"
+#include "brave/components/ai_chat/core/browser/ai_chat_service.h"
 #include "brave/components/brave_news/browser/brave_news_controller.h"
 #include "brave/components/content_settings/core/browser/brave_content_settings_pref_provider.h"
 #include "brave/components/content_settings/core/browser/brave_content_settings_utils.h"
@@ -17,24 +22,88 @@
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/buildflags.h"
+#include "components/browsing_data/content/browsing_data_helper.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
+#include "content/public/browser/browsing_data_remover.h"
 
-#if BUILDFLAG(ENABLE_IPFS)
-#include "base/command_line.h"
-#include "base/files/file_path.h"
-#include "base/process/launch.h"
-#include "base/process/process.h"
-#include "base/task/task_traits.h"
-#include "base/task/thread_pool.h"
-#include "base/threading/thread_restrictions.h"
-#include "base/time/time.h"
-#include "brave/browser/ipfs/ipfs_service_factory.h"
-#include "brave/components/ipfs/ipfs_service.h"
-#endif
+namespace {
 
-#if BUILDFLAG(ENABLE_AI_CHAT)
-#include "brave/components/ai_chat/core/common/features.h"
-#endif
+// TODO(boocmp): Remove this in
+// https://github.com/brave/brave-browser/issues/44327.
+class ContentSettingsDefaultsKeeper {
+ public:
+  explicit ContentSettingsDefaultsKeeper(Profile* profile) : profile_(profile) {
+    auto* map = HostContentSettingsMapFactory::GetForProfile(profile_);
+
+    const auto shields_content_types =
+        content_settings::GetShieldsContentSettingsTypes();
+    for (const auto content_type : shields_content_types) {
+      if (content_type == ContentSettingsType::BRAVE_COOKIES) {
+        // BRAVE_COOKIES don't have own default values. They relies on the
+        // default COOKIES settings which are stored in the profile prefs.
+        continue;
+      }
+      ContentSettingsForOneType settings =
+          map->GetSettingsForOneType(content_type);
+      for (const auto& setting : settings) {
+        if (setting.source !=
+                content_settings::ProviderType::kDefaultProvider &&
+            setting.primary_pattern.MatchesAllHosts()) {
+          defaults_[content_type].push_back(setting);
+        }
+      }
+    }
+  }
+
+  ~ContentSettingsDefaultsKeeper() {
+    auto* map = HostContentSettingsMapFactory::GetForProfile(profile_);
+    for (auto&& [content_type, settings] : defaults_) {
+      for (auto&& setting : settings) {
+        RestoreSetting(map, content_type, std::move(setting));
+      }
+    }
+  }
+
+ private:
+  static const ContentSettingsPattern& BalancedPattern() {
+    static const base::NoDestructor<ContentSettingsPattern> kPattern(
+        ContentSettingsPattern::FromString("https://balanced/*"));
+    return *kPattern;
+  }
+
+  void RestoreSetting(HostContentSettingsMap* map,
+                      ContentSettingsType content_type,
+                      ContentSettingPatternSource setting) {
+    if (content_type == ContentSettingsType::BRAVE_FINGERPRINTING_V2 &&
+        setting.secondary_pattern == BalancedPattern()) {
+      // Special case:
+      // "Balanced" patterns should be replaced with `[url, *] -> ASK`,
+      // as outlined in
+      // `BravePrefProvider::MigrateFingerprintingSettingsToOriginScoped`.
+      // However, the migration process begins before Sync is performed, and
+      // Sync restores the `balanced` values. If a `[*, balanced]` rule has been
+      // restored, attempting to keep it results in a `NOTREACHED` error,
+      // as there are no providers capable of consuming such patterns when the
+      // value is not the default. Setting the default value also notifies Sync
+      // to update the value and clear unwanted state.
+      // This code should be removed in
+      // https://github.com/brave/brave-browser/issues/44327.
+      map->SetWebsiteSettingCustomScope(
+          setting.primary_pattern, setting.secondary_pattern,
+          ContentSettingsType::BRAVE_FINGERPRINTING_V2, base::Value(), {});
+    } else {
+      map->SetWebsiteSettingCustomScope(setting.primary_pattern,
+                                        setting.secondary_pattern, content_type,
+                                        std::move(setting.setting_value));
+    }
+  }
+
+  raw_ptr<Profile> profile_ = nullptr;
+  base::flat_map<ContentSettingsType, std::vector<ContentSettingPatternSource>>
+      defaults_;
+};
+
+}  // namespace
 
 BraveBrowsingDataRemoverDelegate::BraveBrowsingDataRemoverDelegate(
     content::BrowserContext* browser_context)
@@ -50,37 +119,63 @@ void BraveBrowsingDataRemoverDelegate::RemoveEmbedderData(
     content::BrowsingDataFilterBuilder* filter_builder,
     uint64_t origin_type_mask,
     base::OnceCallback<void(/*failed_data_types=*/uint64_t)> callback) {
-  ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(delete_begin,
-                                                        delete_end,
-                                                        remove_mask,
-                                                        filter_builder,
-                                                        origin_type_mask,
-                                                        std::move(callback));
+  ContentSettingsDefaultsKeeper default_values_keeper(profile_);
+
+  ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
+      delete_begin, delete_end, remove_mask, filter_builder, origin_type_mask,
+      std::move(callback));
 
   // We do this because ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData()
   // doesn't clear shields settings with non all time range.
   // The reason is upstream assumes that plugins type only as empty string
   // resource ids with plugins type. but we use plugins type to store our
   // shields settings with non-empty resource ids.
-  if (remove_mask & chrome_browsing_data_remover::DATA_TYPE_CONTENT_SETTINGS)
+  if (remove_mask & chrome_browsing_data_remover::DATA_TYPE_CONTENT_SETTINGS) {
     ClearShieldsSettings(delete_begin, delete_end);
+  }
 
-#if BUILDFLAG(ENABLE_IPFS)
-  if (remove_mask & content::BrowsingDataRemover::DATA_TYPE_CACHE)
-    ClearIPFSCache();
-#endif
-  // Brave News feed cache
   if (remove_mask & chrome_browsing_data_remover::DATA_TYPE_HISTORY) {
-    brave_news::BraveNewsControllerFactory::GetForContext(profile_)
-        ->ClearHistory();
+    // Brave News feed cache
+    if (auto* brave_news_controller =
+            brave_news::BraveNewsControllerFactory::GetForBrowserContext(
+                profile_)) {
+      brave_news_controller->ClearHistory();
+    }
+    // AI Chat history but only associated content, not neccessary if we
+    // are also deleting entire AI Chat history.
+    if (!(remove_mask &
+          chrome_browsing_data_remover::DATA_TYPE_BRAVE_LEO_HISTORY)) {
+      ai_chat::AIChatService* ai_chat_service =
+          ai_chat::AIChatServiceFactory::GetForBrowserContext(profile_);
+      if (ai_chat_service) {
+        ai_chat_service->DeleteAssociatedWebContent(delete_begin, delete_end);
+      }
+    }
   }
-#if BUILDFLAG(ENABLE_AI_CHAT)
-  if (remove_mask & chrome_browsing_data_remover::DATA_TYPE_BRAVE_LEO_HISTORY &&
-      ai_chat::features::IsAIChatEnabled() &&
-      ai_chat::features::IsAIChatHistoryEnabled()) {
-    ClearAiChatHistory(delete_begin, delete_end);
+
+  // That code executes on desktop only. Android part is done inside
+  // BraveClearBrowsingDataFragment::onClearBrowsingData(). It's done
+  // that way to avoid extensive patching in java files by adding extra
+  // types inside ClearBrowsingDataFragment.DialogOption and surrounding
+  // functions
+  if (remove_mask & chrome_browsing_data_remover::DATA_TYPE_BRAVE_LEO_HISTORY) {
+    ai_chat::AIChatService* ai_chat_service =
+        ai_chat::AIChatServiceFactory::GetForBrowserContext(profile_);
+    if (ai_chat_service) {
+      ai_chat_service->DeleteConversations(delete_begin, delete_end);
+    }
   }
-#endif  // BUILDFLAG(ENABLE_AI_CHAT)
+
+  if ((remove_mask & content::BrowsingDataRemover::DATA_TYPE_COOKIES) ||
+      (remove_mask & chrome_browsing_data_remover::DATA_TYPE_HISTORY)) {
+    HostContentSettingsMap::PatternSourcePredicate website_settings_filter =
+        browsing_data::CreateWebsiteSettingsFilter(filter_builder);
+    HostContentSettingsMap* host_content_settings_map =
+        HostContentSettingsMapFactory::GetForProfile(profile_);
+    host_content_settings_map->ClearSettingsForOneTypeWithPredicate(
+        ContentSettingsType::BRAVE_SHIELDS_METADATA, delete_begin, delete_end,
+        website_settings_filter);
+  }
 }
 
 void BraveBrowsingDataRemoverDelegate::ClearShieldsSettings(
@@ -111,77 +206,3 @@ void BraveBrowsingDataRemoverDelegate::ClearShieldsSettings(
     }
   }
 }
-
-#if BUILDFLAG(ENABLE_AI_CHAT)
-void BraveBrowsingDataRemoverDelegate::ClearAiChatHistory(base::Time begin_time,
-                                                          base::Time end_time) {
-  // Handler for the Brave Leo History clearing.
-  // It is prepared for future implementation.
-}
-#endif  // BUILDFLAG(ENABLE_AI_CHAT)
-
-#if BUILDFLAG(ENABLE_IPFS)
-void BraveBrowsingDataRemoverDelegate::WaitForIPFSRepoGC(
-    base::Process process) {
-  bool exited = false;
-
-  {
-    base::ScopedAllowBaseSyncPrimitives scoped_allow_base_sync_primitives;
-
-    // Because we set maximum IPFS storage size as 1GB in Brave, ipfs repo gc
-    // command should be finished in just a few seconds and we do not expect
-    // this child process would hang forever. To be safe, we will wait for 30
-    // seconds max here.
-    exited = process.WaitForExitWithTimeout(base::Seconds(30), nullptr);
-  }
-
-  if (!exited)
-    process.Terminate(0, false /* wait */);
-}
-
-// Run ipfs repo gc command to clear IPFS cache when IPFS executable path is
-// available. Because the command does not support time ranged cleanup, we will
-// always clear the whole cache expect for pinned files when clearing browsing
-// data.
-void BraveBrowsingDataRemoverDelegate::ClearIPFSCache() {
-  auto* service =
-      ipfs::IpfsServiceFactory::GetInstance()->GetForContext(profile_);
-  if (!service)
-    return;
-
-  base::FilePath path = service->GetIpfsExecutablePath();
-  if (path.empty())
-    return;
-
-  base::CommandLine cmdline(path);
-  cmdline.AppendArg("repo");
-  cmdline.AppendArg("gc");
-
-  base::FilePath data_path = service->GetDataPath();
-  base::LaunchOptions options;
-#if BUILDFLAG(IS_WIN)
-  options.environment[L"IPFS_PATH"] = data_path.value();
-#else
-  options.environment["IPFS_PATH"] = data_path.value();
-#endif
-#if BUILDFLAG(IS_LINUX)
-  options.kill_on_parent_death = true;
-#endif
-#if BUILDFLAG(IS_WIN)
-  options.start_hidden = true;
-#endif
-
-  base::Process process = base::LaunchProcess(cmdline, options);
-  if (!process.IsValid()) {
-    return;
-  }
-
-  base::ThreadPool::PostTaskAndReply(
-      FROM_HERE,
-      {base::TaskPriority::USER_VISIBLE, base::MayBlock(),
-       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
-      base::BindOnce(&BraveBrowsingDataRemoverDelegate::WaitForIPFSRepoGC,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(process)),
-      CreateTaskCompletionClosure(TracingDataType::kIPFSCache));
-}
-#endif  // BUILDFLAG(ENABLE_IPFS)

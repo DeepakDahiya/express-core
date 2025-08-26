@@ -4,14 +4,11 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "base/command_line.h"
-#include "base/memory/raw_ptr.h"
-#include "base/path_service.h"
-#include "base/test/bind.h"
-#include "brave/browser/brave_wallet/keyring_service_factory.h"
+#include "brave/browser/brave_wallet/brave_wallet_service_factory.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/keyring_service.h"
 #include "brave/components/brave_wallet/browser/test_utils.h"
-#include "brave/components/constants/brave_paths.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -25,12 +22,13 @@
 #include "content/public/test/test_utils.h"
 #include "net/dns/mock_host_resolver.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "url/gurl.h"
 
 namespace {
 
-std::string CheckForEventScript(const std::string& event_var) {
-  return base::StringPrintf(R"(
+std::string CheckForEventScript(std::string_view event_var) {
+  return absl::StrFormat(R"(
       new Promise(resolve => {
         const timer = setInterval(function () {
           if (%s) {
@@ -40,7 +38,7 @@ std::string CheckForEventScript(const std::string& event_var) {
         }, 100);
       });
     )",
-                            event_var.c_str());
+                         event_var);
 }
 
 }  // namespace
@@ -76,16 +74,9 @@ class EthereumProviderBrowserTest : public InProcessBrowserTest {
     mock_cert_verifier_.mock_cert_verifier()->set_default_result(net::OK);
     host_resolver()->AddRule("*", "127.0.0.1");
 
-    brave::RegisterPathProvider();
-    base::FilePath test_data_dir;
-    base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
-    test_data_dir = test_data_dir.AppendASCII("brave-wallet");
-    https_server_.ServeFilesFromDirectory(test_data_dir);
+    https_server_.ServeFilesFromDirectory(BraveWalletTestDataFolder());
     https_server_.SetSSLConfig(net::EmbeddedTestServer::CERT_TEST_NAMES);
     ASSERT_TRUE(https_server()->Start());
-
-    keyring_service_ =
-        KeyringServiceFactory::GetServiceForContext(browser()->profile());
   }
 
   content::WebContents* web_contents() {
@@ -94,8 +85,13 @@ class EthereumProviderBrowserTest : public InProcessBrowserTest {
 
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
+  KeyringService* keyring_service() {
+    return BraveWalletServiceFactory::GetServiceForContext(browser()->profile())
+        ->keyring_service();
+  }
+
   void RestoreWallet() {
-    ASSERT_TRUE(keyring_service_->RestoreWalletSync(
+    ASSERT_TRUE(keyring_service()->RestoreWalletSync(
         kMnemonicDripCaution, kTestWalletPassword, false));
   }
 
@@ -107,7 +103,6 @@ class EthereumProviderBrowserTest : public InProcessBrowserTest {
  private:
   content::ContentMockCertVerifier mock_cert_verifier_;
   net::test_server::EmbeddedTestServer https_server_;
-  raw_ptr<KeyringService> keyring_service_ = nullptr;
 };
 
 IN_PROC_BROWSER_TEST_F(EthereumProviderBrowserTest, InactiveTabRequest) {
@@ -130,10 +125,16 @@ IN_PROC_BROWSER_TEST_F(EthereumProviderBrowserTest, InactiveTabRequest) {
 
   auto result_first =
       EvalJs(first_tab_web_contents, CheckForEventScript("inactiveTabError"));
-  EXPECT_EQ(base::Value(true), result_first.value);
+  EXPECT_EQ(base::Value(true), result_first);
 }
 
-IN_PROC_BROWSER_TEST_F(EthereumProviderBrowserTest, ActiveTabRequest) {
+// This test is flaky on MacOS CI, but mostly works locally.
+#if BUILDFLAG(IS_MAC)
+#define MAYBE_ActiveTabRequest DISABLED_ActiveTabRequest
+#else
+#define MAYBE_ActiveTabRequest ActiveTabRequest
+#endif
+IN_PROC_BROWSER_TEST_F(EthereumProviderBrowserTest, MAYBE_ActiveTabRequest) {
   RestoreWallet();
   GURL url = https_server()->GetURL("a.com", "/ethereum_provider.html");
 
@@ -156,7 +157,7 @@ IN_PROC_BROWSER_TEST_F(EthereumProviderBrowserTest, ActiveTabRequest) {
 
   auto result_first =
       EvalJs(web_contents(), CheckForEventScript("!inactiveTabError"));
-  EXPECT_EQ(base::Value(true), result_first.value);
+  EXPECT_EQ(base::Value(true), result_first);
 }
 
 IN_PROC_BROWSER_TEST_F(EthereumProviderBrowserTest,

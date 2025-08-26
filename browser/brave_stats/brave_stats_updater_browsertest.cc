@@ -3,15 +3,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/browser/brave_stats/brave_stats_updater.h"
+
 #include <memory>
 
 #include "base/command_line.h"
 #include "base/environment.h"
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/run_loop.h"
 #include "base/time/time.h"
 #include "brave/browser/brave_browser_process.h"
-#include "brave/browser/brave_stats/brave_stats_updater.h"
 #include "brave/browser/brave_stats/brave_stats_updater_params.h"
 #include "brave/browser/brave_stats/switches.h"
 #include "brave/components/brave_referrals/browser/brave_referrals_service.h"
@@ -22,17 +24,15 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/test/base/chrome_test_utils.h"
+#include "chrome/test/base/platform_browser_test.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/browser_test.h"
 #include "net/base/url_util.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"
 
-#if BUILDFLAG(IS_ANDROID)
-#include "chrome/test/base/android/android_browser_test.h"
-#else
+#if !BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/ui/browser.h"
-#include "chrome/test/base/in_process_browser_test.h"
 #endif
 
 namespace {
@@ -45,7 +45,7 @@ std::unique_ptr<net::test_server::HttpResponse> HandleRequestForStats(
     const net::test_server::HttpRequest& request) {
   std::unique_ptr<net::test_server::BasicHttpResponse> http_response(
       new net::test_server::BasicHttpResponse());
-  if (request.relative_url == "/promo/initialize/nonua") {
+  if (request.relative_url == "//promo/initialize/nonua") {
     // We need a download id to make promo initialization happy
     http_response->set_code(net::HTTP_OK);
     http_response->set_content("{\"download_id\":\"keur123\"}");
@@ -96,10 +96,9 @@ class BraveStatsUpdaterBrowserTest : public PlatformBrowserTest {
   }
 
   void SetBaseUpdateURLForTest() {
-    std::unique_ptr<base::Environment> env(base::Environment::Create());
+    auto env = base::Environment::Create();
     env->SetVar("BRAVE_REFERRALS_SERVER",
-                embedded_test_server()->host_port_pair().ToString());
-    env->SetVar("BRAVE_REFERRALS_LOCAL", "1");  // use http for local testing
+                embedded_test_server()->base_url().spec());
   }
 
   GURL GetUpdateURL() const { return update_url_; }
@@ -140,10 +139,6 @@ class BraveStatsUpdaterBrowserTest : public PlatformBrowserTest {
     wait_for_standard_stats_updated_loop_->Run();
   }
 
-  void DisableStatsUsagePing() {
-    g_browser_process->local_state()->SetBoolean(kStatsReportingEnabled, false);
-  }
-
  private:
   std::unique_ptr<base::RunLoop> wait_for_referral_initialized_loop_;
   std::unique_ptr<base::RunLoop> wait_for_standard_stats_updated_loop_;
@@ -161,8 +156,7 @@ IN_PROC_BROWSER_TEST_F(BraveStatsUpdaterBrowserTest,
   WaitForReferralInitializeCallback();
   WaitForStandardStatsUpdatedCallback();
 
-  // We get //1/usage/brave-core here, so ignore the first slash.
-  EXPECT_STREQ(GetUpdateURL().path().c_str() + 1, "/1/usage/brave-core");
+  EXPECT_EQ(GetUpdateURL().path(), "//1/usage/brave-core");
 
   // First check preference should now be true
   EXPECT_TRUE(g_browser_process->local_state()->GetBoolean(kFirstCheckMade));
@@ -171,13 +165,13 @@ IN_PROC_BROWSER_TEST_F(BraveStatsUpdaterBrowserTest,
 // The stats updater should not reach the endpoint
 IN_PROC_BROWSER_TEST_F(BraveStatsUpdaterBrowserTest,
                        StatsUpdaterUsagePingDisabledFirstCheck) {
-  DisableStatsUsagePing();
+  g_browser_process->local_state()->SetBoolean(kStatsReportingEnabled, false);
 
   WaitForReferralInitializeCallback();
   WaitForStandardStatsUpdatedCallback();
 
   // Dummy URL confirms no request was triggered
-  EXPECT_STREQ(GetUpdateURL().host().c_str(), "no-thanks.invalid");
+  EXPECT_EQ(GetUpdateURL().host(), "no-thanks.invalid");
 
   // No prefs should be updated
   EXPECT_FALSE(g_browser_process->local_state()->GetBoolean(kFirstCheckMade));
@@ -201,39 +195,13 @@ IN_PROC_BROWSER_TEST_F(BraveStatsUpdaterBrowserTest,
   // Verify that daily parameter is true
   std::string query_value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(update_url, "daily", &query_value));
-  EXPECT_STREQ(query_value.c_str(), "true");
+  EXPECT_EQ(query_value, "true");
 
   // Verify that there is no referral code
   EXPECT_TRUE(net::GetValueForKeyInQuery(update_url, "ref", &query_value));
-  EXPECT_STREQ(query_value.c_str(), "BRV001");
+  EXPECT_EQ(query_value, "BRV001");
 }
 
-// TODO(bridiver) - convert to a unit test
-IN_PROC_BROWSER_TEST_F(BraveStatsUpdaterBrowserTest,
-                       DISABLED_StatsUpdaterMigration) {
-  // Create a pre 1.19 user.
-  // Has a download_id, kReferralCheckedForPromoCodeFile is set, has promo code.
-  ASSERT_FALSE(
-      g_browser_process->local_state()->GetBoolean(kReferralInitialization));
-  g_browser_process->local_state()->SetString(kReferralDownloadID, "migration");
-  g_browser_process->local_state()->SetString(kReferralPromoCode, "BRV001");
-  g_browser_process->local_state()->SetBoolean(kReferralCheckedForPromoCodeFile,
-                                               true);
-
-  WaitForStandardStatsUpdatedCallback();
-  // Verify that update url is valid
-  const GURL update_url = GetUpdateURL();
-  EXPECT_TRUE(update_url.is_valid());
-
-  // Verify that daily parameter is true
-  std::string query_value;
-  EXPECT_TRUE(net::GetValueForKeyInQuery(update_url, "daily", &query_value));
-  EXPECT_STREQ(query_value.c_str(), "true");
-
-  // Verify that there is no referral code
-  EXPECT_TRUE(net::GetValueForKeyInQuery(update_url, "ref", &query_value));
-  EXPECT_STREQ(query_value.c_str(), "BRV001");
-}
 
 class BraveStatsUpdaterReferralCodeBrowserTest
     : public BraveStatsUpdaterBrowserTest {
@@ -247,11 +215,10 @@ class BraveStatsUpdaterReferralCodeBrowserTest
     BraveStatsUpdaterBrowserTest::SetUp();
   }
 
-  int WritePromoCodeFile(const base::FilePath& promo_code_file,
-                         const std::string& referral_code) {
+  void WritePromoCodeFile(const base::FilePath& promo_code_file,
+                          const std::string& referral_code) {
     base::ScopedAllowBlockingForTesting allow_blocking;
-    return base::WriteFile(promo_code_file, referral_code.c_str(),
-                           referral_code.size());
+    base::WriteFile(promo_code_file, referral_code);
   }
 
   const std::string referral_code() { return "FOO123"; }
@@ -278,9 +245,9 @@ IN_PROC_BROWSER_TEST_F(BraveStatsUpdaterReferralCodeBrowserTest,
   // Verify that daily parameter is true
   std::string query_value;
   EXPECT_TRUE(net::GetValueForKeyInQuery(update_url, "daily", &query_value));
-  EXPECT_STREQ(query_value.c_str(), "true");
+  EXPECT_EQ(query_value, "true");
 
   // Verify that the expected referral code is present
   EXPECT_TRUE(net::GetValueForKeyInQuery(update_url, "ref", &query_value));
-  EXPECT_STREQ(query_value.c_str(), referral_code().c_str());
+  EXPECT_EQ(query_value, referral_code());
 }

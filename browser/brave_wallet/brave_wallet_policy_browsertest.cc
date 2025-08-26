@@ -3,19 +3,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "base/strings/stringprintf.h"
+#include <algorithm>
+
+#include "base/check.h"
 #include "brave/app/brave_command_ids.h"
 #include "brave/browser/brave_wallet/brave_wallet_context_utils.h"
 #include "brave/browser/brave_wallet/brave_wallet_service_factory.h"
-#include "brave/browser/ui/brave_browser.h"
+#include "brave/browser/ui/browser_commands.h"
 #include "brave/browser/ui/sidebar/sidebar_controller.h"
 #include "brave/browser/ui/sidebar/sidebar_model.h"
+#include "brave/components/brave_wallet/browser/pref_names.h"
 #include "brave/components/brave_wallet/common/common_utils.h"
 #include "brave/components/brave_wallet/common/pref_names.h"
-#include "brave/components/sidebar/sidebar_item.h"
+#include "brave/components/sidebar/browser/sidebar_item.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -32,6 +37,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/navigation_handle_observer.h"
 #include "extensions/common/constants.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 #include "url/gurl.h"
 
 namespace policy {
@@ -83,6 +89,35 @@ IN_PROC_BROWSER_TEST_P(BraveWalletPolicyTest, IsBraveWalletDisabled) {
     EXPECT_FALSE(prefs()->GetBoolean(brave_wallet::prefs::kDisabledByPolicy));
     EXPECT_TRUE(brave_wallet::IsAllowed(prefs()));
     EXPECT_TRUE(brave_wallet::IsAllowedForContext(profile()));
+
+    auto* profile = browser()->profile();
+    auto* incognito_profile = CreateIncognitoBrowser(profile)->profile();
+    ui_test_utils::BrowserChangeObserver browser_creation_observer(
+        nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+    profiles::SwitchToGuestProfile();
+    Browser* guest_browser = browser_creation_observer.Wait();
+    DCHECK(guest_browser);
+    auto* guest_profile = guest_browser->profile();
+    ASSERT_TRUE(guest_profile->IsGuestSession());
+
+    ui_test_utils::BrowserChangeObserver tor_browser_creation_observer(
+        nullptr, ui_test_utils::BrowserChangeObserver::ChangeType::kAdded);
+    brave::NewOffTheRecordWindowTor(browser());
+    Browser* tor_browser = tor_browser_creation_observer.Wait();
+    DCHECK(tor_browser);
+    auto* tor_profile = tor_browser->profile();
+    ASSERT_TRUE(tor_profile->IsTor());
+
+    // By default the wallet should not be allowed for private, guest, or tor.
+    EXPECT_FALSE(brave_wallet::IsAllowedForContext(incognito_profile));
+    EXPECT_FALSE(brave_wallet::IsAllowedForContext(tor_profile));
+    EXPECT_FALSE(brave_wallet::IsAllowedForContext(guest_profile));
+
+    // Setting pref should allow it for incognito, but not for guest, or tor.
+    prefs()->SetBoolean(kBraveWalletPrivateWindowsEnabled, true);
+    EXPECT_TRUE(brave_wallet::IsAllowedForContext(incognito_profile));
+    EXPECT_FALSE(brave_wallet::IsAllowedForContext(tor_profile));
+    EXPECT_FALSE(brave_wallet::IsAllowedForContext(guest_profile));
   }
 }
 
@@ -123,14 +158,14 @@ IN_PROC_BROWSER_TEST_P(BraveWalletPolicyTest, WalletPageAccess) {
 // Verify that the wallet item is not shown in the sidebar when Brave Wallet is
 // disabled by policy.
 IN_PROC_BROWSER_TEST_P(BraveWalletPolicyTest, WalletInSidebar) {
-  BraveBrowser* brave_browser = static_cast<BraveBrowser*>(browser());
-  sidebar::SidebarController* controller = brave_browser->sidebar_controller();
+  sidebar::SidebarController* controller =
+      browser()->GetFeatures().sidebar_controller();
   sidebar::SidebarModel* model = controller->model();
 
   const auto items = model->GetAllSidebarItems();
   EXPECT_LT(0UL, items.size());
 
-  const auto iter = base::ranges::find_if(items, [](const auto& i) {
+  const auto iter = std::ranges::find_if(items, [](const auto& i) {
     return (i.built_in_item_type ==
             sidebar::SidebarItem::BuiltInItemType::kWallet);
   });
@@ -142,13 +177,74 @@ IN_PROC_BROWSER_TEST_P(BraveWalletPolicyTest, WalletInSidebar) {
   }
 }
 
+// Verify that Web3 settings pages are not accessible when Brave Wallet is
+// disabled by policy.
+IN_PROC_BROWSER_TEST_P(BraveWalletPolicyTest, Web3SettingsPagesAccess) {
+  std::vector<GURL> web3_urls = {
+      GURL("chrome://settings/content/ethereum"),
+      GURL("chrome://settings/content/solana"),
+      GURL("chrome://settings/web3"),
+  };
+
+  // Only test Cardano if it's enabled
+  if (brave_wallet::IsCardanoDAppSupportEnabled()) {
+    web3_urls.push_back(GURL("chrome://settings/content/cardano"));
+  }
+
+  for (const auto& url : web3_urls) {
+    auto* rfh = ui_test_utils::NavigateToURL(browser(), url);
+    EXPECT_TRUE(rfh);
+
+    if (IsBraveWalletDisabledTest()) {
+      // When wallet is disabled, these pages should redirect
+      EXPECT_TRUE(web_contents()->GetLastCommittedURL() != url);
+    } else {
+      // When wallet is enabled, these pages should be accessible
+      EXPECT_FALSE(rfh->IsErrorDocument());
+      EXPECT_EQ(web_contents()->GetLastCommittedURL(), url);
+    }
+  }
+}
+
+// Verify that Web3 menu item is not available when Brave Wallet is disabled by
+// policy.
+IN_PROC_BROWSER_TEST_P(BraveWalletPolicyTest, Web3MenuVisibility) {
+  // Navigate to the main settings page
+  const GURL settings_url("chrome://settings");
+  auto* rfh = ui_test_utils::NavigateToURL(browser(), settings_url);
+  EXPECT_TRUE(rfh);
+  EXPECT_FALSE(rfh->IsErrorDocument());
+
+  // Wait for the page to load completely
+  content::WaitForLoadStop(web_contents());
+
+  // Check the JavaScript values that control Web3 menu visibility
+  const std::string web3_script = R"(
+    (function() {
+      // The Web3 menu should be visible if isBraveWalletAllowed is true
+      return loadTimeData.getBoolean('isBraveWalletAllowed');
+    })();
+  )";
+
+  bool web3_menu_item_exists =
+      content::EvalJs(web_contents(), web3_script).ExtractBool();
+
+  if (IsBraveWalletDisabledTest()) {
+    // When wallet is disabled, Web3 menu item should not exist
+    EXPECT_FALSE(web3_menu_item_exists);
+  } else {
+    // When wallet is enabled, Web3 menu item should exist
+    EXPECT_TRUE(web3_menu_item_exists);
+  }
+}
+
 INSTANTIATE_TEST_SUITE_P(
     BraveWalletPolicyTest,
     BraveWalletPolicyTest,
     ::testing::Bool(),
     [](const testing::TestParamInfo<BraveWalletPolicyTest::ParamType>& info) {
-      return base::StringPrintf("BraveWallet_%sByPolicy",
-                                info.param ? "Disabled" : "NotDisabled");
+      return absl::StrFormat("BraveWallet_%sByPolicy",
+                             info.param ? "Disabled" : "NotDisabled");
     });
 
 }  // namespace policy

@@ -5,11 +5,15 @@
 
 #include "brave/browser/brave_vpn/win/brave_vpn_wireguard_service/service/wireguard_tunnel_service.h"
 
+#include <array>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/command_line.h"
+#include "base/containers/span.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/logging.h"
@@ -23,13 +27,12 @@
 #include "base/win/security_descriptor.h"
 #include "base/win/sid.h"
 #include "base/win/windows_types.h"
+#include "brave/browser/brave_vpn/win/service_commands.h"
+#include "brave/browser/brave_vpn/win/service_constants.h"
+#include "brave/browser/brave_vpn/win/service_details.h"
+#include "brave/browser/brave_vpn/win/storage_utils.h"
 #include "brave/components/brave_vpn/common/win/scoped_sc_handle.h"
 #include "brave/components/brave_vpn/common/win/utils.h"
-#include "brave/components/brave_vpn/common/wireguard/win/service_commands.h"
-#include "brave/components/brave_vpn/common/wireguard/win/service_constants.h"
-#include "brave/components/brave_vpn/common/wireguard/win/service_details.h"
-#include "brave/components/brave_vpn/common/wireguard/win/storage_utils.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_vpn {
 
@@ -92,29 +95,28 @@ bool AddACEToPath(const base::FilePath& path,
 }
 
 bool ConfigureConfigPermissions(const base::FilePath& config_path) {
-  return AddACEToPath(
-      config_path,
-      {// Let only windows services to read the config.
-       {base::win::WellKnownSid::kService,
-        GENERIC_READ | GENERIC_WRITE | GENERIC_EXECUTE | DELETE,
-        base::win::SecurityAccessMode::kGrant},
-       // Let windows administrators only to remove the config.
-       {base::win::WellKnownSid::kBuiltinAdministrators,
-        GENERIC_EXECUTE | DELETE, base::win::SecurityAccessMode::kGrant}},
-      0, /*recursive=*/false);
+  return AddACEToPath(config_path,
+                      {// Let only windows services to read the config.
+                       {base::win::WellKnownSid::kLocalSystem,
+                        GENERIC_READ | GENERIC_WRITE | DELETE,
+                        base::win::SecurityAccessMode::kGrant},
+                       // Let windows administrators only to remove the config.
+                       {base::win::WellKnownSid::kBuiltinAdministrators, DELETE,
+                        base::win::SecurityAccessMode::kGrant}},
+                      0, /*recursive=*/false);
 }
 
-absl::optional<base::FilePath> WriteConfigToFile(const std::string& config) {
+std::optional<base::FilePath> WriteConfigToFile(const std::string& config) {
   base::FilePath temp_dir_path;
   // Intentionally using base::GetTempDir to reuse same directory between
   // launches.
   if (!base::GetTempDir(&temp_dir_path) || temp_dir_path.empty()) {
     VLOG(1) << "Unable to get temporary directory";
-    return absl::nullopt;
+    return std::nullopt;
   }
   base::ScopedTempDir scoped_temp_dir;
   if (!scoped_temp_dir.Set(temp_dir_path.Append(base::FilePath(L"BraveVpn")))) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   base::FilePath temp_file_path(scoped_temp_dir.GetPath().Append(
@@ -122,7 +124,7 @@ absl::optional<base::FilePath> WriteConfigToFile(const std::string& config) {
 
   if (!base::WriteFile(temp_file_path, config)) {
     VLOG(1) << "Failed to write config to file:" << temp_file_path;
-    return absl::nullopt;
+    return std::nullopt;
   }
   if (!ConfigureConfigPermissions(temp_file_path)) {
     VLOG(1) << "Failed to set permissions to file:" << temp_file_path;
@@ -141,7 +143,7 @@ bool IsServiceRunning(SC_HANDLE service) {
   return service_status.dwCurrentState == SERVICE_RUNNING;
 }
 
-absl::optional<base::FilePath> GetConfigFilePath(
+std::optional<base::FilePath> GetConfigFilePath(
     const std::wstring& encoded_config) {
   if (encoded_config.empty()) {
     return wireguard::GetLastUsedConfigPath();
@@ -151,7 +153,7 @@ absl::optional<base::FilePath> GetConfigFilePath(
   if (!base::Base64Decode(base::WideToUTF8(encoded_config), &decoded_config) ||
       decoded_config.empty()) {
     VLOG(1) << "Unable to decode wireguard config";
-    return absl::nullopt;
+    return std::nullopt;
   }
   return WriteConfigToFile(decoded_config);
 }
@@ -371,8 +373,8 @@ bool WireguardGenerateKeypair(std::string* public_key,
   }
   base::ScopedNativeLibrary tunnel_lib(directory.Append(L"tunnel.dll"));
   typedef bool WireGuardGenerateKeypair(uint8_t[32], uint8_t[32]);
-  std::vector<uint8_t> public_key_bytes(32);
-  std::vector<uint8_t> private_key_bytes(32);
+  std::array<uint8_t, 32u> public_key_bytes = {0};
+  std::array<uint8_t, 32u> private_key_bytes = {0};
 
   WireGuardGenerateKeypair* generate_proc =
       reinterpret_cast<WireGuardGenerateKeypair*>(
@@ -390,9 +392,8 @@ bool WireguardGenerateKeypair(std::string* public_key,
     return false;
   }
 
-  *public_key = base::Base64Encode(base::span<const uint8_t>(public_key_bytes));
-  *private_key =
-      base::Base64Encode(base::span<const uint8_t>(private_key_bytes));
+  *public_key = base::Base64Encode(public_key_bytes);
+  *private_key = base::Base64Encode(private_key_bytes);
   return true;
 }
 
