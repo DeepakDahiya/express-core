@@ -9,10 +9,10 @@
 #include "base/test/thread_test_helper.h"
 #include "brave/browser/brave_browser_process.h"
 #include "brave/components/brave_component_updater/browser/local_data_files_service.h"
-#include "brave/components/brave_shields/browser/ad_block_service.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
-#include "brave/components/brave_shields/browser/test_filters_provider.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
+#include "brave/components/brave_shields/content/test/test_filters_provider.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/constants/brave_paths.h"
 #include "brave/components/localhost_permission/localhost_permission_component.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -35,7 +35,8 @@
 #include "content/public/test/content_mock_cert_verifier.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/test/spawned_test_server/spawned_test_server.h"
+#include "net/test/embedded_test_server/embedded_test_server.h"
+#include "net/test/embedded_test_server/install_default_websocket_handlers.h"
 #include "net/test/test_data_directory.h"
 #include "url/gurl.h"
 
@@ -43,9 +44,9 @@ using net::test_server::EmbeddedTestServer;
 
 namespace {
 
-const char kTestEmbeddingDomain[] = "a.com";
-const char kTestTargetPath[] = "/logo.png";
-const char kSimplePage[] = "/simple.html";
+constexpr char kTestEmbeddingDomain[] = "a.com";
+constexpr char kTestTargetPath[] = "/logo.png";
+constexpr char kSimplePage[] = "/simple.html";
 
 }  // namespace
 
@@ -71,7 +72,6 @@ class LocalhostAccessBrowserTest : public InProcessBrowserTest {
     // Embedding website server
     https_server_ = std::make_unique<net::EmbeddedTestServer>(
         net::test_server::EmbeddedTestServer::TYPE_HTTPS);
-    brave::RegisterPathProvider();
     base::FilePath test_data_dir;
     base::PathService::Get(brave::DIR_TEST_DATA, &test_data_dir);
     https_server_->ServeFilesFromDirectory(test_data_dir);
@@ -142,12 +142,11 @@ class LocalhostAccessBrowserTest : public InProcessBrowserTest {
 
   void AddAdblockRule(const std::string& rule) {
     source_provider_ =
-        std::make_unique<brave_shields::TestFiltersProvider>(rule, "");
+        std::make_unique<brave_shields::TestFiltersProvider>(rule);
 
     brave_shields::AdBlockService* ad_block_service =
         g_brave_browser_process->ad_block_service();
-    ad_block_service->UseSourceProvidersForTest(source_provider_.get(),
-                                                source_provider_.get());
+    ad_block_service->UseSourceProviderForTest(source_provider_.get());
     WaitForAdBlockServiceThreads();
   }
 
@@ -157,8 +156,6 @@ class LocalhostAccessBrowserTest : public InProcessBrowserTest {
         (async () => {
           console.log("Entered insert image script");
           const img = document.createElement('img');
-          img.src = $1;
-          document.body.appendChild(img);
           return await new Promise((resolve) => {
             img.addEventListener("load", () => {
               resolve(true);
@@ -166,6 +163,8 @@ class LocalhostAccessBrowserTest : public InProcessBrowserTest {
             img.addEventListener("error", () => {
               resolve(false);
             }, {once: true});
+            img.src = $1;
+            document.body.appendChild(img);
           });
         })();
         )",
@@ -267,9 +266,9 @@ class LocalhostAccessBrowserTest : public InProcessBrowserTest {
   std::unique_ptr<net::EmbeddedTestServer> https_server_;
   std::unique_ptr<net::EmbeddedTestServer> localhost_server_;
   base::test::ScopedFeatureList feature_list_;
-  raw_ptr<Browser> current_browser_;
+  raw_ptr<Browser, DanglingUntriaged> current_browser_;
   std::unique_ptr<brave_shields::TestFiltersProvider> source_provider_;
-  raw_ptr<localhost_permission::LocalhostPermissionComponent>
+  raw_ptr<localhost_permission::LocalhostPermissionComponent, DanglingUntriaged>
       localhost_permission_component_;
 
  private:
@@ -369,10 +368,11 @@ IN_PROC_BROWSER_TEST_F(LocalhostAccessBrowserTest, NoPermissionPrompt) {
 // Test that WebSocket connections to localhost are blocked/allowed.
 IN_PROC_BROWSER_TEST_F(LocalhostAccessBrowserTest, WebSocket) {
   // Start a WebSocket server.
-  auto ws_server = std::make_unique<net::SpawnedTestServer>(
-      net::SpawnedTestServer::TYPE_WSS, net::GetWebSocketTestDataDirectory());
-  ASSERT_TRUE(ws_server->Start());
-  auto ws_url = ws_server->GetURL("localhost", "echo-with-no-extension");
+  net::EmbeddedTestServer ws_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  net::test_server::InstallDefaultWebSocketHandlers(&ws_server);
+  ASSERT_TRUE(ws_server.Start());
+  auto ws_url = net::test_server::GetWebSocketURL(ws_server, "localhost",
+                                                  "/echo-with-no-extension");
   // Script to connect to ws server.
   std::string ws_open_script_template = R"(
     new Promise(resolve => {

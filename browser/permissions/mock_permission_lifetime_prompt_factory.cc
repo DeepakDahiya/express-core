@@ -5,6 +5,9 @@
 
 #include "brave/browser/permissions/mock_permission_lifetime_prompt_factory.h"
 
+#include <vector>
+
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
@@ -65,7 +68,7 @@ void MockPermissionLifetimePromptFactory::WaitForPermissionBubble() {
 
 void MockPermissionLifetimePromptFactory::HideView(
     MockPermissionLifetimePrompt* prompt) {
-  base::Erase(prompts_, prompt);
+  std::erase(prompts_, prompt);
 }
 
 }  // namespace permissions

@@ -7,6 +7,7 @@
 
 #include "base/files/file_path.h"
 #include "base/files/scoped_temp_dir.h"
+#include "brave/components/constants/pref_names.h"
 #include "brave/components/search_engines/brave_prepopulated_engines.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/test/base/testing_browser_process.h"
@@ -37,6 +38,9 @@ class BraveProfileUtilTest : public testing::Test {
   TestingProfileManager testing_profile_manager_;
   base::ScopedTempDir temp_dir_;
 };
+
+// SetDefaultSearchVersion
+// #######################
 
 // No entry yet. Check initialized value
 TEST_F(BraveProfileUtilTest, SetDefaultSearchVersionExistingProfileNoEntryYet) {

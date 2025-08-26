@@ -19,7 +19,7 @@ using sandbox::policy::features::kModuleFileNamePatch;
 
 namespace {
 
-void NonBlockingDelay(const base::TimeDelta& delay) {
+void NonBlockingDelay(base::TimeDelta delay) {
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitWhenIdleClosure(), delay);
@@ -66,14 +66,15 @@ IN_PROC_BROWSER_TEST_P(ModuleFileNameBrowserTest, CheckPath) {
 
   WCHAR main_path[MAX_PATH] = {0};
   GetModuleFileNameW(nullptr, main_path, MAX_PATH);
-  EXPECT_TRUE(base::EndsWith(main_path, L"brave_browser_tests.exe"))
+  EXPECT_TRUE(
+      std::wstring_view(main_path).ends_with(L"brave_browser_tests.exe"))
       << main_path;
 
-  constexpr const size_t kInterceptedFunctions = 4u;
+  static constexpr size_t kInterceptedFunctions = 4u;
 #if !defined(ADDRESS_SANITIZER)
-  constexpr const size_t kExpectedReplacements = 4u;
+  static constexpr size_t kExpectedReplacements = 4u;
 #else
-  constexpr const size_t kExpectedReplacements = 3u;
+  static constexpr size_t kExpectedReplacements = 3u;
 #endif
 
   if (GetParam()) {

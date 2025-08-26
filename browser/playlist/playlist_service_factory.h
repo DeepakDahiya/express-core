@@ -16,6 +16,7 @@
 #endif  // BUILDFLAG(IS_ANDROID)
 
 class PrefRegistrySimple;
+class Profile;
 
 namespace base {
 template <typename T>
@@ -28,13 +29,11 @@ class MediaDetectorComponentManager;
 
 class PlaylistServiceFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static bool IsPlaylistEnabled(content::BrowserContext* context);
-
   static PlaylistService* GetForBrowserContext(
       content::BrowserContext* context);
 #if BUILDFLAG(IS_ANDROID)
-  static mojo::PendingRemote<mojom::PlaylistService> GetForContext(
-      content::BrowserContext* context);
+  static mojo::PendingRemote<mojom::PlaylistService> GetRemoteForProfile(
+      Profile* profile);
 #endif  // BUILDFLAG(IS_ANDROID)
   static PlaylistServiceFactory* GetInstance();
 
@@ -54,7 +53,7 @@ class PlaylistServiceFactory : public BrowserContextKeyedServiceFactory {
   ~PlaylistServiceFactory() override;
 
   // BrowserContextKeyedServiceFactory overrides:
-  KeyedService* BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(
       content::BrowserContext* context) const override;
 
   void PrepareMediaDetectorComponentManager();

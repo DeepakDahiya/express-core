@@ -7,7 +7,7 @@
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
 #include "base/android/jni_string.h"
-#include "brave/build/android/jni_headers/BraveDappPermissionPromptDialog_jni.h"
+#include "chrome/android/chrome_jni_headers/BraveDappPermissionPromptDialog_jni.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/blink/public/mojom/favicon/favicon_url.mojom.h"
 #include "ui/android/view_android.h"
@@ -92,7 +92,6 @@ BraveDappPermissionPromptDialogController::GetOrCreateJavaObject() {
   return java_object_ = Java_BraveDappPermissionPromptDialog_create(
              env, reinterpret_cast<intptr_t>(this),
              view_android->GetWindowAndroid()->GetJavaObject(),
-             web_contents_->GetJavaWebContents(),
              base::android::ConvertUTF8ToJavaString(
                  env, fav_icon_url.is_valid() ? fav_icon_url.spec() : ""),
              static_cast<int32_t>(coin_type_));

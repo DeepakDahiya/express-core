@@ -3,15 +3,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/permissions/contexts/brave_wallet_permission_context.h"
+
 #include <string>
 #include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "brave/components/brave_wallet/browser/permission_utils.h"
 #include "brave/components/permissions/brave_permission_manager.h"
-#include "brave/components/permissions/contexts/brave_wallet_permission_context.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/permissions/permission_manager_factory.h"
+#include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/permissions/permission_util.h"
@@ -62,7 +64,10 @@ TEST_F(BraveWalletPermissionContextUnitTest, AddPermission) {
   } cases[] = {{"0x407637cC04893DA7FA4A7C0B58884F82d69eD448",
                 blink::PermissionType::BRAVE_ETHEREUM},
                {"BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
-                blink::PermissionType::BRAVE_SOLANA}};
+                blink::PermissionType::BRAVE_SOLANA},
+               {"addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psdu"
+                "yk6n4n2qrud2xlv9fgj53n6ds3t8cs4fvzs05yzmz",
+                blink::PermissionType::BRAVE_CARDANO}};
   for (auto entry : cases) {
     SCOPED_TRACE(entry.address);
     bool has_permission;
@@ -84,7 +89,7 @@ TEST_F(BraveWalletPermissionContextUnitTest, AddPermission) {
     // Set blocked content setting for the url.
     map()->SetContentSettingDefaultScope(
         origin.GetURL(), origin.GetURL(),
-        PermissionUtil::PermissionTypeToContentSettingTypeSafe(entry.type),
+        PermissionUtil::PermissionTypeToContentSettingsTypeSafe(entry.type),
         CONTENT_SETTING_BLOCK);
     success = permissions::BraveWalletPermissionContext::HasPermission(
         entry.type, browser_context(), origin, entry.address, &has_permission);
@@ -94,7 +99,7 @@ TEST_F(BraveWalletPermissionContextUnitTest, AddPermission) {
     // Set content setting to default
     map()->SetContentSettingDefaultScope(
         origin.GetURL(), origin.GetURL(),
-        PermissionUtil::PermissionTypeToContentSettingTypeSafe(entry.type),
+        PermissionUtil::PermissionTypeToContentSettingsTypeSafe(entry.type),
         CONTENT_SETTING_DEFAULT);
     success = permissions::BraveWalletPermissionContext::HasPermission(
         entry.type, browser_context(), origin, entry.address, &has_permission);
@@ -111,7 +116,10 @@ TEST_F(BraveWalletPermissionContextUnitTest, ResetPermission) {
   } cases[] = {{"0x407637cC04893DA7FA4A7C0B58884F82d69eD448",
                 blink::PermissionType::BRAVE_ETHEREUM},
                {"BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
-                blink::PermissionType::BRAVE_SOLANA}};
+                blink::PermissionType::BRAVE_SOLANA},
+               {"addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psdu"
+                "yk6n4n2qrud2xlv9fgj53n6ds3t8cs4fvzs05yzmz",
+                blink::PermissionType::BRAVE_CARDANO}};
   for (auto entry : cases) {
     SCOPED_TRACE(entry.address);
     bool success = permissions::BraveWalletPermissionContext::AddPermission(
@@ -133,18 +141,59 @@ TEST_F(BraveWalletPermissionContextUnitTest, ResetPermission) {
     // CONTENT_SETTING_BLOCK shouldn't affect reset.
     map()->SetContentSettingDefaultScope(
         origin.GetURL(), origin.GetURL(),
-        PermissionUtil::PermissionTypeToContentSettingTypeSafe(entry.type),
+        PermissionUtil::PermissionTypeToContentSettingsTypeSafe(entry.type),
         CONTENT_SETTING_BLOCK);
     // Reset the permission
     ASSERT_TRUE(permissions::BraveWalletPermissionContext::ResetPermission(
         entry.type, browser_context(), origin, entry.address));
     map()->SetContentSettingDefaultScope(
         origin.GetURL(), origin.GetURL(),
-        PermissionUtil::PermissionTypeToContentSettingTypeSafe(entry.type),
+        PermissionUtil::PermissionTypeToContentSettingsTypeSafe(entry.type),
         CONTENT_SETTING_DEFAULT);
 
     // Verify the permission is reset
     success = permissions::BraveWalletPermissionContext::HasPermission(
+        entry.type, browser_context(), origin, entry.address, &has_permission);
+    EXPECT_TRUE(success);
+    EXPECT_FALSE(has_permission);
+  }
+}
+
+TEST_F(BraveWalletPermissionContextUnitTest, ResetAllPermissions) {
+  url::Origin origin = url::Origin::Create(GURL("https://www.brave.com/"));
+  const struct {
+    const char* address;
+    blink::PermissionType type;
+  } cases[] = {{"0x407637cC04893DA7FA4A7C0B58884F82d69eD448",
+                blink::PermissionType::BRAVE_ETHEREUM},
+               {"BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
+                blink::PermissionType::BRAVE_SOLANA},
+               {"addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psdu"
+                "yk6n4n2qrud2xlv9fgj53n6ds3t8cs4fvzs05yzmz",
+                blink::PermissionType::BRAVE_CARDANO}};
+  for (auto entry : cases) {
+    SCOPED_TRACE(entry.address);
+    bool success = permissions::BraveWalletPermissionContext::AddPermission(
+        entry.type, browser_context(), origin, entry.address);
+    EXPECT_TRUE(success);
+
+    // Verify the permission is set
+    bool has_permission;
+    success = permissions::BraveWalletPermissionContext::HasPermission(
+        entry.type, browser_context(), origin, entry.address, &has_permission);
+    EXPECT_TRUE(success);
+    EXPECT_TRUE(has_permission);
+  }
+
+  // Reset all permissions
+  permissions::BraveWalletPermissionContext::ResetAllPermissions(
+      browser_context());
+
+  // Verify permissions are reset
+  for (auto entry : cases) {
+    SCOPED_TRACE(entry.address);
+    bool has_permission;
+    bool success = permissions::BraveWalletPermissionContext::HasPermission(
         entry.type, browser_context(), origin, entry.address, &has_permission);
     EXPECT_TRUE(success);
     EXPECT_FALSE(has_permission);
@@ -162,7 +211,11 @@ TEST_F(BraveWalletPermissionContextUnitTest, GetWebSitesWithPermission) {
        ContentSettingsType::BRAVE_ETHEREUM,
        blink::PermissionType::BRAVE_ETHEREUM},
       {"BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
-       ContentSettingsType::BRAVE_SOLANA, blink::PermissionType::BRAVE_SOLANA}};
+       ContentSettingsType::BRAVE_SOLANA, blink::PermissionType::BRAVE_SOLANA},
+      {"addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psduyk6n4n2qr"
+       "ud2xlv9fgj53n6ds3t8cs4fvzs05yzmz",
+       ContentSettingsType::BRAVE_CARDANO,
+       blink::PermissionType::BRAVE_CARDANO}};
   for (auto entry : cases) {
     SCOPED_TRACE(entry.address);
     bool success = permissions::BraveWalletPermissionContext::AddPermission(
@@ -174,17 +227,17 @@ TEST_F(BraveWalletPermissionContextUnitTest, GetWebSitesWithPermission) {
             entry.permission, browser_context());
     EXPECT_EQ(web_sites.size(), (uint32_t)1);
 
-    url::Origin origin_wallet_address;
-    EXPECT_TRUE(brave_wallet::GetSubRequestOrigin(
+    auto origin_wallet_address = brave_wallet::GetSubRequestOrigin(
         permissions::ContentSettingsTypeToRequestType(entry.type), origin,
-        entry.address, &origin_wallet_address));
+        entry.address);
+    ASSERT_TRUE(origin_wallet_address);
     // origin_wallet_address looks like that
     // "https://www.brave.com__brg44hdsehzapvs8beqzvkq4egwevs3fre6ze2eno6s8/"
     // web_sites[0] looks like that
     // "https://www.brave.com__brg44hdsehzapvs8beqzvkq4egwevs3fre6ze2eno6s8:443"
     // That's why we are going to compare scheme, host and port if it's exist
     // in both URLs
-    EXPECT_TRUE(Matches(origin_wallet_address.GetURL(), GURL(web_sites[0])));
+    EXPECT_TRUE(Matches(origin_wallet_address->GetURL(), GURL(web_sites[0])));
   }
 }
 
@@ -199,7 +252,11 @@ TEST_F(BraveWalletPermissionContextUnitTest, ResetWebSitePermission) {
        ContentSettingsType::BRAVE_ETHEREUM,
        blink::PermissionType::BRAVE_ETHEREUM},
       {"BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
-       ContentSettingsType::BRAVE_SOLANA, blink::PermissionType::BRAVE_SOLANA}};
+       ContentSettingsType::BRAVE_SOLANA, blink::PermissionType::BRAVE_SOLANA},
+      {"addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psduyk6n4n2qr"
+       "ud2xlv9fgj53n6ds3t8cs4fvzs05yzmz",
+       ContentSettingsType::BRAVE_CARDANO,
+       blink::PermissionType::BRAVE_CARDANO}};
   for (auto entry : cases) {
     SCOPED_TRACE(entry.address);
     bool success = permissions::BraveWalletPermissionContext::AddPermission(
