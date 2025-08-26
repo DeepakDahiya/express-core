@@ -7,8 +7,9 @@
 
 #include "base/metrics/histogram_macros.h"
 #include "brave/browser/brave_browser_process_impl.h"
-#include "brave/components/brave_shields/browser/brave_shields_p3a.h"
-#include "brave/components/p3a/buildflags.h"
+#include "brave/browser/misc_metrics/process_misc_metrics.h"
+#include "brave/browser/misc_metrics/uptime_monitor_impl.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_p3a.h"
 #include "brave/components/p3a/p3a_service.h"
 #include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
@@ -35,7 +36,7 @@ namespace {
 void RecordInitialP3AValues() {
 #if !BUILDFLAG(IS_ANDROID)
   if (first_run::IsChromeFirstRun()) {
-    RecordImporterP3A(importer::ImporterType::TYPE_UNKNOWN);
+    RecordImporterP3A(user_data_importer::ImporterType::TYPE_UNKNOWN);
   }
 
   BraveNewTabMessageHandler::RecordInitialP3AValues(
@@ -75,7 +76,8 @@ void BraveBrowserMainExtraParts::PreMainMessageLoopRun() {
   if (g_brave_browser_process->p3a_service() != nullptr) {
     // TODO(iefremov): Maybe find a better place for this initialization.
     g_brave_browser_process->p3a_service()->Init(
-        g_browser_process->shared_url_loader_factory());
+        g_browser_process->shared_url_loader_factory(),
+        g_browser_process->component_updater());
   }
 
   RecordInitialP3AValues();
@@ -83,6 +85,6 @@ void BraveBrowserMainExtraParts::PreMainMessageLoopRun() {
   // The code below is not supported on android.
 #if !BUILDFLAG(IS_ANDROID)
   brave::BraveWindowTracker::CreateInstance(g_browser_process->local_state());
-  brave::BraveUptimeTracker::CreateInstance(g_browser_process->local_state());
 #endif  // !BUILDFLAG(IS_ANDROID)
+  g_brave_browser_process->process_misc_metrics()->uptime_monitor()->Init();
 }

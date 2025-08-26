@@ -5,21 +5,27 @@
 
 #include "brave/browser/brave_drm_tab_helper.h"
 
+#include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "brave/browser/widevine/widevine_permission_request.h"
 #include "brave/browser/widevine/widevine_utils.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/widevine/constants.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process_impl.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/permissions/permission_request_manager.h"
 #include "components/prefs/pref_service.h"
+#include "components/update_client/crx_update_item.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 
 #if !BUILDFLAG(IS_ANDROID)
+#include "base/check_is_test.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -54,8 +60,14 @@ BraveDrmTabHelper::BraveDrmTabHelper(content::WebContents* contents)
 #if !BUILDFLAG(IS_ANDROID)
   auto* updater = g_browser_process->component_updater();
   // We don't need to observe if widevine is already registered.
-  if (!IsAlreadyRegistered(updater))
-    observer_.Observe(updater);
+  // component_updater() can return nullptr in unit tests.
+  if (updater) {
+    if (!IsAlreadyRegistered(updater)) {
+      observer_.Observe(updater);
+    }
+  } else {
+    CHECK_IS_TEST();
+  }
 #endif
 }
 
@@ -76,14 +88,23 @@ void BraveDrmTabHelper::BindBraveDRM(
 }
 
 bool BraveDrmTabHelper::ShouldShowWidevineOptIn() const {
+#if BUILDFLAG(IS_LINUX) && !defined(ARCH_CPU_X86_64)
+  // On non-x64 Linux, Widevine is not publicly available. This point is a
+  // convenient single place for turning this class into a no-op:
+  return false;
+  // Users on non-x64 Linux may still install Widevine manually and enable it in
+  // brave://settings.
+#else
   // If the user already opted in, don't offer it.
   PrefService* prefs =
-      static_cast<Profile*>(web_contents()->GetBrowserContext())->GetPrefs();
+      Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+          ->GetPrefs();
   if (IsWidevineEnabled() || !prefs->GetBoolean(kAskEnableWidvine)) {
     return false;
   }
 
   return is_widevine_requested_;
+#endif  // BUILDFLAG(IS_LINUX) && !defined(ARCH_CPU_X86_64)
 }
 
 void BraveDrmTabHelper::DidStartNavigation(
@@ -106,20 +127,35 @@ void BraveDrmTabHelper::OnWidevineKeySystemAccessRequest() {
 
   if (ShouldShowWidevineOptIn() && !is_permission_requested_) {
     is_permission_requested_ = true;
-    RequestWidevinePermission(web_contents(), for_restart);
+    PrefService* prefs =
+        Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+            ->GetPrefs();
+    permissions::PermissionRequestManager::FromWebContents(web_contents())
+        ->AddRequest(
+            web_contents()->GetPrimaryMainFrame(),
+            std::make_unique<WidevinePermissionRequest>(
+                prefs, web_contents()->GetLastCommittedURL(), for_restart));
   }
 }
 
-void BraveDrmTabHelper::OnEvent(Events event, const std::string& id) {
+void BraveDrmTabHelper::OnEvent(const update_client::CrxUpdateItem& item) {
 #if !BUILDFLAG(IS_ANDROID)
-  if (event == ComponentUpdateService::Observer::Events::COMPONENT_UPDATED &&
-      id == kWidevineComponentId) {
+  if (item.state == update_client::ComponentState::kUpdated &&
+      item.id == kWidevineComponentId) {
 #if BUILDFLAG(IS_LINUX)
     // Ask restart instead of reloading. Widevine is only usable after
     // restarting on linux. This restart permission request is only shown if
     // this tab asks widevine explicitely.
-    if (is_widevine_requested_)
-      RequestWidevinePermission(web_contents(), true /* for_restart*/);
+    if (is_widevine_requested_) {
+      PrefService* prefs =
+          Profile::FromBrowserContext(web_contents()->GetBrowserContext())
+              ->GetPrefs();
+      permissions::PermissionRequestManager::FromWebContents(web_contents())
+          ->AddRequest(web_contents()->GetPrimaryMainFrame(),
+                       std::make_unique<WidevinePermissionRequest>(
+                           prefs, web_contents()->GetLastCommittedURL(),
+                           /*for_restart=*/true));
+    }
 #else
     // When widevine is ready to use, only active tab that requests widevine is
     // reloaded automatically.

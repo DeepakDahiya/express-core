@@ -7,7 +7,14 @@
 
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
-#include "brave/browser/ethereum_remote_client/buildflags/buildflags.h"
+#include "brave/components/brave_search/common/brave_search_utils.h"
+#include "brave/components/skus/common/skus_utils.h"
+#include "build/build_config.h"
+#include "chrome/browser/chrome_content_browser_client.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
+#include "chrome/test/base/testing_browser_process.h"
+#include "chrome/test/base/testing_profile.h"
+#include "content/public/test/browser_task_environment.h"
 #include "extensions/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,90 +28,70 @@
 #include "extensions/common/extension_builder.h"
 #endif
 
-#if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED) && BUILDFLAG(ENABLE_EXTENSIONS)
-#include "brave/browser/ethereum_remote_client/ethereum_remote_client_constants.h"
-#include "brave/components/brave_wallet/browser/pref_names.h"
-#include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
-#include "chrome/test/base/chrome_render_view_host_test_harness.h"
-#include "components/prefs/pref_service.h"
-#include "content/public/common/content_client.h"
-
-namespace extensions {
-
-class BraveWalleBrowserClientUnitTest
-    : public ChromeRenderViewHostTestHarness {
- public:
-  BraveWalleBrowserClientUnitTest() = default;
-  BraveWalleBrowserClientUnitTest(const BraveWalleBrowserClientUnitTest&) =
-      delete;
-  BraveWalleBrowserClientUnitTest& operator=(
-      const BraveWalleBrowserClientUnitTest&) = delete;
-
-  void SetUp() override {
-    ChromeRenderViewHostTestHarness::SetUp();
-    original_client_ = content::SetBrowserClientForTesting(&client_);
-  }
-
-  void TearDown() override {
-    content::SetBrowserClientForTesting(original_client_);
-    ChromeRenderViewHostTestHarness::TearDown();
-  }
-
-  void AddExtension() {
-    extension_ = ExtensionBuilder()
-                     .SetManifest(base::Value::Dict()
-                                      .Set("name", "ext")
-                                      .Set("version", "0.1")
-                                      .Set("manifest_version", 2))
-                     .SetID(ethereum_remote_client_extension_id)
-                     .Build();
-    ASSERT_TRUE(extension_);
-    ExtensionRegistry::Get(browser_context())->AddReady(extension_.get());
-  }
-
- private:
-  scoped_refptr<const Extension> extension_;
-  content::ContentBrowserClient client_;
-  raw_ptr<content::ContentBrowserClient> original_client_ = nullptr;
-};
-
-TEST_F(BraveWalleBrowserClientUnitTest,
-    DoesNotResolveEthereumRemoteClientIfNotInstalled) {
-  GURL url("chrome://wallet/");
-  ASSERT_FALSE(BraveContentBrowserClient::HandleURLOverrideRewrite(
-        &url, browser_context()));
-}
-
-TEST_F(BraveWalleBrowserClientUnitTest,
-    ResolvesEthereumRemoteClientIfInstalled) {
-  AddExtension();
-  profile()->GetPrefs()->SetInteger(
-      kDefaultEthereumWallet,
-      static_cast<int>(brave_wallet::mojom::DefaultWallet::CryptoWallets));
-  GURL url("chrome://wallet/");
-  ASSERT_TRUE(BraveContentBrowserClient::HandleURLOverrideRewrite(
-        &url, browser_context()));
-  ASSERT_STREQ(url.spec().c_str(), ethereum_remote_client_base_url);
-}
-
-}  // namespace extensions
+#if BUILDFLAG(IS_WIN)
+#include "base/test/scoped_os_info_override_win.h"
+#include "brave/components/windows_recall/windows_recall.h"
 #endif
 
-using BraveContentBrowserClientTest = testing::Test;
+class BraveContentBrowserClientTest : public testing::Test {
+ protected:
+  content::BrowserTaskEnvironment task_environment_;
+  TestingProfile profile_;
+};
 
 TEST_F(BraveContentBrowserClientTest, ResolvesSync) {
   GURL url("chrome://sync/");
   ASSERT_TRUE(
-    BraveContentBrowserClient::HandleURLOverrideRewrite(&url, nullptr));
+      BraveContentBrowserClient::HandleURLOverrideRewrite(&url, nullptr));
   ASSERT_STREQ(url.spec().c_str(), "chrome://settings/braveSync");
 
   GURL url2("chrome://sync/");
   ASSERT_TRUE(
-    BraveContentBrowserClient::HandleURLOverrideRewrite(&url2, nullptr));
+      BraveContentBrowserClient::HandleURLOverrideRewrite(&url2, nullptr));
 }
 
 TEST_F(BraveContentBrowserClientTest, ResolvesWelcomePage) {
   GURL url("chrome://welcome/");
   ASSERT_TRUE(
       BraveContentBrowserClient::HandleURLOverrideRewrite(&url, nullptr));
+}
+
+TEST_F(BraveContentBrowserClientTest, IsolatedWebAppsAreDisabled) {
+  BraveContentBrowserClient client;
+  EXPECT_FALSE(client.AreIsolatedWebAppsEnabled(&profile_));
+}
+
+TEST_F(BraveContentBrowserClientTest, GetOriginsRequiringDedicatedProcess) {
+  ChromeContentBrowserClient chrome_client;
+  BraveContentBrowserClient client;
+  auto chrome_origins = chrome_client.GetOriginsRequiringDedicatedProcess();
+  auto brave_origins = client.GetOriginsRequiringDedicatedProcess();
+
+  ASSERT_TRUE(std::all_of(
+      brave_origins.begin(), brave_origins.end(),
+      [chrome_origins](auto& origin) {
+        return std::any_of(chrome_origins.begin(), chrome_origins.end(),
+                           [origin](auto& other) {
+                             return other.IsSameOriginWith(origin);
+                           }) ||
+               skus::IsSafeOrigin(origin.GetURL()) ||
+               brave_search::IsAllowedHost(origin.GetURL());
+      }));
+}
+
+TEST_F(BraveContentBrowserClientTest, IsWindowsRecallDisabled) {
+  BraveContentBrowserClient client;
+  ScopedTestingLocalState testing_local_state(
+      TestingBrowserProcess::GetGlobal());
+#if BUILDFLAG(IS_WIN)
+  base::test::ScopedOSInfoOverride win_version(
+      base::test::ScopedOSInfoOverride::Type::kWin11Home);
+  // Pref is registered.
+  EXPECT_TRUE(testing_local_state.Get()->FindPreference(
+      windows_recall::prefs::kWindowsRecallDisabled));
+  // Disabled by default on Win11 or newer.
+  EXPECT_TRUE(client.IsWindowsRecallDisabled());
+#else
+  EXPECT_FALSE(client.IsWindowsRecallDisabled());
+#endif
 }

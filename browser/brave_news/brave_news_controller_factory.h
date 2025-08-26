@@ -6,6 +6,8 @@
 #ifndef BRAVE_BROWSER_BRAVE_NEWS_BRAVE_NEWS_CONTROLLER_FACTORY_H_
 #define BRAVE_BROWSER_BRAVE_NEWS_BRAVE_NEWS_CONTROLLER_FACTORY_H_
 
+#include <memory>
+
 #include "brave/components/brave_news/common/brave_news.mojom.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -17,6 +19,7 @@ template <typename T>
 class NoDestructor;
 }  // namespace base
 
+class Profile;
 namespace content {
 class BrowserContext;
 }
@@ -27,16 +30,17 @@ class BraveNewsController;
 
 class BraveNewsControllerFactory : public BrowserContextKeyedServiceFactory {
  public:
-  static BraveNewsController* GetForContext(content::BrowserContext* context);
-  static mojo::PendingRemote<mojom::BraveNewsController> GetRemoteService(
+  static BraveNewsController* GetForBrowserContext(
       content::BrowserContext* context);
-  static BraveNewsController* GetControllerForContext(
-      content::BrowserContext* context);
+  static mojo::PendingRemote<mojom::BraveNewsController> GetRemoteForProfile(
+      Profile* profile);
   static BraveNewsControllerFactory* GetInstance();
 
   BraveNewsControllerFactory(const BraveNewsControllerFactory&) = delete;
   BraveNewsControllerFactory& operator=(const BraveNewsControllerFactory&) =
       delete;
+
+  bool ServiceIsCreatedWithBrowserContext() const override;
 
  private:
   friend base::NoDestructor<BraveNewsControllerFactory>;
@@ -44,8 +48,9 @@ class BraveNewsControllerFactory : public BrowserContextKeyedServiceFactory {
   BraveNewsControllerFactory();
   ~BraveNewsControllerFactory() override;
 
-  KeyedService* BuildServiceInstanceFor(
+  std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext(
       content::BrowserContext* context) const override;
+  bool ServiceIsNULLWhileTesting() const override;
 };
 
 }  // namespace brave_news

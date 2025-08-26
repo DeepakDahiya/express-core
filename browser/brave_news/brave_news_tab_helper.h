@@ -14,7 +14,9 @@
 #include "base/observer_list_types.h"
 #include "base/scoped_observation.h"
 #include "brave/components/brave_news/browser/brave_news_controller.h"
+#include "brave/components/brave_news/browser/brave_news_pref_manager.h"
 #include "brave/components/brave_news/browser/publishers_controller.h"
+#include "brave/components/brave_news/common/brave_news.mojom-forward.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -25,15 +27,27 @@ class RenderFrameHost;
 class BraveNewsTabHelper
     : public content::WebContentsUserData<BraveNewsTabHelper>,
       public content::WebContentsObserver,
-      public brave_news::PublishersController::Observer {
+      public brave_news::BraveNewsPrefManager::PrefObserver {
  public:
   struct FeedDetails {
     GURL feed_url;
-    std::string title;
+    std::string title = "";
+    bool subscribed = false;
+
+    // The combined publisher id, if any. Empty string if not a combined
+    // publisher.
+    std::string combined_publisher_id = "";
 
     // Indicates whether we've requested this feed, so we don't request it
     // multiple times.
     bool requested_feed = false;
+
+    FeedDetails();
+    FeedDetails(const FeedDetails&) = delete;
+    FeedDetails& operator=(const FeedDetails&) = delete;
+    FeedDetails(FeedDetails&&);
+    FeedDetails& operator=(FeedDetails&&);
+    ~FeedDetails();
   };
 
   class PageFeedsObserver : public base::CheckedObserver {
@@ -68,24 +82,31 @@ class BraveNewsTabHelper
   void PrimaryPageChanged(content::Page& page) override;
   void DOMContentLoaded(content::RenderFrameHost* rfh) override;
 
-  // brave_news::PublisherController::Observer:
-  void OnPublishersUpdated(
-      brave_news::PublishersController* controller) override;
+  // brave_news::BraveNewsPrefManager::PrefObserver:
+  void OnPublishersChanged() override;
 
  private:
   explicit BraveNewsTabHelper(content::WebContents* contents);
 
   bool ShouldFindFeeds();
+  void OnReceivedNewPublishers(brave_news::Publishers publishers);
   void AvailableFeedsChanged();
+  void UpdatePageFeed();
 
   raw_ptr<brave_news::BraveNewsController> controller_;
 
   std::vector<FeedDetails> rss_page_feeds_;
+
+  // The (optional) publisher associated with this page from our
+  // PublishersController. This may be duplicated by one of the
+  // |rss_page_feeds_| so we should ensure we deduplicate based on |feed_url|.
+  brave_news::mojom::PublisherPtr default_feed_ = nullptr;
+
   base::ObserverList<PageFeedsObserver> observers_;
 
-  base::ScopedObservation<brave_news::PublishersController,
-                          brave_news::PublishersController::Observer>
-      publishers_observation_{this};
+  base::ScopedObservation<brave_news::BraveNewsPrefManager,
+                          brave_news::BraveNewsPrefManager::PrefObserver>
+      pref_observation_{this};
 
   base::WeakPtrFactory<BraveNewsTabHelper> weak_ptr_factory_{this};
 

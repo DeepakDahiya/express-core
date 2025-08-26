@@ -9,6 +9,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/path_service.h"
 #include "base/task/thread_pool.h"
@@ -16,34 +17,37 @@
 #include "brave/browser/brave_referrals/referrals_service_delegate.h"
 #include "brave/browser/brave_shields/ad_block_subscription_download_manager_getter.h"
 #include "brave/browser/brave_stats/brave_stats_updater.h"
+#include "brave/browser/brave_stats/first_run_util.h"
+#include "brave/browser/brave_wallet/wallet_data_files_installer_delegate_impl.h"
 #include "brave/browser/component_updater/brave_component_updater_configurator.h"
 #include "brave/browser/misc_metrics/process_misc_metrics.h"
 #include "brave/browser/net/brave_system_request_handler.h"
 #include "brave/browser/profiles/brave_profile_manager.h"
 #include "brave/browser/themes/brave_dark_mode_utils.h"
 #include "brave/common/brave_channel_info.h"
+#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
+#include "brave/components/ai_chat/core/common/features.h"
 #include "brave/components/brave_ads/browser/component_updater/resource_component.h"
 #include "brave/components/brave_component_updater/browser/brave_component_updater_delegate.h"
-#include "brave/components/brave_component_updater/browser/brave_on_demand_updater.h"
 #include "brave/components/brave_component_updater/browser/local_data_files_service.h"
+#include "brave/components/brave_origin/brave_origin_state.h"
 #include "brave/components/brave_referrals/browser/brave_referrals_service.h"
-#include "brave/components/brave_shields/browser/ad_block_regional_service_manager.h"
-#include "brave/components/brave_shields/browser/ad_block_service.h"
-#include "brave/components/brave_shields/browser/ad_block_subscription_service_manager.h"
-#include "brave/components/brave_shields/browser/brave_farbling_service.h"
-#include "brave/components/brave_shields/browser/https_everywhere_service.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
+#include "brave/components/brave_shields/content/browser/ad_block_subscription_service_manager.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/brave_sync/network_time_helper.h"
+#include "brave/components/brave_wallet/browser/wallet_data_files_installer.h"
 #include "brave/components/constants/pref_names.h"
-#include "brave/components/debounce/browser/debounce_component_installer.h"
-#include "brave/components/debounce/common/features.h"
+#include "brave/components/debounce/core/browser/debounce_component_installer.h"
+#include "brave/components/debounce/core/common/features.h"
 #include "brave/components/https_upgrade_exceptions/browser/https_upgrade_exceptions_service.h"
 #include "brave/components/localhost_permission/localhost_permission_component.h"
 #include "brave/components/ntp_background_images/browser/ntp_background_images_service.h"
-#include "brave/components/p3a/buildflags.h"
 #include "brave/components/p3a/histograms_braveizer.h"
 #include "brave/components/p3a/p3a_config.h"
 #include "brave/components/p3a/p3a_service.h"
+#include "brave/components/webcompat/content/browser/webcompat_exceptions_service.h"
+#include "brave/components/webcompat/core/common/features.h"
 #include "brave/services/network/public/cpp/system_request_handler.h"
 #include "build/build_config.h"
 #include "chrome/browser/component_updater/component_updater_utils.h"
@@ -53,28 +57,21 @@
 #include "chrome/common/channel_info.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/pref_names.h"
-#include "components/component_updater/component_updater_service.h"
 #include "components/component_updater/timer_update_scheduler.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/child_process_security_policy.h"
 #include "net/base/features.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_GREASELION)
-#include "brave/components/greaselion/browser/greaselion_download_service.h"
+#if BUILDFLAG(ENABLE_BRAVE_AI_CHAT_AGENT_PROFILE)
+#include "brave/browser/ai_chat/ai_chat_agent_profile_manager.h"
 #endif
 
 #if BUILDFLAG(ENABLE_TOR)
 #include "brave/components/tor/brave_tor_client_updater.h"
 #include "brave/components/tor/brave_tor_pluggable_transport_updater.h"
 #include "brave/components/tor/pref_names.h"
-#endif
-
-#if BUILDFLAG(ENABLE_IPFS)
-#include "brave/components/ipfs/brave_ipfs_client_updater.h"
-#include "brave/components/ipfs/ipfs_constants.h"
 #endif
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
@@ -84,7 +81,9 @@
 #if BUILDFLAG(IS_ANDROID)
 #include "chrome/browser/flags/android/chrome_feature_list.h"
 #else
+#include "brave/browser/search_engines/search_engine_provider_util.h"
 #include "brave/browser/ui/brave_browser_command_controller.h"
+#include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
 #endif
@@ -95,7 +94,16 @@
 #endif
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
-#include "brave/components/brave_vpn/browser/connection/brave_vpn_os_connection_api.h"
+#include "brave/browser/brave_vpn/vpn_utils.h"
+#include "brave/components/brave_vpn/browser/connection/brave_vpn_connection_manager.h"
+#endif
+
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+#include "brave/browser/day_zero_browser_ui_expt/day_zero_browser_ui_expt_manager.h"
+#endif
+
+#if BUILDFLAG(IS_WIN)
+#include "brave/components/windows_recall/windows_recall.h"
 #endif
 
 using brave_component_updater::BraveComponent;
@@ -130,9 +138,7 @@ BraveBrowserProcessImpl::BraveBrowserProcessImpl(StartupData* startup_data)
   // Create P3A Service early to catch more histograms. The full initialization
   // should be started once browser process impl is ready.
   p3a_service();
-#if BUILDFLAG(BRAVE_P3A_ENABLED)
   histogram_braveizer_ = p3a::HistogramsBraveizer::Create();
-#endif  // BUILDFLAG(BRAVE_P3A_ENABLED)
 
   // initialize ads stats helper
   ads_brave_stats_helper();
@@ -146,15 +152,12 @@ BraveBrowserProcessImpl::BraveBrowserProcessImpl(StartupData* startup_data)
 
 void BraveBrowserProcessImpl::Init() {
   BrowserProcessImpl::Init();
-#if BUILDFLAG(ENABLE_IPFS)
-  content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      ipfs::kIPFSScheme);
-  content::ChildProcessSecurityPolicy::GetInstance()->RegisterWebSafeScheme(
-      ipfs::kIPNSScheme);
-#endif
-  brave_component_updater::BraveOnDemandUpdater::GetInstance()
-      ->RegisterOnDemandUpdateCallback(
-          base::BindRepeating(&component_updater::BraveOnDemandUpdate));
+
+  // Initialize the Brave Origin state once in the browser process only
+  // This must be done early but only in the browser process, not child
+  // processes
+  BraveOriginState::GetInstance()->Initialize();
+
   UpdateBraveDarkMode();
   pref_change_registrar_.Add(
       kBraveDarkMode,
@@ -168,6 +171,11 @@ void BraveBrowserProcessImpl::Init() {
                           base::Unretained(this)));
 #endif
 
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_ANDROID)
+  day_zero_browser_ui_expt_manager_ =
+      DayZeroBrowserUIExptManager::Create(profile_manager());
+#endif
+
   InitSystemRequestHandlerCallback();
 
 #if !BUILDFLAG(IS_ANDROID)
@@ -176,13 +184,47 @@ void BraveBrowserProcessImpl::Init() {
     // suppressed it from previous os.
     local_state()->ClearPref(prefs::kSuppressUnsupportedOSWarning);
   }
+
+  brave::PrepareSearchSuggestionsConfig(*local_state(),
+                                        first_run::IsChromeFirstRun());
 #endif
+#if BUILDFLAG(IS_WIN)
+  // Initializes the internal static data on start up.
+  windows_recall::IsWindowsRecallDisabled(local_state());
+#endif
+
+#if BUILDFLAG(ENABLE_BRAVE_AI_CHAT_AGENT_PROFILE)
+  if (ai_chat::features::IsAIChatAgentProfileEnabled()) {
+    CreateAIChatAgentProfileManager();
+  }
+#endif
+}
+
+void BraveBrowserProcessImpl::PreMainMessageLoopRun() {
+  BrowserProcessImpl::PreMainMessageLoopRun();
+
+  // Upstream initializes network_time_tracker() at PreMainMessageLoopRun()
+  // right above. We are ready to init NetworkTimeHelper now.
+  brave_sync::NetworkTimeHelper::GetInstance()->SetNetworkTimeTracker(
+      g_browser_process->network_time_tracker(),
+      base::SingleThreadTaskRunner::GetCurrentDefault());
 }
 
 #if !BUILDFLAG(IS_ANDROID)
 void BraveBrowserProcessImpl::StartTearDown() {
+  brave_stats_helper_.reset();
   brave_stats_updater_.reset();
   brave_referrals_service_.reset();
+  if (ntp_background_images_service_) {
+    ntp_background_images_service_->StartTearDown();
+  }
+  if (p3a_service_) {
+    p3a_service_->StartTeardown();
+  }
+#if BUILDFLAG(ENABLE_BRAVE_AI_CHAT_AGENT_PROFILE)
+  ai_chat_agent_profile_manager_.reset();
+#endif
+  brave_sync::NetworkTimeHelper::GetInstance()->Shutdown();
   BrowserProcessImpl::StartTearDown();
 }
 
@@ -196,9 +238,9 @@ void BraveBrowserProcessImpl::PostDestroyThreads() {
 brave_component_updater::BraveComponent::Delegate*
 BraveBrowserProcessImpl::brave_component_updater_delegate() {
   if (!brave_component_updater_delegate_) {
-    brave_component_updater_delegate_ =
-        std::make_unique<brave::BraveComponentUpdaterDelegate>(
-            component_updater(), local_state(), GetApplicationLocale());
+    brave_component_updater_delegate_ = std::make_unique<
+        brave_component_updater::BraveComponentUpdaterDelegate>(
+        component_updater(), local_state(), GetApplicationLocale());
   }
   return brave_component_updater_delegate_.get();
 }
@@ -214,7 +256,6 @@ ProfileManager* BraveBrowserProcessImpl::profile_manager() {
 void BraveBrowserProcessImpl::StartBraveServices() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  https_everywhere_service()->Start();
   resource_component();
 
   if (base::FeatureList::IsEnabled(net::features::kBraveHttpsByDefault)) {
@@ -226,9 +267,12 @@ void BraveBrowserProcessImpl::StartBraveServices() {
     localhost_permission_component();
   }
 
-#if BUILDFLAG(ENABLE_GREASELION)
-  greaselion_download_service();
-#endif
+  if (base::FeatureList::IsEnabled(
+          webcompat::features::kBraveWebcompatExceptionsService)) {
+    webcompat::WebcompatExceptionsService::CreateInstance(
+        local_data_files_service());
+  }
+
   debounce_component_installer();
 #if BUILDFLAG(ENABLE_REQUEST_OTR)
   request_otr_component_installer();
@@ -240,8 +284,8 @@ void BraveBrowserProcessImpl::StartBraveServices() {
   // Now start the local data files service, which calls all observers.
   local_data_files_service()->Start();
 
-  brave_sync::NetworkTimeHelper::GetInstance()->SetNetworkTimeTracker(
-      g_browser_process->network_time_tracker());
+  brave_wallet::WalletDataFilesInstaller::GetInstance().SetDelegate(
+      std::make_unique<brave_wallet::WalletDataFilesInstallerDelegateImpl>());
 }
 
 brave_shields::AdBlockService* BraveBrowserProcessImpl::ad_block_service() {
@@ -263,8 +307,8 @@ NTPBackgroundImagesService*
 BraveBrowserProcessImpl::ntp_background_images_service() {
   if (!ntp_background_images_service_) {
     ntp_background_images_service_ =
-        std::make_unique<NTPBackgroundImagesService>(component_updater(),
-                                                     local_state());
+        std::make_unique<NTPBackgroundImagesService>(
+            variations_service(), component_updater(), local_state());
     ntp_background_images_service_->Init();
   }
 
@@ -295,17 +339,6 @@ BraveBrowserProcessImpl::localhost_permission_component() {
   }
   return localhost_permission_component_.get();
 }
-
-#if BUILDFLAG(ENABLE_GREASELION)
-greaselion::GreaselionDownloadService*
-BraveBrowserProcessImpl::greaselion_download_service() {
-  if (!greaselion_download_service_) {
-    greaselion_download_service_ = greaselion::GreaselionDownloadServiceFactory(
-        local_data_files_service());
-  }
-  return greaselion_download_service_.get();
-}
-#endif
 
 debounce::DebounceComponentInstaller*
 BraveBrowserProcessImpl::debounce_component_installer() {
@@ -346,16 +379,6 @@ BraveBrowserProcessImpl::URLSanitizerComponentInstaller() {
   return url_sanitizer_component_installer_.get();
 }
 
-brave_shields::HTTPSEverywhereService*
-BraveBrowserProcessImpl::https_everywhere_service() {
-  if (!created_https_everywhere_service_) {
-    https_everywhere_service_ = brave_shields::HTTPSEverywhereServiceFactory(
-        brave_component_updater_delegate()->GetTaskRunner());
-    created_https_everywhere_service_ = true;
-  }
-  return https_everywhere_service_.get();
-}
-
 brave_component_updater::LocalDataFilesService*
 BraveBrowserProcessImpl::local_data_files_service() {
   if (!local_data_files_service_) {
@@ -375,6 +398,14 @@ void BraveBrowserProcessImpl::UpdateBraveDarkMode() {
 void BraveBrowserProcessImpl::OnBraveDarkModeChanged() {
   UpdateBraveDarkMode();
 }
+
+#if BUILDFLAG(ENABLE_BRAVE_AI_CHAT_AGENT_PROFILE)
+void BraveBrowserProcessImpl::CreateAIChatAgentProfileManager() {
+  CHECK(ai_chat::features::IsAIChatAgentProfileEnabled());
+  ai_chat_agent_profile_manager_ =
+      std::make_unique<ai_chat::AIChatAgentProfileManager>(profile_manager());
+}
+#endif
 
 #if BUILDFLAG(ENABLE_TOR)
 tor::BraveTorClientUpdater* BraveBrowserProcessImpl::tor_client_updater() {
@@ -414,19 +445,15 @@ void BraveBrowserProcessImpl::OnTorEnabledChanged() {
 #endif
 
 p3a::P3AService* BraveBrowserProcessImpl::p3a_service() {
-#if BUILDFLAG(BRAVE_P3A_ENABLED)
   if (p3a_service_) {
     return p3a_service_.get();
   }
   p3a_service_ = base::MakeRefCounted<p3a::P3AService>(
       *local_state(), brave::GetChannelName(),
-      local_state()->GetString(kWeekOfInstallation),
+      brave_stats::GetFirstRunTime(local_state()),
       p3a::P3AConfig::LoadFromCommandLine());
   p3a_service()->InitCallbacks();
   return p3a_service_.get();
-#else
-  return nullptr;
-#endif  // BUILDFLAG(BRAVE_P3A_ENABLED)
 }
 
 brave::BraveReferralsService*
@@ -445,14 +472,15 @@ BraveBrowserProcessImpl::brave_referrals_service() {
 brave_stats::BraveStatsUpdater* BraveBrowserProcessImpl::brave_stats_updater() {
   if (!brave_stats_updater_) {
     brave_stats_updater_ = std::make_unique<brave_stats::BraveStatsUpdater>(
-        local_state(), g_browser_process->profile_manager());
+        local_state(), profile_manager());
   }
   return brave_stats_updater_.get();
 }
 
 brave_ads::BraveStatsHelper* BraveBrowserProcessImpl::ads_brave_stats_helper() {
   if (!brave_stats_helper_) {
-    brave_stats_helper_ = std::make_unique<brave_ads::BraveStatsHelper>();
+    brave_stats_helper_ = std::make_unique<brave_ads::BraveStatsHelper>(
+        local_state(), profile_manager());
   }
   return brave_stats_helper_.get();
 }
@@ -490,40 +518,18 @@ BraveBrowserProcessImpl::speedreader_rewriter_service() {
 }
 #endif  // BUILDFLAG(ENABLE_SPEEDREADER)
 
-#if BUILDFLAG(ENABLE_IPFS)
-ipfs::BraveIpfsClientUpdater* BraveBrowserProcessImpl::ipfs_client_updater() {
-  if (ipfs_client_updater_) {
-    return ipfs_client_updater_.get();
-  }
-
-  base::FilePath user_data_dir;
-  base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-
-  ipfs_client_updater_ = ipfs::BraveIpfsClientUpdaterFactory(
-      brave_component_updater_delegate(), user_data_dir);
-  return ipfs_client_updater_.get();
-}
-#endif  // BUILDFLAG(ENABLE_IPFS)
-
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
-brave_vpn::BraveVPNOSConnectionAPI*
-BraveBrowserProcessImpl::brave_vpn_os_connection_api() {
-  if (brave_vpn_os_connection_api_) {
-    return brave_vpn_os_connection_api_.get();
+brave_vpn::BraveVPNConnectionManager*
+BraveBrowserProcessImpl::brave_vpn_connection_manager() {
+  if (brave_vpn_connection_manager_) {
+    return brave_vpn_connection_manager_.get();
   }
 
-  brave_vpn_os_connection_api_ = brave_vpn::CreateBraveVPNConnectionAPI(
-      shared_url_loader_factory(), local_state(), chrome::GetChannel());
-  return brave_vpn_os_connection_api_.get();
+  brave_vpn_connection_manager_ = brave_vpn::CreateBraveVPNConnectionManager(
+      shared_url_loader_factory(), local_state());
+  return brave_vpn_connection_manager_.get();
 }
 #endif
-
-brave::BraveFarblingService* BraveBrowserProcessImpl::brave_farbling_service() {
-  if (!brave_farbling_service_) {
-    brave_farbling_service_ = std::make_unique<brave::BraveFarblingService>();
-  }
-  return brave_farbling_service_.get();
-}
 
 misc_metrics::ProcessMiscMetrics*
 BraveBrowserProcessImpl::process_misc_metrics() {
