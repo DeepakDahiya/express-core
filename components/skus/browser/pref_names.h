@@ -9,11 +9,8 @@
 namespace skus {
 namespace prefs {
 
-// Dictionary storage for the SKU SDK. For example, account.brave.com
-// stores SKU key/value pairs in local storage.
-inline constexpr char kSkusState[] = "skus.state";
-inline constexpr char kSkusStateMigratedToLocalState[] =
-    "skus.state.migrated_to_local_state";
+extern const char kSkusState[];
+extern const char kSkusStateMigratedToLocalState[];
 
 }  // namespace prefs
 }  // namespace skus

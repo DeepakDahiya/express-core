@@ -34,7 +34,6 @@ export type NetworksRegistry = ReturnType<
   hiddenIdsByCoinType: Record<BraveWallet.CoinType, EntityId[]>
   idsByCoinType: Record<BraveWallet.CoinType, EntityId[]>
   mainnetIds: string[]
-  testnetIds: string[]
   onRampIds: string[]
   offRampIds: string[]
   visibleIds: string[]
@@ -46,7 +45,6 @@ export const emptyNetworksRegistry: NetworksRegistry = {
   hiddenIdsByCoinType: {},
   idsByCoinType: {},
   mainnetIds: [],
-  testnetIds: [],
   onRampIds: [],
   offRampIds: [],
   visibleIds: []
@@ -66,8 +64,20 @@ export const {
   selectById: selectNetworkByIdFromQueryResult,
   selectEntities: selectNetworkEntitiesFromQueryResult,
   selectIds: selectNetworkIdsFromQueryResult,
-  selectTotal: selectTotalNetworksFromQueryResult
+  selectTotal: selectTotalNetworksFromQueryResult,
 } = networkEntityAdapter.getSelectors(selectNetworksRegistryFromQueryResult)
+
+export const selectSwapSupportedNetworksFromQueryResult =
+  createDraftSafeSelector(
+    // inputs
+    [
+      selectNetworksRegistryFromQueryResult,
+      (registry, swapSupportedIds: string[]) => swapSupportedIds
+    ],
+    // output
+    (registry, swapSupportedIds) =>
+      getEntitiesListFromEntityState(registry, swapSupportedIds)
+  )
 
 export const selectMainnetNetworksFromQueryResult = createDraftSafeSelector(
   // inputs

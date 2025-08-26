@@ -8,12 +8,12 @@
 
 #include "brave/components/brave_ads/core/internal/creatives/notification_ads/creative_notification_ad_info.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-CreativeNotificationAdList BuildCreativeNotificationAds(int count);
-CreativeNotificationAdInfo BuildCreativeNotificationAd(
+CreativeNotificationAdList BuildCreativeNotificationAdsForTesting(int count);
+CreativeNotificationAdInfo BuildCreativeNotificationAdForTesting(
     bool should_use_random_uuids);
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_CREATIVES_NOTIFICATION_ADS_CREATIVE_NOTIFICATION_AD_UNITTEST_UTIL_H_

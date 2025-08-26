@@ -8,7 +8,7 @@
 #include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/conversions/queue/conversion_queue_database_table.h"
 #include "brave/components/brave_ads/core/internal/conversions/queue/queue_item/conversion_queue_item_builder.h"
@@ -18,11 +18,11 @@
 namespace brave_ads {
 
 ConversionQueue::ConversionQueue() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 ConversionQueue::~ConversionQueue() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
   delegate_ = nullptr;
 }
 

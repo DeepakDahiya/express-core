@@ -5,7 +5,12 @@
 
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ad_permission_rules.h"
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/catalog_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ads_minimum_wait_time_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ads_per_day_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ads_per_hour_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rule_util.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/user_activity_permission_rule.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 
 namespace brave_ads {
@@ -20,27 +25,29 @@ bool NewTabPageAdPermissionRules::HasPermission() {
     return false;
   }
 
-  if (!HasUserActivityPermission()) {
+  const UserActivityPermissionRule user_activity_permission_rule;
+  if (!ShouldAllow(user_activity_permission_rule)) {
     return false;
   }
 
-  if (!HasCatalogPermission()) {
+  const CatalogPermissionRule catalog_permission_rule;
+  if (!ShouldAllow(catalog_permission_rule)) {
     return false;
   }
 
-  if (!HasNewTabPageAdsPerDayPermission()) {
+  const NewTabPageAdsPerDayPermissionRule ads_per_day_permission_rule;
+  if (!ShouldAllow(ads_per_day_permission_rule)) {
     return false;
   }
 
-  if (!HasNewTabPageAdsPerHourPermission()) {
+  const NewTabPageAdsPerHourPermissionRule ads_per_hour_permission_rule;
+  if (!ShouldAllow(ads_per_hour_permission_rule)) {
     return false;
   }
 
-  if (!HasNewTabPageAdMinimumWaitTimePermission()) {
-    return false;
-  }
-
-  return true;
+  const NewTabPageAdMinimumWaitTimePermissionRule
+      minimum_wait_time_permission_rule;
+  return ShouldAllow(minimum_wait_time_permission_rule);
 }
 
 }  // namespace brave_ads

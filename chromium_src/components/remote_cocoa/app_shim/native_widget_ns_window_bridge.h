@@ -7,10 +7,9 @@
 #define BRAVE_CHROMIUM_SRC_COMPONENTS_REMOTE_COCOA_APP_SHIM_NATIVE_WIDGET_NS_WINDOW_BRIDGE_H_
 
 // Override a method from our NativeWidgetNSWindow mojo extension
-#define OnSizeChanged                                  \
-  SetWindowTitleVisibility(bool visible) override;     \
-  void ResetWindowControlsPosition() override;         \
-  void UpdateWindowTitleColor(SkColor color) override; \
+#define OnSizeChanged                              \
+  SetWindowTitleVisibility(bool visible) override; \
+  void ResetWindowControlsPosition() override;     \
   void OnSizeChanged
 
 #include "src/components/remote_cocoa/app_shim/native_widget_ns_window_bridge.h"  // IWYU pragma: export

@@ -8,10 +8,10 @@
 #include <utility>
 
 #include "base/functional/bind.h"
-#include "base/task/thread_pool.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/resources/language_components.h"
+#include "brave/components/brave_ads/core/internal/common/resources/resources_util_impl.h"
 #include "brave/components/brave_ads/core/internal/ml/pipeline/text_processing/text_processing.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/resource/text_classification_resource_constants.h"
@@ -27,36 +27,14 @@ bool DoesRequireResource() {
   return UserHasOptedInToNotificationAds();
 }
 
-const char* GetResourceId() {
-  return kFlatBuffersTextClassificationResourceId;
-}
-
-int GetResourceVersion() {
-  return kFlatBuffersTextClassificationResourceVersion.Get();
-}
-
 }  // namespace
 
 TextClassificationResource::TextClassificationResource() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 TextClassificationResource::~TextClassificationResource() {
-  RemoveAdsClientNotifierObserver(this);
-}
-
-void TextClassificationResource::ClassifyPage(const std::string& text,
-                                              ClassifyPageCallback callback) {
-  if (!IsInitialized()) {
-    BLOG(1,
-         "Failed to process text classification as resource not initialized");
-    return std::move(callback).Run(/*probabilities=*/{});
-  }
-
-  text_processing_pipeline_
-      ->AsyncCall(&ml::pipeline::TextProcessing::ClassifyPage)
-      .WithArgs(text)
-      .Then(std::move(callback));
+  AdsClientHelper::RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -74,46 +52,34 @@ void TextClassificationResource::MaybeLoadOrReset() {
 void TextClassificationResource::Load() {
   did_load_ = true;
 
-  LoadComponentResource(
-      GetResourceId(), GetResourceVersion(),
-      base::BindOnce(&TextClassificationResource::LoadComponentResourceCallback,
-                     weak_factory_.GetWeakPtr()));
+  LoadAndParseResource(kTextClassificationResourceId,
+                       kTextClassificationResourceVersion.Get(),
+                       base::BindOnce(&TextClassificationResource::LoadCallback,
+                                      weak_factory_.GetWeakPtr()));
 }
 
-void TextClassificationResource::LoadComponentResourceCallback(
-    base::File file) {
-  if (!file.IsValid()) {
-    BLOG(0, "Failed to load invalid resource file");
-    return;
-  }
-
-  text_processing_pipeline_.emplace(
-      base::ThreadPool::CreateSequencedTaskRunner({base::MayBlock()}));
-  text_processing_pipeline_
-      ->AsyncCall(&ml::pipeline::TextProcessing::LoadPipeline)
-      .WithArgs(std::move(file))
-      .Then(base::BindOnce(&TextClassificationResource::LoadPipelineCallback,
-                           weak_factory_.GetWeakPtr()));
-}
-
-void TextClassificationResource::LoadPipelineCallback(
-    base::expected<bool, std::string> result) {
+void TextClassificationResource::LoadCallback(
+    ResourceParsingErrorOr<ml::pipeline::TextProcessing> result) {
   if (!result.has_value()) {
-    text_processing_pipeline_.reset();
-    return BLOG(0, "Failed to initialize " << GetResourceId()
+    return BLOG(0, "Failed to initialize " << kTextClassificationResourceId
                                            << " text classification resource ("
                                            << result.error() << ")");
   }
 
-  const bool is_neural = result.value();
-  const std::string pipeline_type = is_neural ? "neural" : "linear";
-  BLOG(1, "Successfully loaded " << GetResourceId() << " " << pipeline_type
+  if (!result.value().IsInitialized()) {
+    return BLOG(1, kTextClassificationResourceId
+                       << " text classification resource is not available");
+  }
+
+  BLOG(1, "Successfully loaded " << kTextClassificationResourceId
                                  << " text classification resource");
 
+  text_processing_pipeline_ = std::move(result).value();
+
   BLOG(1, "Successfully initialized "
-              << GetResourceId() << " " << pipeline_type
+              << kTextClassificationResourceId
               << " text classification resource version "
-              << GetResourceVersion());
+              << kTextClassificationResourceVersion.Get());
 }
 
 void TextClassificationResource::MaybeReset() {
@@ -123,13 +89,14 @@ void TextClassificationResource::MaybeReset() {
 }
 
 void TextClassificationResource::Reset() {
-  BLOG(1, "Reset " << GetResourceId() << " text classification resource");
+  BLOG(1, "Reset " << kTextClassificationResourceId
+                   << " text classification resource");
   text_processing_pipeline_.reset();
   did_load_ = false;
 }
 
 void TextClassificationResource::OnNotifyLocaleDidChange(
-    const std::string& /*locale*/) {
+    const std::string& /*locale=*/) {
   MaybeLoad();
 }
 

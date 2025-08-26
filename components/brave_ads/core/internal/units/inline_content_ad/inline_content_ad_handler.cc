@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/strings/string_util.h"
+#include "base/functional/callback_helpers.h"
 #include "brave/components/brave_ads/core/internal/account/account.h"
 #include "brave/components/brave_ads/core/internal/analytics/p2a/opportunities/p2a_opportunity.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
@@ -33,8 +33,8 @@ void FireServedEventCallback(
     const InlineContentAdInfo& ad,
     MaybeServeInlineContentAdCallback callback,
     const bool success,
-    const std::string& /*placement_id*/,
-    const mojom::InlineContentAdEventType /*event_type*/) {
+    const std::string& /*placement_id=*/,
+    const mojom::InlineContentAdEventType /*event_type=*/) {
   if (!success) {
     return std::move(callback).Run(dimensions, /*ad=*/absl::nullopt);
   }
@@ -44,8 +44,8 @@ void FireServedEventCallback(
 
 void FireEventCallback(TriggerAdEventCallback callback,
                        const bool success,
-                       const std::string& /*placement_id*/,
-                       const mojom::InlineContentAdEventType /*event_type*/) {
+                       const std::string& /*placement_id=*/,
+                       const mojom::InlineContentAdEventType /*event_type=*/) {
   std::move(callback).Run(success);
 }
 
@@ -91,10 +91,6 @@ void InlineContentAdHandler::TriggerEvent(
       << "Should not be called with kServed as this event is handled when "
          "calling MaybeServe";
 
-  if (creative_instance_id.empty()) {
-    return std::move(callback).Run(/*success=*/false);
-  }
-
   if (!UserHasOptedInToBraveNewsAds()) {
     return std::move(callback).Run(/*success=*/false);
   }
@@ -136,24 +132,8 @@ void InlineContentAdHandler::PurgeOrphanedCachedAdPlacements(
 
   BLOG(1, "Purged orphaned inline content ad placements for tab id " << tab_id);
 
-  PurgeOrphanedAdEvents(
-      placement_ids_[tab_id],
-      base::BindOnce(
-          [](const std::vector<std::string>& placement_ids,
-             const bool success) {
-            const std::string joined_placement_ids =
-                base::JoinString(placement_ids, ", ");
-
-            if (!success) {
-              return BLOG(
-                  0, "Failed to purge orphaned inline content ad events for "
-                         << joined_placement_ids << " placement ids");
-            }
-
-            BLOG(1, "Successfully purged orphaned inline content ad events for "
-                        << joined_placement_ids << " placement ids");
-          },
-          placement_ids_[tab_id]));
+  PurgeOrphanedAdEvents(placement_ids_[tab_id],
+                        /*intentional*/ base::DoNothing());
 
   placement_ids_.erase(tab_id);
 }

@@ -20,46 +20,52 @@ BASE_DECLARE_FEATURE(kCustomNotificationAdFeature);
 #if !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 
 // Ad notification fade animation duration in milliseconds
-inline constexpr base::FeatureParam<int> kCustomNotificationAdFadeDuration{
+constexpr base::FeatureParam<int> kCustomNotificationAdFadeDuration{
     &kCustomNotificationAdFeature, "fade_duration",
     kDefaultNotificationAdFadeDuration};
 
 // Ad notification dark mode background color
-inline constexpr base::FeatureParam<std::string>
+constexpr base::FeatureParam<std::string>
     kCustomNotificationAdDarkModeBackgroundColor{
         &kCustomNotificationAdFeature, "dark_mode_background_color",
         kDefaultNotificationAdDarkModeBackgroundColor};
 
 // Set to true to support multiple displays or false to only support the primary
 // display
-inline constexpr base::FeatureParam<bool> kShouldSupportMultipleDisplays{
+constexpr base::FeatureParam<bool> kShouldSupportMultipleDisplays{
     &kCustomNotificationAdFeature, "should_support_multiple_displays",
     kDefaultShouldSupportMultipleDisplays};
 
 // Set to true to use the same z-order as the browser window
-inline constexpr base::FeatureParam<bool> kUseSameZOrderAsBrowserWindow{
+constexpr base::FeatureParam<bool> kUseSameZOrderAsBrowserWindow{
     &kCustomNotificationAdFeature, "use_same_z_order_as_browser_window",
     kDefaultUseSameZOrderAsBrowserWindow};
-
-// Ad notification margin within the display's work area
-inline constexpr base::FeatureParam<int> kCustomNotificationAdMargin{
-    &kCustomNotificationAdFeature, "margin", kDefaultNotificationAdMargin};
 
 // Ad notification normalized display coordinate for the x component should be
 // between 0.0 and 1.0; coordinates outside this range will be adjusted to fit
 // the work area. Set to 0.0 for left, 0.5 for center or 1.0 for right
-inline constexpr base::FeatureParam<double>
-    kCustomNotificationAdNormalizedCoordinateX{
-        &kCustomNotificationAdFeature, "normalized_coordinate_x",
-        kDefaultNotificationAdNormalizedCoordinateX};
+constexpr base::FeatureParam<double>
+    kCustomNotificationAdNormalizedDisplayCoordinateX{
+        &kCustomNotificationAdFeature, "normalized_display_coordinate_x",
+        kDefaultNotificationAdNormalizedDisplayCoordinateX};
+
+// Ad notification x inset within the display's work area specified in screen
+// coordinates
+constexpr base::FeatureParam<int> kCustomNotificationAdInsetX{
+    &kCustomNotificationAdFeature, "inset_x", kDefaultNotificationAdInsetX};
 
 // Ad notification normalized display coordinate for the y component should be
 // between 0.0 and 1.0; coordinates outside this range will be adjusted to fit
 // the work area. Set to 0.0 for top, 0.5 for middle or 1.0 for bottom
-inline constexpr base::FeatureParam<double>
-    kCustomNotificationAdNormalizedCoordinateY{
-        &kCustomNotificationAdFeature, "normalized_coordinate_y",
-        kDefaultNotificationAdNormalizedCoordinateY};
+constexpr base::FeatureParam<double>
+    kCustomNotificationAdNormalizedDisplayCoordinateY{
+        &kCustomNotificationAdFeature, "normalized_display_coordinate_y",
+        kDefaultNotificationAdNormalizedDisplayCoordinateY};
+
+// Ad notification y inset within the display's work area specified in screen
+// coordinates
+constexpr base::FeatureParam<int> kCustomNotificationAdInsetY{
+    &kCustomNotificationAdFeature, "inset_y", kDefaultNotificationAdInsetY};
 
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)
 

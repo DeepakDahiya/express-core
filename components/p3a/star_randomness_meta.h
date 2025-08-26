@@ -16,7 +16,6 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "brave/components/p3a/constellation/rs/cxx/src/lib.rs.h"
-#include "brave/components/p3a/metric_log_type.h"
 #include "brave/components/p3a/p3a_config.h"
 #include "net/base/hash_value.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -49,29 +48,13 @@ struct RandomnessServerInfo {
   ::rust::Box<constellation::PPOPRFPublicKeyWrapper> public_key;
 };
 
-struct RandomnessServerUpdateState {
-  RandomnessServerUpdateState();
-  ~RandomnessServerUpdateState();
-
-  bool has_used_cached_info = false;
-  absl::optional<uint8_t> last_cached_epoch = absl::nullopt;
-
-  base::OneShotTimer rnd_info_retry_timer;
-  base::TimeDelta current_backoff_time;
-
-  std::unique_ptr<network::SimpleURLLoader> url_loader;
-
-  std::unique_ptr<RandomnessServerInfo> rnd_server_info;
-};
-
 // Handles retrieval of the current epoch number and next epoch time
 // from the randomness host. Also handles Nitro Enclave attestation
 // verification.
 class StarRandomnessMeta {
  public:
   using RandomnessServerInfoCallback =
-      base::RepeatingCallback<void(MetricLogType log_type,
-                                   RandomnessServerInfo* server_info)>;
+      base::RepeatingCallback<void(RandomnessServerInfo* server_info)>;
 
   StarRandomnessMeta(
       PrefService* local_state,
@@ -84,36 +67,38 @@ class StarRandomnessMeta {
   StarRandomnessMeta& operator=(const StarRandomnessMeta&) = delete;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
-  static void RegisterPrefsForMigration(PrefRegistrySimple* registry);
-  static void MigrateObsoleteLocalStatePrefs(PrefService* local_state);
 
   bool VerifyRandomnessCert(network::SimpleURLLoader* url_loader);
 
-  void RequestServerInfo(MetricLogType log_type);
+  void RequestServerInfo();
 
-  RandomnessServerInfo* GetCachedRandomnessServerInfo(MetricLogType log_type);
+  RandomnessServerInfo* GetCachedRandomnessServerInfo();
 
  private:
   bool ShouldAttestEnclave();
 
   void AttestServer(bool make_info_request_after);
 
-  void HandleServerInfoResponse(MetricLogType log_type,
-                                std::unique_ptr<std::string> response_body);
+  void HandleServerInfoResponse(std::unique_ptr<std::string> response_body);
 
   void HandleAttestationResult(
       bool make_info_request_after,
       scoped_refptr<net::X509Certificate> approved_cert);
 
-  void ScheduleServerInfoRetry(MetricLogType log_type);
+  void ScheduleServerInfoRetry();
 
+  std::unique_ptr<network::SimpleURLLoader> url_loader_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  std::unique_ptr<RandomnessServerInfo> rnd_server_info_;
+
+  bool has_used_cached_info_ = false;
+  absl::optional<uint8_t> last_cached_epoch_ = absl::nullopt;
 
   const raw_ptr<PrefService> local_state_;
 
-  base::flat_map<MetricLogType, std::unique_ptr<RandomnessServerUpdateState>>
-      update_states_;
-
+  base::OneShotTimer rnd_info_retry_timer_;
+  base::TimeDelta current_backoff_time_;
   RandomnessServerInfoCallback info_callback_;
 
   const raw_ptr<const P3AConfig> config_;

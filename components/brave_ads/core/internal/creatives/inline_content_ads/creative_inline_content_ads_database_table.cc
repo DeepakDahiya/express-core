@@ -17,7 +17,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/containers/container_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_bind_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_column_util.h"
@@ -347,9 +347,10 @@ void CreativeInlineContentAds::GetForCreativeInstanceId(
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetForCreativeInstanceIdCallback,
-                                  creative_instance_id, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetForCreativeInstanceIdCallback, creative_instance_id,
+                     std::move(callback)));
 }
 
 void CreativeInlineContentAds::GetForSegmentsAndDimensions(
@@ -395,9 +396,10 @@ void CreativeInlineContentAds::GetForSegmentsAndDimensions(
 
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetForSegmentsAndDimensionsCallback,
-                                  segments, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetForSegmentsAndDimensionsCallback, segments,
+                     std::move(callback)));
 }
 
 void CreativeInlineContentAds::GetForDimensions(
@@ -430,7 +432,7 @@ void CreativeInlineContentAds::GetForDimensions(
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(
+  AdsClientHelper::GetInstance()->RunDBTransaction(
       std::move(transaction),
       base::BindOnce(&GetForDimensionsCallback, std::move(callback)));
 }
@@ -460,8 +462,9 @@ void CreativeInlineContentAds::GetAll(
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetAllCallback, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetAllCallback, std::move(callback)));
 }
 
 std::string CreativeInlineContentAds::GetTableName() const {

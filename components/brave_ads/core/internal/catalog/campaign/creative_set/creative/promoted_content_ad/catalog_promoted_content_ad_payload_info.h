@@ -13,12 +13,15 @@
 namespace brave_ads {
 
 struct CatalogPromotedContentAdPayloadInfo final {
-  bool operator==(const CatalogPromotedContentAdPayloadInfo&) const = default;
-
   std::string title;
   std::string description;
   GURL target_url;
 };
+
+bool operator==(const CatalogPromotedContentAdPayloadInfo&,
+                const CatalogPromotedContentAdPayloadInfo&);
+bool operator!=(const CatalogPromotedContentAdPayloadInfo&,
+                const CatalogPromotedContentAdPayloadInfo&);
 
 }  // namespace brave_ads
 

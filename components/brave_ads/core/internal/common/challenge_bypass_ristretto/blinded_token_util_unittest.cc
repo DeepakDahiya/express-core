@@ -17,10 +17,10 @@ namespace brave_ads::cbr {
 
 TEST(BraveAdsBlindedTokenUtilTest, BlindTokens) {
   // Arrange
-  const std::vector<Token> tokens = test::GetTokens();
+  const std::vector<Token> tokens = GetTokensForTesting();
 
   // Act & Assert
-  EXPECT_EQ(test::GetBlindedTokens(), BlindTokens(tokens));
+  EXPECT_EQ(GetBlindedTokensForTesting(), BlindTokens(tokens));
 }
 
 TEST(BraveAdsBlindedTokenUtilTToUnblindedTokensest, BlindEmptyTokens) {
@@ -33,7 +33,7 @@ TEST(BraveAdsBlindedTokenUtilTToUnblindedTokensest, BlindEmptyTokens) {
 
 TEST(BraveAdsBlindedTokenUtilTest, TokensToRawTokens) {
   // Arrange
-  const std::vector<BlindedToken> tokens = test::GetBlindedTokens();
+  const std::vector<BlindedToken> tokens = GetBlindedTokensForTesting();
 
   // Act & Assert
   std::vector<challenge_bypass_ristretto::BlindedToken> expected_raw_tokens;

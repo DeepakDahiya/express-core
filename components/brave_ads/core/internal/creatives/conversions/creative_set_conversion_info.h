@@ -25,8 +25,6 @@ struct CreativeSetConversionInfo final {
 
   ~CreativeSetConversionInfo();
 
-  bool operator==(const CreativeSetConversionInfo&) const = default;
-
   [[nodiscard]] bool IsValid() const;
 
   std::string id;
@@ -35,6 +33,11 @@ struct CreativeSetConversionInfo final {
   base::TimeDelta observation_window;
   base::Time expire_at;
 };
+
+bool operator==(const CreativeSetConversionInfo&,
+                const CreativeSetConversionInfo&);
+bool operator!=(const CreativeSetConversionInfo&,
+                const CreativeSetConversionInfo&);
 
 using CreativeSetConversionList = std::vector<CreativeSetConversionInfo>;
 

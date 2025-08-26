@@ -35,7 +35,7 @@ TEST_F(BraveAdsSystemTimestampUserDataTest,
 TEST_F(BraveAdsSystemTimestampUserDataTest,
        BuildSystemTimestampUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   // Act & Assert
   EXPECT_TRUE(BuildSystemTimestampUserData().empty());

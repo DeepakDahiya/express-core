@@ -30,7 +30,15 @@ import { HardwareWalletConnect } from './hardware-wallet-connect'
 import { SelectAccountType } from './select-account-type/select-account-type'
 
 // style
-import { StyledWrapper } from './style'
+import {
+  StyledWrapper
+} from './style'
+
+// hooks
+import { WalletSelectors } from '../../../../common/selectors'
+
+// selectors
+import { useSafeWalletSelector } from '../../../../common/hooks/use-safe-selector'
 
 interface Params {
   accountTypeName: string
@@ -47,29 +55,29 @@ export const AddHardwareAccountModal = ({ onSelectAccountType }: Props) => {
 
   // redux
   const dispatch = useDispatch()
+  const isFilecoinEnabled = useSafeWalletSelector(WalletSelectors.isFilecoinEnabled)
+  const isSolanaEnabled = useSafeWalletSelector(WalletSelectors.isSolanaEnabled)
 
   // memos
   const createAccountOptions = React.useMemo(() => {
     return CreateAccountOptions({
+      isFilecoinEnabled,
+      isSolanaEnabled,
       isBitcoinEnabled: false, // No bitcoin hardware accounts by now.
       isZCashEnabled: false // No zcash hardware accounts by now.
     })
-  }, [])
+  }, [isFilecoinEnabled, isSolanaEnabled])
 
-  const selectedAccountType: CreateAccountOptionsType | undefined =
-    React.useMemo(() => {
-      return createAccountOptions.find((option) => {
-        return option.name.toLowerCase() === accountTypeName?.toLowerCase()
-      })
-    }, [createAccountOptions, accountTypeName])
+  const selectedAccountType: CreateAccountOptionsType | undefined = React.useMemo(() => {
+    return createAccountOptions.find((option) => {
+      return option.name.toLowerCase() === accountTypeName?.toLowerCase()
+    })
+  }, [createAccountOptions, accountTypeName])
 
   // methods
-  const setImportError = React.useCallback(
-    (hasError: ImportAccountErrorType) => {
-      dispatch(WalletActions.setImportAccountError(hasError))
-    },
-    []
-  )
+  const setImportError = React.useCallback((hasError: ImportAccountErrorType) => {
+    dispatch(WalletActions.setImportAccountError(hasError))
+  }, [])
 
   const closeModal = React.useCallback(() => {
     setImportError(undefined)
@@ -82,24 +90,25 @@ export const AddHardwareAccountModal = ({ onSelectAccountType }: Props) => {
       title={getLocale('braveWalletAddAccountImportHardware')}
       onClose={closeModal}
     >
+
       <DividerLine />
 
-      {selectedAccountType && (
+      {selectedAccountType &&
         <StyledWrapper>
           <HardwareWalletConnect
             selectedAccountType={selectedAccountType}
             onSuccess={closeModal}
           />
         </StyledWrapper>
-      )}
+      }
 
-      {!selectedAccountType && (
+      {!selectedAccountType &&
         <SelectAccountType
           createAccountOptions={createAccountOptions}
           onSelectAccountType={onSelectAccountType}
           buttonText={getLocale('braveWalletAddAccountConnect')}
         />
-      )}
+      }
     </PopupModal>
   )
 }

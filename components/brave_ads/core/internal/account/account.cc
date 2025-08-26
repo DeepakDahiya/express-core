@@ -24,13 +24,13 @@
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/redeem_payment_tokens.h"
 #include "brave/components/brave_ads/core/internal/account/utility/refill_confirmation_tokens/refill_confirmation_tokens.h"
 #include "brave/components/brave_ads/core/internal/account/wallet/wallet_util.h"
-#include "brave/components/brave_ads/core/internal/ads_notifier_manager.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/time/time_formatting_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"  // IWYU pragma: keep
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
+#include "brave/components/brave_ads/core/public/units/ad_type.h"
 #include "brave/components/brave_rewards/common/pref_names.h"
 
 namespace brave_ads {
@@ -39,7 +39,8 @@ namespace {
 
 bool ShouldReset() {
   return UserHasJoinedBraveRewards() &&
-         GetProfileBooleanPref(prefs::kShouldMigrateVerifiedRewardsUser);
+         AdsClientHelper::GetInstance()->GetBooleanPref(
+             prefs::kShouldMigrateVerifiedRewardsUser);
 }
 
 void UpdateIssuers(const IssuersInfo& issuers) {
@@ -57,13 +58,13 @@ Account::Account(TokenGeneratorInterface* token_generator)
     : token_generator_(token_generator) {
   CHECK(token_generator_);
 
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 
   InitializeConfirmations();
 }
 
 Account::~Account() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
 }
 
 void Account::AddObserver(AccountObserver* observer) {
@@ -96,8 +97,8 @@ void Account::SetWallet(const std::string& payment_id,
 
 void Account::Deposit(const std::string& creative_instance_id,
                       const std::string& segment,
-                      AdType ad_type,
-                      ConfirmationType confirmation_type) const {
+                      const AdType& ad_type,
+                      const ConfirmationType& confirmation_type) const {
   CHECK(!creative_instance_id.empty());
   CHECK_NE(AdType::kUndefined, ad_type);
   CHECK_NE(ConfirmationType::kUndefined, confirmation_type);
@@ -128,8 +129,8 @@ void Account::GetStatement(GetStatementOfAccountsCallback callback) {
 
 void Account::DepositCallback(const std::string& creative_instance_id,
                               const std::string& segment,
-                              AdType ad_type,
-                              ConfirmationType confirmation_type,
+                              const AdType& ad_type,
+                              const ConfirmationType& confirmation_type,
                               const bool success,
                               const double value) const {
   if (!success) {
@@ -144,8 +145,8 @@ void Account::DepositCallback(const std::string& creative_instance_id,
 void Account::ProcessDeposit(const std::string& creative_instance_id,
                              const std::string& segment,
                              const double value,
-                             AdType ad_type,
-                             ConfirmationType confirmation_type) const {
+                             const AdType& ad_type,
+                             const ConfirmationType& confirmation_type) const {
   if (!UserHasJoinedBraveRewards()) {
     return SuccessfullyProcessedDeposit(BuildTransaction(
         creative_instance_id, segment, value, ad_type, confirmation_type));
@@ -159,8 +160,8 @@ void Account::ProcessDeposit(const std::string& creative_instance_id,
 }
 
 void Account::ProcessDepositCallback(const std::string& creative_instance_id,
-                                     AdType ad_type,
-                                     ConfirmationType confirmation_type,
+                                     const AdType& ad_type,
+                                     const ConfirmationType& confirmation_type,
                                      const bool success,
                                      const TransactionInfo& transaction) const {
   if (!success) {
@@ -181,14 +182,15 @@ void Account::SuccessfullyProcessedDeposit(
 
   NotifyDidProcessDeposit(transaction);
 
-  AdsNotifierManager::GetInstance().NotifyAdRewardsDidChange();
+  NotifyStatementOfAccountsDidChange();
 
   confirmations_->Confirm(transaction);
 }
 
-void Account::FailedToProcessDeposit(const std::string& creative_instance_id,
-                                     AdType ad_type,
-                                     ConfirmationType confirmation_type) const {
+void Account::FailedToProcessDeposit(
+    const std::string& creative_instance_id,
+    const AdType& ad_type,
+    const ConfirmationType& confirmation_type) const {
   BLOG(0, "Failed to process deposit for "
               << ad_type << " with creative instance id "
               << creative_instance_id << " and " << confirmation_type);
@@ -202,11 +204,9 @@ void Account::Initialize() {
 
   MaybeRewardUser();
 
-  AdsNotifierManager::GetInstance().NotifyAdRewardsDidChange();
+  NotifyStatementOfAccountsDidChange();
 
   MaybeFetchIssuers();
-
-  MaybeRefillConfirmationTokens();
 
   MaybeProcessUnclearedTransactions();
 }
@@ -311,7 +311,7 @@ void Account::MaybeProcessUnclearedTransactions() const {
 }
 
 bool Account::ShouldRefillConfirmationTokens() const {
-  return wallet_ && refill_confirmation_tokens_ && HasIssuers();
+  return wallet_ && refill_confirmation_tokens_;
 }
 
 void Account::MaybeReset() {
@@ -325,7 +325,8 @@ void Account::MaybeReset() {
 
   ResetAndFetchIssuers();
 
-  SetProfileBooleanPref(prefs::kShouldMigrateVerifiedRewardsUser, false);
+  AdsClientHelper::GetInstance()->SetBooleanPref(
+      prefs::kShouldMigrateVerifiedRewardsUser, false);
 }
 
 void Account::ResetAndFetchIssuers() {
@@ -361,11 +362,17 @@ void Account::NotifyDidProcessDeposit(
 
 void Account::NotifyFailedToProcessDeposit(
     const std::string& creative_instance_id,
-    AdType ad_type,
-    ConfirmationType confirmation_type) const {
+    const AdType& ad_type,
+    const ConfirmationType& confirmation_type) const {
   for (AccountObserver& observer : observers_) {
     observer.OnFailedToProcessDeposit(creative_instance_id, ad_type,
                                       confirmation_type);
+  }
+}
+
+void Account::NotifyStatementOfAccountsDidChange() const {
+  for (AccountObserver& observer : observers_) {
+    observer.OnStatementOfAccountsDidChange();
   }
 }
 
@@ -449,7 +456,8 @@ void Account::OnDidRetryRefillingConfirmationTokens() {
 void Account::OnCaptchaRequiredToRefillConfirmationTokens(
     const std::string& captcha_id) {
   if (wallet_) {
-    ShowScheduledCaptchaNotification(wallet_->payment_id, captcha_id);
+    AdsClientHelper::GetInstance()->ShowScheduledCaptchaNotification(
+        wallet_->payment_id, captcha_id);
   }
 }
 

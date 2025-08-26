@@ -14,17 +14,14 @@ namespace brave_ads {
 
 struct IssuersInfo;
 
-namespace test {
+std::string BuildIssuersUrlResponseBodyForTesting();
 
-std::string BuildIssuersUrlResponseBody();
-
-IssuersInfo BuildIssuers(int ping,
-                         const PublicKeyMap& confirmations_public_keys,
-                         const PublicKeyMap& payments_public_keys);
-IssuersInfo BuildIssuers();
-void BuildAndSetIssuers();
-
-}  // namespace test
+IssuersInfo BuildIssuersForTesting(
+    int ping,
+    const PublicKeyMap& confirmations_public_keys,
+    const PublicKeyMap& payments_public_keys);
+IssuersInfo BuildIssuersForTesting();
+void BuildAndSetIssuersForTesting();
 
 }  // namespace brave_ads
 

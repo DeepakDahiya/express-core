@@ -6,13 +6,17 @@
 import * as React from 'react'
 
 // Options
-import { ChartTimelineOptions } from '../../../options/chart-timeline-options'
+import {
+  ChartTimelineOptions
+} from '../../../options/chart-timeline-options'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
 
 // Types
-import { BraveWallet } from '../../../constants/types'
+import {
+  BraveWallet
+} from '../../../constants/types'
 
 // Styled Components
 import {
@@ -26,19 +30,25 @@ export interface Props {
 }
 
 export const LineChartControlsMenu = (props: Props) => {
-  const { onClick } = props
+  const {
+    onClick
+  } = props
 
   return (
     <LineChartWrapper yPosition={32}>
-      {ChartTimelineOptions.map((option) => (
+      {ChartTimelineOptions.map((option) =>
         <PopupButton
           key={option.id}
           onClick={() => onClick(option.id)}
           minWidth={130}
         >
-          <PopupButtonText>{getLocale(option.name)}</PopupButtonText>
+          <PopupButtonText>
+            {getLocale(option.name)}
+          </PopupButtonText>
         </PopupButton>
-      ))}
+      )}
     </LineChartWrapper>
   )
 }
+
+export default LineChartControlsMenu

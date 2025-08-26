@@ -5,6 +5,7 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_cookies_content_view.h"
 
+#include "base/check_is_test.h"
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
 
 #define SetCookieInfo SetCookieInfo_ChromiumImpl
@@ -27,6 +28,8 @@ void PageInfoCookiesContentView::SetCookieInfo(
     if (cookies_buttons_container_view_->children().size() == 3u) {
       cookies_buttons_container_view_->RemoveChildView(
           cookies_buttons_container_view_->children()[1]);
+    } else {
+      CHECK_IS_TEST();
     }
   }
 

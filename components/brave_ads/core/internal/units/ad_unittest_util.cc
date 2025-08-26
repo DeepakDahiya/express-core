@@ -8,11 +8,13 @@
 #include "base/uuid.h"
 #include "brave/components/brave_ads/core/internal/units/ad_unittest_constants.h"
 #include "brave/components/brave_ads/core/public/units/ad_info.h"
+#include "brave/components/brave_ads/core/public/units/ad_type.h"
 #include "url/gurl.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-AdInfo BuildAd(AdType ad_type, const bool should_use_random_uuids) {
+AdInfo BuildAdForTesting(const AdType& ad_type,
+                         const bool should_use_random_uuids) {
   AdInfo ad;
 
   ad.type = ad_type;
@@ -45,4 +47,4 @@ AdInfo BuildAd(AdType ad_type, const bool should_use_random_uuids) {
   return ad;
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

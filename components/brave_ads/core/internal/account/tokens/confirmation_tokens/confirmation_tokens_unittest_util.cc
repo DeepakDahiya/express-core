@@ -18,11 +18,11 @@
 #include "brave/components/brave_ads/core/internal/common/crypto/crypto_util.h"
 #include "brave/components/brave_ads/core/internal/deprecated/confirmations/confirmation_state_manager.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
 namespace {
 
-ConfirmationTokenInfo BuildConfirmationToken(
+ConfirmationTokenInfo BuildConfirmationTokenForTesting(
     const std::string& unblinded_token_base64,
     const WalletInfo& wallet) {
   ConfirmationTokenInfo confirmation_token;
@@ -45,29 +45,30 @@ ConfirmationTokenInfo BuildConfirmationToken(
 
 }  // namespace
 
-ConfirmationTokens& GetConfirmationTokens() {
+ConfirmationTokens& GetConfirmationTokensForTesting() {
   return ConfirmationStateManager::GetInstance().GetConfirmationTokens();
 }
 
-ConfirmationTokenList SetConfirmationTokens(const int count) {
+ConfirmationTokenList SetConfirmationTokensForTesting(const int count) {
   CHECK_GT(count, 0);
 
-  ConfirmationTokenList confirmation_tokens = BuildConfirmationTokens(count);
-  GetConfirmationTokens().SetTokens(confirmation_tokens);
+  ConfirmationTokenList confirmation_tokens =
+      BuildConfirmationTokensForTesting(count);
+  GetConfirmationTokensForTesting().SetTokens(confirmation_tokens);
   return confirmation_tokens;
 }
 
-ConfirmationTokenInfo BuildConfirmationToken() {
+ConfirmationTokenInfo BuildConfirmationTokenForTesting() {
   const ConfirmationTokenList confirmation_tokens =
-      BuildConfirmationTokens(/*count=*/1);
+      BuildConfirmationTokensForTesting(/*count=*/1);
   CHECK(!confirmation_tokens.empty());
   return confirmation_tokens.front();
 }
 
-ConfirmationTokenList BuildConfirmationTokens(const int count) {
+ConfirmationTokenList BuildConfirmationTokensForTesting(const int count) {
   CHECK_GT(count, 0);
 
-  const WalletInfo wallet = GetWallet();
+  const WalletInfo wallet = GetWalletForTesting();
 
   const std::vector<std::string> unblinded_tokens_base64 = {
       R"(PLowz2WF2eGD5zfwZjk9p76HXBLDKMq/3EAZHeG/fE2XGQ48jyte+Ve50ZlasOuYL5mwA8CU2aFMlJrt3DDgC3B1+VD/uyHPfa/+bwYRrpVH5YwNSDEydVx8S4r+BYVY)",
@@ -89,7 +90,7 @@ ConfirmationTokenList BuildConfirmationTokens(const int count) {
     const std::string& unblinded_token_base64 =
         unblinded_tokens_base64.at(i % modulo);
     const ConfirmationTokenInfo confirmation_token =
-        BuildConfirmationToken(unblinded_token_base64, wallet);
+        BuildConfirmationTokenForTesting(unblinded_token_base64, wallet);
 
     confirmation_tokens.push_back(confirmation_token);
   }
@@ -97,4 +98,4 @@ ConfirmationTokenList BuildConfirmationTokens(const int count) {
   return confirmation_tokens;
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

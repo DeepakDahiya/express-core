@@ -7,8 +7,6 @@
 
 #include <guiddef.h>
 
-#include <vector>
-
 #include "base/containers/cxx20_erase.h"
 #include "base/path_service.h"
 #include "brave/components/brave_vpn/common/buildflags/buildflags.h"
@@ -100,7 +98,7 @@ std::wstring GetBraveVpnWireguardServiceDisplayName() {
 
 std::wstring GetBraveVpnWireguardServiceName() {
   std::wstring name = GetBraveVpnWireguardServiceDisplayName();
-  std::erase_if(name, isspace);
+  base::EraseIf(name, isspace);
   return name;
 }
 

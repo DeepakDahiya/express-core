@@ -13,20 +13,22 @@
 #include "brave/components/brave_ads/core/internal/account/transactions/transactions_database_table.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_time_util.h"
 #include "brave/components/brave_ads/core/internal/units/ad_unittest_constants.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 #include "brave/components/brave_ads/core/public/units/ad_type.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-void SaveTransactions(const TransactionList& transactions) {
+void SaveTransactionsForTesting(const TransactionList& transactions) {
   database::table::Transactions database_table;
   database_table.Save(
       transactions, base::BindOnce([](const bool success) { CHECK(success); }));
 }
 
-TransactionInfo BuildTransaction(const double value,
-                                 ConfirmationType confirmation_type,
-                                 const base::Time reconciled_at,
-                                 const bool should_use_random_uuids) {
+TransactionInfo BuildTransactionForTesting(
+    const double value,
+    const ConfirmationType& confirmation_type,
+    const base::Time reconciled_at,
+    const bool should_use_random_uuids) {
   TransactionInfo transaction;
 
   transaction.id = should_use_random_uuids
@@ -46,12 +48,12 @@ TransactionInfo BuildTransaction(const double value,
   return transaction;
 }
 
-TransactionInfo BuildUnreconciledTransaction(
+TransactionInfo BuildUnreconciledTransactionForTesting(
     const double value,
-    ConfirmationType confirmation_type,
+    const ConfirmationType& confirmation_type,
     const bool should_use_random_uuids) {
-  return BuildTransaction(value, confirmation_type, /*reconciled_at=*/{},
-                          should_use_random_uuids);
+  return BuildTransactionForTesting(
+      value, confirmation_type, /*reconciled_at=*/{}, should_use_random_uuids);
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

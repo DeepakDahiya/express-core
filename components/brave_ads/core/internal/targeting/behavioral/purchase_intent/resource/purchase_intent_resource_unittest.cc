@@ -10,11 +10,10 @@
 #include <utility>
 
 #include "base/files/file.h"
-#include "base/files/file_path.h"
 #include "brave/components/brave_ads/core/internal/common/resources/country_components_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/resources/resources_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_path_util.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/purchase_intent/resource/purchase_intent_resource_constants.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
@@ -56,18 +55,18 @@ TEST_F(BraveAdsPurchaseIntentResourceTest, DoNotLoadInvalidResource) {
 
 TEST_F(BraveAdsPurchaseIntentResourceTest, DoNotLoadMissingResource) {
   // Arrange
-  ON_CALL(ads_client_mock_, LoadComponentResource(kPurchaseIntentResourceId,
-                                                  ::testing::_, ::testing::_))
-      .WillByDefault(::testing::Invoke([](const std::string& /*id*/,
-                                          const int /*version*/,
-                                          LoadFileCallback callback) {
-        const base::FilePath path =
-            ComponentResourcesTestDataPath().AppendASCII(kMissingResourceId);
+  ON_CALL(ads_client_mock_, LoadFileResource(kPurchaseIntentResourceId,
+                                             ::testing::_, ::testing::_))
+      .WillByDefault(::testing::Invoke(
+          [](const std::string& /*id=*/, const int /*version=*/,
+             LoadFileCallback callback) {
+            const base::FilePath path =
+                GetFileResourcePath().AppendASCII(kMissingResourceId);
 
-        base::File file(
-            path, base::File::Flags::FLAG_OPEN | base::File::Flags::FLAG_READ);
-        std::move(callback).Run(std::move(file));
-      }));
+            base::File file(path, base::File::Flags::FLAG_OPEN |
+                                      base::File::Flags::FLAG_READ);
+            std::move(callback).Run(std::move(file));
+          }));
 
   // Act & Assert
   EXPECT_FALSE(LoadResource(kCountryComponentId));
@@ -88,8 +87,8 @@ TEST_F(
     BraveAdsPurchaseIntentResourceTest,
     DoNotLoadResourceWhenLocaleDidChangeIfNotificationAdsAndBraveNewsAdsAreDisabled) {
   // Arrange
-  test::OptOutOfNotificationAds();
-  test::OptOutOfBraveNewsAds();
+  OptOutOfNotificationAdsForTesting();
+  OptOutOfBraveNewsAdsForTesting();
 
   ASSERT_FALSE(LoadResource(kCountryComponentId));
 
@@ -130,8 +129,8 @@ TEST_F(
   // Arrange
   ASSERT_TRUE(LoadResource(kCountryComponentId));
 
-  test::OptOutOfNotificationAds();
-  test::OptOutOfBraveNewsAds();
+  OptOutOfNotificationAdsForTesting();
+  OptOutOfBraveNewsAdsForTesting();
 
   // Act
   NotifyPrefDidChange(prefs::kOptedInToNotificationAds);
@@ -169,8 +168,8 @@ TEST_F(
     BraveAdsPurchaseIntentResourceTest,
     DoNotLoadResourceWhenDidUpdateResourceComponentIfNotificationAdsAndBraveNewsAdsAreDisabled) {
   // Arrange
-  test::OptOutOfNotificationAds();
-  test::OptOutOfBraveNewsAds();
+  OptOutOfNotificationAdsForTesting();
+  OptOutOfBraveNewsAdsForTesting();
 
   // Act & Assert
   EXPECT_FALSE(LoadResource(kCountryComponentId));

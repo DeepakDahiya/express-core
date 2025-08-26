@@ -6,6 +6,7 @@
 import styled from 'styled-components'
 import { StyledInput } from '../../shared-swap.styles'
 
+
 export const Input = styled(StyledInput)`
   width: 100%;
   height: 32px;

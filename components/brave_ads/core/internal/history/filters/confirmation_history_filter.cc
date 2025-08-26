@@ -9,14 +9,13 @@
 #include <string>
 
 #include "base/notreached.h"
-#include "base/types/cxx23_to_underlying.h"
 
 namespace brave_ads {
 
 namespace {
 
-bool ShouldFilterConfirmationType(ConfirmationType confirmation_type) {
-  switch (confirmation_type) {
+bool ShouldFilterConfirmationType(const ConfirmationType& confirmation_type) {
+  switch (confirmation_type.value()) {
     case ConfirmationType::kViewed:
     case ConfirmationType::kClicked:
     case ConfirmationType::kDismissed: {
@@ -39,7 +38,7 @@ bool ShouldFilterConfirmationType(ConfirmationType confirmation_type) {
   }
 
   NOTREACHED_NORETURN() << "Unexpected value for ConfirmationType: "
-                        << base::to_underlying(confirmation_type);
+                        << static_cast<int>(confirmation_type.value());
 }
 
 std::map</*placement_id=*/std::string, HistoryItemInfo> BuildBuckets(
@@ -59,8 +58,8 @@ std::map</*placement_id=*/std::string, HistoryItemInfo> BuildBuckets(
       buckets.insert({placement_id, history_item});
     } else {
       const HistoryItemInfo& current_history_item = iter->second;
-      if (current_history_item.ad_content.confirmation_type >
-          confirmation_type) {
+      if (current_history_item.ad_content.confirmation_type.value() >
+          confirmation_type.value()) {
         buckets[placement_id] = history_item;
       }
     }

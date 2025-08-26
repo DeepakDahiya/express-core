@@ -5,6 +5,8 @@
 
 #include "brave/components/brave_ads/core/internal/account/user_data/fixed/catalog_user_data.h"
 
+#include <utility>
+
 #include "brave/components/brave_ads/core/internal/catalog/catalog_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 
@@ -24,8 +26,11 @@ base::Value::Dict BuildCatalogUserData() {
     return user_data;
   }
 
-  user_data.Set(kCatalogKey, base::Value::List().Append(base::Value::Dict().Set(
-                                 kIdKey, GetCatalogId())));
+  base::Value::List list;
+  auto dict = base::Value::Dict().Set(kIdKey, GetCatalogId());
+  list.Append(std::move(dict));
+
+  user_data.Set(kCatalogKey, std::move(list));
 
   return user_data;
 }

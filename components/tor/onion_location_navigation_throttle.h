@@ -26,7 +26,8 @@ class OnionLocationNavigationThrottle : public content::NavigationThrottle {
    public:
     virtual ~Delegate() = default;
     virtual void OpenInTorWindow(content::WebContents* context,
-                                 const GURL& onion_location) = 0;
+                                 const GURL& onion_location,
+                                 bool renderer_initiated) = 0;
   };
   static std::unique_ptr<OnionLocationNavigationThrottle>
   MaybeCreateThrottleFor(content::NavigationHandle* navigation_handle,
@@ -45,8 +46,6 @@ class OnionLocationNavigationThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
-  bool ShouldAutoRedirect();
-
   bool is_tor_profile_ = false;
 
   const raw_ptr<PrefService> pref_service_ = nullptr;

@@ -12,6 +12,7 @@
 #include "brave/components/brave_rewards/core/endpoint/uphold/get_me/get_me.h"
 #include "brave/components/brave_rewards/core/endpoint/uphold/patch_card/patch_card.h"
 #include "brave/components/brave_rewards/core/endpoint/uphold/post_cards/post_cards.h"
+#include "brave/components/brave_rewards/core/rewards_callbacks.h"
 
 namespace brave_rewards::internal {
 class RewardsEngineImpl;

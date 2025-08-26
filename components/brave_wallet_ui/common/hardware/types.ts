@@ -58,15 +58,8 @@ const DerivationSchemeTypes = [
   TrezorDerivationPaths.Default,
   SolDerivationPaths.Default,
   SolDerivationPaths.LedgerLive,
-  SolDerivationPaths.Bip44Root
-] as const
-export type HardwareDerivationScheme = (typeof DerivationSchemeTypes)[number]
-
-export type LedgerDerivationPath =
-  (typeof LedgerDerivationPaths)[keyof typeof LedgerDerivationPaths]
-
-export type TrezorDerivationPath =
-  (typeof TrezorDerivationPaths)[keyof typeof TrezorDerivationPaths]
+  SolDerivationPaths.Bip44Root ] as const
+export type HardwareDerivationScheme = typeof DerivationSchemeTypes[number]
 
 type HardwareWalletAccountBytesAddress = BraveWallet.HardwareWalletAccount & {
   addressBytes?: Buffer

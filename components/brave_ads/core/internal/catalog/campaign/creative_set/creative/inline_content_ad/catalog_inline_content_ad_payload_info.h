@@ -26,7 +26,8 @@ struct CatalogInlineContentAdPayloadInfo final {
 
   ~CatalogInlineContentAdPayloadInfo();
 
-  bool operator==(const CatalogInlineContentAdPayloadInfo&) const = default;
+  bool operator==(const CatalogInlineContentAdPayloadInfo&) const;
+  bool operator!=(const CatalogInlineContentAdPayloadInfo&) const;
 
   std::string title;
   std::string description;

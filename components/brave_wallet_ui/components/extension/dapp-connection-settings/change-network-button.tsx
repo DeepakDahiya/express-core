@@ -9,13 +9,19 @@ import * as React from 'react'
 import { getLocale } from '../../../../common/locale'
 
 // Queries
-import { useGetSelectedChainQuery } from '../../../common/slices/api.slice'
+import {
+  useGetSelectedChainQuery
+} from '../../../common/slices/api.slice'
 
 // Types
-import { BraveWallet } from '../../../constants/types'
+import {
+  BraveWallet
+} from '../../../constants/types'
 
 // Components
-import { CreateNetworkIcon } from '../../shared/create-network-icon'
+import {
+  CreateNetworkIcon
+} from '../../shared/create-network-icon'
 
 // Styled Components
 import {
@@ -23,7 +29,9 @@ import {
   NetworkName,
   ActiveIndicator
 } from './dapp-connection-settings.style'
-import { Row } from '../../shared/style'
+import {
+  Row
+} from '../../shared/style'
 
 interface Props {
   network: BraveWallet.NetworkInfo
@@ -31,7 +39,10 @@ interface Props {
 }
 
 export const ChangeNetworkButton = (props: Props) => {
-  const { network, onSelectNetwork } = props
+  const {
+    network,
+    onSelectNetwork
+  } = props
 
   // Queries
   const { data: selectedNetwork } = useGetSelectedChainQuery()
@@ -46,17 +57,23 @@ export const ChangeNetworkButton = (props: Props) => {
       onClick={onClick}
       data-test-chain-id={'chain-' + network.chainId}
     >
-      <Row width='unset'>
+      <Row
+        width='unset'
+      >
         <CreateNetworkIcon
           network={network}
           marginRight={8}
           size='big'
         />
-        <NetworkName>{network.chainName}</NetworkName>
+        <NetworkName>
+          {network.chainName}
+        </NetworkName>
       </Row>
-      {selectedNetwork?.chainId === network.chainId && (
-        <ActiveIndicator>{getLocale('braveWalletActive')}</ActiveIndicator>
-      )}
+      {selectedNetwork?.chainId === network.chainId &&
+        <ActiveIndicator>
+          {getLocale('braveWalletActive')}
+        </ActiveIndicator>
+      }
     </NetworkButton>
   )
 }

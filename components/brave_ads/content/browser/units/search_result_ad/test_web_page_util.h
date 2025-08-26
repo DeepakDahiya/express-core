@@ -13,7 +13,7 @@
 
 namespace brave_ads {
 
-inline constexpr char kTestWebPagePlacementId[] = "placement-id";
+constexpr char kTestWebPagePlacementId[] = "placement-id";
 
 std::vector<::schema_org::mojom::EntityPtr> CreateTestWebPageEntities(
     std::vector<std::string_view> attributes_to_skip);

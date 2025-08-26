@@ -37,9 +37,9 @@ class BraveAdsNonRewardConfirmationUtilTest : public UnitTestBase {
 
 TEST_F(BraveAdsNonRewardConfirmationUtilTest, BuildNonRewardConfirmation) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -64,7 +64,7 @@ TEST_F(BraveAdsNonRewardConfirmationUtilTest, BuildNonRewardConfirmation) {
 TEST_F(BraveAdsNonRewardConfirmationUtilTest,
        DISABLED_DoNotBuildNonRewardConfirmationWithInvalidTransaction) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   const TransactionInfo transaction;
 
@@ -77,7 +77,7 @@ TEST_F(BraveAdsNonRewardConfirmationUtilTest,
 TEST_F(BraveAdsNonRewardConfirmationUtilTest,
        DISABLED_DoNotBuildNonRewardConfirmationForRewardsUser) {
   // Arrange
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 

@@ -11,7 +11,7 @@ class PrefRegistrySimple;
 namespace de_amp {
 
 // Is De-AMP feature currently enabled
-inline constexpr char kDeAmpPrefEnabled[] = "brave.de_amp.enabled";
+extern const char kDeAmpPrefEnabled[];
 
 void RegisterProfilePrefs(PrefRegistrySimple* registry);
 

@@ -13,13 +13,12 @@ namespace brave_ads::rewards::json::reader {
 
 absl::optional<TransactionList> ReadTransactionHistory(
     const std::string& json) {
-  const absl::optional<base::Value::Dict> dict =
-      base::JSONReader::ReadDict(json);
-  if (!dict) {
+  const absl::optional<base::Value> root = base::JSONReader::Read(json);
+  if (!root || !root->is_dict()) {
     return absl::nullopt;
   }
 
-  return ParseTransactionHistory(*dict);
+  return ParseTransactionHistory(root->GetDict());
 }
 
 }  // namespace brave_ads::rewards::json::reader

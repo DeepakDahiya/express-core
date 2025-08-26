@@ -4,32 +4,32 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
 
 // utils
 import { getLocale } from '../../../../common/locale'
-import { PanelActions } from '../../../panel/actions'
 
 // components
 import { NavButton } from '../buttons/nav-button/index'
 
 // style
-import { VerticalSpace, WalletWelcomeGraphic } from '../../shared/style'
-import { StyledWrapper, Title, Description } from './style'
+import {
+  VerticalSpace,
+  WalletWelcomeGraphic
+} from '../../shared/style'
+import {
+  StyledWrapper,
+  Title,
+  Description
+} from './style'
 
-export const WelcomePanel = () => {
-  // redux
-  const dispatch = useDispatch()
+interface Props {
+  onSetup: () => void
+}
 
-  // methods
-  const onSetup = () => {
-    dispatch(PanelActions.setupWallet())
-  }
-
-  // render
+export const WelcomePanel = ({ onSetup }: Props) => {
   return (
     <StyledWrapper>
-      <WalletWelcomeGraphic scale={0.9} />
+      <WalletWelcomeGraphic scale={0.9}/>
 
       <VerticalSpace space='16px' />
 

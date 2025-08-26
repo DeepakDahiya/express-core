@@ -8,27 +8,27 @@
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_time_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/conversions/creative_set_conversion_database_table_util.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-CreativeSetConversionInfo BuildCreativeSetConversion(
+CreativeSetConversionInfo BuildCreativeSetConversionForTesting(
     const std::string& creative_set_id,
     const std::string& url_pattern,
     const base::TimeDelta observation_window) {
-  return BuildVerifiableCreativeSetConversion(
+  return BuildVerifiableCreativeSetConversionForTesting(
       creative_set_id, url_pattern, observation_window,
       /*verifiable_advertiser_public_key_base64=*/absl::nullopt);
 }
 
-void BuildAndSaveCreativeSetConversion(
+void BuildAndSaveCreativeSetConversionForTesting(
     const std::string& creative_set_id,
     const std::string& url_pattern,
     const base::TimeDelta observation_window) {
-  BuildAndSaveVerifiableCreativeSetConversion(
+  BuildAndSaveVerifiableCreativeSetConversionForTesting(
       creative_set_id, url_pattern, observation_window,
       /*verifiable_advertiser_public_key_base64=*/absl::nullopt);
 }
 
-CreativeSetConversionInfo BuildVerifiableCreativeSetConversion(
+CreativeSetConversionInfo BuildVerifiableCreativeSetConversionForTesting(
     const std::string& creative_set_id,
     const std::string& url_pattern,
     const base::TimeDelta observation_window,
@@ -47,7 +47,7 @@ CreativeSetConversionInfo BuildVerifiableCreativeSetConversion(
   return creative_set_conversion;
 }
 
-void BuildAndSaveVerifiableCreativeSetConversion(
+void BuildAndSaveVerifiableCreativeSetConversionForTesting(
     const std::string& creative_set_id,
     const std::string& url_pattern,
     const base::TimeDelta observation_window,
@@ -56,7 +56,7 @@ void BuildAndSaveVerifiableCreativeSetConversion(
   CreativeSetConversionList creative_set_conversions;
 
   const CreativeSetConversionInfo creative_set_conversion =
-      BuildVerifiableCreativeSetConversion(
+      BuildVerifiableCreativeSetConversionForTesting(
           creative_set_id, url_pattern, observation_window,
           verifiable_advertiser_public_key_base64);
   creative_set_conversions.push_back(creative_set_conversion);
@@ -64,4 +64,4 @@ void BuildAndSaveVerifiableCreativeSetConversion(
   database::SaveCreativeSetConversions(creative_set_conversions);
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

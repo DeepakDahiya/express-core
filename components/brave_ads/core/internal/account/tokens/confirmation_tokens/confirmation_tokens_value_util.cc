@@ -6,6 +6,7 @@
 #include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_value_util.h"
 
 #include <string>
+#include <utility>
 
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/unblinded_token.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
@@ -38,10 +39,12 @@ base::Value::List ConfirmationTokensToValue(
       continue;
     }
 
-    list.Append(base::Value::Dict()
+    auto dict = base::Value::Dict()
                     .Set(kUnblindedTokenKey, *unblinded_token_base64)
                     .Set(kPublicKey, *public_key_base64)
-                    .Set(kSignature, confirmation_token.signature));
+                    .Set(kSignature, confirmation_token.signature);
+
+    list.Append(std::move(dict));
   }
 
   return list;

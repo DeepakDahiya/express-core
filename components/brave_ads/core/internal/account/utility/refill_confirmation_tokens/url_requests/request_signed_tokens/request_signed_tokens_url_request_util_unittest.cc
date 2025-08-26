@@ -20,7 +20,7 @@ TEST_F(BraveAdsRequestSignedTokensUrlRequestUtilTest, ParseNonce) {
   // Act & Assert
   EXPECT_EQ(kGetSignedTokensNonce,
             ParseNonce(base::test::ParseJsonDict(
-                test::BuildRequestSignedTokensUrlResponseBody())));
+                BuildRequestSignedTokensUrlResponseBodyForTesting())));
 }
 
 TEST_F(BraveAdsRequestSignedTokensUrlRequestUtilTest, DoNotParseMissingNonce) {

@@ -5,20 +5,31 @@
 
 import * as React from 'react'
 
+// Queries
+import {
+  useGetSelectedChainQuery
+} from '../../../../../../common/slices/api.slice'
+
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
 
 // Types
-import { BraveWallet } from '../../../../../../constants/types'
+import {
+  BraveWallet
+} from '../../../../../../constants/types'
 
 // Components
 import {
-  SelectTokenOrNetworkButton //
+  SelectTokenOrNetworkButton
 } from '../../buttons/select-token-or-network/select-token-or-network'
 import { SwapInput } from '../../inputs/swap-input/swap-input'
 
 // Styled Components
-import { LoadingRow } from './to-section.style'
+import {
+  LoadingRow
+} from './to-section.style'
 import {
   Row,
   Column,
@@ -35,7 +46,6 @@ interface Props {
   hasInputError: boolean
   token: BraveWallet.BlockchainToken | undefined
   disabled: boolean
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
 }
 
 export const ToSection = (props: Props) => {
@@ -46,16 +56,15 @@ export const ToSection = (props: Props) => {
     inputValue,
     hasInputError,
     isLoading,
-    disabled,
-    selectedNetwork
+    disabled
   } = props
+
+  // Queries
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
 
   return (
     <Column columnWidth='full'>
-      <LoadingRow
-        rowWidth='full'
-        horizontalAlign='flex-end'
-      >
+      <LoadingRow rowWidth='full' horizontalAlign='flex-end'>
         {isLoading && (
           <>
             <Loader />

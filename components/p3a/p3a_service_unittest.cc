@@ -44,8 +44,6 @@ constexpr char kTestP3AJsonHost[] = "https://p3a-json.brave.com";
 constexpr char kTestP2AJsonHost[] = "https://p2a-json.brave.com";
 constexpr char kTestP3ACreativeHost[] = "https://p3a-creative.brave.com";
 
-constexpr char kTestEphemeralMetric[] = "Brave.Wallet.UsageWeekly";
-
 }  // namespace
 
 class P3AServiceTest : public testing::Test {
@@ -249,16 +247,6 @@ TEST_F(P3AServiceTest, UpdateLogsAndSendExpress) {
 
   EXPECT_EQ(p3a_json_sent_metrics_.size(), 1U);
   EXPECT_EQ(p2a_json_sent_metrics_.size(), 0U);
-  // Creative metrics are automatically ephemeral, should not auto resend.
-  EXPECT_EQ(p3a_creative_sent_metrics_.size(), 0U);
-
-  for (size_t i = 1; i < test_histograms.size(); i++) {
-    base::UmaHistogramExactLinear(test_histograms[i], i + 1, 8);
-    p3a_service_->OnHistogramChanged(test_histograms[i].c_str(), 0, i + 1);
-    task_environment_.RunUntilIdle();
-  }
-  task_environment_.FastForwardBy(base::Seconds(kUploadIntervalSeconds * 10));
-
   EXPECT_EQ(p3a_creative_sent_metrics_.size(), 2U);
 
   ResetInterceptorStores();
@@ -310,16 +298,9 @@ TEST_F(P3AServiceTest, UpdateLogsAndSendSlow) {
   task_environment_.FastForwardBy(base::Days(15) +
                                   base::Seconds(kUploadIntervalSeconds * 400));
 
-  EXPECT_EQ(p3a_json_sent_metrics_.size(), 1U);
+  EXPECT_EQ(p3a_json_sent_metrics_.size(), 2U);
   EXPECT_EQ(p2a_json_sent_metrics_.size(), 0U);
   EXPECT_EQ(p3a_creative_sent_metrics_.size(), 0U);
-
-  base::UmaHistogramExactLinear(kTestExampleMetric, 1, 8);
-  p3a_service_->OnHistogramChanged(kTestExampleMetric, 0, 1);
-  task_environment_.RunUntilIdle();
-  task_environment_.FastForwardBy(base::Seconds(kUploadIntervalSeconds * 400));
-
-  EXPECT_EQ(p3a_json_sent_metrics_.size(), 2U);
 
   ResetInterceptorStores();
 
@@ -385,22 +366,25 @@ TEST_F(P3AServiceTest, ShouldNotSendIfDisabled) {
 }
 
 TEST_F(P3AServiceTest, EphemeralMetricOnlySentOnce) {
+  // Increase upload interval to reduce test time (less tasks to execute)
+  base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
+  cmdline->AppendSwitchASCII(switches::kP3AUploadIntervalSeconds, "13000");
   SetUpP3AService();
 
-  base::UmaHistogramExactLinear(kTestEphemeralMetric, 1, 8);
-  p3a_service_->OnHistogramChanged(kTestEphemeralMetric, 0, 8);
+  std::string test_histogram = std::string(*p3a::kEphemeralHistograms.begin());
+  base::UmaHistogramExactLinear(test_histogram, 1, 8);
+  p3a_service_->OnHistogramChanged(test_histogram.c_str(), 0, 8);
 
   EXPECT_EQ(p3a_json_sent_metrics_.size(), 0U);
 
-  task_environment_.FastForwardBy(base::Seconds(kUploadIntervalSeconds * 10));
+  task_environment_.FastForwardBy(base::Seconds(kUploadIntervalSeconds * 400));
 
   EXPECT_EQ(p3a_json_sent_metrics_.size(), 1U);
   EXPECT_EQ(p2a_json_sent_metrics_.size(), 0U);
   EXPECT_EQ(p3a_creative_sent_metrics_.size(), 0U);
 
   ResetInterceptorStores();
-  task_environment_.FastForwardBy(base::Days(7) +
-                                  base::Seconds(kUploadIntervalSeconds * 10));
+  task_environment_.FastForwardBy(base::Days(15));
 
   EXPECT_EQ(p3a_json_sent_metrics_.size(), 0U);
   EXPECT_EQ(p2a_json_sent_metrics_.size(), 0U);

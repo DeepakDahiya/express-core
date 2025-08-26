@@ -11,11 +11,7 @@ namespace brave_ads {
 struct ConfirmationInfo;
 struct RewardInfo;
 
-namespace test {
-
-RewardInfo BuildReward(const ConfirmationInfo& confirmation);
-
-}  // namespace test
+RewardInfo BuildRewardForTesting(const ConfirmationInfo& confirmation);
 
 }  // namespace brave_ads
 

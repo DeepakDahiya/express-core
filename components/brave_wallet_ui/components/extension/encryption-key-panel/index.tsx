@@ -4,7 +4,6 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
 
 // Types
 import { BraveWallet } from '../../../constants/types'
@@ -12,7 +11,6 @@ import { BraveWallet } from '../../../constants/types'
 // Utils
 import { reduceAccountDisplayName } from '../../../utils/reduce-account-name'
 import { getLocale, splitStringForTag } from '../../../../common/locale'
-import { PanelActions } from '../../../panel/actions'
 
 // Components
 import { NavButton } from '../buttons/nav-button/index'
@@ -39,13 +37,12 @@ import { useAccountQuery } from '../../../common/slices/api.slice.extra'
 
 export interface ProvidePubKeyPanelProps {
   payload: BraveWallet.GetEncryptionPublicKeyRequest
+  onProvide: (requestId: string) => void
+  onCancel: (requestId: string) => void
 }
 
-export function ProvidePubKeyPanel({ payload }: ProvidePubKeyPanelProps) {
-  // redux
-  const dispatch = useDispatch()
-
-  // queries
+export function ProvidePubKeyPanel(props: ProvidePubKeyPanelProps) {
+  const { payload, onProvide: onProvideOrAllow, onCancel } = props
   const { account } = useAccountQuery(payload.accountId)
 
   const orb = useAccountOrb(account)
@@ -55,26 +52,6 @@ export function ProvidePubKeyPanel({ payload }: ProvidePubKeyPanelProps) {
   ).replace('$url', payload.originInfo.originSpec)
   const { duringTag, afterTag } = splitStringForTag(descriptionString)
 
-  // methods
-  const onProvideOrAllow = () => {
-    dispatch(
-      PanelActions.getEncryptionPublicKeyProcessed({
-        requestId: payload.requestId,
-        approved: true
-      })
-    )
-  }
-
-  const onCancel = (requestId: string) => {
-    dispatch(
-      PanelActions.getEncryptionPublicKeyProcessed({
-        requestId,
-        approved: false
-      })
-    )
-  }
-
-  // render
   return (
     <StyledWrapper>
       <AccountCircle orb={orb} />
@@ -108,7 +85,7 @@ export function ProvidePubKeyPanel({ payload }: ProvidePubKeyPanelProps) {
         <NavButton
           buttonType='primary'
           text={getLocale('braveWalletProvideEncryptionKeyButton')}
-          onSubmit={onProvideOrAllow}
+          onSubmit={() => onProvideOrAllow(payload.requestId)}
         />
       </ButtonRow>
     </StyledWrapper>
@@ -117,39 +94,17 @@ export function ProvidePubKeyPanel({ payload }: ProvidePubKeyPanelProps) {
 
 interface DecryptRequestPanelProps {
   payload: BraveWallet.DecryptRequest
+  onAllow: (requestId: string) => void
+  onCancel: (requestId: string) => void
 }
 
-export function DecryptRequestPanel({ payload }: DecryptRequestPanelProps) {
-  // redux
-  const dispatch = useDispatch()
-
-  // state
+export function DecryptRequestPanel(props: DecryptRequestPanelProps) {
+  const { payload, onAllow, onCancel } = props
   const [isDecrypted, setIsDecrypted] = React.useState<boolean>(false)
 
-  // queries
   const { account } = useAccountQuery(payload.accountId)
 
-  // custom hooks
   const orb = useAccountOrb(account)
-
-  // methods
-  const onAllow = () => {
-    dispatch(
-      PanelActions.decryptProcessed({
-        requestId: payload.requestId,
-        approved: true
-      })
-    )
-  }
-
-  const onCancel = () => {
-    dispatch(
-      PanelActions.decryptProcessed({
-        requestId: payload.requestId,
-        approved: false
-      })
-    )
-  }
 
   const onDecryptMessage = () => {
     setIsDecrypted(true)
@@ -189,12 +144,12 @@ export function DecryptRequestPanel({ payload }: DecryptRequestPanelProps) {
         <NavButton
           buttonType='secondary'
           text={getLocale('braveWalletButtonCancel')}
-          onSubmit={onCancel}
+          onSubmit={() => onCancel(payload.requestId)}
         />
         <NavButton
           buttonType='primary'
           text={getLocale('braveWalletReadEncryptedMessageButton')}
-          onSubmit={onAllow}
+          onSubmit={() => onAllow(payload.requestId)}
         />
       </ButtonRow>
     </StyledWrapper>

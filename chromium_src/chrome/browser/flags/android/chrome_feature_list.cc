@@ -35,6 +35,9 @@
     &brave_search_conversion::features::kOmniboxBanner,                 \
     &brave_vpn::features::kBraveVPNLinkSubscriptionAndroidUI,           \
     &brave_wallet::features::kNativeBraveWalletFeature,                 \
+    &brave_wallet::features::kBraveWalletSolanaFeature,                 \
+    &brave_wallet::features::kBraveWalletFilecoinFeature,               \
+    &brave_wallet::features::kBraveWalletSnsFeature,                    \
     &playlist::features::kPlaylist,                                     \
     &preferences::features::kBraveBackgroundVideoPlayback,              \
     &request_otr::features::kBraveRequestOTRTab,                        \
@@ -44,7 +47,6 @@
     &net::features::kBraveHttpsByDefault,                               \
     &google_sign_in_permission::features::kBraveGoogleSignInPermission, \
     &net::features::kBraveForgetFirstPartyStorage,                      \
-    &brave_shields::features::kBraveShowStrictFingerprintingMode,       \
     &brave_shields::features::kBraveLocalhostAccessPermission
 
 // clang-format on
@@ -59,7 +61,9 @@ namespace android {
 OVERRIDE_FEATURE_DEFAULT_STATES({{
     {kAddToHomescreenIPH, base::FEATURE_DISABLED_BY_DEFAULT},
     {kBaselineGM3SurfaceColors, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kIncognitoReauthenticationForAndroid, base::FEATURE_ENABLED_BY_DEFAULT},
+    // Disable until we sort out UI issues
+    // https://github.com/brave/brave-browser/issues/29688
+    {kIncognitoReauthenticationForAndroid, base::FEATURE_DISABLED_BY_DEFAULT},
     {kShowScrollableMVTOnNTPAndroid, base::FEATURE_ENABLED_BY_DEFAULT},
     {kStartSurfaceAndroid, base::FEATURE_DISABLED_BY_DEFAULT},
 }});

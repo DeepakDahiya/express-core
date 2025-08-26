@@ -17,12 +17,14 @@ NS_ASSUME_NONNULL_BEGIN
 OBJC_EXPORT
 @protocol BraveAdsNotificationHandler
 @required
-/// Returns |true| if notification ads can be shown.
-- (BOOL)canShowNotificationAds;
-/// Show notification |ad|.
-- (void)showNotificationAd:(NotificationAdIOS*)ad;
-/// Close the notification ad for the specified |placement_id|.
-- (void)closeNotificationAd:(NSString*)placementId;
+/// Determine whether or not the client can currently show notifications
+/// to the user.
+- (BOOL)shouldShowNotifications;
+/// Show the given notification to the user (or add it to the queue)
+- (void)showNotification:(NotificationAdIOS*)notification;
+/// Remove a pending notification from the queue or remove an already shown
+/// notification from view
+- (void)clearNotificationWithIdentifier:(NSString*)identifier;
 @end
 
 OBJC_EXPORT
@@ -47,112 +49,144 @@ OBJC_EXPORT
 /// @see BraveAdsCaptchaHandler
 @property(nonatomic, weak, nullable) id<BraveAdsCaptchaHandler> captchaHandler;
 
-#pragma mark -
+#pragma mark - Global
 
-// Returns |true| if ads are supported for the user's current country otherwise
-// returns |false|.
+/// Whether or not the users current region is supported
 + (BOOL)isSupportedRegion;
 
-/// Returns |true| if the ads service is running otherwise returns |false|.
-- (BOOL)isServiceRunning;
+#pragma mark - Initialization / Shutdown
+
+/// Initializes the ads service
+- (void)initializeWithSysInfo:(BraveAdsSysInfo*)sysInfo
+             buildChannelInfo:(BraveAdsBuildChannelInfo*)buildChannelInfo
+                   walletInfo:(nullable BraveAdsWalletInfo*)walletInfo
+                   completion:(void (^)(bool))completion;
+
+/// Shuts down the ads service if its running
+- (void)shutdown:(nullable void (^)())completion;
+
+/// Whether or not the ads service is running
+- (BOOL)isAdsServiceRunning;
+
+/// Update the ad library with the users current wallet
+- (void)updateWalletInfo:(NSString*)paymentId base64Seed:(NSString*)base64Seed;
+
+#pragma mark - Configuration
 
 /// Whether or not Brave Ads is enabled and the user should receive
 /// notification-style ads and be rewarded for it
 @property(nonatomic, assign, getter=isEnabled)
     BOOL enabled NS_SWIFT_NAME(isEnabled);
 
-#pragma mark - Initialization / Shutdown
+/// The max number of ads the user can see in an hour
+@property(nonatomic, assign)
+    NSInteger numberOfAllowableAdsPerHour NS_SWIFT_NAME(adsPerHour);
 
-- (void)initServiceWithSysInfo:(BraveAdsSysInfo*)sysInfo
-              buildChannelInfo:(BraveAdsBuildChannelInfo*)buildChannelInfo
-                    walletInfo:(nullable BraveAdsWalletInfo*)walletInfo
-                    completion:(void (^)(bool))completion;
+/// Whether or not the user has opted out of subdivision ad targeting
+@property(nonatomic, assign, getter=shouldAllowSubdivisionTargeting)
+    BOOL allowSubdivisionTargeting;
 
-/// Returns false if the ad service is already running.
-- (void)shutdownService:(nullable void (^)())completion;
+/// Selected ads subdivision targeting option
+@property(nonatomic, copy) NSString* subdivisionTargetingCode;
+
+/// Automatically detected ads subdivision targeting code
+@property(nonatomic, copy) NSString* autoDetectedSubdivisionTargetingCode;
+
+#pragma mark - Notificiations
+
+- (nullable NotificationAdIOS*)notificationAdForIdentifier:
+    (NSString*)identifier;
 
 #pragma mark - History
 
-/// Return true if the user has viewed ads in the previous cycle/month.
-- (BOOL)hasViewedAdsInPreviousCycle;
-
-/// Get a list of dates of when the user has viewed ads.
+/// Get a list of dates of when the user has viewed ads
 - (NSArray<NSDate*>*)getAdsHistoryDates;
 
-#pragma mark - Ads
+/// Return true if the user has viewed ads in the previous cycle/month
+- (BOOL)hasViewedAdsInPreviousCycle;
 
-// See |components/brave_ads/core/internal/ads_impl.h|.
+#pragma mark - Reporting
 
-- (void)getStatementOfAccounts:
-    (void (^)(NSInteger adsReceived,
-              double estimatedEarnings,
-              NSDate* _Nullable nextPaymentDate))completion;
+/// Report that a page has loaded in the current browser tab, and the html and
+/// inner text within the page loaded for classification
+- (void)reportLoadedPageWithURL:(NSURL*)url
+             redirectedFromURLs:(NSArray<NSURL*>*)redirectionURLs
+                           html:(NSString*)html
+                      innerText:(NSString*)text
+                          tabId:(NSInteger)tabId;
 
-- (void)maybeServeInlineContentAd:(NSString*)dimensions
-                       completion:
-                           (void (^)(NSString* dimensions,
-                                     InlineContentAdIOS* _Nullable))completion;
+/// Report that media has started on a tab with a given id
+- (void)reportMediaStartedWithTabId:(NSInteger)tabId
+    NS_SWIFT_NAME(reportMediaStarted(tabId:));
 
-- (void)triggerInlineContentAdEvent:(NSString*)placementId
-                 creativeInstanceId:(NSString*)creativeInstanceId
-                          eventType:(BraveAdsInlineContentAdEventType)eventType
-                         completion:(void (^)(BOOL success))completion;
+/// Report that media has stopped on a tab with a given id
+- (void)reportMediaStoppedWithTabId:(NSInteger)tabId
+    NS_SWIFT_NAME(reportMediaStopped(tabId:));
 
-- (void)triggerNewTabPageAdEvent:(NSString*)wallpaperId
-              creativeInstanceId:(NSString*)creativeInstanceId
-                       eventType:(BraveAdsNewTabPageAdEventType)eventType
-                      completion:(void (^)(BOOL success))completion;
+/// Report that a tab with a given id was updated
+- (void)reportTabUpdated:(NSInteger)tabId
+                     url:(NSURL*)url
+      redirectedFromURLs:(NSArray<NSURL*>*)redirectionURLs
+              isSelected:(BOOL)isSelected;
 
-- (nullable NotificationAdIOS*)maybeGetNotificationAd:(NSString*)identifier;
+/// Report that a tab with a given id was closed by the user
+- (void)reportTabClosedWithTabId:(NSInteger)tabId
+    NS_SWIFT_NAME(reportTabClosed(tabId:));
 
-- (void)triggerNotificationAdEvent:(NSString*)placementId
-                         eventType:(BraveAdsNotificationAdEventType)eventType
+/// Report that a notification ad event type was triggered for a given id
+- (void)reportNotificationAdEvent:(NSString*)placementId
+                        eventType:(BraveAdsNotificationAdEventType)eventType
+                       completion:(void (^)(BOOL success))completion;
+
+/// Get inline content ad for the given dimensions
+- (void)inlineContentAdsWithDimensions:(NSString*)dimensions
+                            completion:(void (^)(NSString* dimensions,
+                                                 InlineContentAdIOS* _Nullable))
+                                           completion
+    NS_SWIFT_NAME(inlineContentAds(dimensions:completion:));
+
+/// Report that an inline content ad event type was triggered for a given id
+- (void)reportInlineContentAdEvent:(NSString*)placementId
+                creativeInstanceId:(NSString*)creativeInstanceId
+                         eventType:(BraveAdsInlineContentAdEventType)eventType
                         completion:(void (^)(BOOL success))completion;
 
-- (void)triggerPromotedContentAdEvent:(NSString*)placementId
-                   creativeInstanceId:(NSString*)creativeInstanceId
-                            eventType:
-                                (BraveAdsPromotedContentAdEventType)eventType
-                           completion:(void (^)(BOOL success))completion;
+/// Report that a new tab page ad event type was triggered for a given id
+- (void)reportNewTabPageAdEvent:(NSString*)wallpaperId
+             creativeInstanceId:(NSString*)creativeInstanceId
+                      eventType:(BraveAdsNewTabPageAdEventType)eventType
+                     completion:(void (^)(BOOL success))completion;
 
-- (void)purgeOrphanedAdEventsForType:(BraveAdsAdType)adType
+/// Report that a promoted content ad event type was triggered for a given id
+- (void)reportPromotedContentAdEvent:(NSString*)placementId
+                  creativeInstanceId:(NSString*)creativeInstanceId
+                           eventType:
+                               (BraveAdsPromotedContentAdEventType)eventType
                           completion:(void (^)(BOOL success))completion;
 
-- (void)toggleLikeAd:(NSString*)creativeInstanceId
-        advertiserId:(NSString*)advertiserId
-             segment:(NSString*)segment;
+/// Purge orphaned ad events for a given ad type
+- (void)purgeOrphanedAdEvents:(BraveAdsAdType)adType
+                   completion:(void (^)(BOOL success))completion;
 
-- (void)toggleDislikeAd:(NSString*)creativeInstanceId
-           advertiserId:(NSString*)advertiserId
-                segment:(NSString*)segment;
+/// Get the number of ads received and the estimated earnings of viewing said
+/// ads for this cycle
+- (void)detailsForCurrentCycle:
+    (void (^)(NSInteger adsReceived,
+              double estimatedEarnings,
+              NSDate* _Nullable nextPaymentDate))completion
+    NS_SWIFT_NAME(detailsForCurrentCycle(_:));
 
-#pragma mark - Ads client notifier
+/// Toggle that the user liked the given ad and advertiser and more like it
+/// should be shown
+- (void)toggleThumbsUpForAd:(NSString*)creativeInstanceId
+               advertiserId:(NSString*)advertiserId
+                    segment:(NSString*)segment;
 
-// See |components/brave_ads/core/public/client/ads_client_notifier.h|.
-
-- (void)notifyRewardsWalletDidUpdate:(NSString*)paymentId
-                          base64Seed:(NSString*)base64Seed;
-
-- (void)notifyTabTextContentDidChange:(NSInteger)tabId
-                                  url:(NSURL*)url
-                        redirectChain:(NSArray<NSURL*>*)redirectChain
-                                 text:(NSString*)text;
-
-- (void)notifyTabHtmlContentDidChange:(NSInteger)tabId
-                                  url:(NSURL*)url
-                        redirectChain:(NSArray<NSURL*>*)redirectChain
-                                 html:(NSString*)html;
-
-- (void)notifyTabDidStartPlayingMedia:(NSInteger)tabId;
-
-- (void)notifyTabDidStopPlayingMedia:(NSInteger)tabId;
-
-- (void)notifyTabDidChange:(NSInteger)tabId
-                       url:(NSURL*)url
-             redirectChain:(NSArray<NSURL*>*)redirectChain
-                isSelected:(BOOL)isSelected;
-
-- (void)notifyDidCloseTab:(NSInteger)tabId;
+/// Toggle that the user disliked the given ad and advertiser and it shouldn't
+/// be shown again
+- (void)toggleThumbsDownForAd:(NSString*)creativeInstanceId
+                 advertiserId:(NSString*)advertiserId
+                      segment:(NSString*)segment;
 
 #pragma mark -
 

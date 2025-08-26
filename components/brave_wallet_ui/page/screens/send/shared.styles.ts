@@ -6,15 +6,7 @@
 import styled from 'styled-components'
 
 export interface TextProps {
-  textSize?:
-    | '22px'
-    | '20px'
-    | '18px'
-    | '16px'
-    | '14px'
-    | '12px'
-    | '11px'
-    | '10px'
+  textSize?: '22px' | '20px' | '18px' | '16px' | '14px' | '12px' | '11px' | '10px'
   isBold?: boolean
   textColor?: 'text01' | 'text02' | 'text03' | 'success' | 'error'
   maintainHeight?: boolean
@@ -53,7 +45,7 @@ export const StyledDiv = styled.div`
   letter-spacing: 0.02em;
 `
 
-export const Row = styled(StyledDiv)<{
+export const Row = styled(StyledDiv) <{
   rowWidth?: 'dynamic' | 'full'
   rowHeight?: 'dynamic' | 'full'
   marginBottom?: number
@@ -75,13 +67,12 @@ export const Row = styled(StyledDiv)<{
   align-items: ${(p) => p.verticalAlign ?? 'center'};
   justify-content: ${(p) => p.horizontalAlign ?? 'space-between'};
   margin-bottom: ${(p) => p.marginBottom ?? 0}px;
-  padding: var(--padding-top) var(--padding-right) var(--padding-bottom)
-    var(--padding-left);
+  padding: var(--padding-top) var(--padding-right) var(--padding-bottom) var(--padding-left);
   width: ${(p) => (p.rowWidth === 'full' ? '100%' : 'unset')};
   height: ${(p) => (p.rowHeight === 'full' ? '100%' : 'unset')};
 `
 
-export const Column = styled(StyledDiv)<{
+export const Column = styled(StyledDiv) <{
   columnWidth?: 'dynamic' | 'full'
   columnHeight?: 'dynamic' | 'full'
   horizontalAlign?: 'flex-start' | 'center' | 'flex-end' | 'space-between'
@@ -101,29 +92,29 @@ export const Column = styled(StyledDiv)<{
   width: ${(p) => (p.columnWidth === 'full' ? '100%' : 'unset')};
 `
 
-export const HorizontalSpacer = styled(StyledDiv)<{
+export const HorizontalSpacer = styled(StyledDiv) <{
   size: number
 }>`
   height: 100%;
   width: ${(p) => p.size}px;
 `
 
-export const VerticalSpacer = styled(StyledDiv)<{
+export const VerticalSpacer = styled(StyledDiv) <{
   size: number
 }>`
   height: ${(p) => p.size}px;
   width: 100%;
 `
 
-export const HorizontalDivider = styled(StyledDiv)<{
+export const HorizontalDivider = styled(StyledDiv) <{
   height?: number
   marginLeft?: number
   marginRight?: number
   dividerTheme?: 'lighter' | 'darker'
 }>`
-  --light-theme-color: #e9e9f4;
+  --light-theme-color: #E9E9F4;
   @media (prefers-color-scheme: dark) {
-    --light-theme-color: ${(p) => p.theme.color.interactive08};
+  --light-theme-color: ${(p) => p.theme.color.interactive08};
   }
   background-color: ${(p) =>
     p.dividerTheme === 'lighter'
@@ -135,7 +126,7 @@ export const HorizontalDivider = styled(StyledDiv)<{
   width: 2px;
 `
 
-export const VerticalDivider = styled(StyledDiv)<{
+export const VerticalDivider = styled(StyledDiv) <{
   width?: number
   marginTop?: number
   marginBottom?: number
@@ -147,7 +138,7 @@ export const VerticalDivider = styled(StyledDiv)<{
   width: ${(p) => (p.width ? `${p.width}px` : '100%')};
 `
 
-export const Icon = styled(StyledDiv)<{
+export const Icon = styled(StyledDiv) <{
   size: number
   icon: string
 }>`
@@ -196,7 +187,7 @@ export const StyledButton = styled.button`
   }
 `
 
-export const IconButton = styled(StyledButton)<{
+export const IconButton = styled(StyledButton) <{
   size?: number
   icon: string
 }>`
@@ -208,7 +199,7 @@ export const IconButton = styled(StyledButton)<{
   -webkit-mask-image: url(${(p) => p.icon});
 `
 
-export const HiddenResponsiveRow = styled(Row)<{ dontHide?: boolean }>`
+export const HiddenResponsiveRow = styled(Row) <{ dontHide?: boolean }>`
   display: flex;
   @media screen and (max-width: 800px) {
     display: ${(p) => (p.dontHide ? 'flex' : 'none')};

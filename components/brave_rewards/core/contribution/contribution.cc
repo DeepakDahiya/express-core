@@ -247,8 +247,8 @@ void Contribution::StartAutoContribute() {
 }
 
 void Contribution::OnBalance(mojom::ContributionQueuePtr queue,
-                             mojom::BalancePtr balance) {
-  if (!balance) {
+                             FetchBalanceResult result) {
+  if (!result.has_value()) {
     queue_in_progress_ = false;
     BLOG(0, "We couldn't get balance from the server.");
     if (queue->type == mojom::RewardsType::ONE_TIME_TIP) {
@@ -257,7 +257,7 @@ void Contribution::OnBalance(mojom::ContributionQueuePtr queue,
     return;
   }
 
-  Process(std::move(queue), std::move(balance));
+  Process(std::move(queue), std::move(result.value()));
 }
 
 void Contribution::Start(mojom::ContributionQueuePtr info) {

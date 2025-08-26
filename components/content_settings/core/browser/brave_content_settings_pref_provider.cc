@@ -117,6 +117,7 @@ BravePrefProvider::BravePrefProvider(PrefService* prefs,
                           base::Unretained(this)));
 
   MigrateShieldsSettings(off_the_record_);
+  MigrateFingerprintingSettings();
   MigrateFingerprintingSetingsToOriginScoped();
 
   OnCookieSettingsChanged(ContentSettingsType::BRAVE_COOKIES);
@@ -217,7 +218,7 @@ void BravePrefProvider::EnsureNoWildcardEntries(
   // there is no global disabled value.
   // TODO(petemill): This should also be done for the other shields
   // content settings types, and we can use default boolean prefs to represent
-  // defaults, e.g. `profile.default_content_setting_values.images`.
+  // defaults, e.g. `profile.default_content_setting_values.https_everywhere`.
   SetWebsiteSetting(ContentSettingsPattern::Wildcard(),
                     ContentSettingsPattern::Wildcard(), content_type,
                     base::Value(), {});

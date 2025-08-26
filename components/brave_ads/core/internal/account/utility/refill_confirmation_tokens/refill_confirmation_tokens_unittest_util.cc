@@ -5,16 +5,16 @@
 
 #include "brave/components/brave_ads/core/internal/account/utility/refill_confirmation_tokens/refill_confirmation_tokens_unittest_util.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-std::string BuildRequestSignedTokensUrlResponseBody() {
+std::string BuildRequestSignedTokensUrlResponseBodyForTesting() {
   return R"(
       {
         "nonce": "2f0e2891-e7a5-4262-835b-550b13e58e5c"
       })";
 }
 
-std::string BuildGetSignedTokensUrlResponseBody() {
+std::string BuildGetSignedTokensUrlResponseBodyForTesting() {
   return R"(
       {
         "batchProof": "nZBm4sojuuKV91w9/Hcevh3r0SSmx7Cu26oeUko7hwIXYQJXjuFabmJ40nNToVm7UAkiaQvoKDFViqfpHcwxAA==",
@@ -74,4 +74,4 @@ std::string BuildGetSignedTokensUrlResponseBody() {
       })";
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

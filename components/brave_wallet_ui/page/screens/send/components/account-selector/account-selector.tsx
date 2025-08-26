@@ -13,8 +13,9 @@ import CaratDownIcon from '../../assets/carat-down-icon.svg'
 // Hooks
 import { useOnClickOutside } from '../../../../../common/hooks/useOnClickOutside'
 import {
-  useGenerateReceiveAddressMutation,
-  useGetFVMAddressQuery
+  useGetFVMAddressQuery,
+  useGetSelectedAccountIdQuery,
+  useGetSelectedChainQuery //
 } from '../../../../../common/slices/api.slice'
 import { useAccountsQuery } from '../../../../../common/slices/api.slice.extra'
 
@@ -22,18 +23,12 @@ import { useAccountsQuery } from '../../../../../common/slices/api.slice.extra'
 import { AccountListItem } from '../account-list-item/account-list-item'
 
 // Styled Components
-import {
-  ButtonIcon,
-  ArrowIcon,
-  DropDown,
-  SelectorButton
-} from './account-selector.style'
+import { ButtonIcon, ArrowIcon, DropDown, SelectorButton } from './account-selector.style'
 import { BraveWallet } from '../../../../../constants/types'
+
 
 interface Props {
   asset: BraveWallet.BlockchainToken | undefined
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
-  selectedAccountId: BraveWallet.AccountId | undefined
   onSelectAddress: (value: string) => void
   disabled: boolean
 }
@@ -41,56 +36,36 @@ interface Props {
 const ACCOUNT_SELECTOR_BUTTON_ID = 'account-selector-button-id'
 
 export const AccountSelector = (props: Props) => {
-  const {
-    asset,
-    selectedNetwork,
-    selectedAccountId,
-    onSelectAddress,
-    disabled
-  } = props
+  const { asset, onSelectAddress, disabled } = props
 
   // Queries
   const { accounts } = useAccountsQuery()
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
+  const { data: selectedAccountId } = useGetSelectedAccountIdQuery()
 
   // State
-  const [showAccountSelector, setShowAccountSelector] =
-    React.useState<boolean>(false)
+  const [showAccountSelector, setShowAccountSelector] = React.useState<boolean>(false)
 
   // Refs
   const accountSelectorRef = React.useRef<HTMLDivElement>(null)
 
   // Methods
   const toggleShowAccountSelector = React.useCallback(() => {
-    setShowAccountSelector((prev) => !prev)
+    setShowAccountSelector(prev => !prev)
   }, [])
 
-  const [generateReceiveAddress] = useGenerateReceiveAddressMutation()
-
-  const handleOnSelectAccount = React.useCallback(
-    async (account: BraveWallet.AccountInfo) => {
+  const handleOnSelectAccount = React.useCallback((account: BraveWallet.AccountInfo) => {
       setShowAccountSelector(false)
-      if (account.accountId.coin === BraveWallet.CoinType.ZEC) {
-        const generatedAddress = await generateReceiveAddress(
-          account.accountId
-        ).unwrap()
-        onSelectAddress(generatedAddress)
-      } else {
-        onSelectAddress(account.address)
-      }
-    },
-    [onSelectAddress, generateReceiveAddress]
-  )
+      onSelectAddress(account.address)
+    }, [onSelectAddress])
 
   const isFVMAccount = React.useCallback(
     (account) =>
-      (selectedNetwork?.chainId ===
-        BraveWallet.FILECOIN_ETHEREUM_MAINNET_CHAIN_ID &&
+      (selectedNetwork?.chainId === BraveWallet.FILECOIN_ETHEREUM_MAINNET_CHAIN_ID &&
         account.accountId.keyringId === BraveWallet.KeyringId.kFilecoin) ||
-      (selectedNetwork?.chainId ===
-        BraveWallet.FILECOIN_ETHEREUM_TESTNET_CHAIN_ID &&
+      (selectedNetwork?.chainId === BraveWallet.FILECOIN_ETHEREUM_TESTNET_CHAIN_ID &&
         account.accountId.keyringId === BraveWallet.KeyringId.kFilecoinTestnet),
-    [selectedNetwork]
-  )
+    [selectedNetwork]);
 
   // Memos
   const accountsByNetwork = React.useMemo(() => {
@@ -106,13 +81,10 @@ export const AccountSelector = (props: Props) => {
     }
 
     if (selectedAccountId.coin === BraveWallet.CoinType.FIL) {
-      const filecoinAccounts = accounts.filter(
-        (account) =>
-          account.accountId.keyringId === selectedAccountId?.keyringId
-      )
-      const fevmAccounts = accounts.filter(
-        (account) => account.accountId.coin === BraveWallet.CoinType.ETH
-      )
+      const filecoinAccounts = accounts.filter((account) =>
+        (account.accountId.keyringId === selectedAccountId?.keyringId))
+      const fevmAccounts = accounts.filter((account) =>
+        (account.accountId.coin === BraveWallet.CoinType.ETH))
       return filecoinAccounts.concat(fevmAccounts)
     }
 
@@ -122,19 +94,14 @@ export const AccountSelector = (props: Props) => {
     return accounts.filter(
       (account) =>
         account.accountId.keyringId === selectedAccountId.keyringId ||
-        (asset?.contractAddress === '' && isFVMAccount(account))
-    )
+        (asset?.contractAddress === "" && isFVMAccount(account)))
   }, [accounts, selectedNetwork, selectedAccountId, asset])
 
-  const evmAddressesforFVMTranslation = React.useMemo(
-    () =>
-      accountsByNetwork
-        .filter(
-          (account) => account.accountId.coin === BraveWallet.CoinType.ETH
-        )
-        .map((account) => account.accountId.address),
-    [accountsByNetwork]
-  )
+  const evmAddressesforFVMTranslation = React.useMemo(() =>
+  accountsByNetwork
+    .filter(account => account.accountId.coin === BraveWallet.CoinType.ETH)
+    .map(account => account.accountId.address),
+  [accountsByNetwork])
 
   const { data: fvmTranslatedAddresses } = useGetFVMAddressQuery(
     selectedNetwork &&
@@ -158,26 +125,13 @@ export const AccountSelector = (props: Props) => {
 
   return (
     <>
-      <SelectorButton
-        disabled={disabled}
-        id={ACCOUNT_SELECTOR_BUTTON_ID}
-        onClick={toggleShowAccountSelector}
-      >
-        <ButtonIcon
-          id={ACCOUNT_SELECTOR_BUTTON_ID}
-          icon={PersonIcon}
-          size={16}
-        />
-        <ArrowIcon
-          id={ACCOUNT_SELECTOR_BUTTON_ID}
-          icon={CaratDownIcon}
-          size={12}
-          isOpen={showAccountSelector}
-        />
+      <SelectorButton disabled={disabled} id={ACCOUNT_SELECTOR_BUTTON_ID} onClick={toggleShowAccountSelector}>
+        <ButtonIcon id={ACCOUNT_SELECTOR_BUTTON_ID} icon={PersonIcon} size={16} />
+        <ArrowIcon id={ACCOUNT_SELECTOR_BUTTON_ID} icon={CaratDownIcon} size={12} isOpen={showAccountSelector} />
       </SelectorButton>
-      {showAccountSelector && (
+      {showAccountSelector &&
         <DropDown ref={accountSelectorRef}>
-          {accountsByNetwork.map((account) => (
+          {accountsByNetwork.map((account) =>
             <AccountListItem
               key={account.accountId.uniqueKey}
               account={account}
@@ -187,9 +141,9 @@ export const AccountSelector = (props: Props) => {
               }
               accountAlias={fvmTranslatedAddresses?.[account.accountId.address]}
             />
-          ))}
+          )}
         </DropDown>
-      )}
+      }
     </>
   )
 }

@@ -10,9 +10,9 @@ namespace permissions {
 namespace prefs {
 
 // General pref for all permission lifetime logic.
-inline constexpr char kPermissionLifetimeRoot[] = "permission_lifetime";
+constexpr char kPermissionLifetimeRoot[] = "permission_lifetime";
 // Expiration pref to store currently expiring permissions.
-inline constexpr char kPermissionLifetimeExpirations[] =
+constexpr char kPermissionLifetimeExpirations[] =
     "permission_lifetime.expirations";
 
 }  // namespace prefs

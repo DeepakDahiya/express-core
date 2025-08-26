@@ -14,7 +14,6 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
-#include "brave/components/p3a/metric_log_store.h"
 #include "brave/components/p3a/uploader.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -24,21 +23,14 @@ namespace p3a {
 
 namespace {
 
-constexpr char kTypicalPrefName[] = "p3a.constellation_logs";
-constexpr char kSlowPrefName[] = "p3a.constellation_logs_slow";
-constexpr char kExpressV1PrefName[] = "p3a.constellation_logs_express";
-constexpr char kExpressV2PrefName[] = "p3a.constellation_logs_express_v2";
+constexpr char kPrefName[] = "p3a.constellation_logs";
 
 }  // namespace
 
-const size_t kTypicalMaxEpochsToRetain = 4;
-const size_t kSlowMaxEpochsToRetain = 2;
-const size_t kExpressMaxEpochsToRetain = 21;
-
 ConstellationLogStore::ConstellationLogStore(PrefService& local_state,
-                                             MetricLogType log_type)
-    : local_state_(local_state), log_type_(log_type) {
-  local_state.ClearPref(kExpressV1PrefName);
+                                             size_t keep_epoch_count)
+    : local_state_(local_state), keep_epoch_count_(keep_epoch_count) {
+  CHECK_GT(keep_epoch_count, 0U);
 }
 
 ConstellationLogStore::~ConstellationLogStore() = default;
@@ -50,29 +42,13 @@ bool ConstellationLogStore::LogKeyCompare::operator()(const LogKey& lhs,
 }
 
 void ConstellationLogStore::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kTypicalPrefName);
-  registry->RegisterDictionaryPref(kSlowPrefName);
-  registry->RegisterDictionaryPref(kExpressV2PrefName);
-  // Following pref is deprecated, added 12/2023
-  // TODO(djandries): remove by the end of Q1 2024
-  registry->RegisterDictionaryPref(kExpressV1PrefName);
-}
-
-const char* ConstellationLogStore::GetPrefName() const {
-  switch (log_type_) {
-    case MetricLogType::kTypical:
-      return kTypicalPrefName;
-    case MetricLogType::kExpress:
-      return kExpressV2PrefName;
-    case MetricLogType::kSlow:
-      return kSlowPrefName;
-  }
+  registry->RegisterDictionaryPref(kPrefName);
 }
 
 void ConstellationLogStore::UpdateMessage(const std::string& histogram_name,
                                           uint8_t epoch,
                                           const std::string& msg) {
-  ScopedDictPrefUpdate update(&*local_state_, GetPrefName());
+  ScopedDictPrefUpdate update(&*local_state_, kPrefName);
   std::string epoch_key = base::NumberToString(epoch);
   base::Value::Dict* epoch_dict = update->EnsureDict(epoch_key);
   epoch_dict->Set(histogram_name, msg);
@@ -87,7 +63,7 @@ void ConstellationLogStore::RemoveMessageIfExists(const LogKey& key) {
   unsent_entries_.erase(key);
 
   // Update the persistent value.
-  ScopedDictPrefUpdate update(&*local_state_, GetPrefName());
+  ScopedDictPrefUpdate update(&*local_state_, kPrefName);
   std::string epoch_key = base::NumberToString(key.epoch);
   base::Value::Dict* epoch_dict = update->EnsureDict(epoch_key);
   epoch_dict->Remove(key.histogram_name);
@@ -120,7 +96,11 @@ const std::string& ConstellationLogStore::staged_log() const {
 
 std::string ConstellationLogStore::staged_log_type() const {
   DCHECK(staged_entry_key_);
-  return GetUploadType(staged_entry_key_->histogram_name);
+  if (base::StartsWith(staged_entry_key_->histogram_name, "Brave.P2A",
+                       base::CompareCase::SENSITIVE)) {
+    return kP2AUploadType;
+  }
+  return kP3AUploadType;
 }
 
 const std::string& ConstellationLogStore::staged_log_hash() const {
@@ -172,24 +152,13 @@ void ConstellationLogStore::TrimAndPersistUnsentLogs(
   NOTREACHED();
 }
 
-size_t ConstellationLogStore::GetMaxEpochsToRetain() const {
-  switch (log_type_) {
-    case MetricLogType::kTypical:
-      return kTypicalMaxEpochsToRetain;
-    case MetricLogType::kExpress:
-      return kExpressMaxEpochsToRetain;
-    case MetricLogType::kSlow:
-      return kSlowMaxEpochsToRetain;
-  }
-}
-
 void ConstellationLogStore::LoadPersistedUnsentLogs() {
   log_.clear();
   unsent_entries_.clear();
 
   std::vector<std::string> epochs_to_remove;
 
-  const base::Value::Dict& log_dict = local_state_->GetDict(GetPrefName());
+  const base::Value::Dict& log_dict = local_state_->GetDict(kPrefName);
   for (const auto [epoch_key, inner_epoch_dict] : log_dict) {
     uint64_t parsed_epoch;
     if (!base::StringToUint64(epoch_key, &parsed_epoch)) {
@@ -197,7 +166,7 @@ void ConstellationLogStore::LoadPersistedUnsentLogs() {
     }
     uint8_t item_epoch = (uint8_t)parsed_epoch;
 
-    if ((current_epoch_ - item_epoch) >= GetMaxEpochsToRetain()) {
+    if ((current_epoch_ - item_epoch) >= keep_epoch_count_) {
       // If epoch is too old, delete it
       epochs_to_remove.push_back(epoch_key);
       continue;
@@ -215,7 +184,7 @@ void ConstellationLogStore::LoadPersistedUnsentLogs() {
   }
 
   if (!epochs_to_remove.empty()) {
-    ScopedDictPrefUpdate update(&*local_state_, GetPrefName());
+    ScopedDictPrefUpdate update(&*local_state_, kPrefName);
     for (const std::string& epoch : epochs_to_remove) {
       update->Remove(epoch);
     }

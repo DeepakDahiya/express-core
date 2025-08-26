@@ -36,7 +36,7 @@ BraveURLLoaderThrottleProviderImpl::CreateThrottles(
 #if BUILDFLAG(ENABLE_TOR)
   if (auto onion_domain_throttle =
           tor::OnionDomainThrottle::MaybeCreateThrottle(
-              brave_content_renderer_client_->IsOnionAllowed())) {
+              brave_content_renderer_client_->IsTorProcess())) {
     throttles.emplace_back(std::move(onion_domain_throttle));
   }
 #endif

@@ -29,11 +29,11 @@ bool DoesRequireResource() {
 }  // namespace
 
 TextEmbeddingResource::TextEmbeddingResource() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 TextEmbeddingResource::~TextEmbeddingResource() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -93,7 +93,7 @@ void TextEmbeddingResource::Reset() {
 }
 
 void TextEmbeddingResource::OnNotifyLocaleDidChange(
-    const std::string& /*locale*/) {
+    const std::string& /*locale=*/) {
   MaybeLoad();
 }
 

@@ -13,7 +13,6 @@
 #include "base/strings/strcat.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
-#include "brave/components/brave_ads/core/internal/account/issuers/issuer_types.h"
 #include "brave/components/brave_ads/core/internal/account/issuers/issuers_util.h"
 #include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_util.h"
 #include "brave/components/brave_ads/core/internal/account/tokens/token_generator_interface.h"
@@ -22,10 +21,8 @@
 #include "brave/components/brave_ads/core/internal/account/utility/refill_confirmation_tokens/url_requests/get_signed_tokens/get_signed_tokens_url_request_util.h"
 #include "brave/components/brave_ads/core/internal/account/utility/refill_confirmation_tokens/url_requests/request_signed_tokens/request_signed_tokens_url_request_builder.h"
 #include "brave/components/brave_ads/core/internal/account/utility/refill_confirmation_tokens/url_requests/request_signed_tokens/request_signed_tokens_url_request_util.h"
-#include "brave/components/brave_ads/core/internal/account/utility/tokens_util.h"
 #include "brave/components/brave_ads/core/internal/account/wallet/wallet_info.h"
-#include "brave/components/brave_ads/core/internal/ads_notifier_manager.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/blinded_token_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/net/http/http_status_code.h"
@@ -110,7 +107,7 @@ void RefillConfirmationTokens::RequestSignedTokens() {
   BLOG(6, UrlRequestToString(url_request));
   BLOG(7, UrlRequestHeadersToString(url_request));
 
-  UrlRequest(
+  AdsClientHelper::GetInstance()->UrlRequest(
       std::move(url_request),
       base::BindOnce(&RefillConfirmationTokens::RequestSignedTokensCallback,
                      weak_factory_.GetWeakPtr()));
@@ -136,8 +133,6 @@ base::expected<void, std::tuple<std::string, bool>>
 RefillConfirmationTokens::HandleRequestSignedTokensUrlResponse(
     const mojom::UrlResponseInfo& url_response) {
   if (url_response.status_code == net::kHttpUpgradeRequired) {
-    AdsNotifierManager::GetInstance().NotifyBrowserUpgradeRequiredToServeAds();
-
     return base::unexpected(std::make_tuple(
         "Failed to request signed tokens as a browser upgrade is required",
         /*should_retry=*/false));
@@ -154,11 +149,6 @@ RefillConfirmationTokens::HandleRequestSignedTokensUrlResponse(
     return base::unexpected(std::make_tuple(
         base::StrCat({"Failed to parse response: ", url_response.body}),
         /*should_retry=*/false));
-  }
-
-  const bool is_eligible = ParseIsEligible(*dict).value_or(true);
-  if (!is_eligible) {
-    AdsNotifierManager::GetInstance().NotifyIneligibleRewardsWalletToServeAds();
   }
 
   nonce_ = ParseNonce(*dict);
@@ -180,9 +170,10 @@ void RefillConfirmationTokens::GetSignedTokens() {
   BLOG(6, UrlRequestToString(url_request));
   BLOG(7, UrlRequestHeadersToString(url_request));
 
-  UrlRequest(std::move(url_request),
-             base::BindOnce(&RefillConfirmationTokens::GetSignedTokensCallback,
-                            weak_factory_.GetWeakPtr()));
+  AdsClientHelper::GetInstance()->UrlRequest(
+      std::move(url_request),
+      base::BindOnce(&RefillConfirmationTokens::GetSignedTokensCallback,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void RefillConfirmationTokens::GetSignedTokensCallback(
@@ -195,7 +186,6 @@ void RefillConfirmationTokens::GetSignedTokensCallback(
     const auto& [failure, should_retry] = result.error();
 
     BLOG(0, failure);
-
     return FailedToRefill(should_retry);
   }
 
@@ -209,8 +199,6 @@ RefillConfirmationTokens::HandleGetSignedTokensUrlResponse(
   CHECK(blinded_tokens_);
 
   if (url_response.status_code == net::kHttpUpgradeRequired) {
-    AdsNotifierManager::GetInstance().NotifyBrowserUpgradeRequiredToServeAds();
-
     return base::unexpected(
         std::make_tuple("Failed to get signed tokens as a browser upgrade is "
                         "required", /*should_retry=*/
@@ -239,29 +227,16 @@ RefillConfirmationTokens::HandleGetSignedTokensUrlResponse(
         false));
   }
 
-  const absl::optional<cbr::PublicKey> public_key = ParsePublicKey(*dict);
-  if (!public_key.has_value()) {
-    return base::unexpected(std::make_tuple("Failed to parse public key",
-                                            /*should_retry=*/false));
-  }
-
-  if (!PublicKeyExistsForIssuerType(IssuerType::kConfirmations, *public_key)) {
-    return base::unexpected(
-        std::make_tuple("Confirmations public key does not exist",
-                        /*should_retry=*/true));
-  }
-
-  const auto result = ParseVerifyAndUnblindTokens(
-      *dict, *tokens_, *blinded_tokens_, *public_key);
+  const auto result =
+      ParseAndUnblindSignedTokens(*dict, *tokens_, *blinded_tokens_);
   if (!result.has_value()) {
     BLOG(0, result.error());
     return base::unexpected(
-        std::make_tuple("Failed to parse, verify and unblind signed tokens",
+        std::make_tuple("Failed to parse and unblinded signed tokens",
                         /*should_retry=*/false));
   }
-  const auto& unblinded_tokens = result.value();
-
-  BuildAndAddConfirmationTokens(unblinded_tokens, *public_key, wallet_);
+  const auto& [unblinded_tokens, public_key] = result.value();
+  BuildAndAddConfirmationTokens(unblinded_tokens, public_key, wallet_);
 
   return base::ok();
 }

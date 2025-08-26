@@ -17,6 +17,7 @@
 #include "base/task/thread_pool.h"
 #include "base/types/expected.h"
 #include "base/values.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
@@ -32,9 +33,9 @@ base::expected<T, std::string> ReadFileAndParseResourceOnBackgroundThread(
     return base::ok(T{});
   }
 
-  absl::optional<base::Value::Dict> dict;
+  absl::optional<base::Value> root;
   {
-    // `content` can be up to 10 MB, so we keep the scope of this object to this
+    // |content| can be up to 10 MB, so we keep the scope of this object to this
     // block to release its memory as soon as possible.
 
     std::string content;
@@ -43,18 +44,18 @@ base::expected<T, std::string> ReadFileAndParseResourceOnBackgroundThread(
       return base::unexpected("Failed to read file");
     }
 
-    dict = base::JSONReader::ReadDict(content);
-    if (!dict) {
+    root = base::JSONReader::Read(content);
+    if (!root || !root->is_dict()) {
       return base::unexpected("Invalid JSON");
     }
   }
 
-  return T::CreateFromValue(std::move(*dict));
+  return T::CreateFromValue(std::move(root).value().TakeDict());
 }
 
 template <typename T>
-void LoadComponentResourceCallback(LoadAndParseResourceCallback<T> callback,
-                                   base::File file) {
+void LoadFileResourceCallback(LoadAndParseResourceCallback<T> callback,
+                              base::File file) {
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
       base::BindOnce(&ReadFileAndParseResourceOnBackgroundThread<T>,
@@ -66,9 +67,9 @@ template <typename T>
 void LoadAndParseResource(const std::string& id,
                           const int version,
                           LoadAndParseResourceCallback<T> callback) {
-  LoadComponentResource(
+  AdsClientHelper::GetInstance()->LoadFileResource(
       id, version,
-      base::BindOnce(&LoadComponentResourceCallback<T>, std::move(callback)));
+      base::BindOnce(&LoadFileResourceCallback<T>, std::move(callback)));
 }
 
 }  // namespace brave_ads

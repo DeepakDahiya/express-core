@@ -5,20 +5,32 @@
 
 import * as React from 'react'
 
+// Queries
+import { useGetSelectedChainQuery } from '../../../../../../common/slices/api.slice'
+import { useSelectedAccountQuery } from '../../../../../../common/slices/api.slice.extra'
+
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
 import Amount from '../../../../../../utils/amount'
 
 // Types
 import { BraveWallet } from '../../../../../../constants/types'
 
 // Components
-import { SwapSectionBox } from '../../swap-section-box/swap-section-box'
 import {
-  SelectTokenOrNetworkButton //
+  SwapSectionBox
+} from '../../swap-section-box/swap-section-box'
+import {
+  SelectTokenOrNetworkButton
 } from '../../buttons/select-token-or-network/select-token-or-network'
-import { PresetButton } from '../../buttons/preset-button/preset-button'
-import { SwapInput } from '../../inputs/swap-input/swap-input'
+import {
+  PresetButton
+} from '../../buttons/preset-button/preset-button'
+import {
+  SwapInput
+} from '../../inputs/swap-input/swap-input'
 
 // Styled Components
 import {
@@ -37,8 +49,6 @@ interface Props {
   token: BraveWallet.BlockchainToken | undefined
   tokenBalance: Amount
   fiatValue: string | undefined
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
-  selectedAccount: BraveWallet.AccountInfo | undefined
 }
 
 export const FromSection = (props: Props) => {
@@ -49,10 +59,12 @@ export const FromSection = (props: Props) => {
     hasInputError,
     inputValue,
     tokenBalance,
-    fiatValue,
-    selectedNetwork,
-    selectedAccount
+    fiatValue
   } = props
+
+  // Queries
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
+  const { data: selectedAccount } = useSelectedAccountQuery()
 
   // methods
   const onClickHalfPreset = () => {
@@ -72,20 +84,18 @@ export const FromSection = (props: Props) => {
     if (!token) {
       return
     }
-    onInputChange(tokenBalance.divideByDecimals(token.decimals).format())
+    onInputChange(
+      tokenBalance
+        .divideByDecimals(token.decimals)
+        .format()
+    )
   }
 
   // render
   return (
     <SwapSectionBox boxType='primary'>
-      <Column
-        columnWidth='full'
-        columnHeight='full'
-      >
-        <Row
-          rowWidth='full'
-          horizontalAlign='flex-end'
-        >
+      <Column columnWidth='full' columnHeight='full'>
+        <Row rowWidth='full' horizontalAlign='flex-end'>
           {token && (
             <Text
               textSize='14px'
@@ -94,16 +104,13 @@ export const FromSection = (props: Props) => {
             >
               {!tokenBalance.isUndefined()
                 ? `${getLocale('braveSwapBalance')} ${tokenBalance
-                    .divideByDecimals(token.decimals)
-                    .format(6)}`
+                  .divideByDecimals(token.decimals)
+                  .format(6)}`
                 : ''}
             </Text>
           )}
         </Row>
-        <Row
-          rowWidth='full'
-          verticalAlign='center'
-        >
+        <Row rowWidth='full' verticalAlign='center'>
           <Row>
             <SelectTokenOrNetworkButton
               onClick={onClickSelectToken}
@@ -141,10 +148,7 @@ export const FromSection = (props: Props) => {
             autoFocus={true}
           />
         </Row>
-        <Row
-          rowWidth='full'
-          horizontalAlign='flex-end'
-        >
+        <Row rowWidth='full' horizontalAlign='flex-end'>
           {token && (
             <Text
               textSize='14px'

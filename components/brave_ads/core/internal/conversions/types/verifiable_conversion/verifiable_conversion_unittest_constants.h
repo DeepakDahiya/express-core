@@ -8,16 +8,15 @@
 
 namespace brave_ads {
 
-inline constexpr char kVerifiableConversionId[] = "smartbrownfoxes42";
-inline constexpr char kInvalidVerifiableConversionId[] = "smart brown foxes 16";
-inline constexpr char kEmptyVerifiableConversionId[] = "";
+constexpr char kVerifiableConversionId[] = "smartbrownfoxes42";
+constexpr char kInvalidVerifiableConversionId[] = "smart brown foxes 16";
+constexpr char kEmptyVerifiableConversionId[] = "";
 
-inline constexpr char kVerifiableConversionAdvertiserPublicKey[] =
+constexpr char kVerifiableConversionAdvertiserPublicKey[] =
     "ofIveUY/bM7qlL9eIkAv/xbjDItFs1xRTTYKRZZsPHI=";
-inline constexpr char kInvalidVerifiableConversionAdvertiserPublicKey[] =
-    "INVALID";
-inline constexpr char kEmptyVerifiableConversionAdvertiserPublicKey[] = "";
-inline constexpr char kVerifiableConversionAdvertiserSecretKey[] =
+constexpr char kInvalidVerifiableConversionAdvertiserPublicKey[] = "INVALID";
+constexpr char kEmptyVerifiableConversionAdvertiserPublicKey[] = "";
+constexpr char kVerifiableConversionAdvertiserSecretKey[] =
     "Ete7+aKfrX25gt0eN4kBV1LqeF9YmB1go8OqnGXUGG4=";
 
 }  // namespace brave_ads

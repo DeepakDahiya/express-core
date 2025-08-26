@@ -27,8 +27,6 @@ struct ConversionInfo final {
 
   ~ConversionInfo();
 
-  bool operator==(const ConversionInfo&) const = default;
-
   [[nodiscard]] bool IsValid() const;
 
   AdType ad_type = AdType::kUndefined;
@@ -40,6 +38,9 @@ struct ConversionInfo final {
   ConversionActionType action_type = ConversionActionType::kUndefined;
   absl::optional<VerifiableConversionInfo> verifiable;
 };
+
+bool operator==(const ConversionInfo&, const ConversionInfo&);
+bool operator!=(const ConversionInfo&, const ConversionInfo&);
 
 using ConversionList = std::vector<ConversionInfo>;
 

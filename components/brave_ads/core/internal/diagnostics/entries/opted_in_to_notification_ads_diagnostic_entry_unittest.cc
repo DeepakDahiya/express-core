@@ -29,7 +29,7 @@ TEST_F(BraveAdsOptedInToNotificationAdsDiagnosticEntryTest, IsOptedIn) {
 
 TEST_F(BraveAdsOptedInToNotificationAdsDiagnosticEntryTest, IsOptedOut) {
   // Arrange
-  test::OptOutOfNotificationAds();
+  OptOutOfNotificationAdsForTesting();
 
   const OptedInToNotificationAdsDiagnosticEntry diagnostic_entry;
 

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import "rewards.mojom.objc.h"
+#import "rewards_types.mojom.objc.h"
 
 @class RewardsObserver, PromotionSolution, RewardsNotification;
 

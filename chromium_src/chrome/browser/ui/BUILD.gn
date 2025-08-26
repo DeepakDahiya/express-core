@@ -8,10 +8,7 @@ import("//brave/components/brave_webtorrent/browser/buildflags/buildflags.gni")
 import("//build/config/ui.gni")
 
 group("ui") {
-  deps = [
-    "//brave/components/brave_player/common/buildflags",
-    "//brave/components/brave_vpn/common/buildflags",
-  ]
+  deps = [ "//brave/components/brave_vpn/common/buildflags" ]
 
   if (toolkit_views) {
     deps += [
@@ -21,9 +18,9 @@ group("ui") {
 
     if (enable_ai_chat) {
       deps += [
-        "//brave/components/ai_chat/content/browser",
-        "//brave/components/ai_chat/core/browser",
+        "//brave/components/ai_chat/browser",
         "//brave/components/ai_chat/core/common",
+        "//brave/components/ai_chat/core",
       ]
     }
   }

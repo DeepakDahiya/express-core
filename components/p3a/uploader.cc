@@ -7,8 +7,6 @@
 
 #include <utility>
 
-#include "base/strings/strcat.h"
-#include "brave/components/p3a/metric_log_type.h"
 #include "brave/components/p3a/network_annotations.h"
 #include "brave/components/p3a/p3a_config.h"
 #include "net/base/load_flags.h"
@@ -18,27 +16,6 @@
 #include "services/network/public/mojom/url_response_head.mojom.h"
 
 namespace p3a {
-
-namespace {
-
-constexpr char kBraveP3AHeader[] = "X-Brave-P3A";
-constexpr char kBraveP3AVersionHeader[] = "Brave-P3A-Version";
-
-constexpr size_t kCurrentP3AVersionValue = 3;
-
-GURL GetConstellationUploadURL(const P3AConfig* config,
-                               MetricLogType log_type,
-                               const std::string& upload_type) {
-  std::string path;
-  if (upload_type == kP3ACreativeUploadType) {
-    path = "creative";
-  } else {
-    path = MetricLogTypeToString(log_type);
-  }
-  return GURL(base::StrCat({config->p3a_constellation_upload_host, "/", path}));
-}
-
-}  // namespace
 
 Uploader::Uploader(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
@@ -58,24 +35,22 @@ void Uploader::UploadLog(const std::string& compressed_log_data,
   if (upload_type == kP2AUploadType) {
     resource_request->url = config_->p2a_json_upload_url;
     resource_request->headers.SetHeader("X-Brave-P2A", "?1");
+  } else if (upload_type == kP3AUploadType) {
+    resource_request->url = is_constellation
+                                ? config_->p3a_constellation_upload_url
+                                : config_->p3a_json_upload_url;
+    resource_request->headers.SetHeader("X-Brave-P3A", "?1");
+  } else if (upload_type == kP3ACreativeUploadType) {
+    resource_request->url = config_->p3a_creative_upload_url;
+    resource_request->headers.SetHeader("X-Brave-P3A", "?1");
   } else {
-    if (is_constellation) {
-      resource_request->url =
-          GetConstellationUploadURL(config_, log_type, upload_type);
-      resource_request->headers.SetHeader(
-          kBraveP3AVersionHeader, std::to_string(kCurrentP3AVersionValue));
-    } else {
-      resource_request->url = upload_type == kP3ACreativeUploadType
-                                  ? config_->p3a_creative_upload_url
-                                  : config_->p3a_json_upload_url;
-    }
-    resource_request->headers.SetHeader(kBraveP3AHeader, "?1");
+    NOTREACHED();
   }
 
   resource_request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   resource_request->method = "POST";
 
-#if defined(OFFICIAL_BUILD)
+#if defined(IS_OFFICIAL_BUILD)
   CHECK(!resource_request->url.is_empty() &&
         resource_request->url.SchemeIsHTTPOrHTTPS());
 #else

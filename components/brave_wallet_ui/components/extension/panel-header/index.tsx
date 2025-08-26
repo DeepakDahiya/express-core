@@ -4,13 +4,23 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 import * as React from 'react'
 
+import { SearchBar } from '../../shared/search-bar/index'
+
 // Styled Components
-import { HeaderTitle, HeaderWrapper, TopRow, CloseButton } from './style'
+import {
+  HeaderTitle,
+  HeaderWrapper,
+  TopRow,
+  CloseButton
+} from './style'
+import { getLocale } from '../../../../common/locale'
 import { PanelTypes } from '../../../constants/types'
 
 export interface Props {
   title: string
   action: (path: PanelTypes) => void
+  useSearch?: boolean | undefined
+  searchAction?: (event: any) => void | undefined
 }
 
 export class PanelHeader extends React.PureComponent<Props> {
@@ -18,14 +28,20 @@ export class PanelHeader extends React.PureComponent<Props> {
     this.props.action(path)
   }
 
-  render() {
-    const { title } = this.props
+  render () {
+    const { title, searchAction, useSearch } = this.props
     return (
-      <HeaderWrapper hasSearch={false}>
+      <HeaderWrapper hasSearch={useSearch || false}>
         <TopRow>
           <HeaderTitle>{title}</HeaderTitle>
           <CloseButton onClick={this.navigate('main')} />
         </TopRow>
+        {useSearch &&
+          <SearchBar
+            placeholder={getLocale('braveWalletSearchText')}
+            action={searchAction}
+          />
+        }
       </HeaderWrapper>
     )
   }

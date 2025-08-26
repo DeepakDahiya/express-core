@@ -63,7 +63,6 @@ class BitcoinWalletServiceUnitTest : public testing::Test {
     bitcoin_wallet_service_ = std::make_unique<BitcoinWalletService>(
         keyring_service_.get(), &prefs_,
         bitcoin_test_rpc_server_->GetURLLoaderFactory());
-    bitcoin_wallet_service_->SetArrangeTransactionsForTesting(true);
 
     keyring_service_->CreateWallet(kMnemonicDivideCruise, kTestWalletPassword,
                                    base::DoNothing());
@@ -73,7 +72,9 @@ class BitcoinWalletServiceUnitTest : public testing::Test {
     ASSERT_TRUE(btc_account_);
     bitcoin_test_rpc_server_->SetUpBitcoinRpc(btc_account_->account_id);
     keyring_service_->UpdateNextUnusedAddressForBitcoinAccount(
-        btc_account_->account_id, 5, 5);
+        btc_account_->account_id, mojom::BitcoinKeyId::New(0, 5));
+    keyring_service_->UpdateNextUnusedAddressForBitcoinAccount(
+        btc_account_->account_id, mojom::BitcoinKeyId::New(1, 5));
   }
 
   AccountUtils GetAccountUtils() {
@@ -268,17 +269,17 @@ TEST_F(BitcoinWalletServiceUnitTest, CreateTransaction) {
                 return true;
               })));
   bitcoin_wallet_service_->CreateTransaction(account_id(), kMockBtcAddress,
-                                             48000, callback.Get());
+                                             6000, callback.Get());
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&callback);
 
   EXPECT_EQ(actual_tx.locktime(), 12345u);
-  EXPECT_EQ(actual_tx.amount(), 48000u);
+  EXPECT_EQ(actual_tx.amount(), 6000u);
   EXPECT_EQ(actual_tx.to(), kMockBtcAddress);
 
-  EXPECT_EQ(actual_tx.EffectiveFeeAmount(), 4879u);  // ceil(23.456*208)
+  EXPECT_EQ(actual_tx.EffectiveFeeAmount(), 4878u);  // 23.456*208
   EXPECT_EQ(actual_tx.TotalInputsAmount(), 50000u + 5000u);
-  EXPECT_EQ(actual_tx.TotalOutputsAmount(), 50000u + 5000u - 4879u);
+  EXPECT_EQ(actual_tx.TotalOutputsAmount(), 50000u + 5000u - 4878u);
 
   EXPECT_EQ(actual_tx.inputs().size(), 2u);
   auto& input_0 = actual_tx.inputs().at(0);
@@ -303,17 +304,13 @@ TEST_F(BitcoinWalletServiceUnitTest, CreateTransaction) {
 
   auto& output_0 = actual_tx.outputs().at(0);
   EXPECT_EQ(output_0.address, kMockBtcAddress);
-  EXPECT_EQ(base::HexEncode(output_0.script_pubkey),
-            "0014751E76E8199196D454941C45D1B3A323F1433BD6");
-  EXPECT_EQ(output_0.amount, 48000u);
+  EXPECT_EQ(output_0.amount, 6000u);
 
   auto& output_1 = actual_tx.outputs().at(1);
   EXPECT_EQ(output_1.address,
             keyring_service_->GetBitcoinAccountInfo(account_id())
                 ->next_change_address->address_string);
-  EXPECT_EQ(output_1.amount, 50000u + 5000u - 48000u - 4879u);
-  EXPECT_EQ(base::HexEncode(output_1.script_pubkey),
-            "00142DAF8BA8858A8D65B8C6107ECE99DA1FAEF0B944");
+  EXPECT_EQ(output_1.amount, 50000u + 5000u - 6000u - 4878u);
 }
 
 TEST_F(BitcoinWalletServiceUnitTest, SignAndPostTransaction) {
@@ -331,7 +328,7 @@ TEST_F(BitcoinWalletServiceUnitTest, SignAndPostTransaction) {
                 return true;
               })));
   bitcoin_wallet_service_->CreateTransaction(account_id(), kMockBtcAddress,
-                                             48000, callback.Get());
+                                             6000, callback.Get());
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&callback);
 
@@ -344,144 +341,25 @@ TEST_F(BitcoinWalletServiceUnitTest, SignAndPostTransaction) {
   base::RunLoop().RunUntilIdle();
   testing::Mock::VerifyAndClearExpectations(&sign_callback);
 
-  EXPECT_EQ(BitcoinSerializer::CalcTransactionWeight(signed_tx, false), 832u);
-  EXPECT_EQ(BitcoinSerializer::CalcTransactionVBytes(signed_tx, false), 208u);
-  EXPECT_EQ(signed_tx.EffectiveFeeAmount(), 4879u);
+  EXPECT_EQ(BitcoinSerializer::CalcTransactionWeight(signed_tx), 832u);
+  EXPECT_EQ(BitcoinSerializer::CalcVSize(signed_tx), 208u);
+  EXPECT_EQ(signed_tx.EffectiveFeeAmount(), 4878u);
   EXPECT_EQ(signed_tx.TotalInputsAmount(), 50000u + 5000u);
-  EXPECT_EQ(signed_tx.TotalOutputsAmount(), 50000u + 5000u - 4879u);
+  EXPECT_EQ(signed_tx.TotalOutputsAmount(), 50000u + 5000u - 4878u);
 
   EXPECT_EQ(
       bitcoin_test_rpc_server_->captured_raw_tx(),
-      "020000000001"  // version/marker/flag
-
-      "02"  // inputs
-      "C5E29F841382F02A49BEAFAC756D14A211EC9089AD50E153767625B7508F38AA01000000"
-      "00FDFFFFFF"
-      "BEC2C52B2448A8733648E967D2B4559D0F1AA4BBBB93E53E9F516A12FB9C1CBD07000000"
-      "00FDFFFFFF"
-
-      "02"  // outputs
-      "80BB000000000000160014751E76E8199196D454941C45D1B3A323F1433BD6"
-      "49080000000000001600142DAF8BA8858A8D65B8C6107ECE99DA1FAEF0B944"
-
-      // witness 0
-      "02473044022010F337726DFB2E31D87279418EA0E2A305176CC7D9EC8566F8E27EAF658D"
-      "5A700220696354637317BF41F7FB5C599A169BA015E033245E7B7949C8E59BEF4FF19005"
-      "0121028256AD805CC35647890DEFD92AE6EF9BE31BA254E7E7D2834F8C403766C65FE7"
-
-      // witness 1
-      "0247304402205D08864CE25C834F50B624CDB35D9D05183A259F1C85513168FC1FE10B0B"
-      "50DB02205E375EED2DB73F7A149B62A84D98299852CCCBA359DA968CA82A91899CF0DD05"
-      "0121038F616FB0894BD77263DA0111E3BAB673AB9B77309FD7247177975698FEB2CDDE"
-
-      "39300000"  // locktime
-  );
-}
-
-TEST_F(BitcoinWalletServiceUnitTest, DiscoverAccount) {
-  base::MockCallback<BitcoinWalletService::DiscoverAccountCallback> callback;
-  bitcoin_test_rpc_server_->SetUpBitcoinRpc({});
-
-  // By default discovered receive and change indexes are zero.
-  EXPECT_CALL(callback, Run(Truly([&](auto& arg) {
-                DiscoveredBitcoinAccount expected;
-                return arg.value() == expected;
-              })));
-  bitcoin_wallet_service_->DiscoverAccount(mojom::KeyringId::kBitcoin84, 0,
-                                           callback.Get());
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&callback);
-
-  EXPECT_CALL(callback, Run(Truly([&](auto& arg) {
-                DiscoveredBitcoinAccount expected;
-                expected.account_index = 1;
-                return arg.value() == expected;
-              })));
-  bitcoin_wallet_service_->DiscoverAccount(mojom::KeyringId::kBitcoin84, 1,
-                                           callback.Get());
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&callback);
-
-  // Receive addresses 5 and 30 for account 0 are transacted.
-  auto receive_address_5 =
-      keyring_service_
-          ->GetBitcoinAccountDiscoveryAddress(mojom::KeyringId::kBitcoin84, 0,
-                                              mojom::BitcoinKeyId::New(0, 5))
-          ->address_string;
-  bitcoin_test_rpc_server_->AddTransactedAddress(receive_address_5);
-  auto receive_address_30 =
-      keyring_service_
-          ->GetBitcoinAccountDiscoveryAddress(mojom::KeyringId::kBitcoin84, 0,
-                                              mojom::BitcoinKeyId::New(0, 30))
-          ->address_string;
-  bitcoin_test_rpc_server_->AddTransactedAddress(receive_address_30);
-
-  // For acc 0 next recieve address is 6.
-  EXPECT_CALL(callback, Run(Truly([&](auto& arg) {
-                DiscoveredBitcoinAccount expected;
-                expected.next_unused_receive_index = 6;
-                return arg.value() == expected;
-              })));
-  bitcoin_wallet_service_->DiscoverAccount(mojom::KeyringId::kBitcoin84, 0,
-                                           callback.Get());
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&callback);
-
-  // For acc 1 nothing is still discovered.
-  EXPECT_CALL(callback, Run(Truly([&](auto& arg) {
-                DiscoveredBitcoinAccount expected;
-                expected.account_index = 1;
-                return arg.value() == expected;
-              })));
-  bitcoin_wallet_service_->DiscoverAccount(mojom::KeyringId::kBitcoin84, 1,
-                                           callback.Get());
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&callback);
-
-  // Receive address 15 and change address 17 for account 0 are transacted.
-  auto receive_address_15 =
-      keyring_service_
-          ->GetBitcoinAccountDiscoveryAddress(mojom::KeyringId::kBitcoin84, 0,
-                                              mojom::BitcoinKeyId::New(0, 15))
-          ->address_string;
-  bitcoin_test_rpc_server_->AddTransactedAddress(receive_address_15);
-  auto change_address_17 =
-      keyring_service_
-          ->GetBitcoinAccountDiscoveryAddress(mojom::KeyringId::kBitcoin84, 0,
-                                              mojom::BitcoinKeyId::New(1, 17))
-          ->address_string;
-  bitcoin_test_rpc_server_->AddTransactedAddress(change_address_17);
-  // Receive address 8 for account 1 is transacted.
-  auto receive_address_8 =
-      keyring_service_
-          ->GetBitcoinAccountDiscoveryAddress(mojom::KeyringId::kBitcoin84, 1,
-                                              mojom::BitcoinKeyId::New(0, 8))
-          ->address_string;
-  bitcoin_test_rpc_server_->AddTransactedAddress(receive_address_8);
-
-  // Discovered are 30+1 and 17+1.
-  EXPECT_CALL(callback, Run(Truly([&](auto& arg) {
-                DiscoveredBitcoinAccount expected;
-                expected.next_unused_receive_index = 31;
-                expected.next_unused_change_index = 18;
-                return arg.value() == expected;
-              })));
-  bitcoin_wallet_service_->DiscoverAccount(mojom::KeyringId::kBitcoin84, 0,
-                                           callback.Get());
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&callback);
-
-  // Discovered 9 and 0.
-  EXPECT_CALL(callback, Run(Truly([&](auto& arg) {
-                DiscoveredBitcoinAccount expected;
-                expected.account_index = 1;
-                expected.next_unused_receive_index = 9;
-                return arg.value() == expected;
-              })));
-  bitcoin_wallet_service_->DiscoverAccount(mojom::KeyringId::kBitcoin84, 1,
-                                           callback.Get());
-  base::RunLoop().RunUntilIdle();
-  testing::Mock::VerifyAndClearExpectations(&callback);
+      "02000000000102C5E29F841382F02A49BEAFAC756D14A211EC9089AD50E153767625B750"
+      "8F38AA0100000000FDFFFFFFBEC2C52B2448A8733648E967D2B4559D0F1AA4BBBB93E53E"
+      "9F516A12FB9C1CBD0700000000FDFFFFFF027017000000000000160014751E76E8199196"
+      "D454941C45D1B3A323F1433BD65AAC0000000000001600142DAF8BA8858A8D65B8C6107E"
+      "CE99DA1FAEF0B944024730440220782626C48EBDD79FEB9A015C68727BAF4CB059F9568A"
+      "959C6BB3D2B9655566FA02204A7A58F9A52D0D4F1B632A98F481303746DF675CC65D8453"
+      "D06EF298774253B20121028256AD805CC35647890DEFD92AE6EF9BE31BA254E7E7D2834F"
+      "8C403766C65FE702473044022072F292CD14269608D0D25F068E5D587DCB4CB4FDEB9679"
+      "922F95AAEEE1A30EED02202510CA7CDF4D49C448162BF5FB0F39FC4BEF244830CDABA966"
+      "D73C315DA8899A0121038F616FB0894BD77263DA0111E3BAB673AB9B77309FD724717797"
+      "5698FEB2CDDE39300000");
 }
 
 }  // namespace brave_wallet

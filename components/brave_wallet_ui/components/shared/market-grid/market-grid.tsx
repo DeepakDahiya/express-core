@@ -176,10 +176,7 @@ export const MarketGrid = ({
   }, [headers])
 
   return (
-    <StyledWrapper
-      onLoad={onContentLoad}
-      ref={wrapperRef}
-    >
+    <StyledWrapper onLoad={onContentLoad} ref={wrapperRef}>
       <GridContainer>
         <Header templateColumns={gridTemplateColumns}>
           {headers.map((header) => (
@@ -201,7 +198,9 @@ export const MarketGrid = ({
           ))}
         </Header>
         {showEmptyState ? (
-          <Row margin='30px 0px'>
+          <Row
+            margin='30px 0px'
+          >
             <EmptyStateText
               isBold={true}
               textSize='14px'
@@ -221,6 +220,7 @@ export const MarketGrid = ({
             {renderRows}
           </FixedSizeList>
         )}
+
       </GridContainer>
       <CoinGeckoText>
         {getLocale('braveWalletPoweredByCoinGecko')}

@@ -24,7 +24,7 @@ base::Value::Dict BuildCreatedAtTimestampUserData(
   }
 
   user_data.Set(kCreatedAtTimestampKey,
-                TimeToPrivacyPreservingIso8601(transaction.created_at));
+                TimeToPrivacyPreservingISO8601(transaction.created_at));
 
   return user_data;
 }

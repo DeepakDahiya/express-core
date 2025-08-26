@@ -10,16 +10,18 @@
 #include "brave/components/brave_ads/core/internal/creatives/promoted_content_ads/creative_promoted_content_ad_info.h"
 #include "brave/components/brave_ads/core/internal/segments/segment_unittest_constants.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-CreativePromotedContentAdList BuildCreativePromotedContentAds(const int count) {
+CreativePromotedContentAdList BuildCreativePromotedContentAdsForTesting(
+    const int count) {
   CHECK_GT(count, 0);
 
   CreativePromotedContentAdList creative_ads;
 
   for (int i = 0; i < count; ++i) {
-    CreativePromotedContentAdInfo creative_ad = BuildCreativePromotedContentAd(
-        /*should_use_random_uuids=*/true);
+    CreativePromotedContentAdInfo creative_ad =
+        BuildCreativePromotedContentAdForTesting(
+            /*should_use_random_uuids=*/true);
     creative_ad.segment = kSegments[i % std::size(kSegments)];
 
     creative_ads.push_back(creative_ad);
@@ -28,9 +30,10 @@ CreativePromotedContentAdList BuildCreativePromotedContentAds(const int count) {
   return creative_ads;
 }
 
-CreativePromotedContentAdInfo BuildCreativePromotedContentAd(
+CreativePromotedContentAdInfo BuildCreativePromotedContentAdForTesting(
     const bool should_use_random_uuids) {
-  const CreativeAdInfo creative_ad = BuildCreativeAd(should_use_random_uuids);
+  const CreativeAdInfo creative_ad =
+      BuildCreativeAdForTesting(should_use_random_uuids);
   CreativePromotedContentAdInfo creative_promoted_content_ad(creative_ad);
 
   creative_promoted_content_ad.title = "Test Ad Title";
@@ -39,4 +42,4 @@ CreativePromotedContentAdInfo BuildCreativePromotedContentAd(
   return creative_promoted_content_ad;
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

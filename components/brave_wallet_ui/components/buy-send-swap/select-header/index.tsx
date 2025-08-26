@@ -21,17 +21,14 @@ export interface Props {
   onBack?: () => void
 }
 
-function SelectHeader(props: Props) {
+function SelectHeader (props: Props) {
   const { onBack, title, hasAddButton, onClickAdd } = props
   return (
     <Header>
-      {onBack ? (
-        <Button onClick={onBack}>
-          <BackIcon />
-        </Button>
-      ) : (
-        <HeaderSpacing />
-      )}
+      {onBack
+        ? <Button onClick={onBack}><BackIcon /></Button>
+        : <HeaderSpacing />
+      }
       <HeaderText>{title}</HeaderText>
       {hasAddButton ? (
         <Button onClick={onClickAdd}>

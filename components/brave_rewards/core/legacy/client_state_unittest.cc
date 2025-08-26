@@ -52,6 +52,16 @@ class ClientStateTest : public ::testing::Test {
 
     return wallet_info_properties;
   }
+
+  std::map<std::string, bool> GetInlineTips(const int count) const {
+    std::map<std::string, bool> inline_tips;
+    for (int i = 0; i < count; i++) {
+      const std::string key = std::to_string(i);
+      inline_tips.insert({key, true});
+    }
+
+    return inline_tips;
+  }
 };
 
 TEST_F(ClientStateTest, ToJsonSerializationWithMinValues) {
@@ -64,6 +74,7 @@ TEST_F(ClientStateTest, ToJsonSerializationWithMinValues) {
   client_properties.user_changed_fee = true;
   client_properties.auto_contribute = true;
   client_properties.rewards_enabled = true;
+  client_properties.inline_tips = GetInlineTips(1);
 
   // Assert
   ClientProperties expected_client_properties;
@@ -81,6 +92,7 @@ TEST_F(ClientStateTest, FromJsonDeserializationWithMinValues) {
   client_properties.user_changed_fee = true;
   client_properties.auto_contribute = true;
   client_properties.rewards_enabled = true;
+  client_properties.inline_tips = GetInlineTips(1);
 
   const std::string json =
       "{\"walletInfo\":{\"paymentId\":\"PaymentId\",\"addressCARD_ID\":"
@@ -115,7 +127,7 @@ TEST_F(ClientStateTest, FromJsonDeserializationWithMinValues) {
       "\"proof\":\"Proof\"}},\"walletProperties\":{\"fee_amount\":1."
       "7976931348623157e308,\"parameters\":{\"adFree\":{\"fee\":{\"BAT\":1."
       "7976931348623157e308},\"choices\":{\"BAT\":[5.0,10.0,15.0,20.0,25.0,50."
-      "0,100.0]}}}}}";  // NOLINT
+      "0,100.0]}}}},\"inlineTip\":{\"0\":true}}";  // NOLINT
 
   // Act
   ClientProperties expected_client_properties;
@@ -135,6 +147,7 @@ TEST_F(ClientStateTest, ToJsonSerializationWithMaxValues) {
   client_properties.user_changed_fee = true;
   client_properties.auto_contribute = true;
   client_properties.rewards_enabled = true;
+  client_properties.inline_tips = GetInlineTips(9);
 
   // Assert
   ClientProperties expected_client_properties;
@@ -152,6 +165,7 @@ TEST_F(ClientStateTest, FromJsonDeserializationWithMaxValues) {
   client_properties.user_changed_fee = true;
   client_properties.auto_contribute = true;
   client_properties.rewards_enabled = true;
+  client_properties.inline_tips = GetInlineTips(9);
 
   const std::string json =
       "{\"walletInfo\":{\"paymentId\":\"PaymentId\",\"addressCARD_ID\":"
@@ -251,7 +265,9 @@ TEST_F(ClientStateTest, FromJsonDeserializationWithMaxValues) {
       "\"destination\":\"Destination\",\"proof\":\"Proof\"}},"
       "\"walletProperties\":{\"fee_amount\":1.7976931348623157e308,"
       "\"parameters\":{\"adFree\":{\"fee\":{\"BAT\":1.7976931348623157e308},"
-      "\"choices\":{\"BAT\":[5.0,10.0,15.0,20.0,25.0,50.0,100.0]}}}}}";  // NOLINT
+      "\"choices\":{\"BAT\":[5.0,10.0,15.0,20.0,25.0,50.0,100.0]}}}},"
+      "\"inlineTip\":{\"0\":true,\"1\":true,\"2\":true,\"3\":true,\"4\":true,"
+      "\"5\":true,\"6\":true,\"7\":true,\"8\":true}}";  // NOLINT
 
   // Act
   ClientProperties expected_client_properties;

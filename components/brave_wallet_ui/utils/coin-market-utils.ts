@@ -3,18 +3,22 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-import {
-  BraveWallet,
-  MarketAssetFilterOption,
-  MarketGridColumnTypes,
-  SortOrder
-} from '../constants/types'
+import Fuse from 'fuse.js'
+import { BraveWallet, MarketAssetFilterOption, MarketGridColumnTypes, SortOrder } from '../constants/types'
 
-export const sortCoinMarkets = (
-  marketData: BraveWallet.CoinMarket[],
-  sortOrder: SortOrder,
-  columnId: MarketGridColumnTypes
-) => {
+const searchOptions: Fuse.IFuseOptions<BraveWallet.CoinMarket> = {
+  shouldSort: true,
+  threshold: 0.1,
+  location: 0,
+  distance: 0,
+  minMatchCharLength: 1,
+  keys: [
+    { name: 'name', weight: 0.5 },
+    { name: 'symbol', weight: 0.5 }
+  ]
+}
+
+export const sortCoinMarkets = (marketData: BraveWallet.CoinMarket[], sortOrder: SortOrder, columnId: MarketGridColumnTypes) => {
   if (sortOrder === 'asc') {
     return marketData.sort((a, b) => a[columnId] - b[columnId])
   } else {
@@ -22,37 +26,23 @@ export const sortCoinMarkets = (
   }
 }
 
-export const searchCoinMarkets = (
-  searchList: BraveWallet.CoinMarket[],
-  searchTerm: string
-): BraveWallet.CoinMarket[] => {
-  const trimmedSearch = searchTerm.trim().toLowerCase()
-  if (!trimmedSearch) {
+export const searchCoinMarkets = (searchList: BraveWallet.CoinMarket[], searchTerm: string): BraveWallet.CoinMarket[] => {
+  if (!searchTerm) {
     return searchList
   }
 
-  return searchList.filter(
-    (coin) =>
-      coin.name.toLowerCase().includes(trimmedSearch) ||
-      coin.symbol.toLowerCase().includes(trimmedSearch)
-  )
+  const fuse = new Fuse(searchList, searchOptions)
+  return fuse.search(searchTerm)
+    .map((result: Fuse.FuseResult<BraveWallet.CoinMarket>) => result.item)
 }
 
-export const filterCoinMarkets = (
-  coins: BraveWallet.CoinMarket[],
-  tradableAssets: BraveWallet.BlockchainToken[],
-  filter: MarketAssetFilterOption
-) => {
-  const tradableAssetsSymbols = tradableAssets.map((asset) =>
-    asset.symbol.toLowerCase()
-  )
+export const filterCoinMarkets = (coins: BraveWallet.CoinMarket[], tradableAssets: BraveWallet.BlockchainToken[], filter: MarketAssetFilterOption) => {
+  const tradableAssetsSymbols = tradableAssets.map(asset => asset.symbol.toLowerCase())
 
   if (filter === 'all') {
     return coins
   } else if (filter === 'tradable') {
-    return coins.filter((asset) =>
-      tradableAssetsSymbols.includes(asset.symbol.toLowerCase())
-    )
+    return coins.filter(asset => tradableAssetsSymbols.includes(asset.symbol.toLowerCase()))
   }
 
   return []

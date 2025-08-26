@@ -15,7 +15,9 @@ import {
 // components
 import { WalletPanelStory } from '../../../stories/wrappers/wallet-panel-story-wrapper'
 import { SignTransactionPanel } from './sign-transaction-panel'
-import { SignInWithEthereumError } from './sign_in_with_ethereum_error'
+import {
+  SignInWithEthereumError
+} from './sign_in_with_ethereum_error'
 import {
   deserializeTransaction //
 } from '../../../utils/model-serialization-utils'
@@ -65,7 +67,7 @@ export const _SignSolanaTxPanel = () => {
         ]
       }}
     >
-      <SignTransactionPanel signMode='signTx' />
+      <SignTransactionPanel signMode="signTx" />
     </WalletPanelStory>
   )
 }

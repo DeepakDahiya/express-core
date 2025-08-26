@@ -8,8 +8,7 @@
 
 namespace brave_ads {
 
-inline constexpr char kGetSignedTokensNonce[] =
-    "2f0e2891-e7a5-4262-835b-550b13e58e5c";
+constexpr char kGetSignedTokensNonce[] = "2f0e2891-e7a5-4262-835b-550b13e58e5c";
 
 }  // namespace brave_ads
 

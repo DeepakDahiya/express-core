@@ -5,7 +5,13 @@
 
 import * as React from 'react'
 
-import { StyledWrapper, Button, CaratDown, Dropdown, Option } from './style'
+import {
+  StyledWrapper,
+  Button,
+  CaratDown,
+  Dropdown,
+  Option
+} from './style'
 import { BraveWallet, BuyOption } from '../../constants/types'
 import { RampLogo } from '../buy-send-swap/buy/style'
 
@@ -23,7 +29,7 @@ const SelectBuy = (props: Props) => {
   const [isOpen, setIsOpen] = React.useState(false)
 
   const onClick = () => {
-    setIsOpen((prevIsOpen) => !prevIsOpen)
+    setIsOpen(prevIsOpen => !prevIsOpen)
   }
 
   const onOptionSelect = (value: BraveWallet.OnRampProvider) => {
@@ -36,28 +42,25 @@ const SelectBuy = (props: Props) => {
 
   return (
     <StyledWrapper>
-      <Button
-        onClick={onClick}
-        disabled={disabled}
-      >
+      <Button onClick={onClick} disabled={disabled}>
         {children}
-        {!disabled && <CaratDown />}
+        {!disabled && <CaratDown/>}
       </Button>
-      {!disabled && isOpen && (
-        <Dropdown>
-          {options.map((option) => (
-            <Option
-              key={option.id}
-              value={option.id}
-              selected={value === option.id}
-              onClick={() => onOptionSelect(option.id)}
-            >
-              <RampLogo />
-              {option.label}
-            </Option>
-          ))}
-        </Dropdown>
-      )}
+      {!disabled && isOpen &&
+          <Dropdown>
+            {options.map(option =>
+              <Option
+                key={option.id}
+                value={option.id}
+                selected={value === option.id}
+                onClick={() => onOptionSelect(option.id)}
+              >
+                <RampLogo/>
+                {option.label}
+              </Option>
+            )}
+          </Dropdown>
+      }
     </StyledWrapper>
   )
 }

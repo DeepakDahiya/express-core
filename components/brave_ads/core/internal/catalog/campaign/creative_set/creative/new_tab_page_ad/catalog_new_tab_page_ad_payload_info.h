@@ -26,7 +26,8 @@ struct CatalogNewTabPageAdPayloadInfo final {
 
   ~CatalogNewTabPageAdPayloadInfo();
 
-  bool operator==(const CatalogNewTabPageAdPayloadInfo&) const = default;
+  bool operator==(const CatalogNewTabPageAdPayloadInfo&) const;
+  bool operator!=(const CatalogNewTabPageAdPayloadInfo&) const;
 
   std::string company_name;
   GURL image_url;

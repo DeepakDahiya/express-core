@@ -108,7 +108,7 @@ data-encoding = "2.1.2"
 bigdecimal = { version = "0.1", features = ["serde"] }
 serde = { version = "1.0", features = ["derive"] }
 chrono = { version = "0.4", default-features = false, features = ["clock", "serde"] }
-uuid = { version = "1", features = ["v4"] }
+uuid = { version = "0.8", features = ["serde"] }
 futures-retry = "0.5.0"
 urlencoding = "1.1.1"
 hmac = "0.10"
@@ -201,25 +201,14 @@ if (target_cpu == "arm64" &&
 '''
 
 [dependencies.curve25519-dalek]
-version = "4.1.1"
-allow-first-party-usage = false
-features = [ "rand_core", "serde" ]
-# curve25519-dalek-derive is only used on x64
-# gnrt did not detect that due to a complex build.rs condition
-gn-variables-lib = '''
-if (target_cpu == "x64") {
-  deps += [
-    "//brave/third_party/rust/cpufeatures/v0_2:lib", 
-    "//brave/third_party/rust/curve25519_dalek_derive/v0_1:lib",
-  ]
-}
-'''
+version = "3.2.1"
+features = [ "alloc", "serde", "std", "u64_backend" ]
 
 [dependencies.cpufeatures]
 version = "0.2"
 allow-first-party-usage = false
 gn-variables-lib = '''
-if ((is_android || is_apple || is_linux) && target_cpu == "arm64") {
+if (is_linux && target_cpu == "arm64") {
   deps += [ "//third_party/rust/libc/v0_2:lib" ]
 }
 '''
@@ -239,7 +228,7 @@ if (is_mac) {
 '''
 
 [dependencies.adblock]
-version = "0.8.3"
+version = "0.8.2"
 default-features = false
 features = ["full-regex-handling", "regex-debug-info", "css-validation"]
 gn-variables-lib = '''

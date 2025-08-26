@@ -5,7 +5,7 @@
 
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision.h"
 
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request.h"
@@ -25,11 +25,11 @@ bool DoesRequireResource() {
 }  // namespace
 
 Subdivision::Subdivision() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 Subdivision::~Subdivision() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
 }
 
 void Subdivision::AddObserver(SubdivisionObserver* observer) {

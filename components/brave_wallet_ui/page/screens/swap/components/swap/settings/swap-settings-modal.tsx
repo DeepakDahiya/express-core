@@ -6,7 +6,9 @@
 import * as React from 'react'
 
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
 
 // Types
 import {
@@ -15,14 +17,28 @@ import {
   GasFeeOption
 } from '../../../../../../constants/types'
 
+import {
+  useGetSelectedChainQuery
+} from '../../../../../../common/slices/api.slice'
+
 // Options
-import { gasFeeOptions } from '../../../../../../options/gas-fee-options'
+import {
+  gasFeeOptions
+} from '../../../../../../options/gas-fee-options'
 
 // Components
-import { ExpandSection } from './expand-section'
-import { GasPresetButton } from './gas-preset-button'
-import { StandardButton } from '../../buttons/standard-button/standard-button'
-import { SlippageInput } from '../../inputs/slippage-input/slippage-input'
+import {
+  ExpandSection
+} from './expand-section'
+import {
+  GasPresetButton
+} from './gas-preset-button'
+import {
+  StandardButton
+} from '../../buttons/standard-button/standard-button'
+import {
+  SlippageInput
+} from '../../inputs/slippage-input/slippage-input'
 
 // Styled Components
 import { Modal } from './settings.style'
@@ -49,7 +65,6 @@ interface Props {
   setSlippageTolerance: (value: string) => void
   setSelectedGasFeeOption: (value: GasFeeOption) => void
   onClose: () => void
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
 }
 
 export const SwapSettingsModal = (props: Props) => {
@@ -61,9 +76,11 @@ export const SwapSettingsModal = (props: Props) => {
     slippageTolerance,
     // useDirectRoute,
     gasEstimates,
-    onClose,
-    selectedNetwork
+    onClose
   } = props
+
+  // Queries
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
 
   // State
   const [showExchanges, setShowExchanges] = React.useState<boolean>(false)
@@ -98,35 +115,22 @@ export const SwapSettingsModal = (props: Props) => {
   return (
     <Modal>
       {/* Modal Header */}
-      <Row
-        rowWidth='full'
-        marginBottom={2}
-      >
-        <Text
-          textColor='text01'
-          textSize='16px'
-          isBold={true}
-        >
+      <Row rowWidth='full' marginBottom={2}>
+        <Text textColor='text01' textSize='16px' isBold={true}>
           {modalTitle}
         </Text>
         {showExchanges && (
           <IconButton onClick={() => setShowExchanges(false)}>
-            <Icon
-              name='close'
-              size={26}
-            />
+            <Icon name='close' size={26} />
           </IconButton>
         )}
-        {!showExchanges && (
+        {!showExchanges &&
           <ShownResponsiveRow maxWidth={570}>
             <IconButton onClick={onClose}>
-              <Icon
-                name='close'
-                size={24}
-              />
+              <Icon name='close' size={24} />
             </IconButton>
           </ShownResponsiveRow>
-        )}
+        }
       </Row>
 
       <ShownResponsiveRow maxWidth={570}>
@@ -161,12 +165,9 @@ export const SwapSettingsModal = (props: Props) => {
             label={getLocale('braveSwapSlippageTolerance')}
             value={`${slippageTolerance}%`}
           >
-            <Row
-              marginBottom={22}
-              rowWidth='full'
-            >
+            <Row marginBottom={22} rowWidth='full'>
               <Row horizontalAlign='flex-start'>
-                {slippagePresets.map((preset) => (
+                {slippagePresets.map(preset => (
                   <StandardButton
                     onClick={() => setSlippageTolerance(preset)}
                     buttonType='secondary'
@@ -206,9 +207,9 @@ export const SwapSettingsModal = (props: Props) => {
               <ExpandSection
                 label={getLocale('braveSwapNetworkFee')}
                 value={`$${gasEstimates.gasFeeFiat}`}
-                secondaryValue={`${gasEstimates.gasFee} ${
-                  selectedNetwork?.symbol ?? ''
-                }`}
+                secondaryValue={
+                  `${gasEstimates.gasFee} ${selectedNetwork?.symbol ?? ''}`
+                }
               >
                 <Column columnWidth='full'>
                   {gasFeeOptions.map((option) => (
@@ -218,7 +219,6 @@ export const SwapSettingsModal = (props: Props) => {
                       onClick={() => setSelectedGasFeeOption(option)}
                       gasEstimates={gasEstimates}
                       key={option.id}
-                      selectedNetwork={selectedNetwork}
                     />
                   ))}
                 </Column>

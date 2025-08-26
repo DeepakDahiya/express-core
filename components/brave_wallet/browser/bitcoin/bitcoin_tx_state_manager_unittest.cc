@@ -11,7 +11,6 @@
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/task_environment.h"
-#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_serializer.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_transaction.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_tx_meta.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
@@ -61,18 +60,13 @@ TEST_F(BitcoinTxStateManagerUnitTest, BitcoinTxMetaAndValue) {
       std::make_unique<BitcoinTransaction>();
   tx->set_amount(200000);
   tx->set_to("tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm");
-
-  BitcoinTransaction::TxInput input;
-  input.utxo_address = "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
-  input.utxo_value = 200000;
-  tx->AddInput(std::move(input));
-
-  BitcoinTransaction::TxOutput output;
-  output.address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
-  output.script_pubkey = BitcoinSerializer::AddressToScriptPubkey(
-      "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm", true);
-  output.amount = 200000 - 1000;
-  tx->AddOutput(std::move(output));
+  tx->inputs().emplace_back();
+  tx->inputs().back().utxo_address =
+      "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
+  tx->inputs().back().utxo_value = 200000;
+  tx->outputs().emplace_back();
+  tx->outputs().back().address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
+  tx->outputs().back().amount = 200000 - 1000;
 
   BitcoinTxMeta meta(btc_account_id, std::move(tx));
   meta.set_id(TxMeta::GenerateMetaID());

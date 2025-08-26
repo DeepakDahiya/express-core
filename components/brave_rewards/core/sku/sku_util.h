@@ -7,6 +7,9 @@
 #define BRAVE_COMPONENTS_BRAVE_REWARDS_CORE_SKU_SKU_UTIL_H_
 
 #include <string>
+#include <vector>
+
+#include "brave/components/brave_rewards/core/mojom_structs.h"
 
 namespace brave_rewards::internal {
 namespace sku {

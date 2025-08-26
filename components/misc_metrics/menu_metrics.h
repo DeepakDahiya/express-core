@@ -24,11 +24,9 @@ enum class MenuGroup {
   kBrowserViews,
 };
 
-inline constexpr char kFrequentMenuGroupHistogramName[] =
-    "Brave.Toolbar.FrequentMenuGroup";
-inline constexpr char kMenuDismissRateHistogramName[] =
-    "Brave.Toolbar.MenuDismissRate";
-inline constexpr char kMenuOpensHistogramName[] = "Brave.Toolbar.MenuOpens";
+extern const char kFrequentMenuGroupHistogramName[];
+extern const char kMenuDismissRateHistogramName[];
+extern const char kMenuOpensHistogramName[];
 
 class MenuMetrics {
  public:

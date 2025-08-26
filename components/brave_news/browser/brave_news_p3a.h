@@ -14,23 +14,16 @@ class PrefService;
 namespace brave_news {
 namespace p3a {
 
-inline constexpr char kWeeklySessionCountHistogramName[] =
-    "Brave.Today.WeeklySessionCount";
-inline constexpr char kTotalCardViewsHistogramName[] =
-    "Brave.Today.WeeklyTotalCardViews";
-inline constexpr char kWeeklyDisplayAdsViewedHistogramName[] =
-    "Brave.Today.WeeklyDisplayAdsViewedCount";
-inline constexpr char kDirectFeedsTotalHistogramName[] =
-    "Brave.Today.DirectFeedsTotal";
-inline constexpr char kWeeklyAddedDirectFeedsHistogramName[] =
-    "Brave.Today.WeeklyAddedDirectFeedsCount";
-inline constexpr char kLastUsageTimeHistogramName[] =
-    "Brave.Today.LastUsageTime";
-inline constexpr char kNewUserReturningHistogramName[] =
-    "Brave.Today.NewUserReturning";
-inline constexpr char kIsEnabledHistogramName[] = "Brave.Today.IsEnabled";
-inline constexpr char kUsageMonthlyHistogramName[] = "Brave.Today.UsageMonthly";
-inline constexpr char kUsageDailyHistogramName[] = "Brave.Today.UsageDaily";
+extern const char kWeeklySessionCountHistogramName[];
+extern const char kTotalCardViewsHistogramName[];
+extern const char kWeeklyDisplayAdsViewedHistogramName[];
+extern const char kDirectFeedsTotalHistogramName[];
+extern const char kWeeklyAddedDirectFeedsHistogramName[];
+extern const char kLastUsageTimeHistogramName[];
+extern const char kNewUserReturningHistogramName[];
+extern const char kIsEnabledHistogramName[];
+extern const char kUsageMonthlyHistogramName[];
+extern const char kUsageDailyHistogramName[];
 
 void RecordAtInit(PrefService* prefs);
 void RecordAtSessionStart(PrefService* prefs);

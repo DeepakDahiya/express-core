@@ -7,6 +7,7 @@ import * as leo from '@brave/leo/tokens/css'
 
 import { WalletButton } from '../../../shared/style'
 
+
 export const StyledWrapper = styled.div`
   display: flex;
   flex-direction: column;

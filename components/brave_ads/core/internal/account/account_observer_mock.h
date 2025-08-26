@@ -34,8 +34,10 @@ class AccountObserverMock : public AccountObserver {
   MOCK_METHOD(void,
               OnFailedToProcessDeposit,
               (const std::string& creative_instance_id,
-               AdType ad_type,
-               ConfirmationType confirmation_type));
+               const AdType& ad_type,
+               const ConfirmationType& confirmation_type));
+
+  MOCK_METHOD(void, OnStatementOfAccountsDidChange, ());
 };
 
 }  // namespace brave_ads

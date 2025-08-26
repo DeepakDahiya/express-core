@@ -54,13 +54,12 @@ export const usePasswordStrength = () => {
 
   // computed
   const passwordsMatch = password === confirmedPassword && confirmedPassword
-  const isValid =
-    !(
-      hasConfirmedPasswordError ||
-      hasPasswordError ||
-      password === '' ||
-      confirmedPassword === ''
-    ) && isStrongPassword
+  const isValid = !(
+    hasConfirmedPasswordError ||
+    hasPasswordError ||
+    password === '' ||
+    confirmedPassword === ''
+  ) && isStrongPassword
 
   return {
     confirmedPassword,

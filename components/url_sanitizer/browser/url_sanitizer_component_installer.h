@@ -22,8 +22,8 @@
 
 namespace brave {
 
-inline constexpr char kCleanURLsConfigFile[] = "clean-urls.json";
-inline constexpr char kCleanURLsConfigFileVersion[] = "1";
+extern const char kCleanURLsConfigFile[];
+extern const char kCleanURLsConfigFileVersion[];
 
 class URLSanitizerComponentInstaller
     : public brave_component_updater::LocalDataFilesObserver {

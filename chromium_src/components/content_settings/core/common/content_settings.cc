@@ -5,8 +5,6 @@
 
 #include "components/content_settings/core/common/content_settings.h"
 
-#include <vector>
-
 #define RendererContentSettingRules RendererContentSettingRules_ChromiumImpl
 
 #include "src/components/content_settings/core/common/content_settings.cc"
@@ -49,12 +47,12 @@ void RendererContentSettingRules::FilterRulesByOutermostMainFrameURL(
   FilterRulesForType(brave_shields_rules, outermost_main_frame_url);
   // FilterRulesForType has a DCHECK on the size and these fail (for now)
   // because they incorrectly use CONTENT_SETTINGS_DEFAULT as a distinct setting
-  std::erase_if(
+  base::EraseIf(
       cosmetic_filtering_rules,
       [&outermost_main_frame_url](const ContentSettingPatternSource& source) {
         return !source.primary_pattern.Matches(outermost_main_frame_url);
       });
-  std::erase_if(
+  base::EraseIf(
       fingerprinting_rules,
       [&outermost_main_frame_url](const ContentSettingPatternSource& source) {
         return !source.primary_pattern.Matches(outermost_main_frame_url);

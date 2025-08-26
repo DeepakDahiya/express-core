@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/browser_is_active_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
@@ -14,6 +14,8 @@
 namespace brave_ads {
 
 class BraveAdsBrowserIsActivePermissionRuleTest : public UnitTestBase {
+ protected:
+  const BrowserIsActivePermissionRule permission_rule_;
 };
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest, ShouldAllow) {
@@ -22,7 +24,7 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest, ShouldAllow) {
   NotifyBrowserDidEnterForeground();
 
   // Act & Assert
-  EXPECT_TRUE(HasBrowserIsActivePermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest, ShouldNotAllow) {
@@ -31,7 +33,7 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest, ShouldNotAllow) {
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_FALSE(HasBrowserIsActivePermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
@@ -46,7 +48,7 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_TRUE(HasBrowserIsActivePermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
@@ -56,7 +58,7 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_FALSE(HasBrowserIsActivePermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
@@ -66,7 +68,7 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
   NotifyBrowserDidEnterForeground();
 
   // Act & Assert
-  EXPECT_FALSE(HasBrowserIsActivePermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
@@ -76,7 +78,7 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_FALSE(HasBrowserIsActivePermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 }  // namespace brave_ads

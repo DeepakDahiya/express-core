@@ -14,7 +14,7 @@
 #include "base/functional/callback.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_bind_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_column_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_table_util.h"
@@ -217,9 +217,10 @@ void CreativeAds::GetForCreativeInstanceId(
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetForCreativeInstanceIdCallback,
-                                  creative_instance_id, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetForCreativeInstanceIdCallback, creative_instance_id,
+                     std::move(callback)));
 }
 
 std::string CreativeAds::GetTableName() const {

@@ -12,7 +12,8 @@ export const mockSignMessageRequest = {
   originInfo: mockOriginInfo,
   id: -1,
   accountId: mockEthAccount.accountId,
-  signData: {
+  signData:
+    {
     ethStandardSignData: {
       message: ''
     },

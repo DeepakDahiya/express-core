@@ -20,15 +20,14 @@ namespace brave_ads {
 
 template <typename T>
 absl::optional<T> MaybeSampleCreativeAd(
-    const CreativeAdModelBasedPredictorList<T>& creative_ad_predictors) {
+    const CreativeAdPredictorList<T>& creative_ad_predictors) {
   if (creative_ad_predictors.empty()) {
     return absl::nullopt;
   }
 
   const double normalizing_constant =
-      CalculateNormalizingConstantForCreativeAdModelBasedPredictors(
+      CalculateNormalizingConstantForCreativeAdPredictors(
           creative_ad_predictors);
-
   if (normalizing_constant <= 0.0 ||
       base::IsApproximatelyEqual(normalizing_constant, 0.0,
                                  std::numeric_limits<double>::epsilon())) {

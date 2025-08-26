@@ -22,13 +22,13 @@ TEST_F(BraveAdsCreativeAdEmbeddingBasedPredictorTest, PredictCreativeAd) {
   // Arrange
   CreativeNotificationAdList creative_ads;
   CreativeNotificationAdInfo creative_ad =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/
-                                        true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/
+                                            true);
   creative_ad.embedding = {0.0853, -0.1789, -0.4221};
   creative_ads.push_back(creative_ad);
 
   const TextEmbeddingHtmlEventInfo text_embedding_html_event =
-      BuildTextEmbeddingHtmlEvent(ml::pipeline::test::BuildTextEmbedding());
+      BuildTextEmbeddingHtmlEvent(ml::pipeline::BuildTextEmbeddingForTesting());
 
   const UserModelInfo user_model{
       IntentUserModelInfo{}, LatentInterestUserModelInfo{},
@@ -44,7 +44,7 @@ TEST_F(BraveAdsCreativeAdEmbeddingBasedPredictorTest, DoNotPredictCreativeAd) {
   CreativeNotificationAdList creative_ads;
 
   CreativeNotificationAdInfo creative_ad =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
   creative_ad.embedding = {0.0853, -0.1789, -0.4221};
   creative_ads.push_back(creative_ad);
 

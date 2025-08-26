@@ -28,7 +28,7 @@ TEST_F(BraveAdsOptedInToBraveNewsAdsDiagnosticEntryTest, IsOptedIn) {
 
 TEST_F(BraveAdsOptedInToBraveNewsAdsDiagnosticEntryTest, IsOptedOut) {
   // Arrange
-  test::OptOutOfBraveNewsAds();
+  OptOutOfBraveNewsAdsForTesting();
 
   const OptedInToBraveNewsAdsDiagnosticEntry diagnostic_entry;
 

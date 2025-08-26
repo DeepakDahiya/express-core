@@ -8,7 +8,6 @@
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/units/ad_unittest_constants.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-shared.h"
 #include "net/http/http_status_code.h"
@@ -20,9 +19,9 @@ namespace brave_ads {
 class BraveAdsPromotedContentAdIntegrationTest : public UnitTestBase {
  protected:
   void SetUp() override {
-    UnitTestBase::SetUp(/*is_integration_test=*/true);
+    UnitTestBase::SetUpForTesting(/*is_integration_test=*/true);
 
-    test::ForcePermissionRules();
+    ForcePermissionRulesForTesting();
   }
 
   void SetUpMocks() override {
@@ -38,7 +37,7 @@ class BraveAdsPromotedContentAdIntegrationTest : public UnitTestBase {
   void TriggerPromotedContentAdEvent(
       const std::string& placement_id,
       const std::string& creative_instance_id,
-      const mojom::PromotedContentAdEventType event_type,
+      const mojom::PromotedContentAdEventType& event_type,
       const bool should_fire_event) {
     base::MockCallback<TriggerAdEventCallback> callback;
     EXPECT_CALL(callback, Run(/*success=*/should_fire_event));
@@ -64,25 +63,6 @@ TEST_F(BraveAdsPromotedContentAdIntegrationTest, TriggerClickedEvent) {
   TriggerPromotedContentAdEvent(kPlacementId, kCreativeInstanceId,
                                 mojom::PromotedContentAdEventType::kClicked,
                                 /*should_fire_event=*/true);
-}
-
-TEST_F(BraveAdsPromotedContentAdIntegrationTest,
-       DoNotTriggerEventForInvalidCreativeInstanceId) {
-  // Act & Assert
-  TriggerPromotedContentAdEvent(kPlacementId, kInvalidCreativeInstanceId,
-                                mojom::PromotedContentAdEventType::kViewed,
-                                /*should_fire_event=*/false);
-}
-
-TEST_F(BraveAdsPromotedContentAdIntegrationTest,
-       DoNotTriggerEventIfUserHasNotOptedInToBraveNewsAds) {
-  // Arrange
-  test::OptOutOfBraveNewsAds();
-
-  // Act & Assert
-  TriggerPromotedContentAdEvent(kPlacementId, kInvalidCreativeInstanceId,
-                                mojom::PromotedContentAdEventType::kViewed,
-                                /*should_fire_event=*/false);
 }
 
 }  // namespace brave_ads

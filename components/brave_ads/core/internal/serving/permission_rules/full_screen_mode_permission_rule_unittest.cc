@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/full_screen_mode_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
@@ -15,11 +15,13 @@
 namespace brave_ads {
 
 class BraveAdsFullScreenModePermissionRuleTest : public UnitTestBase {
+ protected:
+  const FullScreenModePermissionRule permission_rule_;
 };
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAllow) {
   // Act & Assert
-  EXPECT_TRUE(HasFullScreenModePermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAlwaysAllowOnAndroid) {
@@ -29,7 +31,7 @@ TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAlwaysAllowOnAndroid) {
   MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_TRUE(HasFullScreenModePermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAlwaysAllowOnIOS) {
@@ -39,7 +41,7 @@ TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAlwaysAllowOnIOS) {
   MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_TRUE(HasFullScreenModePermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldNotAllow) {
@@ -47,7 +49,7 @@ TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldNotAllow) {
   MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_FALSE(HasFullScreenModePermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest,
@@ -61,7 +63,7 @@ TEST_F(BraveAdsFullScreenModePermissionRuleTest,
   MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_TRUE(HasFullScreenModePermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 }  // namespace brave_ads

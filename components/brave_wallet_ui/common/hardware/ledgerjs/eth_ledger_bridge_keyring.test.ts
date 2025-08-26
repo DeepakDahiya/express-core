@@ -5,11 +5,7 @@
 
 import EthereumLedgerBridgeKeyring from './eth_ledger_bridge_keyring'
 import { MockLedgerTransport } from './ledger_bridge_keyring.test'
-import {
-  LedgerDerivationPaths,
-  GetAccountsHardwareOperationResult,
-  SignHardwareOperationResult
-} from '../types'
+import { LedgerDerivationPaths, GetAccountsHardwareOperationResult, SignHardwareOperationResult } from '../types'
 import { BraveWallet } from '../../../constants/types'
 import { LedgerCommand, LedgerError, UnlockResponse } from './ledger-messages'
 import {
@@ -56,55 +52,36 @@ const unlockErrorResponse: UnlockResponse = {
 
 test('Check ledger bridge type', () => {
   const keyring = createKeyring()
-  return expect(keyring.type()).toStrictEqual(
-    BraveWallet.LEDGER_HARDWARE_VENDOR
-  )
+  return expect(keyring.type()).toStrictEqual(BraveWallet.LEDGER_HARDWARE_VENDOR)
 })
 
 test('getAccounts unlock error', async () => {
   const keyring: EthereumLedgerBridgeKeyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockErrorResponse)
-  const result: GetAccountsHardwareOperationResult = await keyring.getAccounts(
-    -2,
-    1,
-    LedgerDerivationPaths.LedgerLive
-  )
-  const expectedResult: GetAccountsHardwareOperationResult =
-    unlockErrorResponse.payload
+  const result: GetAccountsHardwareOperationResult = await keyring.getAccounts(-2, 1, LedgerDerivationPaths.LedgerLive)
+  const expectedResult: GetAccountsHardwareOperationResult = unlockErrorResponse.payload
   expect(result).toEqual(expectedResult)
 })
 
 test('getAccounts ledger live derivation path success', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const getAccountsResponsePayload1: EthGetAccountResponsePayload = {
     success: true,
     publicKey: 'publicKey',
     address: 'address'
   }
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountsResponsePayload1
-  })
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountsResponsePayload1 })
   const getAccountsResponsePayload2: EthGetAccountResponsePayload = {
     success: true,
     publicKey: 'publicKey 2',
     address: 'address 2'
   }
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountsResponsePayload2
-  })
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountsResponsePayload2 })
 
-  const result = await keyring.getAccounts(
-    -2,
-    1,
-    LedgerDerivationPaths.LedgerLive
-  )
+  const result = await keyring.getAccounts(-2, 1, LedgerDerivationPaths.LedgerLive)
   expect(result).toEqual({
     success: true,
     payload: [
@@ -113,8 +90,7 @@ test('getAccounts ledger live derivation path success', async () => {
         derivationPath: "m/44'/60'/0'/0/0",
         name: 'Ledger',
         hardwareVendor: 'Ledger',
-        deviceId:
-          'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
+        deviceId: 'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
         coin: BraveWallet.CoinType.ETH,
         keyringId: BraveWallet.KeyringId.kDefault
       },
@@ -123,8 +99,7 @@ test('getAccounts ledger live derivation path success', async () => {
         derivationPath: "m/44'/60'/1'/0/0",
         name: 'Ledger',
         hardwareVendor: 'Ledger',
-        deviceId:
-          'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
+        deviceId: 'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
         coin: BraveWallet.CoinType.ETH,
         keyringId: BraveWallet.KeyringId.kDefault
       }
@@ -134,26 +109,20 @@ test('getAccounts ledger live derivation path success', async () => {
 
 test('getAccounts legacy derivation path success', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const getAccountsResponsePayload1: EthGetAccountResponsePayload = {
     success: true,
     publicKey: 'publicKey',
     address: 'address'
   }
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountsResponsePayload1
-  })
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountsResponsePayload1 })
   const getAccountsResponsePayload2: EthGetAccountResponsePayload = {
     success: true,
     publicKey: 'publicKey 2',
     address: 'address 2'
   }
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountsResponsePayload2
-  })
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountsResponsePayload2 })
 
   const result = await keyring.getAccounts(-2, 1, LedgerDerivationPaths.Legacy)
   expect(result).toEqual({
@@ -164,8 +133,7 @@ test('getAccounts legacy derivation path success', async () => {
         derivationPath: "m/44'/60'/0'/0",
         name: 'Ledger',
         hardwareVendor: 'Ledger',
-        deviceId:
-          'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
+        deviceId: 'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
         coin: BraveWallet.CoinType.ETH,
         keyringId: BraveWallet.KeyringId.kDefault
       },
@@ -174,8 +142,7 @@ test('getAccounts legacy derivation path success', async () => {
         derivationPath: "m/44'/60'/0'/1",
         name: 'Ledger',
         hardwareVendor: 'Ledger',
-        deviceId:
-          'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
+        deviceId: 'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
         coin: BraveWallet.CoinType.ETH,
         keyringId: BraveWallet.KeyringId.kDefault
       }
@@ -185,9 +152,7 @@ test('getAccounts legacy derivation path success', async () => {
 
 test('getAccounts deprecated derivation path success', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
 
   const getAccountsResponsePayload1: EthGetAccountResponsePayload = {
@@ -195,23 +160,15 @@ test('getAccounts deprecated derivation path success', async () => {
     publicKey: 'publicKey',
     address: 'address'
   }
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountsResponsePayload1
-  })
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountsResponsePayload1 })
   const getAccountsResponsePayload2: EthGetAccountResponsePayload = {
     success: true,
     publicKey: 'publicKey 2',
     address: 'address 2'
   }
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountsResponsePayload2
-  })
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountsResponsePayload2 })
 
-  const result = await keyring.getAccounts(
-    -2,
-    1,
-    LedgerDerivationPaths.Deprecated
-  )
+  const result = await keyring.getAccounts(-2, 1, LedgerDerivationPaths.Deprecated)
   expect(result).toEqual({
     success: true,
     payload: [
@@ -220,8 +177,7 @@ test('getAccounts deprecated derivation path success', async () => {
         derivationPath: "m/44'/60'/0'/0",
         name: 'Ledger',
         hardwareVendor: 'Ledger',
-        deviceId:
-          'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
+        deviceId: 'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
         coin: BraveWallet.CoinType.ETH,
         keyringId: BraveWallet.KeyringId.kDefault
       },
@@ -230,8 +186,7 @@ test('getAccounts deprecated derivation path success', async () => {
         derivationPath: "m/44'/60'/1'/0",
         name: 'Ledger',
         hardwareVendor: 'Ledger',
-        deviceId:
-          'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
+        deviceId: 'd80c9bf910f144738ef983724bc04bd6bd3f17c5c83ed57bedee1b1b9278e811',
         coin: BraveWallet.CoinType.ETH,
         keyringId: BraveWallet.KeyringId.kDefault
       }
@@ -241,9 +196,7 @@ test('getAccounts deprecated derivation path success', async () => {
 
 test('getAccounts ledger error after successful unlock', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const getAccountResponseLedgerError: LedgerError = {
     success: false,
@@ -251,14 +204,8 @@ test('getAccounts ledger error after successful unlock', async () => {
     statusCode: 101
   }
 
-  keyring['transport']['addSendCommandResponse']({
-    payload: getAccountResponseLedgerError
-  })
-  const result: GetAccountsHardwareOperationResult = await keyring.getAccounts(
-    -2,
-    1,
-    LedgerDerivationPaths.LedgerLive
-  )
+  keyring['transport']['addSendCommandResponse']({ payload: getAccountResponseLedgerError })
+  const result: GetAccountsHardwareOperationResult = await keyring.getAccounts(-2, 1, LedgerDerivationPaths.LedgerLive)
 
   expect(result).toEqual({
     success: false,
@@ -269,24 +216,16 @@ test('getAccounts ledger error after successful unlock', async () => {
 
 test('signTransaction unlock error', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockErrorResponse)
-  const result = await keyring.signTransaction(
-    "m/44'/60'/0'/0/0",
-    'transaction'
-  )
-  const expectedResult: SignHardwareOperationResult =
-    unlockErrorResponse.payload
+  const result = await keyring.signTransaction("m/44'/60'/0'/0/0", 'transaction')
+  const expectedResult: SignHardwareOperationResult = unlockErrorResponse.payload
   expect(result).toEqual(expectedResult)
 })
 
 test('signTransaction success', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const signTransactionResponse: EthSignTransactionResponse = {
     id: LedgerCommand.SignTransaction,
@@ -302,8 +241,7 @@ test('signTransaction success', async () => {
 
   keyring['transport']['addSendCommandResponse'](signTransactionResponse)
   const result: SignHardwareOperationResult = await keyring.signTransaction(
-    "44'/501'/1'/0'",
-    'transaction'
+    '44\'/501\'/1\'/0\'', 'transaction'
   )
 
   const expectedResult: SignHardwareOperationResult = {
@@ -319,9 +257,7 @@ test('signTransaction success', async () => {
 
 test('signTransaction ledger error after successful unlock', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const ledgerError: LedgerError = {
     success: false,
@@ -351,24 +287,19 @@ test('signTransaction ledger error after successful unlock', async () => {
 
 test('signPersonalMessage unlock error', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockErrorResponse)
   const result = await keyring.signPersonalMessage(
     "m/44'/60'/0'/0/0",
     'message'
   )
-  const expectedResult: SignHardwareOperationResult =
-    unlockErrorResponse.payload
+  const expectedResult: SignHardwareOperationResult = unlockErrorResponse.payload
   expect(result).toEqual(expectedResult)
 })
 
 test('signPersonalMessage success with padding v<27', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const responsePayload: EthSignPersonalMessageResponse = {
     id: LedgerCommand.SignPersonalMessage,
@@ -388,9 +319,7 @@ test('signPersonalMessage success with padding v<27', async () => {
 
 test('signPersonalMessage success with padding v>=27', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const responsePayload: EthSignPersonalMessageResponse = {
     id: LedgerCommand.SignPersonalMessage,
@@ -410,9 +339,7 @@ test('signPersonalMessage success with padding v>=27', async () => {
 
 test('signPersonalMessage failure after successful unlock', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const ledgerError: LedgerError = {
     success: false,
@@ -441,25 +368,20 @@ test('signPersonalMessage failure after successful unlock', async () => {
 
 test('signEip712Message unlock error', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockErrorResponse)
   const result = await keyring.signEip712Message(
     "m/44'/60'/0'/0/0",
     'domainSeparatorHex',
     'hashStructMessageHex'
   )
-  const expectedResult: SignHardwareOperationResult =
-    unlockErrorResponse.payload
+  const expectedResult: SignHardwareOperationResult = unlockErrorResponse.payload
   expect(result).toEqual(expectedResult)
 })
 
 test('signEip712Message success', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const responsePayload: EthSignEip712MessageResponse = {
     id: LedgerCommand.SignEip712Message,
@@ -480,9 +402,7 @@ test('signEip712Message success', async () => {
 
 test('signEip712Message failure after successful unlock', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   keyring['transport']['addSendCommandResponse'](unlockSuccessResponse)
   const ledgerError: LedgerError = {
     success: false,

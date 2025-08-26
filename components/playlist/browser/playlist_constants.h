@@ -8,7 +8,7 @@
 
 namespace playlist {
 
-inline constexpr char kDefaultPlaylistID[] = "default";
+constexpr char kDefaultPlaylistID[] = "default";
 
 }  // namespace playlist
 

@@ -4,7 +4,10 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 // Types/constants
-import { SpotPriceRegistry, BraveWallet } from '../constants/types'
+import {
+  SpotPriceRegistry,
+  BraveWallet
+} from '../constants/types'
 
 // Utils
 import Amount from './amount'
@@ -14,7 +17,10 @@ export const getTokenPriceFromRegistry = (
   spotPriceRegistry: SpotPriceRegistry,
   token: Pick<
     BraveWallet.BlockchainToken,
-    'symbol' | 'contractAddress' | 'chainId' | 'coingeckoId'
+    | 'symbol'
+    | 'contractAddress'
+    | 'chainId'
+    | 'coingeckoId'
   >
 ): BraveWallet.AssetPrice | undefined => {
   return spotPriceRegistry[getPriceIdForToken(token)]
@@ -31,13 +37,9 @@ export const getTokenPriceAmountFromRegistry = (
   return value ? new Amount(value.price) : Amount.zero()
 }
 
-export const computeFiatAmount = ({
-  spotPriceRegistry,
-  value,
-  token
-}: {
-  spotPriceRegistry?: SpotPriceRegistry
-  value: string
+export const computeFiatAmount = ({ spotPriceRegistry, value, token }: {
+  spotPriceRegistry?: SpotPriceRegistry,
+  value: string,
   token: Pick<
     BraveWallet.BlockchainToken,
     | 'symbol'
@@ -66,13 +68,10 @@ export const computeFiatAmount = ({
     .times(price.price)
 }
 
-export const computeFiatAmountToAssetValue = ({
-  spotPriceRegistry,
-  value,
-  token
-}: {
-  spotPriceRegistry?: SpotPriceRegistry
-  value: string
+export const computeFiatAmountToAssetValue = (
+  { spotPriceRegistry, value, token }: {
+  spotPriceRegistry?: SpotPriceRegistry,
+  value: string,
   token: Pick<
     BraveWallet.BlockchainToken,
     | 'symbol'

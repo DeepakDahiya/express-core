@@ -13,6 +13,8 @@
 namespace sidebar {
 namespace p3a {
 
+const char kSidebarEnabledHistogramName[] = "Brave.Sidebar.Enabled";
+
 SidebarP3A::SidebarP3A(PrefService* profile_prefs)
     : profile_prefs_(profile_prefs) {
   profile_pref_change_registrar_.Init(profile_prefs);

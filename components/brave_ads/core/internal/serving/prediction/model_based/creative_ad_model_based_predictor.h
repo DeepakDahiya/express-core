@@ -24,9 +24,8 @@ absl::optional<T> MaybePredictCreativeAd(const std::vector<T>& creative_ads,
                                          const AdEventList& ad_events) {
   CHECK(!creative_ads.empty());
 
-  const CreativeAdModelBasedPredictorList<T> creative_ad_predictors =
-      ComputeCreativeAdModelBasedPredictors(creative_ads, user_model,
-                                            ad_events);
+  const CreativeAdPredictorList<T> creative_ad_predictors =
+      ComputeCreativeAdPredictors(creative_ads, user_model, ad_events);
 
   return MaybeSampleCreativeAd(creative_ad_predictors);
 }

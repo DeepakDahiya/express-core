@@ -17,7 +17,7 @@ function ReaderModeControl(props: ReaderModeControlProps) {
   return (
     <S.Box>
       <S.Caption>
-        <Icon name='product-speedreader' />
+        <Icon name='product-readermode' />
         {getLocale('braveReaderModeCaption')}
       </S.Caption>
       <S.CloseButton id="close" onClick={() => { props.onClose?.() }} title={getLocale('braveReaderModeExit')}>

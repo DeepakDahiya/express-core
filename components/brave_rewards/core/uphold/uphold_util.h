@@ -9,11 +9,9 @@
 #include <string>
 #include <vector>
 
-#include "brave/components/brave_rewards/common/mojom/rewards.mojom.h"
+#include "brave/components/brave_rewards/common/mojom/rewards_types.mojom.h"
 
 namespace brave_rewards::internal::uphold {
-
-std::string GetLoginUrl(const std::string& state);
 
 std::string GetClientId();
 

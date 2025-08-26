@@ -5,14 +5,12 @@
 
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/multi_armed_bandits/resource/epsilon_greedy_bandit_resource.h"
 
-#include "base/feature_list.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_info.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/segments/segment_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
-#include "brave/components/brave_ads/core/internal/targeting/behavioral/multi_armed_bandits/epsilon_greedy_bandit_feature.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/multi_armed_bandits/resource/epsilon_greedy_bandit_resource_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "brave/components/brave_news/common/pref_names.h"
@@ -23,20 +21,19 @@ namespace brave_ads {
 namespace {
 
 bool DoesRequireResource() {
-  return base::FeatureList::IsEnabled(kEpsilonGreedyBanditFeature) &&
-         UserHasOptedInToNotificationAds();
+  return UserHasOptedInToBraveNewsAds() || UserHasOptedInToNotificationAds();
 }
 
 }  // namespace
 
 EpsilonGreedyBanditResource::EpsilonGreedyBanditResource(Catalog& catalog)
     : catalog_(catalog) {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
   catalog_->AddObserver(this);
 }
 
 EpsilonGreedyBanditResource::~EpsilonGreedyBanditResource() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
   catalog_->RemoveObserver(this);
 }
 

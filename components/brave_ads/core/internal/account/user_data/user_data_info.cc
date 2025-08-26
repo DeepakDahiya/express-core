@@ -5,6 +5,8 @@
 
 #include "brave/components/brave_ads/core/internal/account/user_data/user_data_info.h"
 
+#include <tuple>
+
 namespace brave_ads {
 
 UserDataInfo::UserDataInfo() = default;
@@ -27,5 +29,17 @@ UserDataInfo::UserDataInfo(UserDataInfo&& other) noexcept = default;
 UserDataInfo& UserDataInfo::operator=(UserDataInfo&& other) noexcept = default;
 
 UserDataInfo::~UserDataInfo() = default;
+
+bool operator==(const UserDataInfo& lhs, const UserDataInfo& rhs) {
+  const auto tie = [](const UserDataInfo& user_data) {
+    return std::tie(user_data.dynamic, user_data.fixed);
+  };
+
+  return tie(lhs) == tie(rhs);
+}
+
+bool operator!=(const UserDataInfo& lhs, const UserDataInfo& rhs) {
+  return !(lhs == rhs);
+}
 
 }  // namespace brave_ads

@@ -6,10 +6,10 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_PERMISSION_RULES_PERMISSION_RULES_UNITTEST_UTIL_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_PERMISSION_RULES_PERMISSION_RULES_UNITTEST_UTIL_H_
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-void ForcePermissionRules();
+void ForcePermissionRulesForTesting();
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_PERMISSION_RULES_PERMISSION_RULES_UNITTEST_UTIL_H_

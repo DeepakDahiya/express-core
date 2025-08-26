@@ -6,31 +6,31 @@
 import * as React from 'react'
 
 import {
-  SettingsCloseIcon,
-  SettingsContent,
-  SettingsFeatureBody,
   SettingsMenu,
-  SettingsSidebar,
-  SettingsSidebarActiveButtonSlider,
-  SettingsSidebarButton,
-  SettingsSidebarButtonText,
-  SettingsSidebarSVGContent,
   SettingsTitle,
-  SettingsWrapper
+  SettingsWrapper,
+  SettingsSidebar,
+  SettingsFeatureBody,
+  SettingsContent,
+  SettingsCloseIcon,
+  SettingsSidebarButton,
+  SettingsSidebarActiveButtonSlider,
+  SettingsSidebarButtonText,
+  SettingsSidebarSVGContent
 } from '../../components/default'
 
-import { BraveNewsContext } from '../../../brave_news/browser/resources/shared/Context'
-import { Publishers } from '../../../brave_news/browser/resources/shared/api'
 import { getLocale } from '../../../common/locale'
+import { Publishers } from '../../../brave_news/browser/resources/shared/api'
+import { BraveNewsContext } from '../../components/default/braveNews/customize/Context'
 
 // Icons
 import { CloseStrokeIcon } from 'brave-ui/components/icons'
 import BackgroundImageIcon from './settings/icons/backgroundImage.svg'
-import TodayIcon from './settings/icons/braveNews.svg'
 import BraveStatsIcon from './settings/icons/braveStats.svg'
-import CardsIcon from './settings/icons/cards.svg'
-import ClockIcon from './settings/icons/clock.svg'
 import TopSitesIcon from './settings/icons/topSites.svg'
+import ClockIcon from './settings/icons/clock.svg'
+import CardsIcon from './settings/icons/cards.svg'
+import TodayIcon from './settings/icons/braveNews.svg'
 
 // Tabs
 const BackgroundImageSettings = React.lazy(() => import('./settings/backgroundImage'))

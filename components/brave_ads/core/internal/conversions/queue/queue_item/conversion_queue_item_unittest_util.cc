@@ -17,11 +17,12 @@
 #include "brave/components/brave_ads/core/internal/units/ad_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_builder.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_info.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 #include "brave/components/brave_ads/core/public/units/ad_info.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-ConversionQueueItemList BuildConversionQueueItems(
+ConversionQueueItemList BuildConversionQueueItemsForTesting(
     const ConversionInfo& conversion,
     const size_t count) {
   ConversionQueueItemList conversion_queue_items;
@@ -36,7 +37,7 @@ ConversionQueueItemList BuildConversionQueueItems(
   return conversion_queue_items;
 }
 
-void SaveConversionQueue(
+void SaveConversionQueueForTesting(
     const ConversionQueueItemList& conversion_queue_items) {
   const database::table::ConversionQueue database_table;
   database_table.Save(
@@ -44,12 +45,13 @@ void SaveConversionQueue(
       base::BindOnce([](const bool success) { CHECK(success); }));
 }
 
-void BuildAndSaveConversionQueue(AdType ad_type,
-                                 ConfirmationType confirmation_type,
-                                 const bool is_verifiable,
-                                 const bool should_use_random_uuids,
-                                 const int count) {
-  const AdInfo ad = BuildAd(ad_type, should_use_random_uuids);
+void BuildAndSaveConversionQueueForTesting(
+    const AdType& ad_type,
+    const ConfirmationType& confirmation_type,
+    const bool is_verifiable,
+    const bool should_use_random_uuids,
+    const int count) {
+  const AdInfo ad = BuildAdForTesting(ad_type, should_use_random_uuids);
 
   absl::optional<VerifiableConversionInfo> verifiable_conversion;
   if (is_verifiable) {
@@ -62,9 +64,9 @@ void BuildAndSaveConversionQueue(AdType ad_type,
                       verifiable_conversion);
 
   const ConversionQueueItemList conversion_queue_items =
-      BuildConversionQueueItems(conversion, count);
+      BuildConversionQueueItemsForTesting(conversion, count);
 
-  SaveConversionQueue(conversion_queue_items);
+  SaveConversionQueueForTesting(conversion_queue_items);
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

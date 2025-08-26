@@ -27,11 +27,11 @@ class BraveAdsRewardConfirmationPayloadUtilTest : public UnitTestBase {
 TEST_F(BraveAdsRewardConfirmationPayloadUtilTest,
        BuildRewardConfirmationPayload) {
   // Arrange
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -39,15 +39,16 @@ TEST_F(BraveAdsRewardConfirmationPayloadUtilTest,
   ASSERT_TRUE(confirmation);
 
   // Act & Assert
-  EXPECT_EQ(base::test::ParseJsonDict(
-                R"(
+  EXPECT_EQ(
+      base::test::ParseJsonDict(
+          R"(
               {
                 "blindedPaymentTokens": [
                   "Ev5JE4/9TZI/5TqyN9JWfJ1To0HBwQw2rWeAPcdjX3Q="
                 ],
                 "publicKey": "RJ2i/o/pZkrH+i0aGEMY1G9FXtd7Q7gfRi3YdNRnDDk="
               })"),
-            BuildRewardConfirmationPayload(test::BuildReward(*confirmation)));
+      BuildRewardConfirmationPayload(BuildRewardForTesting(*confirmation)));
 }
 
 }  // namespace brave_ads

@@ -6,17 +6,20 @@
 import * as React from 'react'
 
 // Types
-import { BraveWallet } from '../../../../../../constants/types'
+import {
+  BraveWallet
+} from '../../../../../../constants/types'
 
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
 
 // Components
+import withPlaceholderIcon from
+  '../../../../../../components/shared/create-placeholder-icon'
 import {
-  withPlaceholderIcon //
-} from '../../../../../../components/shared/create-placeholder-icon'
-import {
-  CreateNetworkIcon //
+  CreateNetworkIcon
 } from '../../../../../../components/shared/create-network-icon/index'
 
 // Styled Components
@@ -24,6 +27,7 @@ import {
   Button,
   ButtonIcon,
   FuelTank,
+  NotSupportedText,
   GasBubble,
   SelectTokenButtonStyleProps
 } from './select-token-or-network.style'
@@ -57,6 +61,7 @@ export const SelectTokenOrNetworkButton = (props: Props) => {
     hasShadow,
     networkFeeFiatValue,
     isHeader,
+    networkNotSupported,
     asset,
     network,
     iconType
@@ -71,11 +76,16 @@ export const SelectTokenOrNetworkButton = (props: Props) => {
   }, [text])
 
   const AssetIconWithPlaceholder = React.useMemo(() => {
-    return withPlaceholderIcon(AssetIcon, {
-      size: buttonSize === 'small' || buttonSize === 'medium' ? 'small' : 'big',
-      marginLeft: 0,
-      marginRight: 8
-    })
+    return withPlaceholderIcon(
+      AssetIcon,
+      {
+        size: buttonSize === 'small' ||
+          buttonSize === 'medium'
+          ? 'small'
+          : 'big',
+        marginLeft: 0,
+        marginRight: 8
+      })
   }, [buttonSize])
 
   return (
@@ -87,57 +97,65 @@ export const SelectTokenOrNetworkButton = (props: Props) => {
       disabled={disabled}
       hasBackground={hasBackground}
       hasShadow={hasShadow}
+      networkNotSupported={networkNotSupported}
     >
-      <Row>
-        {iconType === 'network' ? (
-          <CreateNetworkIcon
-            network={network}
-            marginRight={8}
-            size={buttonSize === 'small' ? 'small' : 'big'}
-          />
-        ) : (
-          text && (
-            <AssetIconWithPlaceholder
-              asset={asset}
-              network={network}
-            />
-          )
-        )}
-        <HiddenResponsiveRow dontHide={!isHeader}>
-          <Text
-            isBold={text !== undefined}
-            textColor={text ? 'text01' : 'text03'}
-            textSize={
-              buttonSize === 'small' || buttonSize === 'medium'
-                ? '14px'
-                : '18px'
-            }
-          >
-            {text ?? getLocale('braveSwapSelectToken')}
-          </Text>
-        </HiddenResponsiveRow>
-      </Row>
-      <HiddenResponsiveRow dontHide={!isHeader}>
-        {networkFeeFiatValue && (
-          <>
-            <HorizontalSpacer size={8} />
-            <GasBubble>
-              <FuelTank
-                name='search-fuel-tank'
-                size={16}
+      {!networkNotSupported && (
+        <>
+          <Row>
+            {iconType === 'network' ? (
+              <CreateNetworkIcon
+                network={network}
+                marginRight={8}
+                size={buttonSize === 'small' ? 'small' : 'big'}
               />
+            ) : (
+              text && (
+                <AssetIconWithPlaceholder
+                  asset={asset}
+                  network={network}
+                />
+              )
+            )}
+            <HiddenResponsiveRow dontHide={!isHeader}>
               <Text
-                textSize='14px'
-                textColor='text01'
+                isBold={text !== undefined}
+                textColor={text ? 'text01' : 'text03'}
+                textSize={
+                  buttonSize === 'small' || buttonSize === 'medium'
+                    ? '14px'
+                    : '18px'
+                }
               >
-                {networkFeeFiatValue}
+                {text ?? getLocale('braveSwapSelectToken')}
               </Text>
-            </GasBubble>
-          </>
-        )}
-        {buttonSize !== 'small' && <HorizontalSpacer size={8} />}
-      </HiddenResponsiveRow>
+            </HiddenResponsiveRow>
+          </Row>
+          <HiddenResponsiveRow dontHide={!isHeader}>
+            {networkFeeFiatValue && (
+              <>
+                <HorizontalSpacer size={8} />
+                <GasBubble>
+                  <FuelTank name='search-fuel-tank' size={16} />
+                  <Text textSize='14px' textColor='text01'>
+                    {networkFeeFiatValue}
+                  </Text>
+                </GasBubble>
+              </>
+            )}
+            {buttonSize !== 'small' && <HorizontalSpacer size={8} />}
+          </HiddenResponsiveRow>
+        </>
+      )}
+      {networkNotSupported && (
+        <>
+          <NotSupportedText isBold={true} textSize='14px'>
+            {getLocale('braveSwapSwitchNetwork')}
+          </NotSupportedText>
+          <HorizontalSpacer size={8} />
+        </>
+      )}
       <ButtonIcon
+        networkNotSupported={networkNotSupported}
         size={24}
         name='carat-down'
       />

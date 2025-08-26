@@ -14,7 +14,7 @@ namespace brave_l10n {
 
 // See https://orpa.princeton.edu/export-controls/sanctioned-countries.
 
-inline constexpr auto kOFACSactionedISO31661CountryCodes =
+constexpr auto kOFACSactionedISO31661CountryCodes =
     base::MakeFixedFlatSet<std::string_view>({
         // List of Comprehensively Sanctioned Countries. Most transactions,
         // including those involving persons or entities "ordinarily resident"

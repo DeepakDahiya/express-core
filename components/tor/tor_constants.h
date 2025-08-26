@@ -11,10 +11,9 @@
 namespace tor {
 
 // Deprecated
-inline constexpr const base::FilePath::CharType kTorProfileDir[] =
-    FILE_PATH_LITERAL("Tor Profile");
+extern const base::FilePath::CharType kTorProfileDir[];
 
-inline constexpr char kTorProfileID[] = "Tor::Profile";
+constexpr char kTorProfileID[] = "Tor::Profile";
 
 }  // namespace tor
 

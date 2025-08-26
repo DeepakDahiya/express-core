@@ -6,8 +6,7 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_WAYBACK_MACHINE_URL_CONSTANTS_H_
 #define BRAVE_COMPONENTS_BRAVE_WAYBACK_MACHINE_URL_CONSTANTS_H_
 
-inline constexpr char kWaybackQueryURL[] =
-    "https://brave-api.archive.org/wayback/available?url=";
-inline constexpr char kWaybackHost[] = "web.archive.org";
+extern const char kWaybackQueryURL[];
+extern const char kWaybackHost[];
 
 #endif  // BRAVE_COMPONENTS_BRAVE_WAYBACK_MACHINE_URL_CONSTANTS_H_

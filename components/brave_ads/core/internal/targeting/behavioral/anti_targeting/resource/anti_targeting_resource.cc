@@ -8,7 +8,7 @@
 #include <utility>
 
 #include "base/functional/bind.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/resources/country_components.h"
 #include "brave/components/brave_ads/core/internal/common/resources/resources_util_impl.h"
@@ -30,11 +30,11 @@ bool DoesRequireResource() {
 }  // namespace
 
 AntiTargetingResource::AntiTargetingResource() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 AntiTargetingResource::~AntiTargetingResource() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
 }
 
 AntiTargetingSiteList AntiTargetingResource::GetSites(
@@ -110,7 +110,7 @@ void AntiTargetingResource::Reset() {
 }
 
 void AntiTargetingResource::OnNotifyLocaleDidChange(
-    const std::string& /*locale*/) {
+    const std::string& /*locale=*/) {
   MaybeLoad();
 }
 

@@ -3,20 +3,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import Flex from '$web-common/Flex'
-import { getLocale } from '$web-common/locale'
-import TextInput from '$web-components/input'
 import Button from '@brave/leo/react/button'
+import TextInput from '$web-components/input'
 import * as React from 'react'
 import { useState } from 'react'
 import styled from 'styled-components'
-import { useBraveNews, useChannels } from '../../../../../brave_news/browser/resources/shared/Context'
+import { getLocale } from '$web-common/locale'
+import { useBraveNews, useChannels } from './Context'
+import Flex from '$web-common/Flex'
 import ChannelCard from './ChannelCard'
 import DiscoverSection from './DiscoverSection'
-import PublisherCard, { DirectPublisherCard } from '../../../../../brave_news/browser/resources/shared/PublisherCard'
-import { PopularCarousel } from './Popular'
-import { SuggestionsCarousel } from './Suggestions'
+import FeedCard, { DirectFeedCard } from './FeedCard'
 import useSearch from './useSearch'
+import { SuggestionsCarousel } from './Suggestions'
+import { PopularCarousel } from './Popular'
 
 const Header = styled.span`
   font-size: 24px;
@@ -89,7 +89,7 @@ function SearchResults (props: SearchResultsProps) {
       }
       <DiscoverSection name={getLocale('braveNewsAllSourcesHeader')}>
         {search.filteredSources.publisherIds.map(publisherId =>
-          <PublisherCard key={publisherId} publisherId={publisherId} />
+          <FeedCard key={publisherId} publisherId={publisherId} />
         )}
         {showFetchPermissionButton &&
           <div>
@@ -99,7 +99,7 @@ function SearchResults (props: SearchResultsProps) {
           </div>
         }
         {search.filteredSources.direct.map(r =>
-          <DirectPublisherCard key={r.feedUrl.url} feedUrl={r.feedUrl.url} title={r.feedTitle} />)}
+          <DirectFeedCard key={r.feedUrl.url} feedUrl={r.feedUrl.url} title={r.feedTitle} />)}
         {!search.canQueryFilterSources &&
           getLocale('braveNewsSearchQueryTooShort')
         }

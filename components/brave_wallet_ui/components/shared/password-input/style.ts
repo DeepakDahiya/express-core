@@ -43,17 +43,22 @@ export const Input = styled.input<{ hasError: boolean }>`
 
   background-image: none;
   box-shadow: none;
+  
+  background-color: ${(p) => p.hasError
+    ? p.theme.color.errorBackground
+    : p.theme.color.background02
+  };
 
-  background-color: ${(p) =>
-    p.hasError ? p.theme.color.errorBackground : p.theme.color.background02};
+  border: ${(p) => p.hasError
+    ? `4px solid ${p.theme.color.errorBorder}`
+    : `1px solid ${p.theme.color.interactive08}`
+  };
 
-  border: ${(p) =>
-    p.hasError
-      ? `4px solid ${p.theme.color.errorBorder}`
-      : `1px solid ${p.theme.color.interactive08}`};
-
-  padding: ${(p) => (p.hasError ? 7 : 10)}px;
-
+  padding: ${(p) => p.hasError
+    ? 7
+    : 10
+  }px;
+  
   border-radius: 4px;
   font-family: Poppins;
   font-style: normal;
@@ -80,7 +85,7 @@ export const Input = styled.input<{ hasError: boolean }>`
     -webkit-appearance: none;
     margin: 0;
   }
-
+  
   ::-webkit-outer-spin-button {
     -webkit-appearance: none;
     margin: 0;
@@ -135,7 +140,7 @@ export const ToggleVisibilityIcon = styled.div<Partial<StyleProps>>`
   width: 18px;
   height: 18px;
   background-color: ${(p) => p.theme.color.text02};
-  -webkit-mask-image: url(${(p) => (p.showPassword ? EyeOffIcon : EyeOnIcon)});
-  mask-image: url(${(p) => (p.showPassword ? EyeOffIcon : EyeOnIcon)});
+  -webkit-mask-image: url(${(p) => p.showPassword ? EyeOffIcon : EyeOnIcon});
+  mask-image: url(${(p) => p.showPassword ? EyeOffIcon : EyeOnIcon});
   mask-size: contain;
 `

@@ -27,11 +27,9 @@ class AdsServiceMock : public AdsService {
 
   ~AdsServiceMock() override;
 
-  MOCK_METHOD1(
-      AddBatAdsObserver,
-      void(mojo::PendingRemote<bat_ads::mojom::BatAdsObserver> observer));
-
   MOCK_CONST_METHOD0(GetMaximumNotificationAdsPerHour, int64_t());
+
+  MOCK_CONST_METHOD0(NeedsBrowserUpgradeToServeAds, bool());
 
   MOCK_METHOD2(ShowScheduledCaptcha,
                void(const std::string&, const std::string&));

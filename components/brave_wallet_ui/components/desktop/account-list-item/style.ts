@@ -8,7 +8,9 @@ import Icon from '@brave/leo/react/icon'
 
 // Shared Styles
 import { WalletButton, Text, Row } from '../../shared/style'
-import { layoutPanelWidth } from '../wallet-page-wrapper/wallet-page-wrapper.style'
+import {
+  layoutPanelWidth
+} from '../wallet-page-wrapper/wallet-page-wrapper.style'
 
 export const StyledWrapper = styled.div`
   display: flex;

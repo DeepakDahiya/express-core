@@ -12,7 +12,7 @@
 #include "brave/components/brave_ads/core/internal/account/account.h"
 #include "brave/components/brave_ads/core/internal/analytics/p2a/opportunities/p2a_opportunity.h"
 #include "brave/components/brave_ads/core/internal/browser/browser_manager.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/notification_ads/notification_ad_manager.h"
 #include "brave/components/brave_ads/core/internal/deprecated/client/client_state_manager.h"
@@ -39,14 +39,14 @@ namespace {
 
 void FireEventCallback(TriggerAdEventCallback callback,
                        const bool success,
-                       const std::string& /*placement_id*/,
-                       const mojom::NotificationAdEventType /*event_type*/) {
+                       const std::string& /*placement_id=*/,
+                       const mojom::NotificationAdEventType /*event_type=*/) {
   std::move(callback).Run(success);
 }
 
 void MaybeCloseAllNotifications() {
   if (!UserHasOptedInToNotificationAds()) {
-    NotificationAdManager::GetInstance().RemoveAll(/*should_close=*/true);
+    NotificationAdManager::GetInstance().CloseAll();
   }
 }
 
@@ -62,14 +62,14 @@ NotificationAdHandler::NotificationAdHandler(
       transfer_(transfer),
       epsilon_greedy_bandit_processor_(epsilon_greedy_bandit_processor),
       serving_(subdivision_targeting, anti_targeting_resource) {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
   BrowserManager::GetInstance().AddObserver(this);
   event_handler_.SetDelegate(this);
   serving_.SetDelegate(this);
 }
 
 NotificationAdHandler::~NotificationAdHandler() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
   BrowserManager::GetInstance().RemoveObserver(this);
 }
 
@@ -116,7 +116,7 @@ void NotificationAdHandler::FireServedEventCallback(
     TriggerAdEventCallback callback,
     const bool success,
     const std::string& placement_id,
-    const mojom::NotificationAdEventType /*event_type*/) {
+    const mojom::NotificationAdEventType /*event_type=*/) {
   if (!success) {
     return std::move(callback).Run(/*success=*/false);
   }
@@ -184,7 +184,7 @@ void NotificationAdHandler::OnDidServeNotificationAd(
               << "  body: " << ad.body << "\n"
               << "  targetUrl: " << ad.target_url);
 
-  NotificationAdManager::GetInstance().Add(ad);
+  ShowNotificationAd(ad);
 
   serving_.MaybeServeAdAtNextRegularInterval();
 }
@@ -218,8 +218,7 @@ void NotificationAdHandler::OnDidFireNotificationAdClickedEvent(
               << ad.placement_id << " and creative instance id "
               << ad.creative_instance_id);
 
-  NotificationAdManager::GetInstance().Remove(ad.placement_id,
-                                              /*should_close=*/true);
+  CloseNotificationAd(ad.placement_id);
 
   transfer_->SetLastClickedAd(ad);
 
@@ -242,8 +241,7 @@ void NotificationAdHandler::OnDidFireNotificationAdDismissedEvent(
               << ad.placement_id << " and creative instance id "
               << ad.creative_instance_id);
 
-  NotificationAdManager::GetInstance().Remove(ad.placement_id,
-                                              /*should_close=*/false);
+  DismissNotificationAd(ad.placement_id);
 
   HistoryManager::GetInstance().Add(ad, ConfirmationType::kDismissed);
 
@@ -264,9 +262,7 @@ void NotificationAdHandler::OnDidFireNotificationAdTimedOutEvent(
               << ad.placement_id << " and creative instance id "
               << ad.creative_instance_id);
 
-  NotificationAdManager::GetInstance().Remove(ad.placement_id,
-                                              /*should_close=*/false);
-
+  NotificationAdTimedOut(ad.placement_id);
   epsilon_greedy_bandit_processor_->Process(
       {ad.segment, mojom::NotificationAdEventType::kTimedOut});
 

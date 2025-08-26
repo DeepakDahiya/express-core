@@ -9,7 +9,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/browser/browser_manager.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/global_state/global_state.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
@@ -43,13 +43,13 @@ void LogEvent(const UserActivityEventType event_type) {
 }  // namespace
 
 UserActivityManager::UserActivityManager() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
   BrowserManager::GetInstance().AddObserver(this);
   TabManager::GetInstance().AddObserver(this);
 }
 
 UserActivityManager::~UserActivityManager() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
   BrowserManager::GetInstance().RemoveObserver(this);
   TabManager::GetInstance().RemoveObserver(this);
 }
@@ -154,27 +154,27 @@ void UserActivityManager::OnBrowserDidEnterBackground() {
   RecordEvent(UserActivityEventType::kBrowserDidEnterBackground);
 }
 
-void UserActivityManager::OnTabDidChangeFocus(const int32_t /*tab_id*/) {
+void UserActivityManager::OnTabDidChangeFocus(const int32_t /*tab_id=*/) {
   RecordEvent(UserActivityEventType::kTabChangedFocus);
 }
 
-void UserActivityManager::OnTabDidChange(const TabInfo& /*tab*/) {
+void UserActivityManager::OnTabDidChange(const TabInfo& /*tab=*/) {
   RecordEvent(UserActivityEventType::kTabUpdated);
 }
 
-void UserActivityManager::OnDidOpenNewTab(const TabInfo& /*tab*/) {
+void UserActivityManager::OnDidOpenNewTab(const TabInfo& /*tab=*/) {
   RecordEvent(UserActivityEventType::kOpenedNewTab);
 }
 
-void UserActivityManager::OnDidCloseTab(const int32_t /*tab_id*/) {
+void UserActivityManager::OnDidCloseTab(const int32_t /*tab_id=*/) {
   RecordEvent(UserActivityEventType::kClosedTab);
 }
 
-void UserActivityManager::OnTabDidStartPlayingMedia(const int32_t /*tab_id*/) {
+void UserActivityManager::OnTabDidStartPlayingMedia(const int32_t /*tab_id=*/) {
   RecordEvent(UserActivityEventType::kTabStartedPlayingMedia);
 }
 
-void UserActivityManager::OnTabDidStopPlayingMedia(const int32_t /*tab_id*/) {
+void UserActivityManager::OnTabDidStopPlayingMedia(const int32_t /*tab_id=*/) {
   RecordEvent(UserActivityEventType::kTabStoppedPlayingMedia);
 }
 

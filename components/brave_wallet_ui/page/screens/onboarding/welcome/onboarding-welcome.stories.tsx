@@ -10,11 +10,9 @@ import { WalletPageStory } from '../../../../stories/wrappers/wallet-page-story-
 import { OnboardingWelcome } from './onboarding-welcome'
 
 export const _OnboardingWelcome = () => {
-  return (
-    <WalletPageStory>
-      <OnboardingWelcome />
-    </WalletPageStory>
-  )
+  return <WalletPageStory>
+    <OnboardingWelcome />
+  </WalletPageStory>
 }
 
 _OnboardingWelcome.story = {

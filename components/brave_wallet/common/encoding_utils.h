@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/containers/span.h"
+#include "base/values.h"
 
 namespace brave_wallet {
 

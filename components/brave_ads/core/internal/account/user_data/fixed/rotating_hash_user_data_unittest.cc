@@ -31,7 +31,7 @@ TEST_F(BraveAdsRotatingHashUserDataTest,
   // Arrange
   MockDeviceId();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -47,11 +47,11 @@ TEST_F(BraveAdsRotatingHashUserDataTest,
 TEST_F(BraveAdsRotatingHashUserDataTest,
        DoNotBuildRotatingHashUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   MockDeviceId();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -62,7 +62,7 @@ TEST_F(BraveAdsRotatingHashUserDataTest,
 TEST_F(BraveAdsRotatingHashUserDataTest,
        DoNotBuildRotatingHashUserDataIfMissingDeviceId) {
   // Arrange
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 

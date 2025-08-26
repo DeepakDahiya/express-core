@@ -9,11 +9,9 @@ import WalletPageStory from '../../../stories/wrappers/wallet-page-story-wrapper
 import { DepositFundsScreen } from './deposit-funds'
 
 export const _DepositFundsScreen = () => {
-  return (
-    <WalletPageStory>
-      <DepositFundsScreen />
-    </WalletPageStory>
-  )
+  return <WalletPageStory>
+    <DepositFundsScreen />
+  </WalletPageStory>
 }
 
 _DepositFundsScreen.story = {

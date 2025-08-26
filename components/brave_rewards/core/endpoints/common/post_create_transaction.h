@@ -8,7 +8,6 @@
 
 #include <string>
 
-#include "brave/components/brave_rewards/common/mojom/rewards_core.mojom.h"
 #include "brave/components/brave_rewards/core/endpoints/request_builder.h"
 
 namespace brave_rewards::internal {

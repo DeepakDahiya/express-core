@@ -9,6 +9,8 @@
 
 namespace de_amp {
 
+const char kDeAmpPrefEnabled[] = "brave.de_amp.enabled";
+
 void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kDeAmpPrefEnabled, true);  // default on
 }

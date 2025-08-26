@@ -9,6 +9,7 @@
 #include "base/strings/string_util.h"
 #include "brave/components/brave_ads/core/internal/common/strings/string_strip_util.h"
 #include "brave/components/brave_ads/core/internal/segments/segment_util.h"
+#include "brave/components/brave_ads/core/public/units/ad_type.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
@@ -27,7 +28,7 @@ std::string NormalizeSegment(const std::string& segment) {
 }
 
 absl::optional<std::string> BuildAdOpportunitiesPerSegmentEvent(
-    AdType ad_type,
+    const AdType& ad_type,
     const std::string& segment) {
   CHECK_NE(AdType::kUndefined, ad_type);
   CHECK(!segment.empty());
@@ -39,21 +40,21 @@ absl::optional<std::string> BuildAdOpportunitiesPerSegmentEvent(
   }
 
   return base::ReplaceStringPlaceholders(
-      kAdOpportunitiesPerSegmentEvent, {ToString(ad_type), normalized_segment},
+      kAdOpportunitiesPerSegmentEvent, {ad_type.ToString(), normalized_segment},
       nullptr);
 }
 
-std::string BuildAdOpportunitiesEvent(AdType ad_type) {
+std::string BuildAdOpportunitiesEvent(const AdType& ad_type) {
   CHECK_NE(AdType::kUndefined, ad_type);
 
   return base::ReplaceStringPlaceholders(kAdOpportunitiesEvent,
-                                         {ToString(ad_type)}, nullptr);
+                                         {ad_type.ToString()}, nullptr);
 }
 
 }  // namespace
 
 std::vector<std::string> BuildP2AAdOpportunityEvents(
-    AdType ad_type,
+    const AdType& ad_type,
     const SegmentList& segments) {
   CHECK_NE(AdType::kUndefined, ad_type);
 

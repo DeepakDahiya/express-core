@@ -8,14 +8,14 @@
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/challenge_bypass_ristretto_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/token_preimage.h"
 
-namespace brave_ads::cbr::test {
+namespace brave_ads::cbr {
 
-TokenPreimage GetTokenPreimage() {
+TokenPreimage GetTokenPreimageForTesting() {
   return TokenPreimage(kTokenPreimageBase64);
 }
 
-TokenPreimage GetInvalidTokenPreimage() {
+TokenPreimage GetInvalidTokenPreimageForTesting() {
   return TokenPreimage(kInvalidBase64);
 }
 
-}  // namespace brave_ads::cbr::test
+}  // namespace brave_ads::cbr

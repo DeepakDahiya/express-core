@@ -12,13 +12,12 @@
 namespace brave_ads::rewards::json::reader {
 
 absl::optional<PaymentTokenList> ReadPaymentTokens(const std::string& json) {
-  const absl::optional<base::Value::Dict> dict =
-      base::JSONReader::ReadDict(json);
-  if (!dict) {
+  const absl::optional<base::Value> root = base::JSONReader::Read(json);
+  if (!root || !root->is_dict()) {
     return absl::nullopt;
   }
 
-  return ParsePaymentTokens(*dict);
+  return ParsePaymentTokens(root->GetDict());
 }
 
 }  // namespace brave_ads::rewards::json::reader

@@ -19,7 +19,10 @@ import {
   networkEntityAdapter
 } from '../common/slices/entities/network.entity'
 import { makeNetworkAsset } from '../options/asset-options'
-import { getAddressLabel, getAccountLabel } from './account-utils'
+import {
+  getAddressLabel,
+  getAccountLabel
+} from './account-utils'
 import Amount from './amount'
 import { getCoinFromTxDataUnion } from './network-utils'
 import {
@@ -85,7 +88,10 @@ export const makeSearchableTransaction = (
   const senderAddress = senderAccount.address
   const senderLabel = getAccountLabel(senderAccount, accountInfosRegistry)
   const recipient = getTransactionToAddress(tx)
-  const recipientLabel = getAddressLabel(recipient, accountInfosRegistry)
+  const recipientLabel = getAddressLabel(
+    recipient,
+    accountInfosRegistry
+  )
 
   const emptyAmount = new Amount('')
 
@@ -137,7 +143,7 @@ export const filterTransactionsBySearchValue = (
   txs: SearchableTransaction[],
   lowerCaseSearchValue: string
 ) => {
-  return txs.filter((tx) => {
+  return txs.filter(tx => {
     return (
       // Tokens
       findTokenBySearchValue(lowerCaseSearchValue, tx.token) ||

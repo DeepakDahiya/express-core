@@ -27,7 +27,7 @@ extern const base::FeatureParam<double> kBraveNewsPopScoreHalfLife;
 // Used as the fallback |pop_score| value for articles we
 // don't have a |pop_score| for, such as articles from a direct feed, or just
 // articles that Brave Search doesn't have enough information about.
-extern const base::FeatureParam<double> kBraveNewsPopScoreMin;
+extern const base::FeatureParam<double> kBraveNewsPopScoreFallback;
 
 // The ratio at which inline cards present discovery options (i.e. a source the
 // user has not visited before).
@@ -56,11 +56,6 @@ extern const base::FeatureParam<double> kBraveNewsChannelSubscribedBoost;
 // visits are calculated as the normalized visit count (i.e. 0 - 1) + this
 // offset.
 extern const base::FeatureParam<double> kBraveNewsSourceVisitsMin;
-
-// The ratio of category to topic clusters. For example 0.8 would indicate that
-// 80% of the clusters should be categories and 20% topics.
-extern const base::FeatureParam<double> kBraveNewsCategoryTopicRatio;
-
 }  // namespace brave_news::features
 
 #endif  // BRAVE_COMPONENTS_BRAVE_NEWS_COMMON_FEATURES_H_

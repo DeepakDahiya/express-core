@@ -91,14 +91,8 @@ absl::optional<PublicKeyMap> ParsePublicKeys(const base::Value::Dict& dict) {
     if (!associated_value) {
       return absl::nullopt;
     }
-    double associated_value_as_double;
-    if (!base::StringToDouble(*associated_value, &associated_value_as_double)) {
-      // TODO(https://github.com/brave/brave-browser/issues/33546): Decouple
-      // payment and confirmation issuer structs/parsing so that we do not need
-      // to set the associated value to 0 when an "associatedValue" key has an
-      // empty value.
-      associated_value_as_double = 0.0;
-    }
+    double associated_value_as_double = 0.0;
+    base::StringToDouble(*associated_value, &associated_value_as_double);
 
     public_keys.insert({*public_key, associated_value_as_double});
   }
@@ -119,15 +113,19 @@ base::Value::List IssuersToValue(const IssuerList& issuers) {
 
     base::Value::List public_keys_list;
     for (const auto& [public_key, associated_value] : issuer.public_keys) {
-      public_keys_list.Append(base::Value::Dict()
-                                  .Set(kPublicKeyKey, public_key)
-                                  .Set(kAssociatedValueKey,
-                                       base::NumberToString(associated_value)));
+      auto public_key_dict =
+          base::Value::Dict()
+              .Set(kPublicKeyKey, public_key)
+              .Set(kAssociatedValueKey, base::NumberToString(associated_value));
+
+      public_keys_list.Append(std::move(public_key_dict));
     }
 
-    list.Append(base::Value::Dict()
+    auto dict = base::Value::Dict()
                     .Set(kNameKey, *name)
-                    .Set(kPublicKeysKey, std::move(public_keys_list)));
+                    .Set(kPublicKeysKey, std::move(public_keys_list));
+
+    list.Append(std::move(dict));
   }
 
   return list;

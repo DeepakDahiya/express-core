@@ -9,7 +9,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/notreached.h"
 #include "base/strings/strcat.h"
@@ -17,10 +16,9 @@
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "brave/components/brave_news/api/combined_feed.h"
-#include "brave/components/brave_news/browser/channel_migrator.h"
 #include "brave/components/brave_news/common/brave_news.mojom-forward.h"
+#include "brave/components/brave_news/common/brave_news.mojom-shared.h"
 #include "brave/components/brave_news/common/brave_news.mojom.h"
-#include "brave/components/brave_news/common/features.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/l10n/time_format.h"
 #include "url/gurl.h"
@@ -31,11 +29,12 @@ namespace {
 
 base::expected<mojom::FeedItemPtr, std::string> ParseFeedItem(
     const base::Value& value) {
-  auto parsed_feed_item = api::combined_feed::Item::FromValue(value);
-  if (!parsed_feed_item.has_value()) {
-    return base::unexpected(
-        base::StrCat({"Failed to parse feed item. ",
-                      base::UTF16ToASCII(parsed_feed_item.error())}));
+  std::u16string error;
+  auto parsed_feed_item =
+      api::combined_feed::Item::FromValueDeprecated(value, &error);
+  if (!parsed_feed_item) {
+    return base::unexpected(base::StrCat(
+        {"Failed to parse feed item. ", base::UTF16ToASCII(error)}));
   }
   api::combined_feed::Item& feed_item = *parsed_feed_item;
 
@@ -51,13 +50,9 @@ base::expected<mojom::FeedItemPtr, std::string> ParseFeedItem(
         base::StrCat({"Item url was not HTTP or HTTPS: url=", url.spec()}));
   }
 
-  // FeedV2 supports articles with no images, such as the ones from Brave Blog.
-  if (!base::FeatureList::IsEnabled(
-          brave_news::features::kBraveNewsFeedUpdate)) {
-    if (feed_item.padded_img.empty()) {
-      return base::unexpected(base::StrCat(
-          {"Found feed item with missing image. url=", feed_item.url}));
-    }
+  if (feed_item.padded_img.empty()) {
+    return base::unexpected(base::StrCat(
+        {"Found feed item with missing image. url=", feed_item.url}));
   }
 
   if (feed_item.publisher_id.empty()) {
@@ -76,7 +71,7 @@ base::expected<mojom::FeedItemPtr, std::string> ParseFeedItem(
   }
 
   auto metadata = mojom::FeedItemMetadata::New();
-  metadata->category_name = GetMigratedChannel(feed_item.category);
+  metadata->category_name = feed_item.category;
   metadata->title = feed_item.title;
   metadata->description = feed_item.description;
   metadata->publisher_id = feed_item.publisher_id;

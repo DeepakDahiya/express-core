@@ -69,6 +69,7 @@ export default {
           adBlockMode: AdBlockMode.ALLOW,
           fingerprintMode: FingerprintMode.ALLOW,
           cookieBlockMode: CookieBlockMode.ALLOW,
+          isHttpsEverywhereEnabled: true,
           httpsUpgradeMode: HttpsUpgradeMode.DISABLED,
           isNoscriptEnabled: false,
           isForgetFirstPartyStorageEnabled: false

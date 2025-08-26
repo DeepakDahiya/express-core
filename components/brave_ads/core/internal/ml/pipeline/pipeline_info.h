@@ -10,26 +10,27 @@
 
 #include "brave/components/brave_ads/core/internal/ml/ml_alias.h"
 #include "brave/components/brave_ads/core/internal/ml/model/linear/linear.h"
-#include "brave/components/brave_ads/core/internal/ml/model/neural/neural.h"
 
 namespace brave_ads::ml::pipeline {
 
 struct PipelineInfo final {
   PipelineInfo();
-  PipelineInfo(std::string locale,
+  PipelineInfo(int version,
+               std::string timestamp,
+               std::string locale,
                TransformationVector transformations,
-               absl::optional<LinearModel> linear_model,
-               absl::optional<NeuralModel> neural_model);
+               LinearModel linear_model);
 
   PipelineInfo(PipelineInfo&&) noexcept;
   PipelineInfo& operator=(PipelineInfo&&) noexcept;
 
   ~PipelineInfo();
 
+  int version;
+  std::string timestamp;
   std::string locale;
   TransformationVector transformations;
-  absl::optional<LinearModel> linear_model;
-  absl::optional<NeuralModel> neural_model;
+  LinearModel linear_model;
 };
 
 }  // namespace brave_ads::ml::pipeline

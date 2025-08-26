@@ -16,7 +16,10 @@ import SelectNetworkDropdown from '../select-network-dropdown'
 import SearchBar from '../../shared/search-bar'
 
 // Styled Components
-import { StyledWrapper, HorizontalDivider } from './style'
+import {
+  StyledWrapper,
+  HorizontalDivider
+} from './style'
 
 interface Props {
   selectedNetwork: BraveWallet.NetworkInfo

@@ -8,8 +8,7 @@
 
 namespace brave_ads {
 
-inline constexpr char kTextEmbeddingResourceId[] =
-    "wtpwsrqtjxmfdwaymauprezkunxprysm";
+constexpr char kTextEmbeddingResourceId[] = "wtpwsrqtjxmfdwaymauprezkunxprysm";
 
 }  // namespace brave_ads
 

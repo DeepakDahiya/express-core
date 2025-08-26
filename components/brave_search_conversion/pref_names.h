@@ -11,31 +11,31 @@ class PrefService;
 namespace brave_search_conversion {
 namespace prefs {
 
-inline constexpr char kDismissed[] = "brave.brave_search_conversion.dismissed";
-inline constexpr char kMaybeLaterClickedTime[] =
+constexpr char kDismissed[] = "brave.brave_search_conversion.dismissed";
+constexpr char kMaybeLaterClickedTime[] =
     "brave.brave_search_conversion.maybe_later_clicked_time";
 
-inline constexpr char kP3AActionStatuses[] =
+constexpr char kP3AActionStatuses[] =
     "brave.brave_search_conversion.action_statuses";
 
-inline constexpr char kP3ADefaultEngineConverted[] =
+constexpr char kP3ADefaultEngineConverted[] =
     "brave.brave_search_conversion.default_changed";
 const char kP3AQueryCountBeforeChurn[] =
     "brave.brave_search_conversion.query_count";
 const char kP3AAlreadyChurned[] =
     "brave.brave_search_conversion.already_churned";
 
-inline constexpr char kP3ABannerShown[] =
+constexpr char kP3ABannerShown[] =
     "brave.brave_search_conversion.banner_shown";  // DEPRECATED
-inline constexpr char kP3ABannerTriggered[] =
+constexpr char kP3ABannerTriggered[] =
     "brave.brave_search_conversion.banner_triggered";  // DEPRECATED
-inline constexpr char kP3AButtonShown[] =
+constexpr char kP3AButtonShown[] =
     "brave.brave_search_conversion.button_shown";  // DEPRECATED
-inline constexpr char kP3ANTPShown[] =
+constexpr char kP3ANTPShown[] =
     "brave.brave_search_conversion.ntp_shown";  // DEPRECATED
-inline constexpr char kP3AButtonTriggered[] =
+constexpr char kP3AButtonTriggered[] =
     "brave.brave_search_conversion.button_triggered";  // DEPRECATED
-inline constexpr char kP3ANTPTriggered[] =
+constexpr char kP3ANTPTriggered[] =
     "brave.brave_search_conversion.ntp_triggered";  // DEPRECATED
 
 }  // namespace prefs

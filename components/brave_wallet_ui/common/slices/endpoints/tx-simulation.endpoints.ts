@@ -111,11 +111,9 @@ export const transactionSimulationEndpoints = ({
 
           if (errorResponse || errorString) {
             throw new Error(
-              `EVM Transaction Simulation error for tx: ${JSON.stringify(
-                tx,
-                undefined,
-                2
-              )} -- ${
+              `EVM Transaction Simulation error for tx: ${
+                JSON.stringify(tx, undefined, 2)
+              } -- ${
                 errorString //
               } -- ${errorResponse}`
             )

@@ -23,8 +23,8 @@ namespace brave_ads {
 
 TEST(BraveAdsValidationUtilTest, InvalidConversionQueueItem) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
   ConversionInfo conversion = BuildConversion(
       BuildAdEvent(ad, ConfirmationType::kViewed, /*created_at=*/Now()),
       VerifiableConversionInfo{kVerifiableConversionId,
@@ -32,7 +32,7 @@ TEST(BraveAdsValidationUtilTest, InvalidConversionQueueItem) {
   conversion.ad_type = AdType::kUndefined;
 
   ConversionQueueItemList conversion_queue_items =
-      test::BuildConversionQueueItems(conversion, /*count=*/1);
+      BuildConversionQueueItemsForTesting(conversion, /*count=*/1);
   conversion_queue_items[0].process_at = base::Time();
 
   // Act & Assert
@@ -42,14 +42,14 @@ TEST(BraveAdsValidationUtilTest, InvalidConversionQueueItem) {
 
 TEST(BraveAdsValidationUtilTest, ValidConversionQueueItem) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
   const ConversionInfo conversion = BuildConversion(
       BuildAdEvent(ad, ConfirmationType::kViewed, /*created_at=*/Now()),
       VerifiableConversionInfo{kVerifiableConversionId,
                                kVerifiableConversionAdvertiserPublicKey});
   const ConversionQueueItemList conversion_queue_items =
-      test::BuildConversionQueueItems(conversion, /*count=*/1);
+      BuildConversionQueueItemsForTesting(conversion, /*count=*/1);
 
   // Act & Assert
   EXPECT_EQ(

@@ -12,14 +12,16 @@
 
 namespace brave_wallet {
 
-mojom::ZeroExQuotePtr ParseZeroExQuoteResponse(const base::Value& json_value,
-                                               bool expect_transaction_data);
-mojom::ZeroExErrorPtr ParseZeroExErrorResponse(const base::Value& json_value);
-
-mojom::JupiterQuotePtr ParseJupiterQuoteResponse(const base::Value& json_value);
-std::optional<std::string> ParseJupiterTransactionResponse(
+mojom::SwapResponsePtr ParseSwapResponse(const base::Value& json_value,
+                                         bool expect_transaction_data);
+mojom::SwapErrorResponsePtr ParseSwapErrorResponse(
     const base::Value& json_value);
-mojom::JupiterErrorPtr ParseJupiterErrorResponse(const base::Value& json_value);
+
+mojom::JupiterQuotePtr ParseJupiterQuote(const base::Value& json_value);
+mojom::JupiterSwapTransactionsPtr ParseJupiterSwapTransactions(
+    const base::Value& json_value);
+mojom::JupiterErrorResponsePtr ParseJupiterErrorResponse(
+    const base::Value& json_value);
 absl::optional<std::string> ConvertAllNumbersToString(const std::string& json);
 }  // namespace brave_wallet
 

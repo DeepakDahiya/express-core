@@ -6,16 +6,13 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_ISSUERS_PUBLIC_KEY_UTIL_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_ISSUERS_PUBLIC_KEY_UTIL_H_
 
+#include <string>
+
 namespace brave_ads {
 
 struct IssuerInfo;
 
-namespace cbr {
-class PublicKey;
-}  // namespace cbr
-
-bool PublicKeyExists(const IssuerInfo& issuer,
-                     const cbr::PublicKey& public_key);
+bool PublicKeyExists(const IssuerInfo& issuer, const std::string& public_key);
 
 }  // namespace brave_ads
 

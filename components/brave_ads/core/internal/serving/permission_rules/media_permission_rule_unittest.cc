@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/media_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
@@ -15,11 +15,13 @@
 namespace brave_ads {
 
 class BraveAdsMediaPermissionRuleTest : public UnitTestBase {
+ protected:
+  const MediaPermissionRule permission_rule_;
 };
 
 TEST_F(BraveAdsMediaPermissionRuleTest, ShouldAllowIfMediaIsNotPlaying) {
   // Act & Assert
-  EXPECT_TRUE(HasMediaPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsMediaPermissionRuleTest,
@@ -34,7 +36,7 @@ TEST_F(BraveAdsMediaPermissionRuleTest,
   NotifyTabDidStopPlayingMedia(/*tab_id=*/1);
 
   // Act & Assert
-  EXPECT_TRUE(HasMediaPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsMediaPermissionRuleTest,
@@ -51,7 +53,7 @@ TEST_F(BraveAdsMediaPermissionRuleTest,
   NotifyTabDidStopPlayingMedia(/*tab_id=*/2);
 
   // Act & Assert
-  EXPECT_TRUE(HasMediaPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsMediaPermissionRuleTest,
@@ -67,7 +69,7 @@ TEST_F(BraveAdsMediaPermissionRuleTest,
   NotifyTabDidStopPlayingMedia(/*tab_id=*/1);
 
   // Act & Assert
-  EXPECT_TRUE(HasMediaPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsMediaPermissionRuleTest,
@@ -80,7 +82,7 @@ TEST_F(BraveAdsMediaPermissionRuleTest,
   NotifyTabDidStartPlayingMedia(/*tab_id=*/1);
 
   // Act & Assert
-  EXPECT_FALSE(HasMediaPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(
@@ -99,7 +101,7 @@ TEST_F(
   NotifyTabDidStartPlayingMedia(/*tab_id=*/1);
 
   // Act & Assert
-  EXPECT_TRUE(HasMediaPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsMediaPermissionRuleTest,
@@ -113,7 +115,7 @@ TEST_F(BraveAdsMediaPermissionRuleTest,
   NotifyTabDidStartPlayingMedia(/*tab_id=*/2);
 
   // Act & Assert
-  EXPECT_FALSE(HasMediaPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsMediaPermissionRuleTest,
@@ -129,7 +131,7 @@ TEST_F(BraveAdsMediaPermissionRuleTest,
   NotifyTabDidStopPlayingMedia(/*tab_id=*/2);
 
   // Act & Assert
-  EXPECT_FALSE(HasMediaPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 }  // namespace brave_ads

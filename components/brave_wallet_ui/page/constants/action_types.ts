@@ -3,7 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { BraveWallet, FilecoinNetwork } from '../../constants/types'
+import {
+  BraveWallet,
+  FilecoinNetwork
+} from '../../constants/types'
+
+export type CreateWalletPayloadType = {
+  password: string
+}
 
 export type ImportAccountPayloadType = {
   accountName: string
@@ -23,19 +30,24 @@ export type RemoveAccountPayloadType = {
   password: string
 }
 
+export type RestoreWalletPayloadType = {
+  mnemonic: string
+  password: string
+  isLegacy: boolean
+  completeWalletSetup?: boolean
+}
+
 export type WalletCreatedPayloadType = {
   mnemonic: string
 }
 
-export type ShowRecoveryPhrasePayload =
-  | {
-      show: false
-      password?: string
-    }
-  | {
-      show: true
-      password: string
-    }
+export type ShowRecoveryPhrasePayload = {
+  show: false
+  password?: string
+} | {
+  show: true
+  password: string
+}
 
 export type RecoveryWordsAvailablePayloadType = {
   mnemonic: string
@@ -50,3 +62,10 @@ export type ImportFromExternalWalletPayloadType = {
   password: string
   newPassword: string
 }
+
+export type ImportWalletErrorPayloadType = {
+  hasError: boolean
+  errorMessage?: string
+  incrementAttempts?: boolean
+}
+

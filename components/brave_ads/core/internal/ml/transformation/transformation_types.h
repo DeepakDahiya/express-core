@@ -8,13 +8,7 @@
 
 namespace brave_ads::ml {
 
-enum class TransformationType {
-  kDistribution = 0,
-  kHashedNGrams,
-  kLowercase,
-  kMappedTokens,
-  kNormalization,
-};
+enum class TransformationType { kLowercase = 0, kHashedNGrams, kNormalization };
 
 }  // namespace brave_ads::ml
 

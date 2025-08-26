@@ -54,10 +54,25 @@ export const nftsEndpoints = ({
     >({
       queryFn: async (tokenArg, { endpoint }, _extraOptions, baseQuery) => {
         try {
-          const { getErc721Metadata } = baseQuery(undefined).cache
+          if (!tokenArg.isErc721) {
+            throw new Error(
+              'Cannot fetch erc-721 metadata for non erc-721 token'
+            )
+          }
 
-          const metadata: ERC721Metadata = await getErc721Metadata(tokenArg)
+          const { jsonRpcService } = baseQuery(undefined).data
 
+          const result = await jsonRpcService.getERC721Metadata(
+            tokenArg.contractAddress,
+            tokenArg.tokenId,
+            tokenArg.chainId
+          )
+
+          if (result.error || result.errorMessage) {
+            throw new Error(result.errorMessage)
+          }
+
+          const metadata: ERC721Metadata = JSON.parse(result.response)
           return {
             data: {
               id: blockchainTokenEntityAdaptor.selectId(tokenArg),

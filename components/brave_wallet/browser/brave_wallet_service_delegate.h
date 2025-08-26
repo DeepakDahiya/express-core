@@ -65,7 +65,6 @@ class BraveWalletServiceDelegate {
                                const std::string& account);
   virtual bool IsPermissionDenied(mojom::CoinType coin,
                                   const url::Origin& origin);
-  virtual void ResetAllPermissions() {}
   virtual void GetWebSitesWithPermission(
       mojom::CoinType coin,
       GetWebSitesWithPermissionCallback callback);

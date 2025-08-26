@@ -7,7 +7,9 @@ import * as React from 'react'
 import Checkbox from '@brave/leo/react/checkbox'
 
 // Types
-import { BraveWallet } from '../../../../../constants/types'
+import {
+  BraveWallet
+} from '../../../../../constants/types'
 
 // Components
 import {
@@ -16,7 +18,7 @@ import {
 
 // Utils
 import {
-  networkEntityAdapter //
+  networkEntityAdapter
 } from '../../../../../common/slices/entities/network.entity'
 
 // Styled Components
@@ -62,22 +64,30 @@ export const NetworkCheckboxes = (props: Props) => {
         justifyContent='space-between'
         marginBottom={marginBottom}
       >
-        {networks.map((network) => (
+        {networks.map((network) =>
           <CheckboxWrapper
             width='unset'
             justifyContent='flex-start'
             marginBottom={16}
-            key={networkEntityAdapter.selectId(network).toString()}
+            key={
+              networkEntityAdapter
+                .selectId(network)
+                .toString()
+            }
           >
             <Checkbox
               checked={
                 !isNetworkFilteredOut(
-                  networkEntityAdapter.selectId(network).toString()
+                  networkEntityAdapter
+                    .selectId(network)
+                    .toString()
                 )
               }
-              onChange={() =>
-                onCheckNetwork(
-                  networkEntityAdapter.selectId(network).toString()
+              onChange={
+                () => onCheckNetwork(
+                  networkEntityAdapter
+                    .selectId(network)
+                    .toString()
                 )
               }
             >
@@ -94,7 +104,7 @@ export const NetworkCheckboxes = (props: Props) => {
               </CheckboxText>
             </Checkbox>
           </CheckboxWrapper>
-        ))}
+        )}
       </CheckboxRow>
     </>
   )

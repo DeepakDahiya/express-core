@@ -3,14 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import Flex from '$web-common/Flex'
-import { getLocale } from '$web-common/locale'
 import * as React from 'react'
 import styled from 'styled-components'
-import { useChannelSubscribed, usePublisher, usePublisherFollowed } from '../../../../../brave_news/browser/resources/shared/Context'
-import { channelIcons as ChannelIcons } from '../../../../../brave_news/browser/resources/shared/Icons'
+import { getLocale } from '$web-common/locale'
+import Flex from '$web-common/Flex'
 import { useLazyFavicon } from '../../../../../brave_news/browser/resources/shared/useUnpaddedImageUrl'
-import { getTranslatedChannelName } from '../../../../../brave_news/browser/resources/shared/channel'
+import { useChannelSubscribed, usePublisher, usePublisherFollowed } from './Context'
+import { getTranslatedChannelName } from './ChannelCard'
+import { channelIcons as ChannelIcons } from '../../../../../brave_news/browser/resources/shared/Icons'
 
 interface Props {
   publisherId: string

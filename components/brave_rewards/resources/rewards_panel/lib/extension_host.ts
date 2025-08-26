@@ -21,7 +21,6 @@ import { createLocalStorageScope } from '../../shared/lib/local_storage_scope'
 import { RewardsPanelProxy } from './rewards_panel_proxy'
 
 import * as apiAdapter from './extension_api_adapter'
-import * as urls from '../../shared/lib/rewards_urls'
 
 type LocalStorageKey = 'catcha-grant-id' | 'load-adaptive-captcha'
 
@@ -140,17 +139,19 @@ export function createHost (): Host {
   }
 
   function getExternalWalletActionURL (action: ExternalWalletAction) {
+    const verifyURL = 'chrome://rewards#verify'
+
     const { externalWallet } = stateManager.getState()
     if (!externalWallet) {
-      return urls.connectURL
+      return verifyURL
     }
 
     const { links } = externalWallet
     switch (action) {
       case 'reconnect':
-        return urls.reconnectURL
+        return links.reconnect || ''
       case 'verify':
-        return urls.connectURL
+        return verifyURL
       case 'view-account':
         return links.account || ''
     }
@@ -192,6 +193,9 @@ export function createHost (): Host {
         break
       case mojom.RewardsPanelView.kAdaptiveCaptcha:
         loadAdaptiveCaptcha()
+        break
+      case mojom.RewardsPanelView.kInlineTip:
+        stateManager.update({ requestedView: 'inline-tip' })
         break
     }
   }

@@ -7,7 +7,7 @@
 
 #include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_profile_pref_value.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_pref_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "brave/components/brave_ads/core/public/units/notification_ad/notification_ad_feature.h"
@@ -25,7 +25,7 @@ TEST_F(BraveAdsSettingsTest, UserHasJoinedBraveRewards) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotJoinedBraveRewards) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   // Act & Assert
   EXPECT_FALSE(UserHasJoinedBraveRewards());
@@ -38,7 +38,7 @@ TEST_F(BraveAdsSettingsTest, UserHasOptedInToBraveNewsAds) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToBraveNews) {
   // Arrange
-  test::OptOutOfBraveNewsAds();
+  OptOutOfBraveNewsAdsForTesting();
 
   // Act & Assert
   EXPECT_FALSE(UserHasOptedInToBraveNewsAds());
@@ -51,7 +51,7 @@ TEST_F(BraveAdsSettingsTest, UserHasOptedInToNewTabPageAds) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToNewTabPageAds) {
   // Arrange
-  test::OptOutOfNewTabPageAds();
+  OptOutOfNewTabPageAdsForTesting();
 
   // Act & Assert
   EXPECT_FALSE(UserHasOptedInToNewTabPageAds());
@@ -64,7 +64,7 @@ TEST_F(BraveAdsSettingsTest, UserHasOptedInToNotificationAds) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToNotificationAds) {
   // Arrange
-  test::OptOutOfNotificationAds();
+  OptOutOfNotificationAdsForTesting();
 
   // Act & Assert
   EXPECT_FALSE(UserHasOptedInToNotificationAds());
@@ -76,7 +76,7 @@ TEST_F(BraveAdsSettingsTest, MaximumNotificationAdsPerHour) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kNotificationAdFeature, {{"default_ads_per_hour", "2"}});
 
-  SetProfileInt64PrefValue(prefs::kMaximumNotificationAdsPerHour, 3);
+  SetInt64PrefValue(prefs::kMaximumNotificationAdsPerHour, 3);
 
   // Act & Assert
   EXPECT_EQ(3, GetMaximumNotificationAdsPerHour());

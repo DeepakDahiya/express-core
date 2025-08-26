@@ -26,8 +26,7 @@ import {
 export const useProcessSignSolanaTransaction = (props: {
   signMode: 'signTx' | 'signAllTxs'
   account?: BraveWallet.AccountInfo
-  request?:
-    | BraveWallet.SignTransactionRequest
+  request?: BraveWallet.SignTransactionRequest
     | BraveWallet.SignAllTransactionsRequest
 }) => {
   // redux
@@ -80,7 +79,7 @@ export const useProcessSignSolanaTransaction = (props: {
         dispatch(
           PanelActions.signAllTransactionsHardware({
             account: props.account,
-            request: props.request as BraveWallet.SignAllTransactionsRequest
+            request: props.request as BraveWallet.SignAllTransactionsRequest,
           })
         )
         return
@@ -117,7 +116,9 @@ export const useSignSolanaTransactionsQueue = (
       : signAllTransactionsRequests
 
   // state
-  const [queueNumber, setQueueNumber] = React.useState<number>(1)
+  const [queueNumber, setQueueNumber] = React.useState<
+    number
+  >(1)
 
   // computed
   const queueLength = signTransactionQueue.length
@@ -132,7 +133,10 @@ export const useSignSolanaTransactionsQueue = (
   const { account } = useGetAccountInfosRegistryQuery(undefined, {
     selectFromResult: (res) => ({
       account: selectedQueueData
-        ? findAccountByAccountId(selectedQueueData.fromAccountId, res.data)
+        ? findAccountByAccountId(
+            selectedQueueData.fromAccountId,
+            res.data
+          )
         : undefined
     })
   })

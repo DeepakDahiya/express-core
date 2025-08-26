@@ -7,7 +7,7 @@
 
 #include "base/test/values_test_util.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_profile_pref_value.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_pref_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 
@@ -20,8 +20,8 @@ class BraveAdsDiagnosticIdUserDataTest : public UnitTestBase {};
 TEST_F(BraveAdsDiagnosticIdUserDataTest,
        BuildDiagnosticIdUserDataForRewardsUser) {
   // Arrange
-  SetProfileStringPrefValue(prefs::kDiagnosticId,
-                            "c1298fde-7fdb-401f-a3ce-0b58fe86e6e2");
+  SetStringPrefValue(prefs::kDiagnosticId,
+                     "c1298fde-7fdb-401f-a3ce-0b58fe86e6e2");
 
   // Act & Assert
   EXPECT_EQ(base::test::ParseJsonDict(
@@ -35,10 +35,10 @@ TEST_F(BraveAdsDiagnosticIdUserDataTest,
 TEST_F(BraveAdsDiagnosticIdUserDataTest,
        BuildDiagnosticIdUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  SetProfileStringPrefValue(prefs::kDiagnosticId,
-                            "c1298fde-7fdb-401f-a3ce-0b58fe86e6e2");
+  SetStringPrefValue(prefs::kDiagnosticId,
+                     "c1298fde-7fdb-401f-a3ce-0b58fe86e6e2");
 
   // Act & Assert
   EXPECT_TRUE(BuildDiagnosticIdUserData().empty());
@@ -47,7 +47,7 @@ TEST_F(BraveAdsDiagnosticIdUserDataTest,
 TEST_F(BraveAdsDiagnosticIdUserDataTest,
        DoNotBuildDiagnosticUserDataIfDiagnosticIdIsInvalid) {
   // Arrange
-  SetProfileStringPrefValue(prefs::kDiagnosticId, "INVALID");
+  SetStringPrefValue(prefs::kDiagnosticId, "INVALID");
 
   // Act & Assert
   EXPECT_TRUE(BuildDiagnosticIdUserData().empty());
@@ -56,7 +56,7 @@ TEST_F(BraveAdsDiagnosticIdUserDataTest,
 TEST_F(BraveAdsDiagnosticIdUserDataTest,
        DoNotBuildDiagnosticIdUserDataIfDiagnosticIdIsEmpty) {
   // Arrange
-  SetProfileStringPrefValue(prefs::kDiagnosticId, "");
+  SetStringPrefValue(prefs::kDiagnosticId, "");
 
   // Act & Assert
   EXPECT_TRUE(BuildDiagnosticIdUserData().empty());

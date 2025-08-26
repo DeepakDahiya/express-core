@@ -14,13 +14,9 @@ type UIStoreState = Omit<WalletPanelState, 'wallet' | 'page'>
 
 type PrimitiveType = string | boolean | number | null
 
-type SubsetSelector<TState, TBanned, TSelected> = (
-  state: TState
-) => TSelected extends TBanned ? never : TSelected
+type SubsetSelector<TState, TBanned, TSelected> = (state: TState) => TSelected extends TBanned ? never : TSelected
 
-type SafeSelector<TState, TSelected> = (
-  state: TState
-) => TSelected extends PrimitiveType | undefined ? TSelected : never
+type SafeSelector<TState, TSelected> = (state: TState) => TSelected extends PrimitiveType | undefined ? TSelected : never
 
 type TypedUseSelectorHookWithBannedSelections<TState, TBanned> = <TSelected>(
   selector: SubsetSelector<TState, TBanned, TSelected>,
@@ -52,11 +48,8 @@ export const useUnsafeUISelector: TypedUseSelectorHookWithBannedSelections<
   PrimitiveType
 > = useSelector
 
-export const useSafeWalletSelector: TypedUseSafeSelectorHook<WalletStoreState> =
-  useSelector
-export const useSafePanelSelector: TypedUseSafeSelectorHook<PanelStoreState> =
-  useSelector
-export const useSafePageSelector: TypedUseSafeSelectorHook<PageStoreState> =
-  useSelector
+export const useSafeWalletSelector: TypedUseSafeSelectorHook<WalletStoreState> = useSelector
+export const useSafePanelSelector: TypedUseSafeSelectorHook<PanelStoreState> = useSelector
+export const useSafePageSelector: TypedUseSafeSelectorHook<PageStoreState> = useSelector
 export const useSafeUISelector: TypedUseSafeSelectorHook<UIStoreState> =
   useSelector

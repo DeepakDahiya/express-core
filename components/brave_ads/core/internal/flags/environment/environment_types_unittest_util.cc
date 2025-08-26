@@ -7,7 +7,7 @@
 
 #include "base/check.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
 namespace {
 
@@ -16,7 +16,7 @@ constexpr char kStagingEnvironment[] = "Staging";
 
 }  // namespace
 
-std::string EnvironmentTypeEnumToString(
+std::string EnvironmentTypeEnumToStringForTesting(
     const mojom::EnvironmentType environment_type) {
   CHECK(mojom::IsKnownEnumValue(environment_type));
 
@@ -31,4 +31,4 @@ std::string EnvironmentTypeEnumToString(
   }
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

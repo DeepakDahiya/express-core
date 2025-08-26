@@ -74,7 +74,6 @@ class PlaylistDownloadRequestManager : public content::WebContentsObserver {
   void ConfigureWebPrefsForBackgroundWebContents(
       content::WebContents* web_contents,
       blink::web_pref::WebPreferences* web_prefs);
-  void ResetRequests();
 
   const content::WebContents* background_contents() const {
     return web_contents_.get();

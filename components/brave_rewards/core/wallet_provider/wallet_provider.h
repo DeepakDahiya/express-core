@@ -18,6 +18,7 @@
 #include "base/timer/timer.h"
 #include "brave/components/brave_rewards/core/rewards_callbacks.h"
 #include "brave/components/brave_rewards/core/wallet_provider/connect_external_wallet.h"
+#include "brave/components/brave_rewards/core/wallet_provider/get_external_wallet.h"
 #include "brave/components/brave_rewards/core/wallet_provider/transfer.h"
 
 namespace brave_rewards::internal {
@@ -51,10 +52,10 @@ class WalletProvider {
                      const std::string& contribution_id,
                      LegacyResultCallback callback);
 
-  void BeginLogin(BeginExternalWalletLoginCallback callback);
-
   void ConnectWallet(const base::flat_map<std::string, std::string>& args,
                      ConnectExternalWalletCallback callback);
+
+  void GetWallet(GetExternalWalletCallback callback);
 
   mojom::ExternalWalletPtr GetWallet();
 
@@ -95,6 +96,7 @@ class WalletProvider {
 
  protected:
   std::unique_ptr<ConnectExternalWallet> connect_wallet_;
+  std::unique_ptr<GetExternalWallet> get_wallet_;
   std::unique_ptr<Transfer> transfer_;
 
  private:

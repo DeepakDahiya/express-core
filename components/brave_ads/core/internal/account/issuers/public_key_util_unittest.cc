@@ -6,7 +6,6 @@
 #include "brave/components/brave_ads/core/internal/account/issuers/public_key_util.h"
 
 #include "brave/components/brave_ads/core/internal/account/issuers/issuer_info.h"
-#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/public_key.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
@@ -29,7 +28,7 @@ TEST_F(BraveAdsPublicKeyUtilTest, PublicKeyExists) {
   issuer.public_keys.insert({kPublicKey, /*associated_value=*/0.1});
 
   // Act & Assert
-  EXPECT_TRUE(PublicKeyExists(issuer, cbr::PublicKey(kPublicKey)));
+  EXPECT_TRUE(PublicKeyExists(issuer, kPublicKey));
 }
 
 TEST_F(BraveAdsPublicKeyUtilTest, PublicKeyDoesNotExist) {
@@ -38,7 +37,7 @@ TEST_F(BraveAdsPublicKeyUtilTest, PublicKeyDoesNotExist) {
   issuer.public_keys.insert({kPublicKey, /*associated_value=*/0.1});
 
   // Act & Assert
-  EXPECT_FALSE(PublicKeyExists(issuer, cbr::PublicKey(kMissingPublicKey)));
+  EXPECT_FALSE(PublicKeyExists(issuer, kMissingPublicKey));
 }
 
 TEST_F(BraveAdsPublicKeyUtilTest, NoPublicKeys) {
@@ -46,7 +45,7 @@ TEST_F(BraveAdsPublicKeyUtilTest, NoPublicKeys) {
   const IssuerInfo issuer;
 
   // Act & Assert
-  EXPECT_FALSE(PublicKeyExists(issuer, cbr::PublicKey(kPublicKey)));
+  EXPECT_FALSE(PublicKeyExists(issuer, kPublicKey));
 }
 
 }  // namespace brave_ads

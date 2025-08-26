@@ -9,11 +9,9 @@
 #include <utility>
 #include <vector>
 
-#include "base/containers/flat_set.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "brave/components/brave_news/api/publisher.h"
-#include "brave/components/brave_news/browser/channel_migrator.h"
 #include "brave/components/brave_news/common/brave_news.mojom.h"
 #include "brave/components/brave_news/common/pref_names.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -31,10 +29,11 @@ absl::optional<Publishers> ParseCombinedPublisherList(
   Publishers result;
 
   for (const base::Value& publisher_value : value.GetList()) {
-    auto parsed_publisher = api::feed::Publisher::FromValue(publisher_value);
-    if (!parsed_publisher.has_value()) {
-      LOG(ERROR) << "Invalid Brave Publisher data. error="
-                 << parsed_publisher.error();
+    std::u16string error;
+    auto parsed_publisher =
+        api::feed::Publisher::FromValueDeprecated(publisher_value, &error);
+    if (!parsed_publisher) {
+      LOG(ERROR) << "Invalid Brave Publisher data. error=" << error;
       return absl::nullopt;
     }
     auto& entry = *parsed_publisher;
@@ -71,18 +70,7 @@ absl::optional<Publishers> ParseCombinedPublisherList(
         auto locale_info = mojom::LocaleInfo::New();
         locale_info->locale = locale.locale;
         locale_info->rank = locale.rank.value_or(0);
-
-        // With migrations, it's possible we'll end up with duplicate channels,
-        // so filter them out with a set.
-        base::flat_set<std::string> seen;
-        for (const auto& channel : locale.channels) {
-          auto transformed = brave_news::GetMigratedChannel(channel);
-          if (seen.contains(transformed)) {
-            continue;
-          }
-          seen.insert(transformed);
-          locale_info->channels.push_back(std::move(transformed));
-        }
+        locale_info->channels = std::move(locale.channels);
 
         publisher->locales.push_back(std::move(locale_info));
       }

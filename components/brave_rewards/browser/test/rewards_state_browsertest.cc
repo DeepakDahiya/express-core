@@ -23,8 +23,8 @@
 #include "brave/components/brave_rewards/browser/test/common/rewards_browsertest_network_util.h"
 #include "brave/components/brave_rewards/browser/test/common/rewards_browsertest_response.h"
 #include "brave/components/brave_rewards/browser/test/common/rewards_browsertest_util.h"
-#include "brave/components/brave_rewards/common/mojom/rewards.mojom.h"
 #include "brave/components/brave_rewards/core/buildflags.h"
+#include "brave/components/brave_rewards/core/mojom_structs.h"
 #include "brave/components/brave_rewards/core/state/state_keys.h"
 #include "brave/components/constants/brave_paths.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -242,6 +242,15 @@ IN_PROC_BROWSER_TEST_F(RewardsStateBrowserTest, State_2) {
   EXPECT_EQ(
       profile_->GetPrefs()->GetBoolean("brave.rewards.ac.enabled"),
       true);
+  EXPECT_EQ(
+      profile_->GetPrefs()->GetBoolean("brave.rewards.inline_tip.reddit"),
+      true);
+  EXPECT_EQ(
+      profile_->GetPrefs()->GetBoolean("brave.rewards.inline_tip.twitter"),
+      false);
+  EXPECT_EQ(
+      profile_->GetPrefs()->GetBoolean("brave.rewards.inline_tip.github"),
+      false);
 }
 
 IN_PROC_BROWSER_TEST_F(RewardsStateBrowserTest, V8RewardsEnabledACEnabled) {
@@ -419,8 +428,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -428,8 +440,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -438,8 +457,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -447,8 +469,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -457,8 +486,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -466,8 +498,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -476,8 +515,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -485,8 +527,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -495,8 +544,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":1,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -504,8 +556,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -514,8 +573,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":1,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -523,8 +585,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"}),
@@ -533,8 +602,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":1,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -542,8 +614,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -552,8 +631,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":1,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -561,8 +643,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"}),
@@ -571,8 +660,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":2,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -580,8 +672,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -590,8 +689,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":2,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -599,8 +701,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"}),
@@ -609,8 +718,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":2,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -618,8 +730,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -628,8 +747,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":2,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -637,8 +759,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"}),
@@ -647,8 +776,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":3,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -656,8 +788,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -666,8 +805,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":3,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -675,8 +817,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -685,8 +834,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":3,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -694,8 +846,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -704,8 +863,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":3,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -713,8 +875,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -723,8 +892,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -732,8 +904,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -742,8 +921,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -751,8 +933,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -761,8 +950,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -770,8 +962,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -780,8 +979,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -789,8 +991,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":4,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -799,8 +1008,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -808,8 +1020,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -818,8 +1037,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -827,8 +1049,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"}),
@@ -837,8 +1066,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"",)"
                 R"("user_name":""})"},
@@ -846,8 +1078,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":0,)"
                 R"("token":"",)"
                 R"("user_name":""})"}),
@@ -856,8 +1095,11 @@ INSTANTIATE_TEST_SUITE_P(
             std::string{
                 R"({"account_url":"",)"
                 R"("address":"962df5b1-bb72-4619-a349-c8087941b795",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":"",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"},
@@ -865,8 +1107,15 @@ INSTANTIATE_TEST_SUITE_P(
                 R"({"account_url":")" _UPHOLD_URL_ R"(/dashboard",)"
                 R"("activity_url":"",)"
                 R"("address":"",)"
+                R"("code_verifier":"",)"
                 R"("fees":{},)"
+                R"("login_url":")" _UPHOLD_URL_
+                R"(/authorize/)" _UPHOLD_CLIENT_ID_
+                R"(?scope=cards:read cards:write user:read transactions:read )"
+                R"(transactions:transfer:application )"
+                R"(transactions:transfer:others&intention=login&state=state",)"
                 R"("member_id":"",)"
+                R"("one_time_string":"state",)"
                 R"("status":5,)"
                 R"("token":"0047c2fd8f023e067354dbdb5639ee67acf77150",)"
                 R"("user_name":""})"})),
@@ -915,6 +1164,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 0,
           "token": "token",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": "activity_url"
         }
       )",
@@ -927,6 +1178,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 2,
           "token": "token",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": ""
         }
       )",
@@ -939,6 +1192,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 2,
           "token": "",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": "activity_url"
         }
       )",
@@ -951,6 +1206,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 4,
           "token": "token",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": "activity_url"
         }
       )",
@@ -963,6 +1220,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 1,
           "token": "token",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": "activity_url"
         }
       )",
@@ -975,6 +1234,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 3,
           "token": "token",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": "activity_url"
         }
       )",
@@ -987,6 +1248,8 @@ INSTANTIATE_TEST_SUITE_P(
           "status": 5,
           "token": "token",
           "address": "address",
+          "one_time_string": "",
+          "code_verifier": "",
           "activity_url": "activity_url"
         }
       )",
@@ -1026,9 +1289,13 @@ IN_PROC_BROWSER_TEST_P_(V12, Paths) {
   const auto status = wallet_dict.FindInt("status");
   const auto* token = wallet_dict.FindString("token");
   const auto* address = wallet_dict.FindString("address");
+  const auto* one_time_string = wallet_dict.FindString("one_time_string");
+  const auto* code_verifier = wallet_dict.FindString("code_verifier");
   const auto* activity_url = wallet_dict.FindString("activity_url");
+  const auto* login_url = wallet_dict.FindString("login_url");
 
-  ASSERT_TRUE(status && token && address && activity_url);
+  ASSERT_TRUE(status && token && address && one_time_string && code_verifier &&
+              activity_url && login_url);
 
   ASSERT_TRUE(
       (std::set{0 /* kNotConnected */, 2 /* kConnected */, 4 /* kLoggedOut */}
@@ -1047,6 +1314,18 @@ IN_PROC_BROWSER_TEST_P_(V12, Paths) {
 
     ASSERT_FALSE(activity_url->empty());
   }
+
+  ASSERT_FALSE(one_time_string->empty());
+  ASSERT_FALSE(code_verifier->empty());
+  ASSERT_TRUE(base::Contains(*login_url, *one_time_string));
+
+  std::string code_challenge;
+  base::Base64UrlEncode(crypto::SHA256HashString(*code_verifier),
+                        base::Base64UrlEncodePolicy::OMIT_PADDING,
+                        &code_challenge);
+  base::ReplaceChars(code_challenge, "+", "-", &code_challenge);
+  base::ReplaceChars(code_challenge, "/", "_", &code_challenge);
+  ASSERT_TRUE(base::Contains(*login_url, code_challenge));
 }
 
 class V13 : public RewardsStateBrowserTest,
@@ -1095,25 +1374,6 @@ IN_PROC_BROWSER_TEST_P_(V13, Paths) {
     ASSERT_FALSE(profile_->GetPrefs()->HasPrefPath(
         brave_ads::prefs::kShouldMigrateVerifiedRewardsUser));
   }
-}
-
-IN_PROC_BROWSER_TEST_F(RewardsStateBrowserTest, V14EmptyWalletType) {
-  profile_->GetPrefs()->SetInteger("brave.rewards.version", 13);
-  rewards_service_->SetEngineStateTargetVersionForTesting(14);
-
-  auto store_wallet = [&](const std::string& key, const std::string& json) {
-    auto encrypted_wallet =
-        test_util::EncryptPrefString(rewards_service_, json);
-    profile_->GetPrefs()->SetString(key, *encrypted_wallet);
-  };
-
-  store_wallet("brave.rewards.wallets.gemini", R"({ "status": 0 })");
-  store_wallet("brave.rewards.wallets.uphold", R"({ "status": 2 })");
-
-  test_util::StartProcess(rewards_service_);
-  EXPECT_EQ(
-      profile_->GetPrefs()->GetString("brave.rewards.external_wallet_type"),
-      "uphold");
 }
 
 }  // namespace brave_rewards

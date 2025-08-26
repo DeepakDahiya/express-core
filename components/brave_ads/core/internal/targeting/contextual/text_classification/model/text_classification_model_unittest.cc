@@ -40,7 +40,6 @@ TEST_F(BraveAdsTextClassificationModelTest,
   // Arrange
   TextClassificationProcessor processor(*resource_);
   processor.Process(/*text=*/"The quick brown fox jumps over the lazy dog");
-  task_environment_.RunUntilIdle();
 
   // Act
   const SegmentList segments = GetTextClassificationSegments();
@@ -56,7 +55,6 @@ TEST_F(BraveAdsTextClassificationModelTest, DoNotGetSegmentsForEmptyText) {
   const std::string text;
   TextClassificationProcessor processor(*resource_);
   processor.Process(text);
-  task_environment_.RunUntilIdle();
 
   // Act
   const SegmentList segments = GetTextClassificationSegments();
@@ -72,7 +70,6 @@ TEST_F(BraveAdsTextClassificationModelTest,
 
   TextClassificationProcessor processor(*resource_);
   processor.Process(/*text=*/"Some content about technology & computing");
-  task_environment_.RunUntilIdle();
 
   // Act & Assert
   const SegmentList expected_segments = {
@@ -148,7 +145,6 @@ TEST_F(BraveAdsTextClassificationModelTest,
   for (const auto& text : texts) {
     processor.Process(text);
   }
-  task_environment_.RunUntilIdle();
 
   // Act & Assert
   const SegmentList expected_segments = {

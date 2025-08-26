@@ -8,6 +8,7 @@ import { PromotionKey } from '../lib/promotions'
 import * as mixins from '../../shared/lib/css_mixins'
 
 import braveCreatorsBackground from '../assets/brave_creators_bg.svg'
+import geminiBackground from '../assets/gemini_bg.svg'
 import tapBackgroud from '../assets/tap_bg.svg'
 import upholdCardBackground from '../assets/uphold_card_bg.png'
 
@@ -15,6 +16,7 @@ function getBackgroundImage (key: PromotionKey) {
   switch (key) {
     case 'bitflyer-verification': return ''
     case 'brave-creators': return braveCreatorsBackground
+    case 'gemini': return geminiBackground
     case 'tap-network': return tapBackgroud
     case 'uphold-card': return upholdCardBackground
   }
@@ -37,15 +39,21 @@ export const promotion = styled.div`
   background-repeat: no-repeat;
 
   &.promotion-brave-creators {
-    background-image: url(${getBackgroundImage('brave-creators')});
+    background-image: url(/${getBackgroundImage('brave-creators')});
+  }
+
+  &.promotion-gemini {
+    background-image: url(/${getBackgroundImage('gemini')});
+    background-position: 4% center;
+    background-size: auto;
   }
 
   &.promotion-tap-network {
-    background-image: url(${getBackgroundImage('tap-network')});
+    background-image: url(/${getBackgroundImage('tap-network')});
   }
 
   &.promotion-uphold-card {
-    background-image: url(${getBackgroundImage('uphold-card')});
+    background-image: url(/${getBackgroundImage('uphold-card')});
   }
 `
 

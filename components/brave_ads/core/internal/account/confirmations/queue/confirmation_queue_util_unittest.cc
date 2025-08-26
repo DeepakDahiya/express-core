@@ -40,11 +40,11 @@ class BraveAdsConversionQueueUtilTest : public UnitTestBase {
 
 TEST_F(BraveAdsConversionQueueUtilTest, AddRewardConfirmationQueueItem) {
   // Arrange
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -61,15 +61,15 @@ TEST_F(BraveAdsConversionQueueUtilTest, AddRewardConfirmationQueueItem) {
 TEST_F(BraveAdsConversionQueueUtilTest,
        AddConversionRewardConfirmationQueueItem) {
   // Arrange
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kViewed,
       /*is_verifiable=*/false, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -86,15 +86,15 @@ TEST_F(BraveAdsConversionQueueUtilTest,
 TEST_F(BraveAdsConversionQueueUtilTest,
        AddVerifiableConversionRewardConfirmationQueueItem) {
   // Arrange
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kClicked,
       /*is_verifiable=*/true, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -110,9 +110,9 @@ TEST_F(BraveAdsConversionQueueUtilTest,
 
 TEST_F(BraveAdsConversionQueueUtilTest, AddNonRewardConfirmationQueueItem) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -129,13 +129,13 @@ TEST_F(BraveAdsConversionQueueUtilTest, AddNonRewardConfirmationQueueItem) {
 TEST_F(BraveAdsConversionQueueUtilTest,
        AddConversionNonRewardConfirmationQueueItem) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kViewed,
       /*is_verifiable=*/false, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -152,13 +152,13 @@ TEST_F(BraveAdsConversionQueueUtilTest,
 TEST_F(BraveAdsConversionQueueUtilTest,
        AddVerifiableConversionNonRewardConfirmationQueueItem) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kClicked,
       /*is_verifiable=*/true, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -174,11 +174,11 @@ TEST_F(BraveAdsConversionQueueUtilTest,
 
 TEST_F(BraveAdsConversionQueueUtilTest, RemoveConfirmationQueueItem) {
   // Arrange
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -197,11 +197,11 @@ TEST_F(BraveAdsConversionQueueUtilTest, RemoveConfirmationQueueItem) {
 
 TEST_F(BraveAdsConversionQueueUtilTest, GetRewardConfirmationQueueItem) {
   // Arrange
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -216,9 +216,9 @@ TEST_F(BraveAdsConversionQueueUtilTest, GetRewardConfirmationQueueItem) {
 
 TEST_F(BraveAdsConversionQueueUtilTest, GetNonRewardConfirmationQueueItem) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -240,11 +240,11 @@ TEST_F(BraveAdsConversionQueueUtilTest,
 
 TEST_F(BraveAdsConversionQueueUtilTest, RebuildRewardConfirmationQueueItem) {
   // Arrange
-  test::MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  MockTokenGenerator(token_generator_mock_, /*count=*/1);
 
-  test::SetConfirmationTokens(/*count=*/1);
+  SetConfirmationTokensForTesting(/*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation = BuildRewardConfirmation(
@@ -259,9 +259,9 @@ TEST_F(BraveAdsConversionQueueUtilTest, RebuildRewardConfirmationQueueItem) {
 
 TEST_F(BraveAdsConversionQueueUtilTest, RebuildNonRewardConfirmationQueueItem) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/true);
   const absl::optional<ConfirmationInfo> confirmation =

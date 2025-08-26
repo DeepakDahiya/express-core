@@ -33,9 +33,10 @@ export const mockBitcoinAccount = {
     uniqueKey: 'mockBitcoinAccount_uniqueKey'
   },
   name: 'Bitcoin Account',
-  tokenBalanceRegistry: {},
+  tokenBalanceRegistry: {
+  },
   nativeBalanceRegistry: {
-    [BraveWallet.BITCOIN_MAINNET]: '123456789'
+    [BraveWallet.BITCOIN_MAINNET]: '123456789',
   },
   hardware: undefined
 }
@@ -94,7 +95,7 @@ export const mockedTransactionAccounts: BraveWallet.AccountInfo[] = [
       kind: BraveWallet.AccountKind.kDerived,
       address: '1',
       bitcoinAccountIndex: 0,
-      uniqueKey: '1'
+      uniqueKey: '1',
     },
     hardware: undefined
   }

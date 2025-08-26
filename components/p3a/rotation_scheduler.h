@@ -25,14 +25,16 @@ namespace p3a {
 // Schedules reporting period rotation (i.e. monthly, daily, or weekly) and
 // calls back to the MessageManager on a given interval.
 class RotationScheduler {
-  using RotationCallback =
+  using JsonRotationCallback =
       base::RepeatingCallback<void(MetricLogType log_type)>;
+  using ConstellationRotationCallback = base::RepeatingCallback<void()>;
 
  public:
-  RotationScheduler(PrefService& local_state,
-                    const P3AConfig* config,
-                    RotationCallback json_rotation_callback,
-                    RotationCallback constellation_rotation_callback);
+  RotationScheduler(
+      PrefService& local_state,
+      const P3AConfig* config,
+      JsonRotationCallback json_rotation_callback,
+      ConstellationRotationCallback constellation_rotation_callback);
 
   ~RotationScheduler();
 
@@ -41,29 +43,27 @@ class RotationScheduler {
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  void InitConstellationTimer(MetricLogType log_type,
-                              base::Time next_epoch_time);
+  void InitConstellationTimer(base::Time next_epoch_time);
 
   base::Time GetLastJsonRotationTime(MetricLogType log_type);
-  base::Time GetLastConstellationRotationTime(MetricLogType log_type);
+  base::Time GetLastConstellationRotationTime();
 
  private:
   void InitJsonTimer(MetricLogType log_type);
   void UpdateJsonTimer(MetricLogType log_type);
 
   void HandleJsonTimerTrigger(MetricLogType log_type);
-  void HandleConstellationTimerTrigger(MetricLogType log_type);
+  void HandleConstellationTimerTrigger();
 
   base::flat_map<MetricLogType, std::unique_ptr<base::WallClockTimer>>
       json_rotation_timers_;
-  base::flat_map<MetricLogType, std::unique_ptr<base::WallClockTimer>>
-      constellation_rotation_timers_;
+  base::WallClockTimer constellation_rotation_timer_;
 
-  RotationCallback json_rotation_callback_;
-  RotationCallback constellation_rotation_callback_;
+  JsonRotationCallback json_rotation_callback_;
+  ConstellationRotationCallback constellation_rotation_callback_;
 
   base::flat_map<MetricLogType, base::Time> last_json_rotation_times_;
-  base::flat_map<MetricLogType, base::Time> last_constellation_rotation_times_;
+  base::Time last_constellation_rotation_time_;
 
   const raw_ref<PrefService> local_state_;
   const raw_ptr<const P3AConfig> config_;

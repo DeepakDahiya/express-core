@@ -7,33 +7,47 @@
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_PUBLIC_ACCOUNT_CONFIRMATIONS_CONFIRMATION_TYPE_H_
 
 #include <ostream>
-#include <string_view>
+#include <string>
 
 namespace brave_ads {
 
-enum class ConfirmationType {
-  // When adding new confirmation types they must be added with highest
-  // priority at the top so that ads history can be filtered
-  kUndefined,
-  kClicked,
-  kDismissed,
-  kViewed,
-  kServed,
-  kTransferred,
-  kFlagged,
-  kSaved,
-  kUpvoted,
-  kDownvoted,
-  kConversion
+class ConfirmationType final {
+ public:
+  enum Value {
+    // When adding new confirmation types they must be added with highest
+    // priority at the top so that ads history can be filtered
+    kUndefined,
+    kClicked,
+    kDismissed,
+    kViewed,
+    kServed,
+    kTransferred,
+    kFlagged,
+    kSaved,
+    kUpvoted,
+    kDownvoted,
+    kConversion
+  };
+
+  ConfirmationType();
+
+  // Allow implicit conversion of the enum value to this wrapper
+  constexpr ConfirmationType(const Value& value)  // NOLINT (runtime/explicit)
+      : value_(value) {}
+
+  explicit ConfirmationType(const std::string& value);
+
+  Value value() const;
+  std::string ToString() const;
+
+ private:
+  Value value_ = kUndefined;
 };
 
-// Provides a corresponding string to a given ConfirmationType value.
-const char* ToString(ConfirmationType type);
+bool operator==(const ConfirmationType&, const ConfirmationType&);
+bool operator!=(const ConfirmationType&, const ConfirmationType&);
 
-// Returns a ConfirmationType value based on the string input.
-ConfirmationType ParseConfirmationType(std::string_view value);
-
-std::ostream& operator<<(std::ostream& os, ConfirmationType type);
+std::ostream& operator<<(std::ostream& os, const ConfirmationType& type);
 
 }  // namespace brave_ads
 

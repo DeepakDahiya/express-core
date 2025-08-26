@@ -6,6 +6,9 @@
 import * as React from 'react'
 import styled from 'styled-components'
 
+// State
+import { useGetSelectedChainQuery } from '../../../common/slices/api.slice'
+
 // Types
 import { BraveWallet } from '../../../constants/types'
 
@@ -18,24 +21,36 @@ import { getLocale } from '$web-common/locale'
 
 // Components
 import {
-  StandardButton //
+  StandardButton
 } from './components/buttons/standard-button/standard-button'
 import {
-  FlipTokensButton //
+  FlipTokensButton
 } from './components/buttons/flip-tokens-button/flip-tokens-button'
-import { SwapContainer } from './components/swap/swap-container/swap-container'
-import { FromSection } from './components/swap/from-section/from-section'
 import {
-  ToSection //
+  SwapContainer
+} from './components/swap/swap-container/swap-container'
+import {
+  FromSection
+} from './components/swap/from-section/from-section'
+import {
+  ToSection
 } from './components/swap/to-section/to-section'
 import {
-  SelectTokenModal //
+  SelectTokenModal
 } from './components/swap/select-token-modal/select-token-modal'
-import { QuoteInfo } from './components/swap/quote-info/quote-info'
 import {
-  SwapSettingsModal //
+  QuoteInfo
+} from './components/swap/quote-info/quote-info'
+import {
+  QuoteOptions
+} from './components/swap/quote-options/quote-options'
+import {
+  SwapSettingsModal
 } from './components/swap/settings/swap-settings-modal'
-import { PrivacyModal } from './components/swap/privacy-modal/privacy-modal'
+// import { SwapSkeleton } from './components/swap/swap-skeleton/swap-skeleton'
+import {
+  PrivacyModal
+} from './components/swap/privacy-modal/privacy-modal'
 
 import { SwapSectionBox } from './components/boxes/swap-section-box'
 
@@ -49,6 +64,8 @@ import {
 } from './components/shared-swap.styles'
 
 export const Swap = () => {
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
+
   // Hooks
   const swap = useSwap()
   const {
@@ -69,6 +86,7 @@ export const Swap = () => {
     getCachedAssetBalance,
     onSelectFromToken,
     onSelectToToken,
+    onSelectQuoteOption,
     onClickFlipSwapTokens,
     setSelectingFromOrTo,
     handleOnSetFromAmount,
@@ -81,11 +99,7 @@ export const Swap = () => {
     isSubmitButtonDisabled,
     swapValidationError,
     getNetworkAssetsList,
-    spotPrices,
-    selectedNetwork,
-    setSelectedNetwork,
-    selectedAccount,
-    setSelectedAcount
+    spotPrices
   } = swap
 
   // State
@@ -131,10 +145,6 @@ export const Swap = () => {
     <>
       <SwapContainer
         showPrivacyModal={() => setShowPrivacyModal(true)}
-        selectedNetwork={selectedNetwork}
-        selectedAccount={selectedAccount}
-        setSelectedNetwork={setSelectedNetwork}
-        setSelectedAccount={setSelectedAcount}
       >
         <Row
           rowWidth='full'
@@ -144,7 +154,9 @@ export const Swap = () => {
         >
           <Text isBold={true}>{getLocale('braveSwap')}</Text>
           <SettingsWrapper ref={swapSettingsModalRef}>
-            <IconButton onClick={onToggleShowSwapSettings}>
+            <IconButton
+              onClick={onToggleShowSwapSettings}
+            >
               <Icon name='tune' />
             </IconButton>
             {showSwapSettings && (
@@ -157,7 +169,6 @@ export const Swap = () => {
                 setUseDirectRoute={setUseDirectRoute}
                 gasEstimates={gasEstimates}
                 onClose={() => setShowSwapSettings(false)}
-                selectedNetwork={selectedNetwork}
               />
             )}
           </SettingsWrapper>
@@ -173,8 +184,6 @@ export const Swap = () => {
             swapValidationError === 'fromAmountDecimalsOverflow'
           }
           fiatValue={fiatValue}
-          selectedNetwork={selectedNetwork}
-          selectedAccount={selectedAccount}
         />
         <FlipTokensButton onClick={onClickFlipSwapTokens} />
         <SwapSectionBox boxType='secondary'>
@@ -186,18 +195,18 @@ export const Swap = () => {
             hasInputError={swapValidationError === 'toAmountDecimalsOverflow'}
             isLoading={isFetchingQuote}
             disabled={selectedNetwork?.coin === BraveWallet.CoinType.SOL}
-            selectedNetwork={selectedNetwork}
           />
-          {/* QuoteOptions is currently unused
-          selectedNetwork?.coin === BraveWallet.CoinType.SOL &&
-            quoteOptions.length > 0 && (
+          {
+            selectedNetwork?.coin === BraveWallet.CoinType.SOL &&
+            quoteOptions.length > 0 &&
+            (
               <QuoteOptions
                 options={quoteOptions}
                 selectedQuoteOptionIndex={selectedQuoteOptionIndex}
                 onSelectQuoteOption={onSelectQuoteOption}
                 spotPrices={spotPrices}
               />
-            ) */}
+            )}
         </SwapSectionBox>
         {quoteOptions.length > 0 && (
           <>
@@ -245,8 +254,6 @@ export const Swap = () => {
           getCachedAssetBalance={getCachedAssetBalance}
           selectingFromOrTo={selectingFromOrTo}
           getNetworkAssetsList={getNetworkAssetsList}
-          selectedNetwork={selectedNetwork}
-          setSelectedNetwork={setSelectedNetwork}
         />
       )}
       {showPrivacyModal && (

@@ -47,21 +47,13 @@ import {
 } from './style'
 
 export interface Props {
+  onCancel: (account: BraveWallet.AccountInfo) => void
   account: BraveWallet.AccountInfo
   hardwareWalletCode: HardwareWalletResponseCodeType | undefined
+  onClickInstructions: () => void
 }
 
-const onClickInstructions = () => {
-  const url = 'https://support.brave.com/hc/en-us/articles/4409309138701'
-
-  chrome.tabs.create({ url }, () => {
-    if (chrome.runtime.lastError) {
-      console.error('tabs.create failed: ' + chrome.runtime.lastError.message)
-    }
-  })
-}
-
-function getAppName(coinType: BraveWallet.CoinType): string {
+function getAppName (coinType: BraveWallet.CoinType): string {
   switch (coinType) {
     case BraveWallet.CoinType.SOL:
       return 'Solana'
@@ -73,8 +65,10 @@ function getAppName(coinType: BraveWallet.CoinType): string {
 }
 
 export const ConnectHardwareWalletPanel = ({
+  onCancel,
   account,
-  hardwareWalletCode
+  hardwareWalletCode,
+  onClickInstructions
 }: Props) => {
   // redux
   const dispatch = useDispatch<ThunkDispatch<any, any, any>>()
@@ -134,8 +128,8 @@ export const ConnectHardwareWalletPanel = ({
 
   // methods
   const onCancelConnect = React.useCallback(() => {
-    dispatch(PanelActions.cancelConnectHardwareWallet(account))
-  }, [account])
+    onCancel(account)
+  }, [onCancel, account])
 
   const onSignData = React.useCallback(() => {
     if (!messageAccount || !request) {
@@ -190,34 +184,28 @@ export const ConnectHardwareWalletPanel = ({
       <ConnectionRow>
         <Indicator isConnected={isConnected} />
         <Description>
-          {isConnected
-            ? getLocale('braveWalletConnectHardwarePanelConnected').replace(
-                '$1',
-                account.name
-              )
-            : getLocale('braveWalletConnectHardwarePanelDisconnected').replace(
-                '$1',
-                account.name
-              )}
+          {
+            isConnected
+              ? getLocale('braveWalletConnectHardwarePanelConnected').replace('$1', account.name)
+              : getLocale('braveWalletConnectHardwarePanelDisconnected').replace('$1', account.name)
+          }
         </Description>
       </ConnectionRow>
       <Title>{title}</Title>
-      <InstructionsButton onClick={onClickInstructions}>
-        {getLocale('braveWalletConnectHardwarePanelInstructions')}
-      </InstructionsButton>
+      <InstructionsButton onClick={onClickInstructions}>{getLocale('braveWalletConnectHardwarePanelInstructions')}</InstructionsButton>
       <PageIcon />
-      {hardwareWalletCode !== 'deviceBusy' &&
-        (hardwareWalletCode === 'unauthorized' ? (
-          <AuthorizeHardwareDeviceIFrame coinType={coinType} />
-        ) : (
-          <ButtonWrapper>
-            <NavButton
-              buttonType='secondary'
-              text={getLocale('braveWalletButtonCancel')}
-              onSubmit={onCancelConnect}
-            />
-          </ButtonWrapper>
-        ))}
+      {
+        hardwareWalletCode !== 'deviceBusy' && (hardwareWalletCode === 'unauthorized'
+          ? <AuthorizeHardwareDeviceIFrame coinType={coinType}/>
+          : <ButtonWrapper>
+              <NavButton
+                buttonType='secondary'
+                text={getLocale('braveWalletButtonCancel')}
+                onSubmit={onCancelConnect}
+              />
+            </ButtonWrapper>
+        )
+      }
     </StyledWrapper>
   )
 }

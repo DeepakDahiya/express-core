@@ -9,8 +9,6 @@
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/units/ad_unittest_constants.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-shared.h"
 #include "brave/components/brave_ads/core/public/ads_callback.h"
 #include "brave/components/brave_ads/core/public/units/ad_type.h"
@@ -29,7 +27,7 @@ constexpr char kDimensions[] = "200x100";
 class BraveAdsInlineContentAdIntegrationTest : public UnitTestBase {
  protected:
   void SetUp() override {
-    UnitTestBase::SetUp(/*is_integration_test=*/true);
+    UnitTestBase::SetUpForTesting(/*is_integration_test=*/true);
 
     NotifyTabDidChange(
         /*tab_id=*/1, /*redirect_chain=*/{GURL("brave://newtab")},
@@ -47,7 +45,7 @@ class BraveAdsInlineContentAdIntegrationTest : public UnitTestBase {
   void TriggerInlineContentAdEvent(
       const std::string& placement_id,
       const std::string& creative_instance_id,
-      const mojom::InlineContentAdEventType event_type,
+      const mojom::InlineContentAdEventType& event_type,
       const bool should_fire_event) {
     base::MockCallback<TriggerAdEventCallback> callback;
     EXPECT_CALL(callback, Run(/*success=*/should_fire_event));
@@ -69,7 +67,7 @@ class BraveAdsInlineContentAdIntegrationTest : public UnitTestBase {
 
 TEST_F(BraveAdsInlineContentAdIntegrationTest, ServeAd) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   // Act & Assert
   EXPECT_CALL(ads_client_mock_,
@@ -81,23 +79,7 @@ TEST_F(BraveAdsInlineContentAdIntegrationTest, ServeAd) {
   GetAds().MaybeServeInlineContentAd(kDimensions, callback.Get());
 }
 
-TEST_F(BraveAdsInlineContentAdIntegrationTest,
-       DoNotServeAdIfPermissionRulesAreDenied) {
-  // Act & Assert
-  EXPECT_CALL(ads_client_mock_, RecordP2AEvents).Times(0);
-
-  base::MockCallback<MaybeServeInlineContentAdCallback> callback;
-  EXPECT_CALL(callback, Run(kDimensions, /*ad=*/::testing::Eq(absl::nullopt)));
-  GetAds().MaybeServeInlineContentAd(kDimensions, callback.Get());
-}
-
-TEST_F(BraveAdsInlineContentAdIntegrationTest,
-       DoNotServeAdIfUserHasNotOptedInToBraveNewsAds) {
-  // Arrange
-  test::ForcePermissionRules();
-
-  test::OptOutOfBraveNewsAds();
-
+TEST_F(BraveAdsInlineContentAdIntegrationTest, DoNotServe) {
   // Act & Assert
   EXPECT_CALL(ads_client_mock_, RecordP2AEvents).Times(0);
 
@@ -108,7 +90,7 @@ TEST_F(BraveAdsInlineContentAdIntegrationTest,
 
 TEST_F(BraveAdsInlineContentAdIntegrationTest, TriggerViewedEvent) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   base::MockCallback<MaybeServeInlineContentAdCallback> callback;
   EXPECT_CALL(callback, Run)
@@ -129,7 +111,7 @@ TEST_F(BraveAdsInlineContentAdIntegrationTest, TriggerViewedEvent) {
 
 TEST_F(BraveAdsInlineContentAdIntegrationTest, TriggerClickedEvent) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   base::MockCallback<MaybeServeInlineContentAdCallback> callback;
   EXPECT_CALL(callback, Run)
@@ -147,29 +129,6 @@ TEST_F(BraveAdsInlineContentAdIntegrationTest, TriggerClickedEvent) {
         TriggerInlineContentAdEvent(ad->placement_id, ad->creative_instance_id,
                                     mojom::InlineContentAdEventType::kClicked,
                                     /*should_fire_event=*/true);
-      });
-
-  GetAds().MaybeServeInlineContentAd(kDimensions, callback.Get());
-}
-
-TEST_F(BraveAdsInlineContentAdIntegrationTest,
-       DoNotTriggerEventForInvalidCreativeInstanceId) {
-  // Arrange
-  test::ForcePermissionRules();
-
-  base::MockCallback<MaybeServeInlineContentAdCallback> callback;
-  EXPECT_CALL(callback, Run)
-      .WillOnce([=](const std::string& dimensions,
-                    const absl::optional<InlineContentAdInfo>& ad) {
-        ASSERT_EQ(kDimensions, dimensions);
-        ASSERT_TRUE(ad);
-        ASSERT_TRUE(ad->IsValid());
-
-        // Act & Assert
-        TriggerInlineContentAdEvent(ad->placement_id,
-                                    kInvalidCreativeInstanceId,
-                                    mojom::InlineContentAdEventType::kViewed,
-                                    /*should_fire_event=*/false);
       });
 
   GetAds().MaybeServeInlineContentAd(kDimensions, callback.Get());

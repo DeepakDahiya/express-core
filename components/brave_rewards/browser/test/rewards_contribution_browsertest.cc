@@ -377,7 +377,8 @@ IN_PROC_BROWSER_TEST_F(
 
   base::RunLoop run_loop_first;
   rewards_service_->GetExternalWallet(
-      base::BindLambdaForTesting([&](mojom::ExternalWalletPtr wallet) {
+      base::BindLambdaForTesting([&](GetExternalWalletResult result) {
+        const auto wallet = std::move(result).value_or(nullptr);
         ASSERT_TRUE(wallet);
         ASSERT_EQ(wallet->fees.size(), 2UL);
         for (auto const& value : wallet->fees) {

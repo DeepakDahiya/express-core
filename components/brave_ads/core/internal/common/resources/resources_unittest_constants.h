@@ -8,8 +8,8 @@
 
 namespace brave_ads {
 
-inline constexpr char kMissingResourceId[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
-inline constexpr char kInvalidResourceId[] = "resources/invalid_resource";
+constexpr char kMissingResourceId[] = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+constexpr char kInvalidResourceId[] = "resources/invalid_resource";
 
 }  // namespace brave_ads
 

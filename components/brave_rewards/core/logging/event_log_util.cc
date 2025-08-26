@@ -9,26 +9,26 @@
 namespace brave_rewards::internal {
 namespace log {
 std::string GetEventLogKeyForLinkingResult(
-    mojom::ConnectExternalWalletResult result) {
-  switch (result) {
-    case mojom::ConnectExternalWalletResult::kDeviceLimitReached:
+    mojom::ConnectExternalWalletError error) {
+  switch (error) {
+    case mojom::ConnectExternalWalletError::kDeviceLimitReached:
       return log::kDeviceLimitReached;
-    case mojom::ConnectExternalWalletResult::kFlaggedWallet:
+    case mojom::ConnectExternalWalletError::kFlaggedWallet:
       return log::kFlaggedWallet;
-    case mojom::ConnectExternalWalletResult::kMismatchedCountries:
+    case mojom::ConnectExternalWalletError::kMismatchedCountries:
       return log::kMismatchedCountries;
-    case mojom::ConnectExternalWalletResult::kMismatchedProviderAccounts:
+    case mojom::ConnectExternalWalletError::kMismatchedProviderAccounts:
       return log::kMismatchedProviderAccounts;
-    case mojom::ConnectExternalWalletResult::kKYCRequired:
+    case mojom::ConnectExternalWalletError::kKYCRequired:
       return log::kKYCRequired;
-    case mojom::ConnectExternalWalletResult::kProviderUnavailable:
+    case mojom::ConnectExternalWalletError::kProviderUnavailable:
       return log::kProviderUnavailable;
-    case mojom::ConnectExternalWalletResult::kRegionNotSupported:
+    case mojom::ConnectExternalWalletError::kRegionNotSupported:
       return log::kRegionNotSupported;
-    case mojom::ConnectExternalWalletResult::
+    case mojom::ConnectExternalWalletError::
         kRequestSignatureVerificationFailure:
       return log::kRequestSignatureVerificationFailure;
-    case mojom::ConnectExternalWalletResult::
+    case mojom::ConnectExternalWalletError::
         kUpholdTransactionVerificationFailure:
       return log::kTransactionVerificationFailure;
     default:

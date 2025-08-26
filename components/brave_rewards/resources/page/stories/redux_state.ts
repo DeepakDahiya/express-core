@@ -20,11 +20,11 @@ export const reduxState: Rewards.ApplicationState = {
     ui: {
       modalConnect: false,
       modalRedirect: 'hide',
-      modalRedirectProvider: '',
       modalReset: false,
       modalAdsHistory: false,
       adsSettings: false,
       autoContributeSettings: false,
+      contributionsSettings: false,
       promosDismissed: {}
     },
     autoContributeList: [
@@ -131,6 +131,12 @@ export const reduxState: Rewards.ApplicationState = {
     },
     adsHistory: [],
     promotions: [],
+    inlineTipsEnabled: true,
+    inlineTip: {
+      twitter: true,
+      reddit: true,
+      github: true
+    },
     excludedList: [],
     externalWalletProviderList: ['uphold'],
     balance: optional<number>(),

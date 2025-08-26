@@ -25,12 +25,7 @@ namespace {
 constexpr char kTypicalJsonLogPrefName[] = "p3a.logs";
 constexpr char kSlowJsonLogPrefName[] = "p3a.logs_slow";
 constexpr char kExpressJsonLogPrefName[] = "p3a.logs_express";
-constexpr char kTypicalConstellationPrepPrefName[] =
-    "p3a.logs_constellation_prep";
-constexpr char kSlowConstellationPrepPrefName[] =
-    "p3a.logs_constellation_prep_slow";
-constexpr char kExpressConstellationPrepPrefName[] =
-    "p3a.logs_constellation_prep_express";
+constexpr char kConstellationPrepPrefName[] = "p3a.logs_constellation_prep";
 constexpr char kLogValueKey[] = "value";
 constexpr char kLogSentKey[] = "sent";
 constexpr char kLogTimestampKey[] = "timestamp";
@@ -57,8 +52,6 @@ bool IsMetricCreative(const std::string& histogram_name) {
                           base::CompareCase::SENSITIVE);
 }
 
-}  // namespace
-
 std::string GetUploadType(const std::string& histogram_name) {
   if (IsMetricP2A(histogram_name)) {
     return kP2AUploadType;
@@ -67,6 +60,8 @@ std::string GetUploadType(const std::string& histogram_name) {
   }
   return kP3AUploadType;
 }
+
+}  // namespace
 
 MetricLogStore::MetricLogStore(Delegate& delegate,
                                PrefService& local_state,
@@ -83,21 +78,12 @@ void MetricLogStore::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(kTypicalJsonLogPrefName);
   registry->RegisterDictionaryPref(kExpressJsonLogPrefName);
   registry->RegisterDictionaryPref(kSlowJsonLogPrefName);
-  registry->RegisterDictionaryPref(kTypicalConstellationPrepPrefName);
-  registry->RegisterDictionaryPref(kExpressConstellationPrepPrefName);
-  registry->RegisterDictionaryPref(kSlowConstellationPrepPrefName);
+  registry->RegisterDictionaryPref(kConstellationPrepPrefName);
 }
 
 const char* MetricLogStore::GetPrefName() const {
   if (is_constellation_) {
-    switch (type_) {
-      case MetricLogType::kTypical:
-        return kTypicalConstellationPrepPrefName;
-      case MetricLogType::kExpress:
-        return kExpressConstellationPrepPrefName;
-      case MetricLogType::kSlow:
-        return kSlowConstellationPrepPrefName;
-    }
+    return kConstellationPrepPrefName;
   } else {
     switch (type_) {
       case MetricLogType::kTypical:
@@ -113,8 +99,8 @@ const char* MetricLogStore::GetPrefName() const {
 void MetricLogStore::UpdateValue(const std::string& histogram_name,
                                  uint64_t value) {
   if (is_constellation_) {
-    if (IsMetricP2A(histogram_name)) {
-      // Only creative or normal P3A metrics are currently supported for
+    if (IsMetricP2A(histogram_name) || IsMetricCreative(histogram_name)) {
+      // Only non-creative P3A metrics are currently supported for
       // Constellation.
       return;
     }

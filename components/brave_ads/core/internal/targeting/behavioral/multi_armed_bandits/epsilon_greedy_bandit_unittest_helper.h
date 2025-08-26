@@ -10,21 +10,23 @@
 #include "brave/components/brave_ads/core/internal/segments/segment_alias.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/multi_armed_bandits/epsilon_greedy_bandit_processor.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-class EpsilonGreedyBanditHelper final {
+class EpsilonGreedyBanditHelperForTesting final {
  public:
-  EpsilonGreedyBanditHelper();
+  EpsilonGreedyBanditHelperForTesting();
 
-  EpsilonGreedyBanditHelper(const EpsilonGreedyBanditHelper&) = delete;
-  EpsilonGreedyBanditHelper& operator=(const EpsilonGreedyBanditHelper&) =
-      delete;
+  EpsilonGreedyBanditHelperForTesting(
+      const EpsilonGreedyBanditHelperForTesting&) = delete;
+  EpsilonGreedyBanditHelperForTesting& operator=(
+      const EpsilonGreedyBanditHelperForTesting&) = delete;
 
-  EpsilonGreedyBanditHelper(EpsilonGreedyBanditHelper&&) noexcept = delete;
-  EpsilonGreedyBanditHelper& operator=(EpsilonGreedyBanditHelper&&) noexcept =
-      delete;
+  EpsilonGreedyBanditHelperForTesting(
+      EpsilonGreedyBanditHelperForTesting&&) noexcept = delete;
+  EpsilonGreedyBanditHelperForTesting& operator=(
+      EpsilonGreedyBanditHelperForTesting&&) noexcept = delete;
 
-  ~EpsilonGreedyBanditHelper();
+  ~EpsilonGreedyBanditHelperForTesting();
 
   void Mock();
 
@@ -34,6 +36,6 @@ class EpsilonGreedyBanditHelper final {
   const EpsilonGreedyBanditProcessor processor_;
 };
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_TARGETING_BEHAVIORAL_MULTI_ARMED_BANDITS_EPSILON_GREEDY_BANDIT_UNITTEST_HELPER_H_

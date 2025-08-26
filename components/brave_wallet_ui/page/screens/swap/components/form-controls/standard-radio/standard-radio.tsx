@@ -6,7 +6,11 @@
 import * as React from 'react'
 
 // Styled Components
-import { Label, Radio, Wrapper } from './standard-radio.style'
+import {
+  Label,
+  Radio,
+  Wrapper
+} from './standard-radio.style'
 
 interface Props {
   label: string
@@ -32,10 +36,7 @@ export const StandardRadio = (props: Props) => {
         onChange={(event) => handleChange(event)}
         checked={isChecked}
       />
-      <Label
-        isChecked={isChecked}
-        htmlFor={id}
-      >
+      <Label isChecked={isChecked} htmlFor={id}>
         {label}
       </Label>
     </Wrapper>

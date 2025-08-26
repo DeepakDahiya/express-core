@@ -11,6 +11,10 @@
 
 namespace brave_l10n {
 
+namespace prefs {
+const char kCountryCode[] = "brave.country_code";
+}  // namespace prefs
+
 void RegisterL10nLocalStatePrefs(PrefRegistrySimple* registry) {
   registry->RegisterStringPref(prefs::kCountryCode,
                                GetDefaultISOCountryCodeString());

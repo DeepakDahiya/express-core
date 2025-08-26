@@ -13,7 +13,9 @@ import { Table, Header, Row } from '../components/shared/datatable'
 storiesOf('Wallet/Desktop/Components', module)
   .addDecorator(withKnobs)
   .add('DataTable', () => {
-    const rowTheme = {}
+    const rowTheme = {
+
+    }
 
     const rows: Row[] = [
       {

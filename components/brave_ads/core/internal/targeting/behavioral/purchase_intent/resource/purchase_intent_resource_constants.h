@@ -8,8 +8,7 @@
 
 namespace brave_ads {
 
-inline constexpr char kPurchaseIntentResourceId[] =
-    "bejenkminijgplakmkmcgkhjjnkelbld";
+constexpr char kPurchaseIntentResourceId[] = "bejenkminijgplakmkmcgkhjjnkelbld";
 
 }  // namespace brave_ads
 

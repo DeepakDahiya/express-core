@@ -27,18 +27,11 @@ interface Props {
   onCancel: () => void
 }
 
-const LEARN_MORE_LINK =
-  'https://github.com/brave/brave-browser/wiki/NFT-Discovery'
+const LEARN_MORE_LINK = 'https://github.com/brave/brave-browser/wiki/NFT-Discovery'
 
 export const EnableNftDiscoveryModal = ({ onConfirm, onCancel }: Props) => {
-  const { beforeTag, duringTag, afterTag } = splitStringForTag(
-    getLocale('braveWalletEnableNftAutoDiscoveryModalDescription'),
-    1
-  )
-  const { beforeTag: beforeLink, duringTag: learnMore } = splitStringForTag(
-    afterTag || '',
-    3
-  )
+  const { beforeTag, duringTag, afterTag } = splitStringForTag(getLocale('braveWalletEnableNftAutoDiscoveryModalDescription'), 1)
+  const { beforeTag: beforeLink, duringTag: learnMore } = splitStringForTag(afterTag || '', 3)
 
   return (
     <PopupModal
@@ -48,20 +41,12 @@ export const EnableNftDiscoveryModal = ({ onConfirm, onCancel }: Props) => {
       onClose={onCancel}
     >
       <StyledWrapper>
-        <Header>
-          {getLocale('braveWalletEnableNftAutoDiscoveryModalHeader')}
-        </Header>
+        <Header>{getLocale('braveWalletEnableNftAutoDiscoveryModalHeader')}</Header>
         <Description>
           {beforeTag}
           <Underline>{duringTag}</Underline>
           {beforeLink}
-          <Link
-            target='_blank'
-            rel='noreferrer'
-            href={LEARN_MORE_LINK}
-          >
-            {learnMore}
-          </Link>
+          <Link target='_blank' rel='noreferrer' href={LEARN_MORE_LINK}>{learnMore}</Link>
         </Description>
         <ButtonRow>
           <CancelButton onClick={onCancel}>

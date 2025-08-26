@@ -5,7 +5,6 @@
 
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision.h"
 
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision_observer_mock.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request_builder_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request_unittest_util.h"
@@ -40,7 +39,7 @@ class BraveAdsSubdivisionTest : public UnitTestBase {
                              const std::string& subdivision_code) {
     const URLResponseMap url_responses = {
         {BuildSubdivisionUrlPath(),
-         {{net::HTTP_OK, test::BuildSubdivisionUrlResponseBody(
+         {{net::HTTP_OK, BuildSubdivisionUrlResponseBodyForTesting(
                              country_code, subdivision_code)}}}};
     MockUrlResponses(ads_client_mock_, url_responses);
   }
@@ -66,8 +65,8 @@ TEST_F(BraveAdsSubdivisionTest, OnDidInitializeAds) {
 
 TEST_F(BraveAdsSubdivisionTest, PrefsNotEnabledOnDidInitializeAds) {
   // Arrange
-  test::DisableBraveRewards();
-  test::OptOutOfBraveNewsAds();
+  DisableBraveRewardsForTesting();
+  OptOutOfBraveNewsAdsForTesting();
 
   MockHttpOkUrlResponse(/*country_code=*/"US", /*subdivision_code=*/"CA");
 
@@ -82,15 +81,15 @@ TEST_F(BraveAdsSubdivisionTest, PrefsNotEnabledOnDidInitializeAds) {
 
 TEST_F(BraveAdsSubdivisionTest, OnDidJoinBraveRewards) {
   // Arrange
-  test::DisableBraveRewards();
-  test::OptOutOfBraveNewsAds();
+  DisableBraveRewardsForTesting();
+  OptOutOfBraveNewsAdsForTesting();
 
   MockHttpOkUrlResponse(/*country_code=*/"US", /*subdivision_code=*/"CA");
 
   EXPECT_CALL(observer_mock_, OnDidUpdateSubdivision("US-CA"));
 
   // Act
-  SetProfileBooleanPref(brave_rewards::prefs::kEnabled, true);
+  ads_client_mock_.SetBooleanPref(brave_rewards::prefs::kEnabled, true);
 
   // Assert
   EXPECT_TRUE(HasPendingTasks());
@@ -99,16 +98,17 @@ TEST_F(BraveAdsSubdivisionTest, OnDidJoinBraveRewards) {
 TEST_F(BraveAdsSubdivisionTest,
        FetchWhenOptingInToBraveNewsIfBraveRewardsIsDisabled) {
   // Arrange
-  test::DisableBraveRewards();
-  test::OptOutOfBraveNewsAds();
+  DisableBraveRewardsForTesting();
+  OptOutOfBraveNewsAdsForTesting();
 
   MockHttpOkUrlResponse(/*country_code=*/"US", /*subdivision_code=*/"CA");
 
   EXPECT_CALL(observer_mock_, OnDidUpdateSubdivision("US-CA"));
 
   // Act
-  SetProfileBooleanPref(brave_news::prefs::kBraveNewsOptedIn, true);
-  SetProfileBooleanPref(brave_news::prefs::kNewTabPageShowToday, true);
+  ads_client_mock_.SetBooleanPref(brave_news::prefs::kBraveNewsOptedIn, true);
+  ads_client_mock_.SetBooleanPref(brave_news::prefs::kNewTabPageShowToday,
+                                  true);
 
   // Assert
   EXPECT_TRUE(HasPendingTasks());
@@ -116,7 +116,7 @@ TEST_F(BraveAdsSubdivisionTest,
 
 TEST_F(BraveAdsSubdivisionTest, OnDidResetBraveRewards) {
   // Arrange
-  test::OptOutOfBraveNewsAds();
+  OptOutOfBraveNewsAdsForTesting();
 
   MockHttpOkUrlResponse(/*country_code=*/"US", /*subdivision_code=*/"CA");
 
@@ -125,7 +125,7 @@ TEST_F(BraveAdsSubdivisionTest, OnDidResetBraveRewards) {
   ASSERT_TRUE(HasPendingTasks());
 
   // Act
-  SetProfileBooleanPref(brave_rewards::prefs::kEnabled, false);
+  ads_client_mock_.SetBooleanPref(brave_rewards::prefs::kEnabled, false);
 
   // Assert
   EXPECT_FALSE(HasPendingTasks());
@@ -133,7 +133,7 @@ TEST_F(BraveAdsSubdivisionTest, OnDidResetBraveRewards) {
 
 TEST_F(BraveAdsSubdivisionTest, OnDidOptoutBraveNews) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   MockHttpOkUrlResponse(/*country_code=*/"US", /*subdivision_code=*/"CA");
 
@@ -144,7 +144,8 @@ TEST_F(BraveAdsSubdivisionTest, OnDidOptoutBraveNews) {
   ASSERT_TRUE(HasPendingTasks());
 
   // Act
-  SetProfileBooleanPref(brave_news::prefs::kNewTabPageShowToday, false);
+  ads_client_mock_.SetBooleanPref(brave_news::prefs::kNewTabPageShowToday,
+                                  false);
 
   // Assert
   EXPECT_FALSE(HasPendingTasks());
@@ -158,7 +159,7 @@ TEST_F(BraveAdsSubdivisionTest, RetryAfterInvalidUrlResponseStatusCode) {
          /*response_body=*/net::GetHttpReasonPhrase(
              net::HTTP_INTERNAL_SERVER_ERROR)},
         {net::HTTP_OK,
-         test::BuildSubdivisionUrlResponseBody(
+         BuildSubdivisionUrlResponseBodyForTesting(
              /*country_code=*/"US", /*subdivision_code=*/"CA")}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 

@@ -36,8 +36,7 @@ TEST_F(BraveAdsDiagnosticManagerTest, DiagnosticManager) {
   SetCatalogId(kCatalogId);
   SetCatalogLastUpdated(Now());
 
-  AdvanceClockTo(TimeFromString("Fri, 16 Mar 2012 06:23:00",
-                                /*is_local=*/true));  // Hello Phoebe!!!
+  AdvanceClockTo(TimeFromString("Mon, 8 Jul 1996 09:25:00", /*is_local=*/true));
 
   SetLastUnIdleTimeDiagnosticEntry(Now());
 
@@ -75,7 +74,7 @@ TEST_F(BraveAdsDiagnosticManagerTest, DiagnosticManager) {
             },
             {
               "name": "Last unidle time",
-              "value": "Friday, March 16, 2012 at 6:23:00\u202fAM"
+              "value": "Monday, July 8, 1996 at 9:25:00\u202fAM"
             }
           ])");
 

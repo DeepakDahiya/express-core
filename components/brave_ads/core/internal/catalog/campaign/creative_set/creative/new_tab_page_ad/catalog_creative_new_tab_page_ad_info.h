@@ -14,7 +14,8 @@
 namespace brave_ads {
 
 struct CatalogCreativeNewTabPageAdInfo final : CatalogCreativeInfo {
-  bool operator==(const CatalogCreativeNewTabPageAdInfo&) const = default;
+  bool operator==(const CatalogCreativeNewTabPageAdInfo&) const;
+  bool operator!=(const CatalogCreativeNewTabPageAdInfo&) const;
 
   CatalogNewTabPageAdPayloadInfo payload;
 };

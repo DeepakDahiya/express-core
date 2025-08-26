@@ -16,9 +16,6 @@ addEventListener('message', async event => {
     socket.addEventListener('open', () => client.postMessage('open'));
     socket.addEventListener('error', () => client.postMessage('error'));
   } else if (event.data.cmd === 'close_ws') {
-    const client = await clients.get(event.source.id)
-    socket = sockets[event.data.idx]
-    socket.addEventListener('close', () => client.postMessage('close'));
-    socket.close();
+    sockets[event.data.idx].close();
   }
 });

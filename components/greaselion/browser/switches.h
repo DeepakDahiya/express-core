@@ -11,7 +11,7 @@ namespace switches {
 
 // Allows forcing greaselion to use a local directory to find
 // the greaselion.json rule file and associated scripts.
-inline constexpr char kGreaselionDataPath[] = "greaselion-data-path";
+extern const char kGreaselionDataPath[];
 
 }  // namespace switches
 }  // namespace greaselion

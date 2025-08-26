@@ -9,8 +9,7 @@
 namespace request_otr {
 
 // Action for Request Off-The-Record feature
-inline constexpr char kRequestOTRActionOption[] =
-    "brave.request_otr.request_otr_action_option";
+extern const char kRequestOTRActionOption[];
 
 }  // namespace request_otr
 

@@ -57,7 +57,9 @@ export function Card () {
               provider: 'uphold',
               status: mojom.WalletStatus.kLoggedOut,
               username: '',
-              links: {}
+              links: {
+                reconnect: 'https://brave.com'
+              }
             } : null}
             nextPaymentDate={nextPaymentDate}
             minEarningsThisMonth={0.142}

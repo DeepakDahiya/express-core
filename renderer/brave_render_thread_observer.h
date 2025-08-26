@@ -27,7 +27,7 @@ class BraveRenderThreadObserver
   BraveRenderThreadObserver();
   ~BraveRenderThreadObserver() override;
 
-  bool IsOnionAllowed() const;
+  bool is_tor_process() const { return is_tor_process_; }
 
   // Return the dynamic parameters - those that may change while the
   // render process is running.

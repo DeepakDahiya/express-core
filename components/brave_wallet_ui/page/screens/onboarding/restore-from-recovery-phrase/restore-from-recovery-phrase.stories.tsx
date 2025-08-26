@@ -9,11 +9,9 @@ import { WalletPageStory } from '../../../../stories/wrappers/wallet-page-story-
 import { OnboardingRestoreFromRecoveryPhrase } from './restore-from-recovery-phrase'
 
 export const _OnboardingRestoreFromRecoveryPhrase = () => {
-  return (
-    <WalletPageStory>
-      <OnboardingRestoreFromRecoveryPhrase restoreFrom='seed' />
-    </WalletPageStory>
-  )
+  return <WalletPageStory>
+    <OnboardingRestoreFromRecoveryPhrase restoreFrom='seed' />
+  </WalletPageStory>
 }
 
 _OnboardingRestoreFromRecoveryPhrase.story = {
@@ -21,11 +19,14 @@ _OnboardingRestoreFromRecoveryPhrase.story = {
 }
 
 export const _OnboardingRestoreFromMetaMaskExtension = () => {
-  return (
-    <WalletPageStory>
-      <OnboardingRestoreFromRecoveryPhrase restoreFrom='metamask' />
-    </WalletPageStory>
-  )
+  return <WalletPageStory
+    pageStateOverride={{
+      isMetaMaskInitialized: true,
+      isImportWalletsCheckComplete: true
+    }}
+  >
+    <OnboardingRestoreFromRecoveryPhrase restoreFrom='metamask' />
+  </WalletPageStory>
 }
 
 _OnboardingRestoreFromMetaMaskExtension.story = {
@@ -33,11 +34,14 @@ _OnboardingRestoreFromMetaMaskExtension.story = {
 }
 
 export const _OnboardingRestoreFromMetaMaskSeed = () => {
-  return (
-    <WalletPageStory>
-      <OnboardingRestoreFromRecoveryPhrase restoreFrom='metamask-seed' />
-    </WalletPageStory>
-  )
+  return <WalletPageStory
+    pageStateOverride={{
+      isMetaMaskInitialized: false,
+      isImportWalletsCheckComplete: true
+    }}
+  >
+    <OnboardingRestoreFromRecoveryPhrase restoreFrom='metamask-seed' />
+  </WalletPageStory>
 }
 
 _OnboardingRestoreFromMetaMaskSeed.story = {
@@ -45,11 +49,15 @@ _OnboardingRestoreFromMetaMaskSeed.story = {
 }
 
 export const _OnboardingRestoreFromLegacyWallet = () => {
-  return (
-    <WalletPageStory>
-      <OnboardingRestoreFromRecoveryPhrase restoreFrom='legacy' />
-    </WalletPageStory>
-  )
+  return <WalletPageStory
+    pageStateOverride={{
+      isMetaMaskInitialized: false,
+      isImportWalletsCheckComplete: true,
+      isCryptoWalletsInitialized: true
+    }}
+  >
+    <OnboardingRestoreFromRecoveryPhrase restoreFrom='legacy' />
+  </WalletPageStory>
 }
 
 _OnboardingRestoreFromLegacyWallet.story = {

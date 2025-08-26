@@ -11,11 +11,10 @@
 namespace brave_search {
 namespace prefs {
 
-inline constexpr char kDailyAsked[] = "brave.brave_search.daily_asked";
-inline constexpr char kTotalAsked[] = "brave.brave_search.total_asked";
+constexpr char kDailyAsked[] = "brave.brave_search.daily_asked";
+constexpr char kTotalAsked[] = "brave.brave_search.total_asked";
 #if BUILDFLAG(IS_ANDROID)
-inline constexpr char kFetchFromNative[] =
-    "brave.brave_search.fetch_se_from_native";
+constexpr char kFetchFromNative[] = "brave.brave_search.fetch_se_from_native";
 #endif
 
 }  // namespace prefs

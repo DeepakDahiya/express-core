@@ -38,45 +38,45 @@ class TabManager final : public AdsClientNotifierObserver {
   void AddObserver(TabManagerObserver* observer);
   void RemoveObserver(TabManagerObserver* observer);
 
-  bool IsVisible(int32_t tab_id) const;
+  bool IsVisible(int32_t id) const;
 
-  bool IsPlayingMedia(int32_t tab_id) const;
+  bool IsPlayingMedia(int32_t id) const;
 
   absl::optional<TabInfo> GetVisible() const;
   absl::optional<TabInfo> GetLastVisible() const;
 
-  absl::optional<TabInfo> MaybeGetForId(int32_t tab_id) const;
+  absl::optional<TabInfo> MaybeGetForId(int32_t id) const;
 
  private:
-  TabInfo& GetOrCreateForId(int32_t tab_id);
-  void Remove(int32_t tab_id);
+  TabInfo& GetOrCreateForId(int32_t id);
+  void Remove(int32_t id);
 
-  void NotifyTabDidChangeFocus(int32_t tab_id) const;
+  void NotifyTabDidChangeFocus(int32_t id) const;
   void NotifyTabDidChange(const TabInfo& tab) const;
   void NotifyDidOpenNewTab(const TabInfo& tab) const;
-  void NotifyTextContentDidChange(int32_t tab_id,
+  void NotifyTextContentDidChange(int32_t id,
                                   const std::vector<GURL>& redirect_chain,
                                   const std::string& text);
-  void NotifyHtmlContentDidChange(int32_t tab_id,
+  void NotifyHtmlContentDidChange(int32_t id,
                                   const std::vector<GURL>& redirect_chain,
                                   const std::string& html);
-  void NotifyDidCloseTab(int32_t tab_id) const;
-  void NotifyTabDidStartPlayingMedia(int32_t tab_id) const;
-  void NotifyTabDidStopPlayingMedia(int32_t tab_id) const;
+  void NotifyDidCloseTab(int32_t id) const;
+  void NotifyTabDidStartPlayingMedia(int32_t id) const;
+  void NotifyTabDidStopPlayingMedia(int32_t id) const;
 
   // AdsClientNotifierObserver:
-  void OnNotifyTabTextContentDidChange(int32_t tab_id,
+  void OnNotifyTabTextContentDidChange(int32_t id,
                                        const std::vector<GURL>& redirect_chain,
                                        const std::string& text) override;
-  void OnNotifyTabHtmlContentDidChange(int32_t tab_id,
+  void OnNotifyTabHtmlContentDidChange(int32_t id,
                                        const std::vector<GURL>& redirect_chain,
                                        const std::string& html) override;
-  void OnNotifyTabDidStartPlayingMedia(int32_t tab_id) override;
-  void OnNotifyTabDidStopPlayingMedia(int32_t tab_id) override;
-  void OnNotifyTabDidChange(int32_t tab_id,
+  void OnNotifyTabDidStartPlayingMedia(int32_t id) override;
+  void OnNotifyTabDidStopPlayingMedia(int32_t id) override;
+  void OnNotifyTabDidChange(int32_t id,
                             const std::vector<GURL>& redirect_chain,
                             bool is_visible) override;
-  void OnNotifyDidCloseTab(int32_t tab_id) override;
+  void OnNotifyDidCloseTab(int32_t id) override;
 
   base::ObserverList<TabManagerObserver> observers_;
 

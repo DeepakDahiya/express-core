@@ -54,6 +54,4 @@ void EnsureBrowserStateKeyedServiceFactoriesBuilt() {
   ReadingListModelFactory::GetInstance();
   SessionSyncServiceFactory::GetInstance();
   SyncSetupServiceFactory::GetInstance();
-
-  brave::EnsureBrowserStateKeyedServiceFactoriesBuilt();
 }

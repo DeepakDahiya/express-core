@@ -16,8 +16,7 @@ namespace brave_ads {
 constexpr int kDefaultNotificationAdFadeDuration = 200;
 
 // Default color value is SkColorSetRGB(0x20, 0x23, 0x27);
-inline constexpr char kDefaultNotificationAdDarkModeBackgroundColor[] =
-    "202327";
+constexpr char kDefaultNotificationAdDarkModeBackgroundColor[] = "202327";
 
 // Do not support multiple displays by default
 constexpr bool kDefaultShouldSupportMultipleDisplays = true;
@@ -25,31 +24,43 @@ constexpr bool kDefaultShouldSupportMultipleDisplays = true;
 // Use the same z-order as the browser window by default
 constexpr bool kDefaultUseSameZOrderAsBrowserWindow = true;
 
-// Default ad notification margin within the display's work area
+// Default ad notification normalized display coordinate
 #if BUILDFLAG(IS_WIN)
-constexpr int kDefaultNotificationAdMargin = 12;
+constexpr double kDefaultNotificationAdNormalizedDisplayCoordinateX = 1.0;
 #elif BUILDFLAG(IS_MAC)
-constexpr int kDefaultNotificationAdMargin = 16;
+constexpr double kDefaultNotificationAdNormalizedDisplayCoordinateX = 1.0;
 #elif BUILDFLAG(IS_LINUX)
-constexpr int kDefaultNotificationAdMargin = 12;
+constexpr double kDefaultNotificationAdNormalizedDisplayCoordinateX = 1.0;
 #endif
 
-// Default ad notification normalized display x coordinate
+// Default ad notification x inset within the display's work area specified in
+// screen coordinates
 #if BUILDFLAG(IS_WIN)
-constexpr double kDefaultNotificationAdNormalizedCoordinateX = 1.0;
+constexpr int kDefaultNotificationAdInsetX = -370;
 #elif BUILDFLAG(IS_MAC)
-constexpr double kDefaultNotificationAdNormalizedCoordinateX = 1.0;
+constexpr int kNativeNotificationWidth = 360;
+constexpr int kDefaultNotificationAdInsetX = -(10 + kNativeNotificationWidth);
 #elif BUILDFLAG(IS_LINUX)
-constexpr double kDefaultNotificationAdNormalizedCoordinateX = 0.5;
+constexpr int kDefaultNotificationAdInsetX = -13;
 #endif
 
-// Default ad notification normalized display y coordinate
+// Default ad notification normalized display coordinate
 #if BUILDFLAG(IS_WIN)
-constexpr double kDefaultNotificationAdNormalizedCoordinateY = 0.05;
+constexpr double kDefaultNotificationAdNormalizedDisplayCoordinateY = 1.0;
 #elif BUILDFLAG(IS_MAC)
-constexpr double kDefaultNotificationAdNormalizedCoordinateY = 0.2;
+constexpr double kDefaultNotificationAdNormalizedDisplayCoordinateY = 0.0;
 #elif BUILDFLAG(IS_LINUX)
-constexpr double kDefaultNotificationAdNormalizedCoordinateY = 0.0;
+constexpr double kDefaultNotificationAdNormalizedDisplayCoordinateY = 0.0;
+#endif
+
+// Default ad notification y inset within the display's work area specified in
+// screen coordinates
+#if BUILDFLAG(IS_WIN)
+constexpr int kDefaultNotificationAdInsetY = -10;
+#elif BUILDFLAG(IS_MAC)
+constexpr int kDefaultNotificationAdInsetY = 11;
+#elif BUILDFLAG(IS_LINUX)
+constexpr int kDefaultNotificationAdInsetY = 18;
 #endif
 
 #endif  // !BUILDFLAG(IS_ANDROID) && !BUILDFLAG(IS_IOS)

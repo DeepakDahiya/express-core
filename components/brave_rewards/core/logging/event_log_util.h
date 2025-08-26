@@ -8,11 +8,12 @@
 
 #include <string>
 
-#include "brave/components/brave_rewards/common/mojom/rewards.mojom.h"
+#include "brave/components/brave_rewards/common/mojom/rewards_types.mojom.h"
+#include "brave/components/brave_rewards/core/mojom_structs.h"
 
 namespace brave_rewards::internal {
 namespace log {
-std::string GetEventLogKeyForLinkingResult(mojom::ConnectExternalWalletResult);
+std::string GetEventLogKeyForLinkingResult(mojom::ConnectExternalWalletError);
 }  // namespace log
 }  // namespace brave_rewards::internal
 

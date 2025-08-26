@@ -6,18 +6,13 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_CONFIRMATION_REWARD_REDEEM_REWARD_CONFIRMATION_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_CONFIRMATION_REWARD_REDEEM_REWARD_CONFIRMATION_H_
 
-#include <string>
-#include <tuple>
-
 #include "base/memory/weak_ptr.h"
-#include "base/types/expected.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/redeem_confirmation_delegate.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 
 namespace brave_ads {
 
 struct ConfirmationInfo;
-struct PaymentTokenInfo;
 
 class RedeemRewardConfirmation final {
  public:
@@ -51,10 +46,6 @@ class RedeemRewardConfirmation final {
                                 const ConfirmationInfo& confirmation);
   static void FetchPaymentTokenCallback(
       RedeemRewardConfirmation redeem_confirmation,
-      const ConfirmationInfo& confirmation,
-      const mojom::UrlResponseInfo& url_response);
-  static base::expected<PaymentTokenInfo, std::tuple<std::string, bool>>
-  HandleFetchPaymentTokenUrlResponse(
       const ConfirmationInfo& confirmation,
       const mojom::UrlResponseInfo& url_response);
 

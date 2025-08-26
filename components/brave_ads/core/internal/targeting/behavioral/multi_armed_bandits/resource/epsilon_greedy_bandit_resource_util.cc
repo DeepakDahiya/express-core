@@ -6,7 +6,7 @@
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/multi_armed_bandits/resource/epsilon_greedy_bandit_resource_util.h"
 
 #include "base/values.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/segments/segment_value_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
@@ -14,13 +14,14 @@
 namespace brave_ads {
 
 void SetEpsilonGreedyBanditEligibleSegments(const SegmentList& segments) {
-  SetProfileListPref(prefs::kEpsilonGreedyBanditEligibleSegments,
-                     SegmentsToValue(segments));
+  AdsClientHelper::GetInstance()->SetListPref(
+      prefs::kEpsilonGreedyBanditEligibleSegments, SegmentsToValue(segments));
 }
 
 SegmentList GetEpsilonGreedyBanditEligibleSegments() {
   const absl::optional<base::Value::List> list =
-      GetProfileListPref(prefs::kEpsilonGreedyBanditEligibleSegments);
+      AdsClientHelper::GetInstance()->GetListPref(
+          prefs::kEpsilonGreedyBanditEligibleSegments);
   if (!list) {
     return {};
   }
@@ -29,7 +30,8 @@ SegmentList GetEpsilonGreedyBanditEligibleSegments() {
 }
 
 void ResetEpsilonGreedyBanditEligibleSegments() {
-  ClearProfilePref(prefs::kEpsilonGreedyBanditEligibleSegments);
+  AdsClientHelper::GetInstance()->ClearPref(
+      prefs::kEpsilonGreedyBanditEligibleSegments);
 }
 
 }  // namespace brave_ads

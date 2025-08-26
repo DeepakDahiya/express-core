@@ -34,8 +34,33 @@ bool IsNativeWalletEnabled() {
   return base::FeatureList::IsEnabled(features::kNativeBraveWalletFeature);
 }
 
+bool IsFilecoinEnabled() {
+  return base::FeatureList::IsEnabled(features::kBraveWalletFilecoinFeature);
+}
+
+bool IsDappsSupportEnabled() {
+  return base::FeatureList::IsEnabled(
+      features::kBraveWalletDappsSupportFeature);
+}
+
+bool IsSolanaEnabled() {
+  return base::FeatureList::IsEnabled(features::kBraveWalletSolanaFeature);
+}
+
 bool IsNftPinningEnabled() {
   return base::FeatureList::IsEnabled(features::kBraveWalletNftPinningFeature);
+}
+
+bool IsPanelV2Enabled() {
+  return base::FeatureList::IsEnabled(features::kBraveWalletPanelV2Feature);
+}
+
+bool ShouldCreateDefaultSolanaAccount() {
+  return IsSolanaEnabled() && features::kCreateDefaultSolanaAccount.Get();
+}
+
+bool ShouldShowTxStatusInToolbar() {
+  return features::kShowToolbarTxStatus.Get();
 }
 
 bool IsBitcoinEnabled() {
@@ -44,11 +69,6 @@ bool IsBitcoinEnabled() {
 
 bool IsZCashEnabled() {
   return base::FeatureList::IsEnabled(features::kBraveWalletZCashFeature);
-}
-
-bool IsAnkrBalancesEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kBraveWalletAnkrBalancesFeature);
 }
 
 bool IsAllowed(PrefService* prefs) {
@@ -147,9 +167,13 @@ GURL GetActiveEndpointUrl(const mojom::NetworkInfo& chain) {
 
 std::vector<mojom::KeyringId> GetSupportedKeyrings() {
   std::vector<mojom::KeyringId> ids = {mojom::KeyringId::kDefault};
-  ids.push_back(mojom::KeyringId::kFilecoin);
-  ids.push_back(mojom::KeyringId::kFilecoinTestnet);
-  ids.push_back(mojom::KeyringId::kSolana);
+  if (IsFilecoinEnabled()) {
+    ids.push_back(mojom::KeyringId::kFilecoin);
+    ids.push_back(mojom::KeyringId::kFilecoinTestnet);
+  }
+  if (IsSolanaEnabled()) {
+    ids.push_back(mojom::KeyringId::kSolana);
+  }
   if (IsBitcoinEnabled()) {
     ids.push_back(mojom::KeyringId::kBitcoin84);
     ids.push_back(mojom::KeyringId::kBitcoin84Testnet);
@@ -232,38 +256,16 @@ mojom::AccountIdPtr MakeBitcoinAccountId(mojom::CoinType coin,
                                std::move(unique_key));
 }
 
-std::string GetNetworkForBitcoinKeyring(const mojom::KeyringId& keyring_id) {
-  if (IsBitcoinMainnetKeyring(keyring_id)) {
-    return mojom::kBitcoinMainnet;
-  }
-  if (IsBitcoinTestnetKeyring(keyring_id)) {
-    return mojom::kBitcoinTestnet;
-  }
-  NOTREACHED_NORETURN();
-}
-
 std::string GetNetworkForBitcoinAccount(const mojom::AccountIdPtr& account_id) {
   CHECK(account_id);
   CHECK(IsBitcoinAccount(*account_id));
-  return GetNetworkForBitcoinKeyring(account_id->keyring_id);
-}
-
-mojom::AccountIdPtr MakeZCashAccountId(mojom::CoinType coin,
-                                       mojom::KeyringId keyring_id,
-                                       mojom::AccountKind kind,
-                                       uint32_t account_index) {
-  DCHECK_EQ(coin, mojom::CoinType::ZEC);
-  DCHECK(IsZCashKeyring(keyring_id));
-  DCHECK_EQ(kind, mojom::AccountKind::kDerived);
-
-  std::string unique_key =
-      base::JoinString({base::NumberToString(static_cast<int>(coin)),
-                        base::NumberToString(static_cast<int>(keyring_id)),
-                        base::NumberToString(static_cast<int>(kind)),
-                        base::NumberToString(account_index)},
-                       "_");
-  return mojom::AccountId::New(coin, keyring_id, kind, "", account_index,
-                               std::move(unique_key));
+  if (IsBitcoinMainnetKeyring(account_id->keyring_id)) {
+    return mojom::kBitcoinMainnet;
+  }
+  if (IsBitcoinTestnetKeyring(account_id->keyring_id)) {
+    return mojom::kBitcoinTestnet;
+  }
+  NOTREACHED_NORETURN();
 }
 
 }  // namespace brave_wallet

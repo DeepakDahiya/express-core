@@ -23,10 +23,13 @@ struct LatentInterestUserModelInfo final {
 
   ~LatentInterestUserModelInfo();
 
-  bool operator==(const LatentInterestUserModelInfo&) const = default;
-
   SegmentList segments;
 };
+
+bool operator==(const LatentInterestUserModelInfo&,
+                const LatentInterestUserModelInfo&);
+bool operator!=(const LatentInterestUserModelInfo&,
+                const LatentInterestUserModelInfo&);
 
 }  // namespace brave_ads
 

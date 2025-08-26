@@ -10,17 +10,17 @@
 #include "brave/components/brave_ads/core/internal/account/wallet/wallet_util.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-WalletInfo GetWallet() {
+WalletInfo GetWalletForTesting() {
   return ToWallet(kWalletPaymentId, kWalletRecoverySeed).value_or(WalletInfo{});
 }
 
-mojom::WalletInfoPtr GetWalletPtr() {
+mojom::WalletInfoPtr GetWalletPtrForTesting() {
   mojom::WalletInfoPtr wallet = mojom::WalletInfo::New();
   wallet->payment_id = kWalletPaymentId;
   wallet->recovery_seed = kWalletRecoverySeed;
   return wallet;
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

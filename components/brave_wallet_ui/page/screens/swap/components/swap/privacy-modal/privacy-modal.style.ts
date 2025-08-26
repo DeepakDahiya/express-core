@@ -6,6 +6,7 @@
 import styled from 'styled-components'
 import { Column } from '../../shared-swap.styles'
 
+
 export const Section = styled(Column)`
   background-color: ${(p) => p.theme.color.background01};
   border: 1px solid ${(p) => p.theme.color.divider01};

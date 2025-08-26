@@ -8,11 +8,11 @@
 
 #include <string>
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-std::string BuildSubdivision(const std::string& country_code,
-                             const std::string& subdivision_code);
+std::string BuildSubdivisionForTesting(const std::string& country_code,
+                                       const std::string& subdivision_code);
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_COMMON_SUBDIVISION_SUBDIVISION_UNITTEST_UTIL_H_

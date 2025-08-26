@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/catalog_permission_rule.h"
 
 #include "brave/components/brave_ads/core/internal/catalog/catalog_url_request_builder_util.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_util.h"
@@ -17,7 +17,9 @@ namespace brave_ads {
 
 class BraveAdsCatalogPermissionRuleIntegrationTest : public UnitTestBase {
  protected:
-  void SetUp() override { UnitTestBase::SetUp(/*is_integration_test=*/true); }
+  void SetUp() override {
+    UnitTestBase::SetUpForTesting(/*is_integration_test=*/true);
+  }
 
   void SetUpMocks() override {
     const URLResponseMap url_responses = {
@@ -25,11 +27,13 @@ class BraveAdsCatalogPermissionRuleIntegrationTest : public UnitTestBase {
          {{net::HTTP_OK, /*response_body=*/"/catalog.json"}}}};
     MockUrlResponses(ads_client_mock_, url_responses);
   }
+
+  const CatalogPermissionRule permission_rule_;
 };
 
 TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest, ShouldAllow) {
   // Act & Assert
-  EXPECT_TRUE(HasCatalogPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest,
@@ -38,7 +42,7 @@ TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest,
   AdvanceClockBy(base::Days(1) - base::Milliseconds(1));
 
   // Act & Assert
-  EXPECT_TRUE(HasCatalogPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest,
@@ -47,7 +51,7 @@ TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest,
   AdvanceClockBy(base::Days(1));
 
   // Act & Assert
-  EXPECT_FALSE(HasCatalogPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest,
@@ -56,7 +60,7 @@ TEST_F(BraveAdsCatalogPermissionRuleIntegrationTest,
   SetCatalogVersion(0);
 
   // Act & Assert
-  EXPECT_FALSE(HasCatalogPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 }  // namespace brave_ads

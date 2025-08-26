@@ -20,11 +20,11 @@ export function defaultState (): Rewards.State {
     ui: {
       modalConnect: false,
       modalRedirect: 'hide',
-      modalRedirectProvider: '',
       modalReset: false,
       modalAdsHistory: false,
       adsSettings: false,
       autoContributeSettings: false,
+      contributionsSettings: false,
       promosDismissed: {}
     },
     autoContributeList: [],
@@ -51,6 +51,12 @@ export function defaultState (): Rewards.State {
     },
     adsHistory: [],
     promotions: [],
+    inlineTipsEnabled: true,
+    inlineTip: {
+      twitter: true,
+      reddit: true,
+      github: true
+    },
     excludedList: [],
     externalWalletProviderList: [],
     balance: optional<number>(),

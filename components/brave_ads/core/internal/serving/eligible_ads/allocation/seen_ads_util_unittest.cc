@@ -18,7 +18,7 @@ namespace brave_ads {
 TEST(BraveAdsSeenAdsUtilTest, DoNotGetLastSeenAdAtForEmptyAdEvents) {
   // Arrange
   const CreativeNotificationAdInfo creative_ad =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
 
   // Act & Assert
   EXPECT_FALSE(GetLastSeenAdAt(/*ad_events=*/{}, creative_ad));
@@ -27,17 +27,17 @@ TEST(BraveAdsSeenAdsUtilTest, DoNotGetLastSeenAdAtForEmptyAdEvents) {
 TEST(BraveAdsSeenAdsUtilTest, DoNotGetLastSeenAdAtForUnseenAd) {
   // Arrange
   const CreativeNotificationAdInfo creative_ad_1 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
-  const AdEventInfo ad_event = test::BuildAdEvent(
+  const AdEventInfo ad_event = BuildAdEventForTesting(
       creative_ad_1, AdType::kNotificationAd, ConfirmationType::kViewed,
       /*created_at=*/Now() - base::Hours(12),
       /*should_use_random_uuids=*/true);
   ad_events.push_back(ad_event);
 
   const CreativeNotificationAdInfo creative_ad_2 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
 
   // Act & Assert
   EXPECT_FALSE(GetLastSeenAdAt(ad_events, creative_ad_2));
@@ -48,34 +48,34 @@ TEST(BraveAdsSeenAdsUtilTest, GetLastSeenAdAt) {
   AdEventList ad_events;
 
   const CreativeNotificationAdInfo creative_ad_1 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
 
   const CreativeNotificationAdInfo creative_ad_2 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
 
   const base::Time now = Now();
 
-  const AdEventInfo ad_event_4 = test::BuildAdEvent(
+  const AdEventInfo ad_event_4 = BuildAdEventForTesting(
       creative_ad_1, AdType::kNotificationAd, ConfirmationType::kConversion,
       now - base::Hours(3), /*should_use_random_uuids=*/true);
   ad_events.push_back(ad_event_4);
 
   const AdEventInfo ad_event_3 =
-      test::BuildAdEvent(creative_ad_1, AdType::kNotificationAd,
-                         ConfirmationType::kViewed, now - base::Hours(6),
-                         /*should_use_random_uuids=*/true);
+      BuildAdEventForTesting(creative_ad_1, AdType::kNotificationAd,
+                             ConfirmationType::kViewed, now - base::Hours(6),
+                             /*should_use_random_uuids=*/true);
   ad_events.push_back(ad_event_3);
 
   const AdEventInfo ad_event_2 =
-      test::BuildAdEvent(creative_ad_2, AdType::kNotificationAd,
-                         ConfirmationType::kViewed, now - base::Hours(11),
-                         /*should_use_random_uuids=*/true);
+      BuildAdEventForTesting(creative_ad_2, AdType::kNotificationAd,
+                             ConfirmationType::kViewed, now - base::Hours(11),
+                             /*should_use_random_uuids=*/true);
   ad_events.push_back(ad_event_2);
 
   const AdEventInfo ad_event_1 =
-      test::BuildAdEvent(creative_ad_1, AdType::kNotificationAd,
-                         ConfirmationType::kViewed, now - base::Hours(12),
-                         /*should_use_random_uuids=*/true);
+      BuildAdEventForTesting(creative_ad_1, AdType::kNotificationAd,
+                             ConfirmationType::kViewed, now - base::Hours(12),
+                             /*should_use_random_uuids=*/true);
   ad_events.push_back(ad_event_1);
 
   // Act & Assert

@@ -21,7 +21,7 @@
 bool ShouldTrackURLForRestore(const GURL& url) {
 #if BUILDFLAG(ETHEREUM_REMOTE_CLIENT_ENABLED)
   if (url.SchemeIs("chrome-extension") &&
-      url.host_piece() == kEthereumRemoteClientExtensionId) {
+      url.host() == ethereum_remote_client_extension_id) {
     return false;
   }
 #endif

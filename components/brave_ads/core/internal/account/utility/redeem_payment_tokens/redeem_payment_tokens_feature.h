@@ -17,7 +17,7 @@ namespace brave_ads {
 
 BASE_DECLARE_FEATURE(kRedeemPaymentTokensFeature);
 
-inline constexpr base::FeatureParam<base::TimeDelta> kRedeemPaymentTokensAfter{
+constexpr base::FeatureParam<base::TimeDelta> kRedeemPaymentTokensAfter{
     &kRedeemPaymentTokensFeature, "redeem_after", base::Days(1)};
 
 }  // namespace brave_ads

@@ -47,12 +47,7 @@ export const StandardCheckbox = (props: Props) => {
         isBold={isBold}
       >
         <StyledCheckbox isChecked={isChecked}>
-          {isChecked && (
-            <StyledIcon
-              size={16}
-              name='check-normal'
-            />
-          )}
+          {isChecked && <StyledIcon size={16} name='check-normal' />}
         </StyledCheckbox>
         {label}
       </Label>

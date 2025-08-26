@@ -95,19 +95,20 @@ void MigrateToVersion(mojom::DBTransactionInfo* transaction,
 }  // namespace
 
 void MigrateFromVersion(const int from_version, ResultCallback callback) {
-  CHECK_LT(from_version, kVersion);
+  const int to_version = database::kVersion;
+  CHECK(from_version < to_version);
 
   mojom::DBTransactionInfoPtr transaction = mojom::DBTransactionInfo::New();
 
-  for (int i = from_version + 1; i <= kVersion; ++i) {
+  for (int i = from_version + 1; i <= to_version; ++i) {
     MigrateToVersion(&*transaction, i);
   }
 
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::MIGRATE;
 
-  transaction->version = kVersion;
-  transaction->compatible_version = kCompatibleVersion;
+  transaction->version = to_version;
+  transaction->compatible_version = database::kCompatibleVersion;
   transaction->commands.push_back(std::move(command));
 
   RunTransaction(std::move(transaction), std::move(callback));

@@ -10,88 +10,54 @@
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/allocation/seen_ads_util.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/allocation/seen_advertisers_util.h"
-#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/last_seen/creative_ad_model_based_predictor_last_seen_input_variable_info.h"
-#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/priority/creative_ad_model_based_predictor_priority_input_variable_info.h"
-#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/weight/creative_ad_model_based_predictor_weights_info.h"
+#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/creative_ad_model_based_predictor_segment_input_variable_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
-struct CreativeAdModelBasedPredictorSegmentInputVariablesInfo;
 struct UserModelInfo;
 
-CreativeAdModelBasedPredictorSegmentInputVariablesInfo
-ComputeCreativeAdModelBasedPredictorIntentSegmentInputVariable(
+CreativeAdPredictorSegmentInputVariableInfo
+ComputeCreativeAdPredictorIntentSegmentInputVariable(
     const UserModelInfo& user_model,
-    const std::string& segment,
-    const CreativeAdModelBasedPredictorWeightsInfo& weights);
+    const std::string& segment);
 
-CreativeAdModelBasedPredictorSegmentInputVariablesInfo
-ComputeCreativeAdModelBasedPredictorLatentInterestSegmentInputVariable(
+CreativeAdPredictorSegmentInputVariableInfo
+ComputeCreativeAdPredictorLatentInterestSegmentInputVariable(
     const UserModelInfo& user_model,
-    const std::string& segment,
-    const CreativeAdModelBasedPredictorWeightsInfo& weights);
+    const std::string& segment);
 
-CreativeAdModelBasedPredictorSegmentInputVariablesInfo
-ComputeCreativeAdModelBasedPredictorInterestSegmentInputVariable(
+CreativeAdPredictorSegmentInputVariableInfo
+ComputeCreativeAdPredictorInterestSegmentInputVariable(
     const UserModelInfo& user_model,
-    const std::string& segment,
-    const CreativeAdModelBasedPredictorWeightsInfo& weights);
+    const std::string& segment);
 
 template <typename T>
-CreativeAdModelBasedPredictorLastSeenInputVariableInfo
-ComputeCreativeAdModelBasedPredictorLastSeenAdInputVariable(
+absl::optional<base::TimeDelta>
+ComputeCreativeAdPredictorLastSeenAdInputVariable(
     const T& creative_ad,
-    const AdEventList& ad_events,
-    const CreativeAdModelBasedPredictorWeightsInfo& weights) {
-  CreativeAdModelBasedPredictorLastSeenInputVariableInfo
-      last_seen_ad_input_variable;
-
+    const AdEventList& ad_events) {
   const absl::optional<base::Time> last_seen_at =
       GetLastSeenAdAt(ad_events, creative_ad);
-  if (last_seen_at) {
-    last_seen_ad_input_variable.value = base::Time::Now() - *last_seen_at;
+  if (!last_seen_at) {
+    return absl::nullopt;
   }
 
-  last_seen_ad_input_variable.weight = weights.last_seen_ad;
-
-  return last_seen_ad_input_variable;
+  return base::Time::Now() - *last_seen_at;
 }
 
 template <typename T>
-CreativeAdModelBasedPredictorLastSeenInputVariableInfo
-ComputeCreativeAdModelBasedPredictorLastSeenAdvertiserInputVariable(
+absl::optional<base::TimeDelta>
+ComputeCreativeAdPredictorLastSeenAdvertiserInputVariable(
     const T& creative_ad,
-    const AdEventList& ad_events,
-    const CreativeAdModelBasedPredictorWeightsInfo& weights) {
-  CreativeAdModelBasedPredictorLastSeenInputVariableInfo
-      last_seen_advertiser_input_variable;
-
+    const AdEventList& ad_events) {
   const absl::optional<base::Time> last_seen_at =
       GetLastSeenAdvertiserAt(ad_events, creative_ad);
-  if (last_seen_at) {
-    last_seen_advertiser_input_variable.value =
-        base::Time::Now() - *last_seen_at;
+  if (!last_seen_at) {
+    return absl::nullopt;
   }
 
-  last_seen_advertiser_input_variable.weight = weights.last_seen_advertiser;
-
-  return last_seen_advertiser_input_variable;
-}
-
-template <typename T>
-CreativeAdModelBasedPredictorPriorityInputVariableInfo
-ComputeCreativeAdModelBasedPredictorPriorityInputVariable(
-    const T& creative_ad,
-    const CreativeAdModelBasedPredictorWeightsInfo& weights) {
-  CreativeAdModelBasedPredictorPriorityInputVariableInfo
-      priority_input_variable;
-
-  priority_input_variable.value = creative_ad.priority;
-
-  priority_input_variable.weight = weights.priority;
-
-  return priority_input_variable;
+  return base::Time::Now() - *last_seen_at;
 }
 
 }  // namespace brave_ads

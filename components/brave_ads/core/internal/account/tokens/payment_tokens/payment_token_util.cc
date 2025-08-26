@@ -36,7 +36,7 @@ void AddPaymentTokens(const PaymentTokenList& payment_tokens) {
   ConfirmationStateManager::GetInstance().GetPaymentTokens().AddTokens(
       payment_tokens);
 
-  ConfirmationStateManager::GetInstance().SaveState();
+  ConfirmationStateManager::GetInstance().Save();
 }
 
 bool RemovePaymentToken(const PaymentTokenInfo& payment_token) {
@@ -45,7 +45,7 @@ bool RemovePaymentToken(const PaymentTokenInfo& payment_token) {
     return false;
   }
 
-  ConfirmationStateManager::GetInstance().SaveState();
+  ConfirmationStateManager::GetInstance().Save();
 
   return true;
 }
@@ -54,13 +54,13 @@ void RemovePaymentTokens(const PaymentTokenList& payment_tokens) {
   ConfirmationStateManager::GetInstance().GetPaymentTokens().RemoveTokens(
       payment_tokens);
 
-  ConfirmationStateManager::GetInstance().SaveState();
+  ConfirmationStateManager::GetInstance().Save();
 }
 
 void RemoveAllPaymentTokens() {
   ConfirmationStateManager::GetInstance().GetPaymentTokens().RemoveAllTokens();
 
-  ConfirmationStateManager::GetInstance().SaveState();
+  ConfirmationStateManager::GetInstance().Save();
 }
 
 bool PaymentTokenExists(const PaymentTokenInfo& payment_token) {

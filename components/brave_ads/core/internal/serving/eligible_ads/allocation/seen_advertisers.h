@@ -10,32 +10,34 @@
 #include <string>
 
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
-#include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
 #include "brave/components/brave_ads/core/internal/deprecated/client/client_state_manager.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/allocation/round_robin_advertisers.h"
 #include "brave/components/brave_ads/core/public/units/ad_type.h"
 
 namespace brave_ads {
 
+struct CreativeAdInfo;
+
 template <typename T>
-T FilterSeenAdvertisersAndRoundRobinIfNeeded(const T& ads, AdType ad_type) {
+T FilterSeenAdvertisersAndRoundRobinIfNeeded(const T& ads, const AdType& type) {
   const std::map<std::string, bool>& seen_advertisers =
-      ClientStateManager::GetInstance().GetSeenAdvertisersForType(ad_type);
+      ClientStateManager::GetInstance().GetSeenAdvertisersForType(type);
 
   const T filtered_ads = FilterSeenAdvertisers(ads, seen_advertisers);
   if (!filtered_ads.empty()) {
     return filtered_ads;
   }
 
-  BLOG(1, "All " << ad_type << " advertisers have been shown, so round robin");
+  BLOG(1, "All " << type << " advertisers have been shown, so round robin");
 
-  CreativeAdList creative_ads;
+  CreativeAdList cast_creative_ads;
   for (const auto& ad : ads) {
-    creative_ads.push_back(ad);
+    const CreativeAdInfo cast_creative_ad = static_cast<CreativeAdInfo>(ad);
+    cast_creative_ads.push_back(cast_creative_ad);
   }
 
-  ClientStateManager::GetInstance().ResetSeenAdvertisersForType(creative_ads,
-                                                                ad_type);
+  ClientStateManager::GetInstance().ResetSeenAdvertisersForType(
+      cast_creative_ads, type);
 
   return ads;
 }

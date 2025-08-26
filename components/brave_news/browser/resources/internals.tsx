@@ -11,14 +11,12 @@ import styled from 'styled-components'
 import FeedPage from './FeedPage'
 import SignalsPage from './SignalsPage'
 import InspectContext from './context'
-import FeedNavigation from './FeedNavigation'
-import Variables from './Variables'
 
 setIconBasePath('//resources/brave-icons')
 
-const Grid = styled(Variables)`
+const Grid = styled.div`
   display: grid;
-  grid-template-columns: 300px auto 300px;
+  grid-template-columns: 300px auto;
   padding: 16px;
   gap: 8px;
 
@@ -29,10 +27,9 @@ const Grid = styled(Variables)`
 `
 
 function App() {
-  return <Grid data-theme="dark">
+  return <Grid>
     <SignalsPage />
     <FeedPage />
-    <FeedNavigation />
   </Grid>
 }
 

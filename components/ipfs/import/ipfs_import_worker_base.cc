@@ -142,19 +142,13 @@ void IpfsImportWorkerBase::UploadData(
                      weak_factory_.GetWeakPtr()));
 }
 
-bool IpfsImportWorkerBase::ParseResponseBody(
-    std::unique_ptr<std::string> response_body,
-    ipfs::ImportedData* data) {
+bool IpfsImportWorkerBase::ParseResponseBody(const std::string& response_body,
+                                             ipfs::ImportedData* data) {
   DCHECK(data);
-  if (!response_body) {
-    return false;
-  }
   std::vector<std::string> parts = base::SplitString(
-      *response_body, "\n", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
-  if (!parts.size()) {
-    return IPFSJSONParser::GetImportResponseFromJSON(*response_body, data);
-  }
-
+      response_body, "\n", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  if (!parts.size())
+    return IPFSJSONParser::GetImportResponseFromJSON(response_body, data);
   for (const auto& item : parts) {
     if (item.front() != '{' || item.back() != '}')
       continue;
@@ -181,7 +175,7 @@ void IpfsImportWorkerBase::OnImportAddComplete(
 
   bool success = (error_code == net::OK && response_code == net::HTTP_OK);
   if (success) {
-    success = ParseResponseBody(std::move(response_body), data_.get());
+    success = ParseResponseBody(*response_body, data_.get());
   }
   simple_url_loader_.reset();
   if (success && !data_->hash.empty()) {

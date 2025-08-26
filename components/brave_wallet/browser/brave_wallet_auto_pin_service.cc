@@ -5,8 +5,6 @@
 
 #include "brave/components/brave_wallet/browser/brave_wallet_auto_pin_service.h"
 
-#include <vector>
-
 #include "brave/components/brave_wallet/browser/pref_names.h"
 
 namespace brave_wallet {
@@ -122,7 +120,7 @@ void BraveWalletAutoPinService::OnTokenAdded(BlockchainTokenPtr token) {
     return;
   }
   tokens_.insert(token_str.value());
-  std::erase_if(queue_, [&token_str](const auto& intent) {
+  base::EraseIf(queue_, [&token_str](const auto& intent) {
     return GetTokenStringValue(intent->token) == token_str;
   });
   AddOrExecute(
@@ -141,7 +139,7 @@ void BraveWalletAutoPinService::OnTokenRemoved(BlockchainTokenPtr token) {
     return;
   }
   tokens_.erase(token_str.value());
-  std::erase_if(queue_, [&token_str](const auto& intent) {
+  base::EraseIf(queue_, [&token_str](const auto& intent) {
     return GetTokenStringValue(intent->token) == token_str;
   });
   AddOrExecute(

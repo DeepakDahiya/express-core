@@ -17,13 +17,13 @@ namespace brave_ads {
 
 BASE_DECLARE_FEATURE(kPurchaseIntentFeature);
 
-inline constexpr base::FeatureParam<int> kPurchaseIntentResourceVersion{
+constexpr base::FeatureParam<int> kPurchaseIntentResourceVersion{
     &kPurchaseIntentFeature, "resource_version", 1};
 
-inline constexpr base::FeatureParam<int> kPurchaseIntentThreshold{
+constexpr base::FeatureParam<int> kPurchaseIntentThreshold{
     &kPurchaseIntentFeature, "threshold", 3};
 
-inline constexpr base::FeatureParam<base::TimeDelta> kPurchaseIntentTimeWindow{
+constexpr base::FeatureParam<base::TimeDelta> kPurchaseIntentTimeWindow{
     &kPurchaseIntentFeature, "time_window", base::Days(7)};
 
 }  // namespace brave_ads

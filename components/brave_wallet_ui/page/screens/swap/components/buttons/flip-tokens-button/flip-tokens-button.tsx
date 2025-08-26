@@ -6,7 +6,11 @@
 import * as React from 'react'
 
 // Styled Components
-import { Button, ButtonIcon, Wrapper } from './flip-tokens-button.style'
+import {
+  Button,
+  ButtonIcon,
+  Wrapper
+} from './flip-tokens-button.style'
 
 interface Props {
   onClick: () => void
@@ -18,10 +22,7 @@ export const FlipTokensButton = (props: Props) => {
   return (
     <Wrapper>
       <Button onClick={onClick}>
-        <ButtonIcon
-          name='arrow-down'
-          size={28}
-        />
+        <ButtonIcon name='arrow-down' size={28} />
       </Button>
     </Wrapper>
   )

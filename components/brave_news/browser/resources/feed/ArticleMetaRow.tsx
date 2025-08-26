@@ -3,8 +3,8 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { font, spacing } from "@brave/leo/tokens/css"
-import getBraveNewsController, { FeedItemMetadata, UserEnabled } from "../shared/api"
+import { color, font, spacing } from "@brave/leo/tokens/css"
+import { FeedItemMetadata, UserEnabled } from "../shared/api"
 import { channelIcons } from "../shared/Icons"
 import styled from "styled-components";
 import * as React from "react";
@@ -12,11 +12,10 @@ import Flex from '$web-common/Flex'
 import ButtonMenu from "@brave/leo/react/buttonMenu";
 import Button from "@brave/leo/react/button";
 import Icon from "@brave/leo/react/icon";
-import { getLocale } from '$web-common/locale';
-import { getTranslatedChannelName } from "../shared/channel";
+import { api } from "../context";
 
 const MenuButton = styled(Button)`
-  --leo-button-padding: 0;
+  --leo-button-padding: ${spacing.s};
 
   flex-grow: 0;
 `
@@ -26,30 +25,27 @@ export const MetaInfoContainer = styled.h4`
 
   margin: 0;
 
-  font: ${font.xSmall.regular};
-  color: var(--bn-glass-50);
+  font: ${font.primary.xSmall.regular};
+  color: ${color.text.secondary};
+
+  opacity: 0.5;
 
   display: flex;
   align-items: center;
   gap: ${spacing.s};
 `
 
-const publisherDescription = (article: FeedItemMetadata) => {
-  if (article.publisherName) return article.publisherName
-  const url = new URL(article.url.url)
-  return url.hostname
+export const getOrigin = (article: FeedItemMetadata) => {
+  const host = new URL(article.url.url).host
+  return host.startsWith('www.') ? host.substring(4) : host
 }
 
 export function MetaInfo(props: { article: FeedItemMetadata, hideChannel?: boolean }) {
   const maybeChannel = !props.hideChannel && <>
-    • {channelIcons[props.article.categoryName] ?? channelIcons.default} {getTranslatedChannelName(props.article.categoryName)}
-  </>
-
-  const maybeTime = props.article.relativeTimeDescription && <>
-    • {props.article.relativeTimeDescription}
+    • {channelIcons[props.article.categoryName] ?? channelIcons.default} {props.article.categoryName}
   </>
   return <MetaInfoContainer>
-    {publisherDescription(props.article)} {maybeChannel} {maybeTime}
+    {getOrigin(props.article)} {maybeChannel} • {props.article.relativeTimeDescription}
   </MetaInfoContainer>
 }
 
@@ -58,16 +54,13 @@ export default function ArticleMetaRow(props: { article: FeedItemMetadata, hideC
     <MetaInfo {...props} />
 
     <ButtonMenu>
-      <MenuButton slot='anchor-content' kind='plain-faint' size="tiny">
+      <MenuButton slot='anchor-content' kind='plain-faint'>
         <Icon name='more-horizontal' />
       </MenuButton>
       <leo-menu-item onClick={e => {
-        getBraveNewsController().setPublisherPref(props.article.publisherId, UserEnabled.DISABLED)
+        api.setPublisherPref(props.article.publisherId, UserEnabled.DISABLED)
         e.stopPropagation()
-      }}>
-        {getLocale('braveNewsHideContentFrom')
-          .replace('$1', publisherDescription(props.article))}
-      </leo-menu-item>
+      }}>Hide content from {getOrigin(props.article)}</leo-menu-item>
     </ButtonMenu>
   </Flex>
 }

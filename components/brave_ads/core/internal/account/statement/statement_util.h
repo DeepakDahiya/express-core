@@ -26,10 +26,8 @@ GetEstimatedEarningsForThisMonth(const TransactionList& transactions);
 std::pair</*range_low=*/double, /*range_high=*/double>
 GetEstimatedEarningsForLastMonth(const TransactionList& transactions);
 
-int32_t GetAdsReceivedThisMonth(const TransactionList& transactions);
-
 base::flat_map</*ad_type=*/std::string, /*count=*/int32_t>
-GetAdsSummaryThisMonth(const TransactionList& transactions);
+GetAdTypesReceivedThisMonth(const TransactionList& transactions);
 
 }  // namespace brave_ads
 

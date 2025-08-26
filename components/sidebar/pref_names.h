@@ -8,20 +8,17 @@
 
 namespace sidebar {
 
-inline constexpr char kSidebarItems[] = "brave.sidebar.sidebar_items";
-inline constexpr char kSidebarHiddenBuiltInItems[] =
+constexpr char kSidebarItems[] = "brave.sidebar.sidebar_items";
+constexpr char kSidebarHiddenBuiltInItems[] =
     "brave.sidebar.hidden_built_in_items";
-inline constexpr char kSidebarShowOption[] =
-    "brave.sidebar.sidebar_show_option";
-inline constexpr char kSidebarItemAddedFeedbackBubbleShowCount[] =
+constexpr char kSidebarShowOption[] = "brave.sidebar.sidebar_show_option";
+constexpr char kSidebarItemAddedFeedbackBubbleShowCount[] =
     "brave.sidebar.item_added_feedback_bubble_shown_count";
-inline constexpr char kSidePanelWidth[] = "brave.sidebar.side_panel_width";
-inline constexpr char kLastUsedBuiltInItemType[] =
-    "brave.sidebar.last_used_built_in_item_type";
+constexpr char kSidePanelWidth[] = "brave.sidebar.side_panel_width";
 
 // Indicates that sidebar alignment was changed by the browser itself, not by
 // users.
-inline constexpr char kSidebarAlignmentChangedTemporarily[] =
+constexpr char kSidebarAlignmentChangedTemporarily[] =
     "brave.sidebar.sidebar_alignment_changed_for_vertical_tabs";
 
 }  // namespace sidebar

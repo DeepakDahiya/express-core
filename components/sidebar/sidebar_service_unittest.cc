@@ -12,6 +12,7 @@
 #include "base/ranges/algorithm.h"
 #include "base/test/metrics/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "brave/browser/ui/sidebar/sidebar_service_factory.h"
 #include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
 #include "brave/components/playlist/common/buildflags/buildflags.h"
 #include "brave/components/sidebar/constants.h"
@@ -19,6 +20,8 @@
 #include "brave/components/sidebar/sidebar_item.h"
 #include "brave/components/sidebar/sidebar_p3a.h"
 #include "brave/components/sidebar/sidebar_service.h"
+#include "chrome/browser/prefs/browser_prefs.h"
+#include "chrome/test/base/testing_profile.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/sync_preferences/pref_service_mock_factory.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
@@ -41,17 +44,6 @@ using ::testing::Optional;
 using version_info::Channel;
 
 namespace {
-
-constexpr sidebar::SidebarItem::BuiltInItemType
-    kDefaultBuiltInItemTypesForTest[] = {
-        sidebar::SidebarItem::BuiltInItemType::kBraveTalk,
-        sidebar::SidebarItem::BuiltInItemType::kWallet,
-        sidebar::SidebarItem::BuiltInItemType::kChatUI,
-        sidebar::SidebarItem::BuiltInItemType::kBookmarks,
-        sidebar::SidebarItem::BuiltInItemType::kReadingList,
-        sidebar::SidebarItem::BuiltInItemType::kHistory,
-        sidebar::SidebarItem::BuiltInItemType::kPlaylist};
-
 constexpr char sidebar_all_builtin_visible_json[] = R"({
         "hidden_built_in_items": [  ],
         "item_added_feedback_bubble_shown_count": 3,
@@ -216,10 +208,7 @@ class SidebarServiceTest : public testing::Test {
   void TearDown() override { ResetService(); }
 
   void InitService() {
-    std::vector<SidebarItem::BuiltInItemType> default_item_types(
-        std::begin(kDefaultBuiltInItemTypesForTest),
-        std::end(kDefaultBuiltInItemTypesForTest));
-    service_ = std::make_unique<SidebarService>(&prefs_, default_item_types);
+    service_ = std::make_unique<SidebarService>(&prefs_);
     service_->AddObserver(&observer_);
   }
 
@@ -231,8 +220,8 @@ class SidebarServiceTest : public testing::Test {
   PrefService* GetPrefs() { return &prefs_; }
 
   size_t GetDefaultItemCount() const {
-    auto item_count =
-        std::size(kDefaultBuiltInItemTypesForTest) - 1 /* for history*/;
+    auto item_count = std::size(SidebarService::kDefaultBuiltInItemTypes) -
+                      1 /* for history*/;
 #if BUILDFLAG(ENABLE_PLAYLIST)
     if (!base::FeatureList::IsEnabled(playlist::features::kPlaylist)) {
       item_count -= 1;
@@ -506,7 +495,8 @@ TEST_F(SidebarServiceTest, NewDefaultItemAdded) {
   // in kSidebarItems pref.
   std::vector<SidebarItem::BuiltInItemType> default_items;
   base::ranges::copy_if(
-      kDefaultBuiltInItemTypesForTest, std::back_inserter(default_items),
+      SidebarService::kDefaultBuiltInItemTypes,
+      std::back_inserter(default_items),
       [&hidden_builtin_types](const auto& built_in_type) {
         if (base::Contains(hidden_builtin_types, built_in_type)) {
           // Hidden by preference
@@ -1102,7 +1092,8 @@ TEST_F(SidebarServiceOrderingTest, LoadFromPrefsWalletBuiltInHidden) {
 #if BUILDFLAG(ENABLE_AI_CHAT)
   auto expected_count = sidebar_items->size();
 #else
-  auto expected_count = sidebar_items->size() - 1;
+  auto expected_count =
+      sidebar_items->size() - 1
 #endif  // BUILDFLAG(ENABLE_AI_CHAT)
 
 #if BUILDFLAG(ENABLE_PLAYLIST)

@@ -25,7 +25,7 @@ namespace {
 
 NewTabPageAdInfo BuildAndSaveAd() {
   const CreativeNewTabPageAdInfo creative_ad =
-      test::BuildCreativeNewTabPageAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNewTabPageAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeNewTabPageAds({creative_ad});
   return BuildNewTabPageAd(creative_ad);
 }
@@ -38,14 +38,14 @@ class BraveAdsNewTabPageAdEventHandlerIfUserHasNotJoinedBraveRewardsTest
   void SetUp() override {
     UnitTestBase::SetUp();
 
-    test::DisableBraveRewards();
+    DisableBraveRewardsForTesting();
 
     event_handler_.SetDelegate(&delegate_mock_);
   }
 
   void FireEvent(const std::string& placement_id,
                  const std::string& creative_instance_id,
-                 const mojom::NewTabPageAdEventType event_type,
+                 const mojom::NewTabPageAdEventType& event_type,
                  const bool should_fire_event) {
     base::MockCallback<FireNewTabPageAdEventHandlerCallback> callback;
     EXPECT_CALL(callback,

@@ -8,10 +8,10 @@
 
 #include "brave/components/brave_ads/core/internal/history/browsing_history.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-BrowsingHistoryList BuildBrowsingHistory();
+BrowsingHistoryList BuildBrowsingHistoryForTesting();
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_HISTORY_BROWSING_HISTORY_UNITTEST_UTIL_H_

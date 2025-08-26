@@ -26,8 +26,6 @@ struct RewardInfo final {
 
   ~RewardInfo();
 
-  bool operator==(const RewardInfo&) const = default;
-
   [[nodiscard]] bool IsValid() const;
 
   cbr::Token token;
@@ -37,6 +35,9 @@ struct RewardInfo final {
   std::string signature;
   std::string credential_base64url;
 };
+
+bool operator==(const RewardInfo&, const RewardInfo&);
+bool operator!=(const RewardInfo&, const RewardInfo&);
 
 }  // namespace brave_ads
 

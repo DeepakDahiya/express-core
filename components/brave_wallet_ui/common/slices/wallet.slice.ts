@@ -19,6 +19,8 @@ import {
   DefaultBaseCurrencyChanged,
   DefaultEthereumWalletChanged,
   DefaultSolanaWalletChanged,
+  GetCoinMarketPayload,
+  GetCoinMarketsResponse,
   RemoveSitePermissionPayloadType,
   SetUserAssetVisiblePayloadType,
   SitePermissionsPayloadType,
@@ -40,17 +42,22 @@ import {
 
 // Options
 import { HighToLowAssetsFilterOption } from '../../options/asset-filter-options'
-import { NoneGroupByOption } from '../../options/group-assets-by-options'
+import {
+  NoneGroupByOption
+} from '../../options/group-assets-by-options'
 import { AllNetworksOptionDefault } from '../../options/network-filter-options'
 import { AllAccountsOptionUniqueKey } from '../../options/account-filter-options'
 import { createAction, createSlice, PayloadAction } from '@reduxjs/toolkit'
 
 const defaultState: WalletState = {
   hasInitialized: false,
+  isFilecoinEnabled: false,
+  isSolanaEnabled: false,
   isBitcoinEnabled: false,
   isZCashEnabled: false,
   isWalletCreated: false,
   isWalletLocked: true,
+  favoriteApps: [],
   isWalletBackedUp: false,
   hasIncorrectPassword: false,
   userVisibleTokensInfo: [],
@@ -70,7 +77,7 @@ const defaultState: WalletState = {
   defaultSolanaWallet: BraveWallet.DefaultWallet.BraveWalletPreferExtension,
   activeOrigin: {
     eTldPlusOne: '',
-    originSpec: ''
+    originSpec: '',
   },
   gasEstimates: undefined,
   connectedAccounts: [],
@@ -79,6 +86,8 @@ const defaultState: WalletState = {
     fiat: '',
     crypto: ''
   },
+  isLoadingCoinMarketData: true,
+  coinMarketData: [],
   selectedNetworkFilter: parseJSONFromLocalStorage(
     'PORTFOLIO_NETWORK_FILTER_OPTION',
     AllNetworksOptionDefault
@@ -88,15 +97,19 @@ const defaultState: WalletState = {
       LOCAL_STORAGE_KEYS.PORTFOLIO_ASSET_FILTER_OPTION
     ) || HighToLowAssetsFilterOption.id,
   selectedGroupAssetsByItem:
-    window.localStorage.getItem(LOCAL_STORAGE_KEYS.GROUP_PORTFOLIO_ASSETS_BY) ||
+    window
+      .localStorage
+      .getItem(
+        LOCAL_STORAGE_KEYS.GROUP_PORTFOLIO_ASSETS_BY
+      ) ||
     NoneGroupByOption.id,
   selectedAccountFilter: AllAccountsOptionUniqueKey,
   solFeeEstimates: undefined,
   selectedDepositAssetId: undefined,
   passwordAttempts: 0,
-  assetAutoDiscoveryCompleted: true,
+  assetAutoDiscoveryCompleted: false,
   isNftPinningFeatureEnabled: false,
-  isAnkrBalancesFeatureEnabled: false,
+  isPanelV2FeatureEnabled: false,
   hidePortfolioGraph:
     window.localStorage.getItem(
       LOCAL_STORAGE_KEYS.IS_PORTFOLIO_OVERVIEW_GRAPH_HIDDEN
@@ -113,11 +126,9 @@ const defaultState: WalletState = {
       LOCAL_STORAGE_KEYS.USER_REMOVED_NON_FUNGIBLE_TOKEN_IDS
     ) || '[]'
   ),
-  deletedNonFungibleTokenIds: JSON.parse(
-    localStorage.getItem(
-      LOCAL_STORAGE_KEYS.USER_DELETED_NON_FUNGIBLE_TOKEN_IDS
-    ) || '[]'
-  ),
+  deletedNonFungibleTokenIds: JSON.parse(localStorage.getItem(
+    LOCAL_STORAGE_KEYS.USER_DELETED_NON_FUNGIBLE_TOKEN_IDS
+  ) || '[]'),
   hidePortfolioNFTsTab:
     window.localStorage.getItem(LOCAL_STORAGE_KEYS.HIDE_PORTFOLIO_NFTS_TAB) ===
     'true',
@@ -140,7 +151,7 @@ const defaultState: WalletState = {
       LOCAL_STORAGE_KEYS.SHOW_NETWORK_LOGO_ON_NFTS
     ) === 'true',
   isRefreshingNetworksAndTokens: false,
-  importAccountError: undefined
+  importAccountError: undefined,
 }
 
 // async actions
@@ -149,6 +160,8 @@ export const WalletAsyncActions = {
   refreshAll: createAction<RefreshOpts>('refreshAll'),
   lockWallet: createAction('lockWallet'), // keyringService.lock()
   unlockWallet: createAction<UnlockWalletPayloadType>('unlockWallet'),
+  addFavoriteApp: createAction<BraveWallet.AppItem>('addFavoriteApp'), // should use ApiProxy.walletHandler + refreshWalletInfo
+  removeFavoriteApp: createAction<BraveWallet.AppItem>('removeFavoriteApp'), // should use ApiProxy.walletHandler + refreshWalletInfo
   addUserAsset: createAction<BraveWallet.BlockchainToken>('addUserAsset'),
   updateUserAsset: createAction<UpdateUsetAssetType>('updateUserAsset'),
   removeUserAsset: createAction<BraveWallet.BlockchainToken>('removeUserAsset'),
@@ -183,12 +196,13 @@ export const WalletAsyncActions = {
   removeSitePermission: createAction<RemoveSitePermissionPayloadType>(
     'removeSitePermission'
   ),
-  refreshNetworksAndTokens: createAction<RefreshOpts>(
-    'refreshNetworksAndTokens'
-  ),
+  refreshNetworksAndTokens:
+    createAction<RefreshOpts>('refreshNetworksAndTokens'),
+  expandWalletNetworks: createAction('expandWalletNetworks'), // replace with chrome.tabs.create helper
   refreshBalancesAndPriceHistory: createAction(
     'refreshBalancesAndPriceHistory'
   ),
+  getCoinMarkets: createAction<GetCoinMarketPayload>('getCoinMarkets'),
   setSelectedNetworkFilter: createAction<NetworkFilterType>(
     'setSelectedNetworkFilter'
   ),
@@ -196,10 +210,15 @@ export const WalletAsyncActions = {
     'setSelectedAccountFilterItem'
   ),
   autoLockMinutesChanged: createAction('autoLockMinutesChanged'), // No reducer or API logic for this (UNUSED)
-  updateAccountName:
-    createAction<UpdateAccountNamePayloadType>('updateAccountName'),
-  removeAccount: createAction<RemoveAccountPayloadType>('removeAccount'),
-  importAccount: createAction<ImportAccountPayloadType>('importAccount'),
+  updateAccountName: createAction<UpdateAccountNamePayloadType>(
+    'updateAccountName'
+  ),
+  removeAccount: createAction<RemoveAccountPayloadType>(
+    'removeAccount'
+  ),
+  importAccount: createAction<ImportAccountPayloadType>(
+    'importAccount'
+  ),
   importAccountFromJson: createAction<ImportAccountFromJsonPayloadType>(
     'importAccountFromJson'
   )
@@ -259,14 +278,16 @@ export const createWalletSlice = (initialState: WalletState = defaultState) => {
       ) {
         state.hasInitialized = true
         state.isWalletCreated = payload.walletInfo.isWalletCreated
+        state.isFilecoinEnabled = payload.walletInfo.isFilecoinEnabled
+        state.isSolanaEnabled = payload.walletInfo.isSolanaEnabled
         state.isBitcoinEnabled = payload.walletInfo.isBitcoinEnabled
         state.isZCashEnabled = payload.walletInfo.isZCashEnabled
         state.isWalletLocked = payload.walletInfo.isWalletLocked
         state.isWalletBackedUp = payload.walletInfo.isWalletBackedUp
         state.isNftPinningFeatureEnabled =
           payload.walletInfo.isNftPinningFeatureEnabled
-        state.isAnkrBalancesFeatureEnabled =
-          payload.walletInfo.isAnkrBalancesFeatureEnabled
+        state.isPanelV2FeatureEnabled =
+          payload.walletInfo.isPanelV2FeatureEnabled
       },
 
       portfolioTimelineUpdated(
@@ -285,9 +306,25 @@ export const createWalletSlice = (initialState: WalletState = defaultState) => {
 
       setAssetAutoDiscoveryCompleted(
         state: WalletState,
-        { payload }: PayloadAction<boolean>
+        { payload }: PayloadAction<BraveWallet.BlockchainToken[]>
       ) {
-        state.assetAutoDiscoveryCompleted = payload
+        state.assetAutoDiscoveryCompleted = true
+      },
+
+      setCoinMarkets: (
+        state: WalletState,
+        { payload }: PayloadAction<GetCoinMarketsResponse>
+      ) => {
+        state.coinMarketData = payload.success
+          ? payload.values.map((coin) => {
+              coin.image = coin.image.replace(
+                'https://assets.coingecko.com',
+                ' https://assets.cgproxy.brave.com'
+              )
+              return coin
+            })
+          : []
+        state.isLoadingCoinMarketData = false
       },
 
       selectOnRampAssetId(
@@ -311,6 +348,7 @@ export const createWalletSlice = (initialState: WalletState = defaultState) => {
       ) {
         state.isMetaMaskInstalled = payload
       },
+
 
       setPasswordAttempts(
         state: WalletState,
@@ -452,12 +490,12 @@ export const createWalletSlice = (initialState: WalletState = defaultState) => {
       ) => {
         state.isRefreshingNetworksAndTokens = payload
       },
-      setImportAccountError(
+      setImportAccountError (
         state: WalletState,
         { payload }: PayloadAction<ImportAccountErrorType>
       ) {
         state.importAccountError = payload
-      }
+      },
     },
     extraReducers: (builder) => {
       builder.addCase(WalletAsyncActions.locked.type, (state) => {

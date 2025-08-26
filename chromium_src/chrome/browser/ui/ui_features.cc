@@ -16,6 +16,7 @@ OVERRIDE_FEATURE_DEFAULT_STATES({{
     {kHaTSWebUI, base::FEATURE_DISABLED_BY_DEFAULT},
 #endif
     {kTabHoverCardImages, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kExtensionsMenuInAppMenu, base::FEATURE_DISABLED_BY_DEFAULT},
 }});
 
 }  // namespace features

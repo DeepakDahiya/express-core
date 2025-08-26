@@ -8,7 +8,7 @@
 
 namespace brave_ads {
 
-inline constexpr char kClientStateFilename[] = "client.json";
+constexpr char kClientStateFilename[] = "client.json";
 
 }  // namespace brave_ads
 

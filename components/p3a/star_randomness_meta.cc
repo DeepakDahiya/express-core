@@ -11,16 +11,13 @@
 #include "base/base64.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
-#include "base/json/values_util.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "brave/components/p3a/features.h"
-#include "brave/components/p3a/metric_log_type.h"
 #include "brave/components/p3a/network_annotations.h"
 #include "brave/components/p3a/nitro_utils/attestation.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
@@ -30,20 +27,10 @@ namespace p3a {
 
 namespace {
 
-constexpr char kCurrentPKPrefName[] = "brave.p3a.current_pk";  // DEPRECATED
-constexpr char kCurrentEpochPrefName[] =
-    "brave.p3a.current_epoch";  // DEPRECATED
-constexpr char kNextEpochTimePrefName[] =
-    "brave.p3a.next_epoch_time";  // DEPRECATED
-constexpr char kApprovedCertFPPrefName[] =
-    "brave.p3a.approved_cert_fp";  // DEPRECATED
-
-constexpr char kRandomnessMetaDictPrefName[] =
-    "brave.p3a.randomness_meta";  // DEPRECATED
-constexpr char kCurrentPKPrefKey[] = "current_pk";
-constexpr char kCurrentEpochPrefKey[] = "current_epoch";
-constexpr char kNextEpochTimePrefKey[] = "next_epoch_time";
-
+constexpr char kCurrentPKPrefName[] = "brave.p3a.current_pk";
+constexpr char kCurrentEpochPrefName[] = "brave.p3a.current_epoch";
+constexpr char kNextEpochTimePrefName[] = "brave.p3a.next_epoch_time";
+constexpr char kApprovedCertFPPrefName[] = "brave.p3a.approved_cert_fp";
 // A generous arbitrary limit, 128KB
 constexpr std::size_t kMaxInfoResponseSize = 128 * 1024;
 const int kRndInfoRetryInitialBackoffSeconds = 5;
@@ -85,10 +72,7 @@ RandomnessServerInfo::RandomnessServerInfo(
       next_epoch_time(next_epoch_time),
       epoch_change_detected(epoch_change_detected),
       public_key(std::move(public_key)) {}
-RandomnessServerInfo::~RandomnessServerInfo() = default;
-
-RandomnessServerUpdateState::RandomnessServerUpdateState() = default;
-RandomnessServerUpdateState::~RandomnessServerUpdateState() = default;
+RandomnessServerInfo::~RandomnessServerInfo() {}
 
 StarRandomnessMeta::StarRandomnessMeta(
     PrefService* local_state,
@@ -99,9 +83,6 @@ StarRandomnessMeta::StarRandomnessMeta(
       local_state_(local_state),
       info_callback_(info_callback),
       config_(config) {
-  for (MetricLogType log_type : kAllMetricLogTypes) {
-    update_states_[log_type] = std::make_unique<RandomnessServerUpdateState>();
-  }
   std::string approved_cert_fp_str =
       local_state->GetString(kApprovedCertFPPrefName);
   net::HashValue approved_cert_fp;
@@ -112,41 +93,13 @@ StarRandomnessMeta::StarRandomnessMeta(
   }
 }
 
-StarRandomnessMeta::~StarRandomnessMeta() = default;
+StarRandomnessMeta::~StarRandomnessMeta() {}
 
 void StarRandomnessMeta::RegisterPrefs(PrefRegistrySimple* registry) {
-  registry->RegisterDictionaryPref(kRandomnessMetaDictPrefName);
-  registry->RegisterStringPref(kApprovedCertFPPrefName, "");
-}
-
-void StarRandomnessMeta::RegisterPrefsForMigration(
-    PrefRegistrySimple* registry) {
-  // Added 09/2023
   registry->RegisterStringPref(kCurrentPKPrefName, std::string());
   registry->RegisterIntegerPref(kCurrentEpochPrefName, -1);
   registry->RegisterTimePref(kNextEpochTimePrefName, base::Time());
-}
-
-void StarRandomnessMeta::MigrateObsoleteLocalStatePrefs(
-    PrefService* local_state) {
-  // Added 09/2023
-  ScopedDictPrefUpdate update(local_state, kRandomnessMetaDictPrefName);
-  base::Value::Dict* typical_dict =
-      update->EnsureDict(MetricLogTypeToString(MetricLogType::kTypical));
-
-  std::string current_pk = local_state->GetString(kCurrentPKPrefName);
-  int current_epoch = local_state->GetInteger(kCurrentEpochPrefName);
-  base::Time next_epoch_time = local_state->GetTime(kNextEpochTimePrefName);
-  if (!current_pk.empty() && current_epoch != -1 &&
-      !next_epoch_time.is_null()) {
-    typical_dict->Set(kCurrentPKPrefKey, current_pk);
-    typical_dict->Set(kCurrentEpochPrefKey, current_epoch);
-    typical_dict->Set(kNextEpochTimePrefKey,
-                      base::TimeToValue(next_epoch_time));
-    local_state->ClearPref(kCurrentPKPrefName);
-    local_state->ClearPref(kCurrentEpochPrefName);
-    local_state->ClearPref(kNextEpochTimePrefName);
-  }
+  registry->RegisterStringPref(kApprovedCertFPPrefName, "");
 }
 
 bool StarRandomnessMeta::ShouldAttestEnclave() {
@@ -184,55 +137,44 @@ bool StarRandomnessMeta::VerifyRandomnessCert(
   return true;
 }
 
-void StarRandomnessMeta::RequestServerInfo(MetricLogType log_type) {
-  RandomnessServerUpdateState* update_state = update_states_[log_type].get();
-  update_state->rnd_server_info = nullptr;
+void StarRandomnessMeta::RequestServerInfo() {
+  rnd_server_info_ = nullptr;
 
   if (ShouldAttestEnclave() && !approved_cert_fp_.has_value()) {
     AttestServer(true);
     return;
   }
 
-  if (!update_state->has_used_cached_info) {
+  if (!has_used_cached_info_) {
     // Using cached server info, if available.
-    const base::Value::Dict& meta_dict =
-        local_state_->GetDict(kRandomnessMetaDictPrefName);
-    const base::Value::Dict* meta_type_dict =
-        meta_dict.FindDict(MetricLogTypeToString(log_type));
-    if (meta_type_dict != nullptr) {
-      update_state->last_cached_epoch =
-          meta_type_dict->FindInt(kCurrentEpochPrefKey);
-      base::Time saved_next_epoch_time =
-          base::ValueToTime(meta_type_dict->Find(kNextEpochTimePrefKey))
-              .value_or(base::Time());
-      // only return cached info if the epoch is not expired,
-      // and if the "fake" star epoch matches the last saved epoch (if
-      // specified). if "fake" star epoch does not match the saved epoch, then
-      // fresh server info should be requested to update the local state with
-      // the new epoch info
-      if (saved_next_epoch_time > base::Time::Now() &&
-          (!config_->fake_star_epochs.at(log_type).has_value() ||
-           config_->fake_star_epochs.at(log_type) ==
-               update_state->last_cached_epoch)) {
-        const std::string* saved_pk =
-            meta_type_dict->FindString(kCurrentPKPrefKey);
+    last_cached_epoch_ =
+        absl::make_optional(local_state_->GetInteger(kCurrentEpochPrefName));
+    base::Time saved_next_epoch_time =
+        local_state_->GetTime(kNextEpochTimePrefName);
+    // only return cached info if the epoch is not expired,
+    // and if the "fake" star epoch matches the last saved epoch (if specified).
+    // if "fake" star epoch does not match the saved epoch, then fresh server
+    // info should be requested to update the local state with the new epoch
+    // info
+    if (saved_next_epoch_time > base::Time::Now() &&
+        (!config_->fake_star_epoch.has_value() ||
+         config_->fake_star_epoch == last_cached_epoch_)) {
+      std::string saved_pk = local_state_->GetString(kCurrentPKPrefName);
 
-        update_state->rnd_server_info = std::make_unique<RandomnessServerInfo>(
-            *update_state->last_cached_epoch, saved_next_epoch_time, false,
-            DecodeServerPublicKey(saved_pk));
-        VLOG(2) << "StarRandomnessMeta: using cached server info";
-        info_callback_.Run(log_type, update_state->rnd_server_info.get());
-        update_state->has_used_cached_info = true;
-        return;
-      }
+      rnd_server_info_ = std::make_unique<RandomnessServerInfo>(
+          *last_cached_epoch_, saved_next_epoch_time, false,
+          DecodeServerPublicKey(&saved_pk));
+      VLOG(2) << "StarRandomnessMeta: using cached server info";
+      info_callback_.Run(rnd_server_info_.get());
+      has_used_cached_info_ = true;
+      return;
     }
   }
 
-  update_state->rnd_server_info = nullptr;
+  rnd_server_info_ = nullptr;
   auto resource_request = std::make_unique<network::ResourceRequest>();
   resource_request->url =
-      GURL(base::StrCat({config_->star_randomness_host, "/instances/",
-                         MetricLogTypeToString(log_type), "/info"}));
+      GURL(base::StrCat({config_->star_randomness_host, "/info"}));
   if (!resource_request->url.is_valid() ||
       !resource_request->url.SchemeIsHTTPOrHTTPS()) {
     VLOG(2) << "StarRandomnessMeta: star randomness host invalid, skipping "
@@ -240,20 +182,19 @@ void StarRandomnessMeta::RequestServerInfo(MetricLogType log_type) {
     return;
   }
 
-  update_state->url_loader = network::SimpleURLLoader::Create(
+  url_loader_ = network::SimpleURLLoader::Create(
       std::move(resource_request), GetRandomnessRequestAnnotation());
-  update_state->url_loader->SetURLLoaderFactoryOptions(
+  url_loader_->SetURLLoaderFactoryOptions(
       network::mojom::kURLLoadOptionSendSSLInfoWithResponse);
-  update_state->url_loader->DownloadToString(
+  url_loader_->DownloadToString(
       url_loader_factory_.get(),
       base::BindOnce(&StarRandomnessMeta::HandleServerInfoResponse,
-                     base::Unretained(this), log_type),
+                     base::Unretained(this)),
       kMaxInfoResponseSize);
 }
 
-RandomnessServerInfo* StarRandomnessMeta::GetCachedRandomnessServerInfo(
-    MetricLogType log_type) {
-  return update_states_[log_type]->rnd_server_info.get();
+RandomnessServerInfo* StarRandomnessMeta::GetCachedRandomnessServerInfo() {
+  return rnd_server_info_.get();
 }
 
 void StarRandomnessMeta::AttestServer(bool make_info_request_after) {
@@ -284,9 +225,7 @@ void StarRandomnessMeta::HandleAttestationResult(
     LOG(ERROR) << "StarRandomnessMeta: attestation failed";
     attestation_pending_ = false;
     if (make_info_request_after) {
-      for (MetricLogType log_type : kAllMetricLogTypes) {
-        ScheduleServerInfoRetry(log_type);
-      }
+      ScheduleServerInfoRetry();
     }
     return;
   }
@@ -298,58 +237,49 @@ void StarRandomnessMeta::HandleAttestationResult(
   VLOG(2) << "StarRandomnessMeta: attestation succeeded; fp = "
           << approved_cert_fp_str;
   if (make_info_request_after) {
-    for (MetricLogType log_type : kAllMetricLogTypes) {
-      RequestServerInfo(log_type);
-    }
+    RequestServerInfo();
   }
 }
 
-void StarRandomnessMeta::ScheduleServerInfoRetry(MetricLogType log_type) {
-  RandomnessServerUpdateState* update_state = update_states_[log_type].get();
-  update_state->url_loader = nullptr;
-  if (update_state->current_backoff_time.is_zero()) {
-    update_state->current_backoff_time =
-        base::Seconds(kRndInfoRetryInitialBackoffSeconds);
+void StarRandomnessMeta::ScheduleServerInfoRetry() {
+  url_loader_ = nullptr;
+  if (current_backoff_time_.is_zero()) {
+    current_backoff_time_ = base::Seconds(kRndInfoRetryInitialBackoffSeconds);
   } else {
-    update_state->current_backoff_time *= 2;
+    current_backoff_time_ *= 2;
     base::TimeDelta max_backoff_time =
         base::Minutes(kRndInfoRetryMaxBackoffMinutes);
-    if (update_state->current_backoff_time > max_backoff_time) {
-      update_state->current_backoff_time = max_backoff_time;
+    if (current_backoff_time_ > max_backoff_time) {
+      current_backoff_time_ = max_backoff_time;
     }
   }
   VLOG(2) << "StarRandomnessMeta: scheduling server info req retry in "
-          << update_state->current_backoff_time;
-  update_state->rnd_info_retry_timer.Start(
-      FROM_HERE, update_state->current_backoff_time,
-      base::BindOnce(&StarRandomnessMeta::RequestServerInfo,
-                     base::Unretained(this), log_type));
+          << current_backoff_time_;
+  rnd_info_retry_timer_.Start(FROM_HERE, current_backoff_time_, this,
+                              &StarRandomnessMeta::RequestServerInfo);
 }
 
 void StarRandomnessMeta::HandleServerInfoResponse(
-    MetricLogType log_type,
     std::unique_ptr<std::string> response_body) {
-  RandomnessServerUpdateState* update_state = update_states_[log_type].get();
   if (!response_body || response_body->empty()) {
-    std::string error_str =
-        net::ErrorToShortString(update_state->url_loader->NetError());
-    VLOG(2) << "StarRandomnessMeta: no response body for randomness server "
-            << "info request, net error: " << error_str;
-    ScheduleServerInfoRetry(log_type);
+    std::string error_str = net::ErrorToShortString(url_loader_->NetError());
+    LOG(ERROR) << "StarRandomnessMeta: no response body for randomness server "
+               << "info request, net error: " << error_str;
+    ScheduleServerInfoRetry();
     return;
   }
-  if (!VerifyRandomnessCert(update_state->url_loader.get())) {
-    ScheduleServerInfoRetry(log_type);
+  if (!VerifyRandomnessCert(url_loader_.get())) {
+    ScheduleServerInfoRetry();
     return;
   }
-  update_state->url_loader = nullptr;
+  url_loader_ = nullptr;
   base::JSONReader::Result parsed_value =
       base::JSONReader::ReadAndReturnValueWithError(
           *response_body, base::JSONParserOptions::JSON_PARSE_RFC);
   if (!parsed_value.has_value() || !parsed_value.value().is_dict()) {
     LOG(ERROR) << "StarRandomnessMeta: failed to parse server info json: "
                << parsed_value.error().message;
-    ScheduleServerInfoRetry(log_type);
+    ScheduleServerInfoRetry();
     return;
   }
   base::Value::Dict& root = parsed_value->GetDict();
@@ -358,12 +288,12 @@ void StarRandomnessMeta::HandleServerInfoResponse(
   if (!epoch || !next_epoch_time_str) {
     LOG(ERROR) << "StarRandomnessMeta: failed to parse server info json: "
                   "missing fields";
-    ScheduleServerInfoRetry(log_type);
+    ScheduleServerInfoRetry();
     return;
   }
 
-  if (config_->fake_star_epochs.at(log_type).has_value()) {
-    epoch = config_->fake_star_epochs.at(log_type);
+  if (config_->fake_star_epoch.has_value()) {
+    epoch = config_->fake_star_epoch;
   }
 
   base::Time next_epoch_time;
@@ -371,35 +301,30 @@ void StarRandomnessMeta::HandleServerInfoResponse(
       next_epoch_time <= base::Time::Now()) {
     LOG(ERROR) << "StarRandomnessMeta: failed to parse server info next "
                   "epoch time";
-    ScheduleServerInfoRetry(log_type);
+    ScheduleServerInfoRetry();
     return;
   }
   const std::string* pk_value = root.FindString("publicKey");
   ::rust::Box<constellation::PPOPRFPublicKeyWrapper> pk =
       DecodeServerPublicKey(pk_value);
-
-  ScopedDictPrefUpdate update(local_state_, kRandomnessMetaDictPrefName);
-  base::Value::Dict* meta_type_dict =
-      update->EnsureDict(MetricLogTypeToString(log_type));
   if (pk_value != nullptr) {
-    meta_type_dict->Set(kCurrentPKPrefKey, *pk_value);
+    local_state_->SetString(kCurrentPKPrefName, *pk_value);
   }
-  meta_type_dict->Set(kCurrentEpochPrefKey, *epoch);
-  meta_type_dict->Set(kNextEpochTimePrefKey,
-                      base::TimeToValue(next_epoch_time));
+  local_state_->SetInteger(kCurrentEpochPrefName, *epoch);
+  local_state_->SetTime(kNextEpochTimePrefName, next_epoch_time);
 
   bool epoch_change_detected = false;
-  if (update_state->last_cached_epoch != epoch) {
-    update_state->last_cached_epoch = epoch;
+  if (last_cached_epoch_ != epoch) {
+    last_cached_epoch_ = epoch;
     epoch_change_detected = true;
   }
 
-  update_state->rnd_server_info = std::make_unique<RandomnessServerInfo>(
+  rnd_server_info_ = std::make_unique<RandomnessServerInfo>(
       static_cast<uint8_t>(*epoch), next_epoch_time, epoch_change_detected,
       std::move(pk));
-  update_state->current_backoff_time = base::TimeDelta();
+  current_backoff_time_ = base::TimeDelta();
   VLOG(2) << "StarRandomnessMeta: server info retrieved";
-  info_callback_.Run(log_type, update_state->rnd_server_info.get());
+  info_callback_.Run(rnd_server_info_.get());
 }
 
 }  // namespace p3a

@@ -5,7 +5,7 @@
 
 #include "brave/components/brave_ads/core/internal/targeting/geographical/subdivision/subdivision_targeting.h"
 
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/locale/locale_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision_util.h"
@@ -27,11 +27,11 @@ bool DoesRequireResource() {
 }  // namespace
 
 SubdivisionTargeting::SubdivisionTargeting() {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 SubdivisionTargeting::~SubdivisionTargeting() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
 }
 
 bool SubdivisionTargeting::IsDisabled() const {
@@ -44,7 +44,8 @@ bool SubdivisionTargeting::ShouldAutoDetect() const {
 
 // static
 bool SubdivisionTargeting::ShouldAllow() {
-  return GetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting);
+  return AdsClientHelper::GetInstance()->GetBooleanPref(
+      prefs::kShouldAllowSubdivisionTargeting);
 }
 
 const std::string& SubdivisionTargeting::GetSubdivision() const {
@@ -82,19 +83,20 @@ void SubdivisionTargeting::AutoDetectSubdivision() {
 void SubdivisionTargeting::MaybeAllowForCountry(
     const std::string& country_code) {
   if (!DoesRequireResource()) {
-    return SetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting,
-                                 false);
+    return AdsClientHelper::GetInstance()->SetBooleanPref(
+        prefs::kShouldAllowSubdivisionTargeting, false);
   }
 
   if (!ShouldTargetSubdivisionCountryCode(country_code)) {
     BLOG(1, "Subdivision targeting is unsupported for " << country_code
                                                         << " country code");
-    return SetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting,
-                                 false);
+    return AdsClientHelper::GetInstance()->SetBooleanPref(
+        prefs::kShouldAllowSubdivisionTargeting, false);
   }
 
   if (IsDisabled()) {
-    return SetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting, true);
+    return AdsClientHelper::GetInstance()->SetBooleanPref(
+        prefs::kShouldAllowSubdivisionTargeting, true);
   }
 
   const std::string& subdivision = GetSubdivision();
@@ -109,11 +111,12 @@ void SubdivisionTargeting::MaybeAllowForCountry(
 
     if (!subdivision_country_code ||
         !ShouldTargetSubdivisionCountryCode(*subdivision_country_code)) {
-      return SetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting,
-                                   false);
+      return AdsClientHelper::GetInstance()->SetBooleanPref(
+          prefs::kShouldAllowSubdivisionTargeting, false);
     }
 
-    return SetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting, true);
+    return AdsClientHelper::GetInstance()->SetBooleanPref(
+        prefs::kShouldAllowSubdivisionTargeting, true);
   }
 
   if (!ShouldTargetSubdivision(country_code, subdivision)) {
@@ -123,7 +126,8 @@ void SubdivisionTargeting::MaybeAllowForCountry(
     DisableSubdivision();
   }
 
-  SetProfileBooleanPref(prefs::kShouldAllowSubdivisionTargeting, true);
+  AdsClientHelper::GetInstance()->SetBooleanPref(
+      prefs::kShouldAllowSubdivisionTargeting, true);
 }
 
 bool SubdivisionTargeting::ShouldFetchSubdivision() {
@@ -149,14 +153,15 @@ void SubdivisionTargeting::SetAutoDetectedSubdivision(
     BLOG(1, "Automatically detected " << subdivision << " subdivision");
 
     auto_detected_subdivision_ = subdivision;
-    SetProfileStringPref(prefs::kSubdivisionTargetingAutoDetectedSubdivision,
-                         subdivision);
+    AdsClientHelper::GetInstance()->SetStringPref(
+        prefs::kSubdivisionTargetingAutoDetectedSubdivision, subdivision);
   }
 }
 
 void SubdivisionTargeting::UpdateAutoDetectedSubdivision() {
   const std::string auto_detected_subdivision =
-      GetProfileStringPref(prefs::kSubdivisionTargetingAutoDetectedSubdivision);
+      AdsClientHelper::GetInstance()->GetStringPref(
+          prefs::kSubdivisionTargetingAutoDetectedSubdivision);
 
   if (auto_detected_subdivision_ != auto_detected_subdivision) {
     auto_detected_subdivision_ = auto_detected_subdivision;
@@ -168,7 +173,7 @@ void SubdivisionTargeting::UpdateAutoDetectedSubdivision() {
 const std::string& SubdivisionTargeting::GetLazyAutoDetectedSubdivision()
     const {
   if (!auto_detected_subdivision_) {
-    auto_detected_subdivision_ = GetProfileStringPref(
+    auto_detected_subdivision_ = AdsClientHelper::GetInstance()->GetStringPref(
         prefs::kSubdivisionTargetingAutoDetectedSubdivision);
   }
 
@@ -181,14 +186,14 @@ void SubdivisionTargeting::SetUserSelectedSubdivision(
 
   if (user_selected_subdivision_ != subdivision) {
     user_selected_subdivision_ = subdivision;
-    SetProfileStringPref(prefs::kSubdivisionTargetingSubdivision,
-                         *user_selected_subdivision_);
+    AdsClientHelper::GetInstance()->SetStringPref(
+        prefs::kSubdivisionTargetingSubdivision, *user_selected_subdivision_);
   }
 }
 
 void SubdivisionTargeting::UpdateUserSelectedSubdivision() {
-  const std::string subdivision =
-      GetProfileStringPref(prefs::kSubdivisionTargetingSubdivision);
+  const std::string subdivision = AdsClientHelper::GetInstance()->GetStringPref(
+      prefs::kSubdivisionTargetingSubdivision);
 
   if (user_selected_subdivision_ != subdivision) {
     user_selected_subdivision_ = subdivision;
@@ -199,8 +204,8 @@ void SubdivisionTargeting::UpdateUserSelectedSubdivision() {
 const std::string& SubdivisionTargeting::GetLazyUserSelectedSubdivision()
     const {
   if (!user_selected_subdivision_) {
-    user_selected_subdivision_ =
-        GetProfileStringPref(prefs::kSubdivisionTargetingSubdivision);
+    user_selected_subdivision_ = AdsClientHelper::GetInstance()->GetStringPref(
+        prefs::kSubdivisionTargetingSubdivision);
   }
 
   return *user_selected_subdivision_;

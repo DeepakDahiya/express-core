@@ -89,6 +89,16 @@ export type RemoveSitePermissionPayloadType = {
   accountId: BraveWallet.AccountId
 }
 
+export type GetCoinMarketPayload = {
+  vsAsset: string
+  limit: number
+}
+
+export type GetCoinMarketsResponse = {
+  success: boolean
+  values: BraveWallet.CoinMarket[]
+}
+
 export type SetTransactionProviderErrorType = {
   transactionId: string
   providerError: TransactionProviderError

@@ -18,19 +18,19 @@ struct InterestUserModelInfo;
 struct LatentInterestUserModelInfo;
 struct UserModelInfo;
 
-namespace test {
-
-class TargetingHelper final {
+class TargetingHelperForTesting final {
  public:
-  TargetingHelper();
+  TargetingHelperForTesting();
 
-  TargetingHelper(const TargetingHelper&) = delete;
-  TargetingHelper& operator=(const TargetingHelper&) = delete;
+  TargetingHelperForTesting(const TargetingHelperForTesting&) = delete;
+  TargetingHelperForTesting& operator=(const TargetingHelperForTesting&) =
+      delete;
 
-  TargetingHelper(TargetingHelper&&) noexcept = delete;
-  TargetingHelper& operator=(TargetingHelper&&) noexcept = delete;
+  TargetingHelperForTesting(TargetingHelperForTesting&&) noexcept = delete;
+  TargetingHelperForTesting& operator=(TargetingHelperForTesting&&) noexcept =
+      delete;
 
-  ~TargetingHelper();
+  ~TargetingHelperForTesting();
 
   void Mock();
   static UserModelInfo Expectation();
@@ -45,13 +45,11 @@ class TargetingHelper final {
   static InterestUserModelInfo InterestExpectation();
 
  private:
-  EpsilonGreedyBanditHelper epsilon_greedy_bandit_;
-  PurchaseIntentHelper purchase_intent_;
-  TextClassificationHelper text_classification_;
-  TextEmbeddingHelper text_embedding_;
+  EpsilonGreedyBanditHelperForTesting epsilon_greedy_bandit_;
+  PurchaseIntentHelperForTesting purchase_intent_;
+  TextClassificationHelperForTesting text_classification_;
+  TextEmbeddingHelperForTesting text_embedding_;
 };
-
-}  // namespace test
 
 }  // namespace brave_ads
 

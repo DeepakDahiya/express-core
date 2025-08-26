@@ -44,6 +44,8 @@ class LegacyBatState {
 
   uint64_t GetCreationStamp() const;
 
+  bool GetInlineTipSetting(const std::string& key) const;
+
  private:
   void OnLoad(LegacyResultCallback callback,
               mojom::Result result,

@@ -13,9 +13,15 @@ import { AccountsTabActions } from '../../../page/reducers/accounts-tab-reducer'
 
 // utils
 import { reduceAddress } from '../../../utils/reduce-address'
-import { getAccountTypeDescription } from '../../../utils/account-utils'
-import { getBalance } from '../../../utils/balance-utils'
-import { computeFiatAmount } from '../../../utils/pricing-utils'
+import {
+  getAccountTypeDescription
+} from '../../../utils/account-utils'
+import {
+  getBalance
+} from '../../../utils/balance-utils'
+import {
+  computeFiatAmount
+} from '../../../utils/pricing-utils'
 import Amount from '../../../utils/amount'
 import {
   getIsRewardsAccount,
@@ -29,7 +35,10 @@ import { getLocale } from '../../../../common/locale'
 import { useOnClickOutside } from '../../../common/hooks/useOnClickOutside'
 
 // Selectors
-import { UISelectors, WalletSelectors } from '../../../common/selectors'
+import {
+  UISelectors,
+  WalletSelectors
+} from '../../../common/selectors'
 import {
   useSafeUISelector,
   useSafeWalletSelector,
@@ -38,7 +47,7 @@ import {
 
 // Queries
 import {
-  TokenBalancesRegistry //
+  TokenBalancesRegistry
 } from '../../../common/slices/entities/token-balance.entity'
 import {
   useGetExternalRewardsWalletQuery,
@@ -52,7 +61,9 @@ import {
   AccountModalTypes,
   SpotPriceRegistry
 } from '../../../constants/types'
-import { WalletStatus } from '../../../common/async/brave_rewards_api_proxy'
+import {
+  WalletStatus
+} from '../../../common/async/brave_rewards_api_proxy'
 
 // options
 import { AccountButtonOptions } from '../../../options/account-list-button-options'
@@ -60,15 +71,21 @@ import { AccountButtonOptions } from '../../../options/account-list-button-optio
 // components
 import { CopyTooltip } from '../../shared/copy-tooltip/copy-tooltip'
 import {
-  AccountActionsMenu //
+  AccountActionsMenu
 } from '../wallet-menus/account-actions-menu'
-import { RewardsMenu } from '../wallet-menus/rewards_menu'
 import {
-  CreateAccountIcon //
+  RewardsMenu
+} from '../wallet-menus/rewards_menu'
+import {
+  CreateAccountIcon
 } from '../../shared/create-account-icon/create-account-icon'
-import { TokenIconsStack } from '../../shared/icon-stacks/token-icons-stack'
+import {
+  TokenIconsStack
+} from '../../shared/icon-stacks/token-icons-stack'
 import LoadingSkeleton from '../../shared/loading-skeleton'
-import { RewardsLogin } from '../rewards_login/rewards_login'
+import {
+  RewardsLogin
+} from '../rewards_login/rewards_login'
 
 // style
 import {
@@ -94,7 +111,7 @@ import {
   HorizontalSpace,
   Row,
   BraveRewardsIndicator,
-  VerticalSpacer
+  VerticalSpacer,
 } from '../../shared/style'
 
 interface Props {
@@ -102,18 +119,14 @@ interface Props {
   onClick: (account: BraveWallet.AccountInfo) => void
   account: BraveWallet.AccountInfo
   tokenBalancesRegistry: TokenBalancesRegistry | undefined
-  isLoadingBalances: boolean
   spotPriceRegistry: SpotPriceRegistry | undefined
-  isLoadingSpotPrices: boolean
 }
 
 export const AccountListItem = ({
   account,
   onClick,
   tokenBalancesRegistry,
-  spotPriceRegistry,
-  isLoadingBalances,
-  isLoadingSpotPrices
+  spotPriceRegistry
 }: Props) => {
   // redux
   const dispatch = useDispatch()
@@ -158,39 +171,35 @@ export const AccountListItem = ({
     )
   }, [account])
 
-  const onShowAccountsModal = React.useCallback(
-    (modalType: AccountModalTypes) => {
-      dispatch(AccountsTabActions.setShowAccountModal(true))
-      dispatch(AccountsTabActions.setAccountModalType(modalType))
-      dispatch(AccountsTabActions.setSelectedAccount(account))
-    },
-    [account, dispatch]
-  )
+  const onShowAccountsModal = React.useCallback((modalType: AccountModalTypes) => {
+    dispatch(AccountsTabActions.setShowAccountModal(true))
+    dispatch(AccountsTabActions.setAccountModalType(modalType))
+    dispatch(AccountsTabActions.setSelectedAccount(account))
+  }, [account, dispatch])
 
-  const onClickButtonOption = React.useCallback(
-    (id: AccountModalTypes) => {
-      if (id === 'details') {
-        onSelectAccount()
-        return
-      }
-      if (id === 'remove') {
-        onRemoveAccount()
-        return
-      }
-      onShowAccountsModal(id)
-    },
-    [onSelectAccount, onRemoveAccount, onShowAccountsModal]
-  )
+  const onClickButtonOption = React.useCallback((id: AccountModalTypes) => {
+    if (id === 'details') {
+      onSelectAccount()
+      return
+    }
+    if (id === 'remove') {
+      onRemoveAccount()
+      return
+    }
+    onShowAccountsModal(id)
+  }, [onSelectAccount, onRemoveAccount, onShowAccountsModal])
 
   // memos & computed
   const isRewardsAccount = getIsRewardsAccount(account.accountId)
 
   const isDisconnectedRewardsAccount =
-    isRewardsAccount && externalRewardsInfo?.status === WalletStatus.kLoggedOut
+    isRewardsAccount &&
+    externalRewardsInfo?.status === WalletStatus.kLoggedOut
 
-  const externalProvider = isRewardsAccount
-    ? externalRewardsInfo?.provider
-    : undefined
+  const externalProvider =
+    isRewardsAccount
+      ? externalRewardsInfo?.provider
+      : undefined
 
   const rewardsToken = getRewardsBATToken(externalProvider)
 
@@ -198,21 +207,28 @@ export const AccountListItem = ({
     if (isRewardsAccount && rewardsToken) {
       return [rewardsToken]
     }
-    return userVisibleTokensInfo
-      .filter((asset) => asset.visible)
+    return userVisibleTokensInfo.filter((asset) => asset.visible)
       .filter((token) => token.coin === account.accountId.coin)
-      .filter((token) => !token.isErc721 && !token.isErc1155 && !token.isNft)
-  }, [userVisibleTokensInfo, account, isRewardsAccount, rewardsToken])
+      .filter((token) =>
+        !token.isErc721 && !token.isErc1155 && !token.isNft)
+  }, [
+    userVisibleTokensInfo,
+    account,
+    isRewardsAccount,
+    rewardsToken
+  ])
 
   const tokensWithBalances = React.useMemo(() => {
-    if (isRewardsAccount && rewardsToken && rewardsBalance) {
+    if (
+      isRewardsAccount
+      && rewardsToken
+      && rewardsBalance
+    ) {
       return [rewardsToken]
     }
-    return accountsFungibleTokens.filter((token) =>
-      new Amount(
-        getBalance(account.accountId, token, tokenBalancesRegistry)
-      ).gt(0)
-    )
+    return accountsFungibleTokens
+      .filter((token) =>
+        new Amount(getBalance(account.accountId, token, tokenBalancesRegistry)).gt(0))
   }, [
     accountsFungibleTokens,
     tokenBalancesRegistry,
@@ -232,9 +248,8 @@ export const AccountListItem = ({
     // Return a 0 balance if the account has no
     // assets to display.
     if (
-      accountsFungibleTokens.length === 0 &&
-      !isLoadingBalances &&
-      !isLoadingSpotPrices
+      accountsFungibleTokens
+        .length === 0
     ) {
       return new Amount(0)
     }
@@ -244,50 +259,49 @@ export const AccountListItem = ({
       return Amount.empty()
     }
 
-    const amounts = accountsFungibleTokens.map((asset) => {
-      const isRewardsToken = getIsRewardsToken(asset)
-      const balance =
-        isRewardsToken && rewardsBalance
-          ? new Amount(rewardsBalance)
-              .multiplyByDecimals(asset.decimals)
-              .format()
-          : getBalance(account.accountId, asset, tokenBalancesRegistry)
-      return computeFiatAmount({
-        spotPriceRegistry,
-        value: balance,
-        token: asset
+    const amounts =
+      accountsFungibleTokens
+        .map((asset) => {
+          const isRewardsToken = getIsRewardsToken(asset)
+          const balance =
+            isRewardsToken &&
+              rewardsBalance
+              ? new Amount(rewardsBalance)
+                .multiplyByDecimals(asset.decimals)
+                .format()
+              : getBalance(account.accountId, asset, tokenBalancesRegistry)
+          return computeFiatAmount({
+            spotPriceRegistry,
+            value: balance,
+            token: asset
+          })
+        })
+
+    const reducedAmounts =
+      amounts.reduce(function (a, b) {
+        return a.plus(b)
       })
-    })
 
-    const reducedAmounts = amounts.reduce(function (a, b) {
-      return a.plus(b)
-    })
-
-    return !reducedAmounts.isUndefined() ? reducedAmounts : Amount.empty()
+    return !reducedAmounts.isUndefined()
+      ? reducedAmounts
+      : new Amount(0)
   }, [
     account,
     userVisibleTokensInfo,
     accountsFungibleTokens,
     tokenBalancesRegistry,
     spotPriceRegistry,
-    rewardsBalance,
-    isLoadingBalances,
-    isLoadingSpotPrices
+    rewardsBalance
   ])
 
   const buttonOptions = React.useMemo((): AccountButtonOptionsObjectType[] => {
     // We are not able to remove a Derived account so we filter out this option.
     if (account.accountId.kind === BraveWallet.AccountKind.kDerived) {
-      return AccountButtonOptions.filter(
-        (option: AccountButtonOptionsObjectType) => option.id !== 'remove'
-      )
+      return AccountButtonOptions.filter((option: AccountButtonOptionsObjectType) => option.id !== 'remove')
     }
-    // We are not able to fetch Private Keys for a Hardware account so we filter
-    // out this option.
+    // We are not able to fetch Private Keys for a Hardware account so we filter out this option.
     if (account.accountId.kind === BraveWallet.AccountKind.kHardware) {
-      return AccountButtonOptions.filter(
-        (option: AccountButtonOptionsObjectType) => option.id !== 'privateKey'
-      )
+      return AccountButtonOptions.filter((option: AccountButtonOptionsObjectType) => option.id !== 'privateKey')
     }
     return AccountButtonOptions
   }, [account])
@@ -295,7 +309,9 @@ export const AccountListItem = ({
   // render
   return (
     <StyledWrapper>
-      <Row justifyContent='space-between'>
+      <Row
+        justifyContent='space-between'
+      >
         <NameAndIcon>
           <CreateAccountIcon
             size='big'
@@ -304,14 +320,16 @@ export const AccountListItem = ({
             externalProvider={externalProvider}
           />
           <AccountAndAddress>
-            <AccountNameWrapper width='unset'>
+            <AccountNameWrapper
+              width='unset'
+            >
               <AccountNameButton
                 onClick={onSelectAccount}
                 disabled={isRewardsAccount}
               >
                 {account.name}
               </AccountNameButton>
-              {isRewardsAccount && (
+              {isRewardsAccount &&
                 <>
                   <VerticalSpacer space='4px' />
                   <BraveRewardsIndicator>
@@ -319,7 +337,7 @@ export const AccountListItem = ({
                   </BraveRewardsIndicator>
                   <VerticalSpacer space='4px' />
                 </>
-              )}
+              }
             </AccountNameWrapper>
             {account.address && !isRewardsAccount && (
               <AddressAndButtonRow>
@@ -332,23 +350,22 @@ export const AccountListItem = ({
               </AddressAndButtonRow>
             )}
             <AccountDescription>
-              {isRewardsAccount
-                ? getRewardsTokenDescription(externalProvider ?? null)
-                : getAccountTypeDescription(account.accountId.coin)}
+              {
+                isRewardsAccount ?
+                  getRewardsTokenDescription(externalProvider ?? null)
+                  : getAccountTypeDescription(account.accountId.coin)
+              }
             </AccountDescription>
           </AccountAndAddress>
         </NameAndIcon>
-        {!isDisconnectedRewardsAccount && (
+        {!isDisconnectedRewardsAccount &&
           <Row width='unset'>
             {!isPanel && !accountsFiatValue.isZero() ? (
               tokensWithBalances.length ? (
                 <TokenIconsStack tokens={tokensWithBalances} />
               ) : (
                 <>
-                  <LoadingSkeleton
-                    width={60}
-                    height={14}
-                  />
+                  <LoadingSkeleton width={60} height={14} />
                   <HorizontalSpace space='26px' />
                 </>
               )
@@ -356,29 +373,25 @@ export const AccountListItem = ({
 
             {accountsFiatValue.isUndefined() ? (
               <>
-                <LoadingSkeleton
-                  width={60}
-                  height={14}
-                />
+                <LoadingSkeleton width={60} height={14} />
                 <HorizontalSpace space='12px' />
               </>
             ) : (
               <>
-                <AccountBalanceText
-                  textSize='14px'
-                  isBold={true}
-                >
+                <AccountBalanceText textSize='14px' isBold={true}>
                   {accountsFiatValue.formatAsFiat(defaultFiatCurrency)}
                 </AccountBalanceText>
               </>
             )}
-            <AccountMenuWrapper ref={accountMenuRef}>
+            <AccountMenuWrapper
+              ref={accountMenuRef}
+            >
               <AccountMenuButton
-                onClick={() => setShowAccountMenu((prev) => !prev)}
+                onClick={() => setShowAccountMenu(prev => !prev)}
               >
                 <AccountMenuIcon />
               </AccountMenuButton>
-              {showAccountMenu && (
+              {showAccountMenu &&
                 <>
                   {isRewardsAccount ? (
                     <RewardsMenu />
@@ -389,17 +402,19 @@ export const AccountListItem = ({
                     />
                   )}
                 </>
-              )}
+              }
             </AccountMenuWrapper>
           </Row>
-        )}
+        }
       </Row>
-      {isDisconnectedRewardsAccount && (
+      {isDisconnectedRewardsAccount &&
         <>
           <VerticalSpacer space='12px' />
-          <RewardsLogin externalRewardsInfo={externalRewardsInfo} />
+          <RewardsLogin
+            externalRewardsInfo={externalRewardsInfo}
+          />
         </>
-      )}
+      }
     </StyledWrapper>
   )
 }

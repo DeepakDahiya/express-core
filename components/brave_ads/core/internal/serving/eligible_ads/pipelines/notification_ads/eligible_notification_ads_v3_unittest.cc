@@ -44,17 +44,17 @@ class BraveAdsEligibleNotificationAdsV3Test : public UnitTestBase {
 TEST_F(BraveAdsEligibleNotificationAdsV3Test, GetAds) {
   // Arrange
   const TextEmbeddingHtmlEventInfo text_embedding_html_event =
-      BuildTextEmbeddingHtmlEvent(ml::pipeline::test::BuildTextEmbedding());
+      BuildTextEmbeddingHtmlEvent(ml::pipeline::BuildTextEmbeddingForTesting());
 
   CreativeNotificationAdList creative_ads;
 
   CreativeNotificationAdInfo creative_ad_1 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
   creative_ad_1.embedding = {0.1, 0.2, 0.3};
   creative_ads.push_back(creative_ad_1);
 
   CreativeNotificationAdInfo creative_ad_2 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
   creative_ad_2.embedding = {-0.3, 0.0, -0.2};
   creative_ads.push_back(creative_ad_2);
 
@@ -76,12 +76,12 @@ TEST_F(BraveAdsEligibleNotificationAdsV3Test, GetAdsForNoStoredTextEmbeddings) {
   CreativeNotificationAdList creative_ads;
 
   CreativeNotificationAdInfo creative_ad_1 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
   creative_ad_1.embedding = {0.1, 0.2, 0.3, 0.4, 0.5};
   creative_ads.push_back(creative_ad_1);
 
   CreativeNotificationAdInfo creative_ad_2 =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
   creative_ad_2.embedding = {-0.3, 0.0, -0.2, 0.6, 0.8};
   creative_ads.push_back(creative_ad_2);
 
@@ -101,11 +101,11 @@ TEST_F(BraveAdsEligibleNotificationAdsV3Test,
       kNotificationAdServingFeature, {{"version", "3"}});
 
   const CreativeNotificationAdList creative_ads =
-      test::BuildCreativeNotificationAds(/*count=*/2);
+      BuildCreativeNotificationAdsForTesting(/*count=*/2);
   database::SaveCreativeNotificationAds(creative_ads);
 
   const TextEmbeddingHtmlEventInfo text_embedding_html_event =
-      BuildTextEmbeddingHtmlEvent(ml::pipeline::test::BuildTextEmbedding());
+      BuildTextEmbeddingHtmlEvent(ml::pipeline::BuildTextEmbeddingForTesting());
 
   // Act & Assert
   base::MockCallback<EligibleAdsCallback<CreativeNotificationAdList>> callback;
@@ -121,7 +121,7 @@ TEST_F(BraveAdsEligibleNotificationAdsV3Test,
 TEST_F(BraveAdsEligibleNotificationAdsV3Test, DoNotGetAdsIfNoEligibleAds) {
   // Arrange
   const TextEmbeddingHtmlEventInfo text_embedding_html_event =
-      BuildTextEmbeddingHtmlEvent(ml::pipeline::test::BuildTextEmbedding());
+      BuildTextEmbeddingHtmlEvent(ml::pipeline::BuildTextEmbeddingForTesting());
 
   // Act & Assert
   base::MockCallback<EligibleAdsCallback<CreativeNotificationAdList>> callback;

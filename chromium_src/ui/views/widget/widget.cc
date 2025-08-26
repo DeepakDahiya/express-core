@@ -21,11 +21,6 @@ void Widget::ResetWindowControlsPosition() {
       ->ResetWindowControlsPosition();
 }
 
-void Widget::UpdateWindowTitleColor(SkColor color) {
-  static_cast<NativeWidgetMac*>(native_widget_private())
-      ->UpdateWindowTitleColor(color);
-}
-
 }  // namespace views
 
 #endif  // BUILDFLAG(IS_MAC)

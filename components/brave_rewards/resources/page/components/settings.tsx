@@ -92,6 +92,8 @@ export function Settings () {
     new HashHandler('ads', actions.onAdsSettingsOpen, true),
     new HashHandler(
       'auto-contribute', actions.onAutoContributeSettingsOpen, true),
+    new HashHandler(
+      'contributions', actions.onContributionsSettingsOpen, true),
     new HashHandler('monthly-contributions'),
     new HashHandler('ads-history', actions.onModalAdsHistoryOpen, false, 'ads'),
     new HashHandler('reset', actions.onModalResetOpen, false, 'top')
@@ -141,6 +143,7 @@ export function Settings () {
     actions.fetchPromotions()
     actions.getExternalWallet()
     actions.getOnboardingStatus()
+    actions.getEnabledInlineTippingPlatforms()
 
     if (handleURLActions()) {
       clearURLPath()

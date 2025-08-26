@@ -8,6 +8,8 @@
 #include <memory>
 #include <utility>
 
+#include "base/feature_list.h"
+#include "brave/components/brave_wallet/common/features.h"
 #include "brave/components/brave_wallet/renderer/v8_helper.h"
 #include "build/buildflag.h"
 #include "content/public/common/isolated_world_ids.h"
@@ -104,7 +106,11 @@ void BraveWalletRenderFrameObserver::DidClearWindowObject() {
         render_frame());
   }
 
-  if (web_frame->GetDocument().IsDOMFeaturePolicyEnabled(context, "solana") &&
+  if (base::FeatureList::IsEnabled(
+          brave_wallet::features::kBraveWalletSolanaFeature) &&
+      base::FeatureList::IsEnabled(
+          brave_wallet::features::kBraveWalletSolanaProviderFeature) &&
+      web_frame->GetDocument().IsDOMFeaturePolicyEnabled(context, "solana") &&
       dynamic_params.brave_use_native_solana_wallet) {
     JSSolanaProvider::Install(
         dynamic_params.allow_overwrite_window_solana_provider, render_frame());

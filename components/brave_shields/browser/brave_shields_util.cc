@@ -575,9 +575,7 @@ ControlType GetFingerprintingControlType(HostContentSettingsMap* map,
       GetBraveFPContentSettingFromRules(fingerprinting_rules, url);
 
   if (fp_setting == CONTENT_SETTING_ASK ||
-      fp_setting == CONTENT_SETTING_DEFAULT ||
-      (!IsShowStrictFingerprintingModeEnabled() &&
-       fp_setting == CONTENT_SETTING_BLOCK)) {
+      fp_setting == CONTENT_SETTING_DEFAULT) {
     return ControlType::DEFAULT;
   }
 
@@ -595,13 +593,48 @@ bool IsBraveShieldsManaged(PrefService* prefs,
   return info.source == content_settings::SettingSource::SETTING_SOURCE_POLICY;
 }
 
-bool IsHttpsByDefaultFeatureEnabled() {
-  return base::FeatureList::IsEnabled(net::features::kBraveHttpsByDefault);
+void SetHTTPSEverywhereEnabled(HostContentSettingsMap* map,
+                               bool enable,
+                               const GURL& url,
+                               PrefService* local_state) {
+  auto primary_pattern = GetPatternFromURL(url);
+
+  if (!primary_pattern.IsValid())
+    return;
+
+  map->SetContentSettingCustomScope(
+      primary_pattern, ContentSettingsPattern::Wildcard(),
+      ContentSettingsType::BRAVE_HTTP_UPGRADABLE_RESOURCES,
+      // this is 'allow_http_upgradeable_resources' so enabling
+      // httpse will set the value to 'BLOCK'
+      enable ? CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW);
+
+  RecordShieldsSettingChanged(local_state);
 }
 
-bool IsShowStrictFingerprintingModeEnabled() {
-  return base::FeatureList::IsEnabled(
-      features::kBraveShowStrictFingerprintingMode);
+void ResetHTTPSEverywhereEnabled(HostContentSettingsMap* map,
+                                 bool enable,
+                                 const GURL& url) {
+  auto primary_pattern = GetPatternFromURL(url);
+
+  if (!primary_pattern.IsValid())
+    return;
+
+  map->SetContentSettingCustomScope(
+      primary_pattern, ContentSettingsPattern::Wildcard(),
+      ContentSettingsType::BRAVE_HTTP_UPGRADABLE_RESOURCES,
+      CONTENT_SETTING_DEFAULT);
+}
+
+bool GetHTTPSEverywhereEnabled(HostContentSettingsMap* map, const GURL& url) {
+  ContentSetting setting = map->GetContentSetting(
+      url, GURL(), ContentSettingsType::BRAVE_HTTP_UPGRADABLE_RESOURCES);
+
+  return setting == CONTENT_SETTING_ALLOW ? false : true;
+}
+
+bool IsHttpsByDefaultFeatureEnabled() {
+  return base::FeatureList::IsEnabled(net::features::kBraveHttpsByDefault);
 }
 
 void SetHttpsUpgradeControlType(HostContentSettingsMap* map,

@@ -12,7 +12,10 @@ import { BuyOptionItem } from '../../shared/buy-option/buy-option-item'
 import { BackButton } from '../../shared/back-button/index'
 
 // Styled Components
-import { StyledWrapper, SubDivider } from './select-buy-option-styles'
+import {
+  StyledWrapper,
+  SubDivider
+} from './select-buy-option-styles'
 
 interface Props {
   buyOptions: BuyOption[]
@@ -42,11 +45,12 @@ export const SelectBuyOption = ({
             onSelect={onSelect}
           />
 
-          {layoutType !== 'loose' && index !== buyOptions.length - 1 && (
+          {layoutType !== 'loose' && index !== buyOptions.length - 1 &&
             <SubDivider />
-          )}
+          }
         </div>
       ))}
+
     </StyledWrapper>
   )
 }

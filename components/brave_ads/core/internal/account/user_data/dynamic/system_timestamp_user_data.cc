@@ -23,7 +23,7 @@ base::Value::Dict BuildSystemTimestampUserData() {
   }
 
   user_data.Set(kSystemTimestampKey,
-                TimeToPrivacyPreservingIso8601(base::Time::Now()));
+                TimeToPrivacyPreservingISO8601(base::Time::Now()));
 
   return user_data;
 }

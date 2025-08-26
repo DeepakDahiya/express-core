@@ -8,9 +8,9 @@
 
 namespace brave_search_conversion {
 
-inline constexpr char kBraveSearchConversionPromotionURL[] =
+constexpr char kBraveSearchConversionPromotionURL[] =
     "https://search.brave.com/search?q={SearchTerms}&action=makeDefault";
-inline constexpr char kSearchTermsParameter[] = "{SearchTerms}";
+constexpr char kSearchTermsParameter[] = "{SearchTerms}";
 
 }  // namespace brave_search_conversion
 

@@ -10,20 +10,23 @@
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/resource/text_classification_resource.h"
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/text_classification_processor.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-class TextClassificationHelper final {
+class TextClassificationHelperForTesting final {
  public:
-  TextClassificationHelper();
+  TextClassificationHelperForTesting();
 
-  TextClassificationHelper(const TextClassificationHelper&) = delete;
-  TextClassificationHelper& operator=(const TextClassificationHelper&) = delete;
+  TextClassificationHelperForTesting(
+      const TextClassificationHelperForTesting&) = delete;
+  TextClassificationHelperForTesting& operator=(
+      const TextClassificationHelperForTesting&) = delete;
 
-  TextClassificationHelper(TextClassificationHelper&&) noexcept = delete;
-  TextClassificationHelper& operator=(TextClassificationHelper&&) noexcept =
-      delete;
+  TextClassificationHelperForTesting(
+      TextClassificationHelperForTesting&&) noexcept = delete;
+  TextClassificationHelperForTesting& operator=(
+      TextClassificationHelperForTesting&&) noexcept = delete;
 
-  ~TextClassificationHelper();
+  ~TextClassificationHelperForTesting();
 
   void Mock();
 
@@ -34,6 +37,6 @@ class TextClassificationHelper final {
   TextClassificationProcessor processor_;
 };
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_TARGETING_CONTEXTUAL_TEXT_CLASSIFICATION_TEXT_CLASSIFICATION_UNITTEST_HELPER_H_

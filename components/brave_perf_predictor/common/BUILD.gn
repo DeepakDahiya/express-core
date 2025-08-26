@@ -1,3 +1,6 @@
-source_set("common") {
-  sources = [ "pref_names.h" ]
+static_library("common") {
+  sources = [
+    "pref_names.cc",
+    "pref_names.h",
+  ]
 }

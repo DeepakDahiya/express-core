@@ -14,12 +14,13 @@
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_cache_util.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_info.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_events_database_table.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 #include "brave/components/brave_ads/core/public/units/ad_info.h"
 
 namespace brave_ads {
 
 void RecordAdEvent(const AdInfo& ad,
-                   ConfirmationType confirmation_type,
+                   const ConfirmationType& confirmation_type,
                    AdEventCallback callback) {
   RecordAdEvent(BuildAdEvent(ad, confirmation_type, base::Time::Now()),
                 std::move(callback));
@@ -54,10 +55,6 @@ void PurgeOrphanedAdEvents(const mojom::AdType ad_type,
   database_table.PurgeOrphaned(
       ad_type, base::BindOnce(
                    [](AdEventCallback callback, const bool success) {
-                     if (success) {
-                       RebuildAdEventCache();
-                     }
-
                      std::move(callback).Run(success);
                    },
                    std::move(callback)));
@@ -69,10 +66,6 @@ void PurgeOrphanedAdEvents(const std::vector<std::string>& placement_ids,
   database_table.PurgeOrphaned(
       placement_ids, base::BindOnce(
                          [](AdEventCallback callback, const bool success) {
-                           if (success) {
-                             RebuildAdEventCache();
-                           }
-
                            std::move(callback).Run(success);
                          },
                          std::move(callback)));
@@ -82,10 +75,6 @@ void PurgeAllOrphanedAdEvents(AdEventCallback callback) {
   const database::table::AdEvents database_table;
   database_table.PurgeAllOrphaned(base::BindOnce(
       [](AdEventCallback callback, const bool success) {
-        if (success) {
-          RebuildAdEventCache();
-        }
-
         std::move(callback).Run(success);
       },
       std::move(callback)));

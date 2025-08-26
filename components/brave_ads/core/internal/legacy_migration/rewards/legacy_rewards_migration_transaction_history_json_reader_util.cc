@@ -34,7 +34,7 @@ absl::optional<TransactionInfo> ParseTransaction(
     return absl::nullopt;
   }
 
-  double created_at_as_double;
+  double created_at_as_double = 0.0;
   if (!base::StringToDouble(*created_at, &created_at_as_double)) {
     return absl::nullopt;
   }
@@ -55,7 +55,7 @@ absl::optional<TransactionInfo> ParseTransaction(
   if (!confirmation_type) {
     return absl::nullopt;
   }
-  transaction.confirmation_type = ParseConfirmationType(*confirmation_type);
+  transaction.confirmation_type = ConfirmationType(*confirmation_type);
 
   return transaction;
 }

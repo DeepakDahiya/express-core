@@ -29,8 +29,6 @@ struct ConfirmationInfo final {
 
   ~ConfirmationInfo();
 
-  bool operator==(const ConfirmationInfo&) const = default;
-
   std::string transaction_id;
   std::string creative_instance_id;
   ConfirmationType type = ConfirmationType::kUndefined;
@@ -39,6 +37,9 @@ struct ConfirmationInfo final {
   absl::optional<RewardInfo> reward;
   UserDataInfo user_data;
 };
+
+bool operator==(const ConfirmationInfo&, const ConfirmationInfo&);
+bool operator!=(const ConfirmationInfo&, const ConfirmationInfo&);
 
 using ConfirmationList = std::vector<ConfirmationInfo>;
 

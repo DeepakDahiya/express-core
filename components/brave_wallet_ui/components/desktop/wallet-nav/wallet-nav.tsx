@@ -7,10 +7,14 @@ import * as React from 'react'
 import { useDispatch } from 'react-redux'
 
 // Selectors
-import { UISelectors } from '../../../common/selectors'
+import {
+  UISelectors
+} from '../../../common/selectors'
 
 // Hooks
-import { useSafeUISelector } from '../../../common/hooks/use-safe-selector'
+import {
+  useSafeUISelector
+} from '../../../common/hooks/use-safe-selector'
 
 // Options
 import {
@@ -42,10 +46,7 @@ export const WalletNav = () => {
       <PanelOptionsWrapper>
         <Section>
           {PanelNavOptions.map((option) => (
-            <WalletNavButton
-              option={option}
-              key={option.id}
-            />
+            <WalletNavButton option={option} key={option.id} />
           ))}
         </Section>
       </PanelOptionsWrapper>
@@ -53,10 +54,7 @@ export const WalletNav = () => {
       <PageOptionsWrapper>
         <Section showBorder={true}>
           {NavOptions.map((option) => (
-            <WalletNavButton
-              option={option}
-              key={option.id}
-            />
+            <WalletNavButton option={option} key={option.id} />
           ))}
         </Section>
         <Section>

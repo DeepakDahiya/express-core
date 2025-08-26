@@ -29,7 +29,9 @@ interface Props {
 }
 
 const PasswordStrengthDetails = ({
-  passwordStrength: { isLongEnough }
+  passwordStrength: {
+    isLongEnough
+  }
 }: Pick<Props, 'passwordStrength'>) => {
   return (
     <PasswordStrengthTextWrapper>
@@ -43,13 +45,16 @@ const PasswordStrengthDetails = ({
           {getLocale('braveWalletPasswordStrengthTooltipIsLongEnough')}
         </PasswordStrengthText>
       </CriteriaCheckContainer>
+
     </PasswordStrengthTextWrapper>
   )
 }
 
-export const PasswordStrengthTooltip: React.FC<
-  React.PropsWithChildren<Props>
-> = ({ children, isVisible, passwordStrength }) => {
+export const PasswordStrengthTooltip: React.FC<React.PropsWithChildren<Props>> = ({
+  children,
+  isVisible,
+  passwordStrength
+}) => {
   return (
     <Tooltip
       disableHoverEvents
@@ -57,7 +62,11 @@ export const PasswordStrengthTooltip: React.FC<
       isVisible={isVisible}
       position='right'
       pointerPosition={'center'}
-      text={<PasswordStrengthDetails passwordStrength={passwordStrength} />}
+      text={
+        <PasswordStrengthDetails
+          passwordStrength={passwordStrength}
+        />
+      }
     >
       {children}
     </Tooltip>

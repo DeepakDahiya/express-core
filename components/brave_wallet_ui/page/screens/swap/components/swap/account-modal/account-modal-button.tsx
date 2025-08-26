@@ -6,7 +6,10 @@
 import * as React from 'react'
 
 // Styled Components
-import { ModalButton, ModalButtonIcon } from './account-modal.style'
+import {
+  ModalButton,
+  ModalButtonIcon
+} from './account-modal.style'
 
 interface Props {
   iconName: string
@@ -19,10 +22,7 @@ export const AccountModalButton = (props: Props) => {
 
   return (
     <ModalButton onClick={onClick}>
-      <ModalButtonIcon
-        size={20}
-        name={iconName}
-      />
+      <ModalButtonIcon size={20} name={iconName} />
       {text}
     </ModalButton>
   )

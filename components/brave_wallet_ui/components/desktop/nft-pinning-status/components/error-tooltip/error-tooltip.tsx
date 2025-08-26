@@ -17,9 +17,7 @@ export const ErrorTooltip = () => {
   return (
     <StyledWrapper>
       <TooltipContent>
-        <Heading>
-          {getLocale('braveWalletNftPinningErrorTooltipHeading')}
-        </Heading>
+        <Heading>{getLocale('braveWalletNftPinningErrorTooltipHeading')}</Heading>
         <List>
           <li>{getLocale('braveWalletNftPinningErrorTooltipReasonOne')}</li>
           <li>{getLocale('braveWalletNftPinningErrorTooltipReasonTwo')}</li>

@@ -11,9 +11,13 @@ export interface Props {
 }
 
 export class WalletSubViewLayout extends React.PureComponent<Props, {}> {
-  render() {
+  render () {
     const { children, noPadding } = this.props
-    return <StyledWrapper noPadding={noPadding}>{children}</StyledWrapper>
+    return (
+      <StyledWrapper noPadding={noPadding}>
+        {children}
+      </StyledWrapper>
+    )
   }
 }
 

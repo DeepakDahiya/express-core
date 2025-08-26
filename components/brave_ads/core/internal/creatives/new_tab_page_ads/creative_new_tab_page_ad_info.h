@@ -27,7 +27,8 @@ struct CreativeNewTabPageAdInfo final : CreativeAdInfo {
 
   ~CreativeNewTabPageAdInfo();
 
-  bool operator==(const CreativeNewTabPageAdInfo&) const = default;
+  bool operator==(const CreativeNewTabPageAdInfo&) const;
+  bool operator!=(const CreativeNewTabPageAdInfo&) const;
 
   std::string company_name;
   GURL image_url;

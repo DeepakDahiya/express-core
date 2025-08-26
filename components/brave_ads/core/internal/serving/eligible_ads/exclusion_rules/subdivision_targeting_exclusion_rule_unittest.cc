@@ -14,7 +14,7 @@
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_profile_pref_value.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_pref_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
 #include "brave/components/brave_ads/core/internal/targeting/geographical/subdivision/subdivision_targeting.h"
 #include "brave/components/brave_ads/core/internal/units/ad_unittest_constants.h"
@@ -83,34 +83,34 @@ class BraveAdsSubdivisionTargetingExclusionRuleTest
   }
 
   static std::string BuildSubdivisionForTestParam() {
-    return test::BuildSubdivision(GetParam().country, GetParam().region);
+    return BuildSubdivisionForTesting(GetParam().country, GetParam().region);
   }
 
   static std::string BuildOtherSubdivisionForTestParam() {
     const char* region = "";
 
     if (GetParam().country ==
-        std::string_view("US") /*United States of America*/) {
-      if (GetParam().region == std::string_view("FL") /*Florida*/) {
+        std::string_view("US") /*United States of America=*/) {
+      if (GetParam().region == std::string_view("FL") /*Florida=*/) {
         region = "CA";  // Alabama
       } else {
         region = "FL";  // Florida
       }
-    } else if (GetParam().country == std::string_view("CA") /*Canada*/) {
-      if (GetParam().region == std::string_view("QC") /*Quebec*/) {
+    } else if (GetParam().country == std::string_view("CA") /*Canada=*/) {
+      if (GetParam().region == std::string_view("QC") /*Quebec=*/) {
         region = "AB";  // Alberta
       } else {
         region = "QC";  // Quebec
       }
     }
 
-    return test::BuildSubdivision(GetParam().country, region);
+    return BuildSubdivisionForTesting(GetParam().country, region);
   }
 
   void MockUrlResponseForTestParam() {
     const URLResponseMap url_responses = {
         {BuildSubdivisionUrlPath(),
-         {{net::HTTP_OK, test::BuildSubdivisionUrlResponseBody(
+         {{net::HTTP_OK, BuildSubdivisionUrlResponseBodyForTesting(
                              GetParam().country, GetParam().region)}}}};
     MockUrlResponses(ads_client_mock_, url_responses);
   }
@@ -137,7 +137,7 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsNotAllowedForGeoTargetWithNoRegion) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, false);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, false);
 
   CreativeAdInfo creative_ad;
   creative_ad.creative_set_id = kCreativeSetId;
@@ -150,7 +150,7 @@ TEST_P(
 TEST_P(BraveAdsSubdivisionTargetingExclusionRuleTest,
        ShouldIncludeIfSubdivisionTargetingIsSupportedAndAutoDetected) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
   MockUrlResponseForTestParam();
 
@@ -168,7 +168,7 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsSupportedAndAutoDetectedForMultipleGeoTargets) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
   MockUrlResponseForTestParam();
 
@@ -187,7 +187,7 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsSupportedAndAutoDetectedForGeoTargetWithNoRegion) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
   MockUrlResponseForTestParam();
 
@@ -205,10 +205,10 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsSupportedAndSubdivisionWasManuallySelected) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
-  SetProfileStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
-                            BuildSubdivisionForTestParam());
+  SetStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
+                     BuildSubdivisionForTestParam());
 
   MockUrlResponseForTestParam();
 
@@ -226,10 +226,10 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsSupportedAndSubdivisionWasManuallySelectedForMultipleGeoTargets) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
-  SetProfileStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
-                            BuildSubdivisionForTestParam());
+  SetStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
+                     BuildSubdivisionForTestParam());
 
   MockUrlResponseForTestParam();
 
@@ -248,10 +248,10 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsSupportedAndManuallySelectedForGeoTargetWithNoRegion) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
-  SetProfileStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
-                            BuildSubdivisionForTestParam());
+  SetStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
+                     BuildSubdivisionForTestParam());
 
   MockUrlResponseForTestParam();
 
@@ -268,7 +268,7 @@ TEST_P(
 TEST_P(BraveAdsSubdivisionTargetingExclusionRuleTest,
        ShouldExcludeIfSubdivisionTargetingIsSupportedForUnsupportedGeoTarget) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
   MockUrlResponseForTestParam();
 
@@ -276,7 +276,7 @@ TEST_P(BraveAdsSubdivisionTargetingExclusionRuleTest,
 
   CreativeAdInfo creative_ad;
   creative_ad.creative_set_id = kCreativeSetId;
-  creative_ad.geo_targets = {test::BuildSubdivision(
+  creative_ad.geo_targets = {BuildSubdivisionForTesting(
       /*country_code=*/"US", /*subdivision_code=*/"XX")};
 
   // Assert
@@ -287,7 +287,7 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldExcludeIfSubdivisionTargetingIsNotSupportedForSubdivisionGeoTarget) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
   MockUrlResponseForTestParam();
 
@@ -295,7 +295,7 @@ TEST_P(
 
   CreativeAdInfo creative_ad;
   creative_ad.creative_set_id = kCreativeSetId;
-  creative_ad.geo_targets = {test::BuildSubdivision(
+  creative_ad.geo_targets = {BuildSubdivisionForTesting(
       /*country_code=*/"GB", /*subdivision_code=*/"DEV")};
 
   // Act & Assert
@@ -306,12 +306,12 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsNotSupportedForNonSubdivisionGeoTarget) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
   const URLResponseMap url_responses = {
       {BuildSubdivisionUrlPath(),
        {{net::HTTP_OK,
-         test::BuildSubdivisionUrlResponseBody(
+         BuildSubdivisionUrlResponseBodyForTesting(
              /*country_code=*/"XX", /*subdivision_code=*/"NO REGION")}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 
@@ -328,10 +328,9 @@ TEST_P(
 TEST_P(BraveAdsSubdivisionTargetingExclusionRuleTest,
        ShouldExcludeIfSubdivisionTargetingIsDisabledForSubdivisionGeoTarget) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
-  SetProfileStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
-                            "DISABLED");
+  SetStringPrefValue(prefs::kSubdivisionTargetingSubdivision, "DISABLED");
 
   MockUrlResponseForTestParam();
 
@@ -349,10 +348,9 @@ TEST_P(
     BraveAdsSubdivisionTargetingExclusionRuleTest,
     ShouldIncludeIfSubdivisionTargetingIsDisabledForNonSubdivisionGeoTarget) {
   // Arrange
-  SetProfileBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
+  SetBooleanPrefValue(prefs::kShouldAllowSubdivisionTargeting, true);
 
-  SetProfileStringPrefValue(prefs::kSubdivisionTargetingSubdivision,
-                            "DISABLED");
+  SetStringPrefValue(prefs::kSubdivisionTargetingSubdivision, "DISABLED");
 
   MockUrlResponseForTestParam();
 

@@ -5,22 +5,35 @@
 
 import * as React from 'react'
 
+// Queries
+import {
+  useGetSelectedChainQuery,
+  useSetNetworkMutation
+} from '../../../../../../common/slices/api.slice'
+
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
-import { reduceNetworkDisplayName } from '../../../../../../utils/network-utils'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
+import {
+  reduceNetworkDisplayName
+} from '../../../../../../utils/network-utils'
 
 // Types
 import { BraveWallet } from '../../../../../../constants/types'
 
 // Components
 import {
-  SelectTokenOrNetworkButton //
+  SelectTokenOrNetworkButton
 } from '../../buttons/select-token-or-network/select-token-or-network'
 import { SearchInput } from '../../inputs/search-input/search-input'
 import { NetworkSelector } from '../network-selector/network-selector'
 
 // Styled Components
-import { Wrapper, SelectorWrapper } from './search-with-network-selector.style'
+import {
+  Wrapper,
+  SelectorWrapper
+} from './search-with-network-selector.style'
 import {
   HorizontalDivider,
   HiddenResponsiveRow
@@ -30,18 +43,18 @@ interface Props {
   onSearchChanged: (value: string) => void
   searchValue: string
   networkSelectorDisabled: boolean
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
-  setSelectedNetwork: (network: BraveWallet.NetworkInfo) => void
 }
 
 export const SearchWithNetworkSelector = (props: Props) => {
   const {
     onSearchChanged,
     searchValue,
-    networkSelectorDisabled,
-    selectedNetwork,
-    setSelectedNetwork
+    networkSelectorDisabled
   } = props
+
+  // Queries
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
+  const [setNetwork] = useSetNetworkMutation()
 
   // State
   const [showNetworkSelector, setShowNetworkSelector] =
@@ -49,11 +62,12 @@ export const SearchWithNetworkSelector = (props: Props) => {
 
   const onSelectNetwork = React.useCallback(
     async (network: BraveWallet.NetworkInfo) => {
-      setSelectedNetwork(network)
+      await setNetwork({
+        chainId: network.chainId,
+        coin: network.coin
+      }).unwrap()
       setShowNetworkSelector(false)
-    },
-    [setSelectedNetwork]
-  )
+    }, [setNetwork])
 
   return (
     <Wrapper>
@@ -64,22 +78,22 @@ export const SearchWithNetworkSelector = (props: Props) => {
         value={searchValue}
       />
       <HiddenResponsiveRow maxWidth={570}>
-        <HorizontalDivider
-          marginRight={8}
-          height={24}
-        />
+        <HorizontalDivider marginRight={8} height={24} />
         <SelectorWrapper>
           <SelectTokenOrNetworkButton
             network={selectedNetwork}
-            onClick={() => setShowNetworkSelector((prev) => !prev)}
-            text={reduceNetworkDisplayName(selectedNetwork?.chainName)}
+            onClick={() => setShowNetworkSelector(prev => !prev)}
+            text={
+              reduceNetworkDisplayName(selectedNetwork?.chainName)
+            }
             buttonSize='small'
             disabled={networkSelectorDisabled}
             iconType='network'
           />
-          {showNetworkSelector && (
+          {
+            showNetworkSelector &&
             <NetworkSelector onSelectNetwork={onSelectNetwork} />
-          )}
+          }
         </SelectorWrapper>
       </HiddenResponsiveRow>
     </Wrapper>

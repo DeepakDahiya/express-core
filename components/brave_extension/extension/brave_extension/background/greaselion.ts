@@ -35,6 +35,17 @@ interface SavePublisherVisit {
   favIconUrl?: string
 }
 
+interface TipUser {
+  url: string
+  publisherKey: string
+  publisherName: string
+  publisherScreenName: string
+  favIconUrl: string
+  postId: string
+  postTimestamp: string
+  postText: string
+}
+
 interface ConnectionState {
   port: chrome.runtime.Port
   onCompletedWebRequestListener?: (
@@ -303,6 +314,20 @@ const handleSavePublisherVisit = (tabId: number, mediaType: string, data: SavePu
     })
 }
 
+const handleTipUser = (tabId: number, mediaType: string, data: TipUser) => {
+  chrome.braveRewards.tipUser(
+    tabId,
+    mediaType,
+    data.url,
+    data.publisherKey,
+    data.publisherName,
+    data.publisherScreenName,
+    data.favIconUrl,
+    data.postId,
+    data.postTimestamp,
+    data.postText)
+}
+
 const onMessageListener = (msg: any, port: chrome.runtime.Port) => {
   if (!port || !port.sender || !port.sender.id || !port.sender.tab || !msg) {
     return
@@ -388,6 +413,11 @@ const onMessageListener = (msg: any, port: chrome.runtime.Port) => {
       case 'SavePublisherVisit': {
         const data = msg.data as SavePublisherVisit
         handleSavePublisherVisit(tabId, msg.mediaType, data)
+        break
+      }
+      case 'TipUser': {
+        const data = msg.data as TipUser
+        handleTipUser(tabId, msg.mediaType, data)
         break
       }
     }

@@ -76,14 +76,11 @@ class AdblockEngineBox final {
 - (instancetype)initWithRules:(NSString*)rules error:(NSError**)error {
   if ((self = [super init])) {
     if (rules.length > 0) {
-      std::vector<std::uint8_t> vecRules;
+      std::vector<std::uint8_t> vecRules(rules.length);
       NSData* data = [rules dataUsingEncoding:NSUTF8StringEncoding];
-
       if (data) {
-        vecRules.resize(data.length);
         [data getBytes:vecRules.data() length:data.length];
       }
-
       auto result = adblock::engine_with_rules(vecRules);
       if (result.result_kind == adblock::ResultKind::Success) {
         adblock_engine = std::move(result.value);

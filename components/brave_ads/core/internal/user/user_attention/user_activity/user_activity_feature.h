@@ -19,17 +19,17 @@ namespace brave_ads {
 
 BASE_DECLARE_FEATURE(kUserActivityFeature);
 
-inline constexpr base::FeatureParam<int> kMaximumUserActivityEvents{
+constexpr base::FeatureParam<int> kMaximumUserActivityEvents{
     &kUserActivityFeature, "maximum_events", 3600};
 
-inline constexpr base::FeatureParam<std::string> kUserActivityTriggers{
+constexpr base::FeatureParam<std::string> kUserActivityTriggers{
     &kUserActivityFeature, "triggers",
     "0D0B14110D0B14110D0B14110D0B1411=-1.0;0D0B1411070707=-1.0;07070707=-1.0"};
 
-inline constexpr base::FeatureParam<base::TimeDelta> kUserActivityTimeWindow{
+constexpr base::FeatureParam<base::TimeDelta> kUserActivityTimeWindow{
     &kUserActivityFeature, "time_window", base::Minutes(15)};
 
-inline constexpr base::FeatureParam<double> kUserActivityThreshold{
+constexpr base::FeatureParam<double> kUserActivityThreshold{
     &kUserActivityFeature, "threshold", 0.0};
 
 }  // namespace brave_ads

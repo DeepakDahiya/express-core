@@ -15,7 +15,6 @@
 #include "base/no_destructor.h"
 #include "base/strings/stringprintf.h"
 #include "brave/components/api_request_helper/api_request_helper.h"
-#include "brave/components/brave_wallet/browser/asset_ratio_response_parser.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/json_rpc_requests_helper.h"
 #include "brave/components/brave_wallet/common/eth_address.h"
@@ -128,28 +127,6 @@ base::flat_map<std::string, std::string> MakeBraveServicesKeyHeader() {
 
 namespace brave_wallet {
 
-namespace {
-
-std::vector<mojom::AssetPricePtr> DummyPrices(
-    const std::vector<std::string>& from_assets,
-    const std::vector<std::string>& to_assets) {
-  std::vector<mojom::AssetPricePtr> test_result;
-  for (auto& from : from_assets) {
-    for (auto& to : to_assets) {
-      auto price = mojom::AssetPrice::New();
-      price->from_asset = from;
-      price->to_asset = to;
-      price->price = "1";
-      price->asset_timeframe_change = "1";
-      test_result.push_back(std::move(price));
-    }
-  }
-
-  return test_result;
-}
-
-}  // namespace
-
 GURL AssetRatioService::base_url_for_test_;
 
 AssetRatioService::AssetRatioService(
@@ -165,10 +142,6 @@ void AssetRatioService::SetAPIRequestHelperForTesting(
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
   api_request_helper_ = std::make_unique<api_request_helper::APIRequestHelper>(
       GetNetworkTrafficAnnotationTag(), url_loader_factory);
-}
-
-void AssetRatioService::EnableDummyPricesForTesting() {
-  dummy_prices_for_testing_ = true;
 }
 
 mojo::PendingRemote<mojom::AssetRatioService> AssetRatioService::MakeRemote() {
@@ -206,9 +179,10 @@ GURL AssetRatioService::GetSardineBuyURL(const std::string chain_id,
 }
 
 // static
-GURL AssetRatioService::GetPriceURL(const std::vector<std::string>& from_assets,
-                                    const std::vector<std::string>& to_assets,
-                                    mojom::AssetPriceTimeframe timeframe) {
+GURL AssetRatioService::GetPriceURL(
+    const std::vector<std::string>& from_assets,
+    const std::vector<std::string>& to_assets,
+    brave_wallet::mojom::AssetPriceTimeframe timeframe) {
   std::string from = VectorToCommaSeparatedList(from_assets);
   std::string to = VectorToCommaSeparatedList(to_assets);
   std::string spec = base::StringPrintf(
@@ -223,7 +197,7 @@ GURL AssetRatioService::GetPriceURL(const std::vector<std::string>& from_assets,
 GURL AssetRatioService::GetPriceHistoryURL(
     const std::string& asset,
     const std::string& vs_asset,
-    mojom::AssetPriceTimeframe timeframe) {
+    brave_wallet::mojom::AssetPriceTimeframe timeframe) {
   std::string spec = base::StringPrintf(
       "%s/v2/history/coingecko/%s/%s/%s",
       base_url_for_test_.is_empty() ? GetAssetRatioBaseURL().c_str()
@@ -377,14 +351,11 @@ void AssetRatioService::GetSellUrl(mojom::OffRampProvider provider,
   }
 }
 
-void AssetRatioService::GetPrice(const std::vector<std::string>& from_assets,
-                                 const std::vector<std::string>& to_assets,
-                                 mojom::AssetPriceTimeframe timeframe,
-                                 GetPriceCallback callback) {
-  if (dummy_prices_for_testing_) {
-    std::move(callback).Run(true, DummyPrices(from_assets, to_assets));
-    return;
-  }
+void AssetRatioService::GetPrice(
+    const std::vector<std::string>& from_assets,
+    const std::vector<std::string>& to_assets,
+    brave_wallet::mojom::AssetPriceTimeframe timeframe,
+    GetPriceCallback callback) {
   std::vector<std::string> from_assets_lower = VectorToLowerCase(from_assets);
   std::vector<std::string> to_assets_lower = VectorToLowerCase(to_assets);
   auto internal_callback = base::BindOnce(
@@ -480,7 +451,7 @@ void AssetRatioService::OnGetPrice(std::vector<std::string> from_assets,
                                    std::vector<std::string> to_assets,
                                    GetPriceCallback callback,
                                    APIRequestResult api_request_result) {
-  std::vector<mojom::AssetPricePtr> prices;
+  std::vector<brave_wallet::mojom::AssetPricePtr> prices;
   if (!api_request_result.Is2XXResponseCode()) {
     std::move(callback).Run(false, std::move(prices));
     return;
@@ -494,10 +465,11 @@ void AssetRatioService::OnGetPrice(std::vector<std::string> from_assets,
   std::move(callback).Run(true, std::move(prices));
 }
 
-void AssetRatioService::GetPriceHistory(const std::string& asset,
-                                        const std::string& vs_asset,
-                                        mojom::AssetPriceTimeframe timeframe,
-                                        GetPriceHistoryCallback callback) {
+void AssetRatioService::GetPriceHistory(
+    const std::string& asset,
+    const std::string& vs_asset,
+    brave_wallet::mojom::AssetPriceTimeframe timeframe,
+    GetPriceHistoryCallback callback) {
   std::string asset_lower = base::ToLowerASCII(asset);
   std::string vs_asset_lower = base::ToLowerASCII(vs_asset);
   auto internal_callback =
@@ -511,7 +483,7 @@ void AssetRatioService::GetPriceHistory(const std::string& asset,
 
 void AssetRatioService::OnGetPriceHistory(GetPriceHistoryCallback callback,
                                           APIRequestResult api_request_result) {
-  std::vector<mojom::AssetTimePricePtr> values;
+  std::vector<brave_wallet::mojom::AssetTimePricePtr> values;
   if (!api_request_result.Is2XXResponseCode()) {
     std::move(callback).Run(false, std::move(values));
     return;

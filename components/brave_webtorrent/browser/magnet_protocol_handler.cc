@@ -8,7 +8,6 @@
 #include <string>
 #include <utility>
 
-#include "base/metrics/histogram_macros.h"
 #include "base/strings/escape.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
@@ -25,8 +24,6 @@
 namespace webtorrent {
 
 namespace {
-
-constexpr char kWebtorrentUsageHistogramName[] = "Brave.WebTorrent.UsageWeekly";
 
 bool IsMagnetProtocol(const GURL& url) {
   return url.SchemeIs(kMagnetScheme);
@@ -143,8 +140,6 @@ bool HandleMagnetProtocol(const GURL& url,
       !IsWebtorrentEnabled(web_contents->GetBrowserContext())) {
     return false;
   }
-
-  UMA_HISTOGRAM_BOOLEAN(kWebtorrentUsageHistogramName, true);
 
   content::GetUIThreadTaskRunner({})->PostTask(
       FROM_HERE,

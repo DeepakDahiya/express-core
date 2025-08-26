@@ -5,17 +5,12 @@
 import styled from 'styled-components'
 
 const sizeNameToPixels = (size: 'big' | 'medium' | 'small' | 'tiny') => {
-  switch (size) {
-    case 'big':
-      return '40px'
-    case 'medium':
-      return '32px'
-    case 'small':
-      return '24px'
-    case 'tiny':
-      return '16px'
-    default:
-      return '16px'
+  switch(size) {
+    case 'big': return '40px'
+    case 'medium': return '32px'
+    case 'small': return '24px'
+    case 'tiny': return '16px'
+    default: return '16px'
   }
 }
 
@@ -44,7 +39,12 @@ export const PlaceholderText = styled.span<{
 }>`
   font-family: Poppins;
   font-size: ${(p) =>
-    p.size === 'big' ? '16px' : p.size === 'tiny' ? '10px' : '12px'};
+    p.size === 'big'
+      ? '16px'
+      : p.size === 'tiny'
+        ? '10px'
+        : '12px'
+  };
   font-weight: 600;
   letter-spacing: 0.01em;
   color: ${(p) => p.theme.palette.white};

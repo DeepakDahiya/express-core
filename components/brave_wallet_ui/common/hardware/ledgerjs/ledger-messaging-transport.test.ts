@@ -11,19 +11,16 @@ import {
 } from './ledger-messages'
 
 // We must read and write to protected class attributes in the tests.
-// That yields a typescript error unless we use bracket notation, e.g.
-// `transport['handlers']` instead of `transport.handlers`. As a result we
-// silence the dot-notation tslint rule for the file.
+// That yields a typescript error unless we use bracket notation, e.g. `transport['handlers']`
+// instead of `transport.handlers`. As a result we silence the dot-notation
+// tslint rule for the file.
+//
 /* eslint-disable @typescript-eslint/dot-notation */
 
-const createTransport = (
-  targetUrl: string = 'chrome-untrusted://ledger-bridge'
-): LedgerMessagingTransport => {
+const createTransport = (targetUrl: string = 'chrome-untrusted://ledger-bridge'): LedgerMessagingTransport => {
   const iframe = document.createElement('iframe')
   document.body.appendChild(iframe)
-  if (!iframe.contentWindow) {
-    fail('transport should be defined')
-  }
+  if (!iframe.contentWindow) { fail('transport should be defined') }
   // Use Object.defineProperty in order to assign to
   // window.crypto because standard assignment results in
   // assignment error because window.origin is read-only
@@ -40,7 +37,10 @@ const createTransport = (
 }
 
 test('constructor', () => {
-  const transport = new LedgerMessagingTransport(window, window.origin)
+  const transport = new LedgerMessagingTransport(
+    window,
+    window.origin
+  )
 
   expect(transport['targetWindow']).toEqual(window)
   expect(transport['targetUrl']).toEqual(window.origin)
@@ -71,8 +71,7 @@ test('sendCommand returns CommandInProgress if response handler already exists',
   }
 
   transport['targetWindow'].postMessage = (eventData) => {
-    // Sending a second message before the first is replied to should result in
-    // CommandInProgress
+    // Sending a second message before the first is replied to should result in CommandInProgress
     transport.sendCommand(sendEvent).then((inflightResponse) => {
       expect(inflightResponse).toEqual(LedgerBridgeErrorCodes.CommandInProgress)
     })
@@ -118,7 +117,7 @@ test('onMessageReceived ignores messages not from the targetUrl', () => {
     origin: transport['senderWindow']['origin'],
     source: transport['senderWindow']
   })
-  transport['addCommandHandler'](testId, () => (callbackCalled = true))
+  transport['addCommandHandler'](testId, () => callbackCalled = true)
   transport['senderWindow'].dispatchEvent(invalidEvent)
   expect(callbackCalled).toEqual(false)
 
@@ -142,8 +141,7 @@ test('onMessageReceived invokes handler and replies with response', () => {
   }
   const event: MessageEvent = new MessageEvent('message', {
     data: eventData,
-    // event.origin === event.data.origin when a response is expected
-    origin: eventData.origin,
+    origin: eventData.origin, // event.origin === event.data.origin when a response is expected
     source: transport['targetWindow']
   })
 

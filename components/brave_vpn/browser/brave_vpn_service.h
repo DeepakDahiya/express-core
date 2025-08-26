@@ -47,11 +47,9 @@ class BraveBrowserCommandControllerTest;
 
 namespace brave_vpn {
 
-inline constexpr char kNewUserReturningHistogramName[] =
-    "Brave.VPN.NewUserReturning";
-inline constexpr char kDaysInMonthUsedHistogramName[] =
-    "Brave.VPN.DaysInMonthUsed";
-inline constexpr char kLastUsageTimeHistogramName[] = "Brave.VPN.LastUsageTime";
+constexpr char kNewUserReturningHistogramName[] = "Brave.VPN.NewUserReturning";
+constexpr char kDaysInMonthUsedHistogramName[] = "Brave.VPN.DaysInMonthUsed";
+constexpr char kLastUsageTimeHistogramName[] = "Brave.VPN.LastUsageTime";
 
 // This class is used by desktop and android.
 // However, it includes desktop specific impls and it's hidden

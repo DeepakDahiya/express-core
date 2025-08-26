@@ -5,7 +5,10 @@
 
 import styled from 'styled-components'
 import * as leo from '@brave/leo/tokens/css'
-import { AssetIconProps, AssetIconFactory } from '../style'
+import {
+  AssetIconProps,
+  AssetIconFactory
+} from '../style'
 
 export const StackContainer = styled.div<{
   width: string
@@ -32,7 +35,7 @@ export const IconWrapper = styled.div<{
 
 export const AssetIcon = AssetIconFactory<AssetIconProps>({
   width: '16px',
-  height: 'auto'
+  height: 'auto',
 })
 
 export const AdditionalCountBubble = styled.div`
@@ -43,7 +46,6 @@ export const AdditionalCountBubble = styled.div`
   padding-left: 4px;
   height: 16px;
   background-color: ${leo.color.container.highlight};
-  color: ${leo.color.text.secondary};
   border-radius: 100px;
   font-size: 11px;
   font-family: Poppins;

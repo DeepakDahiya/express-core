@@ -93,15 +93,8 @@ export const EvmNativeAssetOrErc20TokenTransfer = ({
 
   // render
   return (
-    <Column
-      alignItems='flex-start'
-      padding={0}
-      margin={'0px 0px 8px 0px'}
-    >
-      <Text
-        textSize='12px'
-        color={color.text.secondary}
-      >
+    <Column alignItems='flex-start' padding={0} margin={'0px 0px 8px 0px'}>
+      <Text textSize='12px' color={color.text.secondary}>
         {getLocale(isReceive ? 'braveWalletReceive' : 'braveWalletSend')}
       </Text>
       <Row
@@ -109,14 +102,8 @@ export const EvmNativeAssetOrErc20TokenTransfer = ({
         alignItems='center'
         justifyContent='flex-start'
       >
-        <IconsWrapper
-          marginRight='0px'
-          title={getTokenVerificationString}
-        >
-          <AssetIconWithPlaceholder
-            asset={asset}
-            network={network}
-          />
+        <IconsWrapper marginRight='0px' title={getTokenVerificationString}>
+          <AssetIconWithPlaceholder asset={asset} network={network} />
           {!transfer.asset.verified && (
             <NetworkIconWrapper>
               <UnverifiedTokenIndicator />
@@ -124,11 +111,7 @@ export const EvmNativeAssetOrErc20TokenTransfer = ({
           )}
         </IconsWrapper>
 
-        <Row
-          alignItems='center'
-          gap={'4px'}
-          justifyContent='flex-start'
-        >
+        <Row alignItems='center' gap={'4px'} justifyContent='flex-start'>
           <StateChangeText
             color={isReceive ? color.systemfeedback.successIcon : undefined}
           >
@@ -190,15 +173,8 @@ export const NonFungibleErcTokenTransfer = ({
 
   // render
   return (
-    <Column
-      alignItems='flex-start'
-      padding={0}
-      margin={'0px 0px 8px 0px'}
-    >
-      <Text
-        textSize='12px'
-        color={color.text.secondary}
-      >
+    <Column alignItems='flex-start' padding={0} margin={'0px 0px 8px 0px'}>
+      <Text textSize='12px' color={color.text.secondary}>
         {getLocale(isReceive ? 'braveWalletReceive' : 'braveWalletSend')}
       </Text>
       <Row
@@ -214,18 +190,11 @@ export const NonFungibleErcTokenTransfer = ({
               iconStyles={NFT_ICON_STYLE}
             />
           ) : (
-            <AssetIconWithPlaceholder
-              asset={asset}
-              network={network}
-            />
+            <AssetIconWithPlaceholder asset={asset} network={network} />
           )}
         </IconsWrapper>
 
-        <Row
-          alignItems='center'
-          gap={'4px'}
-          justifyContent='flex-start'
-        >
+        <Row alignItems='center' gap={'4px'} justifyContent='flex-start'>
           <StateChangeText
             color={isReceive ? color.systemfeedback.successIcon : undefined}
           >
@@ -343,11 +312,7 @@ export const ErcTokenApproval = ({
       alignItems='flex-start'
       justifyContent='center'
     >
-      <Row
-        gap={'4px'}
-        alignItems='center'
-        justifyContent='flex-start'
-      >
+      <Row gap={'4px'} alignItems='center' justifyContent='flex-start'>
         <StateChangeText>
           <span>{getLocale('braveWalletFrom')}</span>
           <strong>{beforeAmount}</strong>
@@ -356,10 +321,7 @@ export const ErcTokenApproval = ({
           <strong>{afterAmount}</strong>
         </StateChangeText>
       </Row>
-      <Row
-        alignItems='center'
-        justifyContent='flex-start'
-      >
+      <Row alignItems='center' justifyContent='flex-start'>
         <CopyTooltip
           isAddress
           text={approval.spender.address}

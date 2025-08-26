@@ -37,9 +37,7 @@ export interface WalletPanelStoryProps {
   walletApiDataOverrides?: WalletApiDataOverrides
 }
 
-export const WalletPanelStory: React.FC<
-  React.PropsWithChildren<WalletPanelStoryProps>
-> = ({
+export const WalletPanelStory: React.FC<React.PropsWithChildren<WalletPanelStoryProps>> = ({
   children,
   panelStateOverride,
   walletStateOverride,

@@ -32,7 +32,7 @@ class BraveAdsUserModelBuilderTest : public UnitTestBase {
 
     SetUpFeatures();
 
-    targeting_ = std::make_unique<test::TargetingHelper>();
+    targeting_ = std::make_unique<TargetingHelperForTesting>();
 
     LoadResources();
 
@@ -72,17 +72,16 @@ class BraveAdsUserModelBuilderTest : public UnitTestBase {
 
   base::test::ScopedFeatureList scoped_feature_list_;
 
-  std::unique_ptr<test::TargetingHelper> targeting_;
+  std::unique_ptr<TargetingHelperForTesting> targeting_;
 };
 
 TEST_F(BraveAdsUserModelBuilderTest, BuildUserModel) {
   // Arrange
   targeting_->Mock();
-  task_environment_.RunUntilIdle();
 
   // Act & Assert
   base::MockCallback<BuildUserModelCallback> callback;
-  EXPECT_CALL(callback, Run(test::TargetingHelper::Expectation()));
+  EXPECT_CALL(callback, Run(TargetingHelperForTesting::Expectation()));
   BuildUserModel(callback.Get());
 }
 

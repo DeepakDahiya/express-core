@@ -7,10 +7,7 @@ import * as React from 'react'
 import { useHistory } from 'react-router'
 
 // api
-import {
-  useGetAutopinEnabledQuery,
-  useSetAutopinEnabledMutation
-} from '../../../common/slices/api.slice'
+import { useGetAutopinEnabledQuery, useSetAutopinEnabledMutation } from '../../../common/slices/api.slice'
 
 // components
 import { NftList } from './components/nft-list/nft-list'
@@ -57,19 +54,20 @@ export const InspectNftsScreen = ({ onClose }: Props) => {
   // routing
   const history = useHistory()
 
-  // queries
-  const { data: isAutoPinEnabled } = useGetAutopinEnabledQuery()
+ // queries
+ const { data: isAutoPinEnabled } = useGetAutopinEnabledQuery()
+  
+ // mutations
+ const [setAutoPinStatus] = useSetAutopinEnabledMutation()
 
-  // mutations
-  const [setAutoPinStatus] = useSetAutopinEnabledMutation()
+ // methods
+ const onClickRunNode = React.useCallback(() => {
+   if (!isAutoPinEnabled) {
+     setAutoPinStatus(true)
+   }
+   history.push(WalletRoutes.PortfolioNFTs)
+ }, [isAutoPinEnabled])
 
-  // methods
-  const onClickRunNode = React.useCallback(() => {
-    if (!isAutoPinEnabled) {
-      setAutoPinStatus(true)
-    }
-    history.push(WalletRoutes.PortfolioNFTs)
-  }, [isAutoPinEnabled])
 
   const onShowTooltip = React.useCallback(() => setShowTooltip(true), [])
   const onHideTooltip = React.useCallback(() => setShowTooltip(false), [])
@@ -87,11 +85,7 @@ export const InspectNftsScreen = ({ onClose }: Props) => {
         </TopRowButton>
       </TopRow>
       <MainContent>
-        <Row
-          maxWidth='100%'
-          alignItems='center'
-          justifyContent='center'
-        >
+        <Row maxWidth='100%' alignItems='center' justifyContent='center'>
           <NftList />
         </Row>
         <Row
@@ -102,10 +96,8 @@ export const InspectNftsScreen = ({ onClose }: Props) => {
           onMouseEnter={onShowTooltip}
           onMouseLeave={onHideTooltip}
         >
-          <InfoSubHeading>
-            {getLocale('braveWalletNftPinningWhyNotAvailable')}
-          </InfoSubHeading>
-          <InfoIcon />
+          <InfoSubHeading>{getLocale('braveWalletNftPinningWhyNotAvailable')}</InfoSubHeading>
+          <InfoIcon/>
           {showTooltip && (
             <InfoTooltip text={getLocale('braveWalletNftPinningTooltip')} />
           )}
@@ -114,15 +106,9 @@ export const InspectNftsScreen = ({ onClose }: Props) => {
           <SubDivider />
         </Row>
         <Row margin='32px 0 0'>
-          <Description>
-            {getLocale('braveWalletNftPinningBenefitsHeading')}
-          </Description>
+          <Description>{getLocale('braveWalletNftPinningBenefitsHeading')}</Description>
         </Row>
-        <Row
-          gap='16px'
-          alignItems='center'
-          justifyContent='center'
-        >
+        <Row gap='16px' alignItems='center' justifyContent='center'>
           <PinNftsButton
             onClick={onClickRunNode}
             disabled={pinnableNftsCount === 0}

@@ -20,7 +20,8 @@ describe('external_wallet', () => {
         status: mojom.WalletStatus.kConnected,
         username: '',
         links: {
-          account: ''
+          account: '',
+          reconnect: ''
         }
       })
     })
@@ -44,6 +45,10 @@ describe('external_wallet', () => {
       expect(convert({ ...basicObject, status: 6 })).toStrictEqual(null)
     })
 
+    it('returns null if property "status" is kNotConnected', () => {
+      expect(convert({ ...basicObject, status: 0 })).toStrictEqual(null)
+    })
+
     it('maps wallet status integers correctly', () => {
       expect(convert({ ...basicObject, status: 2 })).toMatchObject({
         status: mojom.WalletStatus.kConnected
@@ -64,6 +69,12 @@ describe('external_wallet', () => {
       expect(convert({ ...basicObject, accountUrl: 'url' })).toMatchObject({
         links: {
           account: 'url'
+        }
+      })
+
+      expect(convert({ ...basicObject, loginUrl: 'url' })).toMatchObject({
+        links: {
+          reconnect: 'url'
         }
       })
     })

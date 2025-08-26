@@ -55,8 +55,8 @@
 
     bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer(
         net::x509_util::CreateCryptoBuffer(base::make_span(
-            CFDataGetBytePtr(cert_data_.get()),
-            base::checked_cast<size_t>(CFDataGetLength(cert_data_.get())))));
+            CFDataGetBytePtr(cert_data_),
+            base::checked_cast<size_t>(CFDataGetLength(cert_data_)))));
 
     if (!cert_buffer) {
       return nullptr;

@@ -4,30 +4,22 @@
 
 import * as React from 'react'
 
-import { getExternalWalletProviderName } from '../../lib/external_wallet'
-import { LocaleContext, formatMessage } from '../../lib/locale_context'
-import { ExternalWalletDisconnectedNotification } from './notification'
+import { LocaleContext } from '../../lib/locale_context'
 import { NotificationViewProps } from './notification_view'
 
 export function ExternalWalletDisconnected (props: NotificationViewProps) {
   const { getString } = React.useContext(LocaleContext)
   const { Title, Body, Action } = props
-  const { provider } = props.notification as ExternalWalletDisconnectedNotification
 
   return (
     <div>
       <Title style='error'>
         {getString('notificationWalletDisconnectedTitle')}
       </Title>
-      <Body>
-        {
-          formatMessage(getString('notificationWalletDisconnectedText'),
-            [getExternalWalletProviderName(provider)])
-        }
-      </Body>
+      <Body>{getString('notificationWalletDisconnectedText')}</Body>
       <Action
         notification={props.notification}
-        label={getString('notificationWalletDisconnectedAction')}
+        label={getString('notificationReconnect')}
         action={{ type: 'reconnect-external-wallet' }}
       />
     </div>

@@ -40,7 +40,8 @@ void ParseErrorResult(const base::Value& json_value,
   *error = Error::kParsingError;
   *error_message = l10n_util::GetStringUTF8(IDS_WALLET_PARSING_ERROR);
 
-  auto response = json_rpc_responses::RPCResponse::FromValue(json_value);
+  auto response =
+      json_rpc_responses::RPCResponse::FromValueDeprecated(json_value);
   if (!response || !response->error) {
     return;
   }
@@ -76,11 +77,6 @@ absl::optional<std::string> ConvertMultiUint64InObjectArrayToString(
     const std::string& path_to_object,
     const std::vector<std::string>& keys,
     const std::string& json);
-
-namespace ankr {
-absl::optional<std::vector<mojom::AnkrAssetBalancePtr>>
-ParseGetAccountBalanceResponse(const base::Value& json_value);
-}  // namespace ankr
 
 }  // namespace brave_wallet
 

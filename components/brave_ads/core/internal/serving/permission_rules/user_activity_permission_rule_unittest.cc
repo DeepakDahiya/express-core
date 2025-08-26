@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/user_activity_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
@@ -27,6 +27,8 @@ class BraveAdsUserActivityPermissionRuleTest : public UnitTestBase {
   }
 
   base::test::ScopedFeatureList scoped_feature_list_;
+
+  const UserActivityPermissionRule permission_rule_;
 };
 
 TEST_F(BraveAdsUserActivityPermissionRuleTest,
@@ -38,16 +40,16 @@ TEST_F(BraveAdsUserActivityPermissionRuleTest,
       UserActivityEventType::kClosedTab);
 
   // Act & Assert
-  EXPECT_TRUE(HasUserActivityPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsUserActivityPermissionRuleTest,
        ShouldAllowIfUserHasNotJoinedBraveRewards) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   // Act & Assert
-  EXPECT_TRUE(HasUserActivityPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsUserActivityPermissionRuleTest,
@@ -61,7 +63,7 @@ TEST_F(BraveAdsUserActivityPermissionRuleTest,
       UserActivityEventType::kClosedTab);
 
   // Act & Assert
-  EXPECT_TRUE(HasUserActivityPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsUserActivityPermissionRuleTest,
@@ -71,7 +73,7 @@ TEST_F(BraveAdsUserActivityPermissionRuleTest,
       UserActivityEventType::kOpenedNewTab);
 
   // Act & Assert
-  EXPECT_FALSE(HasUserActivityPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 }  // namespace brave_ads

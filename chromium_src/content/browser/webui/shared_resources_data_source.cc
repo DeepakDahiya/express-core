@@ -30,8 +30,7 @@
 namespace {
 
 bool ShouldHandleWebUIRequestCallback(const std::string& path) {
-  if (!base::EqualsCaseInsensitiveASCII(path, "fonts/poppins.css") &&
-      !base::EqualsCaseInsensitiveASCII(path, "fonts/inter.css")) {
+  if (!base::EqualsCaseInsensitiveASCII(path, "fonts/poppins.css")) {
     return false;
   }
 

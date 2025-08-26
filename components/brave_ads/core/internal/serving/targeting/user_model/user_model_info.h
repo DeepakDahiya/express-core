@@ -26,12 +26,13 @@ struct UserModelInfo final {
 
   ~UserModelInfo();
 
-  bool operator==(const UserModelInfo&) const = default;
-
   IntentUserModelInfo intent;
   LatentInterestUserModelInfo latent_interest;
   InterestUserModelInfo interest;
 };
+
+bool operator==(const UserModelInfo&, const UserModelInfo&);
+bool operator!=(const UserModelInfo&, const UserModelInfo&);
 
 }  // namespace brave_ads
 

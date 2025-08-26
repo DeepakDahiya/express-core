@@ -6,7 +6,10 @@
 import styled from 'styled-components'
 import * as leo from '@brave/leo/tokens/css'
 import Icon from '@brave/leo/react/icon'
-import { AssetIconProps, AssetIconFactory } from '../../shared/style'
+import {
+  AssetIconProps,
+  AssetIconFactory
+} from '../../shared/style'
 
 export const AssetIcon = AssetIconFactory<AssetIconProps>({
   width: '40px',
@@ -53,10 +56,11 @@ export const PercentChange = styled.div<{ isDown?: boolean }>`
   color: ${(p) =>
     p.isDown
       ? leo.color.systemfeedback.errorIcon
-      : leo.color.systemfeedback.successIcon};
+      : leo.color.systemfeedback.successIcon
+  };
 `
 
-export const UpDownIcon = styled(Icon)<{
+export const UpDownIcon = styled(Icon) <{
   size?: number
 }>`
   --leo-icon-size: 24px;

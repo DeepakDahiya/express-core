@@ -135,9 +135,10 @@ std::string RequestSignedTokensUrlRequestBuilder::BuildBody() const {
     }
   }
 
+  const auto dict = base::Value::Dict().Set("blindedTokens", std::move(list));
+
   std::string json;
-  CHECK(base::JSONWriter::Write(
-      base::Value::Dict().Set("blindedTokens", std::move(list)), &json));
+  CHECK(base::JSONWriter::Write(dict, &json));
   return json;
 }
 

@@ -46,6 +46,7 @@ UserActivityTriggerList ToUserActivityTriggers(const std::string& param_value) {
   for (const auto& component : components) {
     const std::vector<std::string> value = base::SplitString(
         component, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY);
+
     if (value.size() != 2) {
       continue;
     }
@@ -57,9 +58,7 @@ UserActivityTriggerList ToUserActivityTriggers(const std::string& param_value) {
 
     UserActivityTriggerInfo trigger;
     trigger.event_sequence = base::ToUpperASCII(event_sequence);
-    if (!base::StringToDouble(value.at(1), &trigger.score)) {
-      continue;
-    }
+    base::StringToDouble(value.at(1), &trigger.score);
 
     triggers.push_back(trigger);
   }

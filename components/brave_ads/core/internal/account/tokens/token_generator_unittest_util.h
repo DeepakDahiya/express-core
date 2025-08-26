@@ -16,13 +16,9 @@ namespace cbr {
 class Token;
 }  // namespace cbr
 
-namespace test {
-
 void MockTokenGenerator(const TokenGeneratorMock& mock, size_t count);
 
-std::vector<cbr::Token> BuildTokens(size_t count);
-
-}  // namespace test
+std::vector<cbr::Token> BuildTokensForTesting(size_t count);
 
 }  // namespace brave_ads
 

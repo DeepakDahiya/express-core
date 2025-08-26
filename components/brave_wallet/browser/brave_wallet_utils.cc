@@ -510,14 +510,8 @@ const std::vector<const mojom::NetworkInfo*>& GetKnownFilNetworks() {
 }
 
 GURL BitcoinMainnetRpcUrl() {
-  auto switch_url =
-      GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kBitcoinMainnetRpcUrl));
-  if (switch_url.is_valid()) {
-    return switch_url;
-  }
-
-  return GURL("https://bitcoin-mainnet.wallet.brave.com/");
+  return GURL(base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+      switches::kBitcoinMainnetRpcUrl));
 }
 
 GURL BitcoinTestnetRpcUrl() {
@@ -558,7 +552,7 @@ const mojom::NetworkInfo* GetBitcoinMainnet() {
   static base::NoDestructor<mojom::NetworkInfo> network_info(
       {chain_id,
        "Bitcoin Mainnet",
-       {"https://www.blockchain.com/explorer"},
+       {"https://blockstream.info"},
        {},
        0,
        {BitcoinMainnetRpcUrl()},
@@ -582,7 +576,7 @@ const mojom::NetworkInfo* GetBitcoinTestnet() {
        {},
        0,
        {BitcoinTestnetRpcUrl()},
-       "BTC",
+       "tBTC",
        "Bitcoin",
        8,
        coin,
@@ -598,8 +592,7 @@ const mojom::NetworkInfo* GetZCashMainnet() {
   static base::NoDestructor<mojom::NetworkInfo> network_info(
       {chain_id,
        "ZCash Mainnet",
-       {"https://zcashblockexplorer.com/transactions"},  // TODO(cypt4):
-                                                         // explorer url
+       {""},  // TODO(cypt4): explorer url
        {},
        0,
        {ZCashMainnetRpcUrl()},
@@ -678,10 +671,6 @@ const base::flat_map<std::string, std::string> kFilecoinSubdomains = {
 const base::flat_map<std::string, std::string> kBitcoinSubdomains = {
     {mojom::kBitcoinMainnet, "mainnet"},
     {mojom::kBitcoinTestnet, "testnet"}};
-
-const base::flat_map<std::string, std::string> kZCashSubdomains = {
-    {mojom::kZCashMainnet, "mainnet"},
-    {mojom::kZCashTestnet, "testnet"}};
 
 // Addesses taken from https://docs.unstoppabledomains.com/developer-toolkit/
 // smart-contracts/uns-smart-contracts/#proxyreader
@@ -913,14 +902,6 @@ std::string GetBitcoinSubdomainForKnownChainId(const std::string& chain_id) {
   std::string chain_id_lower = base::ToLowerASCII(chain_id);
   if (kBitcoinSubdomains.contains(chain_id_lower)) {
     return kBitcoinSubdomains.at(chain_id_lower);
-  }
-  return std::string();
-}
-
-std::string GetZCashSubdomainForKnownChainId(const std::string& chain_id) {
-  std::string chain_id_lower = base::ToLowerASCII(chain_id);
-  if (kZCashSubdomains.contains(chain_id_lower)) {
-    return kZCashSubdomains.at(chain_id_lower);
   }
   return std::string();
 }
@@ -1224,10 +1205,6 @@ void UpdateLastUnlockPref(PrefService* prefs) {
   prefs->SetTime(kBraveWalletLastUnlockTime, base::Time::Now());
 }
 
-bool HasCreatedWallets(PrefService* prefs) {
-  return !prefs->GetTime(kBraveWalletLastUnlockTime).is_null();
-}
-
 base::Value::Dict TransactionReceiptToValue(
     const TransactionReceipt& tx_receipt) {
   base::Value::Dict dict;
@@ -1445,17 +1422,6 @@ std::vector<std::string> GetAllKnownEthNetworkIds() {
   return network_ids;
 }
 
-std::vector<std::string> GetAllKnownZecNetworkIds() {
-  std::vector<std::string> network_ids;
-  for (const auto* network : GetKnownZCashNetworks()) {
-    std::string network_id = GetKnownZecNetworkId(network->chain_id);
-    if (!network_id.empty()) {
-      network_ids.push_back(network_id);
-    }
-  }
-  return network_ids;
-}
-
 std::string GetKnownEthNetworkId(const std::string& chain_id) {
   auto subdomain = GetInfuraSubdomainForKnownChainId(chain_id);
   if (!subdomain.empty()) {
@@ -1528,15 +1494,6 @@ std::string GetKnownBtcNetworkId(const std::string& chain_id) {
   return "";
 }
 
-std::string GetKnownZecNetworkId(const std::string& chain_id) {
-  auto subdomain = GetZCashSubdomainForKnownChainId(chain_id);
-  if (!subdomain.empty()) {
-    return subdomain;
-  }
-
-  return "";
-}
-
 std::string GetKnownNetworkId(mojom::CoinType coin,
                               const std::string& chain_id) {
   if (coin == mojom::CoinType::ETH) {
@@ -1551,10 +1508,6 @@ std::string GetKnownNetworkId(mojom::CoinType coin,
   if (coin == mojom::CoinType::BTC) {
     return GetKnownBtcNetworkId(chain_id);
   }
-  if (coin == mojom::CoinType::ZEC) {
-    return GetKnownZecNetworkId(chain_id);
-  }
-  NOTREACHED() << coin;
   return "";
 }
 

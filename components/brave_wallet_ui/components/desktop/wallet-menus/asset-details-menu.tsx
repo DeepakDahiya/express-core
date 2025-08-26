@@ -47,10 +47,8 @@ export const AssetDetailsMenu = (props: Props) => {
       <PopupButton onClick={onClickHideToken}>
         <ButtonIcon name='trash' />
         <PopupButtonText>
-          {getLocale('braveWalletPortfolioHideTokenMenuLabel').replace(
-            '$1',
-            assetSymbol
-          )}
+          {getLocale('braveWalletPortfolioHideTokenMenuLabel')
+            .replace('$1', assetSymbol)}
         </PopupButtonText>
       </PopupButton>
     </StyledWrapper>

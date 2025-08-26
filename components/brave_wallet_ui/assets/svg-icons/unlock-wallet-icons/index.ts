@@ -6,4 +6,7 @@
 import UnlockIconLight from './unlock-wallet-icon-light.svg'
 import UnlockIconDark from './unlock-wallet-icon-dark.svg'
 
-export { UnlockIconLight, UnlockIconDark }
+export {
+  UnlockIconLight,
+  UnlockIconDark
+}

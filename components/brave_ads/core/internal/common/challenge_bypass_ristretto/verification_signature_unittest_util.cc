@@ -8,14 +8,14 @@
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/challenge_bypass_ristretto_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/verification_signature.h"
 
-namespace brave_ads::cbr::test {
+namespace brave_ads::cbr {
 
-VerificationSignature GetVerificationSignature() {
+VerificationSignature GetVerificationSignatureForTesting() {
   return VerificationSignature(kVerificationSignatureBase64);
 }
 
-VerificationSignature GetInvalidVerificationSignature() {
+VerificationSignature GetInvalidVerificationSignatureForTesting() {
   return VerificationSignature(kInvalidBase64);
 }
 
-}  // namespace brave_ads::cbr::test
+}  // namespace brave_ads::cbr

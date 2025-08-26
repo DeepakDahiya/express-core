@@ -6,7 +6,6 @@
 // Import web components here. They will be available on the page
 // as <leo-{component}></leo-{component}>.
 import '@brave/leo/web-components/button'
-import '@brave/leo/web-components/dropdown'
 import { setIconBasePath } from '@brave/leo/web-components/icon'
 import iconsMeta from '@brave/leo/icons/meta'
 

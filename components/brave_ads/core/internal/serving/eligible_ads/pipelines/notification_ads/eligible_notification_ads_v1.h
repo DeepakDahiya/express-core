@@ -37,6 +37,12 @@ class EligibleNotificationAdsV1 final : public EligibleNotificationAdsBase {
       EligibleAdsCallback<CreativeNotificationAdList> callback,
       bool success,
       const AdEventList& ad_events);
+
+  void GetBrowsingHistory(
+      UserModelInfo user_model,
+      const AdEventList& ad_events,
+      EligibleAdsCallback<CreativeNotificationAdList> callback);
+
   void GetEligibleAds(UserModelInfo user_model,
                       const AdEventList& ad_events,
                       EligibleAdsCallback<CreativeNotificationAdList> callback,

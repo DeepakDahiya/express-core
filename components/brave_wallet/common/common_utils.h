@@ -15,17 +15,22 @@ class PrefService;
 
 namespace brave_wallet {
 
-inline constexpr mojom::CoinType kAllCoins[] = {
+constexpr mojom::CoinType kAllCoins[] = {
     mojom::CoinType::ETH, mojom::CoinType::FIL, mojom::CoinType::SOL,
     mojom::CoinType::BTC};
 
 bool IsZCashKeyring(mojom::KeyringId keyring_id);
 
 bool IsNativeWalletEnabled();
+bool IsFilecoinEnabled();
+bool IsSolanaEnabled();
+bool ShouldShowTxStatusInToolbar();
 bool IsNftPinningEnabled();
+bool IsPanelV2Enabled();
+bool ShouldCreateDefaultSolanaAccount();
+bool IsDappsSupportEnabled();
 bool IsBitcoinEnabled();
 bool IsZCashEnabled();
-bool IsAnkrBalancesEnabled();
 
 bool IsAllowed(PrefService* prefs);
 
@@ -62,13 +67,7 @@ mojom::AccountIdPtr MakeBitcoinAccountId(mojom::CoinType coin,
                                          mojom::KeyringId keyring_id,
                                          mojom::AccountKind kind,
                                          uint32_t account_index);
-std::string GetNetworkForBitcoinKeyring(const mojom::KeyringId& keyring_id);
 std::string GetNetworkForBitcoinAccount(const mojom::AccountIdPtr& account_id);
-
-mojom::AccountIdPtr MakeZCashAccountId(mojom::CoinType coin,
-                                       mojom::KeyringId keyring_id,
-                                       mojom::AccountKind kind,
-                                       uint32_t account_index);
 
 }  // namespace brave_wallet
 

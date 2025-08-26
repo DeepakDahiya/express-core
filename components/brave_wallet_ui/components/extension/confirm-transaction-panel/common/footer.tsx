@@ -29,7 +29,7 @@ interface Props {
   rejectButtonType?: 'reject' | 'cancel'
 }
 
-export function Footer(props: Props) {
+export function Footer (props: Props) {
   const { onReject, onConfirm, rejectButtonType } = props
 
   const {
@@ -39,11 +39,8 @@ export function Footer(props: Props) {
     transactionsQueueLength
   } = usePendingTransactions()
 
-  const [transactionConfirmed, setTranactionConfirmed] =
-    React.useState<boolean>(false)
-  const [queueLength, setQueueLength] = React.useState<number | undefined>(
-    undefined
-  )
+  const [transactionConfirmed, setTranactionConfirmed] = React.useState<boolean>(false)
+  const [queueLength, setQueueLength] = React.useState<number | undefined>(undefined)
 
   React.useEffect(() => {
     // This will update the transactionConfirmed state back to false
@@ -54,8 +51,8 @@ export function Footer(props: Props) {
   }, [queueLength, transactionsQueueLength])
 
   const onClickConfirmTransaction = React.useCallback(async () => {
-    // Checks to see if there are multiple transactions in the queue, if there
-    // is we keep track of the length of the last confirmed transaction.
+    // Checks to see if there are multiple transactions in the queue,
+    // if there is we keep track of the length of the last confirmed transaction.
     if (transactionsQueueLength > 1) {
       setQueueLength(transactionsQueueLength)
     }
@@ -68,14 +65,8 @@ export function Footer(props: Props) {
   return (
     <FooterContainer>
       {transactionsQueueLength > 1 && (
-        <QueueStepButton
-          needsMargin={false}
-          onClick={rejectAllTransactions}
-        >
-          {getLocale('braveWalletQueueRejectAll').replace(
-            '$1',
-            transactionsQueueLength.toString()
-          )}
+        <QueueStepButton needsMargin={false} onClick={rejectAllTransactions}>
+          {getLocale('braveWalletQueueRejectAll').replace('$1', transactionsQueueLength.toString())}
         </QueueStepButton>
       )}
 
@@ -84,9 +75,7 @@ export function Footer(props: Props) {
           transactionDetails.contractAddressError,
           transactionDetails.sameAddressError,
           transactionDetails.missingGasLimitError
-        ].map((error, index) => (
-          <ErrorText key={`${index}-${error}`}>{error}</ErrorText>
-        ))}
+        ].map((error, index) => <ErrorText key={`${index}-${error}`}>{error}</ErrorText>)}
 
       <ButtonRow>
         <NavButton
@@ -98,7 +87,6 @@ export function Footer(props: Props) {
           }
           onSubmit={onReject}
           disabled={transactionConfirmed}
-          minWidth='45%'
         />
         {transactionConfirmed ? (
           <ConfirmingButton>
@@ -113,7 +101,6 @@ export function Footer(props: Props) {
             text={getLocale('braveWalletAllowSpendConfirmButton')}
             onSubmit={onClickConfirmTransaction}
             disabled={isConfirmButtonDisabled}
-            minWidth='45%'
           />
         )}
       </ButtonRow>

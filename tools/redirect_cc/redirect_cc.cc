@@ -20,11 +20,9 @@
 
 #if defined(REDIRECT_CC_AS_GOMACC)
 #include "brave/tools/redirect_cc/gomacc_buildflags.h"
-#elif defined(REDIRECT_CC_AS_REWRAPPER)
-#include "brave/tools/redirect_cc/rewrapper_buildflags.h"
-#else  // defined(REDIRECT_CC_AS_GOMACC) || defined(REDIRECT_CC_AS_REWRAPPER)
+#else  // defined(REDIRECT_CC_AS_GOMACC)
 #include "base/environment.h"
-#endif  // defined(REDIRECT_CC_AS_GOMACC) || defined(REDIRECT_CC_AS_REWRAPPER)
+#endif  // defined(REDIRECT_CC_AS_GOMACC)
 
 const base::FilePath::StringPieceType kIncludeFlag = FILE_PATH_LITERAL("-I");
 const base::FilePath::StringPieceType kBraveChromiumSrc =
@@ -34,8 +32,6 @@ const base::FilePath::StringPieceType kCompileFileFlags[] = {
     FILE_PATH_LITERAL("-c"),
     FILE_PATH_LITERAL("/c"),
 };
-const base::FilePath::StringPieceType kShowIncludesFlag =
-    FILE_PATH_LITERAL("/showIncludes");
 
 class RedirectCC {
  public:
@@ -51,10 +47,7 @@ class RedirectCC {
 #if defined(REDIRECT_CC_AS_GOMACC)
     *first_compiler_arg_idx = 1;
     return UTF8ToFilePathString(BUILDFLAG(REAL_GOMACC));
-#elif defined(REDIRECT_CC_AS_REWRAPPER)
-    *first_compiler_arg_idx = 1;
-    return UTF8ToFilePathString(BUILDFLAG(REAL_REWRAPPER));
-#else   // defined(REDIRECT_CC_AS_GOMACC) || defined(REDIRECT_CC_AS_REWRAPPER)
+#else   // defined(REDIRECT_CC_AS_GOMACC)
     std::string cc_wrapper;
     std::unique_ptr<base::Environment> env(base::Environment::Create());
     if (env->HasVar("CC_WRAPPER")) {
@@ -68,12 +61,12 @@ class RedirectCC {
 
     *first_compiler_arg_idx = 2;
     return argv_[1];
-#endif  // defined(REDIRECT_CC_AS_GOMACC) || defined(REDIRECT_CC_AS_REWRAPPER)
+#endif  // defined(REDIRECT_CC_AS_GOMACC)
   }
 
   int Run() {
     // Get compiler executable. It can be a first arg to redirect_cc, a
-    // REAL_GOMACC/REAL_REWRAPPER buildflag or a CC_WRAPPER env variable.
+    // REAL_GOMACC buildflag or a CC_WRAPPER env variable.
     int first_compiler_arg_idx = 0;
     const base::FilePath::StringType& compiler_executable =
         GetCompilerExecutable(&first_compiler_arg_idx);
@@ -81,11 +74,6 @@ class RedirectCC {
       LOG(ERROR) << "Compiler executable not found";
       return -1;
     }
-
-    // Prepare argv to launch.
-    std::vector<base::FilePath::StringType> launch_argv;
-    launch_argv.reserve(argc_);
-    launch_argv.push_back(compiler_executable);
 
     // Path to `src/brave/chromium_src`.
     base::FilePath::StringType brave_chromium_src_dir;
@@ -104,23 +92,17 @@ class RedirectCC {
         break;
       }
     }
-
     if (chromium_src_dir_with_slash.empty()) {
-#if defined(REDIRECT_CC_AS_REWRAPPER)
-      // We're called to execute a non-clang action. Just launch it as is.
-      for (int arg_idx = first_compiler_arg_idx; arg_idx < argc_; ++arg_idx) {
-        launch_argv.emplace_back(argv_[arg_idx]);
-      }
-      return Launch(launch_argv);
-#else   // defined(REDIRECT_CC_AS_REWRAPPER)
       LOG(ERROR) << "Can't find chromium src dir";
       return -1;
-#endif  // defined(REDIRECT_CC_AS_REWRAPPER)
     }
 
+    // Prepare argv to launch.
+    std::vector<base::FilePath::StringType> launch_argv;
+    launch_argv.reserve(argc_);
+    launch_argv.push_back(compiler_executable);
     bool compile_file_found = false;
     base::FilePath::StringType brave_path;
-    bool has_show_includes_flag = false;
 
     for (int arg_idx = first_compiler_arg_idx; arg_idx < argc_; ++arg_idx) {
       const base::FilePath::StringPieceType arg_piece = argv_[arg_idx];
@@ -168,7 +150,7 @@ class RedirectCC {
           brave_path = base::StrCat(
               {brave_chromium_src_dir, FILE_PATH_LITERAL("/"), path_cc});
           if (base::PathExists(base::FilePath(brave_path))) {
-            launch_argv.emplace_back(arg_piece);
+            launch_argv.push_back(base::FilePath::StringType(arg_piece));
             launch_argv.push_back(brave_path);
             ++arg_idx;
             continue;
@@ -176,43 +158,31 @@ class RedirectCC {
             brave_path.clear();
           }
         }
-      } else {
-        has_show_includes_flag |= arg_piece.starts_with(kShowIncludesFlag);
       }
-      launch_argv.emplace_back(arg_piece);
+      launch_argv.push_back(base::FilePath::StringType(arg_piece));
     }
 
-    const auto exit_code = Launch(launch_argv);
-
-    // To check the redirected file timestamp, it should be marked as dependency
-    // for ninja. Linux/MacOS gcc deps format includes this file properly.
-    // Windows msvc deps format does not include it, so we do it manually here.
-    // This is a specially crafted string that ninja will look for to create
-    // deps.
-    if (exit_code == 0 && !brave_path.empty() && has_show_includes_flag) {
-#if BUILDFLAG(IS_WIN)
-      std::wcerr << L"Note: including file: " << brave_path << L"\n";
-#else   // BUILDFLAG(IS_WIN)
-      std::cerr << "Note: including file: " << brave_path << "\n";
-#endif  // BUILDFLAG(IS_WIN)
-    }
-
-    return exit_code;
-  }
-
-  int Launch(const std::vector<base::FilePath::StringType>& launch_argv) {
 #if BUILDFLAG(IS_WIN)
     const auto& to_launch = CreateCmdLine(launch_argv);
 #else   // BUILDFLAG(IS_WIN)
     const auto& to_launch = launch_argv;
 #endif  // BUILDFLAG(IS_WIN)
 
-    auto process = base::LaunchProcess(to_launch, base::LaunchOptions());
+    base::LaunchOptions options;
+    options.wait = true;
+    auto process = base::LaunchProcess(to_launch, options);
     int exit_code = -1;
-    if (!process.WaitForExit(&exit_code)) {
-      LOG(ERROR) << "Failed to WaitForExit";
-      return -1;
+    process.WaitForExit(&exit_code);
+#if BUILDFLAG(IS_WIN)
+    // To check the redirected file timestamp, it should be marked as dependency
+    // for ninja. Linux/MacOS gcc deps format includes this file properly.
+    // Windows msvc deps format does not include it, so we do it manually here.
+    if (exit_code == 0 && !brave_path.empty()) {
+      // This is a specially crafted string that ninja will look for to create
+      // deps.
+      std::wcerr << L"Note: including file: " << brave_path << L"\n";
     }
+#endif  // BUILDFLAG(IS_WIN)
     return exit_code;
   }
 

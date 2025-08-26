@@ -32,14 +32,6 @@ const actions = bindActionCreators(rewardsActions, store.dispatch.bind(store))
 setIconBasePath('chrome://resources/brave-icons')
 
 function initialize () {
-  // For `brave://rewards/reconnect`, automatically trigger reconnection on page
-  // load and send the user immediately to the external wallet login page. Do
-  // not show any additional UI while redirecting.
-  if (window.location.pathname === '/reconnect') {
-    chrome.send('brave_rewards.reconnectExternalWallet')
-    return
-  }
-
   initLocale(loadTimeData.data_)
 
   const platformInfo = {
@@ -177,8 +169,8 @@ function excludedSiteChanged () {
   actions.getContributeList()
 }
 
-function balance (balance?: mojom.Balance) {
-  actions.onBalance(balance)
+function balance (result: mojom.FetchBalanceResult) {
+  actions.onBalance(result)
 }
 
 function reconcileComplete (properties: { type: number, result: number }) {
@@ -196,8 +188,8 @@ function reconcileComplete (properties: { type: number, result: number }) {
   }
 }
 
-function onGetExternalWallet (externalWallet?: mojom.ExternalWallet) {
-  actions.onGetExternalWallet(externalWallet)
+function onGetExternalWallet (result: mojom.GetExternalWalletResult) {
+  actions.onGetExternalWallet(result)
 }
 
 function onConnectExternalWallet (result: mojom.ConnectExternalWalletResult) {
@@ -245,10 +237,12 @@ function onboardingStatus (result: { showOnboarding: boolean }) {
   actions.onOnboardingStatus(result.showOnboarding)
 }
 
+function enabledInlineTippingPlatforms (list: string[]) {
+  actions.onEnabledInlineTippingPlatforms(list)
+}
+
 function externalWalletLogin (url: string) {
-  if (url) {
-    window.open(url, '_self', 'noreferrer')
-  }
+  window.open(url, '_self', 'noreferrer')
 }
 
 function onPrefChanged (key: string) {
@@ -305,6 +299,7 @@ Object.defineProperty(window, 'brave_rewards', {
     initialized,
     completeReset,
     onboardingStatus,
+    enabledInlineTippingPlatforms,
     externalWalletLogin,
     onPrefChanged,
     onIsUnsupportedRegion

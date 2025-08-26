@@ -12,7 +12,7 @@
 #include "base/functional/bind.h"
 #include "brave/components/brave_ads/core/internal/account/transactions/transaction_info.h"
 #include "brave/components/brave_ads/core/internal/account/transactions/transactions_database_table.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/deprecated/confirmations/confirmation_state_manager_constants.h"
 #include "brave/components/brave_ads/core/internal/legacy_migration/rewards/legacy_rewards_migration_util.h"
@@ -24,7 +24,8 @@ namespace brave_ads::rewards {
 namespace {
 
 bool HasMigrated() {
-  return GetProfileBooleanPref(prefs::kHasMigratedRewardsState);
+  return AdsClientHelper::GetInstance()->GetBooleanPref(
+      prefs::kHasMigratedRewardsState);
 }
 
 void FailedToMigrate(InitializeCallback callback) {
@@ -32,7 +33,8 @@ void FailedToMigrate(InitializeCallback callback) {
 }
 
 void SuccessfullyMigrated(InitializeCallback callback) {
-  SetProfileBooleanPref(prefs::kHasMigratedRewardsState, true);
+  AdsClientHelper::GetInstance()->SetBooleanPref(
+      prefs::kHasMigratedRewardsState, true);
   std::move(callback).Run(/*success=*/true);
 }
 
@@ -82,8 +84,9 @@ void Migrate(InitializeCallback callback) {
     return std::move(callback).Run(/*success=*/true);
   }
 
-  Load(kConfirmationStateFilename,
-       base::BindOnce(&MigrateCallback, std::move(callback)));
+  AdsClientHelper::GetInstance()->Load(
+      kConfirmationStateFilename,
+      base::BindOnce(&MigrateCallback, std::move(callback)));
 }
 
 }  // namespace brave_ads::rewards

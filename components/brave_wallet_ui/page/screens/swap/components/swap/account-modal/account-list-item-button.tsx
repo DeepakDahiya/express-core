@@ -8,7 +8,9 @@ import * as React from 'react'
 import { BraveWallet } from '../../../../../../constants/types'
 
 // Utils
-import { reduceAddress } from '../../../../../../utils/reduce-address'
+import {
+  reduceAddress
+} from '../../../../../../utils/reduce-address'
 
 // Styled Components
 import {
@@ -16,7 +18,10 @@ import {
   AccountCircle,
   AccountText
 } from './account-modal.style'
-import { Text, HorizontalSpacer } from '../../shared-swap.styles'
+import {
+  Text,
+  HorizontalSpacer,
+} from '../../shared-swap.styles'
 
 // Hooks
 import { useAccountOrb } from '../../../../../../common/hooks/use-orb'
@@ -34,18 +39,11 @@ export const AccountListItemButton = (props: Props) => {
   return (
     <AccountButton onClick={onClick}>
       <AccountCircle orb={accountOrb} />{' '}
-      <AccountText
-        textSize='14px'
-        isBold={true}
-      >
+      <AccountText textSize='14px' isBold={true}>
         {account.name}
       </AccountText>
       <HorizontalSpacer size={4} />
-      <Text
-        textSize='14px'
-        textColor='text03'
-        isBold={false}
-      >
+      <Text textSize='14px' textColor='text03' isBold={false}>
         {reduceAddress(account.address)}
       </Text>
     </AccountButton>

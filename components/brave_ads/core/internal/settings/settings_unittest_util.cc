@@ -5,38 +5,37 @@
 
 #include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
 
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_profile_pref_value.h"
+#include "brave/components/brave_ads/core/internal/common/unittest/unittest_pref_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 #include "brave/components/brave_news/common/pref_names.h"
 #include "brave/components/brave_rewards/common/pref_names.h"
 #include "brave/components/ntp_background_images/common/pref_names.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-void DisableBraveRewards() {
-  SetProfileBooleanPrefValue(brave_rewards::prefs::kEnabled, false);
+void DisableBraveRewardsForTesting() {
+  SetBooleanPrefValue(brave_rewards::prefs::kEnabled, false);
 }
 
-void OptOutOfBraveNewsAds() {
-  SetProfileBooleanPrefValue(brave_news::prefs::kBraveNewsOptedIn, false);
-  SetProfileBooleanPrefValue(brave_news::prefs::kNewTabPageShowToday, false);
+void OptOutOfBraveNewsAdsForTesting() {
+  SetBooleanPrefValue(brave_news::prefs::kBraveNewsOptedIn, false);
+  SetBooleanPrefValue(brave_news::prefs::kNewTabPageShowToday, false);
 }
 
-void OptOutOfNewTabPageAds() {
-  SetProfileBooleanPrefValue(
+void OptOutOfNewTabPageAdsForTesting() {
+  SetBooleanPrefValue(
       ntp_background_images::prefs::kNewTabPageShowBackgroundImage, false);
-  SetProfileBooleanPrefValue(ntp_background_images::prefs::
-                                 kNewTabPageShowSponsoredImagesBackgroundImage,
-                             false);
+  SetBooleanPrefValue(ntp_background_images::prefs::
+                          kNewTabPageShowSponsoredImagesBackgroundImage,
+                      false);
 }
 
-void OptOutOfNotificationAds() {
-  SetProfileBooleanPrefValue(prefs::kOptedInToNotificationAds, false);
+void OptOutOfNotificationAdsForTesting() {
+  SetBooleanPrefValue(prefs::kOptedInToNotificationAds, false);
 }
 
-void SetMaximumNotificationAdsPerHour(const int max_ads_per_hour) {
-  SetProfileInt64PrefValue(prefs::kMaximumNotificationAdsPerHour,
-                           max_ads_per_hour);
+void SetMaximumNotificationAdsPerHourForTesting(const int max_ads_per_hour) {
+  SetInt64PrefValue(prefs::kMaximumNotificationAdsPerHour, max_ads_per_hour);
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

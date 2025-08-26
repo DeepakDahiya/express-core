@@ -8,8 +8,7 @@
 
 namespace brave_ads {
 
-inline constexpr char kConversionResourceId[] =
-    "nnqccijfhvzwyrxpxwjrpmynaiazctqb";
+constexpr char kConversionResourceId[] = "nnqccijfhvzwyrxpxwjrpmynaiazctqb";
 
 }  // namespace brave_ads
 

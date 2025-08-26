@@ -14,35 +14,33 @@ class HostContentSettingsMap;
 
 namespace brave_shields {
 
-inline constexpr char kUsagePrefName[] = "brave_shields.p3a_usage";
-inline constexpr char kFirstReportedPrefName[] =
-    "brave_shields.p3a_first_reported_v2";
+constexpr char kUsagePrefName[] = "brave_shields.p3a_usage";
+constexpr char kFirstReportedPrefName[] = "brave_shields.p3a_first_reported_v2";
 
-inline constexpr char kAdsStrictCountPrefName[] =
+constexpr char kAdsStrictCountPrefName[] =
     "brave_shields.p3a_ads_strict_domain_count";
-inline constexpr char kAdsStandardCountPrefName[] =
+constexpr char kAdsStandardCountPrefName[] =
     "brave_shields.p3a_ads_standard_domain_count";
-inline constexpr char kAdsAllowCountPrefName[] =
+constexpr char kAdsAllowCountPrefName[] =
     "brave_shields.p3a_ads_allow_domain_count";
-inline constexpr char kFPStrictCountPrefName[] =
+constexpr char kFPStrictCountPrefName[] =
     "brave_shields.p3a_fp_strict_domain_count";
-inline constexpr char kFPStandardCountPrefName[] =
+constexpr char kFPStandardCountPrefName[] =
     "brave_shields.p3a_fp_standard_domain_count";
-inline constexpr char kFPAllowCountPrefName[] =
+constexpr char kFPAllowCountPrefName[] =
     "brave_shields.p3a_fp_allow_domain_count";
 
-inline constexpr char kAdsSettingHistogramName[] =
-    "Brave.Shields.AdBlockSetting";
-inline constexpr char kFingerprintSettingHistogramName[] =
+constexpr char kAdsSettingHistogramName[] = "Brave.Shields.AdBlockSetting";
+constexpr char kFingerprintSettingHistogramName[] =
     "Brave.Shields.FingerprintBlockSetting";
-inline constexpr char kUsageStatusHistogramName[] = "Brave.Shields.UsageStatus";
-inline constexpr char kDomainAdsSettingsAboveHistogramName[] =
+constexpr char kUsageStatusHistogramName[] = "Brave.Shields.UsageStatus";
+constexpr char kDomainAdsSettingsAboveHistogramName[] =
     "Brave.Shields.DomainAdsSettingsAboveGlobal";
-inline constexpr char kDomainAdsSettingsBelowHistogramName[] =
+constexpr char kDomainAdsSettingsBelowHistogramName[] =
     "Brave.Shields.DomainAdsSettingsBelowGlobal";
-inline constexpr char kDomainFPSettingsAboveHistogramName[] =
+constexpr char kDomainFPSettingsAboveHistogramName[] =
     "Brave.Shields.DomainFingerprintSettingsAboveGlobal";
-inline constexpr char kDomainFPSettingsBelowHistogramName[] =
+constexpr char kDomainFPSettingsBelowHistogramName[] =
     "Brave.Shields.DomainFingerprintSettingsBelowGlobal";
 // Note: append-only enumeration! Never remove any existing values, as this enum
 // is used to bucket a UMA histogram, and removing values breaks that.

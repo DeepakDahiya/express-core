@@ -26,7 +26,8 @@ struct ADS_EXPORT NewTabPageAdInfo final : AdInfo {
 
   ~NewTabPageAdInfo();
 
-  bool operator==(const NewTabPageAdInfo&) const = default;
+  bool operator==(const NewTabPageAdInfo&) const;
+  bool operator!=(const NewTabPageAdInfo&) const;
 
   [[nodiscard]] bool IsValid() const;
 

@@ -7,7 +7,6 @@
 
 #include "base/notreached.h"
 #include "base/time/time.h"
-#include "base/types/cxx23_to_underlying.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_info.h"
 
@@ -20,7 +19,7 @@ bool CanConvertAdEvent(const AdEventInfo& ad_event) {
     return false;
   }
 
-  switch (ad_event.type) {
+  switch (ad_event.type.value()) {
     case AdType::kInlineContentAd:
     case AdType::kPromotedContentAd: {
       return UserHasOptedInToBraveNewsAds();
@@ -45,7 +44,7 @@ bool CanConvertAdEvent(const AdEventInfo& ad_event) {
   }
 
   NOTREACHED_NORETURN() << "Unexpected value for AdType: "
-                        << base::to_underlying(ad_event.type);
+                        << static_cast<int>(ad_event.type.value());
 }
 
 bool HasObservationWindowForAdEventExpired(

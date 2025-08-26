@@ -10,7 +10,9 @@ import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 import { handleEndpointError } from '../../../utils/api-utils'
 import { generateQRCode } from '../../../utils/qr-code-utils'
 
-export const qrCodeEndpoints = ({ query }: WalletApiEndpointBuilderParams) => {
+export const qrCodeEndpoints = ({
+  query
+}: WalletApiEndpointBuilderParams) => {
   return {
     getQrCodeImage: query<string, string>({
       queryFn: async (dataArg, { endpoint }) => {

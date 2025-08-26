@@ -135,8 +135,7 @@ export function SignCowSwapOrder(props: Props) {
       {!showDetails && (
         <SwapBase
           sellToken={
-            sellToken ||
-            (cowSwapOrder
+            sellToken || (cowSwapOrder
               ? makeUnknownToken(
                   data.chainId,
                   data.coin,
@@ -145,8 +144,7 @@ export function SignCowSwapOrder(props: Props) {
               : undefined)
           }
           buyToken={
-            buyToken ||
-            (cowSwapOrder
+            buyToken || (cowSwapOrder
               ? makeUnknownToken(data.chainId, data.coin, cowSwapOrder.buyToken)
               : undefined)
           }
@@ -174,10 +172,7 @@ export function SignCowSwapOrder(props: Props) {
             {getLocale('braveWalletNetworkFees')}
           </NetworkFeeTitle>
           <NetworkFeeValue>
-            <CreateNetworkIcon
-              network={network}
-              marginRight={0}
-            />
+            <CreateNetworkIcon network={network} marginRight={0} />
             {getLocale('braveSwapFree')}
           </NetworkFeeValue>
         </NetworkFeeContainer>

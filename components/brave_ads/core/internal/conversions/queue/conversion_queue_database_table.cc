@@ -12,7 +12,7 @@
 #include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/containers/container_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_bind_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_column_util.h"
@@ -64,7 +64,7 @@ size_t BindParameters(mojom::DBCommandInfo* command,
   int index = 0;
   for (const auto& conversion_queue_item : conversion_queue_items) {
     BindString(command, index++,
-               ToString(conversion_queue_item.conversion.ad_type));
+               conversion_queue_item.conversion.ad_type.ToString());
     BindString(command, index++, conversion_queue_item.conversion.campaign_id);
     BindString(command, index++,
                conversion_queue_item.conversion.creative_set_id);
@@ -100,8 +100,7 @@ ConversionQueueItemInfo GetFromRecord(mojom::DBRecordInfo* record) {
   CHECK(record);
 
   ConversionQueueItemInfo conversion_queue_item;
-  conversion_queue_item.conversion.ad_type =
-      ParseAdType(ColumnString(record, 0));
+  conversion_queue_item.conversion.ad_type = AdType(ColumnString(record, 0));
   conversion_queue_item.conversion.campaign_id = ColumnString(record, 1);
   conversion_queue_item.conversion.creative_set_id = ColumnString(record, 2);
   conversion_queue_item.conversion.creative_instance_id =
@@ -190,9 +189,9 @@ void MigrateToV10(mojom::DBTransactionInfo* transaction) {
 
   DropTable(transaction, "conversion_queue");
 
-  // `campaign_id` and `advertiser_id` can be `NULL` for legacy conversions
-  // migrated from "ad_conversions.json" and `conversion_id` and
-  // `advertiser_public_key` will be empty for non verifiable conversions.
+  // campaign_id and advertiser_id can be NULL for legacy conversions migrated
+  // from |ad_conversions.json| and conversion_id and advertiser_public_key will
+  // be empty for non verifiable conversions
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -206,7 +205,7 @@ void MigrateToV10(mojom::DBTransactionInfo* transaction) {
 void MigrateToV11(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with new `advertiser_public_key` column
+  // Create a temporary table with new |advertiser_public_key| column
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -238,7 +237,7 @@ void MigrateToV17(mojom::DBTransactionInfo* transaction) {
 void MigrateToV21(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with new `ad_type` and `was_processed` column
+  // Create a temporary table with new |ad_type| and |was_processed| column
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -273,7 +272,7 @@ void MigrateToV21(mojom::DBTransactionInfo* transaction) {
 void MigrateToV26(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with new `segment` column
+  // Create a temporary table with new |segment| column
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -306,7 +305,7 @@ void MigrateToV26(mojom::DBTransactionInfo* transaction) {
 void MigrateToV28(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with renamed `timestamp` to `process_at` column
+  // Create a temporary table with renamed |timestamp| to |process_at| column
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -354,10 +353,11 @@ void MigrateToV29(mojom::DBTransactionInfo* transaction) {
 void MigrateToV30(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with a new `type` column defaulted to
-  // `kViewThroughConversionActionType` for legacy conversions, rename the
-  // `conversion_id` column to `verifiable_conversion_id` and rename the
-  // `advertiser_public_key` column to `verifiable_advertiser_public_key`.
+  // Create a temporary table with a new |type| column defaulted to
+  // |kViewThroughConversionActionType| for legacy conversions, rename the
+  // |conversion_id| column to |verifiable_conversion_id| and
+  // rename the |advertiser_public_key| column to
+  // |verifiable_advertiser_public_key|.
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql = base::ReplaceStringPlaceholders(
@@ -464,8 +464,9 @@ void ConversionQueue::GetAll(GetConversionQueueCallback callback) const {
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetCallback, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetCallback, std::move(callback)));
 }
 
 void ConversionQueue::GetUnprocessed(
@@ -483,8 +484,9 @@ void ConversionQueue::GetUnprocessed(
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetCallback, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetCallback, std::move(callback)));
 }
 
 void ConversionQueue::GetForCreativeInstanceId(
@@ -508,9 +510,10 @@ void ConversionQueue::GetForCreativeInstanceId(
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetForCreativeInstanceIdCallback,
-                                  creative_instance_id, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetForCreativeInstanceIdCallback, creative_instance_id,
+                     std::move(callback)));
 }
 
 std::string ConversionQueue::GetTableName() const {

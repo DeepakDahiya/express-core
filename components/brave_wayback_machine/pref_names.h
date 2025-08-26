@@ -6,7 +6,6 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_WAYBACK_MACHINE_PREF_NAMES_H_
 #define BRAVE_COMPONENTS_BRAVE_WAYBACK_MACHINE_PREF_NAMES_H_
 
-inline constexpr char kBraveWaybackMachineEnabled[] =
-    "brave.wayback_machine_enabled";
+extern const char kBraveWaybackMachineEnabled[];
 
 #endif  // BRAVE_COMPONENTS_BRAVE_WAYBACK_MACHINE_PREF_NAMES_H_

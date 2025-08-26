@@ -23,7 +23,7 @@ class BraveAdsTopSegmentUserDataTest : public UnitTestBase {
   void SetUp() override {
     UnitTestBase::SetUp();
 
-    targeting_ = std::make_unique<test::TargetingHelper>();
+    targeting_ = std::make_unique<TargetingHelperForTesting>();
 
     LoadResource();
   }
@@ -34,15 +34,14 @@ class BraveAdsTopSegmentUserDataTest : public UnitTestBase {
     task_environment_.RunUntilIdle();
   }
 
-  std::unique_ptr<test::TargetingHelper> targeting_;
+  std::unique_ptr<TargetingHelperForTesting> targeting_;
 };
 
 TEST_F(BraveAdsTopSegmentUserDataTest, BuildTopSegmentUserDataForRewardsUser) {
   // Arrange
   targeting_->MockInterest();
-  task_environment_.RunUntilIdle();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -62,12 +61,11 @@ TEST_F(BraveAdsTopSegmentUserDataTest, BuildTopSegmentUserDataForRewardsUser) {
 TEST_F(BraveAdsTopSegmentUserDataTest,
        DoNotBuildTopSegmentUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   targeting_->MockInterest();
-  task_environment_.RunUntilIdle();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -79,9 +77,8 @@ TEST_F(BraveAdsTopSegmentUserDataTest,
        DoNotBuildTopSegmentUserDataForNonViewedConfirmationType) {
   // Arrange
   targeting_->MockInterest();
-  task_environment_.RunUntilIdle();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kClicked,
       /*should_use_random_uuids=*/false);
 
@@ -92,7 +89,7 @@ TEST_F(BraveAdsTopSegmentUserDataTest,
 TEST_F(BraveAdsTopSegmentUserDataTest,
        DoNotBuildTopSegmentUserDataIfNoTargeting) {
   // Arrange
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 

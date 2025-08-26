@@ -10,11 +10,7 @@ namespace brave_ads::cbr {
 
 class VerificationKey;
 
-namespace test {
-
-VerificationKey GetVerificationKey();
-
-}  // namespace test
+VerificationKey GetVerificationKeyForTesting();
 
 }  // namespace brave_ads::cbr
 

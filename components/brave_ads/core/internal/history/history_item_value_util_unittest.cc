@@ -47,7 +47,7 @@ constexpr char kJson[] =
               "category": "untargeted",
               "optAction": 0
             },
-            "created_at": "12993327900000000"
+            "created_at": "13323916800000000"
           },
           {
             "ad_content": {
@@ -71,13 +71,13 @@ constexpr char kJson[] =
               "category": "untargeted",
               "optAction": 0
             },
-            "created_at": "12993327900000000"
+            "created_at": "13323916800000000"
           }
         ])";
 
 HistoryItemList BuildHistoryItems() {
   const CreativeNotificationAdInfo creative_ad =
-      test::BuildCreativeNotificationAd(/*should_use_random_uuids=*/false);
+      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/false);
   const NotificationAdInfo ad = BuildNotificationAd(creative_ad, kPlacementId);
 
   const HistoryItemInfo history_item =
@@ -92,8 +92,7 @@ class BraveAdsHistoryItemValueUtilTest : public UnitTestBase {};
 
 TEST_F(BraveAdsHistoryItemValueUtilTest, FromValue) {
   // Arrange
-  AdvanceClockTo(TimeFromString("Fri, 28 Sep 2012 17:45",
-                                /*is_local=*/false));  // Hello Jaxson!!!
+  AdvanceClockTo(TimeFromString("22 March 2023", /*is_local=*/false));
 
   const base::Value::List list = base::test::ParseJsonList(kJson);
 
@@ -104,7 +103,7 @@ TEST_F(BraveAdsHistoryItemValueUtilTest, FromValue) {
 
 TEST_F(BraveAdsHistoryItemValueUtilTest, ToValue) {
   // Arrange
-  AdvanceClockTo(TimeFromString("Fri, 28 Sep 2012 17:45", /*is_local=*/false));
+  AdvanceClockTo(TimeFromString("22 March 2023", /*is_local=*/false));
 
   const HistoryItemList history_items = BuildHistoryItems();
 

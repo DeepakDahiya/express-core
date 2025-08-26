@@ -48,10 +48,10 @@ TEST_F(BraveAdsNewTabPageAdServingTest, DoNotServeAdForUnsupportedVersion) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kNewTabPageAdServingFeature, {{"version", "0"}});
 
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   const CreativeNewTabPageAdInfo creative_ad =
-      test::BuildCreativeNewTabPageAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNewTabPageAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeNewTabPageAds({creative_ad});
 
   // Act & Assert
@@ -64,10 +64,10 @@ TEST_F(BraveAdsNewTabPageAdServingTest, DoNotServeAdForUnsupportedVersion) {
 
 TEST_F(BraveAdsNewTabPageAdServingTest, ServeAd) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   const CreativeNewTabPageAdInfo creative_ad =
-      test::BuildCreativeNewTabPageAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNewTabPageAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeNewTabPageAds({creative_ad});
   const NewTabPageAdInfo ad = BuildNewTabPageAd(creative_ad);
 
@@ -83,10 +83,10 @@ TEST_F(BraveAdsNewTabPageAdServingTest, ServeAd) {
 
 TEST_F(BraveAdsNewTabPageAdServingTest, DoNotServeAdIfMissingWallpapers) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   CreativeNewTabPageAdInfo creative_ad =
-      test::BuildCreativeNewTabPageAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNewTabPageAdForTesting(/*should_use_random_uuids=*/true);
   creative_ad.wallpapers.clear();
   database::SaveCreativeNewTabPageAds({creative_ad});
 
@@ -102,7 +102,7 @@ TEST_F(BraveAdsNewTabPageAdServingTest, DoNotServeAdIfMissingWallpapers) {
 
 TEST_F(BraveAdsNewTabPageAdServingTest, DoNotServeAdIfNoEligibleAdsFound) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   // Act & Assert
   EXPECT_CALL(delegate_mock_, OnOpportunityAroseToServeNewTabPageAd);
@@ -118,7 +118,7 @@ TEST_F(BraveAdsNewTabPageAdServingTest,
        DoNotServeAdIfNotAllowedDueToPermissionRules) {
   // Arrange
   const CreativeNewTabPageAdInfo creative_ad =
-      test::BuildCreativeNewTabPageAd(/*should_use_random_uuids=*/true);
+      BuildCreativeNewTabPageAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeNewTabPageAds({creative_ad});
 
   // Act & Assert

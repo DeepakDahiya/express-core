@@ -43,7 +43,7 @@ class BraveAdsFixedUserDataBuilderTest : public UnitTestBase {
 TEST_F(BraveAdsFixedUserDataBuilderTest,
        BuildConfirmationUserDataForRewardsUser) {
   // Arrange
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -77,9 +77,9 @@ TEST_F(BraveAdsFixedUserDataBuilderTest,
 TEST_F(BraveAdsFixedUserDataBuilderTest,
        BuildConfirmationUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
 
@@ -92,11 +92,11 @@ TEST_F(BraveAdsFixedUserDataBuilderTest,
 TEST_F(BraveAdsFixedUserDataBuilderTest,
        BuildConversionConfirmationUserDataForRewardsUser) {
   // Arrange
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kViewed,
       /*is_verifiable=*/false, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
 
@@ -134,13 +134,13 @@ TEST_F(BraveAdsFixedUserDataBuilderTest,
 TEST_F(BraveAdsFixedUserDataBuilderTest,
        BuildConversionConfirmationUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kClicked,
       /*is_verifiable=*/false, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
 
@@ -163,11 +163,11 @@ TEST_F(BraveAdsFixedUserDataBuilderTest,
 TEST_F(BraveAdsFixedUserDataBuilderTest,
        BuildVerifiableConversionConfirmationUserDataForRewardsUser) {
   // Arrange
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kViewed,
       /*is_verifiable=*/true, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
 
@@ -188,13 +188,13 @@ TEST_F(BraveAdsFixedUserDataBuilderTest,
 TEST_F(BraveAdsFixedUserDataBuilderTest,
        BuildVerifiableConversionConfirmationUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
-  test::BuildAndSaveConversionQueue(
+  BuildAndSaveConversionQueueForTesting(
       AdType::kNotificationAd, ConfirmationType::kClicked,
       /*is_verifiable=*/true, /*should_use_random_uuids=*/false, /*count=*/1);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.0, ConfirmationType::kConversion,
       /*should_use_random_uuids=*/false);
 

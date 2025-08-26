@@ -8,7 +8,10 @@ import * as leo from '@brave/leo/tokens/css'
 import Icon from '@brave/leo/react/icon'
 
 // Shared Styles
-import { Text, WalletButton } from '../../shared/style'
+import {
+  Text,
+  WalletButton
+} from '../../shared/style'
 
 export const StyledWrapper = styled.div`
   display: flex;

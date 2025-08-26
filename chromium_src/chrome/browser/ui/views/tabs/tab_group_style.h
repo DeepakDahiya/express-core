@@ -24,8 +24,6 @@ class TabGroupStyle : public TabGroupStyle_ChromiumImpl {
 
   gfx::Insets GetInsetsForHeaderChip(bool should_show_sync_icon) const override;
 
-  int GetChipCornerRadius() const override;
-
   float GetEmptyChipSize() const override;
 
  private:

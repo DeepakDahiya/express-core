@@ -6,7 +6,7 @@
 import styled from 'styled-components'
 
 // Shared Styles
-import { StyledButton, Text } from '../../shared.styles'
+import { StyledButton } from '../../shared.styles'
 
 export const Button = styled(StyledButton)`
   --button-shadow-hover: 0px 0px 16px rgba(99, 105, 110, 0.18);
@@ -27,6 +27,13 @@ export const Button = styled(StyledButton)`
   }
 `
 
-export const ButtonText = styled(Text)`
-  word-break: break-all;
+export const AccountCircle = styled.div<{
+  orb: string
+}>`
+  width: 32px;
+  height: 32px;
+  border-radius: 100%;
+  background-image: url(${(p) => p.orb});
+  background-size: cover;
+  margin-right: 16px;
 `

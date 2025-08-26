@@ -5,7 +5,7 @@
 
 #include "brave/components/brave_ads/core/internal/common/country_code/country_code.h"
 
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 #include "brave/components/brave_rewards/common/pref_names.h"
@@ -25,11 +25,11 @@ bool DoesSupportCountryCode() {
 
 CountryCode::CountryCode()
     : cached_country_code_(brave_l10n::GetDefaultISOCountryCodeString()) {
-  AddAdsClientNotifierObserver(this);
+  AdsClientHelper::AddObserver(this);
 }
 
 CountryCode::~CountryCode() {
-  RemoveAdsClientNotifierObserver(this);
+  AdsClientHelper::RemoveObserver(this);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -62,14 +62,22 @@ void CountryCode::OnDidUpdateSubdivision(const std::string& subdivision) {
 }
 
 void CountryCode::CacheCountryCode() {
-  cached_country_code_ =
-      GetLocalStateStringPref(brave_l10n::prefs::kCountryCode);
+  absl::optional<base::Value> country_code_value =
+      AdsClientHelper::GetInstance()->GetLocalStatePref(
+          brave_l10n::prefs::kCountryCode);
+
+  if (!country_code_value) {
+    return;
+  }
+
+  CHECK(country_code_value->is_string());
+  cached_country_code_ = country_code_value->GetString();
 }
 
 void CountryCode::MaybeSetCountryCode() {
   if (DoesSupportCountryCode()) {
-    SetLocalStateStringPref(brave_l10n::prefs::kCountryCode,
-                            cached_country_code_);
+    AdsClientHelper::GetInstance()->SetLocalStatePref(
+        brave_l10n::prefs::kCountryCode, base::Value(cached_country_code_));
   }
 }
 

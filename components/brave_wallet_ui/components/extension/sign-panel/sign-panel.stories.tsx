@@ -8,7 +8,10 @@ import * as React from 'react'
 import WalletPageStory from '../../../stories/wrappers/wallet-page-story-wrapper'
 import { SignPanel } from './index'
 
-import { BraveWallet, Url } from '../../../constants/types'
+import {
+  BraveWallet,
+  Url
+} from '../../../constants/types'
 import { mockOriginInfo } from '../../../stories/mock-data/mock-origin-info'
 import { mockEthAccount } from '../../../stories/mock-data/mock-wallet-accounts'
 
@@ -37,7 +40,8 @@ const signMessageData: BraveWallet.SignMessageRequest = {
       notBefore: '',
       requestId: '22',
       resources: [mockIPFSPath, mockURLPath],
-      statement: 'I accept the Brave Terms of Service: http://address.com/tos',
+      statement:
+        'I accept the Brave Terms of Service: http://address.com/tos',
       uri: {
         url: mockOriginInfo.originSpec
       },
@@ -62,14 +66,13 @@ const evilUnicodeSignMessageData = {
 }
 
 export const _SignPanel = () => {
-  return (
-    <WalletPageStory>
-      <SignPanel
-        showWarning={true}
-        signMessageData={[evilUnicodeSignMessageData, signMessageData]}
-      />
-    </WalletPageStory>
-  )
+  return <WalletPageStory>
+    <SignPanel
+      onCancel={() => alert('')}
+      showWarning={true}
+      signMessageData={[evilUnicodeSignMessageData, signMessageData]}
+    />
+  </WalletPageStory>
 }
 
 _SignPanel.story = {

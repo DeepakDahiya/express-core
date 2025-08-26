@@ -5,6 +5,7 @@
 
 import { Reducer } from 'redux'
 import { types } from '../actions/rewards_types'
+import * as mojom from '../../shared/lib/mojom'
 import {
   optional
 } from '../../../../brave_rewards/resources/shared/lib/optional'
@@ -63,20 +64,26 @@ const walletReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State,
       break
     }
     case types.ON_BALANCE: {
-      const { balance } = action.payload
-      if (balance) {
-        state = { ...state, balance: optional(balance.total) }
+      const { value, error } = action.payload.result
+
+      if (value) {
+        state = { ...state, balance: optional(value.balance.total) }
       } else {
         state = { ...state, balance: optional<number>() }
+
+        if (error === mojom.FetchBalanceError.kAccessTokenExpired) {
+          chrome.send('brave_rewards.getExternalWallet')
+        }
       }
+
       break
     }
     case types.GET_EXTERNAL_WALLET_PROVIDERS: {
       chrome.send('brave_rewards.getExternalWalletProviders')
       break
     }
-    case types.BEGIN_EXTERNAL_WALLET_LOGIN: {
-      chrome.send('brave_rewards.beginExternalWalletLogin', [action.payload.provider])
+    case types.SET_EXTERNAL_WALLET_TYPE: {
+      chrome.send('brave_rewards.setExternalWalletType', [action.payload.provider])
       break
     }
     case types.GET_EXTERNAL_WALLET: {
@@ -84,11 +91,19 @@ const walletReducer: Reducer<Rewards.State | undefined> = (state: Rewards.State,
       break
     }
     case types.ON_GET_EXTERNAL_WALLET: {
-      const { externalWallet } = action.payload
-      if (externalWallet) {
-        state = { ...state, externalWallet }
+      const { value, error } = action.payload.result
+
+      if (value) {
+        state = { ...state, externalWallet: value.wallet }
         chrome.send('brave_rewards.fetchBalance')
+      } else {
+        switch (error) {
+          case mojom.GetExternalWalletError.kAccessTokenExpired:
+            chrome.send('brave_rewards.getExternalWallet')
+            break
+        }
       }
+
       break
     }
     case types.GET_MONTHLY_REPORT: {

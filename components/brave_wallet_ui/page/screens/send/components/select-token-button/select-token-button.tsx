@@ -10,7 +10,10 @@ import { skipToken } from '@reduxjs/toolkit/query/react'
 import CaratDownIcon from '../../assets/carat-down-icon.svg'
 
 // Types
-import { BraveWallet, SendPageTabHashes } from '../../../../../constants/types'
+import {
+  BraveWallet,
+  SendPageTabHashes
+} from '../../../../../constants/types'
 
 // Utils
 import { getLocale } from '../../../../../../common/locale'
@@ -59,16 +62,10 @@ export const SelectTokenButton = (props: Props) => {
   // Memos
   const buttonText = React.useMemo(() => {
     if (selectedSendOption === SendPageTabHashes.nft) {
-      const id = token?.tokenId
-        ? `#${new Amount(token?.tokenId).toNumber()}`
-        : ''
-      return token !== undefined
-        ? `${token.name} ${id}`
-        : getLocale('braveWalletSelectNFT')
+      const id = token?.tokenId ? `#${new Amount(token?.tokenId).toNumber()}` : ''
+      return token !== undefined ? `${token.name} ${id}` : getLocale('braveWalletSelectNFT')
     }
-    return token !== undefined
-      ? token.symbol
-      : getLocale('braveWalletSelectToken')
+    return token !== undefined ? token.symbol : getLocale('braveWalletSelectToken')
   }, [selectedSendOption, token])
 
   return (
@@ -81,19 +78,15 @@ export const SelectTokenButton = (props: Props) => {
         {token && (
           <IconsWrapper
             marginRight={
-              selectedSendOption === SendPageTabHashes.nft ? 12 : undefined
+              selectedSendOption === SendPageTabHashes.nft
+                ? 12
+                : undefined
             }
           >
             {token.isNft || token.isErc721 ? (
-              <NftIconWithPlaceholder
-                asset={token}
-                network={tokensNetwork}
-              />
+              <NftIconWithPlaceholder asset={token} network={tokensNetwork} />
             ) : (
-              <AssetIconWithPlaceholder
-                asset={token}
-                network={tokensNetwork}
-              />
+              <AssetIconWithPlaceholder asset={token} network={tokensNetwork} />
             )}
             {tokensNetwork &&
               checkIfTokenNeedsNetworkIcon(
@@ -101,10 +94,7 @@ export const SelectTokenButton = (props: Props) => {
                 token.contractAddress
               ) && (
                 <NetworkIconWrapper>
-                  <CreateNetworkIcon
-                    network={tokensNetwork}
-                    marginRight={0}
-                  />
+                  <CreateNetworkIcon network={tokensNetwork} marginRight={0} />
                 </NetworkIconWrapper>
               )}
           </IconsWrapper>
@@ -119,10 +109,7 @@ export const SelectTokenButton = (props: Props) => {
           {buttonText}
         </ButtonText>
       </Row>
-      <ButtonIcon
-        size={12}
-        icon={CaratDownIcon}
-      />
+      <ButtonIcon size={12} icon={CaratDownIcon} />
     </Button>
   )
 }

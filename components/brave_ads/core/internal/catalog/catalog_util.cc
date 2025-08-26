@@ -9,7 +9,7 @@
 #include "brave/components/brave_ads/core/internal/account/deposits/deposits_database_util.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_feature.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_info.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/creatives/campaigns_database_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/conversions/creative_set_conversion_database_table_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ads_database_util.h"
@@ -66,44 +66,49 @@ void SaveCatalog(const CatalogInfo& catalog) {
 }
 
 void ResetCatalog() {
-  ClearProfilePref(prefs::kCatalogId);
-  ClearProfilePref(prefs::kCatalogVersion);
-  ClearProfilePref(prefs::kCatalogPing);
-  ClearProfilePref(prefs::kCatalogLastUpdated);
+  AdsClientHelper::GetInstance()->ClearPref(prefs::kCatalogId);
+  AdsClientHelper::GetInstance()->ClearPref(prefs::kCatalogVersion);
+  AdsClientHelper::GetInstance()->ClearPref(prefs::kCatalogPing);
+  AdsClientHelper::GetInstance()->ClearPref(prefs::kCatalogLastUpdated);
 
   Delete();
 }
 
 std::string GetCatalogId() {
-  return GetProfileStringPref(prefs::kCatalogId);
+  return AdsClientHelper::GetInstance()->GetStringPref(prefs::kCatalogId);
 }
 
 void SetCatalogId(const std::string& id) {
-  SetProfileStringPref(prefs::kCatalogId, id);
+  AdsClientHelper::GetInstance()->SetStringPref(prefs::kCatalogId, id);
 }
 
 int GetCatalogVersion() {
-  return GetProfileIntegerPref(prefs::kCatalogVersion);
+  return AdsClientHelper::GetInstance()->GetIntegerPref(prefs::kCatalogVersion);
 }
 
 void SetCatalogVersion(const int version) {
-  SetProfileIntegerPref(prefs::kCatalogVersion, version);
+  AdsClientHelper::GetInstance()->SetIntegerPref(prefs::kCatalogVersion,
+                                                 version);
 }
 
 base::TimeDelta GetCatalogPing() {
-  return base::Milliseconds(GetProfileInt64Pref(prefs::kCatalogPing));
+  return base::Milliseconds(
+      AdsClientHelper::GetInstance()->GetInt64Pref(prefs::kCatalogPing));
 }
 
 void SetCatalogPing(const base::TimeDelta ping) {
-  SetProfileInt64Pref(prefs::kCatalogPing, ping.InMilliseconds());
+  AdsClientHelper::GetInstance()->SetInt64Pref(prefs::kCatalogPing,
+                                               ping.InMilliseconds());
 }
 
 base::Time GetCatalogLastUpdated() {
-  return GetProfileTimePref(prefs::kCatalogLastUpdated);
+  return AdsClientHelper::GetInstance()->GetTimePref(
+      prefs::kCatalogLastUpdated);
 }
 
 void SetCatalogLastUpdated(const base::Time last_updated_at) {
-  SetProfileTimePref(prefs::kCatalogLastUpdated, last_updated_at);
+  AdsClientHelper::GetInstance()->SetTimePref(prefs::kCatalogLastUpdated,
+                                              last_updated_at);
 }
 
 bool DoesCatalogExist() {

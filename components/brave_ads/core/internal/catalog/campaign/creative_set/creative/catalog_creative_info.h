@@ -13,7 +13,8 @@
 namespace brave_ads {
 
 struct CatalogCreativeInfo {
-  bool operator==(const CatalogCreativeInfo&) const = default;
+  bool operator==(const CatalogCreativeInfo&) const;
+  bool operator!=(const CatalogCreativeInfo&) const;
 
   std::string instance_id;
   CatalogTypeInfo type;

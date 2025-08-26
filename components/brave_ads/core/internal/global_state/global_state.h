@@ -15,7 +15,6 @@
 namespace brave_ads {
 
 class AdsClient;
-class AdsNotifierManager;
 class BrowserManager;
 class ClientStateManager;
 class ConfirmationStateManager;
@@ -46,7 +45,6 @@ class GlobalState final {
 
   AdsClient* GetAdsClient();
 
-  AdsNotifierManager& GetAdsNotifierManager();
   BrowserManager& GetBrowserManager();
   ClientStateManager& GetClientStateManager();
   ConfirmationStateManager& GetConfirmationStateManager();
@@ -71,7 +69,6 @@ class GlobalState final {
 
   const std::unique_ptr<GlobalStateHolder> global_state_holder_;
 
-  std::unique_ptr<AdsNotifierManager> ads_notifier_manager_;
   std::unique_ptr<BrowserManager> browser_manager_;
   std::unique_ptr<ClientStateManager> client_state_manager_;
   std::unique_ptr<ConfirmationStateManager> confirmation_state_manager_;

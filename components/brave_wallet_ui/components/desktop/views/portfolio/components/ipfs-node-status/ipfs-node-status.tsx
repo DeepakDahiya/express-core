@@ -21,11 +21,7 @@ export const IpfsNodeStatus = () => {
   return (
     <IpfsNodeStatusWrapper>
       <StatusIcon running={isLocalIpfsNodeRunning} />
-      <Text>
-        {isLocalIpfsNodeRunning
-          ? getLocale('braveWalletNftPinningNodeRunningStatus')
-          : getLocale('braveWalletNftPinningNodeNotRunningStatus')}
-      </Text>
+      <Text>{isLocalIpfsNodeRunning ? getLocale('braveWalletNftPinningNodeRunningStatus') : getLocale('braveWalletNftPinningNodeNotRunningStatus')}</Text>
     </IpfsNodeStatusWrapper>
   )
 }

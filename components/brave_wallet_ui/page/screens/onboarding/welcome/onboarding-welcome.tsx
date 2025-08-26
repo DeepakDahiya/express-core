@@ -26,18 +26,10 @@ import {
 } from '../disclosures/disclosures'
 
 // routes
-import {
-  BraveWallet,
-  PageState,
-  WalletRoutes
-} from '../../../../constants/types'
+import { BraveWallet, PageState, WalletRoutes } from '../../../../constants/types'
 
 // styles
-import {
-  Row,
-  VerticalSpace,
-  WalletWelcomeGraphic
-} from '../../../../components/shared/style'
+import { Row, VerticalSpace, WalletWelcomeGraphic } from '../../../../components/shared/style'
 import { OnboardingWrapper } from '../onboarding.style'
 import {
   Title,
@@ -53,14 +45,10 @@ import {
 export const OnboardingWelcome = () => {
   // redux
   const dispatch = useDispatch()
-  const setupStillInProgress = useSelector(
-    ({ page }: { page: PageState }) => page.setupStillInProgress
-  )
+  const setupStillInProgress = useSelector(({ page }: { page: PageState }) => page.setupStillInProgress)
 
   // state
-  const [nextStep, setNextStep] = React.useState<
-    OnboardingDisclosuresNextSteps | undefined
-  >(undefined)
+  const [nextStep, setNextStep] = React.useState<OnboardingDisclosuresNextSteps | undefined>(undefined)
 
   // methods
   const hideDisclosures = React.useCallback(() => setNextStep(undefined), [])
@@ -91,7 +79,7 @@ export const OnboardingWelcome = () => {
   }, [setupStillInProgress])
 
   React.useEffect(() => {
-    let action = BraveWallet.OnboardingAction.Shown
+    let action = BraveWallet.OnboardingAction.Shown;
     switch (nextStep) {
       case WalletRoutes.OnboardingImportOrRestore:
         action = BraveWallet.OnboardingAction.StartRestore
@@ -105,76 +93,78 @@ export const OnboardingWelcome = () => {
 
   // render
   if (nextStep !== undefined) {
-    return (
-      <OnboardingDisclosures
-        nextStep={nextStep}
-        onBack={hideDisclosures}
-      />
-    )
+    return <OnboardingDisclosures nextStep={nextStep} onBack={hideDisclosures} />
   }
 
-  return (
-    <WalletPageLayout>
-      <OnboardingWrapper>
-        <WalletWelcomeGraphic />
+  return <WalletPageLayout>
+    <OnboardingWrapper>
+      <WalletWelcomeGraphic />
 
-        <Title maxWidth='467px'>{getLocale('braveWalletWelcomeTitle')}</Title>
+      <Title maxWidth='467px'>
+        {getLocale('braveWalletWelcomeTitle')}
+      </Title>
 
-        <BlockQuote>
-          <VerticalRule />
-          <BlockQuoteTextContainer>
-            <span>{getLocale('braveWalletPerksTokens')}</span>
-            <span>{getLocale('braveWalletMultiChain')}</span>
-            <span>{getLocale('braveWalletPerksBrowserNative')}</span>
-          </BlockQuoteTextContainer>
-        </BlockQuote>
+      <BlockQuote>
+        <VerticalRule />
+        <BlockQuoteTextContainer>
+          <span>
+            {getLocale('braveWalletPerksTokens')}
+          </span>
+          <span>
+            {getLocale('braveWalletMultiChain')}
+          </span>
+          <span>
+            {getLocale('braveWalletPerksBrowserNative')}
+          </span>
+        </BlockQuoteTextContainer>
+      </BlockQuote>
 
-        <VerticalSpace space='34px' />
+      <VerticalSpace space='34px' />
 
-        <ButtonContainer>
-          <NavButton
-            buttonType='primary'
-            text={getLocale('braveWalletWelcomeButton')}
-            onSubmit={showNewWalletDisclosures}
-            maxHeight={'48px'}
-            minWidth={'267px'}
-          />
-
-          <NavButton
-            buttonType='secondary'
-            text={getLocale('braveWalletImportExistingWallet')}
-            onSubmit={showRestoredWalletDisclosures}
-            maxHeight={'48px'}
-            minWidth={'267px'}
-          />
-        </ButtonContainer>
-
-        <Row>
-          <SubDivider />
-          <SubDividerText>
-            {getLocale('braveWalletWelcomeDividerText')}
-          </SubDividerText>
-          <SubDivider />
-        </Row>
-
+      <ButtonContainer>
         <NavButton
           buttonType='primary'
-          text={getLocale('braveWalletConnectHardwareWallet')}
-          onSubmit={showConnectHardwareDisclosures}
+          text={getLocale('braveWalletWelcomeButton')}
+          onSubmit={showNewWalletDisclosures}
           maxHeight={'48px'}
           minWidth={'267px'}
         />
 
-        <VerticalSpace space='20px' />
+        <NavButton
+          buttonType='secondary'
+          text={getLocale('braveWalletImportExistingWallet')}
+          onSubmit={showRestoredWalletDisclosures}
+          maxHeight={'48px'}
+          minWidth={'267px'}
+        />
 
-        <LearnMoreLink
-          href='https://support.brave.com/hc/en-us/categories/360001059151-Brave-Wallet'
-          target='_blank'
-          rel='noreferrer'
-        >
-          {getLocale('braveWalletLearnMoreAboutBraveWallet')}
-        </LearnMoreLink>
-      </OnboardingWrapper>
-    </WalletPageLayout>
-  )
+      </ButtonContainer>
+
+      <Row>
+        <SubDivider />
+        <SubDividerText>{getLocale('braveWalletWelcomeDividerText')}</SubDividerText>
+        <SubDivider />
+      </Row>
+
+      <NavButton
+        buttonType='primary'
+        text={getLocale('braveWalletConnectHardwareWallet')}
+        onSubmit={showConnectHardwareDisclosures}
+        maxHeight={'48px'}
+        minWidth={'267px'}
+      />
+
+      <VerticalSpace space='20px' />
+
+      <LearnMoreLink
+        href='https://support.brave.com/hc/en-us/categories/360001059151-Brave-Wallet'
+        target='_blank'
+        rel='noreferrer'
+      >
+        {getLocale('braveWalletLearnMoreAboutBraveWallet')}
+      </LearnMoreLink>
+
+    </OnboardingWrapper>
+
+  </WalletPageLayout>
 }

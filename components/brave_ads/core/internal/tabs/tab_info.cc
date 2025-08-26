@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_ads/core/internal/tabs/tab_info.h"
 
+#include <tuple>
 #include <utility>
 
 namespace brave_ads {
@@ -27,5 +28,17 @@ TabInfo::TabInfo(TabInfo&& other) noexcept = default;
 TabInfo& TabInfo::operator=(TabInfo&& other) noexcept = default;
 
 TabInfo::~TabInfo() = default;
+
+bool TabInfo::operator==(const TabInfo& other) const {
+  const auto tie = [](const TabInfo& tab) {
+    return std::tie(tab.id, tab.redirect_chain, tab.is_playing_media);
+  };
+
+  return tie(*this) == tie(other);
+}
+
+bool TabInfo::operator!=(const TabInfo& other) const {
+  return !(*this == other);
+}
 
 }  // namespace brave_ads

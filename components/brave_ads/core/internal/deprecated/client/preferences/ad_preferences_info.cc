@@ -34,27 +34,33 @@ base::Value::Dict AdPreferencesInfo::ToValue() const {
 
   base::Value::List advertisers_list;
   for (const auto& advertiser : filtered_advertisers) {
-    advertisers_list.Append(base::Value::Dict().Set("id", advertiser.id));
+    base::Value::Dict advertiser_dict;
+    advertiser_dict.Set("id", advertiser.id);
+    advertisers_list.Append(std::move(advertiser_dict));
   }
   dict.Set("filtered_advertisers", std::move(advertisers_list));
 
   base::Value::List categories_list;
   for (const auto& category : filtered_categories) {
-    categories_list.Append(base::Value::Dict().Set("name", category.name));
+    base::Value::Dict category_dict;
+    category_dict.Set("name", category.name);
+    categories_list.Append(std::move(category_dict));
   }
   dict.Set("filtered_categories", std::move(categories_list));
 
   base::Value::List saved_ads_list;
   for (const auto& saved_ad : saved_ads) {
-    saved_ads_list.Append(base::Value::Dict().Set(
-        "creative_instance_id", saved_ad.creative_instance_id));
+    base::Value::Dict saved_ad_dict;
+    saved_ad_dict.Set("creative_instance_id", saved_ad.creative_instance_id);
+    saved_ads_list.Append(std::move(saved_ad_dict));
   }
   dict.Set("saved_ads", std::move(saved_ads_list));
 
   base::Value::List flagged_ads_list;
   for (const auto& flagged_ad : flagged_ads) {
-    flagged_ads_list.Append(
-        base::Value::Dict().Set("creative_set_id", flagged_ad.creative_set_id));
+    base::Value::Dict flagged_ad_dict;
+    flagged_ad_dict.Set("creative_set_id", flagged_ad.creative_set_id);
+    flagged_ads_list.Append(std::move(flagged_ad_dict));
   }
   dict.Set("flagged_ads", std::move(flagged_ads_list));
 
@@ -145,14 +151,14 @@ std::string AdPreferencesInfo::ToJson() const {
 }
 
 bool AdPreferencesInfo::FromJson(const std::string& json) {
-  const absl::optional<base::Value::Dict> dict = base::JSONReader::ReadDict(
-      json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
-                base::JSONParserOptions::JSON_PARSE_RFC);
-  if (!dict) {
+  const absl::optional<base::Value> root =
+      base::JSONReader::Read(json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
+                                       base::JSONParserOptions::JSON_PARSE_RFC);
+  if (!root || !root->is_dict()) {
     return false;
   }
 
-  FromValue(*dict);
+  FromValue(root->GetDict());
 
   return true;
 }

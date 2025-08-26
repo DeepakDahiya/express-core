@@ -9,11 +9,10 @@
 #include <string>
 
 #include "base/containers/circular_deque.h"
+#include "brave/components/brave_ads/core/public/units/notification_ad/notification_ad_info.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
-
-struct NotificationAdInfo;
 
 class NotificationAdManager final {
  public:
@@ -34,8 +33,10 @@ class NotificationAdManager final {
 
   void Add(const NotificationAdInfo& ad);
 
-  void Remove(const std::string& placement_id, bool should_close);
-  void RemoveAll(bool should_close);
+  bool Remove(const std::string& placement_id);
+  void RemoveAll();
+
+  void CloseAll();
 
   bool Exists(const std::string& placement_id) const;
 

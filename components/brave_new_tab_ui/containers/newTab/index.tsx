@@ -21,11 +21,11 @@ import SiteRemovalNotification from './notification'
 import Stats from './stats'
 
 // Helpers
-import { getLocale } from '$web-common/locale'
-import VisibilityTimer from '$web-common/visibilityTimer'
 import isReadableOnBackground from '../../helpers/colorUtil'
+import VisibilityTimer from '../../helpers/visibilityTimer'
 
 // Types
+import { getLocale } from '../../../common/locale'
 import { NewTabActions } from '../../constants/new_tab_types'
 import { BraveNewsState } from '../../reducers/today'
 
@@ -33,19 +33,15 @@ import { BraveNewsState } from '../../reducers/today'
 import { MAX_GRID_SIZE } from '../../constants/new_tab_ui'
 import Settings, { TabType as SettingsTabType } from './settings'
 
-import { BraveNewsContextProvider } from '../../../brave_news/browser/resources/shared/Context'
-import BraveNewsModal from '../../components/default/braveNews/customize/Modal'
+import { BraveNewsContextProvider } from '../../components/default/braveNews/customize/Context'
 import BraveNewsHint from '../../components/default/braveNews/hint'
-import SponsoredImageClickArea from '../../components/default/sponsoredImage/sponsoredImageClickArea'
 import GridWidget from './gridWidget'
+import SponsoredImageClickArea from '../../components/default/sponsoredImage/sponsoredImageClickArea'
 
 import Icon, { setIconBasePath } from '@brave/leo/react/icon'
 setIconBasePath('chrome://resources/brave-icons')
 
 import * as style from './style'
-import { defaultState } from '../../storage/new_tab_storage'
-
-const BraveNewsPeek =  React.lazy(() => import('../../../brave_news/browser/resources/Peek'))
 
 interface Props {
   newTabData: NewTab.State
@@ -603,7 +599,7 @@ class NewTabPage extends React.Component<Props, State> {
         imageSrc={this.imageSource}
         imageHasLoaded={this.state.backgroundHasLoaded}
         colorForBackground={colorForBackground}
-        data-show-news-prompt={((this.state.backgroundHasLoaded || colorForBackground) && this.state.isPromptingBraveNews && !defaultState.featureFlagBraveNewsFeedV2Enabled) ? true : undefined}>
+        data-show-news-prompt={((this.state.backgroundHasLoaded || colorForBackground) && this.state.isPromptingBraveNews) ? true : undefined}>
         <OverrideReadabilityColor override={ this.shouldOverrideReadabilityColor(this.props.newTabData) } />
         <BraveNewsContextProvider>
         <Page.Page
@@ -692,11 +688,7 @@ class NewTabPage extends React.Component<Props, State> {
             </Page.Footer>
             {newTabData.showToday &&
               <Page.GridItemNavigationBraveNews>
-                {defaultState.featureFlagBraveNewsFeedV2Enabled
-                  ? <React.Suspense fallback={null}>
-                    <BraveNewsPeek/>
-                  </React.Suspense>
-                  : <BraveNewsHint />}
+                <BraveNewsHint />
               </Page.GridItemNavigationBraveNews>
             }
           </Page.Page>
@@ -768,7 +760,6 @@ class NewTabPage extends React.Component<Props, State> {
               onSave={this.saveNewTopSite}
             /> : null
         }
-        <BraveNewsModal/>
         </BraveNewsContextProvider>
       </Page.App>
     )

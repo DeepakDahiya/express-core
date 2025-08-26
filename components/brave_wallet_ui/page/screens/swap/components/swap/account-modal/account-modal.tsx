@@ -5,14 +5,15 @@
 
 import * as React from 'react'
 
-// Types
-import { BraveWallet } from '../../../../../../constants/types'
-
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
 
 import {
-  useGetAccountInfosRegistryQuery //
+  useGetAccountInfosRegistryQuery,
+  useGetSelectedChainQuery,
+  useSetSelectedAccountMutation
 } from '../../../../../../common/slices/api.slice'
 import {
   AccountInfoEntity,
@@ -20,7 +21,7 @@ import {
 } from '../../../../../../common/slices/entities/account-info.entity'
 
 import {
-  getEntitiesListFromEntityState //
+  getEntitiesListFromEntityState
 } from '../../../../../../utils/entities.utils'
 
 // Components
@@ -36,44 +37,44 @@ import {
   ShownResponsiveRow
 } from '../../shared-swap.styles'
 
+
 interface Props {
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
-  setSelectedAccount: (account: BraveWallet.AccountInfo) => void
   onHideModal: () => void
 }
 
 export const AccountModal = (props: Props) => {
-  const { onHideModal, selectedNetwork, setSelectedAccount } = props
+  const { onHideModal } = props
 
   // Queries / mutations
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
+  const [setSelectedAccount] = useSetSelectedAccountMutation()
   const { data: accountInfosRegistry = accountInfoEntityAdaptorInitialState } =
     useGetAccountInfosRegistryQuery(undefined)
   const accounts = getEntitiesListFromEntityState(accountInfosRegistry)
 
   // Memos
   const networkAccounts = React.useMemo(() => {
-    return accounts.filter(
-      (account) => account.accountId.coin === selectedNetwork?.coin
-    )
+    return accounts.filter(account => account.accountId.coin === selectedNetwork?.coin)
   }, [accounts, selectedNetwork])
 
   // Methods
   const onSelectAccount = React.useCallback(
     async (account: AccountInfoEntity) => {
-      setSelectedAccount(account)
+      await setSelectedAccount(account.accountId)
       onHideModal()
     },
-    [onHideModal, setSelectedAccount]
+    [onHideModal]
   )
 
   return (
     <ModalBox>
       {/*
-       * TODO(onyb): this should be removed since the account dropdown is
-       * eventually going to be replaced with Send-like UX.
-       *
-       * Hiding Porfolio Section until we support/remove it
-       */}
+        * TODO(onyb): this should be removed since the account dropdown is
+        * eventually going to be replaced with Send-like UX.
+        *
+        * Hiding Porfolio Section until we support/remove it
+        */
+      }
       {/* <Column
         columnWidth='full'
         verticalPadding={16}
@@ -115,10 +116,7 @@ export const AccountModal = (props: Props) => {
           </Row>
           <ShownResponsiveRow maxWidth={570}>
             <IconButton onClick={onHideModal}>
-              <Icon
-                size={28}
-                name='close'
-              />
+              <Icon size={28} name='close' />
             </IconButton>
           </ShownResponsiveRow>
         </Row>

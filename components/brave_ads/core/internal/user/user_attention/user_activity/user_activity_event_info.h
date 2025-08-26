@@ -13,11 +13,12 @@
 namespace brave_ads {
 
 struct UserActivityEventInfo final {
-  bool operator==(const UserActivityEventInfo&) const = default;
-
   UserActivityEventType type;
   base::Time created_at;
 };
+
+bool operator==(const UserActivityEventInfo&, const UserActivityEventInfo&);
+bool operator!=(const UserActivityEventInfo&, const UserActivityEventInfo&);
 
 using UserActivityEventList = base::circular_deque<UserActivityEventInfo>;
 

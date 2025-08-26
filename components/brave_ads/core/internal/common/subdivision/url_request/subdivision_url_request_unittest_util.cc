@@ -7,9 +7,9 @@
 
 #include "base/strings/string_util.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-std::string BuildSubdivisionUrlResponseBody(
+std::string BuildSubdivisionUrlResponseBodyForTesting(
     const std::string& country_code,
     const std::string& subdivision_code) {
   return base::ReplaceStringPlaceholders(
@@ -21,4 +21,4 @@ std::string BuildSubdivisionUrlResponseBody(
       {country_code, subdivision_code}, nullptr);
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

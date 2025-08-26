@@ -27,9 +27,7 @@ class ConnectBitFlyerWallet : public wallet_provider::ConnectExternalWallet {
  private:
   const char* WalletType() const override;
 
-  std::string GetOAuthLoginURL() const override;
-
-  void Authorize(ConnectExternalWalletCallback callback) override;
+  void Authorize(OAuthInfo&&, ConnectExternalWalletCallback) override;
 
   void OnAuthorize(ConnectExternalWalletCallback,
                    mojom::Result,

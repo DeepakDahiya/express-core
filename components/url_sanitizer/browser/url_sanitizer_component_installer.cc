@@ -25,6 +25,9 @@ using brave_component_updater::LocalDataFilesService;
 
 namespace brave {
 
+const char kCleanURLsConfigFile[] = "clean-urls.json";
+const char kCleanURLsConfigFileVersion[] = "1";
+
 URLSanitizerComponentInstaller::URLSanitizerComponentInstaller(
     LocalDataFilesService* local_data_files_service)
     : LocalDataFilesObserver(local_data_files_service) {}

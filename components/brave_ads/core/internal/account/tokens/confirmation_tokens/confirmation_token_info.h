@@ -15,7 +15,8 @@
 namespace brave_ads {
 
 struct ConfirmationTokenInfo final {
-  bool operator==(const ConfirmationTokenInfo&) const = default;
+  bool operator==(const ConfirmationTokenInfo&) const;
+  bool operator!=(const ConfirmationTokenInfo&) const;
 
   cbr::UnblindedToken unblinded_token;
   cbr::PublicKey public_key;

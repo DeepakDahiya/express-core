@@ -8,17 +8,17 @@
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/challenge_bypass_ristretto_unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/unblinded_token.h"
 
-namespace brave_ads::cbr::test {
+namespace brave_ads::cbr {
 
-UnblindedToken GetUnblindedToken() {
+UnblindedToken GetUnblindedTokenForTesting() {
   return UnblindedToken(kUnblindedTokenBase64);
 }
 
-std::vector<UnblindedToken> GetUnblindedTokens() {
+std::vector<UnblindedToken> GetUnblindedTokensForTesting() {
   std::vector<UnblindedToken> unblinded_tokens;
-  const UnblindedToken unblinded_token = GetUnblindedToken();
+  const UnblindedToken unblinded_token = GetUnblindedTokenForTesting();
   unblinded_tokens.push_back(unblinded_token);
   return unblinded_tokens;
 }
 
-}  // namespace brave_ads::cbr::test
+}  // namespace brave_ads::cbr

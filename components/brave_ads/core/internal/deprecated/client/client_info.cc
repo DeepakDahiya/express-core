@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/purchase_intent/resource/purchase_intent_signal_history_value_util.h"
 #include "brave/components/brave_ads/core/public/history/history_item_value_util.h"
-#include "brave/components/brave_ads/core/public/units/ad_type.h"
 #include "build/build_config.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
@@ -58,7 +57,7 @@ base::Value::Dict ClientInfo::ToValue() const {
       seen_ad_dict.Set(creative_instance_id, seen_ad);
     }
 
-    seen_ads_dict.Set(ToString(ad_type), std::move(seen_ad_dict));
+    seen_ads_dict.Set(ad_type, std::move(seen_ad_dict));
   }
   dict.Set("seenAds", std::move(seen_ads_dict));
 
@@ -69,8 +68,7 @@ base::Value::Dict ClientInfo::ToValue() const {
       seen_advertiser_dict.Set(advertiser_id, seen_advertiser);
     }
 
-    seen_advertisers_dict.Set(ToString(ad_type),
-                              std::move(seen_advertiser_dict));
+    seen_advertisers_dict.Set(ad_type, std::move(seen_advertiser_dict));
   }
   dict.Set("seenAdvertisers", std::move(seen_advertisers_dict));
 
@@ -81,14 +79,17 @@ base::Value::Dict ClientInfo::ToValue() const {
     for (const auto& [segmemt, page_score] : item) {
       CHECK(!segmemt.empty());
 
-      probabilities_list.Append(
-          base::Value::Dict()
-              .Set("segment", segmemt)
-              .Set("pageScore", base::NumberToString(page_score)));
+      base::Value::Dict probability_dict;
+      probability_dict.Set("segment", segmemt);
+      probability_dict.Set("pageScore", base::NumberToString(page_score));
+
+      probabilities_list.Append(std::move(probability_dict));
     }
 
-    probabilities_history_list.Append(base::Value::Dict().Set(
-        "textClassificationProbabilities", std::move(probabilities_list)));
+    base::Value::Dict probability_dict;
+    probability_dict.Set("textClassificationProbabilities",
+                         std::move(probabilities_list));
+    probabilities_history_list.Append(std::move(probability_dict));
   }
 
   dict.Set("textClassificationProbabilitiesHistory",
@@ -140,8 +141,7 @@ bool ClientInfo::FromValue(const base::Value::Dict& dict) {
 
       for (const auto [creative_instance_id, seen_ad] : ads.GetDict()) {
         CHECK(seen_ad.is_bool());
-        seen_ads[ParseAdType(ad_type)][creative_instance_id] =
-            seen_ad.GetBool();
+        seen_ads[ad_type][creative_instance_id] = seen_ad.GetBool();
       }
     }
   }
@@ -155,8 +155,7 @@ bool ClientInfo::FromValue(const base::Value::Dict& dict) {
       for (const auto [advertiser_id, seen_advertiser] :
            advertisers.GetDict()) {
         CHECK(seen_advertiser.is_bool());
-        seen_advertisers[ParseAdType(ad_type)][advertiser_id] =
-            seen_advertiser.GetBool();
+        seen_advertisers[ad_type][advertiser_id] = seen_advertiser.GetBool();
       }
     }
   }
@@ -193,7 +192,9 @@ bool ClientInfo::FromValue(const base::Value::Dict& dict) {
           page_score = *page_score_value;
         } else if (const auto* const legacy_page_score_value =
                        dict.FindString("pageScore")) {
-          CHECK(base::StringToDouble(*legacy_page_score_value, &page_score));
+          const bool success =
+              base::StringToDouble(*legacy_page_score_value, &page_score);
+          CHECK(success);
         }
 
         probabilities.insert({*segment, page_score});
@@ -213,14 +214,14 @@ std::string ClientInfo::ToJson() const {
 }
 
 bool ClientInfo::FromJson(const std::string& json) {
-  const absl::optional<base::Value::Dict> dict = base::JSONReader::ReadDict(
-      json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
-                base::JSONParserOptions::JSON_PARSE_RFC);
-  if (!dict) {
+  const absl::optional<base::Value> root =
+      base::JSONReader::Read(json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
+                                       base::JSONParserOptions::JSON_PARSE_RFC);
+  if (!root || !root->is_dict()) {
     return false;
   }
 
-  return FromValue(*dict);
+  return FromValue(root->GetDict());
 }
 
 }  // namespace brave_ads

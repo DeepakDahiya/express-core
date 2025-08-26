@@ -6,6 +6,7 @@
 import styled from 'styled-components'
 import { Row } from '../../shared-swap.styles'
 
+
 export const LoadingRow = styled(Row)`
   margin-top: 2px;
   height: 4px;

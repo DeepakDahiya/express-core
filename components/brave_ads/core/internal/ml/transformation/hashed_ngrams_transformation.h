@@ -19,7 +19,8 @@ class HashVectorizer;
 class HashedNGramsTransformation final : public Transformation {
  public:
   HashedNGramsTransformation();
-  HashedNGramsTransformation(int bucket_count, std::vector<uint32_t> subgrams);
+  HashedNGramsTransformation(int bucket_count,
+                             const std::vector<int>& subgrams);
 
   HashedNGramsTransformation(
       HashedNGramsTransformation&& hashed_ngrams) noexcept;

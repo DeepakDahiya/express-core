@@ -10,9 +10,9 @@
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_constants.h"
 #include "brave/components/brave_ads/core/internal/ml/pipeline/text_processing/embedding_info.h"
 
-namespace brave_ads::ml::pipeline::test {
+namespace brave_ads::ml::pipeline {
 
-ml::pipeline::TextEmbeddingInfo BuildTextEmbedding() {
+ml::pipeline::TextEmbeddingInfo BuildTextEmbeddingForTesting() {
   TextEmbeddingInfo text_embedding;
 
   text_embedding.text = "The quick brown fox jumps over the lazy dog";
@@ -24,4 +24,4 @@ ml::pipeline::TextEmbeddingInfo BuildTextEmbedding() {
   return text_embedding;
 }
 
-}  // namespace brave_ads::ml::pipeline::test
+}  // namespace brave_ads::ml::pipeline

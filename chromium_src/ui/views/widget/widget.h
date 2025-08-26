@@ -9,10 +9,9 @@
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_MAC)
-#define UnlockPaintAsActive                   \
-  SetWindowTitleVisibility(bool visible);     \
-  void ResetWindowControlsPosition();         \
-  void UpdateWindowTitleColor(SkColor color); \
+#define UnlockPaintAsActive               \
+  SetWindowTitleVisibility(bool visible); \
+  void ResetWindowControlsPosition();     \
   void UnlockPaintAsActive
 #else
 #define UnlockPaintAsActive UnlockPaintAsActive

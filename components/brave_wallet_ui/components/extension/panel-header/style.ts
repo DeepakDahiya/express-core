@@ -27,7 +27,8 @@ export const HeaderWrapper = styled.div<StyleProps>`
   justify-content: center;
   border-bottom: ${(p) => `1px solid ${p.theme.color.divider01}`};
   padding: 0px 12px;
-  margin-bottom: ${(p) => (p.hasSearch ? '0px' : '8px')};
+  max-width: 300px;
+  margin-bottom: ${(p) => p.hasSearch ? '0px' : '8px'};
 `
 
 export const TopRow = styled.div`
@@ -40,7 +41,7 @@ export const TopRow = styled.div`
 `
 
 export const CloseButton = styled(WalletButton)`
-  display: flex;
+  display: flex;;
   align-items: center;
   justify-content: center;
   cursor: pointer;

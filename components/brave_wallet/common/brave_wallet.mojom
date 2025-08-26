@@ -130,18 +130,11 @@ enum BitcoinProviderError {
   kInternalError = JsonRpcError.kInternalError,
 };
 
-enum ZCashProviderError {
-  kSuccess = ProviderError.kSuccess,  // No error
-  kUnknown = ProviderError.kUnknown,
-  kInternalError = JsonRpcError.kInternalError,
-};
-
 union ProviderErrorUnion {
   ProviderError provider_error;
   SolanaProviderError solana_provider_error;
   FilecoinProviderError filecoin_provider_error;
   BitcoinProviderError bitcoin_provider_error;
-  ZCashProviderError zcash_provider_error;
 };
 
 // There is one EthereumProvider per renderer, the renderer communicates
@@ -425,6 +418,14 @@ interface PageHandler {
   ShowApprovePanelUI();
 };
 
+// TODO(apaymyshev): remove favorite apps ui
+struct AppItem {
+  string description;
+  string icon;
+  string name;
+  string url;
+};
+
 enum AssetPriceTimeframe {
   Live,
   OneDay,
@@ -475,47 +476,16 @@ struct Dapp {
   string range;
 };
 
-enum RoutePriority {
-  kRecommended,
-  kFastest,
-  kCheapest,
-  kSafest
-};
-
-struct SwapQuoteParams {
-  AccountId from_account_id;
-  string from_chain_id;
-  string from_token;
-  string from_amount;
-
-  // Setting the to_account_id is only supported for LiFi swaps.
-  AccountId to_account_id;
-  string to_chain_id;
-  string to_token;
-
-  // Setting the to_amount is not supported for Jupiter and LiFi swaps.
-  string to_amount;
-
-  string slippage_percentage;
-
-  // This is primarily used for LiFi swaps. For every other case, this should
-  // be set to kRecommended.
-  RoutePriority route_priority;
-};
-
-union SwapTransactionParamsUnion {
-  JupiterTransactionParams jupiter_transaction_params;
-  SwapQuoteParams zero_ex_transaction_params;
-};
-
-union SwapQuoteUnion {
-  JupiterQuote jupiter_quote;
-  ZeroExQuote zero_ex_quote;
-};
-
-union SwapTransactionUnion {
-  string jupiter_transaction;
-  ZeroExQuote zero_ex_transaction;
+// Structs to model 0x (swap) HTTP API interactions
+// Docs: https://docs.0x.org/0x-api-swap
+struct SwapParams {
+  string taker_address;
+  string sell_amount;
+  string buy_amount;
+  string buy_token;
+  string sell_token;
+  double slippage_percentage;
+  string gas_price;
 };
 
 struct ZeroExSource {
@@ -534,7 +504,7 @@ struct ZeroExFees {
   ZeroExFee? zero_ex_fee;
 };
 
-struct ZeroExQuote {
+struct SwapResponse {
   string price;
   string guaranteed_price; // Unused for price quote response
   string to;   // Unused for price quote response
@@ -557,70 +527,78 @@ struct ZeroExQuote {
   ZeroExFees fees;
 };
 
-struct ZeroExErrorItem {
+struct SwapErrorResponseItem {
   string field;
   int32 code;
   string reason;
 };
 
-struct ZeroExError {
+struct SwapErrorResponse {
   int32 code;
   string reason;
-  array<ZeroExErrorItem> validation_errors;
+  array<SwapErrorResponseItem> validation_errors;
   bool is_insufficient_liquidity;
 };
 
-union SwapErrorUnion {
-  JupiterError jupiter_error;
-  ZeroExError zero_ex_error;
-};
-
 // Structs to model Jupiter (swap) HTTP API interactions
-// Swagger spec: https://station.jup.ag/api-v6/get-quote
+// Swagger spec: https://quote-api.jup.ag/docs/static/index.html
 //
 // Note that amount field is incorrectly modelled as number in spec,
 // but it has been fixed here.
-struct JupiterPlatformFee {
-  string amount;
-  string fee_bps;
+struct JupiterFee {
+  uint64 amount;
+  string mint;
+  double pct;
 };
 
-struct JupiterSwapInfo {
-  string amm_key;
+struct JupiterMarketInfo {
+  string id;
   string label;
   string input_mint;
   string output_mint;
-  string in_amount;
-  string out_amount;
-  string fee_amount;
-  string fee_mint;
+  bool not_enough_liquidity;
+  uint64 in_amount;
+  uint64 out_amount;
+  double price_impact_pct;
+  JupiterFee lp_fee;
+  JupiterFee platform_fee;
 };
 
-struct JupiterRouteStep {
-  JupiterSwapInfo swap_info;
-  string percent;
+struct JupiterRoute {
+  uint64 in_amount;
+  uint64 out_amount;
+  uint64 amount;
+  uint64 other_amount_threshold;
+  string swap_mode;
+  double price_impact_pct;
+  int32 slippage_bps;
+  array<JupiterMarketInfo> market_infos;
 };
 
 struct JupiterQuote {
-  string input_mint;
-  string in_amount;
-  string output_mint;
-  string out_amount;
-  string other_amount_threshold;
-  string swap_mode;
-  string slippage_bps;
-  JupiterPlatformFee? platform_fee;
-  string price_impact_pct;
-  array<JupiterRouteStep> route_plan;
+  array<JupiterRoute> routes;
 };
 
-struct JupiterTransactionParams {
-  JupiterQuote quote;
-  string chain_id;
+struct JupiterQuoteParams {
+  string input_mint;
+  string output_mint;
+  string amount;
+  int32 slippage_bps;
   string user_public_key;
 };
 
-struct JupiterError {
+struct JupiterSwapParams {
+  JupiterRoute route;
+  string user_public_key;
+  string input_mint;
+  string output_mint;
+};
+
+struct JupiterSwapTransactions {
+  string swap_transaction;
+};
+
+struct JupiterErrorResponse {
   string status_code;
   string error;
   string message;
@@ -735,10 +713,12 @@ struct WalletInfo {
   bool is_wallet_created;
   bool is_wallet_locked;
   bool is_wallet_backed_up;
+  bool is_filecoin_enabled;
+  bool is_solana_enabled;
   bool is_bitcoin_enabled;
   bool is_z_cash_enabled;
   bool is_nft_pinning_feature_enabled;
-  bool is_ankr_balances_feature_enabled;
+  bool is_panel_v2_feature_enabled;
 };
 
 // Browser-side handler for common panel / page things
@@ -999,11 +979,21 @@ interface AssetRatioService {
 
 // Implements swapping related functionality through the 0x API.
 interface SwapService {
-  GetQuote(SwapQuoteParams params) =>
-      (SwapQuoteUnion? response, SwapErrorUnion? error, string error_string);
+  // Obtains a price quote for a swap
+  GetPriceQuote(SwapParams params) =>
+      (SwapResponse? response, SwapErrorResponse? error_response, string error_string);
 
-  GetTransaction(SwapTransactionParamsUnion params) =>
-      (SwapTransactionUnion? response, SwapErrorUnion? error, string error_string);
+  // Obtains transaction payload data for a swap
+  GetTransactionPayload(SwapParams params) =>
+      (SwapResponse? response, SwapErrorResponse? error_response, string error_string);
+
+  // Obtains a price quote from Jupiter for a Solana swap
+  GetJupiterQuote(JupiterQuoteParams params) =>
+      (JupiterQuote? response, JupiterErrorResponse? error_response, string error_string);
+
+  // Get the serialized transactions to perform the swap
+  GetJupiterSwapTransactions(JupiterSwapParams params) =>
+      (JupiterSwapTransactions? response, JupiterErrorResponse? error_response, string error_string);
 
   // Obtains whether the given chain id supports swap
   IsSwapSupported(string chain_id) => (bool result);
@@ -1116,9 +1106,6 @@ const string kPalmChainId = "0x2a15c308d";
 const string kPolygonZKEVMChainId = "0x44d";
 const string kZkSyncEraChainId = "0x144";
 const string kBaseMainnetChainId = "0x2105";
-const string kFlareMainnetChainId = "0xe";
-const string kRolluxMainnetChainId = "0x23a";
-const string kSyscoinMainnetChainId = "0x39";
 
 // https://github.com/satoshilabs/slips/blob/master/slip-0044.md
 enum CoinType {
@@ -1203,14 +1190,6 @@ enum ResolveMethod {
    kAsk = 0,
    kDisabled = 1,
    kEnabled = 2,
-};
-
-struct AnkrAssetBalance {
-  BlockchainToken asset;
-  string balance;
-  string formatted_balance;
-  string balance_usd;
-  string price_usd;
 };
 
 // Deals with the ETH JSON RPC API, as well as things like the user's current
@@ -1370,15 +1349,15 @@ interface JsonRpcService {
                       string chain_id) => (array<SPLTokenAmount> balances,
                                            SolanaProviderError error,
                                            string error_message);
-
-  // Fetches balances of an EVM account address for a list of chain ids
-  // using Ankr Advanced APIs.
-  AnkrGetAccountBalances(string account_address, array<string> chain_ids)
-    => (array<AnkrAssetBalance> balances, ProviderError error,
-        string error_message);
 };
 
 struct BitcoinKeyId {
+  uint32 change;
+  uint32 index;
+};
+
+struct ZCashKeyId {
+  uint32 account;
   uint32 change;
   uint32 index;
 };
@@ -1404,6 +1383,11 @@ struct BitcoinAccountInfo {
   BitcoinAddress next_change_address;
 };
 
+struct ZCashBalance {
+  uint64 total_balance;
+  map<string, uint64> balances;  // address -> balance of that address(sum of all related utxos)
+};
+
 interface BitcoinWalletService {
   // Fetches BitcoinBalance struct for all addresses associated with account_id.
   // Now includes both confirmed and mempool utxos.
@@ -1414,25 +1398,8 @@ interface BitcoinWalletService {
   GetBitcoinAccountInfo(AccountId account_id) => (BitcoinAccountInfo? account_info);
 };
 
-struct ZCashKeyId {
-  uint32 account;
-  uint32 change;
-  uint32 index;
-};
-
-struct ZCashBalance {
-  uint64 total_balance;
-  map<string, uint64> balances;  // address -> balance of that address(sum of all related utxos)
-};
-
-struct ZCashAddress {
-  string address_string;
-  ZCashKeyId key_id;
-};
-
 interface ZCashWalletService {
   GetBalance(string network_id, AccountId account_id) => (ZCashBalance? balance, string? error_message);
-  GetReceiverAddress(AccountId account_id) => (ZCashAddress? address, string? error_message);
 };
 
 enum TransactionStatus {
@@ -1492,31 +1459,12 @@ struct BtcTxData {
   array<BtcTxOutput> outputs;
 };
 
-struct ZecTxInput {
-  string address;
-  uint64 value;
-};
-
-struct ZecTxOutput {
-  string address;
-  uint64 value;
-};
-
-struct ZecTxData {
-  string to;
-  uint64 amount;
-  uint64 fee;
-  array<ZecTxInput> inputs;
-  array<ZecTxOutput> outputs;
-};
-
 union TxDataUnion {
   TxData eth_tx_data;
   TxData1559 eth_tx_data_1559;
   SolanaTxData solana_tx_data;
   FilTxData fil_tx_data;
   BtcTxData btc_tx_data;
-  ZecTxData zec_tx_data;
 };
 
 struct TransactionInfo {
@@ -1562,9 +1510,7 @@ interface TxServiceObserver {
 // For transaction management such as creation, broadcasting, and storing
 // transactions.
 interface TxService {
-  AddUnapprovedTransaction(TxDataUnion tx_data_union,
-                           string chain_id,
-                           AccountId from)
+  AddUnapprovedTransaction(TxDataUnion tx_data_union, AccountId from)
     => (bool success, string tx_meta_id, string error_message);
 
   // Used to approve a transaction
@@ -2027,8 +1973,6 @@ interface BraveWalletService {
   // transacted and tries next one if it is(prefs are changed).
   GenerateReceiveAddress(AccountId account_id)
     => (string? address, string? error_message);
-
-  GetAnkrSupportedChainIds() => (array<string> chain_ids);
 };
 
 // For reporting wallet related P3A metrics.

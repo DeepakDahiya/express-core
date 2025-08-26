@@ -12,14 +12,10 @@ namespace brave_ads::cbr {
 
 class BlindedToken;
 
-namespace test {
-
-BlindedToken GetBlindedToken();
-BlindedToken GetInvalidBlindedToken();
-std::vector<BlindedToken> GetBlindedTokens();
-std::vector<BlindedToken> GetInvalidBlindedTokens();
-
-}  // namespace test
+BlindedToken GetBlindedTokenForTesting();
+BlindedToken GetInvalidBlindedTokenForTesting();
+std::vector<BlindedToken> GetBlindedTokensForTesting();
+std::vector<BlindedToken> GetInvalidBlindedTokensForTesting();
 
 }  // namespace brave_ads::cbr
 

@@ -8,16 +8,21 @@
 
 #include <string>
 
+#include "base/files/file_path.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
-absl::optional<std::string> MaybeReadFileToString(const std::string& name);
-
-absl::optional<std::string> MaybeReadFileToStringAndReplaceTags(
+base::FilePath GetTestPath();
+absl::optional<std::string> ReadFileFromTestPathToString(
+    const std::string& name);
+absl::optional<std::string> ReadFileFromTestPathAndParseTagsToString(
     const std::string& name);
 
-absl::optional<std::string> MaybeReadDataResourceToString(
+base::FilePath GetFileResourcePath();
+
+base::FilePath GetDataResourcePath();
+absl::optional<std::string> ReadFileFromDataResourcePathToString(
     const std::string& name);
 
 }  // namespace brave_ads

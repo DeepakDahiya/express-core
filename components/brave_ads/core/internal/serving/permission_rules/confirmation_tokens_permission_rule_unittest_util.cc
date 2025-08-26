@@ -7,10 +7,10 @@
 
 #include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_unittest_util.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-void ForceConfirmationTokensPermissionRule() {
-  SetConfirmationTokens(/*count=*/50);
+void ForceConfirmationTokensPermissionRuleForTesting() {
+  SetConfirmationTokensForTesting(/*count=*/50);
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

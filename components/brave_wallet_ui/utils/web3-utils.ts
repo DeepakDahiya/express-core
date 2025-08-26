@@ -14,8 +14,12 @@ import Amount from './amount'
  * @param assetDecimals the decimal amount the the asset uses for convertion
  * @returns
  */
-export const weiToEther = (weiValue: string, assetDecimals: number) => {
-  return new Amount(weiValue).divideByDecimals(assetDecimals)
+export const weiToEther = (
+  weiValue: string,
+  assetDecimals: number
+) => {
+  return new Amount(weiValue)
+    .divideByDecimals(assetDecimals)
 }
 
 /**
@@ -24,6 +28,9 @@ export const weiToEther = (weiValue: string, assetDecimals: number) => {
  * @param lamports coins value formatted in it's lowest denomination
  * @returns
  */
-export const lamportsToSol = (lamports: string) => {
-  return new Amount(lamports).div(LAMPORTS_PER_SOL)
+export const lamportsToSol = (
+  lamports: string
+) => {
+  return new Amount(lamports)
+    .div(LAMPORTS_PER_SOL)
 }

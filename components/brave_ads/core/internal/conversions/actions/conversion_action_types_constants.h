@@ -8,8 +8,8 @@
 
 namespace brave_ads {
 
-inline constexpr char kViewThroughConversionActionType[] = "view";
-inline constexpr char kClickThroughConversionActionType[] = "click";
+constexpr char kViewThroughConversionActionType[] = "view";
+constexpr char kClickThroughConversionActionType[] = "click";
 
 }  // namespace brave_ads
 

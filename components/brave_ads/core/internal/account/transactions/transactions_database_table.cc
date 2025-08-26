@@ -15,7 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_util.h"
+#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_bind_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_column_util.h"
 #include "brave/components/brave_ads/core/internal/common/database/database_table_util.h"
@@ -62,8 +62,8 @@ size_t BindParameters(mojom::DBCommandInfo* command,
     BindString(command, index++, transaction.creative_instance_id);
     BindDouble(command, index++, transaction.value);
     BindString(command, index++, transaction.segment);
-    BindString(command, index++, ToString(transaction.ad_type));
-    BindString(command, index++, ToString(transaction.confirmation_type));
+    BindString(command, index++, transaction.ad_type.ToString());
+    BindString(command, index++, transaction.confirmation_type.ToString());
     BindInt64(
         command, index++,
         transaction.reconciled_at.ToDeltaSinceWindowsEpoch().InMicroseconds());
@@ -85,9 +85,8 @@ TransactionInfo GetFromRecord(mojom::DBRecordInfo* record) {
   transaction.creative_instance_id = ColumnString(record, 2);
   transaction.value = ColumnDouble(record, 3);
   transaction.segment = ColumnString(record, 4);
-  transaction.ad_type = ParseAdType(ColumnString(record, 5));
-  transaction.confirmation_type =
-      ParseConfirmationType(ColumnString(record, 6));
+  transaction.ad_type = AdType(ColumnString(record, 5));
+  transaction.confirmation_type = ConfirmationType(ColumnString(record, 6));
   transaction.reconciled_at = base::Time::FromDeltaSinceWindowsEpoch(
       base::Microseconds(ColumnInt64(record, 7)));
 
@@ -133,7 +132,7 @@ void MigrateToV18(mojom::DBTransactionInfo* transaction) {
 void MigrateToV26(mojom::DBTransactionInfo* transaction) {
   CHECK(transaction);
 
-  // Create a temporary table with new `segment` column.
+  // Create a temporary table with new |segment| column.
   mojom::DBCommandInfoPtr command = mojom::DBCommandInfo::New();
   command->type = mojom::DBCommandInfo::Type::EXECUTE;
   command->sql =
@@ -216,8 +215,9 @@ void Transactions::GetAll(GetTransactionsCallback callback) const {
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetCallback, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetCallback, std::move(callback)));
 }
 
 void Transactions::GetForDateRange(const base::Time from_time,
@@ -236,8 +236,9 @@ void Transactions::GetForDateRange(const base::Time from_time,
   BindRecords(&*command);
   transaction->commands.push_back(std::move(command));
 
-  RunDBTransaction(std::move(transaction),
-                   base::BindOnce(&GetCallback, std::move(callback)));
+  AdsClientHelper::GetInstance()->RunDBTransaction(
+      std::move(transaction),
+      base::BindOnce(&GetCallback, std::move(callback)));
 }
 
 void Transactions::Update(const PaymentTokenList& payment_tokens,

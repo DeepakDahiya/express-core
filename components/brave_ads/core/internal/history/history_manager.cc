@@ -17,11 +17,12 @@
 #include "brave/components/brave_ads/core/internal/history/history_util.h"
 #include "brave/components/brave_ads/core/internal/history/sorts/history_sort_factory.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
-#include "brave/components/brave_ads/core/internal/units/promoted_content_ad/promoted_content_ad_info.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 #include "brave/components/brave_ads/core/public/history/ad_content_info.h"
 #include "brave/components/brave_ads/core/public/units/inline_content_ad/inline_content_ad_info.h"
 #include "brave/components/brave_ads/core/public/units/new_tab_page_ad/new_tab_page_ad_info.h"
 #include "brave/components/brave_ads/core/public/units/notification_ad/notification_ad_info.h"
+#include "brave/components/brave_ads/core/public/units/promoted_content_ad/promoted_content_ad_info.h"
 
 namespace brave_ads {
 
@@ -74,7 +75,7 @@ HistoryItemList HistoryManager::Get(const HistoryFilterType filter_type,
 }
 
 void HistoryManager::Add(const InlineContentAdInfo& ad,
-                         ConfirmationType confirmation_type) const {
+                         const ConfirmationType& confirmation_type) const {
   if (!UserHasJoinedBraveRewards()) {
     return;
   }
@@ -85,7 +86,7 @@ void HistoryManager::Add(const InlineContentAdInfo& ad,
 }
 
 void HistoryManager::Add(const NewTabPageAdInfo& ad,
-                         ConfirmationType confirmation_type) const {
+                         const ConfirmationType& confirmation_type) const {
   if (!UserHasJoinedBraveRewards()) {
     return;
   }
@@ -96,7 +97,7 @@ void HistoryManager::Add(const NewTabPageAdInfo& ad,
 }
 
 void HistoryManager::Add(const NotificationAdInfo& ad,
-                         ConfirmationType confirmation_type) const {
+                         const ConfirmationType& confirmation_type) const {
   if (!UserHasJoinedBraveRewards()) {
     return;
   }
@@ -107,7 +108,7 @@ void HistoryManager::Add(const NotificationAdInfo& ad,
 }
 
 void HistoryManager::Add(const PromotedContentAdInfo& ad,
-                         ConfirmationType confirmation_type) const {
+                         const ConfirmationType& confirmation_type) const {
   if (!UserHasJoinedBraveRewards()) {
     return;
   }
@@ -118,7 +119,7 @@ void HistoryManager::Add(const PromotedContentAdInfo& ad,
 }
 
 void HistoryManager::Add(const SearchResultAdInfo& ad,
-                         ConfirmationType confirmation_type) const {
+                         const ConfirmationType& confirmation_type) const {
   if (!UserHasJoinedBraveRewards()) {
     return;
   }

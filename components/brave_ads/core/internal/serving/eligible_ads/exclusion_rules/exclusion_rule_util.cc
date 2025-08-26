@@ -8,12 +8,13 @@
 #include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 
 namespace brave_ads {
 
 bool DoesRespectCampaignCap(const CreativeAdInfo& creative_ad,
                             const AdEventList& ad_events,
-                            ConfirmationType confirmation_type,
+                            const ConfirmationType& confirmation_type,
                             const base::TimeDelta time_constraint,
                             const size_t cap) {
   const size_t count = base::ranges::count_if(
@@ -29,7 +30,7 @@ bool DoesRespectCampaignCap(const CreativeAdInfo& creative_ad,
 
 bool DoesRespectCreativeSetCap(const CreativeAdInfo& creative_ad,
                                const AdEventList& ad_events,
-                               ConfirmationType confirmation_type,
+                               const ConfirmationType& confirmation_type,
                                const base::TimeDelta time_constraint,
                                const size_t cap) {
   const size_t count = base::ranges::count_if(
@@ -45,7 +46,7 @@ bool DoesRespectCreativeSetCap(const CreativeAdInfo& creative_ad,
 
 bool DoesRespectCreativeCap(const CreativeAdInfo& creative_ad,
                             const AdEventList& ad_events,
-                            ConfirmationType confirmation_type,
+                            const ConfirmationType& confirmation_type,
                             const base::TimeDelta time_constraint,
                             const size_t cap) {
   const size_t count = base::ranges::count_if(

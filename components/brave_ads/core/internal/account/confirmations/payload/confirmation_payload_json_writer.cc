@@ -29,7 +29,7 @@ std::string WriteConfirmationPayload(const ConfirmationInfo& confirmation) {
       base::Value::Dict()
           .Set(kTransactionIdKey, confirmation.transaction_id)
           .Set(kCreativeInstanceIdKey, confirmation.creative_instance_id)
-          .Set(kTypeKey, ToString(confirmation.type));
+          .Set(kTypeKey, confirmation.type.ToString());
 
   if (confirmation.reward) {
     base::Value::Dict reward_dict =

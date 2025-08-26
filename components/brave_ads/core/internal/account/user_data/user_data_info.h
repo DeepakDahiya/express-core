@@ -21,11 +21,12 @@ struct UserDataInfo final {
 
   ~UserDataInfo();
 
-  bool operator==(const UserDataInfo&) const = default;
-
   base::Value::Dict dynamic;
   base::Value::Dict fixed;
 };
+
+bool operator==(const UserDataInfo&, const UserDataInfo&);
+bool operator!=(const UserDataInfo&, const UserDataInfo&);
 
 }  // namespace brave_ads
 

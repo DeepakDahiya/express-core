@@ -13,13 +13,12 @@
 namespace brave_ads {
 
 template <typename T>
-double CalculateNormalizingConstantForCreativeAdModelBasedPredictors(
-    const CreativeAdModelBasedPredictorList<T>& creative_ad_predictors) {
+double CalculateNormalizingConstantForCreativeAdPredictors(
+    const CreativeAdPredictorList<T>& creative_ad_predictors) {
   return std::accumulate(
       creative_ad_predictors.cbegin(), creative_ad_predictors.cend(), 0.0,
       [](double normalizing_constant,
-         const CreativeAdModelBasedPredictorList<T>::value_type&
-             creative_ad_predictor) {
+         const CreativeAdPredictorList<T>::value_type& creative_ad_predictor) {
         return normalizing_constant + creative_ad_predictor.score;
       });
 }

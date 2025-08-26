@@ -6,4 +6,7 @@
 import * as WalletSelectors from './wallet-selectors'
 import * as UISelectors from './ui-selectors'
 
-export { WalletSelectors, UISelectors }
+export {
+  WalletSelectors,
+  UISelectors
+}

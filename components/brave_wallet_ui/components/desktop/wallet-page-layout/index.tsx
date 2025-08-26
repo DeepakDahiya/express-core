@@ -11,11 +11,13 @@ export interface Props {
 }
 
 export class WalletPageLayout extends React.PureComponent<Props, {}> {
-  render() {
+  render () {
     const { children, maintainWidth } = this.props
     return (
       <StyledWrapper maintainWidth={maintainWidth}>
-        <StyledContent maintainWidth={maintainWidth}>{children}</StyledContent>
+        <StyledContent maintainWidth={maintainWidth}>
+          {children}
+        </StyledContent>
       </StyledWrapper>
     )
   }

@@ -8,11 +8,11 @@
 
 namespace brave_ads {
 
-inline constexpr char kDatabaseFilename[] = "database.sqlite";
+constexpr char kDatabaseFilename[] = "database.sqlite";
 
-inline constexpr char kDefaultLocale[] = "en_US";
+constexpr char kDefaultLocale[] = "en_US";
 
-inline constexpr char kDeviceId[] =
+constexpr char kDeviceId[] =
     "21b4677de1a9b4a197ab671a1481d3fcb24f826a4358a05aafbaee5a9a51b57e";
 
 }  // namespace brave_ads

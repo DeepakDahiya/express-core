@@ -9,13 +9,14 @@
 
 #include "url/gurl.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-PurchaseIntentHelper::PurchaseIntentHelper() : processor_(resource_) {}
+PurchaseIntentHelperForTesting::PurchaseIntentHelperForTesting()
+    : processor_(resource_) {}
 
-PurchaseIntentHelper::~PurchaseIntentHelper() = default;
+PurchaseIntentHelperForTesting::~PurchaseIntentHelperForTesting() = default;
 
-void PurchaseIntentHelper::Mock() {
+void PurchaseIntentHelperForTesting::Mock() {
   const std::vector<GURL> urls = {
       GURL("https://www.brave.com/test?foo=bar"),
       GURL("https://www.basicattentiontoken.org/test?bar=foo"),
@@ -27,8 +28,8 @@ void PurchaseIntentHelper::Mock() {
 }
 
 // static
-SegmentList PurchaseIntentHelper::Expectation() {
+SegmentList PurchaseIntentHelperForTesting::Expectation() {
   return {"segment 3", "segment 2"};
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

@@ -52,10 +52,10 @@ TEST_F(BraveAdsInlineContentAdServingTest, DoNotServeAdForUnsupportedVersion) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kInlineContentAdServingFeature, {{"version", "0"}});
 
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   const CreativeInlineContentAdInfo creative_ad =
-      test::BuildCreativeInlineContentAd(/*should_use_random_uuids=*/true);
+      BuildCreativeInlineContentAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeInlineContentAds({creative_ad});
 
   // Act & Assert
@@ -69,10 +69,10 @@ TEST_F(BraveAdsInlineContentAdServingTest, DoNotServeAdForUnsupportedVersion) {
 
 TEST_F(BraveAdsInlineContentAdServingTest, ServeAd) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   const CreativeInlineContentAdInfo creative_ad =
-      test::BuildCreativeInlineContentAd(/*should_use_random_uuids=*/true);
+      BuildCreativeInlineContentAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeInlineContentAds({creative_ad});
   const InlineContentAdInfo ad = BuildInlineContentAd(creative_ad);
 
@@ -90,10 +90,10 @@ TEST_F(BraveAdsInlineContentAdServingTest, ServeAd) {
 TEST_F(BraveAdsInlineContentAdServingTest,
        DoNotServeAdForNonExistentDimensions) {
   // Arrange
-  test::ForcePermissionRules();
+  ForcePermissionRulesForTesting();
 
   const CreativeInlineContentAdInfo creative_ad =
-      test::BuildCreativeInlineContentAd(/*should_use_random_uuids=*/true);
+      BuildCreativeInlineContentAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeInlineContentAds({creative_ad});
 
   // Act & Assert
@@ -111,7 +111,7 @@ TEST_F(BraveAdsInlineContentAdServingTest,
        DoNotServeAdIfNotAllowedDueToPermissionRules) {
   // Arrange
   const CreativeInlineContentAdInfo creative_ad =
-      test::BuildCreativeInlineContentAd(/*should_use_random_uuids=*/true);
+      BuildCreativeInlineContentAdForTesting(/*should_use_random_uuids=*/true);
   database::SaveCreativeInlineContentAds({creative_ad});
 
   // Act & Assert

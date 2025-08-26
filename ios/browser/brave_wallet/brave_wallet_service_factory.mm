@@ -12,7 +12,6 @@
 #include "brave/ios/browser/brave_wallet/json_rpc_service_factory.h"
 #include "brave/ios/browser/brave_wallet/keyring_service_factory.h"
 #include "brave/ios/browser/brave_wallet/tx_service_factory.h"
-#include "brave/ios/browser/brave_wallet/zcash_wallet_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
@@ -52,7 +51,6 @@ BraveWalletServiceFactory::BraveWalletServiceFactory()
   DependsOn(KeyringServiceFactory::GetInstance());
   DependsOn(JsonRpcServiceFactory::GetInstance());
   DependsOn(TxServiceFactory::GetInstance());
-  DependsOn(ZCashWalletServiceFactory::GetInstance());
 }
 
 BraveWalletServiceFactory::~BraveWalletServiceFactory() = default;
@@ -68,7 +66,6 @@ BraveWalletServiceFactory::BuildServiceInstanceFor(
       JsonRpcServiceFactory::GetServiceForState(browser_state),
       TxServiceFactory::GetServiceForState(browser_state),
       nullptr,  // TODO(apaymyshev): support bitcoin for ios.
-      ZCashWalletServiceFactory::GetServiceForState(browser_state),
       browser_state->GetPrefs(), GetApplicationContext()->GetLocalState()));
   return service;
 }

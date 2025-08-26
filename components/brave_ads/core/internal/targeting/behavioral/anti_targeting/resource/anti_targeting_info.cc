@@ -5,6 +5,8 @@
 
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/anti_targeting/resource/anti_targeting_info.h"
 
+#include <utility>
+
 #include "base/values.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/anti_targeting/anti_targeting_feature.h"
 #include "third_party/abseil-cpp/absl/types/optional.h"

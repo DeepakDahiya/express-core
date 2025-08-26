@@ -13,10 +13,10 @@ namespace brave_ads {
 
 BASE_DECLARE_FEATURE(kEligibleAdFeature);
 
-inline constexpr base::FeatureParam<int> kBrowsingHistoryMaxCount{
+constexpr base::FeatureParam<int> kBrowsingHistoryMaxCount{
     &kEligibleAdFeature, "browsing_history_max_count", 5'000};
 
-inline constexpr base::FeatureParam<int> kBrowsingHistoryRecentDayRange{
+constexpr base::FeatureParam<int> kBrowsingHistoryRecentDayRange{
     &kEligibleAdFeature, "browsing_history_recent_day_range", 180};
 
 }  // namespace brave_ads

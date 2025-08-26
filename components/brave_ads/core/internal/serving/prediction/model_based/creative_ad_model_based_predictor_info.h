@@ -13,17 +13,32 @@
 namespace brave_ads {
 
 template <typename T>
-struct CreativeAdModelBasedPredictorInfo final {
-  bool operator==(const CreativeAdModelBasedPredictorInfo<T>&) const = default;
-
+struct CreativeAdPredictorInfo final {
   T creative_ad;
-  CreativeAdModelBasedPredictorInputVariableInfo input_variable;
+  CreativeAdPredictorInputVariableInfo input_variable;
   double score = 0.0;
 };
 
 template <typename T>
-using CreativeAdModelBasedPredictorList =
-    std::vector<CreativeAdModelBasedPredictorInfo<T>>;
+bool operator==(const CreativeAdPredictorInfo<T>& lhs,
+                const CreativeAdPredictorInfo<T>& rhs) {
+  const auto tie = [](const CreativeAdPredictorInfo<T>& creative_ad_predictor) {
+    return std::tie(creative_ad_predictor.creative_ad,
+                    creative_ad_predictor.input_variable,
+                    creative_ad_predictor.score);
+  };
+
+  return tie(lhs) == tie(rhs);
+}
+
+template <typename T>
+bool operator!=(const CreativeAdPredictorInfo<T>& lhs,
+                const CreativeAdPredictorInfo<T>& rhs) {
+  return !(lhs == rhs);
+}
+
+template <typename T>
+using CreativeAdPredictorList = std::vector<CreativeAdPredictorInfo<T>>;
 
 }  // namespace brave_ads
 

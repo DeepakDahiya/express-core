@@ -48,7 +48,7 @@ TEST_F(BraveAdsConfirmationDynamicUserDataBuilderTest,
 TEST_F(BraveAdsConfirmationDynamicUserDataBuilderTest,
        BuildConfirmationUserDataForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   // Act & Assert
   base::MockCallback<BuildUserDataCallback> callback;

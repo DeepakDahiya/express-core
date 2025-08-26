@@ -7,8 +7,10 @@
 
 #include <utility>
 
+#include "base/features.h"
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
+#include "brave/components/brave_wallet/common/features.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_interstitial_controller_client.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_opt_in_page.h"
 #include "brave/components/decentralized_dns/content/ens_offchain_lookup_interstitial_controller_client.h"
@@ -32,9 +34,8 @@ DecentralizedDnsNavigationThrottle::MaybeCreateThrottleFor(
     const std::string& locale) {
   content::BrowserContext* context =
       navigation_handle->GetWebContents()->GetBrowserContext();
-  if (context->IsOffTheRecord()) {
+  if (context->IsOffTheRecord())
     return nullptr;
-  }
 
   return std::make_unique<DecentralizedDnsNavigationThrottle>(
       navigation_handle, local_state, locale);
@@ -59,7 +60,9 @@ DecentralizedDnsNavigationThrottle::WillStartRequest() {
   if ((IsUnstoppableDomainsTLD(url.host_piece()) &&
        IsUnstoppableDomainsResolveMethodAsk(local_state_)) ||
       (IsENSTLD(url.host_piece()) && IsENSResolveMethodAsk(local_state_)) ||
-      (IsSnsTLD(url.host_piece()) && IsSnsResolveMethodAsk(local_state_))) {
+      (base::FeatureList::IsEnabled(
+           brave_wallet::features::kBraveWalletSnsFeature) &&
+       IsSnsTLD(url.host_piece()) && IsSnsResolveMethodAsk(local_state_))) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&DecentralizedDnsNavigationThrottle::ShowInterstitial,

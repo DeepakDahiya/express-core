@@ -78,7 +78,7 @@ export interface Options {
   vbatExpired: boolean
 }
 
-type RequestedView = 'rewards-setup'
+type RequestedView = 'rewards-setup' | 'inline-tip'
 
 export interface HostState {
   openTime: number

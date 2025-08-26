@@ -8,10 +8,10 @@
 
 #include <string>
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-std::string BuildRedeemPaymentTokensUrlResponseBody();
+std::string BuildRedeemPaymentTokensUrlResponseBodyForTesting();
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_PAYMENT_TOKENS_REDEEM_PAYMENT_TOKENS_UNITTEST_UTIL_H_

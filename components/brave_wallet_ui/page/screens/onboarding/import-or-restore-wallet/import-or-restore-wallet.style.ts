@@ -17,6 +17,7 @@ import LegacyWalletSvgDark from '../../../../assets/svg-icons/onboarding/reset-t
 import { WalletLink } from '../../../../components/shared/style'
 
 export const CardButton = styled(WalletLink)`
+
   cursor: pointer;
 
   box-sizing: border-box;
@@ -38,12 +39,13 @@ export const CardButton = styled(WalletLink)`
 
   &:hover {
     outline-style: solid;
-    outline-color: ${(p) => p.theme.palette.blurple300};
+    outline-color: ${p => p.theme.palette.blurple300};
     outline-width: 2px;
   }
 `
 
 export const CardButtonTextContainer = styled.div`
+
   max-width: 70%;
 
   & > p {
@@ -57,7 +59,7 @@ export const CardButtonTextContainer = styled.div`
     text-align: left;
     margin: 2px;
   }
-
+  
   & > p:first-of-type {
     font-weight: 500;
     font-size: 14px;

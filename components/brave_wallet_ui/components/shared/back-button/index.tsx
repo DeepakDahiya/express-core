@@ -9,7 +9,10 @@ import * as React from 'react'
 import { getLocale } from '../../../../common/locale'
 
 // style
-import { StyledWrapper, BackIcon } from './style'
+import {
+  StyledWrapper,
+  BackIcon
+} from './style'
 
 export interface Props {
   onSubmit: () => void

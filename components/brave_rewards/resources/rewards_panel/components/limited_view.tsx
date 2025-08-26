@@ -19,6 +19,8 @@ export function LimitedView () {
   const host = React.useContext(HostContext)
   const { getString, getPluralString } = React.useContext(LocaleContext)
 
+  const [requestedView, setRequestedView] =
+    React.useState(host.state.requestedView)
   const [publisherInfo, setPublisherInfo] =
     React.useState(host.state.publisherInfo)
   const [publishersVisitedCount, setPublishersVisitedCount] =
@@ -28,6 +30,7 @@ export function LimitedView () {
     React.useState(derivedState.canConnectAccount(host.state))
 
   useHostListener(host, (state) => {
+    setRequestedView(state.requestedView)
     setPublisherInfo(state.publisherInfo)
     setPublishersVisitedCount(state.publishersVisitedCount)
     setCanConnectAccount(derivedState.canConnectAccount(state))
@@ -64,6 +67,26 @@ export function LimitedView () {
               {getString('learnMore')}
             </NewTabLink>
           </style.connectLearnMore>
+        </style.connect>
+      )
+    }
+
+    if (publisherInfo && requestedView === 'inline-tip') {
+      return (
+        <style.connect>
+          <style.connectAction>
+            <button onClick={onConnectAccount}>
+              {getString('rewardsConnectAccount')}<ArrowNextIcon />
+            </button>
+          </style.connectAction>
+          <div>
+            <div>
+              <strong>{getString('connectContributeHeader')}</strong>
+            </div>
+            <div>
+              {getString('connectContributeText')}
+            </div>
+          </div>
         </style.connect>
       )
     }

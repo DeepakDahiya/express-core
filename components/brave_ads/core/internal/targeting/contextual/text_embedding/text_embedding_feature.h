@@ -13,10 +13,10 @@ namespace brave_ads {
 
 BASE_DECLARE_FEATURE(kTextEmbeddingFeature);
 
-inline constexpr base::FeatureParam<int> kTextEmbeddingResourceVersion{
+constexpr base::FeatureParam<int> kTextEmbeddingResourceVersion{
     &kTextEmbeddingFeature, "resource_version", 1};
 
-inline constexpr base::FeatureParam<int> kTextEmbeddingHistorySize{
+constexpr base::FeatureParam<int> kTextEmbeddingHistorySize{
     &kTextEmbeddingFeature, "history_size", 10};
 
 }  // namespace brave_ads

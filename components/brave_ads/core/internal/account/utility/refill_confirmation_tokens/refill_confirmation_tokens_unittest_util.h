@@ -8,11 +8,11 @@
 
 #include <string>
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-std::string BuildRequestSignedTokensUrlResponseBody();
-std::string BuildGetSignedTokensUrlResponseBody();
+std::string BuildRequestSignedTokensUrlResponseBodyForTesting();
+std::string BuildGetSignedTokensUrlResponseBodyForTesting();
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads
 
 #endif  // BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REFILL_CONFIRMATION_TOKENS_REFILL_CONFIRMATION_TOKENS_UNITTEST_UTIL_H_

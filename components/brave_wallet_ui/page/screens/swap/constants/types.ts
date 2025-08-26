@@ -62,8 +62,7 @@ export type GasEstimate = {
 }
 
 export type AmountValidationErrorType =
-  | 'fromAmountDecimalsOverflow'
-  | 'toAmountDecimalsOverflow'
+  'fromAmountDecimalsOverflow' | 'toAmountDecimalsOverflow'
 
 export type SwapValidationErrorType =
   | AmountValidationErrorType
@@ -74,8 +73,6 @@ export type SwapValidationErrorType =
   | 'unknownError'
 
 export type SwapParams = {
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
-  selectedAccount: BraveWallet.AccountInfo | undefined
   fromToken?: BraveWallet.BlockchainToken
   toToken?: BraveWallet.BlockchainToken
   fromAmount: string
@@ -85,6 +82,6 @@ export type SwapParams = {
    * format for Jupiter and 0x swap providers.
    */
   slippageTolerance: string
-  fromAccount?: BraveWallet.AccountInfo
+  fromAddress?: string
   spotPrices?: SpotPriceRegistry
 }

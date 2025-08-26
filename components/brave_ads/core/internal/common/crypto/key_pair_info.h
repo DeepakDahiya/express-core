@@ -22,7 +22,8 @@ struct KeyPairInfo final {
 
   ~KeyPairInfo();
 
-  bool operator==(const KeyPairInfo&) const = default;
+  bool operator==(const KeyPairInfo&) const;
+  bool operator!=(const KeyPairInfo&) const;
 
   [[nodiscard]] bool IsValid() const;
 

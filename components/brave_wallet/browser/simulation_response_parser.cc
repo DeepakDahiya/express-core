@@ -19,10 +19,10 @@ namespace {
 mojom::BlowfishWarningSeverity ParseWarningSeverity(
     const simulation_responses::WarningSeverity& severity) {
   switch (severity) {
-    case simulation_responses::WarningSeverity::kCritical:
+    case simulation_responses::WarningSeverity::WARNING_SEVERITY_CRITICAL:
       return mojom::BlowfishWarningSeverity::kCritical;
 
-    case simulation_responses::WarningSeverity::kWarning:
+    case simulation_responses::WarningSeverity::WARNING_SEVERITY_WARNING:
       return mojom::BlowfishWarningSeverity::kWarning;
 
     default:
@@ -33,94 +33,107 @@ mojom::BlowfishWarningSeverity ParseWarningSeverity(
 mojom::BlowfishWarningKind ParseWarningKind(
     const simulation_responses::WarningKind& kind) {
   switch (kind) {
-    case simulation_responses::WarningKind::kApprovalToEOA:
+    case simulation_responses::WarningKind::WARNING_KIND_APPROVAL_TO_E_O_A:
       return mojom::BlowfishWarningKind::kApprovalToEOA;
 
-    case simulation_responses::WarningKind::kBlocklistedDomainCrossOrigin:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_BLOCKLISTED_DOMAIN_CROSS_ORIGIN:
       return mojom::BlowfishWarningKind::kBlocklistedDomainCrossOrigin;
 
-    case simulation_responses::WarningKind::kBulkApprovalsRequest:
+    case simulation_responses::WarningKind::WARNING_KIND_BULK_APPROVALS_REQUEST:
       return mojom::BlowfishWarningKind::kBulkApprovalsRequest;
 
-    case simulation_responses::WarningKind::kCompromisedAuthorityUpgrade:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_COMPROMISED_AUTHORITY_UPGRADE:
       return mojom::BlowfishWarningKind::kCompromisedAuthorityUpgrade;
 
-    case simulation_responses::WarningKind::kCopyCatDomain:
+    case simulation_responses::WarningKind::WARNING_KIND_COPY_CAT_DOMAIN:
       return mojom::BlowfishWarningKind::kCopyCatDomain;
 
-    case simulation_responses::WarningKind::kCopyCatImageUnresponsiveDomain:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_COPY_CAT_IMAGE_UNRESPONSIVE_DOMAIN:
       return mojom::BlowfishWarningKind::kCopyCatImageUnresponsiveDomain;
 
-    case simulation_responses::WarningKind::kDanglingApproval:
+    case simulation_responses::WarningKind::WARNING_KIND_DANGLING_APPROVAL:
       return mojom::BlowfishWarningKind::kDanglingApproval;
 
-    case simulation_responses::WarningKind::kDevtoolsDisabled:
+    case simulation_responses::WarningKind::WARNING_KIND_DEVTOOLS_DISABLED:
       return mojom::BlowfishWarningKind::kDevtoolsDisabled;
 
-    case simulation_responses::WarningKind::kEthSignTxHash:
+    case simulation_responses::WarningKind::WARNING_KIND_ETH_SIGN_TX_HASH:
       return mojom::BlowfishWarningKind::kEthSignTxHash;
 
-    case simulation_responses::WarningKind::kKnownMalicious:
+    case simulation_responses::WarningKind::WARNING_KIND_KNOWN_MALICIOUS:
       return mojom::BlowfishWarningKind::kKnownMalicious;
 
-    case simulation_responses::WarningKind::kMainnetReplayPossible:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_MAINNET_REPLAY_POSSIBLE:
       return mojom::BlowfishWarningKind::kMainnetReplayPossible;
 
-    case simulation_responses::WarningKind::kMultiCopyCatDomain:
+    case simulation_responses::WarningKind::WARNING_KIND_MULTI_COPY_CAT_DOMAIN:
       return mojom::BlowfishWarningKind::kMultiCopyCatDomain;
 
-    case simulation_responses::WarningKind::kNewDomain:
+    case simulation_responses::WarningKind::WARNING_KIND_NEW_DOMAIN:
       return mojom::BlowfishWarningKind::kNewDomain;
 
-    case simulation_responses::WarningKind::kNonAsciiUrl:
+    case simulation_responses::WarningKind::WARNING_KIND_NON_ASCII_URL:
       return mojom::BlowfishWarningKind::kNonAsciiUrl;
 
-    case simulation_responses::WarningKind::kObfuscatedCode:
+    case simulation_responses::WarningKind::WARNING_KIND_OBFUSCATED_CODE:
       return mojom::BlowfishWarningKind::kObfuscatedCode;
 
-    case simulation_responses::WarningKind::kPermitNoExpiration:
+    case simulation_responses::WarningKind::WARNING_KIND_PERMIT_NO_EXPIRATION:
       return mojom::BlowfishWarningKind::kPermitNoExpiration;
 
-    case simulation_responses::WarningKind::kPermitUnlimitedAllowance:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_PERMIT_UNLIMITED_ALLOWANCE:
       return mojom::BlowfishWarningKind::kPermitUnlimitedAllowance;
 
-    case simulation_responses::WarningKind::kPoisonedAddress:
+    case simulation_responses::WarningKind::WARNING_KIND_POISONED_ADDRESS:
       return mojom::BlowfishWarningKind::kPoisonedAddress;
 
-    case simulation_responses::WarningKind::kReferencedOfacAddress:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_REFERENCED_OFAC_ADDRESS:
       return mojom::BlowfishWarningKind::kReferencedOfacAddress;
 
-    case simulation_responses::WarningKind::kSemiTrustedBlocklistDomain:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_SEMI_TRUSTED_BLOCKLIST_DOMAIN:
       return mojom::BlowfishWarningKind::kSemiTrustedBlocklistDomain;
 
-    case simulation_responses::WarningKind::kSetOwnerAuthority:
+    case simulation_responses::WarningKind::WARNING_KIND_SET_OWNER_AUTHORITY:
       return mojom::BlowfishWarningKind::kSetOwnerAuthority;
 
-    case simulation_responses::WarningKind::kSuspectedMalicious:
+    case simulation_responses::WarningKind::WARNING_KIND_SUSPECTED_MALICIOUS:
       return mojom::BlowfishWarningKind::kSuspectedMalicious;
 
-    case simulation_responses::WarningKind::kTooManyTransactions:
+    case simulation_responses::WarningKind::WARNING_KIND_TOO_MANY_TRANSACTIONS:
       return mojom::BlowfishWarningKind::kTooManyTransactions;
 
-    case simulation_responses::WarningKind::kTradeForNothing:
+    case simulation_responses::WarningKind::WARNING_KIND_TRADE_FOR_NOTHING:
       return mojom::BlowfishWarningKind::kTradeForNothing;
 
-    case simulation_responses::WarningKind::kTransferringErc20ToOwnContract:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_TRANSFERRING_ERC20_TO_OWN_CONTRACT:
       return mojom::BlowfishWarningKind::kTransferringErc20ToOwnContract;
 
-    case simulation_responses::WarningKind::kTrustedBlocklistDomain:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_TRUSTED_BLOCKLIST_DOMAIN:
       return mojom::BlowfishWarningKind::kTrustedBlocklistDomain;
 
-    case simulation_responses::WarningKind::kUnlimitedAllowanceToNfts:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_UNLIMITED_ALLOWANCE_TO_NFTS:
       return mojom::BlowfishWarningKind::kUnlimitedAllowanceToNfts;
 
-    case simulation_responses::WarningKind::kUnusualGasConsumption:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_UNUSUAL_GAS_CONSUMPTION:
       return mojom::BlowfishWarningKind::kUnusualGasConsumption;
 
-    case simulation_responses::WarningKind::kUserAccountOwnerChange:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_USER_ACCOUNT_OWNER_CHANGE:
       return mojom::BlowfishWarningKind::kUserAccountOwnerChange;
 
-    case simulation_responses::WarningKind::kWhitelistedDomainCrossOrigin:
+    case simulation_responses::WarningKind::
+        WARNING_KIND_WHITELISTED_DOMAIN_CROSS_ORIGIN:
       return mojom::BlowfishWarningKind::kWhitelistedDomainCrossOrigin;
 
     default:
@@ -131,13 +144,13 @@ mojom::BlowfishWarningKind ParseWarningKind(
 mojom::BlowfishAssetPriceSource ParseAssetPriceSource(
     const simulation_responses::AssetPriceSource& source) {
   switch (source) {
-    case simulation_responses::AssetPriceSource::kCoingecko:
+    case simulation_responses::AssetPriceSource::ASSET_PRICE_SOURCE_COINGECKO:
       return mojom::BlowfishAssetPriceSource::kCoingecko;
 
-    case simulation_responses::AssetPriceSource::kDefillama:
+    case simulation_responses::AssetPriceSource::ASSET_PRICE_SOURCE_DEFILLAMA:
       return mojom::BlowfishAssetPriceSource::kDefillama;
 
-    case simulation_responses::AssetPriceSource::kSimplehash:
+    case simulation_responses::AssetPriceSource::ASSET_PRICE_SOURCE_SIMPLEHASH:
       return mojom::BlowfishAssetPriceSource::kSimplehash;
 
     default:
@@ -148,31 +161,38 @@ mojom::BlowfishAssetPriceSource ParseAssetPriceSource(
 mojom::BlowfishEVMRawInfoKind ParseEVMRawInfoKind(
     const simulation_responses::EVMRawInfoKind& kind) {
   switch (kind) {
-    case simulation_responses::EVMRawInfoKind::kAnyNftFromCollectionTransfer:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_ANY_NFT_FROM_COLLECTION_TRANSFER:
       return mojom::BlowfishEVMRawInfoKind::kAnyNftFromCollectionTransfer;
 
-    case simulation_responses::EVMRawInfoKind::kErc1155ApprovalForAll:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_ERC1155_APPROVAL_FOR_ALL:
       return mojom::BlowfishEVMRawInfoKind::kErc1155ApprovalForAll;
 
-    case simulation_responses::EVMRawInfoKind::kErc1155Transfer:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_ERC1155_TRANSFER:
       return mojom::BlowfishEVMRawInfoKind::kErc1155Transfer;
 
-    case simulation_responses::EVMRawInfoKind::kErc20Approval:
+    case simulation_responses::EVMRawInfoKind::EVM_RAW_INFO_KIND_ERC20_APPROVAL:
       return mojom::BlowfishEVMRawInfoKind::kErc20Approval;
 
-    case simulation_responses::EVMRawInfoKind::kErc20Transfer:
+    case simulation_responses::EVMRawInfoKind::EVM_RAW_INFO_KIND_ERC20_TRANSFER:
       return mojom::BlowfishEVMRawInfoKind::kErc20Transfer;
 
-    case simulation_responses::EVMRawInfoKind::kErc721Approval:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_ERC721_APPROVAL:
       return mojom::BlowfishEVMRawInfoKind::kErc721Approval;
 
-    case simulation_responses::EVMRawInfoKind::kErc721ApprovalForAll:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_ERC721_APPROVAL_FOR_ALL:
       return mojom::BlowfishEVMRawInfoKind::kErc721ApprovalForAll;
 
-    case simulation_responses::EVMRawInfoKind::kErc721Transfer:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_ERC721_TRANSFER:
       return mojom::BlowfishEVMRawInfoKind::kErc721Transfer;
 
-    case simulation_responses::EVMRawInfoKind::kNativeAssetTransfer:
+    case simulation_responses::EVMRawInfoKind::
+        EVM_RAW_INFO_KIND_NATIVE_ASSET_TRANSFER:
       return mojom::BlowfishEVMRawInfoKind::kNativeAssetTransfer;
 
     default:
@@ -183,19 +203,24 @@ mojom::BlowfishEVMRawInfoKind ParseEVMRawInfoKind(
 mojom::BlowfishSolanaRawInfoKind ParseSolanaRawInfoKind(
     const simulation_responses::SolanaRawInfoKind& kind) {
   switch (kind) {
-    case simulation_responses::SolanaRawInfoKind::kSolStakeAuthorityChange:
+    case simulation_responses::SolanaRawInfoKind::
+        SOLANA_RAW_INFO_KIND_SOL_STAKE_AUTHORITY_CHANGE:
       return mojom::BlowfishSolanaRawInfoKind::kSolStakeAuthorityChange;
 
-    case simulation_responses::SolanaRawInfoKind::kSolTransfer:
+    case simulation_responses::SolanaRawInfoKind::
+        SOLANA_RAW_INFO_KIND_SOL_TRANSFER:
       return mojom::BlowfishSolanaRawInfoKind::kSolTransfer;
 
-    case simulation_responses::SolanaRawInfoKind::kSplApproval:
+    case simulation_responses::SolanaRawInfoKind::
+        SOLANA_RAW_INFO_KIND_SPL_APPROVAL:
       return mojom::BlowfishSolanaRawInfoKind::kSplApproval;
 
-    case simulation_responses::SolanaRawInfoKind::kSplTransfer:
+    case simulation_responses::SolanaRawInfoKind::
+        SOLANA_RAW_INFO_KIND_SPL_TRANSFER:
       return mojom::BlowfishSolanaRawInfoKind::kSplTransfer;
 
-    case simulation_responses::SolanaRawInfoKind::kUserAccountOwnerChange:
+    case simulation_responses::SolanaRawInfoKind::
+        SOLANA_RAW_INFO_KIND_USER_ACCOUNT_OWNER_CHANGE:
       return mojom::BlowfishSolanaRawInfoKind::kUserAccountOwnerChange;
 
     default:
@@ -206,16 +231,20 @@ mojom::BlowfishSolanaRawInfoKind ParseSolanaRawInfoKind(
 mojom::BlowfishMetaplexTokenStandardKind ParseMetaplexTokenStandardKind(
     const simulation_responses::MetaplexTokenStandardKind& kind) {
   switch (kind) {
-    case simulation_responses::MetaplexTokenStandardKind::kFungible:
+    case simulation_responses::MetaplexTokenStandardKind::
+        METAPLEX_TOKEN_STANDARD_KIND_FUNGIBLE:
       return mojom::BlowfishMetaplexTokenStandardKind::kFungible;
 
-    case simulation_responses::MetaplexTokenStandardKind::kFungibleAsset:
+    case simulation_responses::MetaplexTokenStandardKind::
+        METAPLEX_TOKEN_STANDARD_KIND_FUNGIBLE_ASSET:
       return mojom::BlowfishMetaplexTokenStandardKind::kFungibleAsset;
 
-    case simulation_responses::MetaplexTokenStandardKind::kNonFungible:
+    case simulation_responses::MetaplexTokenStandardKind::
+        METAPLEX_TOKEN_STANDARD_KIND_NON_FUNGIBLE:
       return mojom::BlowfishMetaplexTokenStandardKind::kNonFungible;
 
-    case simulation_responses::MetaplexTokenStandardKind::kNonFungibleEdition:
+    case simulation_responses::MetaplexTokenStandardKind::
+        METAPLEX_TOKEN_STANDARD_KIND_NON_FUNGIBLE_EDITION:
       return mojom::BlowfishMetaplexTokenStandardKind::kNonFungibleEdition;
 
     default:
@@ -226,16 +255,17 @@ mojom::BlowfishMetaplexTokenStandardKind ParseMetaplexTokenStandardKind(
 mojom::BlowfishEVMErrorKind ParseEVMErrorKind(
     const simulation_responses::EVMErrorKind& kind) {
   switch (kind) {
-    case simulation_responses::EVMErrorKind::kSimulationFailed:
+    case simulation_responses::EVMErrorKind::EVM_ERROR_KIND_SIMULATION_FAILED:
       return mojom::BlowfishEVMErrorKind::kSimulationFailed;
 
-    case simulation_responses::EVMErrorKind::kTransactionError:
+    case simulation_responses::EVMErrorKind::EVM_ERROR_KIND_TRANSACTION_ERROR:
       return mojom::BlowfishEVMErrorKind::kTransactionError;
 
-    case simulation_responses::EVMErrorKind::kTransactionReverted:
+    case simulation_responses::EVMErrorKind::
+        EVM_ERROR_KIND_TRANSACTION_REVERTED:
       return mojom::BlowfishEVMErrorKind::kTransactionReverted;
 
-    case simulation_responses::EVMErrorKind::kUnknownError:
+    case simulation_responses::EVMErrorKind::EVM_ERROR_KIND_UNKNOWN_ERROR:
     default:
       return mojom::BlowfishEVMErrorKind::kUnknownError;
   }
@@ -244,7 +274,7 @@ mojom::BlowfishEVMErrorKind ParseEVMErrorKind(
 mojom::BlowfishEVMAddressKind ParseBlowfishEVMAddressKind(
     const simulation_responses::EVMAddressKind& kind) {
   switch (kind) {
-    case simulation_responses::EVMAddressKind::kAccount:
+    case simulation_responses::EVMAddressKind::EVM_ADDRESS_KIND_ACCOUNT:
       return mojom::BlowfishEVMAddressKind::kAccount;
 
     default:
@@ -351,7 +381,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
   auto raw_info = mojom::BlowfishEVMStateChangeRawInfo::New();
   raw_info->kind = ParseEVMRawInfoKind(value.kind);
 
-  if (value.kind == simulation_responses::EVMRawInfoKind::kErc20Transfer) {
+  if (value.kind == simulation_responses::EVM_RAW_INFO_KIND_ERC20_TRANSFER) {
     auto data_value = simulation_responses::ERC20TransferData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -372,7 +402,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishEVMStateChangeRawInfoDataUnion::NewErc20TransferData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kErc20Approval) {
+             simulation_responses::EVM_RAW_INFO_KIND_ERC20_APPROVAL) {
     auto data_value = simulation_responses::ERC20ApprovalData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -395,7 +425,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishEVMStateChangeRawInfoDataUnion::NewErc20ApprovalData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kNativeAssetTransfer) {
+             simulation_responses::EVM_RAW_INFO_KIND_NATIVE_ASSET_TRANSFER) {
     auto data_value = simulation_responses::NativeAssetTransferData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -414,7 +444,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
     raw_info->data = mojom::BlowfishEVMStateChangeRawInfoDataUnion::
         NewNativeAssetTransferData(std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kErc721Transfer) {
+             simulation_responses::EVM_RAW_INFO_KIND_ERC721_TRANSFER) {
     auto data_value = simulation_responses::ERC721TransferData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -435,7 +465,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishEVMStateChangeRawInfoDataUnion::NewErc721TransferData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kErc721Approval) {
+             simulation_responses::EVM_RAW_INFO_KIND_ERC721_APPROVAL) {
     auto data_value = simulation_responses::ERC721ApprovalData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -458,7 +488,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishEVMStateChangeRawInfoDataUnion::NewErc721ApprovalData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kErc721ApprovalForAll) {
+             simulation_responses::EVM_RAW_INFO_KIND_ERC721_APPROVAL_FOR_ALL) {
     auto data_value = simulation_responses::ERC721ApprovalForAllData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -477,7 +507,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
     raw_info->data = mojom::BlowfishEVMStateChangeRawInfoDataUnion::
         NewErc721ApprovalForAllData(std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kErc1155Transfer) {
+             simulation_responses::EVM_RAW_INFO_KIND_ERC1155_TRANSFER) {
     auto data_value = simulation_responses::ERC1155TransferData::FromValue(
         value.data.GetDict());
     if (!data_value) {
@@ -497,7 +527,7 @@ mojom::BlowfishEVMStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishEVMStateChangeRawInfoDataUnion::NewErc1155TransferData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::EVMRawInfoKind::kErc1155ApprovalForAll) {
+             simulation_responses::EVM_RAW_INFO_KIND_ERC1155_APPROVAL_FOR_ALL) {
     auto data_value =
         simulation_responses::ERC1155ApprovalForAllData::FromValue(
             value.data.GetDict());
@@ -648,10 +678,10 @@ mojom::BlowfishPricePtr ParsePrice(const base::Value& value) {
 mojom::BlowfishDiffSign ParseDiffSign(
     const simulation_responses::DiffSign& sign) {
   switch (sign) {
-    case simulation_responses::DiffSign::kMinus:
+    case simulation_responses::DiffSign::DIFF_SIGN_MINUS:
       return mojom::BlowfishDiffSign::kMinus;
 
-    case simulation_responses::DiffSign::kPlus:
+    case simulation_responses::DiffSign::DIFF_SIGN_PLUS:
     default:
       return mojom::BlowfishDiffSign::kPlus;
   }
@@ -685,7 +715,7 @@ mojom::BlowfishSolanaStateChangeRawInfoPtr ParseStateChangeRawInfo(
   auto raw_info = mojom::BlowfishSolanaStateChangeRawInfo::New();
   raw_info->kind = ParseSolanaRawInfoKind(value.kind);
 
-  if (value.kind == simulation_responses::SolanaRawInfoKind::kSolTransfer) {
+  if (value.kind == simulation_responses::SOLANA_RAW_INFO_KIND_SOL_TRANSFER) {
     auto data_value =
         simulation_responses::SOLTransferData::FromValue(value.data.GetDict());
     if (!data_value) {
@@ -705,7 +735,7 @@ mojom::BlowfishSolanaStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishSolanaStateChangeRawInfoDataUnion::NewSolTransferData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::SolanaRawInfoKind::kSplTransfer) {
+             simulation_responses::SOLANA_RAW_INFO_KIND_SPL_TRANSFER) {
     auto data_value =
         simulation_responses::SPLTransferData::FromValue(value.data.GetDict());
     if (!data_value) {
@@ -731,7 +761,7 @@ mojom::BlowfishSolanaStateChangeRawInfoPtr ParseStateChangeRawInfo(
         mojom::BlowfishSolanaStateChangeRawInfoDataUnion::NewSplTransferData(
             std::move(data));
   } else if (value.kind ==
-             simulation_responses::SolanaRawInfoKind::kSplApproval) {
+             simulation_responses::SOLANA_RAW_INFO_KIND_SPL_APPROVAL) {
     auto data_value =
         simulation_responses::SPLApprovalData::FromValue(value.data.GetDict());
     if (!data_value) {
@@ -759,8 +789,9 @@ mojom::BlowfishSolanaStateChangeRawInfoPtr ParseStateChangeRawInfo(
     raw_info->data =
         mojom::BlowfishSolanaStateChangeRawInfoDataUnion::NewSplApprovalData(
             std::move(data));
-  } else if (value.kind == simulation_responses::SolanaRawInfoKind::
-                               kSolStakeAuthorityChange) {
+  } else if (value.kind ==
+             simulation_responses::
+                 SOLANA_RAW_INFO_KIND_SOL_STAKE_AUTHORITY_CHANGE) {
     auto data_value =
         simulation_responses::SOLStakeAuthorityChangeData::FromValue(
             value.data.GetDict());
@@ -796,10 +827,10 @@ mojom::BlowfishSolanaStateChangeRawInfoPtr ParseStateChangeRawInfo(
 mojom::BlowfishSuggestedColor ParseSuggestedColor(
     const simulation_responses::SuggestedColor& color) {
   switch (color) {
-    case simulation_responses::SuggestedColor::kCredit:
+    case simulation_responses::SuggestedColor::SUGGESTED_COLOR_CREDIT:
       return mojom::BlowfishSuggestedColor::kCredit;
 
-    case simulation_responses::SuggestedColor::kDebit:
+    case simulation_responses::SuggestedColor::SUGGESTED_COLOR_DEBIT:
     default:
       return mojom::BlowfishSuggestedColor::kDebit;
   }

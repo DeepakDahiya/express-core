@@ -10,13 +10,13 @@
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/issuers_permission_rule_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/user_activity_permission_rule_unittest_util.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-void ForcePermissionRules() {
-  ForceCatalogPermissionRule();
-  ForceConfirmationTokensPermissionRule();
-  ForceIssuersPermissionRule();
-  ForceUserActivityPermissionRule();
+void ForcePermissionRulesForTesting() {
+  ForceCatalogPermissionRuleForTesting();
+  ForceConfirmationTokensPermissionRuleForTesting();
+  ForceIssuersPermissionRuleForTesting();
+  ForceUserActivityPermissionRuleForTesting();
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

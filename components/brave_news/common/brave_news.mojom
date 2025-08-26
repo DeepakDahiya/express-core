@@ -24,11 +24,6 @@ enum CardType {
   PROMOTED_ARTICLE
 };
 
-enum ClusterType {
-  CHANNEL,
-  TOPIC
-};
-
 struct FeedItemMetadata {
   string category_name;
   mojo_base.mojom.Time publish_time;
@@ -149,17 +144,11 @@ struct Publisher {
 
 // Used to display information about why an article was displayed.
 struct Signal {
-  // Indicates that articles from this source should never be shown.
-  bool disabled;
-
-  // The weight to be shared among all articles within this Signal.
+  // The subscription weight of this item. Note: This is normally a small
+  // non-zero number even if the user is not subscribed to a channel/source for
+  // this item. It will only be zero if the user has explicitly opted out.
   double subscribed_weight;
-
-  // The normalized weighting of the users visits to this source.
   double visit_weight;
-
-  // The number of articles encompassed by this signal.
-  uint32 article_count;
 };
 
 struct HeroArticle {
@@ -176,52 +165,21 @@ struct Discover {
 };
 
 struct Cluster {
-  ClusterType type;
+  string type;
   string id;
   array<ArticleElements> articles;
 };
 
-// Placeholder FeedV2 Ad - the actual ad is fetched dynamically when the item
-// comes into the viewport.
-struct FeedV2Ad {};
-
 union FeedItemV2 {
   Article article;
   HeroArticle hero;
-  FeedV2Ad advert;
+  PromotedArticle advert;
   Discover discover;
   Cluster cluster;
 };
 
-struct FeedV2AllType {};
-struct FeedV2FollowingType {};
-struct FeedV2PublisherType {
-  string publisher_id;
-};
-struct FeedV2ChannelType {
-  string channel;
-};
-union FeedV2Type {
-  FeedV2AllType all;
-  FeedV2FollowingType following;
-  FeedV2PublisherType publisher;
-  FeedV2ChannelType channel;
-};
-
-enum FeedV2Error {
-  NoArticles,
-  NoFeeds,
-  ConnectionError,
-};
-
 struct FeedV2 {
-  mojo_base.mojom.Time construct_time;
-  string source_hash;
-  FeedV2Type? type;
   array<FeedItemV2> items;
-
-  // If |error| is set items will be empty.
-  FeedV2Error? error;
 };
 
 struct DisplayAd {
@@ -254,12 +212,6 @@ struct ChannelsEvent {
   array<string> removed;
 };
 
-struct Configuration {
-  bool isOptedIn;
-  bool showOnNTP;
-  bool openArticlesInNewTab;
-};
-
 interface ChannelsListener {
   Changed(ChannelsEvent event);
 };
@@ -268,21 +220,13 @@ interface FeedListener {
   OnUpdateAvailable(string feed_hash);
 };
 
-interface ConfigurationListener {
-  Changed(Configuration new_configuration);
-};
-
 // Browser-side handler
 interface BraveNewsController {
   // Gets the current locale.
   GetLocale() => (string locale);
 
   GetFeed() => (Feed feed);
-  GetFollowingFeed() => (FeedV2 feed);
-  GetChannelFeed(string channel) => (FeedV2 feed);
-  GetPublisherFeed(string publisher_id) => (FeedV2 feed);
   GetFeedV2() => (FeedV2 feed);
-  EnsureFeedV2IsUpdating();
   GetSignals() => (map<string, Signal> signals);
 
   // Deprecated by https://github.com/brave/brave-core/pull/16038. Use
@@ -318,9 +262,6 @@ interface BraveNewsController {
   IsFeedUpdateAvailable(string displayed_feed_hash)
     => (bool is_update_available);
   AddFeedListener(pending_remote<FeedListener> listener);
-
-  SetConfiguration(Configuration configuration) => ();
-  AddConfigurationListener(pending_remote<ConfigurationListener> listener);
 
   GetDisplayAd() => (DisplayAd? ad);
   // Lets the browser know when a user begins viewing or scrolling

@@ -30,6 +30,8 @@ import SponsoredImageToggle from './sponsoredImagesToggle'
 import { RANDOM_SOLID_COLOR_VALUE, RANDOM_GRADIENT_COLOR_VALUE, MAX_CUSTOM_IMAGE_BACKGROUNDS } from 'gen/brave/components/brave_new_tab_ui/brave_new_tab_page.mojom.m.js'
 import BackgroundImageTiles from './backgroundImageTiles'
 
+import * as mojom from '../../../../brave_rewards/resources/shared/lib/mojom'
+
 interface Props {
   newTabData: NewTab.State
   toggleBrandedWallpaperOptIn: () => void
@@ -198,7 +200,8 @@ class BackgroundImageSettings extends React.PureComponent<Props, State> {
                   disabled={!showBackgroundImage /* This option can only be enabled if users opt in for background images */}
                   rewardsEnabled={this.props.newTabData.rewardsState.rewardsEnabled}
                   isExternalWalletConnected={
-                    Boolean(this.props.newTabData.rewardsState.externalWallet)} />
+                    this.props.newTabData.rewardsState.externalWallet?.status !==
+                    mojom.WalletStatus.kNotConnected} />
               </SettingsRow>
             )}
           </div>

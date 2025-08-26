@@ -56,10 +56,7 @@ export function EthSignTypedData(props: Props) {
       )}
 
       {data && (
-        <MessageBox
-          height={height ?? '180px'}
-          width={width}
-        >
+        <MessageBox height={height ?? '180px'} width={width}>
           <MessageHeader>
             {getLocale('braveWalletSignTransactionEIP712MessageDomain')}:
           </MessageHeader>

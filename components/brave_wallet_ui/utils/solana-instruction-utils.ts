@@ -6,7 +6,10 @@
 import { EntityState } from '@reduxjs/toolkit'
 
 // types
-import { BraveWallet, SerializableSolanaTxData } from '../constants/types'
+import {
+  BraveWallet,
+  SerializableSolanaTxData
+} from '../constants/types'
 
 // utils
 import { findAccountByAddress } from './account-utils'
@@ -22,10 +25,10 @@ export const SolanaTokenInstructionKeys = getGetCleanedMojoEnumKeys(
 )
 
 export type SolanaSystemInstructionType =
-  (typeof SolanaSystemInstructionKeys)[number]
+  typeof SolanaSystemInstructionKeys[number]
 
 export type SolanaTokenInstructionType =
-  (typeof SolanaTokenInstructionKeys)[number]
+  typeof SolanaTokenInstructionKeys[number]
 
 export type TypedSolanaInstructionWithParams = {
   accountMetas: BraveWallet.SolanaAccountMeta[]
@@ -40,7 +43,7 @@ export const getSolanaTransactionInstructionParamsAndType = ({
   programId,
   decodedData,
   accountMetas,
-  data
+  data,
 }: BraveWallet.SolanaInstruction): TypedSolanaInstructionWithParams => {
   // the signers are the `accountMetas` from this index to the end of the array
   // its possible to have any number of signers, including 0
@@ -55,8 +58,7 @@ export const getSolanaTransactionInstructionParamsAndType = ({
       type: isSignersParam
         ? BraveWallet.SolanaInstructionParamType.kString
         : BraveWallet.SolanaInstructionParamType.kPublicKey,
-      // add a comma separated list of signers as a value if param name is
-      // "signers"
+      // add a comma separated list of signers as a value if param name is "signers"
       value: isSignersParam
         ? accountMetas.slice(i).join(',')
         : accountMetas[i]?.pubkey
@@ -93,12 +95,8 @@ export const getSolanaTransactionInstructionParamsAndType = ({
   return typedInstruction
 }
 
-export const getTypedSolanaTxInstructions = (
-  solTxData?: SerializableSolanaTxData | BraveWallet.SolanaTxData
-): TypedSolanaInstructionWithParams[] => {
-  const instructions: TypedSolanaInstructionWithParams[] = (
-    solTxData?.instructions || []
-  ).map((instruction) => {
+export const getTypedSolanaTxInstructions = (solTxData?: SerializableSolanaTxData | BraveWallet.SolanaTxData): TypedSolanaInstructionWithParams[] => {
+  const instructions: TypedSolanaInstructionWithParams[] = (solTxData?.instructions || []).map((instruction) => {
     return getSolanaTransactionInstructionParamsAndType(instruction)
   })
   return instructions || []
@@ -177,8 +175,7 @@ export const getSolInstructionAccountParamsObj = (
         newAccount = value
         break
       }
-      default:
-        break
+      default: break
     }
   })
 
@@ -201,8 +198,7 @@ export const getSolInstructionParamsObj = (
         lamports = value ?? '0'
         break
       }
-      default:
-        break
+      default: break
     }
   })
 

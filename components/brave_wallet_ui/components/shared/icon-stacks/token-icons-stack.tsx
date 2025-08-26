@@ -13,7 +13,9 @@ import { getTokensNetwork } from '../../../utils/network-utils'
 import { getAssetIdKey } from '../../../utils/asset-utils'
 
 // Queries
-import { useGetVisibleNetworksQuery } from '../../../common/slices/api.slice'
+import {
+  useGetVisibleNetworksQuery
+} from '../../../common/slices/api.slice'
 
 // Components
 import withPlaceholderIcon from '../../shared/create-placeholder-icon'
@@ -27,17 +29,20 @@ import {
 } from './icon-stacks.style'
 
 // Methods
-const AssetIconWithPlaceholder = withPlaceholderIcon(AssetIcon, {
-  size: 'tiny',
-  marginLeft: 0,
-  marginRight: 0
-})
+const AssetIconWithPlaceholder = withPlaceholderIcon(
+  AssetIcon,
+  {
+    size: 'tiny',
+    marginLeft: 0,
+    marginRight: 0
+  }
+)
 
 const calculateIconLeftPosition = (index: number) => {
   if (index === 0) {
     return 4
   }
-  return index * 12 + 4
+  return (index * 12) + 4
 }
 
 interface Props {
@@ -45,7 +50,9 @@ interface Props {
 }
 
 export const TokenIconsStack = (props: Props) => {
-  const { tokens } = props
+  const {
+    tokens
+  } = props
 
   // queries
   const { data: networks = [] } = useGetVisibleNetworksQuery()
@@ -62,16 +69,22 @@ export const TokenIconsStack = (props: Props) => {
       return 0
     }
     const additionalWidth = tokens.length > 9 ? 16 : 12
-    const firstThreeWidth = firstThreeTokens.length * 12 + additionalWidth
+    const firstThreeWidth = (firstThreeTokens.length * 12) + additionalWidth
     if (tokens.length > 3) {
       return firstThreeWidth + additionalWidth
     }
     return firstThreeWidth
-  }, [firstThreeTokens, tokens, additionalTokensLength])
+  }, [
+    firstThreeTokens,
+    tokens,
+    additionalTokensLength
+  ])
 
   return (
-    <StackContainer width={`${calculatedContainerWidth}px`}>
-      {firstThreeTokens.map((token, i) => (
+    <StackContainer
+      width={`${calculatedContainerWidth}px`}
+    >
+      {firstThreeTokens.map((token, i) =>
         <IconWrapper
           key={getAssetIdKey(token)}
           leftPosition={calculateIconLeftPosition(i)}
@@ -81,14 +94,16 @@ export const TokenIconsStack = (props: Props) => {
             network={getTokensNetwork(networks, token)}
           />
         </IconWrapper>
-      ))}
-      {tokens.length > 3 && (
-        <IconWrapper leftPosition={calculateIconLeftPosition(3)}>
+      )}
+      {tokens.length > 3 &&
+        <IconWrapper
+          leftPosition={calculateIconLeftPosition(3)}
+        >
           <AdditionalCountBubble>
             {'+' + additionalTokensLength}
           </AdditionalCountBubble>
         </IconWrapper>
-      )}
+      }
     </StackContainer>
   )
 }

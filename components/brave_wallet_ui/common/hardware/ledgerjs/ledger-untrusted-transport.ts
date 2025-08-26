@@ -20,10 +20,8 @@ import {
 // We isolate the Ledger library from the wallet
 // so that in the event it's compromised it will reduce the
 // impact to the wallet.
-export class LedgerUntrustedMessagingTransport //
-  extends LedgerMessagingTransport
-{
-  constructor(targetWindow: Window, targetUrl: string) {
+export class LedgerUntrustedMessagingTransport extends LedgerMessagingTransport {
+  constructor (targetWindow: Window, targetUrl: string) {
     super(targetWindow, targetUrl)
   }
 
@@ -34,9 +32,7 @@ export class LedgerUntrustedMessagingTransport //
     }
   }
 
-  protected handleUnlock = async (
-    command: UnlockCommand
-  ): Promise<UnlockResponse> => {
+  protected handleUnlock = async (command: UnlockCommand): Promise<UnlockResponse> => {
     const isAuthNeeded = await this.authorizationNeeded()
     const payload: LedgerResponsePayload | HardwareOperationResult =
       isAuthNeeded

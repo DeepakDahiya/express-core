@@ -14,7 +14,7 @@
 // Define this variable in the url namespace to make patching easier.
 namespace url {
 
-inline constexpr char kWebTorrentScheme[] = "webtorrent";
+constexpr char kWebTorrentScheme[] = "webtorrent";
 
 }  // namespace url
 

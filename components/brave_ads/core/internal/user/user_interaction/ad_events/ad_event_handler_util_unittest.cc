@@ -9,6 +9,7 @@
 #include "brave/components/brave_ads/core/internal/units/ad_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_builder.h"
 #include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_info.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 #include "brave/components/brave_ads/core/public/units/ad_info.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,8 +19,8 @@ namespace brave_ads {
 
 TEST(BraveAdsAdEventHandlerUtilTest, HasFiredAdEvent) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   const AdEventInfo ad_event = BuildAdEvent(ad, ConfirmationType::kServed,
@@ -32,8 +33,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, HasFiredAdEvent) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, HasNeverFiredAdEvent) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   const AdEventInfo ad_event =
@@ -46,8 +47,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, HasNeverFiredAdEvent) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, WasAdServed) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   const AdEventList ad_events;
 
@@ -58,8 +59,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, WasAdServed) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, WasAdPreviouslyServed) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   AdEventInfo ad_event = BuildAdEvent(ad, ConfirmationType::kServed, Now());
@@ -72,8 +73,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, WasAdPreviouslyServed) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, WasAdNeverServed) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   const AdEventList ad_events;
 
@@ -84,8 +85,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, WasAdNeverServed) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, ShouldDebouncePreviouslyViewedAdEvent) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   AdEventInfo ad_event_1 = BuildAdEvent(ad, ConfirmationType::kServed, Now());
@@ -100,8 +101,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, ShouldDebouncePreviouslyViewedAdEvent) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, ShouldNotDebounceViewedAdEvent) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   AdEventInfo ad_event = BuildAdEvent(ad, ConfirmationType::kServed, Now());
@@ -114,8 +115,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, ShouldNotDebounceViewedAdEvent) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, ShouldDebouncePreviouslyClickedAdEvent) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   AdEventInfo ad_event_1 = BuildAdEvent(ad, ConfirmationType::kServed, Now());
@@ -132,8 +133,8 @@ TEST(BraveAdsAdEventHandlerUtilTest, ShouldDebouncePreviouslyClickedAdEvent) {
 
 TEST(BraveAdsAdEventHandlerUtilTest, ShouldNotDebounceClickedAdEvent) {
   // Arrange
-  const AdInfo ad = test::BuildAd(AdType::kNotificationAd,
-                                  /*should_use_random_uuids=*/true);
+  const AdInfo ad = BuildAdForTesting(AdType::kNotificationAd,
+                                      /*should_use_random_uuids=*/true);
 
   AdEventList ad_events;
   AdEventInfo ad_event_1 = BuildAdEvent(ad, ConfirmationType::kServed, Now());

@@ -6,10 +6,13 @@
 import * as React from 'react'
 
 // Utils
-import { getLocale } from '../../../../../../../common/locale'
+import {
+  getLocale
+} from '../../../../../../../common/locale'
 
-// Types
-import { BraveWallet } from '../../../../../../constants/types'
+import {
+  useGetSelectedChainQuery
+} from '../../../../../../common/slices/api.slice'
 
 // Components
 import { Header } from '../header/header'
@@ -26,21 +29,13 @@ import {
 interface Props {
   children?: React.ReactNode
   showPrivacyModal: () => void
-  selectedNetwork: BraveWallet.NetworkInfo | undefined
-  selectedAccount: BraveWallet.AccountInfo | undefined
-  setSelectedNetwork: (network: BraveWallet.NetworkInfo) => void
-  setSelectedAccount: (account: BraveWallet.AccountInfo) => void
 }
 
 export const SwapContainer = (props: Props) => {
-  const {
-    children,
-    showPrivacyModal,
-    selectedNetwork,
-    selectedAccount,
-    setSelectedNetwork,
-    setSelectedAccount
-  } = props
+  const { children, showPrivacyModal } = props
+
+  // Queries
+  const { data: selectedNetwork } = useGetSelectedChainQuery()
 
   // State
   const [backgroundHeight, setBackgroundHeight] = React.useState<number>(0)
@@ -74,12 +69,7 @@ export const SwapContainer = (props: Props) => {
 
   return (
     <Wrapper>
-      <Header
-        selectedNetwork={selectedNetwork}
-        selectedAccount={selectedAccount}
-        setSelectedNetwork={setSelectedNetwork}
-        setSelectedAccount={setSelectedAccount}
-      />
+      <Header />
       <Container ref={ref}>{children}</Container>
       <Row>
         <ActionButton onClick={showPrivacyModal}>

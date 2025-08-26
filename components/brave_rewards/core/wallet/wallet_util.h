@@ -10,6 +10,7 @@
 #include <string>
 
 #include "brave/components/brave_rewards/common/mojom/rewards.mojom.h"
+#include "brave/components/brave_rewards/common/mojom/rewards_types.mojom.h"
 #include "third_party/abseil-cpp/absl/types/variant.h"
 
 namespace brave_rewards::internal {

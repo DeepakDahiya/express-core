@@ -8,9 +8,8 @@
 
 namespace p3a {
 
-inline constexpr char kP3AEnabled[] = "brave.p3a.enabled";
-inline constexpr char kP3ANoticeAcknowledged[] =
-    "brave.p3a.notice_acknowledged";
+extern const char kP3AEnabled[];
+extern const char kP3ANoticeAcknowledged[];
 
 }  // namespace p3a
 

@@ -8,10 +8,9 @@
 
 namespace brave_ads {
 
-inline constexpr char kCountryComponentManifestVersion[] = "1.0.0";
-inline constexpr char kCountryComponentId[] =
-    "jememeholcpjpoahinnlafoiaknnmfgl";
-inline constexpr char kInvalidCountryComponentId[] =
+constexpr char kCountryComponentManifestVersion[] = "1.0.0";
+constexpr char kCountryComponentId[] = "jememeholcpjpoahinnlafoiaknnmfgl";
+constexpr char kInvalidCountryComponentId[] =
     "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 }  // namespace brave_ads

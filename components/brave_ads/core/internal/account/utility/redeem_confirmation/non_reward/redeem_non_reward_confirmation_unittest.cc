@@ -28,7 +28,7 @@ class BraveAdsRedeemNonRewardConfirmationTest : public UnitTestBase {
   void SetUp() override {
     UnitTestBase::SetUp();
 
-    test::DisableBraveRewards();
+    DisableBraveRewardsForTesting();
   }
 
   RedeemConfirmationDelegateMock delegate_mock_;
@@ -41,10 +41,10 @@ TEST_F(BraveAdsRedeemNonRewardConfirmationTest, Redeem) {
   const URLResponseMap url_responses = {
       {BuildCreateNonRewardConfirmationUrlPath(kTransactionId),
        {{net::kHttpImATeapot,
-         test::BuildCreateNonRewardConfirmationUrlResponseBody()}}}};
+         BuildCreateNonRewardConfirmationUrlResponseBodyForTesting()}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -69,7 +69,7 @@ TEST_F(BraveAdsRedeemNonRewardConfirmationTest,
          /*response_body=*/net::GetHttpReasonPhrase(net::HTTP_BAD_REQUEST)}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -95,7 +95,7 @@ TEST_F(BraveAdsRedeemNonRewardConfirmationTest,
          /*response_body=*/net::GetHttpReasonPhrase(net::HTTP_CONFLICT)}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -121,7 +121,7 @@ TEST_F(BraveAdsRedeemNonRewardConfirmationTest,
          /*response_body=*/net::GetHttpReasonPhrase(net::HTTP_CREATED)}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =
@@ -147,7 +147,7 @@ TEST_F(BraveAdsRedeemNonRewardConfirmationTest, RetryRedeeming) {
              net::HTTP_INTERNAL_SERVER_ERROR)}}}};
   MockUrlResponses(ads_client_mock_, url_responses);
 
-  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
       /*value=*/0.01, ConfirmationType::kViewed,
       /*should_use_random_uuids=*/false);
   const absl::optional<ConfirmationInfo> confirmation =

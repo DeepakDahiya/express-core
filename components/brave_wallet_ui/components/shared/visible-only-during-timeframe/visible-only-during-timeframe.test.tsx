@@ -10,41 +10,37 @@ import { VisibleOnlyDuringTimeFrame } from './visible-only-during-timeframe'
 describe('<VisibleOnlyDuringTimeFrame />', () => {
   it('renders children when within start/end dates', () => {
     const START_DATE = new Date()
-    // 25 Days ago
-    START_DATE.setTime(START_DATE.getTime() - 1000 * 60 * 60 * 24 * 25)
+    START_DATE.setTime(START_DATE.getTime() - 1000 * 60 * 60 * 24 * 25) // 25 Days ago
 
     const END_DATE = new Date()
-    // 35 Days from start
-    END_DATE.setTime(START_DATE.getTime() + 1000 * 60 * 60 * 24 * 35)
+    END_DATE.setTime(START_DATE.getTime() + 1000 * 60 * 60 * 24 * 35) // 35 Days from start
 
-    const wrapper = shallow(
+    const wrapper = shallow((
       <VisibleOnlyDuringTimeFrame
         startDate={START_DATE}
         endDate={END_DATE}
       >
-        <div className='unique' />
+        <div className="unique" />
       </VisibleOnlyDuringTimeFrame>
-    )
-    expect(wrapper.contains(<div className='unique' />)).toEqual(true)
+    ))
+    expect(wrapper.contains(<div className="unique" />)).toEqual(true)
   })
 
   it('does not render children when not within start/end dates', () => {
     const START_DATE = new Date()
-    // 25 Days ago
-    START_DATE.setTime(START_DATE.getTime() - 1000 * 60 * 60 * 24 * 25)
+    START_DATE.setTime(START_DATE.getTime() - 1000 * 60 * 60 * 24 * 25) // 25 Days ago
 
     const END_DATE = new Date()
-    // 20 Days from start (5 days ago)
-    END_DATE.setTime(START_DATE.getTime() + 1000 * 60 * 60 * 24 * 20)
+    END_DATE.setTime(START_DATE.getTime() + 1000 * 60 * 60 * 24 * 20) // 20 Days from start (5 days ago)
 
-    const wrapper = shallow(
+    const wrapper = shallow((
       <VisibleOnlyDuringTimeFrame
         startDate={START_DATE}
         endDate={END_DATE}
       >
-        <div className='unique' />
+        <div className="unique" />
       </VisibleOnlyDuringTimeFrame>
-    )
-    expect(wrapper.contains(<div className='unique' />)).toEqual(false)
+    ))
+    expect(wrapper.contains(<div className="unique" />)).toEqual(false)
   })
 })

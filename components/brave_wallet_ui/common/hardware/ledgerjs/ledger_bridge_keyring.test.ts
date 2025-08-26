@@ -17,30 +17,20 @@ import { HardwareOperationResult } from '../types'
 import { LedgerTrustedMessagingTransport } from './ledger-trusted-transport'
 
 export class MockLedgerTransport extends LedgerTrustedMessagingTransport {
-  sendCommandResponses: any[] // queue
+  sendCommandResponses: any [] // queue
 
-  constructor(
-    targetWindow: Window,
-    targetUrl: string,
-    onAuthorized?: () => void
-  ) {
+  constructor (targetWindow: Window, targetUrl: string, onAuthorized?: () => void) {
     super(targetWindow, targetUrl)
     this.sendCommandResponses = []
   }
 
-  addSendCommandResponse = (response: LedgerFrameResponse) => {
-    // appends to the left of the list
-    this.sendCommandResponses.unshift(response)
+ addSendCommandResponse = (response: LedgerFrameResponse) => {
+    this.sendCommandResponses.unshift(response) // appends to the left of the list
   }
 
-  sendCommand = <T>(
-    command: LedgerFrameCommand
-  ): Promise<T | LedgerBridgeErrorCodes> => {
+  sendCommand = <T> (command: LedgerFrameCommand): Promise<T | LedgerBridgeErrorCodes> => {
     if (this.sendCommandResponses.length === 0) {
-      throw new Error(
-        'No mock ledger transport responses remaining.' +
-          'More sendCommand calls were made than mocked responses added.'
-      )
+      throw new Error('No mock ledger transport responses remaining. More sendCommand calls were made than mocked responses added.')
     }
     const response = this.sendCommandResponses.pop()
     return response
@@ -68,9 +58,7 @@ const createKeyring = () => {
 
 test('unlock successful', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   const unlockResponse: UnlockResponse = {
     id: LedgerCommand.Unlock,
     origin: window.origin,
@@ -89,9 +77,7 @@ test('unlock successful', async () => {
 
 test('unlock ledger error', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   const unlockResponse: UnlockResponse = {
     id: LedgerCommand.Unlock,
     origin: window.origin,
@@ -110,9 +96,7 @@ test('unlock ledger error', async () => {
 
 test('unlock unauthorized error', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
+  if (!keyring['transport']) { fail('transport should be defined') }
   const sendCommandResponse: UnlockResponse = {
     id: LedgerCommand.Unlock,
     origin: window.origin,
@@ -131,12 +115,8 @@ test('unlock unauthorized error', async () => {
 
 test('unlock bridge error', async () => {
   const keyring = createKeyring()
-  if (!keyring['transport']) {
-    fail('transport should be defined')
-  }
-  keyring['transport']['addSendCommandResponse'](
-    LedgerBridgeErrorCodes.BridgeNotReady
-  )
+  if (!keyring['transport']) { fail('transport should be defined') }
+  keyring['transport']['addSendCommandResponse'](LedgerBridgeErrorCodes.BridgeNotReady)
   let result: HardwareOperationResult = await keyring.unlock()
   let expectedResult: HardwareOperationResult = {
     success: false,
@@ -145,9 +125,7 @@ test('unlock bridge error', async () => {
   }
   expect(result).toEqual(expectedResult)
 
-  keyring['transport']['addSendCommandResponse'](
-    LedgerBridgeErrorCodes.CommandInProgress
-  )
+  keyring['transport']['addSendCommandResponse'](LedgerBridgeErrorCodes.CommandInProgress)
   result = await keyring.unlock()
   expectedResult = {
     success: false,

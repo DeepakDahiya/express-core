@@ -10,11 +10,7 @@ namespace brave_ads::ml::pipeline {
 
 struct TextEmbeddingInfo;
 
-namespace test {
-
-TextEmbeddingInfo BuildTextEmbedding();
-
-}  // namespace test
+TextEmbeddingInfo BuildTextEmbeddingForTesting();
 
 }  // namespace brave_ads::ml::pipeline
 

@@ -10,52 +10,55 @@
 #include "brave/components/brave_ads/core/internal/serving/targeting/user_model/latent_interest/latent_interest_user_model_info.h"
 #include "brave/components/brave_ads/core/internal/serving/targeting/user_model/user_model_info.h"
 
-namespace brave_ads::test {
+namespace brave_ads {
 
-TargetingHelper::TargetingHelper() = default;
+TargetingHelperForTesting::TargetingHelperForTesting() = default;
 
-TargetingHelper::~TargetingHelper() = default;
+TargetingHelperForTesting::~TargetingHelperForTesting() = default;
 
-void TargetingHelper::Mock() {
+void TargetingHelperForTesting::Mock() {
   MockIntent();
   MockLatentInterest();
   MockInterest();
 }
 
 // static
-UserModelInfo TargetingHelper::Expectation() {
-  return UserModelInfo{TargetingHelper::IntentExpectation(),
-                       TargetingHelper::LatentInterestExpectation(),
-                       TargetingHelper::InterestExpectation()};
+UserModelInfo TargetingHelperForTesting::Expectation() {
+  return UserModelInfo{TargetingHelperForTesting::IntentExpectation(),
+                       TargetingHelperForTesting::LatentInterestExpectation(),
+                       TargetingHelperForTesting::InterestExpectation()};
 }
 
-void TargetingHelper::MockIntent() {
+void TargetingHelperForTesting::MockIntent() {
   purchase_intent_.Mock();
 }
 
 // static
-IntentUserModelInfo TargetingHelper::IntentExpectation() {
-  return IntentUserModelInfo{PurchaseIntentHelper::Expectation()};
+IntentUserModelInfo TargetingHelperForTesting::IntentExpectation() {
+  return IntentUserModelInfo{PurchaseIntentHelperForTesting::Expectation()};
 }
 
-void TargetingHelper::MockLatentInterest() {
+void TargetingHelperForTesting::MockLatentInterest() {
   epsilon_greedy_bandit_.Mock();
 }
 
 // static
-LatentInterestUserModelInfo TargetingHelper::LatentInterestExpectation() {
-  return LatentInterestUserModelInfo{EpsilonGreedyBanditHelper::Expectation()};
+LatentInterestUserModelInfo
+TargetingHelperForTesting::LatentInterestExpectation() {
+  return LatentInterestUserModelInfo{
+      EpsilonGreedyBanditHelperForTesting::Expectation()};
 }
 
-void TargetingHelper::MockInterest() {
+void TargetingHelperForTesting::MockInterest() {
   text_classification_.Mock();
   text_embedding_.Mock();
 }
 
 // static
-InterestUserModelInfo TargetingHelper::InterestExpectation() {
-  return InterestUserModelInfo{TextClassificationHelper::Expectation(),
-                               TextEmbeddingHelper::Expectation()};
+InterestUserModelInfo TargetingHelperForTesting::InterestExpectation() {
+  return InterestUserModelInfo{
+      TextClassificationHelperForTesting::Expectation(),
+      TextEmbeddingHelperForTesting::Expectation()};
 }
 
-}  // namespace brave_ads::test
+}  // namespace brave_ads

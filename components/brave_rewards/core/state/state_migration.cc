@@ -14,7 +14,7 @@ using std::placeholders::_1;
 
 namespace {
 
-const int kCurrentVersionNumber = 14;
+const int kCurrentVersionNumber = 13;
 
 }  // namespace
 
@@ -33,8 +33,7 @@ StateMigration::StateMigration(RewardsEngineImpl& engine)
       v10_(engine),
       v11_(engine),
       v12_(engine),
-      v13_(engine),
-      v14_(engine) {}
+      v13_(engine) {}
 
 StateMigration::~StateMigration() = default;
 
@@ -123,10 +122,6 @@ void StateMigration::Migrate(ResultCallback callback) {
     }
     case 13: {
       v13_.Migrate(ToLegacyCallback(std::move(migrate_callback)));
-      return;
-    }
-    case 14: {
-      v14_.Migrate(std::move(migrate_callback));
       return;
     }
   }

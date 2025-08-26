@@ -16,6 +16,7 @@
 namespace brave_rewards {
 namespace p3a {
 
+#if !BUILDFLAG(IS_ANDROID)
 namespace {
 
 // The maximum time difference allowed between the rewards panel opening action
@@ -24,17 +25,18 @@ namespace {
 // enabling.
 constexpr base::TimeDelta kMaxEnabledCauseTriggerTime = base::Minutes(1);
 
-#if BUILDFLAG(IS_ANDROID)
-constexpr base::TimeDelta kReportInterval = base::Days(1);
-#endif
-
-const int kTipsSentBuckets[] = {0, 1, 3};
-
-#if BUILDFLAG(IS_ANDROID)
-const int kMobilePanelCountBuckets[] = {5, 10, 50};
-#endif
-
 }  // namespace
+#endif  // !BUILDFLAG(IS_ANDROID)
+
+const char kEnabledSourceHistogramName[] = "Brave.Rewards.EnabledSource";
+const char kInlineTipTriggerHistogramName[] = "Brave.Rewards.InlineTipTrigger";
+const char kToolbarButtonTriggerHistogramName[] =
+    "Brave.Rewards.ToolbarButtonTrigger";
+const char kTipsSentHistogramName[] = "Brave.Rewards.TipsSent.2";
+const char kAutoContributionsStateHistogramName[] =
+    "Brave.Rewards.AutoContributionsState.3";
+const char kAdTypesEnabledHistogramName[] = "Brave.Rewards.AdTypesEnabled";
+const int kTipsSentBuckets[] = {0, 1, 3};
 
 void RecordAutoContributionsState(bool ac_enabled) {
   UMA_HISTOGRAM_EXACT_LINEAR(kAutoContributionsStateHistogramName, ac_enabled,
@@ -75,36 +77,19 @@ void RecordAdTypesEnabled(PrefService* prefs) {
   UMA_HISTOGRAM_ENUMERATION(kAdTypesEnabledHistogramName, answer);
 }
 
-#if BUILDFLAG(IS_ANDROID)
-ConversionMonitor::ConversionMonitor(PrefService* prefs)
-    : prefs_(prefs),
-      mobile_panel_trigger_count_(prefs, prefs::kP3APanelTriggerCount) {
-  ReportPeriodicMetrics();
-}
-#else
-ConversionMonitor::ConversionMonitor(PrefService* prefs) {}
-#endif
-
+ConversionMonitor::ConversionMonitor() = default;
 ConversionMonitor::~ConversionMonitor() = default;
 
 void ConversionMonitor::RecordPanelTrigger(PanelTrigger trigger) {
 #if !BUILDFLAG(IS_ANDROID)
-  if (trigger == PanelTrigger::kToolbarButton) {
+  if (trigger == PanelTrigger::kInlineTip) {
+    UMA_HISTOGRAM_EXACT_LINEAR(kInlineTipTriggerHistogramName, 1, 2);
+  } else if (trigger == PanelTrigger::kToolbarButton) {
     UMA_HISTOGRAM_EXACT_LINEAR(kToolbarButtonTriggerHistogramName, 1, 2);
   }
   last_trigger_ = trigger;
   last_trigger_time_ = base::Time::Now();
-#else
-  if (prefs_->GetBoolean(prefs::kEnabled)) {
-    mobile_panel_trigger_count_.AddDelta(1u);
-    ReportMobilePanelTriggerCount();
-  } else {
-    mobile_trigger_timer_.Start(
-        FROM_HERE, kMaxEnabledCauseTriggerTime,
-        base::BindOnce(&ConversionMonitor::OnMobileTriggerTimer,
-                       base::Unretained(this)));
-  }
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
 
 void ConversionMonitor::RecordRewardsEnable() {
@@ -113,6 +98,7 @@ void ConversionMonitor::RecordRewardsEnable() {
   // data from being sent once the "rewards enabled source" metric is recorded.
   UMA_HISTOGRAM_EXACT_LINEAR(kToolbarButtonTriggerHistogramName, INT_MAX - 1,
                              2);
+  UMA_HISTOGRAM_EXACT_LINEAR(kInlineTipTriggerHistogramName, INT_MAX - 1, 2);
 
   if (!last_trigger_.has_value() ||
       base::Time::Now() - last_trigger_time_ > kMaxEnabledCauseTriggerTime) {
@@ -123,35 +109,8 @@ void ConversionMonitor::RecordRewardsEnable() {
 
   last_trigger_.reset();
   last_trigger_time_ = base::Time();
-#else
-  mobile_trigger_timer_.Stop();
-  OnMobileTriggerTimer();
-#endif
+#endif  // !BUILDFLAG(IS_ANDROID)
 }
-
-#if BUILDFLAG(IS_ANDROID)
-
-void ConversionMonitor::ReportPeriodicMetrics() {
-  ReportMobilePanelTriggerCount();
-  daily_timer_.Start(FROM_HERE, base::Time::Now() + kReportInterval,
-                     base::BindOnce(&ConversionMonitor::ReportPeriodicMetrics,
-                                    base::Unretained(this)));
-}
-
-void ConversionMonitor::OnMobileTriggerTimer() {
-  UMA_HISTOGRAM_BOOLEAN(kMobileConversionHistogramName,
-                        prefs_->GetBoolean(prefs::kEnabled));
-}
-
-void ConversionMonitor::ReportMobilePanelTriggerCount() {
-  uint64_t total = mobile_panel_trigger_count_.GetWeeklySum();
-  if (total == 0) {
-    return;
-  }
-  p3a_utils::RecordToHistogramBucket(kMobilePanelCountHistogramName,
-                                     kMobilePanelCountBuckets, total);
-}
-#endif
 
 }  // namespace p3a
 }  // namespace brave_rewards

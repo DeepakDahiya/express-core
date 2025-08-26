@@ -357,7 +357,7 @@ IN_PROC_BROWSER_TEST_F(JSEthereumProviderBrowserTest,
 
   scoped_refptr<const extensions::Extension> extension(
       extensions::ExtensionBuilder("MetaMask")
-          .SetID(kMetamaskExtensionId)
+          .SetID(metamask_extension_id)
           .Build());
   extensions::ExtensionSystem::Get(browser()->profile())
       ->extension_service()
@@ -391,7 +391,7 @@ IN_PROC_BROWSER_TEST_F(JSEthereumProviderBrowserTest,
 
   scoped_refptr<const extensions::Extension> extension(
       extensions::ExtensionBuilder("MetaMask")
-          .SetID(kMetamaskExtensionId)
+          .SetID(metamask_extension_id)
           .Build());
   extensions::ExtensionSystem::Get(browser()->profile())
       ->extension_service()

@@ -18,15 +18,12 @@ base::Time TimeFromString(const std::string& time_string, bool is_local);
 
 // The distance between the past, present and future is only a persistent
 // illusion. Albert Einstein.
-
 base::Time DistantPast();
-std::string DistantPastAsIso8601();
-
+std::string DistantPastAsISO8601();
 base::Time Now();
-std::string NowAsIso8601();
-
+std::string NowAsISO8601();
 base::Time DistantFuture();
-std::string DistantFutureAsIso8601();
+std::string DistantFutureAsISO8601();
 
 }  // namespace brave_ads
 

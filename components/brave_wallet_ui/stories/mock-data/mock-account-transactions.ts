@@ -28,19 +28,14 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 3,
       txArgs: [],
       txParams: [],
       txType: 0,
-      createdTime: {
-        microseconds: BigInt(Date.now() * 1000 - 1000 * 60 * 5 * 1000)
-      },
-      submittedTime: {
-        microseconds: BigInt(Date.now() * 1000 - 1000 * 60 * 5)
-      },
-      confirmedTime: { microseconds: BigInt(Date.now() * 1000 - 1000 * 60 * 5) }
+      createdTime: { microseconds: BigInt((Date.now() * 1000) - 1000 * 60 * 5 * 1000) },
+      submittedTime: { microseconds: BigInt((Date.now() * 1000) - 1000 * 60 * 5) },
+      confirmedTime: { microseconds: BigInt((Date.now() * 1000) - 1000 * 60 * 5) }
     },
     {
       fromAddress: '0x7d66c9ddAED3115d93Bd1790332f3Cd06Cf52B14',
@@ -64,8 +59,7 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 3,
       txArgs: [],
       txParams: [],
@@ -96,8 +90,7 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 4,
       txArgs: [],
       txParams: [],
@@ -128,8 +121,7 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 2,
       txArgs: [],
       txParams: [],
@@ -160,8 +152,7 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 1,
       txArgs: [],
       txParams: [],
@@ -194,8 +185,7 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 0,
       txArgs: [],
       txParams: [],
@@ -226,8 +216,7 @@ export const transactionDummyData = {
         solanaTxData: undefined,
         filTxData: undefined
       },
-      txHash:
-        '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
+      txHash: '0x55732e30af74a450cd438be2a02c765ea62cb4ec8dda5cb12ed8dc5d21ac15d3',
       txStatus: 5,
       txArgs: [],
       txParams: [],

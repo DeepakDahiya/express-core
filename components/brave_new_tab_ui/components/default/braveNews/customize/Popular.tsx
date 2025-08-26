@@ -3,15 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import Flex from '$web-common/Flex'
 import { getLocale } from '$web-common/locale'
 import * as React from 'react'
-import { useBraveNews } from '../../../../../brave_news/browser/resources/shared/Context'
+import Flex from '$web-common/Flex'
 import Carousel from './Carousel'
+import { useBraveNews } from './Context'
 import CustomizeLink from './CustomizeLink'
 import CustomizePage from './CustomizePage'
 import DiscoverSection from './DiscoverSection'
-import PublisherCard from '../../../../../brave_news/browser/resources/shared/PublisherCard'
+import FeedCard from './FeedCard'
 
 const usePopularPublisherIds = () => {
   const { filteredPublisherIds, publishers, locale } = useBraveNews()
@@ -49,7 +49,7 @@ export function PopularPage () {
   const popularPublisherIds = usePopularPublisherIds()
   return <CustomizePage title={getLocale('braveNewsPopularTitle')}>
     <DiscoverSection>
-      {popularPublisherIds.map(p => <PublisherCard key={p} publisherId={p} />)}
+      {popularPublisherIds.map(p => <FeedCard key={p} publisherId={p} />)}
     </DiscoverSection>
   </CustomizePage>
 }

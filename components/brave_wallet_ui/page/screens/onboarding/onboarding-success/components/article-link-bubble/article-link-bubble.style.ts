@@ -33,19 +33,15 @@ export type IconBubbleColors =
   | 'yellow500'
 
 const getIcon = (iconName: ArticleLinkIcons) => {
-  return (
-    (
-      {
-        'crypto-wallets': CryptoWalletsIcon,
-        'grid': GridIcon,
-        'ipfs': IpfsIcon,
-        'key': KeyIcon,
-        'smartphone-desktop': SmartphoneDesktopIcon,
-        'wallet-with-coins': WalletWithCoinsIcon,
-        'wallet': WalletIcon
-      } as Record<ArticleLinkIcons, string>
-    )[iconName] || ''
-  )
+  return ({
+    'crypto-wallets': CryptoWalletsIcon,
+    'grid': GridIcon,
+    'ipfs': IpfsIcon,
+    'key': KeyIcon,
+    'smartphone-desktop': SmartphoneDesktopIcon,
+    'wallet-with-coins': WalletWithCoinsIcon,
+    'wallet': WalletIcon
+  } as Record<ArticleLinkIcons, string>)[iconName] || ''
 }
 
 export const BubbleIconBackground = styled.div<{
@@ -64,7 +60,7 @@ export const BubbleIcon = styled.div<{
   width: 30px;
   height: 30px;
   background-color: ${(p) => p.theme.palette.white};
-  mask-image: url(${(p) => getIcon(p.icon)});
+  mask-image: url(${p => getIcon(p.icon)});
   mask-size: 14px;
   mask-position: center center;
   mask-repeat: no-repeat;

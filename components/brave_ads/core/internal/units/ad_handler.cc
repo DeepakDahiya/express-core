@@ -73,6 +73,7 @@ void AdHandler::TriggerNewTabPageAdEvent(
     const mojom::NewTabPageAdEventType event_type,
     TriggerAdEventCallback callback) {
   CHECK(!placement_id.empty());
+  CHECK(!creative_instance_id.empty());
   CHECK(mojom::IsKnownEnumValue(event_type));
 
   new_tab_page_ad_handler_.TriggerEvent(placement_id, creative_instance_id,
@@ -85,6 +86,7 @@ void AdHandler::TriggerPromotedContentAdEvent(
     const mojom::PromotedContentAdEventType event_type,
     TriggerAdEventCallback callback) {
   CHECK(!placement_id.empty());
+  CHECK(!creative_instance_id.empty());
   CHECK(mojom::IsKnownEnumValue(event_type));
 
   promoted_content_ad_handler_.TriggerEvent(placement_id, creative_instance_id,
@@ -105,6 +107,7 @@ void AdHandler::TriggerInlineContentAdEvent(
     const mojom::InlineContentAdEventType event_type,
     TriggerAdEventCallback callback) {
   CHECK(!placement_id.empty());
+  CHECK(!creative_instance_id.empty());
   CHECK(mojom::IsKnownEnumValue(event_type));
 
   inline_content_ad_handler_.TriggerEvent(placement_id, creative_instance_id,

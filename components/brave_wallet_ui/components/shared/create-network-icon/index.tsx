@@ -7,7 +7,7 @@ import * as React from 'react'
 
 // Types
 import {
-  externalWalletProviderFromString //
+  externalWalletProviderFromString
 } from '../../../../brave_rewards/resources/shared/lib/external_wallet'
 
 // Constants
@@ -26,7 +26,7 @@ import {
 } from '../../../utils/rewards_utils'
 
 // Styled components
-import { IconWrapper, Placeholder, NetworkIcon, IconSize } from './style'
+import { IconWrapper, Placeholder, NetworkIcon } from './style'
 
 // Options
 import { getNetworkLogo } from '../../../options/asset-options'
@@ -42,7 +42,7 @@ type SimpleNetwork = Pick<
 interface Props {
   network?: SimpleNetwork | null
   marginRight?: number
-  size?: IconSize
+  size?: 'huge' | 'big' | 'small' | 'tiny' | 'extra-small'
 }
 
 const isStorybook = isComponentInStorybook()
@@ -51,24 +51,22 @@ export const CreateNetworkIcon = ({ network, marginRight, size }: Props) => {
   // exit early if no network
   if (!network) {
     return (
-      <NetworkPlaceholderIcon
-        marginRight={marginRight}
-        network={network}
-        size={size}
-      />
+      <NetworkPlaceholderIcon marginRight={marginRight} network={network} />
     )
   }
 
   // Computed
   const isRewardsNetwork = getIsRewardsNetwork(network)
 
-  const externalProvider = isRewardsNetwork
-    ? externalWalletProviderFromString(network.chainId)
-    : null
+  const externalProvider =
+    isRewardsNetwork
+      ? externalWalletProviderFromString(network.chainId)
+      : null
 
-  const networkLogo = isRewardsNetwork
-    ? getRewardsProviderIcon(externalProvider)
-    : getNetworkLogo(network.chainId, network.symbol)
+  const networkLogo =
+    isRewardsNetwork
+      ? getRewardsProviderIcon(externalProvider)
+      : getNetworkLogo(network.chainId, network.symbol)
 
   const isTestnet = SupportedTestNetworks.includes(network.chainId)
 
@@ -108,11 +106,7 @@ export const CreateNetworkIcon = ({ network, marginRight, size }: Props) => {
       : true)
   ) {
     return (
-      <NetworkPlaceholderIcon
-        marginRight={marginRight}
-        network={network}
-        size={size}
-      />
+      <NetworkPlaceholderIcon marginRight={marginRight} network={network} />
     )
   }
 
@@ -134,27 +128,18 @@ export default CreateNetworkIcon
 
 function NetworkPlaceholderIcon({
   marginRight,
-  network,
-  size
+  network
 }: {
   marginRight: number | undefined
   network?: SimpleNetwork | null
-  size?: IconSize
 }) {
   // custom hooks
   const orb = useNetworkOrb(network)
 
   // render
   return (
-    <IconWrapper
-      marginRight={marginRight ?? 0}
-      isTestnet={false}
-      size={size}
-    >
-      <Placeholder
-        size={size}
-        orb={orb}
-      />
+    <IconWrapper marginRight={marginRight ?? 0} isTestnet={false}>
+      <Placeholder orb={orb} />
     </IconWrapper>
   )
 }

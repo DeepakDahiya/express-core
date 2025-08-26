@@ -24,18 +24,15 @@ const AppContainer = styled.div<{ isPlaylistPlayerPage: boolean }>`
     isPlaylistPlayerPage ? '74px' : '56px'};
 `
 
-const StickyArea = styled.header`
+const HeaderWrapper = styled.header`
   position: sticky;
-  width: 100vw;
+  width: 100%;
+  height: var(--header-height);
   top: 0;
   z-index: 1;
 `
 
-const StyledHeader = styled(Header)`
-  height: var(--header-height);
-`
-
-export default function App() {
+export default function App () {
   useHistorySynchronization()
 
   const lastPlayerState = useLastPlayerState()
@@ -48,26 +45,23 @@ export default function App() {
         const playlistId = match?.params.playlistId
         return (
           <AppContainer isPlaylistPlayerPage={!!playlistId}>
-            <StickyArea>
-              <StyledHeader playlistId={playlistId} />
-              <VideoFrame
-                visible={
-                  !!lastPlayerState?.currentItem &&
-                  editMode !== PlaylistEditMode.BULK_EDIT
-                }
-                isMiniPlayer={lastPlayerState?.currentList?.id !== playlistId}
-              />
-            </StickyArea>
+            <HeaderWrapper>
+              <Header playlistId={playlistId} />
+            </HeaderWrapper>
+            <VideoFrame
+              visible={
+                !!lastPlayerState?.currentItem &&
+                editMode !== PlaylistEditMode.BULK_EDIT
+              }
+              isMiniPlayer={lastPlayerState?.currentList?.id !== playlistId}
+            />
             <section>
               <Switch>
                 <Route
                   path='/playlist/:playlistId'
                   component={PlaylistFolder}
                 />
-                <Route
-                  path='/'
-                  component={PlaylistsCatalog}
-                ></Route>
+                <Route path='/' component={PlaylistsCatalog}></Route>
               </Switch>
             </section>
           </AppContainer>

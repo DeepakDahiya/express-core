@@ -9,10 +9,6 @@
 #include <string>
 #include <vector>
 
-#include "base/files/file_util.h"
-#include "base/functional/bind.h"
-#include "base/sequence_checker.h"
-#include "base/task/thread_pool.h"
 #include "brave/components/brave_wallet/browser/blockchain_list_parser.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "build/build_config.h"
@@ -23,7 +19,6 @@
 namespace base {
 template <typename T>
 class NoDestructor;
-class FilePath;
 }  // namespace base
 
 namespace brave_wallet {
@@ -31,6 +26,7 @@ namespace brave_wallet {
 class BlockchainRegistry : public mojom::BlockchainRegistry {
  public:
   BlockchainRegistry(const BlockchainRegistry&) = delete;
+  ~BlockchainRegistry() override;
   BlockchainRegistry& operator=(const BlockchainRegistry&) = delete;
 
   static BlockchainRegistry* GetInstance();
@@ -89,20 +85,9 @@ class BlockchainRegistry : public mojom::BlockchainRegistry {
                       const std::string& contract_address,
                       GetCoingeckoIdCallback callback) override;
   bool IsOfacAddress(const std::string& address);
-  void ParseLists(const base::FilePath& dir, base::OnceClosure callback);
 
-  bool IsEmptyForTesting();
-  void ResetForTesting();
-
- private:
-  friend base::NoDestructor<BlockchainRegistry>;
-  BlockchainRegistry();
-  ~BlockchainRegistry() override;
-
+ protected:
   std::vector<mojom::BlockchainTokenPtr>* GetTokenListFromChainId(
-      const std::string& chain_id);
-  std::vector<brave_wallet::mojom::BlockchainTokenPtr> GetBuyTokens(
-      const std::vector<mojom::OnRampProvider>& providers,
       const std::string& chain_id);
 
   CoingeckoIdsMap coingecko_ids_map_;
@@ -113,9 +98,15 @@ class BlockchainRegistry : public mojom::BlockchainRegistry {
   OffRampTokensListMap off_ramp_token_lists_;
   std::vector<mojom::OnRampCurrency> on_ramp_currencies_list_;
   base::flat_set<std::string> ofac_addresses_;
+  friend base::NoDestructor<BlockchainRegistry>;
 
-  SEQUENCE_CHECKER(sequence_checker_);
+  BlockchainRegistry();
+
+ private:
   mojo::ReceiverSet<mojom::BlockchainRegistry> receivers_;
+  std::vector<brave_wallet::mojom::BlockchainTokenPtr> GetBuyTokens(
+      const std::vector<mojom::OnRampProvider>& providers,
+      const std::string& chain_id);
 };
 
 }  // namespace brave_wallet

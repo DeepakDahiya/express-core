@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rules.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/issuers_permission_rule.h"
 
 #include "brave/components/brave_ads/core/internal/account/issuers/issuers_unittest_util.h"
 #include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
@@ -14,27 +14,29 @@
 namespace brave_ads {
 
 class BraveAdsIssuersPermissionRuleTest : public UnitTestBase {
+ protected:
+  const IssuersPermissionRule permission_rule_;
 };
 
 TEST_F(BraveAdsIssuersPermissionRuleTest, ShouldAllowForRewardsUser) {
   // Arrange
-  test::BuildAndSetIssuers();
+  BuildAndSetIssuersForTesting();
 
   // Act & Assert
-  EXPECT_TRUE(HasIssuersPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsIssuersPermissionRuleTest, ShouldAlwaysAllowForNonRewardsUser) {
   // Arrange
-  test::DisableBraveRewards();
+  DisableBraveRewardsForTesting();
 
   // Act & Assert
-  EXPECT_TRUE(HasIssuersPermission());
+  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
 }
 
 TEST_F(BraveAdsIssuersPermissionRuleTest, ShouldNotAllowIfNoIssuers) {
   // Act & Assert
-  EXPECT_FALSE(HasIssuersPermission());
+  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
 }
 
 }  // namespace brave_ads

@@ -22,6 +22,8 @@ export const _DesktopWalletConcept = () => {
       walletStateOverride={{
         hasIncorrectPassword: false,
         isWalletCreated: true,
+        isSolanaEnabled: true,
+        isFilecoinEnabled: true
       }}
       pageStateOverride={{
         hasInitialized: true
@@ -44,11 +46,16 @@ export const _WalletOnboardingConcept = () => {
     <WalletPageStory
       walletStateOverride={{
         hasIncorrectPassword: false,
+        isSolanaEnabled: true,
+        isFilecoinEnabled: true,
         isWalletBackedUp: false,
         isWalletCreated: false
       }}
       pageStateOverride={{
-        setupStillInProgress: true
+        isCryptoWalletsInitialized: true,
+        isMetaMaskInitialized: true,
+        setupStillInProgress: true,
+        isImportWalletsCheckComplete: true
       }}
     >
       <Container />
