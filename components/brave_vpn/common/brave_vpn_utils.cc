@@ -120,7 +120,7 @@ bool IsBraveVPNDisabledByPolicy(PrefService* prefs) {
   return prefs->FindPreference(prefs::kManagedBraveVPNDisabled) &&
   // Need to investigate more about this.
   // IsManagedPreference() gives false on macOS when it's configured by
-  // "defaults write com.brave.Browser.beta BraveVPNDisabled -bool true".
+  // "defaults write com.discourse.browser.beta BraveVPNDisabled -bool true".
   // As kManagedBraveVPNDisabled is false by default and only can be set
   // by policy, I think skipping this condition checking will be fine.
 #if !BUILDFLAG(IS_MAC)

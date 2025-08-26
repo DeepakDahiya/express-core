@@ -33,8 +33,6 @@ import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.TextView;
 import org.chromium.url.mojom.Url;
-import org.chromium.brave_shields.mojom.SubscriptionInfo;
-import org.chromium.chrome.browser.shields.FilterListServiceFactory;
 import androidx.core.app.NotificationCompat;
 import android.app.PendingIntent;
 import androidx.core.app.NotificationManagerCompat;

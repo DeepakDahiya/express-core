@@ -441,7 +441,7 @@
         <!--
             TODO(alexeybarabash, Deep, Agustin) Shold we ambed this font?
             Otherwise, app can't be built:
-            error: resource font/roboto (aka com.brave.browser_default:font/roboto) not found.
+            error: resource font/roboto (aka com.discourse.browser_default:font/roboto) not found.
         -->
         <!-- <item name="android:fontFamily">@font/roboto</item> -->
         <item name="android:textSize">@dimen/small_semibold</item>

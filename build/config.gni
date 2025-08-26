@@ -3,18 +3,12 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
+import("//brave/build/brave_channel.gni")
 import("//build/config/apple/symbols.gni")
 import("//build/util/branding.gni")
 import("//chrome/version.gni")
 
 declare_args() {
-  # Release channel support.
-  # "beta" for beta release.
-  # "dev" for dev channel release.
-  # "nightly" for nightly channel release.
-  # "" for stable channel release.
-  brave_channel = ""
-  is_release_channel = false
   base_sparkle_update_url = ""
   enable_sparkle = !is_component_build && is_mac
   build_sparkle = false
@@ -28,16 +22,15 @@ declare_args() {
   brave_version_major = ""
   brave_version_minor = ""
   brave_version_build = ""
-  brave_version_patch = 0
   chrome_version_string = ""
-  build_omaha = false
-  tag_ap = ""
   target_android_base = ""
   target_android_output_format = ""
   brave_android_keystore_path = "."
   brave_android_keystore_name = ""
   brave_android_keystore_password = ""
   brave_android_key_password = ""
+  brave_android_pkcs11_provider = ""
+  brave_android_pkcs11_alias = ""
 
   skip_signing = false
 
@@ -47,8 +40,16 @@ declare_args() {
 
   # Enables brave/tools/redirect_cc target, replaces brave/chromium_src
   # overrides with empty ones to make //base buildable for redirect_cc.
-  is_redirect_cc_build = false
   android_aab_to_apk = false
+}
+
+if (target_os == "win") {
+  # Omaha 3 and its related arguments are available on Windows only.
+  declare_args() {
+    build_omaha = false
+    tag_ap = ""
+    tag_installdataindex = ""
+  }
 }
 
 declare_args() {
@@ -120,6 +121,7 @@ if (is_win) {
   brave_exe = "$chrome_product_full_name.app"
   brave_dmg = "$chrome_product_full_name.dmg"
   brave_pkg = "$chrome_product_full_name.pkg"
+  brave_zip = "$chrome_product_full_name.app.zip"
   brave_delta = "$chrome_product_full_name.delta"
 
   brave_product_dir_name_suffix = ""

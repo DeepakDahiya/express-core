@@ -19,13 +19,10 @@ public class BraveBottomControlsMediatorClassAdapter extends BraveClassVisitor {
         redirectConstructor(
                 sBottomControlsMediatorClassName, sBraveBottomControlsMediatorClassName);
 
-        deleteField(sBraveBottomControlsMediatorClassName, "mBottomControlsHeight");
-        makeProtectedField(sBottomControlsMediatorClassName, "mBottomControlsHeight");
-
         deleteField(sBraveBottomControlsMediatorClassName, "mModel");
         makeProtectedField(sBottomControlsMediatorClassName, "mModel");
 
-        deleteField(sBraveBottomControlsMediatorClassName, "mBrowserControlsSizer");
-        makeProtectedField(sBottomControlsMediatorClassName, "mBrowserControlsSizer");
+        deleteField(sBraveBottomControlsMediatorClassName, "mBottomControlsStacker");
+        makeProtectedField(sBottomControlsMediatorClassName, "mBottomControlsStacker");
     }
 }

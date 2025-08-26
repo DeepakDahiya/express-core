@@ -3,13 +3,14 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/components/brave_webtorrent/browser/buildflags/buildflags.gni")
 import("//brave/components/tor/buildflags/buildflags.gni")
 import("//build/config/locales.gni")
 import("//chrome/common/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//tools/grit/repack.gni")
 import("//ui/base/ui_features.gni")
+
+assert(!is_ios)
 
 # Generates a rule to repack a set of resources, substituting a given string
 # in for the percentage (e.g. "100", "200"). It generates the repacked files in
@@ -54,21 +55,21 @@ template("brave_extra_paks") {
                            ])
     output = "${invoker.output_dir}/brave_resources.pak"
     sources = [
-      "$root_gen_dir/brave/components/brave_ads/resources/brave_ads_resources.pak",
       "$root_gen_dir/brave/components/brave_rewards/resources/brave_rewards_resources.pak",
       "$root_gen_dir/components/brave_components_resources.pak",
     ]
 
     if (!is_android) {
       sources += [
+        "$root_gen_dir/brave/brave_education_resources.pak",
         "$root_gen_dir/brave/brave_generated_resources.pak",
         "$root_gen_dir/brave/brave_unscaled_resources.pak",
+        "$root_gen_dir/brave/browser/resources/brave_new_tab_page_refresh/brave_new_tab_page_refresh_generated.pak",
         "$root_gen_dir/brave/browser/resources/settings/brave_settings_resources.pak",
       ]
     }
 
     deps = [
-      "//brave/components/brave_ads/resources",
       "//brave/components/brave_rewards/resources",
       "//brave/components/resources",
     ]
@@ -77,6 +78,8 @@ template("brave_extra_paks") {
       deps += [
         "//brave/app:brave_generated_resources_grit",
         "//brave/app/theme:brave_unscaled_resources",
+        "//brave/browser/resources/brave_education:resources_grit",
+        "//brave/browser/resources/brave_new_tab_page_refresh:generated_resources",
         "//brave/browser/resources/settings:resources",
         "//brave/components/resources:strings",
       ]
@@ -87,12 +90,6 @@ template("brave_extra_paks") {
           [ "$root_gen_dir/brave/components/tor/resources/tor_resources.pak" ]
 
       deps += [ "//brave/components/tor/resources" ]
-    }
-
-    if (enable_brave_webtorrent) {
-      sources += [ "$root_gen_dir/brave/components/brave_webtorrent/brave_webtorrent_resources.pak" ]
-
-      deps += [ "//brave/components/brave_webtorrent:resources" ]
     }
 
     if (enable_extensions) {

@@ -22,13 +22,32 @@ public class BraveNewTabPageLayoutClassAdapter extends BraveClassVisitor {
         deleteField(sBraveNewTabPageLayoutClassName, "mLogoCoordinator");
         makeProtectedField(sNewTabPageLayoutClassName, "mLogoCoordinator");
 
-        makePublicMethod(sNewTabPageLayoutClassName, "insertSiteSectionView");
-        addMethodAnnotation(
-                sBraveNewTabPageLayoutClassName, "insertSiteSectionView", "Ljava/lang/Override;");
+        deleteField(sBraveNewTabPageLayoutClassName, "mInitialTileNum");
+        makeProtectedField(sNewTabPageLayoutClassName, "mInitialTileNum");
 
-        makePublicMethod(sNewTabPageLayoutClassName, "isScrollableMvtEnabled");
+        deleteField(sBraveNewTabPageLayoutClassName, "mProfile");
+        makeProtectedField(sNewTabPageLayoutClassName, "mProfile");
+
+        makePublicMethod(sNewTabPageLayoutClassName, "initializeSiteSectionView");
         addMethodAnnotation(
-                sBraveNewTabPageLayoutClassName, "isScrollableMvtEnabled", "Ljava/lang/Override;");
+                sBraveNewTabPageLayoutClassName,
+                "initializeSiteSectionView",
+                "Ljava/lang/Override;");
+
+        makePublicMethod(sNewTabPageLayoutClassName, "setSearchProviderTopMargin");
+        addMethodAnnotation(
+                sBraveNewTabPageLayoutClassName,
+                "setSearchProviderTopMargin",
+                "Ljava/lang/Override;");
+
+        makePublicMethod(sNewTabPageLayoutClassName, "setSearchProviderBottomMargin");
+        addMethodAnnotation(
+                sBraveNewTabPageLayoutClassName,
+                "setSearchProviderBottomMargin",
+                "Ljava/lang/Override;");
+
+        deleteMethod(sBraveNewTabPageLayoutClassName, "getLogoMargin");
+        makePublicMethod(sNewTabPageLayoutClassName, "getLogoMargin");
 
         changeSuperName(sNewTabPageLayoutClassName, sNewTabPageLayoutSuperClassName);
     }

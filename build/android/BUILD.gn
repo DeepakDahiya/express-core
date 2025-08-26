@@ -18,10 +18,11 @@ action("sign_app_convert_aab_to_apk") {
 
   deps = [ ":sign_app" ]
 
-  target_aab_path = "$root_out_dir/apks/MonochromePublic6432.aab"
+  target_aab_path = "$root_out_dir/apks/MonochromePublic64.aab"
   output_apk_path = "$root_out_dir/apks/Bravearm64Universal.apk"
   output_path = "$root_out_dir/apks/"
-  bundletool = "//third_party/android_build_tools/bundletool/bundletool.jar"
+  bundletool =
+      "//third_party/android_build_tools/bundletool/cipd/bundletool.jar"
 
   outputs = [ output_apk_path ]
 
@@ -43,13 +44,21 @@ action("sign_app_convert_aab_to_apk") {
 action("sign_app") {
   script = "//brave/build/android/sign_apk.py"
 
-  deps = [ "//brave:create_symbols_dist" ]
+  deps = [
+    # Make sure we have a copy prior to signing.
+    ":brave",
+    "//brave:create_symbols_dist",
+  ]
 
   if (target_cpu == "arm64" || target_cpu == "x64") {
     if (target_android_output_format == "aab") {
-      target_sign_app_path = "$root_out_dir/apks/MonochromePublic6432.aab"
+      target_sign_app_path = "$root_out_dir/apks/MonochromePublic64.aab"
     } else {
-      target_sign_app_path = "$root_out_dir/apks/MonochromePublic.apk"
+      if (defined(android_app_secondary_abi)) {
+        target_sign_app_path = "$root_out_dir/apks/MonochromePublic.apk"
+      } else {
+        target_sign_app_path = "$root_out_dir/apks/MonochromePublic64.apk"
+      }
     }
   } else {
     if (target_android_base == "mono") {
@@ -67,7 +76,7 @@ action("sign_app") {
     }
   }
 
-  outputs = [ "$target_sign_app_path-singed" ]
+  outputs = [ "$brave_android_output-sign-result" ]
   args = [
     rebase_path(_zipalign, root_out_dir),
     rebase_path(_apksigner, root_out_dir),
@@ -75,11 +84,23 @@ action("sign_app") {
   ]
   args += [
     rebase_path(target_sign_app_path, root_out_dir),
-    rebase_path("$brave_android_keystore_path", root_out_dir),
+
+    # Sign the final output file as well as there is no garantee that copy will happen after the sign.
+    # Ideally we should combine `brave`, `sign_app` and `sign_app_convert_aab_to_apk` into one action and do what we need in the script depending on the flags.
+    rebase_path(brave_android_output, root_out_dir),
+    "$brave_android_keystore_path",
     "$brave_android_keystore_password",
     "$brave_android_key_password",
     "$brave_android_keystore_name",
   ]
+
+  # Add PKCS11 arguments if both provider and alias are defined
+  if (brave_android_pkcs11_provider != "" && brave_android_pkcs11_alias != "") {
+    args += [
+      "--pkcs11-provider=" + brave_android_pkcs11_provider,
+      "--pkcs11-alias=" + brave_android_pkcs11_alias,
+    ]
+  }
 }
 
 copy("brave") {
@@ -88,12 +109,16 @@ copy("brave") {
   sources = []
   if (target_cpu == "arm64" || target_cpu == "x64") {
     if (target_android_output_format == "aab") {
-      deps += [ "//chrome/android:monochrome_64_32_public_bundle" ]
-      sources += [ "$root_out_dir/apks/MonochromePublic6432.aab" ]
+      deps += [ "//chrome/android:monochrome_64_public_bundle" ]
+      sources += [ "$root_out_dir/apks/MonochromePublic64.aab" ]
     } else {
-      # There is no 64-bit apk target for Mono
-      deps += [ "//chrome/android:monochrome_32_64_public_apk" ]
-      sources += [ "$root_out_dir/apks/MonochromePublic.apk" ]
+      if (defined(android_app_secondary_abi)) {
+        deps += [ "//chrome/android:monochrome_64_32_public_apk" ]
+        sources += [ "$root_out_dir/apks/MonochromePublic.apk" ]
+      } else {
+        deps += [ "//chrome/android:monochrome_64_public_apk" ]
+        sources += [ "$root_out_dir/apks/MonochromePublic64.apk" ]
+      }
     }
   } else {
     if (target_android_base == "mono") {
@@ -198,52 +223,21 @@ java_strings_grd("android_brave_strings_grd") {
   ]
 }
 
-brave_xml_preprocessor("brave_java_xml_preprocess_resources") {
-  sources = brave_java_preprocess_xml_sources
-  modules = brave_java_preprocess_module_sources
-}
-
 generate_jni("jni_headers") {
   sources = [
-    "//brave/android/java/org/chromium/chrome/browser/BraveFeatureUtil.java",
-    "//brave/android/java/org/chromium/chrome/browser/BraveLocalState.java",
-    "//brave/android/java/org/chromium/chrome/browser/BraveRelaunchUtils.java",
-    "//brave/android/java/org/chromium/chrome/browser/BraveRewardsNativeWorker.java",
-    "//brave/android/java/org/chromium/chrome/browser/BraveSyncWorker.java",
-    "//brave/android/java/org/chromium/chrome/browser/app/BraveActivity.java",
-    "//brave/android/java/org/chromium/chrome/browser/bookmarks/BraveBookmarkBridge.java",
     "//brave/android/java/org/chromium/chrome/browser/brave_leo/BraveLeoSettingsLauncherHelper.java",
-    "//brave/android/java/org/chromium/chrome/browser/brave_news/BraveNewsControllerFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/component_updater/BraveComponentUpdater.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/AssetRatioServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BlockchainRegistryFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BraveWalletProviderDelegateImplHelper.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/BraveWalletServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/JsonRpcServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/KeyringServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/SwapServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/TxServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/fragments/dapps/ConnectAccountFragment.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/permission/BraveDappPermissionPromptDialog.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/util/WalletDataFilesInstaller.java",
     "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/util/WalletDataFilesInstallerUtil.java",
-    "//brave/android/java/org/chromium/chrome/browser/crypto_wallet/util/WalletNativeUtils.java",
+    "//brave/android/java/org/chromium/chrome/browser/day_zero/DayZeroHelper.java",
     "//brave/android/java/org/chromium/chrome/browser/informers/BraveSyncAccountDeletedInformer.java",
-    "//brave/android/java/org/chromium/chrome/browser/misc_metrics/MiscAndroidMetricsFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/notifications/BraveNotificationPlatformBridge.java",
-    "//brave/android/java/org/chromium/chrome/browser/notifications/BraveNotificationSettingsBridge.java",
-    "//brave/android/java/org/chromium/chrome/browser/ntp_background_images/NTPBackgroundImagesBridge.java",
-    "//brave/android/java/org/chromium/chrome/browser/playlist/PlaylistServiceFactoryAndroid.java",
+    "//brave/android/java/org/chromium/chrome/browser/notifications/channels/BraveSiteChannelsManagerBridge.java",
     "//brave/android/java/org/chromium/chrome/browser/preferences/BravePrefServiceBridge.java",
-    "//brave/android/java/org/chromium/chrome/browser/preferences/website/BraveShieldsContentSettings.java",
-    "//brave/android/java/org/chromium/chrome/browser/settings/developer/BraveQAPreferences.java",
-    "//brave/android/java/org/chromium/chrome/browser/shields/FilterListServiceFactory.java",
-    "//brave/android/java/org/chromium/chrome/browser/shields/UrlSanitizerServiceFactory.java",
     "//brave/android/java/org/chromium/chrome/browser/signin/BraveSigninManager.java",
-    "//brave/android/java/org/chromium/chrome/browser/speedreader/BraveSpeedReaderUtils.java",
-    "//brave/android/java/org/chromium/chrome/browser/sync/BraveSyncDevices.java",
-    "//brave/android/java/org/chromium/chrome/browser/vpn/BraveVpnNativeWorker.java",
+    "//brave/android/java/org/chromium/chrome/browser/util/TabUtils.java",
   ]
 
-  public_deps = [ "//brave/android/java/org/chromium/chrome/browser/search_engines:jni_headers" ]
+  public_deps = [
+    "//brave/android/java/org/chromium/chrome/browser/search_engines:jni_headers",
+    "//brave/browser/android/youtube_script_injector:jni_headers",
+    "//chrome/android:chrome_jni_headers",
+  ]
 }
