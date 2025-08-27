@@ -19,7 +19,9 @@
   }                                                                      \
   bool SerializesAsNull
 
-#include "src/third_party/blink/renderer/platform/weborigin/security_origin.h"  // IWYU pragma: export
+#include <third_party/blink/renderer/platform/weborigin/security_origin.h>  // IWYU pragma: export
+
+#include "base/check.h"
 
 #undef SerializesAsNull
 

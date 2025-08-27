@@ -8,7 +8,7 @@
 #include "brave/third_party/blink/renderer/core/farbling/brave_session_cache.h"
 
 #define NavigatorLanguage NavigatorLanguage_ChromiumImpl
-#include "src/third_party/blink/renderer/core/frame/navigator_language.cc"
+#include <third_party/blink/renderer/core/frame/navigator_language.cc>
 #undef NavigatorLanguage
 
 namespace blink {
@@ -19,7 +19,8 @@ NavigatorLanguage::NavigatorLanguage(ExecutionContext* execution_context)
 void NavigatorLanguage::EnsureUpdatedLanguage() {
   NavigatorLanguage_ChromiumImpl::EnsureUpdatedLanguage();
   BraveFarblingLevel farbling_level = brave::GetBraveFarblingLevelFor(
-      execution_context_, BraveFarblingLevel::OFF);
+      execution_context_, ContentSettingsType::BRAVE_WEBCOMPAT_LANGUAGE,
+      BraveFarblingLevel::OFF);
   // If Brave Shields are down or anti-fingerprinting is off for this site,
   // do nothing.
   if (farbling_level == BraveFarblingLevel::OFF)

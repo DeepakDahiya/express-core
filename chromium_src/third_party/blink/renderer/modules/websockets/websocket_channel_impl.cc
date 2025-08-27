@@ -12,7 +12,7 @@
 
 #define WebSocketChannelImpl WebSocketChannelImpl_ChromiumImpl
 
-#include "src/third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc"
+#include <third_party/blink/renderer/modules/websockets/websocket_channel_impl.cc>
 
 #undef WebSocketChannelImpl
 
@@ -22,9 +22,9 @@ namespace blink {
 WebSocketChannelImpl* WebSocketChannelImpl::Create(
     ExecutionContext* execution_context,
     WebSocketChannelClient* client,
-    std::unique_ptr<SourceLocation> location) {
-  auto* channel = MakeGarbageCollected<WebSocketChannelImpl>(
-      execution_context, client, std::move(location));
+    SourceLocation* location) {
+  auto* channel = MakeGarbageCollected<WebSocketChannelImpl>(execution_context,
+                                                             client, location);
   channel->handshake_throttle_ =
       channel->GetBaseFetchContext()->CreateWebSocketHandshakeThrottle();
   return channel;
@@ -39,19 +39,19 @@ void WebSocketChannelImpl::TearDownFailedConnection() {
 
 bool WebSocketChannelImpl::ShouldDisallowConnection(const KURL& url) {
   if (base::FeatureList::IsEnabled(blink::features::kRestrictWebSocketsPool)) {
-    if (blink::WebContentSettingsClient* settings =
-            brave::GetContentSettingsClientFor(execution_context_)) {
-      const bool is_extension = CommonSchemeRegistry::IsExtensionScheme(
-          execution_context_->GetSecurityOrigin()->Protocol().Ascii());
-      if (!is_extension &&
-          settings->GetBraveFarblingLevel() != BraveFarblingLevel::OFF) {
-        websocket_in_use_tracker_ =
-            ResourcePoolLimiter::GetInstance().IssueResourceInUseTracker(
-                execution_context_,
-                ResourcePoolLimiter::ResourceType::kWebSocket);
-        if (!websocket_in_use_tracker_) {
-          return true;
-        }
+    const bool is_extension = CommonSchemeRegistry::IsExtensionScheme(
+        execution_context_->GetSecurityOrigin()->Protocol().Ascii());
+    if (!is_extension &&
+        brave::GetBraveFarblingLevelFor(
+            execution_context_,
+            ContentSettingsType::BRAVE_WEBCOMPAT_WEB_SOCKETS_POOL,
+            BraveFarblingLevel::OFF) != BraveFarblingLevel::OFF) {
+      websocket_in_use_tracker_ =
+          ResourcePoolLimiter::GetInstance().IssueResourceInUseTracker(
+              execution_context_,
+              ResourcePoolLimiter::ResourceType::kWebSocket);
+      if (!websocket_in_use_tracker_) {
+        return true;
       }
     }
   }

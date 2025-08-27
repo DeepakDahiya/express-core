@@ -3,25 +3,20 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import os.path
 import re
-import sys
 
+import brave_chromium_utils
 import override_utils
 
-# We patch the upstream script to inline this file, so the path reported by
-# __file__ will be the path of the upstream script.
-SCRIPTS_DIR = os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
-sys.path.insert(1, SCRIPTS_DIR)
-
-from bind_gen.code_node import SymbolNode, TextNode  # pylint: disable=import-error,wrong-import-position
-from bind_gen.codegen_accumulator import CodeGenAccumulator  # pylint: disable=import-error,wrong-import-position
-from bind_gen.codegen_context import CodeGenContext  # pylint: disable=import-error,wrong-import-position
-from bind_gen.codegen_format import format_template as _format  # pylint: disable=import-error,wrong-import-position
+# pylint: disable=relative-beyond-top-level
+from .code_node import SymbolNode, TextNode
+from .codegen_accumulator import CodeGenAccumulator
+from .codegen_context import CodeGenContext
+from .codegen_format import format_template as _format
 
 # Get gn arg to enable WebAPI probes.
-_IS_PG_WEBAPI_PROBES_ENABLED = override_utils.get_gn_arg(
-    "enable_brave_page_graph_webapi_probes")
+_IS_PG_WEBAPI_PROBES_ENABLED = brave_chromium_utils.get_json_value(
+    "gn_args_page_graph.json", "enable_brave_page_graph_webapi_probes")
 
 # Workaround attribute to set when is_observable_array codegen is active. This
 # codegen breaks "return value" assumption, i.e. it says that a return value
@@ -30,9 +25,8 @@ _IS_OBSERVABLE_ARRAY_SETTER = "pg_is_observable_array_setter"
 
 # Allowed WebAPIs to track.
 _PAGE_GRAPH_TRACKED_ITEMS = {
-    "OffscreenCanvasRenderingContext2D": {
-        "measureText",
-    },
+    "AudioContext": {"*"},
+    "BaseAudioContext": {"*"},
     "CanvasRenderingContext2D": {
         "measureText",
     },
@@ -40,39 +34,48 @@ _PAGE_GRAPH_TRACKED_ITEMS = {
         "cookie",
         "referrer",
     },
+    "DynamicsCompressorNode": {"*"},
+    "Geolocation": {"*"},
     "HTMLCanvasElement": {
         "getContext",
         "toBlob",
         "toDataURL",
     },
     "Location": {"*"},
+    "MediaDevices": {"*"},
     "Navigator": {"*"},
+    "OfflineAudioContext": {"*"},
+    "OffscreenCanvasRenderingContext2D": {
+        "measureText",
+    },
+    "OscillatorNode": {"*"},
     "Performance": {"*"},
-    "PerformanceObserver": {"*"},
     "PerformanceNavigation": {"*"},
+    "PerformanceObserver": {"*"},
     "PerformanceTiming": {"*"},
     "Screen": {"*"},
     "Storage": {"*"},
-    "Window": {
-        "performance",
-        "fetch",
-        "setTimeout",
-        "setInterval",
-        "clearTimeout",
-        "clearInterval",
-    },
-    "WorkerGlobalScope": {
-        "performance",
-        "fetch",
+    "WebGL2RenderingContext": {
+        "getExtension",
+        "getParameter",
     },
     "WebGLRenderingContext": {
         "getExtension",
         "getParameter",
         "getShaderPrecisionFormat",
     },
-    "WebGL2RenderingContext": {
-        "getExtension",
-        "getParameter",
+    "Window": {
+        "clearInterval",
+        "clearTimeout",
+        "fetch",
+        "matchMedia",
+        "performance",
+        "setInterval",
+        "setTimeout",
+    },
+    "WorkerGlobalScope": {
+        "fetch",
+        "performance",
     },
     "XMLHttpRequest": {"*"},
     "XMLHttpRequestEventTarget": {"*"},
@@ -97,12 +100,12 @@ def _should_track_in_page_graph(cg_context):
     return cg_context.property_.identifier in tracked_class_items
 
 
-def _to_page_graph_blink_receiver_data(arg):
-    return "ToPageGraphBlinkReceiverData({})".format(arg)
+def _to_page_graph_object(arg):
+    return "ToPageGraphObject({})".format(arg)
 
 
-def _to_page_graph_blink_arg(arg):
-    return "ToPageGraphBlinkArg({})".format(arg)
+def _to_page_graph_value(arg):
+    return "ToPageGraphValue(${{current_script_state}}, {})".format(arg)
 
 
 ### Helpers end.
@@ -133,7 +136,7 @@ def _make_report_page_graph_binding_event(cg_context):
         assert False, "PageGraph unsupported binding type for: {}.{}".format(
             cg_context.class_like.identifier, cg_context.property_.identifier)
 
-    pattern = ("if (UNLIKELY(${page_graph_enabled})) {{\n"
+    pattern = ("if (${page_graph_enabled}) [[unlikely]] {{\n"
                "  probe::RegisterPageGraphBindingEvent("
                "${current_execution_context}, ${page_graph_binding_name}, "
                "PageGraphBindingType::k{_1}, "
@@ -189,8 +192,6 @@ def _append_report_page_graph_api_call_event(cg_context, expr):
     if not _should_track_in_page_graph(cg_context):
         return expr
 
-    if cg_context.no_alloc_direct_call_for_testing:
-        return expr
     # `expr`` is a C++ code (a simple string) that contains the call and the
     # return value assignment. Make sure it's a single-lined expression as it's
     # originally implemented in upstream `_make_blink_api_call` function.
@@ -199,7 +200,7 @@ def _append_report_page_graph_api_call_event(cg_context, expr):
     # Extract blink_receiver and args from a string like:
     # ${blink_receiver}->getExtension(${script_state}, ${arg1_name})
     if expr.startswith("${blink_receiver}"):
-        receiver_data = _to_page_graph_blink_receiver_data("${blink_receiver}")
+        receiver_data = _to_page_graph_object("${blink_receiver}")
     else:
         receiver_data = "{}"
 
@@ -207,7 +208,7 @@ def _append_report_page_graph_api_call_event(cg_context, expr):
     args = re.findall((r"(\${(?:"
                        r"arg\d+\w+|blink_property_name|blink_property_value"
                        r")})"), expr)
-    args = ", ".join(map(_to_page_graph_blink_arg, args))
+    args = ", ".join(map(_to_page_graph_value, args))
 
     # Extract exception state.
     if cg_context.may_throw_exception:
@@ -224,13 +225,37 @@ def _append_report_page_graph_api_call_event(cg_context, expr):
                                            _IS_OBSERVABLE_ARRAY_SETTER):
         return_value = "std::nullopt"
     else:
-        return_value = _to_page_graph_blink_arg("return_value")
+        return_value = _to_page_graph_value("return_value")
 
+    # The odd pattern below:
+    #     auto *pg_v8_receiver = ${v8_receiver};
+    # is to make sure the code generator sets up `v8_receiver` correctly
+    # (which necessarily happens before the PageGraph check block),
+    # but to only interact with it in cases where we know there will be
+    # a context associated with it.
     pattern = (";\n"
-               "if (UNLIKELY(${page_graph_enabled})) {{\n"
-               "  probe::RegisterPageGraphWebAPICallWithResult("
-               "${current_execution_context}, \n"
-               "${page_graph_binding_name}, {_1}, {{{_2}}}, {_3}, {_4});\n"
+               "if (${page_graph_enabled}) [[unlikely]] {{\n"
+               "  if (auto pg_scope = ScopedPageGraphCall();"
+               "    pg_scope.has_value()) {{\n"
+               "    auto pg_context = ${current_execution_context};\n"
+               "    auto pg_v8_receiver = ${v8_receiver};\n"
+               "    auto pg_maybe_receiver_context = pg_v8_receiver->"
+               "        GetCreationContext();\n"
+               "    if (!pg_maybe_receiver_context.IsEmpty()) {{\n"
+               "      auto pg_receiver_v8_context = pg_maybe_receiver_context"
+               "          .ToLocalChecked();\n"
+               "      auto pg_maybe_receiver_execution_context = "
+               "          ToExecutionContext(pg_receiver_v8_context);\n"
+               "      if (pg_maybe_receiver_execution_context) {{\n"
+               "        pg_context = pg_maybe_receiver_execution_context;\n"
+               "      }}\n"
+               "    }}\n"
+               "    probe::RegisterPageGraphWebAPICallWithResult("
+               "      pg_context, \n"
+               "      ${page_graph_binding_name}, {_1}, \n"
+               "      CreatePageGraphValues({_2}), \n"
+               "      {_3}, {_4});\n"
+               "  }}"
                "}}")
     _1 = receiver_data
     _2 = args

@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
+#include <optional>
 
 #include "brave/third_party/blink/renderer/core/farbling/brave_session_cache.h"
 #include "third_party/blink/renderer/core/dom/document.h"
@@ -11,13 +11,15 @@
 #include "third_party/blink/renderer/core/frame/local_frame.h"
 #include "third_party/blink/renderer/core/html/canvas/canvas_rendering_context_host.h"
 #include "third_party/blink/renderer/core/workers/worker_global_scope.h"
+#include "third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"
 
 namespace {
 
 bool AllowFingerprintingForHost(blink::CanvasRenderingContextHost* host) {
   if (!host)
     return true;
-  return brave::AllowFingerprinting(host->GetTopExecutionContext());
+  return brave::AllowFingerprinting(host->GetTopExecutionContext(),
+                                    ContentSettingsType::BRAVE_WEBCOMPAT_WEBGL);
 }
 
 }  // namespace
@@ -32,7 +34,7 @@ bool AllowFingerprintingForHost(blink::CanvasRenderingContextHost* host) {
 
 #define BRAVE_WEBGL_RENDERING_CONTEXT_BASE_NULLOPT \
   if (!AllowFingerprintingForHost(Host()))         \
-    return absl::nullopt;
+    return std::nullopt;
 
 #define BRAVE_WEBGL_RENDERING_CONTEXT_BASE_ZERO \
   if (!AllowFingerprintingForHost(Host()))      \
@@ -44,7 +46,7 @@ bool AllowFingerprintingForHost(blink::CanvasRenderingContextHost* host) {
 
 #define BRAVE_WEBGL_RENDERING_CONTEXT_BASE_SCRIPT_VALUE \
   if (!AllowFingerprintingForHost(Host()))              \
-    return ScriptValue::CreateNull(script_state->GetIsolate());
+    return ScriptValue::CreateNull(v8::Isolate::GetCurrent());
 
 #define BRAVE_WEBGL_RENDERING_CONTEXT_BASE_STRING \
   if (!AllowFingerprintingForHost(Host()))        \
@@ -77,7 +79,7 @@ bool AllowFingerprintingForHost(blink::CanvasRenderingContextHost* host) {
 
 #define getExtension getExtension_ChromiumImpl
 #define getSupportedExtensions getSupportedExtensions_ChromiumImpl
-#include "src/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc"
+#include <third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.cc>
 #undef getSupportedExtensions
 #undef getExtension
 
@@ -85,12 +87,13 @@ namespace blink {
 
 // If fingerprinting is disallowed, claim that the only supported extension is
 // WebGLDebugRendererInfo.
-absl::optional<Vector<String>>
+std::optional<Vector<String>>
 WebGLRenderingContextBase::getSupportedExtensions() {
-  absl::optional<Vector<String>> real_extensions =
+  std::optional<Vector<String>> real_extensions =
       getSupportedExtensions_ChromiumImpl();
-  if (real_extensions == absl::nullopt)
+  if (real_extensions == std::nullopt) {
     return real_extensions;
+  }
   if (AllowFingerprintingForHost(Host()))
     return real_extensions;
 
@@ -101,11 +104,12 @@ WebGLRenderingContextBase::getSupportedExtensions() {
 
 // If fingerprinting is disallowed and they're asking for information about any
 // extension other than WebGLDebugRendererInfo, don't give it to them.
-ScriptValue WebGLRenderingContextBase::getExtension(ScriptState* script_state,
-                                                    const String& name) {
-  if (!AllowFingerprintingForHost(Host()))
+ScriptObject WebGLRenderingContextBase::getExtension(ScriptState* script_state,
+                                                     const String& name) {
+  if (!AllowFingerprintingForHost(Host())) {
     if (name != WebGLDebugRendererInfo::ExtensionName())
-      return ScriptValue::CreateNull(script_state->GetIsolate());
+      return ScriptObject::CreateNull(v8::Isolate::GetCurrent());
+  }
   return getExtension_ChromiumImpl(script_state, name);
 }
 

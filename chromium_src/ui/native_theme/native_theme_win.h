@@ -10,7 +10,7 @@
  private: \
   friend void UpdateDarkModeStatus();
 
-#include "src/ui/native_theme/native_theme_win.h"  // IWYU pragma: export
+#include <ui/native_theme/native_theme_win.h>  // IWYU pragma: export
 #undef BRAVE_UI_NATIVE_THEME_NATIVE_THEME_WIN_H_
 
 namespace ui {
@@ -18,7 +18,7 @@ namespace ui {
 // Set true when browser should not response to system theme change.
 // If user set dark or light explicitly, browser should ignore system dark mode
 // setting.
-void NATIVE_THEME_EXPORT IgnoreSystemDarkModeChange(bool ignore);
+void COMPONENT_EXPORT(NATIVE_THEME) IgnoreSystemDarkModeChange(bool ignore);
 
 }  // namespace ui
 

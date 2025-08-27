@@ -9,15 +9,16 @@
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_MAC)
-#define UnlockPaintAsActive               \
-  SetWindowTitleVisibility(bool visible); \
-  void ResetWindowControlsPosition();     \
+#define UnlockPaintAsActive                   \
+  SetWindowTitleVisibility(bool visible);     \
+  void ResetWindowControlsPosition();         \
+  void UpdateWindowTitleColor(SkColor color); \
   void UnlockPaintAsActive
 #else
 #define UnlockPaintAsActive UnlockPaintAsActive
 #endif
 
-#include "src/ui/views/widget/widget.h"  // IWYU pragma: export
+#include <ui/views/widget/widget.h>  // IWYU pragma: export
 
 #undef UnlockPaintAsActive
 

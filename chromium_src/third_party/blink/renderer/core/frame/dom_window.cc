@@ -5,12 +5,19 @@
 
 #include "third_party/blink/renderer/core/frame/dom_window.h"
 
-#include "src/third_party/blink/renderer/core/frame/dom_window.cc"
+#include <third_party/blink/renderer/core/frame/dom_window.cc>
 
 namespace blink {
 
 LocalFrame* DOMWindow::GetDisconnectedFrame() const {
-  v8::Isolate* isolate = window_proxy_manager_->GetIsolate();
+  // IncumbentDOMWindow is safe to call only when an active v8 context is
+  // present.
+  if (auto* isolate = v8::Isolate::TryGetCurrent();
+      !isolate || !isolate->InContext()) {
+    return nullptr;
+  }
+
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
   LocalDOMWindow* accessing_window = IncumbentDOMWindow(isolate);
   LocalFrame* accessing_frame = accessing_window->GetFrame();
   return accessing_frame;

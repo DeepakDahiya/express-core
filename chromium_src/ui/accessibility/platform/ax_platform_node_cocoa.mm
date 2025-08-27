@@ -5,6 +5,7 @@
 
 #include "base/debug/alias.h"
 #include "base/debug/dump_without_crashing.h"
+#include "base/logging.h"
 
 // Assumed to be a temporary fix for
 // https://github.com/brave/brave-browser/issues/13778
@@ -29,5 +30,5 @@
     return nil;                                                     \
   }
 
-#include "src/ui/accessibility/platform/ax_platform_node_cocoa.mm"
+#include <ui/accessibility/platform/ax_platform_node_cocoa.mm>
 #undef BRAVE_ACCESSIBILITY_ATTRIBUTED_STRING_FOR_RANGE

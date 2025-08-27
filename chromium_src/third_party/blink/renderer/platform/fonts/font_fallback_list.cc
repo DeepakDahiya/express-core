@@ -5,6 +5,7 @@
 
 #include "third_party/blink/renderer/platform/fonts/font_fallback_list.h"
 
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "third_party/blink/renderer/platform/fonts/font_selector.h"
 #include "third_party/blink/renderer/platform/wtf/text/atomic_string.h"
@@ -38,5 +39,5 @@ void RegisterAllowFontFamilyCallback(AllowFontFamilyCallback callback) {
           curr_family->FamilyName()))               \
     result = nullptr;
 
-#include "src/third_party/blink/renderer/platform/fonts/font_fallback_list.cc"
+#include <third_party/blink/renderer/platform/fonts/font_fallback_list.cc>
 #undef BRAVE_GET_FONT_DATA

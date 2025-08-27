@@ -3,7 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "src/ui/views/widget/native_widget_mac.mm"
+#include "base/check.h"
+
+#include <ui/views/widget/native_widget_mac.mm>
 
 namespace views {
 
@@ -15,6 +17,10 @@ void NativeWidgetMac::SetWindowTitleVisibility(bool visible) {
 
   GetNSWindowMojo()->SetWindowTitleVisibility(visible);
   overridden_window_title_visibility_ = visible;
+}
+
+void NativeWidgetMac::UpdateWindowTitleColor(SkColor color) {
+  GetNSWindowMojo()->UpdateWindowTitleColor(color);
 }
 
 bool NativeWidgetMac::GetOverriddenWindowTitleVisibility() const {

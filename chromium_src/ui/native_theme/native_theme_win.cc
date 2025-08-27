@@ -12,12 +12,12 @@ bool s_ignore_system_dark_mode_change = false;
     return;                                       \
   }
 
-#include "src/ui/native_theme/native_theme_win.cc"
+#include <ui/native_theme/native_theme_win.cc>
 #undef BRAVE_NATIVETHEMEWIN_UPDATEDARKMODESTATUS
 
 namespace ui {
 
-void NATIVE_THEME_EXPORT IgnoreSystemDarkModeChange(bool ignore) {
+void COMPONENT_EXPORT(NATIVE_THEME) IgnoreSystemDarkModeChange(bool ignore) {
   s_ignore_system_dark_mode_change = ignore;
 }
 

@@ -8,39 +8,37 @@
 
 #define SetIsEnabled SetIsEnabled_ChromiumImpl
 
-#include "src/third_party/blink/common/client_hints/enabled_client_hints.cc"
+#include <third_party/blink/common/client_hints/enabled_client_hints.cc>
 
 #undef SetIsEnabled
 
-// If the kAllowCertainClientHints feature is turned on then, by default, we
-// will send three (3) non-privacy-risking CHs: kUA, kUAMobile, and kUAPlatform.
-// Additionally, if we receive CH requests for
-// kUAPlatformVersion and/or kUAModel, we will send these, but:
-// - kUAModel will be always set to an empty string;
-// - kUAPlatformVersion will be clamped to the same value we report in the
-//   User-Agent string.
+// By default we will send three (3) non-privacy-risking CHs: kUA, kUAMobile,
+// and kUAPlatform.
+// Additionally:
+//   - if we receive CH requests for kUAArch, kUABitness, kUAFullVersionList, or
+//   kUAWoW64, we will send these.
+//   - if we receive CH requests for kUAPlatformVersion and/or kUAModel, we will
+//   send these, too, but:
+//     - kUAModel will be always set to an empty string;
+//     - kUAPlatformVersion will be clamped to the same value we report in the
+//     User-Agent string.
 
 namespace blink {
-
-namespace {
-bool AreCertainClientHintsAllowed() {
-  return base::FeatureList::IsEnabled(
-      blink::features::kAllowCertainClientHints);
-}
-}  // namespace
 
 void EnabledClientHints::SetIsEnabled(const WebClientHintsType type,
                                       const bool should_send) {
   bool type_is_enabled = false;
   switch (type) {
     case WebClientHintsType::kUA:
+    case WebClientHintsType::kUAArch:
+    case WebClientHintsType::kUABitness:
+    case WebClientHintsType::kUAFullVersionList:
     case WebClientHintsType::kUAMobile:
     case WebClientHintsType::kUAModel:
     case WebClientHintsType::kUAPlatform:
     case WebClientHintsType::kUAPlatformVersion:
-      if (AreCertainClientHintsAllowed()) {
-        type_is_enabled = true;
-      }
+    case WebClientHintsType::kUAWoW64:
+      type_is_enabled = true;
       break;
     default:
       break;

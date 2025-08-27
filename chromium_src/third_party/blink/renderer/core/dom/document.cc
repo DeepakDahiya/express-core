@@ -8,14 +8,13 @@
 #include "brave/components/brave_page_graph/common/buildflags.h"
 
 #define ProcessJavaScriptUrl ProcessJavaScriptUrl_ChromiumImpl
-#include "src/third_party/blink/renderer/core/dom/document.cc"
+#include <third_party/blink/renderer/core/dom/document.cc>
 #undef ProcessJavaScriptUrl
 
 namespace blink {
 
-void Document::ProcessJavaScriptUrl(
-    const KURL& url,
-    scoped_refptr<const DOMWrapperWorld> world) {
+void Document::ProcessJavaScriptUrl(const KURL& url,
+                                    const DOMWrapperWorld* world) {
 #if BUILDFLAG(ENABLE_BRAVE_PAGE_GRAPH)
   probe::RegisterPageGraphJavaScriptUrl(this, url);
 #endif

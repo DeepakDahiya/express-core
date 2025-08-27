@@ -7,11 +7,12 @@
 #define BRAVE_CHROMIUM_SRC_THIRD_PARTY_BLINK_PUBLIC_WEB_WEB_DOCUMENT_H_
 
 #define IsPluginDocument                                    \
-  IsDOMFeaturePolicyEnabled(v8::Local<v8::Context> context, \
+  IsDOMFeaturePolicyEnabled(v8::Isolate* isolate,           \
+                            v8::Local<v8::Context> context, \
                             const WebString& feature);      \
   bool IsPluginDocument
 
-#include "src/third_party/blink/public/web/web_document.h"  // IWYU pragma: export
+#include <third_party/blink/public/web/web_document.h>  // IWYU pragma: export
 
 #undef IsPluginDocument
 

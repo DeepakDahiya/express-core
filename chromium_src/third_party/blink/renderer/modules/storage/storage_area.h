@@ -17,7 +17,7 @@
  private:                                                    \
   void RecordModificationInMetrics
 
-#include "src/third_party/blink/renderer/modules/storage/storage_area.h"  // IWYU pragma: export
+#include <third_party/blink/renderer/modules/storage/storage_area.h>  // IWYU pragma: export
 
 #undef RecordModificationInMetrics
 
@@ -25,8 +25,7 @@
 
 namespace blink {
 
-MODULES_EXPORT PageGraphBlinkReceiverData
-ToPageGraphBlinkReceiverData(StorageArea* storage_area);
+MODULES_EXPORT PageGraphObject ToPageGraphObject(StorageArea* storage_area);
 
 }  // namespace blink
 

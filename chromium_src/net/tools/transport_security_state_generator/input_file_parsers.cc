@@ -213,6 +213,11 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
       "policy": "custom"
     },
     {
+      "name": "go-updater.browser.express",
+      "mode": "force-https",
+      "policy": "custom"
+    },
+    {
       "name": "go-updater.brave.com",
       "mode": "force-https",
       "policy": "custom"

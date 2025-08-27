@@ -8,13 +8,11 @@
 
 #define WebPreferences WebPreferences_ChromiumImpl
 
-#include "src/third_party/blink/common/web_preferences/web_preferences.cc"
+#include <third_party/blink/common/web_preferences/web_preferences.cc>
 
 #undef WebPreferences
 
-namespace blink {
-
-namespace web_pref {
+namespace blink::web_pref {
 
 WebPreferences::WebPreferences(const WebPreferences& other) = default;
 WebPreferences::WebPreferences(WebPreferences&& other) = default;
@@ -23,6 +21,4 @@ WebPreferences& WebPreferences::operator=(const WebPreferences& other) =
     default;
 WebPreferences& WebPreferences::operator=(WebPreferences&& other) = default;
 
-}  // namespace web_pref
-
-}  // namespace blink
+}  // namespace blink::web_pref

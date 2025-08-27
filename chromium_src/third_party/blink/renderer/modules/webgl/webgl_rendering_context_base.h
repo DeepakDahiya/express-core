@@ -8,13 +8,15 @@
 
 #define getExtension                                           \
   getExtension_ChromiumImpl(ScriptState*, const String& name); \
-  ScriptValue getExtension
+  ScriptObject getExtension
 
 #define getSupportedExtensions           \
   getSupportedExtensions_ChromiumImpl(); \
-  absl::optional<Vector<String>> getSupportedExtensions
+  std::optional<Vector<String>> getSupportedExtensions
 
-#include "src/third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h"  // IWYU pragma: export
+#include <third_party/blink/renderer/modules/webgl/webgl_rendering_context_base.h>  // IWYU pragma: export
+
+#include <optional>
 
 #undef getSupportedExtensions
 #undef getExtension

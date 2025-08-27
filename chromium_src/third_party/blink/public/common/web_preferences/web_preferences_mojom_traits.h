@@ -11,7 +11,7 @@
 
 #define WebPreferences WebPreferences_ChromiumImpl
 
-#include "src/third_party/blink/public/common/web_preferences/web_preferences_mojom_traits.h"  // IWYU pragma: export
+#include <third_party/blink/public/common/web_preferences/web_preferences_mojom_traits.h>  // IWYU pragma: export
 
 #undef WebPreferences
 
@@ -27,13 +27,12 @@ struct BLINK_COMMON_EXPORT StructTraits<blink::mojom::WebPreferencesDataView,
     return r.force_cosmetic_filtering;
   }
 
-  static bool hide_media_src_api(const blink::web_pref::WebPreferences& r) {
-    return r.hide_media_src_api;
+  static bool page_in_reader_mode(const blink::web_pref::WebPreferences& r) {
+    return r.page_in_reader_mode;
   }
 
-  static bool should_detect_media_files(
-      const blink::web_pref::WebPreferences& r) {
-    return r.should_detect_media_files;
+  static bool is_tor_window(const blink::web_pref::WebPreferences& r) {
+    return r.is_tor_window;
   }
 
   static bool Read(blink::mojom::WebPreferencesDataView r,

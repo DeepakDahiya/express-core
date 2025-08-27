@@ -8,7 +8,7 @@
 
 #define WebPreferences WebPreferences_ChromiumImpl
 
-#include "src/third_party/blink/public/common/web_preferences/web_preferences.h"  // IWYU pragma: export
+#include <third_party/blink/public/common/web_preferences/web_preferences.h>  // IWYU pragma: export
 
 #undef WebPreferences
 
@@ -26,8 +26,8 @@ struct BLINK_COMMON_EXPORT WebPreferences : public WebPreferences_ChromiumImpl {
   WebPreferences& operator=(WebPreferences&& other);
 
   bool force_cosmetic_filtering = false;
-  bool hide_media_src_api = false;
-  bool should_detect_media_files = false;
+  bool page_in_reader_mode = false;
+  bool is_tor_window = false;
 };
 
 }  // namespace web_pref
