@@ -3,13 +3,42 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "src/net/socket/socks5_client_socket.cc"
+#define BRAVE_SOCKS5_CLIENT_SOCKET_DO_LOOP \
+  case STATE_AUTH:                         \
+    rv = DoAuth(rv);                       \
+    break;
+
+// Set authentication method.
+#define BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_WRITE     \
+  static_assert(kSOCKS5GreetWriteData.size() == 3u);  \
+  std::string greeting(kSOCKS5GreetWriteData.begin(), \
+                       kSOCKS5GreetWriteData.end());  \
+  greeting.back() = static_cast<char>(auth_method()); \
+  auto greet_buffer = base::MakeRefCounted<StringIOBuffer>(std::move(greeting));
+
+#define BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_READ_COMPLETE_1 \
+  }                                                         \
+  if (read_data[1] != auth_method()) {
+#define BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_READ_COMPLETE_2 \
+  next_state_ = STATE_AUTH;
+
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
+
+#include <net/socket/socks5_client_socket.cc>
+#undef BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_READ_COMPLETE_2
+#undef BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_READ_COMPLETE_1
+#undef BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_WRITE
+#undef BRAVE_SOCKS5_CLIENT_SOCKET_DO_LOOP
 
 #include <algorithm>
 #include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 
+#include "base/compiler_specific.h"
 #include "net/base/io_buffer.h"
 #include "net/socket/socks5_client_socket.h"
 
@@ -17,15 +46,17 @@ namespace net {
 
 namespace {
 
+constexpr size_t kSOCKSAuthUsernamePasswordResponseLen = 2;
+
 HostPortPair ToLegacyDestinationEndpoint(
     const TransportSocketParams::Endpoint& endpoint) {
-  if (absl::holds_alternative<url::SchemeHostPort>(endpoint)) {
+  if (std::holds_alternative<url::SchemeHostPort>(endpoint)) {
     return HostPortPair::FromSchemeHostPort(
-        absl::get<url::SchemeHostPort>(endpoint));
+        std::get<url::SchemeHostPort>(endpoint));
   }
 
-  DCHECK(absl::holds_alternative<HostPortPair>(endpoint));
-  return absl::get<HostPortPair>(endpoint);
+  DCHECK(std::holds_alternative<HostPortPair>(endpoint));
+  return std::get<HostPortPair>(endpoint);
 }
 
 }  // namespace
@@ -78,8 +109,6 @@ uint8_t SOCKS5ClientSocketAuth::auth_method() {
   return 0x02;
 }
 
-static const size_t kSOCKSAuthUsernamePasswordResponseLen = 2;
-
 int SOCKS5ClientSocketAuth::Authenticate(
     int rv,
     NetLogWithSource& net_log,
@@ -112,13 +141,12 @@ int SOCKS5ClientSocketAuth::Authenticate(
         DCHECK_EQ(OK, rv);
         DCHECK_LT(0u, buffer_left_);
         iobuf_ = base::MakeRefCounted<IOBufferWithSize>(buffer_left_);
-        memcpy(iobuf_->data(),
-               &buffer_.data()[buffer_.size() - buffer_left_],
-               buffer_left_);
+        iobuf_->span().copy_from_nonoverlapping(
+            base::as_byte_span(buffer_).last(buffer_left_));
         next_state_ = STATE_WRITE_COMPLETE;
         net_log.BeginEvent(NetLogEventType::SOCKS5_AUTH_WRITE);
         rv = transport_socket_->Write(iobuf_.get(), buffer_left_, callback,
-            traffic_annotation_);
+                                      traffic_annotation_);
         break;
 
       case STATE_WRITE_COMPLETE:
@@ -181,7 +209,6 @@ int SOCKS5ClientSocketAuth::Authenticate(
       case STATE_BAD:
       default:
         NOTREACHED() << "bad state";
-        return ERR_UNEXPECTED;
     }
   } while (rv != ERR_IO_PENDING);
   return rv;

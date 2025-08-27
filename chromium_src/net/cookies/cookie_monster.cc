@@ -3,27 +3,33 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include <memory>
+#include <optional>
+
+#include "net/base/url_util.h"
 #include "net/cookies/cookie_monster.h"
 
-#include <memory>
-#include "net/base/url_util.h"
-
 #define CookieMonster ChromiumCookieMonster
-#include "src/net/cookies/cookie_monster.cc"
+#include <net/cookies/cookie_monster.cc>
 #undef CookieMonster
 
 namespace net {
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
-                             NetLog* net_log)
-    : ChromiumCookieMonster(store, net_log),
+                             NetLog* net_log,
+                             std::unique_ptr<PrefDelegate> pref_delegate)
+    : ChromiumCookieMonster(store, net_log, std::move(pref_delegate)),
       net_log_(
           NetLogWithSource::Make(net_log, NetLogSourceType::COOKIE_STORE)) {}
 
 CookieMonster::CookieMonster(scoped_refptr<PersistentCookieStore> store,
                              base::TimeDelta last_access_threshold,
-                             NetLog* net_log)
-    : ChromiumCookieMonster(store, last_access_threshold, net_log),
+                             NetLog* net_log,
+                             std::unique_ptr<PrefDelegate> pref_delegate)
+    : ChromiumCookieMonster(store,
+                            last_access_threshold,
+                            net_log,
+                            std::move(pref_delegate)),
       net_log_(
           NetLogWithSource::Make(net_log, NetLogSourceType::COOKIE_STORE)) {}
 
@@ -86,12 +92,13 @@ void CookieMonster::DeleteSessionCookiesAsync(DeleteCallback callback) {
 }
 
 void CookieMonster::SetCookieableSchemes(
-    const std::vector<std::string>& schemes,
+    std::vector<std::string> schemes,
     SetCookieableSchemesCallback callback) {
   for (auto& it : ephemeral_cookie_stores_) {
     it.second->SetCookieableSchemes(schemes, SetCookieableSchemesCallback());
   }
-  ChromiumCookieMonster::SetCookieableSchemes(schemes, std::move(callback));
+  ChromiumCookieMonster::SetCookieableSchemes(std::move(schemes),
+                                              std::move(callback));
 }
 
 void CookieMonster::SetCanonicalCookieAsync(
@@ -99,15 +106,16 @@ void CookieMonster::SetCanonicalCookieAsync(
     const GURL& source_url,
     const CookieOptions& options,
     SetCookiesCallback callback,
-    absl::optional<CookieAccessResult> cookie_access_result) {
+    std::optional<CookieAccessResult> cookie_access_result) {
   if (options.should_use_ephemeral_storage()) {
     if (!options.top_frame_origin()) {
       // Shouldn't happen, but don't do anything in this case.
-      NOTREACHED();
-      MaybeRunCookieCallback(
-          std::move(callback),
-          CookieAccessResult(CookieInclusionStatus(
-              CookieInclusionStatus::EXCLUDE_UNKNOWN_ERROR)));
+      net::CookieInclusionStatus cookie_inclusion_status;
+      cookie_inclusion_status.AddExclusionReason(
+          net::CookieInclusionStatus::ExclusionReason::EXCLUDE_UNKNOWN_ERROR);
+
+      MaybeRunCookieCallback(std::move(callback),
+                             CookieAccessResult(cookie_inclusion_status));
       return;
     }
     ChromiumCookieMonster* ephemeral_monster =
@@ -132,7 +140,6 @@ void CookieMonster::GetCookieListWithOptionsAsync(
   if (options.should_use_ephemeral_storage()) {
     if (!options.top_frame_origin()) {
       // Shouldn't happen, but don't do anything in this case.
-      NOTREACHED();
       MaybeRunCookieCallback(std::move(callback), CookieAccessResultList(),
                              CookieAccessResultList());
       return;

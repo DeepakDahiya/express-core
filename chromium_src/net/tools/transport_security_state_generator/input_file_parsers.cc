@@ -7,11 +7,13 @@
 
 #define ParseJSON ParseJSON_ChromiumImpl
 #define ParseCertificatesFile ParseCertificatesFile_ChromiumImpl
-#include "src/net/tools/transport_security_state_generator/input_file_parsers.cc"
+#include <net/tools/transport_security_state_generator/input_file_parsers.cc>
 #undef ParseCertificatesFile
 #undef ParseJSON
 
 namespace {
+// NOTE: Do not add any host which has TLS terminated by Cloudflare.
+// Hosts backed by Universal SSL do not have stable CAs.
 constexpr std::string_view kBravePinsJson = R"brave_pins_json({
   "pinsets": [
     {
@@ -28,7 +30,6 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
         "GlobalSignRootCA_R46",
         "GlobalSignRootCA_R5",
         "GlobalSignRootCA_E46",
-        "DSTRootCA_X3",
         "ISRGRootCA_X1",
         "ISRGRootCA_X2"
       ]
@@ -38,7 +39,6 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
     // Brave
     { "name": "adblock-data.s3.brave.com", "pins": "brave"},
     { "name": "ai-chat.bsg.brave.com", "pins": "brave"},
-    { "name": "feedback.brave.com", "pins": "brave"},
     { "name": "brave-core-ext.s3.brave.com", "pins": "brave"},
     { "name": "express-core-ext.s3.us-west-2.amazonaws.com", "pins": "brave"},
     { "name": "brave-today-cdn.brave.com", "pins": "brave"},
@@ -48,17 +48,10 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
     { "name": "devtools.brave.com", "pins": "brave"},
     { "name": "dict.brave.com", "pins": "brave"},
     { "name": "extensionupdater.brave.com", "pins": "brave"},
+    { "name": "feedback.brave.com", "pins": "brave"},
     { "name": "gaia.brave.com", "pins": "brave"},
     { "name": "go-updater.brave.com", "pins": "brave"},
     { "name": "go-updater.browser.express", "pins": "brave"},
-    { "name": "mobile-data.s3.brave.com", "pins": "brave"},
-    { "name": "p2a.brave.com", "pins": "brave"},
-    { "name": "p2a-json.brave.com", "pins": "brave"},
-    { "name": "p3a.brave.com", "pins": "brave"},
-    { "name": "p3a-creative.brave.com", "pins": "brave"},
-    { "name": "p3a-json.brave.com", "pins": "brave"},
-    { "name": "p3a.bravesoftware.com", "pins": "brave"},
-    { "name": "p3a-dev.bravesoftware.com", "pins": "brave"},
     { "name": "pcdn.brave.com", "pins": "brave"},
     { "name": "redirector.brave.com", "pins": "brave"},
     { "name": "safebrowsing.brave.com", "pins": "brave"},
@@ -73,6 +66,10 @@ constexpr std::string_view kBravePinsJson = R"brave_pins_json({
     { "name": "translate.brave.com", "pins": "brave"},
     { "name": "translate-static.brave.com", "pins": "brave"},
     { "name": "variations.brave.com", "pins": "brave"},
+
+    // P2A/P3A
+    { "name": "collector.bsg.brave.com", "pins": "brave"},
+    { "name": "star-randsrv.bsg.brave.com", "pins": "brave"},
 
     // Creators
     { "name": "creators.basicattentiontoken.org", "pins": "brave"},
@@ -134,17 +131,17 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
     // Critical endpoints that should remain unpinned so that they
     // always work.
     {
-      "name": "laptop-updates.brave.com",
-      "mode": "force-https",
-      "policy": "custom"
-    },
-    {
       "name": "updates.bravesoftware.com",
       "mode": "force-https",
       "policy": "custom"
     },
     {
       "name": "updates-cdn.bravesoftware.com",
+      "mode": "force-https",
+      "policy": "custom"
+    },
+    {
+      "name": "usage-ping.brave.com",
       "mode": "force-https",
       "policy": "custom"
     },
@@ -157,11 +154,6 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
     },
     {
       "name": "ai-chat.bsg.brave.com",
-      "mode": "force-https",
-      "policy": "custom"
-    },
-    {
-      "name": "feedback.brave.com",
       "mode": "force-https",
       "policy": "custom"
     },
@@ -211,6 +203,11 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
       "policy": "custom"
     },
     {
+      "name": "feedback.brave.com",
+      "mode": "force-https",
+      "policy": "custom"
+    },
+    {
       "name": "gaia.brave.com",
       "mode": "force-https",
       "policy": "custom"
@@ -219,51 +216,6 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
       "name": "go-updater.brave.com",
       "mode": "force-https",
       "policy": "custom"
-    },
-    {
-      "name": "go-updater.browser.express",
-      "mode": "force-https",
-      "policy": "custom"
-    },
-    {
-      "name": "mobile-data.s3.brave.com",
-      "mode": "force-https",
-      "policy": "custom"
-    },
-    {
-      "name": "p2a.brave.com",
-      "mode": "force-https",
-      "policy": "custom"
-    },
-    {
-      "name": "p2a-json.brave.com",
-      "mode": "force-https",
-      "policy": "custom"
-    },
-    {
-      "name": "p3a.brave.com",
-      "policy": "custom",
-      "mode": "force-https"
-    },
-    {
-      "name": "p3a-creative.brave.com",
-      "policy": "custom",
-      "mode": "force-https"
-    },
-    {
-      "name": "p3a-json.brave.com",
-      "policy": "custom",
-      "mode": "force-https"
-    },
-    {
-      "name": "p3a.bravesoftware.com",
-      "policy": "custom",
-      "mode": "force-https"
-    },
-    {
-      "name": "p3a-dev.bravesoftware.com",
-      "policy": "custom",
-      "mode": "force-https"
     },
     {
       "name": "pcdn.brave.com",
@@ -553,17 +505,15 @@ constexpr std::string_view kBraveHstsJson = R"brave_hsts_json({
  ]})brave_hsts_json";
 }  // namespace
 
-namespace net {
-
-namespace transport_security_state {
+namespace net::transport_security_state {
 
 bool ParseCertificatesFile(std::string_view certs_input,
                            Pinsets* pinsets,
                            base::Time* timestamp) {
   constexpr std::string_view brave_certs = R"brave_certs(
-# Last updated: Wed Jan 17 19:42:33 UTC 2024
+# Last updated: Wed Aug 20 20:26:49 2025
 PinsListTimestamp
-1705520553
+1755718009
 
 # =====BEGIN BRAVE ROOTS ASC=====
 #From https://www.amazontrust.com/repository/
@@ -703,25 +653,25 @@ HMUfpIBvFSDJ3gyICh3WZlXi/EjJKSZp4A==
 
 GlobalSignRootCA_R3
 -----BEGIN CERTIFICATE-----
-MIIDXzCCAkegAwIBAgILBAAAAAABIVhTCKIwDQYJKoZIhvcNAQELBQAwTDEgMB4G
-A1UECxMXR2xvYmFsU2lnbiBSb290IENBIC0gUjMxEzARBgNVBAoTCkdsb2JhbFNp
-Z24xEzARBgNVBAMTCkdsb2JhbFNpZ24wHhcNMDkwMzE4MTAwMDAwWhcNMjkwMzE4
-MTAwMDAwWjBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzETMBEG
-A1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjCCASIwDQYJKoZI
-hvcNAQEBBQADggEPADCCAQoCggEBAMwldpB5BngiFvXAg7aEyiie/QV2EcWtiHL8
-RgJDx7KKnQRfJMsuS+FggkbhUqsMgUdwbN1k0ev1LKMPgj0MK66X17YUhhB5uzsT
-gHeMCOFJ0mpiLx9e+pZo34knlTifBtc+ycsmWQ1z3rDI6SYOgxXG71uL0gRgykmm
-KPZpO/bLyCiR5Z2KYVc3rHQU3HTgOu5yLy6c+9C7v/U9AOEGM+iCK65TpjoWc4zd
-QQ4gOsC0p6Hpsk+QLjJg6VfLuQSSaGjlOCZgdbKfd/+RFO+uIEn8rUAVSNECMWEZ
-XriX7613t2Saer9fwRPvm2L7DWzgVGkWqQPabumDk3F2xmmFghcCAwEAAaNCMEAw
-DgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0OBBYEFI/wS3+o
-LkUkrk1Q+mOai97i3Ru8MA0GCSqGSIb3DQEBCwUAA4IBAQBLQNvAUKr+yAzv95ZU
-RUm7lgAJQayzE4aGKAczymvmdLm6AC2upArT9fHxD4q/c2dKg8dEe3jgr25sbwMp
-jjM5RcOO5LlXbKr8EpbsU8Yt5CRsuZRj+9xTaGdWPoO4zzUhw8lo/s7awlOqzJCK
-6fBdRoyV3XpYKBovHd7NADdBj+1EbddTKJd+82cEHhXXipa0095MJ6RMG3NzdvQX
-mcIfeg7jLQitChws/zyrVQ4PkX4268NXSb7hLi18YIvDQVETI53O9zJrlAGomecs
-Mx86OyXShkDOOyyGeMlhLxS67ttVb9+E7gUJTb0o2HLO02JQZR7rkpeDMdmztcpH
-WD9f
+MIIDXzCCAkegAwIBAgILBAAAAAABIVhTCKIwDQYJKoZIhvcNAQELBQAwTDEgMB4
+GA1UECxMXR2xvYmFsU2lnbiBSb290IENBIC0gUjMxEzARBgNVBAoTCkdsb2JhbF
+NpZ24xEzARBgNVBAMTCkdsb2JhbFNpZ24wHhcNMDkwMzE4MTAwMDAwWhcNMjkwM
+zE4MTAwMDAwWjBMMSAwHgYDVQQLExdHbG9iYWxTaWduIFJvb3QgQ0EgLSBSMzET
+MBEGA1UEChMKR2xvYmFsU2lnbjETMBEGA1UEAxMKR2xvYmFsU2lnbjCCASIwDQY
+JKoZIhvcNAQEBBQADggEPADCCAQoCggEBAMwldpB5BngiFvXAg7aEyiie/QV2Ec
+WtiHL8RgJDx7KKnQRfJMsuS+FggkbhUqsMgUdwbN1k0ev1LKMPgj0MK66X17YUh
+hB5uzsTgHeMCOFJ0mpiLx9e+pZo34knlTifBtc+ycsmWQ1z3rDI6SYOgxXG71uL
+0gRgykmmKPZpO/bLyCiR5Z2KYVc3rHQU3HTgOu5yLy6c+9C7v/U9AOEGM+iCK65
+TpjoWc4zdQQ4gOsC0p6Hpsk+QLjJg6VfLuQSSaGjlOCZgdbKfd/+RFO+uIEn8rU
+AVSNECMWEZXriX7613t2Saer9fwRPvm2L7DWzgVGkWqQPabumDk3F2xmmFghcCA
+wEAAaNCMEAwDgYDVR0PAQH/BAQDAgEGMA8GA1UdEwEB/wQFMAMBAf8wHQYDVR0O
+BBYEFI/wS3+oLkUkrk1Q+mOai97i3Ru8MA0GCSqGSIb3DQEBCwUAA4IBAQBLQNv
+AUKr+yAzv95ZURUm7lgAJQayzE4aGKAczymvmdLm6AC2upArT9fHxD4q/c2dKg8
+dEe3jgr25sbwMpjjM5RcOO5LlXbKr8EpbsU8Yt5CRsuZRj+9xTaGdWPoO4zzUhw
+8lo/s7awlOqzJCK6fBdRoyV3XpYKBovHd7NADdBj+1EbddTKJd+82cEHhXXipa0
+095MJ6RMG3NzdvQXmcIfeg7jLQitChws/zyrVQ4PkX4268NXSb7hLi18YIvDQVE
+TI53O9zJrlAGomecsMx86OyXShkDOOyyGeMlhLxS67ttVb9+E7gUJTb0o2HLO02
+JQZR7rkpeDMdmztcpHWD9f
 -----END CERTIFICATE-----
 
 GlobalSignRootCA_R6
@@ -824,29 +774,6 @@ i4RguYv/Uo7njLwcAjA8+RHUjE7AwWHCFUyqqx0LMV87HOIAl0Qx5v5zli/alt
 P+CAezNIm8BZ/3Hobui3A=
 -----END CERTIFICATE-----
 
-# https://www.identrust.com/support/downloads
-DSTRootCA_X3
------BEGIN CERTIFICATE-----
-MIIDSjCCAjKgAwIBAgIQRK+wgNajJ7qJMDmGLvhAazANBgkqhkiG9w0BAQUFADA/
-MSQwIgYDVQQKExtEaWdpdGFsIFNpZ25hdHVyZSBUcnVzdCBDby4xFzAVBgNVBAMT
-DkRTVCBSb290IENBIFgzMB4XDTAwMDkzMDIxMTIxOVoXDTIxMDkzMDE0MDExNVow
-PzEkMCIGA1UEChMbRGlnaXRhbCBTaWduYXR1cmUgVHJ1c3QgQ28uMRcwFQYDVQQD
-Ew5EU1QgUm9vdCBDQSBYMzCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEB
-AN+v6ZdQCINXtMxiZfaQguzH0yxrMMpb7NnDfcdAwRgUi+DoM3ZJKuM/IUmTrE4O
-rz5Iy2Xu/NMhD2XSKtkyj4zl93ewEnu1lcCJo6m67XMuegwGMoOifooUMM0RoOEq
-OLl5CjH9UL2AZd+3UWODyOKIYepLYYHsUmu5ouJLGiifSKOeDNoJjj4XLh7dIN9b
-xiqKqy69cK3FCxolkHRyxXtqqzTWMIn/5WgTe1QLyNau7Fqckh49ZLOMxt+/yUFw
-7BZy1SbsOFU5Q9D8/RhcQPGX69Wam40dutolucbY38EVAjqr2m7xPi71XAicPNaD
-aeQQmxkqtilX4+U9m5/wAl0CAwEAAaNCMEAwDwYDVR0TAQH/BAUwAwEB/zAOBgNV
-HQ8BAf8EBAMCAQYwHQYDVR0OBBYEFMSnsaR7LHH62+FLkHX/xBVghYkQMA0GCSqG
-SIb3DQEBBQUAA4IBAQCjGiybFwBcqR7uKGY3Or+Dxz9LwwmglSBd49lZRNI+DT69
-ikugdB/OEIKcdBodfpga3csTS7MgROSR6cz8faXbauX+5v3gTt23ADq1cEmv8uXr
-AvHRAosZy5Q6XkjEGB5YGV8eAlrwDPGxrancWYaLbumR9YbK+rlmM6pZW87ipxZz
-R8srzJmwN0jP41ZL9c8PDHIyh8bwRLtTcm1D9SZImlJnt1ir/md2cXjbDaJWFBM5
-JDGFoqgCWjBH4d1QB7wCCZAA62RjYJsWvIjJEubSfZGL+T0yjWW06XyxV3bqxbYo
-Ob8VZRzI9neWagqNdwvYkQsEjgfbKbYK7p2CNTUQ
------END CERTIFICATE-----
-
 # From https://letsencrypt.org/certificates/#root-certificates
 ISRGRootCA_X1
 -----BEGIN CERTIFICATE-----
@@ -928,6 +855,4 @@ bool ParseJSON(std::string_view hsts_json,
                                 pinsets);
 }
 
-}  // namespace transport_security_state
-
-}  // namespace net
+}  // namespace net::transport_security_state

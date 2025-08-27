@@ -8,14 +8,16 @@
 
 #define UpdateHttpRequest                                              \
   UpdateHttpRequest_ChromiumImpl(                                      \
-      const GURL& original_url, const std::string& original_method,    \
+      const GURL& original_url, std::string_view original_method,      \
       const RedirectInfo& redirect_info,                               \
-      const absl::optional<std::vector<std::string>>& removed_headers, \
-      const absl::optional<net::HttpRequestHeaders>& modified_headers, \
+      const std::optional<std::vector<std::string>>& removed_headers,  \
+      const std::optional<net::HttpRequestHeaders>& modified_headers,  \
       HttpRequestHeaders* request_headers, bool* should_clear_upload); \
   NET_EXPORT static void UpdateHttpRequest
 
-#include "src/net/url_request/redirect_util.h"  // IWYU pragma: export
+#include <net/url_request/redirect_util.h>  // IWYU pragma: export
+
+#include <optional>
 #undef UpdateHttpRequest
 
 #endif  // BRAVE_CHROMIUM_SRC_NET_URL_REQUEST_REDIRECT_UTIL_H_

@@ -6,12 +6,6 @@
 // NOLINT(build/header_guard)
 // no-include-guard-because-multiply-included
 
-#include "src/net/base/net_error_list.h"  // IWYU pragma: export
-
-// Error occurs when user tries to access ipfs sites in
-// incognito context
-NET_ERROR(INCOGNITO_IPFS_NOT_ALLOWED, -10001)
-NET_ERROR(IPFS_DISABLED, -10002)
-NET_ERROR(IPFS_RESOLVE_METHOD_NOT_SELECTED, -10003)
+#include <net/base/net_error_list.h>  // IWYU pragma: export
 
 NET_ERROR(ENS_OFFCHAIN_LOOKUP_NOT_SELECTED, -10004)

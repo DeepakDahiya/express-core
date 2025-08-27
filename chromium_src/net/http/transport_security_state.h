@@ -21,7 +21,7 @@ using TransportSecurityState_BraveImpl = TransportSecurityState;
   friend TransportSecurityState_BraveImpl; \
   PartitionedHostStateMap<STSStateMap> enabled_sts_hosts_
 
-#include "src/net/http/transport_security_state.h"  // IWYU pragma: export
+#include <net/http/transport_security_state.h>  // IWYU pragma: export
 
 #undef enabled_sts_hosts_
 #undef TransportSecurityState
@@ -34,24 +34,31 @@ class NET_EXPORT TransportSecurityState
   using TransportSecurityState_ChromiumImpl::
       TransportSecurityState_ChromiumImpl;
 
+  SSLUpgradeDecision GetSSLUpgradeDecision(
+      const NetworkAnonymizationKey& network_anonymization_key,
+      const std::string& host,
+      bool is_top_level_nav,
+      const NetLogWithSource& net_log = NetLogWithSource());
   bool ShouldSSLErrorsBeFatal(
       const NetworkAnonymizationKey& network_anonymization_key,
       const std::string& host);
   bool ShouldUpgradeToSSL(
       const NetworkAnonymizationKey& network_anonymization_key,
       const std::string& host,
+      bool is_top_level_nav,
       const NetLogWithSource& net_log = NetLogWithSource());
   bool AddHSTSHeader(const IsolationInfo& isolation_info,
-                     const std::string& host,
-                     const std::string& value);
+                     std::string_view host,
+                     std::string_view value);
 
   // This is used only for manual adding via net-internals page.
-  void AddHSTS(const std::string& host,
+  void AddHSTS(std::string_view host,
                const base::Time& expiry,
                bool include_subdomains);
   // These are used in some places where no NIK is available.
   bool ShouldSSLErrorsBeFatal(const std::string& host);
   bool ShouldUpgradeToSSL(const std::string& host,
+                          bool is_top_level_nav,
                           const NetLogWithSource& net_log = NetLogWithSource());
   bool GetDynamicSTSState(const std::string& host, STSState* result);
   bool DeleteDynamicDataForHost(const std::string& host);

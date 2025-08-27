@@ -7,9 +7,11 @@
 #define BRAVE_CHROMIUM_SRC_NET_COOKIES_COOKIE_DELETION_INFO_H_
 
 #define BRAVE_COOKIE_DELETION_INFO_H \
-  absl::optional<std::string> ephemeral_storage_domain;
+  std::optional<std::string> ephemeral_storage_domain;
 
-#include "src/net/cookies/cookie_deletion_info.h"  // IWYU pragma: export
+#include <net/cookies/cookie_deletion_info.h>  // IWYU pragma: export
+
+#include <optional>
 
 #undef BRAVE_COOKIE_DELETION_INFO_H
 
