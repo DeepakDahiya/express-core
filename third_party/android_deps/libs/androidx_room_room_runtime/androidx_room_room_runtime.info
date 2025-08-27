@@ -8,7 +8,9 @@ has_native_libraries = false
 has_proguard_flags = true
 has_r_text_file = false
 is_manifest_empty = false
-manifest_package = "com.google.android.datatransport.backend.cct"
-resources = []
+manifest_package = "androidx.room"
+resources = [
+  "res/values/values.xml"
+]
 subjar_tuples = []
 subjars = []
