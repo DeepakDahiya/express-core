@@ -8,10 +8,13 @@
 #include <openssl/digest.h>
 #include <openssl/hkdf.h>
 #include <openssl/sha.h>
+
+#include <algorithm>
+#include <cstdint>
 #include <iterator>
 
 #include "base/base64.h"
-#include "base/ranges/algorithm.h"
+#include "base/check.h"
 #include "brave/components/brave_ads/core/internal/common/crypto/key_pair_info.h"
 #include "crypto/random.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
@@ -21,7 +24,7 @@ namespace brave_ads::crypto {
 
 namespace {
 
-constexpr int kHKDFSeedLength = 32;
+constexpr size_t kHKDFSeedLength = 32;
 
 constexpr uint8_t kHKDFSalt[] = {
     126, 244, 99,  158, 51,  68,  253, 80,  133, 183, 51,  180, 77,
@@ -30,7 +33,7 @@ constexpr uint8_t kHKDFSalt[] = {
     246, 105, 20,  215, 5,   248, 154, 179, 191, 46,  17,  6,   72,
     210, 91,  10,  169, 145, 248, 22,  147, 117, 24,  105, 12};
 
-absl::optional<std::vector<uint8_t>> GetHKDF(
+std::optional<std::vector<uint8_t>> GetHKDF(
     const std::vector<uint8_t>& secret) {
   CHECK(!secret.empty());
 
@@ -41,7 +44,7 @@ absl::optional<std::vector<uint8_t>> GetHKDF(
   if (HKDF(derived_key.data(), kHKDFSeedLength, EVP_sha512(), secret.data(),
            secret.size(), kHKDFSalt, std::size(kHKDFSalt), kInfo,
            sizeof(kInfo) / sizeof(kInfo[0])) == 0) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return derived_key;
@@ -71,15 +74,15 @@ std::vector<uint8_t> Sha256(const std::string& value) {
   return hash;
 }
 
-absl::optional<KeyPairInfo> GenerateSignKeyPairFromSeed(
+std::optional<KeyPairInfo> GenerateSignKeyPairFromSeed(
     const std::vector<uint8_t>& seed) {
   if (seed.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
-  const absl::optional<std::vector<uint8_t>> derived_key = GetHKDF(seed);
+  std::optional<std::vector<uint8_t>> derived_key = GetHKDF(seed);
   if (!derived_key) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return GenerateSignKeyPairFromSecret(*derived_key);
@@ -98,50 +101,48 @@ KeyPairInfo GenerateBoxKeyPair() {
 }
 
 std::vector<uint8_t> GenerateRandomNonce() {
-  std::vector<uint8_t> nonce(crypto_box_NONCEBYTES);
-  ::crypto::RandBytes(nonce);
-  return nonce;
+  return ::crypto::RandBytesAsVector(crypto_box_NONCEBYTES);
 }
 
-absl::optional<std::string> Sign(const std::string& message,
-                                 const std::string& secret_key) {
-  const absl::optional<std::vector<uint8_t>> raw_secret_key =
-      base::Base64Decode(secret_key);
-  if (!raw_secret_key) {
-    return absl::nullopt;
+std::optional<std::string> Sign(const std::string& message,
+                                const std::string& secret_key_base64) {
+  std::optional<std::vector<uint8_t>> secret_key =
+      base::Base64Decode(secret_key_base64);
+  if (!secret_key) {
+    return std::nullopt;
   }
 
-  const std::vector<uint8_t> raw_message(message.begin(), message.end());
+  const std::vector<uint8_t> message_bytes(message.cbegin(), message.cend());
 
-  std::vector<uint8_t> raw_signature;
-  raw_signature.resize(ED25519_SIGNATURE_LEN);
-  if (ED25519_sign(raw_signature.data(), raw_message.data(), raw_message.size(),
-                   raw_secret_key->data()) == 0) {
-    return absl::nullopt;
+  std::vector<uint8_t> signature;
+  signature.resize(ED25519_SIGNATURE_LEN);
+  if (ED25519_sign(signature.data(), message_bytes.data(), message_bytes.size(),
+                   secret_key->data()) == 0) {
+    return std::nullopt;
   }
 
-  return base::Base64Encode(raw_signature);
+  return base::Base64Encode(signature);
 }
 
 bool Verify(const std::string& message,
-            const std::string& public_key,
-            const std::string& signature) {
-  const absl::optional<std::vector<uint8_t>> raw_public_key =
-      base::Base64Decode(public_key);
-  if (!raw_public_key) {
+            const std::string& public_key_base64,
+            const std::string& signature_base64) {
+  std::optional<std::vector<uint8_t>> public_key =
+      base::Base64Decode(public_key_base64);
+  if (!public_key) {
     return false;
   }
 
-  const absl::optional<std::vector<uint8_t>> raw_signature =
-      base::Base64Decode(signature);
-  if (!raw_signature) {
+  std::optional<std::vector<uint8_t>> signature =
+      base::Base64Decode(signature_base64);
+  if (!signature) {
     return false;
   }
 
-  const std::vector<uint8_t> raw_message(message.begin(), message.end());
+  const std::vector<uint8_t> message_bytes(message.cbegin(), message.cend());
 
-  return ED25519_verify(raw_message.data(), raw_message.size(),
-                        raw_signature->data(), raw_public_key->data()) != 0;
+  return ED25519_verify(message_bytes.data(), message_bytes.size(),
+                        signature->data(), public_key->data()) != 0;
 }
 
 std::vector<uint8_t> Encrypt(const std::vector<uint8_t>& plaintext,
@@ -168,9 +169,9 @@ std::vector<uint8_t> Decrypt(const std::vector<uint8_t>& ciphertext,
                   nonce.data(), public_key.data(), secret_key.data());
 
   std::vector<uint8_t> plaintext;
-  base::ranges::copy_n(padded_plaintext.cbegin() + crypto_box_ZEROBYTES,
-                       padded_plaintext.size() - crypto_box_ZEROBYTES,
-                       std::back_inserter(plaintext));
+  std::ranges::copy_n(padded_plaintext.cbegin() + crypto_box_ZEROBYTES,
+                      padded_plaintext.size() - crypto_box_ZEROBYTES,
+                      std::back_inserter(plaintext));
   return plaintext;
 }
 

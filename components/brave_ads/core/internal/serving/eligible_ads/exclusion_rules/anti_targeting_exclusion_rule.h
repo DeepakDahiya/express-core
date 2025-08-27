@@ -9,8 +9,8 @@
 #include <string>
 
 #include "base/memory/raw_ref.h"
-#include "brave/components/brave_ads/core/internal/history/browsing_history.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/exclusion_rules/exclusion_rule_interface.h"
+#include "brave/components/brave_ads/core/public/history/site_history.h"
 
 namespace brave_ads {
 
@@ -21,29 +21,24 @@ class AntiTargetingExclusionRule final
     : public ExclusionRuleInterface<CreativeAdInfo> {
  public:
   AntiTargetingExclusionRule(const AntiTargetingResource& resource,
-                             BrowsingHistoryList browsing_history);
+                             SiteHistoryList site_history);
 
   AntiTargetingExclusionRule(const AntiTargetingExclusionRule&) = delete;
   AntiTargetingExclusionRule& operator=(const AntiTargetingExclusionRule&) =
       delete;
 
-  AntiTargetingExclusionRule(AntiTargetingExclusionRule&&) noexcept = delete;
-  AntiTargetingExclusionRule& operator=(AntiTargetingExclusionRule&&) noexcept =
-      delete;
-
   ~AntiTargetingExclusionRule() override;
 
-  std::string GetUuid(const CreativeAdInfo& creative_ad) const override;
-
-  base::expected<void, std::string> ShouldInclude(
-      const CreativeAdInfo& creative_ad) const override;
+  // ExclusionRuleInterface:
+  std::string GetCacheKey(const CreativeAdInfo& creative_ad) const override;
+  bool ShouldInclude(const CreativeAdInfo& creative_ad) const override;
 
  private:
   bool DoesRespectCap(const CreativeAdInfo& creative_ad) const;
 
   const raw_ref<const AntiTargetingResource> resource_;
 
-  BrowsingHistoryList browsing_history_;
+  SiteHistoryList site_history_;
 };
 
 }  // namespace brave_ads

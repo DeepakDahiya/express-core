@@ -7,40 +7,40 @@ import { LedgerMessagingTransport } from './ledger-messaging-transport'
 import {
   LedgerCommand,
   LedgerBridgeErrorCodes,
-  UnlockCommand
+  UnlockCommand,
 } from './ledger-messages'
 
 // We must read and write to protected class attributes in the tests.
-// That yields a typescript error unless we use bracket notation, e.g. `transport['handlers']`
-// instead of `transport.handlers`. As a result we silence the dot-notation
-// tslint rule for the file.
-//
+// That yields a typescript error unless we use bracket notation, e.g.
+// `transport['handlers']` instead of `transport.handlers`. As a result we
+// silence the dot-notation tslint rule for the file.
 /* eslint-disable @typescript-eslint/dot-notation */
 
-const createTransport = (targetUrl: string = 'chrome-untrusted://ledger-bridge'): LedgerMessagingTransport => {
+const createTransport = (
+  targetUrl: string = 'chrome-untrusted://ledger-bridge',
+): LedgerMessagingTransport => {
   const iframe = document.createElement('iframe')
   document.body.appendChild(iframe)
-  if (!iframe.contentWindow) { fail('transport should be defined') }
+  if (!iframe.contentWindow) {
+    fail('transport should be defined')
+  }
   // Use Object.defineProperty in order to assign to
   // window.crypto because standard assignment results in
   // assignment error because window.origin is read-only
   Object.defineProperty(iframe.contentWindow, 'origin', {
-    value: targetUrl
+    value: targetUrl,
   })
   const targetWindow = iframe.contentWindow
   const transport = new LedgerMessagingTransport(
     targetWindow,
-    targetWindow.origin
+    targetWindow.origin,
   )
   transport['senderWindow'] = window // Shorthand for testing
   return transport
 }
 
 test('constructor', () => {
-  const transport = new LedgerMessagingTransport(
-    window,
-    window.origin
-  )
+  const transport = new LedgerMessagingTransport(window, window.origin)
 
   expect(transport['targetWindow']).toEqual(window)
   expect(transport['targetUrl']).toEqual(window.origin)
@@ -52,7 +52,7 @@ test('sendCommand configures handler for the response message ', async () => {
   const sendEvent: UnlockCommand = {
     id: LedgerCommand.Unlock,
     origin: transport['senderWindow']['origin'],
-    command: LedgerCommand.Unlock
+    command: LedgerCommand.Unlock,
   }
   const initialHandlersCount = transport['handlers'].size
   transport['targetWindow'].postMessage = (eventData) => {
@@ -67,11 +67,12 @@ test('sendCommand returns CommandInProgress if response handler already exists',
   const sendEvent: UnlockCommand = {
     id: LedgerCommand.Unlock,
     origin: transport['senderWindow'].origin,
-    command: LedgerCommand.Unlock
+    command: LedgerCommand.Unlock,
   }
 
   transport['targetWindow'].postMessage = (eventData) => {
-    // Sending a second message before the first is replied to should result in CommandInProgress
+    // Sending a second message before the first is replied to should result in
+    // CommandInProgress
     transport.sendCommand(sendEvent).then((inflightResponse) => {
       expect(inflightResponse).toEqual(LedgerBridgeErrorCodes.CommandInProgress)
     })
@@ -84,14 +85,14 @@ test('sendCommand removes command handler for the response when its resolved', a
   const sendEvent: UnlockCommand = {
     id: LedgerCommand.Unlock,
     origin: transport['senderWindow']['origin'],
-    command: LedgerCommand.Unlock
+    command: LedgerCommand.Unlock,
   }
 
   transport['targetWindow'].postMessage = (eventData) => {
     const replyEvent: MessageEvent = new MessageEvent('message', {
       data: eventData,
       origin: transport['targetWindow'].origin,
-      source: transport['targetWindow']
+      source: transport['targetWindow'],
     })
     transport['senderWindow'].dispatchEvent(replyEvent)
   }
@@ -107,7 +108,7 @@ test('onMessageReceived ignores messages not from the targetUrl', () => {
   const testId = 'test'
   let eventData = {
     id: testId,
-    command: testId
+    command: testId,
   }
 
   let callbackCalled = false
@@ -115,9 +116,9 @@ test('onMessageReceived ignores messages not from the targetUrl', () => {
   const invalidEvent: MessageEvent = new MessageEvent('message', {
     data: eventData,
     origin: transport['senderWindow']['origin'],
-    source: transport['senderWindow']
+    source: transport['senderWindow'],
   })
-  transport['addCommandHandler'](testId, () => callbackCalled = true)
+  transport['addCommandHandler'](testId, () => (callbackCalled = true))
   transport['senderWindow'].dispatchEvent(invalidEvent)
   expect(callbackCalled).toEqual(false)
 
@@ -125,7 +126,7 @@ test('onMessageReceived ignores messages not from the targetUrl', () => {
   const validEvent: MessageEvent = new MessageEvent('message', {
     data: eventData,
     origin: transport['targetWindow'].origin,
-    source: transport['targetWindow']
+    source: transport['targetWindow'],
   })
   transport['senderWindow'].dispatchEvent(validEvent)
   expect(callbackCalled).toEqual(true)
@@ -137,12 +138,13 @@ test('onMessageReceived invokes handler and replies with response', () => {
   const eventData = {
     id: testId,
     origin: transport['targetWindow'].origin,
-    command: testId
+    command: testId,
   }
   const event: MessageEvent = new MessageEvent('message', {
     data: eventData,
-    origin: eventData.origin, // event.origin === event.data.origin when a response is expected
-    source: transport['targetWindow']
+    // event.origin === event.data.origin when a response is expected
+    origin: eventData.origin,
+    source: transport['targetWindow'],
   })
 
   const expectedResponse = 123
@@ -162,13 +164,13 @@ test('onMessageReceived does not reply with response if the receiving message is
   const eventData = {
     id: testId,
     origin: transport['targetWindow'].origin,
-    command: testId
+    command: testId,
   }
   let callbackCalled = false
   const event: MessageEvent = new MessageEvent('message', {
     data: eventData,
     origin: transport['senderWindow']['origin'], // event.origin !== event.data.origin when it is a reponse to a sendCommand
-    source: transport['targetWindow']
+    source: transport['targetWindow'],
   })
   transport['addCommandHandler'](testId, () => {
     callbackCalled = true

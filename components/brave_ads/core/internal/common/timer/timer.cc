@@ -5,16 +5,19 @@
 
 #include "brave/components/brave_ads/core/internal/common/timer/timer.h"
 
+#include <optional>
 #include <utility>
 
+#include "base/check_is_test.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/common/random/random_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
 namespace {
-absl::optional<base::TimeDelta> g_timer_delay_for_testing;
+std::optional<base::TimeDelta> g_timer_delay_for_testing;
 }  // namespace
 
 Timer::Timer() = default;
@@ -24,7 +27,7 @@ Timer::~Timer() {
 }
 
 base::Time Timer::Start(const base::Location& location,
-                        const base::TimeDelta delay,
+                        base::TimeDelta delay,
                         base::OnceClosure user_task) {
   Stop();
 
@@ -35,10 +38,19 @@ base::Time Timer::Start(const base::Location& location,
 }
 
 base::Time Timer::StartWithPrivacy(const base::Location& location,
-                                   const base::TimeDelta delay,
+                                   base::TimeDelta delay,
                                    base::OnceClosure user_task) {
   base::TimeDelta rand_delay = RandTimeDelta(delay);
   if (rand_delay.is_negative()) {
+    // TODO(https://github.com/brave/brave-browser/issues/43332): Invalid random
+    // timer delay.
+    SCOPED_CRASH_KEY_STRING256("Issue32066", "location", location.ToString());
+    SCOPED_CRASH_KEY_NUMBER("Issue32066", "rand_delay",
+                            rand_delay.InMicroseconds());
+    SCOPED_CRASH_KEY_STRING64("Issue32066", "failure_reason",
+                              "Invalid random timer delay");
+    base::debug::DumpWithoutCrashing();
+
     rand_delay = base::Seconds(1);
   }
 
@@ -50,22 +62,20 @@ bool Timer::IsRunning() const {
 }
 
 bool Timer::Stop() {
-  if (!IsRunning()) {
-    return false;
-  }
-
+  const bool was_running = IsRunning();
   timer_.Stop();
-
-  return true;
+  return was_running;
 }
 
 ScopedTimerDelaySetterForTesting::ScopedTimerDelaySetterForTesting(
-    const base::TimeDelta delay) {
+    base::TimeDelta delay) {
+  CHECK_IS_TEST();
+
   g_timer_delay_for_testing = delay;
 }
 
 ScopedTimerDelaySetterForTesting::~ScopedTimerDelaySetterForTesting() {
-  g_timer_delay_for_testing = absl::nullopt;
+  g_timer_delay_for_testing = std::nullopt;
 }
 
 }  // namespace brave_ads

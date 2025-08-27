@@ -5,19 +5,18 @@
 
 #include "brave/components/brave_wallet/browser/fil_requests.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/strings/string_util.h"
+#include "base/strings/string_number_conversions.h"
 #include "brave/components/brave_wallet/browser/fil_transaction.h"
 #include "brave/components/brave_wallet/browser/json_rpc_requests_helper.h"
 #include "brave/components/brave_wallet/common/fil_address.h"
-#include "brave/components/json/rs/src/lib.rs.h"
+#include "brave/components/json/json_helper.h"
 
-namespace brave_wallet {
-
-namespace fil {
+namespace brave_wallet::fil {
 
 std::string getBalance(const std::string& address) {
   return GetJsonRpcString("Filecoin.WalletBalance", address);
@@ -54,8 +53,8 @@ std::string getEstimateGas(const std::string& from_address,
 
   transaction.Set("Version", 0);
   transaction.Set("Params", "");
-  transaction.Set("GasLimit", std::to_string(gas_limit));
-  transaction.Set("Nonce", std::to_string(nonce));
+  transaction.Set("GasLimit", base::NumberToString(gas_limit));
+  transaction.Set("Nonce", base::NumberToString(nonce));
   params.Append(std::move(transaction));
 
   base::Value::Dict fee;
@@ -73,15 +72,9 @@ std::string getEstimateGas(const std::string& from_address,
   dict.Set("id", 1);
   std::string json;
   base::JSONWriter::Write(dict, &json);
-  json = std::string(json::convert_string_value_to_int64("/params/0/GasLimit",
-                                                         json.c_str(), false)
-                         .c_str());
-  json = std::string(json::convert_string_value_to_uint64("/params/0/Nonce",
-                                                          json.c_str(), false)
-                         .c_str());
-  return std::string(json::convert_string_value_to_uint64("/params/0/Method",
-                                                          json.c_str(), false)
-                         .c_str());
+  json = json::convert_string_value_to_int64("/params/0/GasLimit", json, false);
+  json = json::convert_string_value_to_uint64("/params/0/Nonce", json, false);
+  return json::convert_string_value_to_uint64("/params/0/Method", json, false);
 }
 
 std::string getChainHead() {
@@ -93,18 +86,16 @@ std::string getStateSearchMsgLimited(const std::string& cid, uint64_t period) {
   cid_value.Set("/", cid);
   auto result =
       GetJsonRpcString("Filecoin.StateSearchMsgLimited", std::move(cid_value),
-                       base::Value(std::to_string(period)));
-  result = std::string(
-      json::convert_string_value_to_uint64("/params/1", result.c_str(), false)
-          .c_str());
+                       base::Value(base::NumberToString(period)));
+  result = json::convert_string_value_to_uint64("/params/1", result, false);
   return result;
 }
 
-absl::optional<std::string> getSendTransaction(const std::string& signed_tx) {
+std::optional<std::string> getSendTransaction(const std::string& signed_tx) {
   base::Value::List params;
   auto signed_tx_value = FilTransaction::DeserializeSignedTx(signed_tx);
-  if (!signed_tx_value || !signed_tx_value->is_dict()) {
-    return absl::nullopt;
+  if (!signed_tx_value) {
+    return std::nullopt;
   }
   params.Append(std::move(signed_tx_value.value()));
 
@@ -121,6 +112,4 @@ absl::optional<std::string> getSendTransaction(const std::string& signed_tx) {
   return FilTransaction::ConvertSignedTxStringFieldsToInt64("/params/0", json);
 }
 
-}  // namespace fil
-
-}  // namespace brave_wallet
+}  // namespace brave_wallet::fil

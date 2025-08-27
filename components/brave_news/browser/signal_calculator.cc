@@ -5,15 +5,18 @@
 
 #include "brave/components/brave_news/browser/signal_calculator.h"
 
+#include <algorithm>
 #include <iterator>
 #include <string>
-#include <unordered_set>
 #include <utility>
 #include <vector>
 
+#include "base/containers/flat_map.h"
+#include "brave/components/brave_news/browser/background_history_querier.h"
 #include "brave/components/brave_news/browser/feed_fetcher.h"
 #include "brave/components/brave_news/common/brave_news.mojom.h"
 #include "brave/components/brave_news/common/features.h"
+#include "brave/components/brave_news/common/subscriptions_snapshot.h"
 
 namespace brave_news {
 
@@ -33,38 +36,55 @@ std::vector<mojom::FeedItemMetadataPtr> GetArticles(const FeedItems& feed) {
 
 SignalCalculator::SignalCalculator(PublishersController& publishers_controller,
                                    ChannelsController& channels_controller,
-                                   PrefService& prefs,
-                                   history::HistoryService& history_service)
+                                   BackgroundHistoryQuerier& history_querier)
     : publishers_controller_(publishers_controller),
       channels_controller_(channels_controller),
-      prefs_(prefs),
-      history_service_(history_service) {}
+      history_querier_(history_querier) {}
 
 SignalCalculator::~SignalCalculator() = default;
 
-void SignalCalculator::GetSignals(const FeedItems& feed,
+void SignalCalculator::GetSignals(const SubscriptionsSnapshot& subscriptions,
+                                  const FeedItems& feed,
                                   SignalsCallback callback) {
   auto articles = GetArticles(feed);
-  history::QueryOptions options;
-  options.SetRecentDayRange(21);
-  options.max_count = 2000;
-  history_service_->QueryHistory(
-      u"", options,
-      base::BindOnce(&SignalCalculator::OnGotHistory,
-                     weak_ptr_factory_.GetWeakPtr(), std::move(articles),
-                     std::move(callback)),
-      &task_tracker_);
+  history_querier_->Run(base::BindOnce(
+      &SignalCalculator::OnGotHistory, weak_ptr_factory_.GetWeakPtr(),
+      subscriptions, std::move(articles), std::move(callback)));
 }
 
 void SignalCalculator::OnGotHistory(
+    const SubscriptionsSnapshot& subscriptions,
     std::vector<mojom::FeedItemMetadataPtr> articles,
     SignalsCallback callback,
     history::QueryResults results) {
   const auto& locale = publishers_controller_->GetLastLocale();
 
-  const auto& publishers = publishers_controller_->GetLastPublishers();
+  const auto& publishers = publishers_controller_->last_publishers();
   const auto& channels = channels_controller_->GetChannelsFromPublishers(
-      publishers, &prefs_.get());
+      publishers, subscriptions);
+
+  // Work out how many articles we have in each publisher/channel. We'll use
+  // these values to normalize the boost we apply to articles within those
+  // publishers/channels so we don't overwhelm the user with articles from
+  // certain areas.
+  base::flat_map<std::string, uint32_t> article_counts;
+  for (const auto& article : articles) {
+    auto it = publishers.find(article->publisher_id);
+    if (it == publishers.end()) {
+      continue;
+    }
+
+    article_counts[article->publisher_id]++;
+    for (const auto& locale_info : it->second->locales) {
+      if (locale_info->locale != locale) {
+        continue;
+      }
+      for (const auto& channel : locale_info->channels) {
+        article_counts[channel]++;
+      }
+    }
+  }
+
   base::flat_map<std::string, std::vector<std::string>> origin_visits;
   for (const auto& item : results) {
     auto host = item.url().host();
@@ -93,8 +113,8 @@ void SignalCalculator::OnGotHistory(
       continue;
     }
 
-    base::ranges::copy(history_it->second,
-                       std::back_inserter(publisher_visits[publisher_id]));
+    std::ranges::copy(history_it->second,
+                      std::back_inserter(publisher_visits[publisher_id]));
     total_publisher_visits += history_it->second.size();
 
     for (const auto& locale_info : publisher->locales) {
@@ -104,8 +124,8 @@ void SignalCalculator::OnGotHistory(
 
       for (const auto& channel : locale_info->channels) {
         total_channel_visits += history_it->second.size();
-        base::ranges::copy(history_it->second,
-                           std::back_inserter(channel_visits[channel]));
+        std::ranges::copy(history_it->second,
+                          std::back_inserter(channel_visits[channel]));
       }
       break;
     }
@@ -116,9 +136,12 @@ void SignalCalculator::OnGotHistory(
   // Add publisher signals
   for (const auto& [id, publisher] : publishers) {
     const auto& visits = publisher_visits.at(publisher->publisher_id);
+    auto disabled =
+        publisher->user_enabled_status == mojom::UserEnabled::DISABLED;
     signals[id] = mojom::Signal::New(
-        GetSubscribedWeight(publisher),
-        visits.size() / static_cast<double>(total_publisher_visits));
+        disabled, GetSubscribedWeight(publisher),
+        visits.size() / static_cast<double>(total_publisher_visits),
+        article_counts[id]);
   }
 
   // Add channel signals
@@ -126,8 +149,12 @@ void SignalCalculator::OnGotHistory(
     auto it = channel_visits.find(channel.first);
     auto visit_count = it == channel_visits.end() ? 0 : it->second.size();
     signals[channel.first] = mojom::Signal::New(
-        channels_controller_->GetChannelSubscribed(locale, channel.first),
-        visit_count / static_cast<double>(total_channel_visits));
+        /*disabled=*/false,
+        subscriptions.GetChannelSubscribed(locale, channel.first)
+            ? features::kBraveNewsChannelSubscribedBoost.Get()
+            : 0,
+        visit_count / static_cast<double>(total_channel_visits),
+        article_counts[channel.first]);
   }
 
   std::move(callback).Run(std::move(signals));
@@ -141,30 +168,10 @@ double SignalCalculator::GetSubscribedWeight(
     return 0;
   }
 
-  // We have a minimum subscribed weight for feeds which aren't explicitly
-  // disabled. This means they have a (normally small) nonzero chance of showing
-  // up in the feed.
-  double result = features::kBraveNewsSourceVisitsMin.Get();
-
-  // Direct feeds or explicitly enabled sources get the same boost.
-  if (publisher->type == mojom::PublisherType::DIRECT_SOURCE ||
-      enabled == mojom::UserEnabled::ENABLED) {
-    result += features::kBraveNewsSourceSubscribedBoost.Get();
-  }
-
-  // If the source is part of any channel the user is subscribed to, apply the
-  // channel subscribed boost.
-  for (const auto& locale_info : publisher->locales) {
-    for (const auto& channel : locale_info->channels) {
-      if (channels_controller_->GetChannelSubscribed(locale_info->locale,
-                                                     channel)) {
-        result += features::kBraveNewsChannelSubscribedBoost.Get();
-        break;
-      }
-    }
-  }
-
-  return result;
+  return publisher->type == mojom::PublisherType::DIRECT_SOURCE ||
+                 enabled == mojom::UserEnabled::ENABLED
+             ? features::kBraveNewsSourceSubscribedBoost.Get()
+             : 0;
 }
 
 }  // namespace brave_news

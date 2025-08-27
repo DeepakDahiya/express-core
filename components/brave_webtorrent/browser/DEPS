@@ -1,16 +1,8 @@
 include_rules = [
   "+brave/components/constants",
+  "+components/prefs",
   "+content/public/browser",
   "+extensions/browser",
   "+extensions/common",
+  "+ui/base",
 ]
-
-# Existing exceptions
-specific_include_rules = {
-  "magnet_protocol_handler\.(h|cc)": [
-    "+chrome/browser/external_protocol/external_protocol_handler.h",
-  ],
-  "webtorrent_util.cc": [
-    "+chrome/browser/profiles/profile.h",
-  ],
-}

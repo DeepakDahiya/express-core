@@ -11,7 +11,7 @@ export interface AccountsTabState {
   showAccountModal: boolean
   accountModalType: AccountModalTypes
   accountToRemove:
-                   | {
+    | {
         accountId: BraveWallet.AccountId
         name: string
       }
@@ -22,12 +22,12 @@ const defaultState: AccountsTabState = {
   selectedAccount: undefined,
   showAccountModal: false,
   accountModalType: 'deposit',
-  accountToRemove: undefined
+  accountToRemove: undefined,
 }
 
 export const AccountsTabActions = {
   setSelectedAccount: createAction<BraveWallet.AccountInfo | undefined>(
-    'setSelectedAccount'
+    'setSelectedAccount',
   ),
   setShowAccountModal: createAction<boolean>('setShowAccountModal'),
   setAccountModalType: createAction<AccountModalTypes>('setAccountModalType'),
@@ -37,7 +37,7 @@ export const AccountsTabActions = {
         name: string
       }
     | undefined
-  >('setAccountToRemove')
+  >('setAccountToRemove'),
 }
 
 export const createAccountsTabReducer = (initialState: AccountsTabState) => {
@@ -47,47 +47,52 @@ export const createAccountsTabReducer = (initialState: AccountsTabState) => {
     AccountsTabActions.setSelectedAccount,
     (
       state: AccountsTabState,
-      payload: BraveWallet.AccountInfo | undefined
+      payload: BraveWallet.AccountInfo | undefined,
     ): AccountsTabState => {
       return {
         ...state,
-        selectedAccount: payload
+        selectedAccount: payload,
       }
-    }
+    },
   )
 
-  reducer.on(AccountsTabActions.setShowAccountModal, (
-    state: AccountsTabState,
-    payload: boolean
-  ): AccountsTabState => {
-    return {
-      ...state,
-      showAccountModal: payload
-    }
-  })
+  reducer.on(
+    AccountsTabActions.setShowAccountModal,
+    (state: AccountsTabState, payload: boolean): AccountsTabState => {
+      return {
+        ...state,
+        showAccountModal: payload,
+      }
+    },
+  )
 
-  reducer.on(AccountsTabActions.setAccountModalType, (
-    state: AccountsTabState,
-    payload: AccountModalTypes
-  ): AccountsTabState => {
-    return {
-      ...state,
-      accountModalType: payload
-    }
-  })
+  reducer.on(
+    AccountsTabActions.setAccountModalType,
+    (state: AccountsTabState, payload: AccountModalTypes): AccountsTabState => {
+      return {
+        ...state,
+        accountModalType: payload,
+      }
+    },
+  )
 
-  reducer.on(AccountsTabActions.setAccountToRemove, (
-    state: AccountsTabState,
-    payload: {
-      accountId: BraveWallet.AccountId,
-      name: string
-    } | undefined
-  ): AccountsTabState => {
-    return {
-      ...state,
-      accountToRemove: payload
-    }
-  })
+  reducer.on(
+    AccountsTabActions.setAccountToRemove,
+    (
+      state: AccountsTabState,
+      payload:
+        | {
+            accountId: BraveWallet.AccountId
+            name: string
+          }
+        | undefined,
+    ): AccountsTabState => {
+      return {
+        ...state,
+        accountToRemove: payload,
+      }
+    },
+  )
 
   return reducer
 }

@@ -5,7 +5,6 @@
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/exclusion_rules/exclusion_rule_feature.h"
 
-#include "base/test/scoped_feature_list.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
@@ -17,124 +16,29 @@ TEST(BraveAdsExclusionRuleFeatureTest, IsEnabled) {
   EXPECT_TRUE(base::FeatureList::IsEnabled(kExclusionRulesFeature));
 }
 
-TEST(BraveAdsExclusionRuleFeatureTest, IsDisabled) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kExclusionRulesFeature);
-
-  // Act & Assert
-  EXPECT_FALSE(base::FeatureList::IsEnabled(kExclusionRulesFeature));
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest, ShouldExcludeAdIfConverted) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kExclusionRulesFeature, {{"should_exclude_ad_if_converted", "false"}});
-
-  // Act & Assert
-  EXPECT_FALSE(kShouldExcludeAdIfConverted.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest, DefaultShouldExcludeAdIfConverted) {
-  // Act & Assert
-  EXPECT_TRUE(kShouldExcludeAdIfConverted.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfConvertedWhenDisabled) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kExclusionRulesFeature);
-
-  // Act & Assert
-  EXPECT_TRUE(kShouldExcludeAdIfConverted.Get());
-}
-
 TEST(BraveAdsExclusionRuleFeatureTest,
      ShouldExcludeAdIfDismissedWithinTimeWindow) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kExclusionRulesFeature,
-      {{"should_exclude_ad_if_dismissed_within_time_window", "1d"}});
-
-  // Act & Assert
-  EXPECT_EQ(base::Days(1), kShouldExcludeAdIfDismissedWithinTimeWindow.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfDismissedWithinTimeWindow) {
   // Act & Assert
   EXPECT_EQ(base::Hours(0), kShouldExcludeAdIfDismissedWithinTimeWindow.Get());
 }
 
 TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfDismissedWithinTimeWindowWhenDisabled) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kExclusionRulesFeature);
-
-  // Act & Assert
-  EXPECT_EQ(base::Hours(0), kShouldExcludeAdIfDismissedWithinTimeWindow.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest,
-     ShouldExcludeAdIfTransferredWithinTimeWindow) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kExclusionRulesFeature,
-      {{"should_exclude_ad_if_transferred_within_time_window", "1d"}});
-
-  // Act & Assert
-  EXPECT_EQ(base::Days(1), kShouldExcludeAdIfTransferredWithinTimeWindow.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfTransferredWithinTimeWindow) {
+     ShouldExcludeAdIfLandedOnPageWithinTimeWindow) {
   // Act & Assert
   EXPECT_EQ(base::Hours(0),
-            kShouldExcludeAdIfTransferredWithinTimeWindow.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfTransferredWithinTimeWindowWhenDisabled) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kExclusionRulesFeature);
-
-  // Act & Assert
-  EXPECT_EQ(base::Hours(0),
-            kShouldExcludeAdIfTransferredWithinTimeWindow.Get());
+            kShouldExcludeAdIfLandedOnPageWithinTimeWindow.Get());
 }
 
 TEST(BraveAdsExclusionRuleFeatureTest,
      ShouldExcludeAdIfCreativeInstanceExceedsPerHourCap) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndEnableFeatureWithParameters(
-      kExclusionRulesFeature,
-      {{"should_exclude_ad_if_creative_instance_exceeds_per_hour_cap", "7"}});
-
   // Act & Assert
-  EXPECT_EQ(7, kShouldExcludeAdIfCreativeInstanceExceedsPerHourCap.Get());
+  EXPECT_EQ(1U, kShouldExcludeAdIfCreativeInstanceExceedsPerHourCap.Get());
 }
 
 TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfCreativeInstanceExceedsPerHourCap) {
+     ShouldExcludeAdIfCreativeSetExceedsConversionCap) {
   // Act & Assert
-  EXPECT_EQ(1, kShouldExcludeAdIfCreativeInstanceExceedsPerHourCap.Get());
-}
-
-TEST(BraveAdsExclusionRuleFeatureTest,
-     DefaultShouldExcludeAdIfCreativeInstanceExceedsPerHourCapWhenDisabled) {
-  // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitAndDisableFeature(kExclusionRulesFeature);
-
-  // Act & Assert
-  EXPECT_EQ(1, kShouldExcludeAdIfCreativeInstanceExceedsPerHourCap.Get());
+  EXPECT_EQ(0U, kShouldExcludeAdIfCreativeSetExceedsConversionCap.Get());
 }
 
 }  // namespace brave_ads

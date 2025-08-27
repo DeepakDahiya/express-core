@@ -5,75 +5,82 @@
 
 #include "brave/components/ai_chat/content/browser/ai_chat_throttle.h"
 
-#include <memory>
+#include <string>
+#include <string_view>
 
-#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
+#include "brave/components/ai_chat/core/browser/utils.h"
 #include "brave/components/ai_chat/core/common/features.h"
 #include "brave/components/constants/webui_url_constants.h"
+#include "build/build_config.h"
+#include "components/user_prefs/user_prefs.h"
+#include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
+#include "content/public/browser/web_contents.h"
 #include "content/public/common/url_constants.h"
+#include "ui/base/page_transition_types.h"
+#include "url/gurl.h"
 
 namespace ai_chat {
 
 // static
-std::unique_ptr<AiChatThrottle> AiChatThrottle::MaybeCreateThrottleFor(
-    content::NavigationHandle* navigation_handle) {
-  if (!ai_chat::features::IsAIChatEnabled()) {
-    return nullptr;
+void AIChatThrottle::MaybeCreateAndAdd(
+    content::NavigationThrottleRegistry& registry) {
+  // The throttle's only purpose is to deny navigation in a Tab.
+
+  // The AI Chat WebUI won't be enabled if the feature or policy is disabled
+  // (this is not checking a user preference).
+  content::NavigationHandle& navigation_handle = registry.GetNavigationHandle();
+  if (!ai_chat::IsAIChatEnabled(user_prefs::UserPrefs::Get(
+          navigation_handle.GetWebContents()->GetBrowserContext()))) {
+    return;
   }
 
-  // We need this throttle to work only for chrome-untrusted://chat page
-  if (!navigation_handle->GetURL().SchemeIs(
-          content::kChromeUIUntrustedScheme) ||
-      navigation_handle->GetURL().host_piece() != kChatUIHost) {
-    return nullptr;
+  const GURL& url = navigation_handle.GetURL();
+
+  bool is_main_page_url = url.SchemeIs(content::kChromeUIScheme) &&
+                          url.host_piece() == kAIChatUIHost;
+
+  // We allow main page navigation only if the full-page feature is enabled
+  // via the AIChatHistory feature flag.
+  if (is_main_page_url && features::IsAIChatHistoryEnabled()) {
+    return;
   }
 
-  // Purpose of this throttle is to forbid loading of chrome-untrusted://chat
-  // in tab.
-  // Parameters check is made different for Android and Desktop because
-  // there are different flags:
-  // --------+---------------------------------+------------------------------
-  //         | Tab                             | Panel
-  // --------+---------------------------------+------------------------------
-  // Android |PAGE_TRANSITION_FROM_ADDRESS_BAR | PAGE_TRANSITION_FROM_API
-  // --------+---------------------------------+------------------------------
-  // Desktop |PAGE_TRANSITION_TYPED|           | PAGE_TRANSITION_AUTO_TOPLEVEL
-  //         |PAGE_TRANSITION_FROM_ADDRESS_BAR |
-  // -------------------------------------------------------------------------
-  //
-  // So for Android the only allowed transition is PAGE_TRANSITION_FROM_API
-  // because it is pretty unique and means the page is loaded in a custom tab
-  // view.
-  // And for the desktop just disallow PAGE_TRANSITION_FROM_ADDRESS_BAR
-  ui::PageTransition transition = navigation_handle->GetPageTransition();
+  bool is_ai_chat_frame =
+      url.SchemeIs(content::kChromeUIUntrustedScheme) &&
+      url.host_piece() == kAIChatUntrustedConversationUIHost;
+
+  // We need this throttle to work only for AI Chat related URLs
+  if (!is_main_page_url && !is_ai_chat_frame) {
+    return;
+  }
+
+// On Android, we only have full page chat, so we always allow loading. On
+// desktop we just disallow PAGE_TRANSITION_FROM_ADDRESS_BAR.
 #if BUILDFLAG(IS_ANDROID)
-  if (ui::PageTransitionTypeIncludingQualifiersIs(
-          transition, ui::PageTransition::PAGE_TRANSITION_FROM_API)) {
-    return nullptr;
-  }
+  return;
 #else
+  ui::PageTransition transition = navigation_handle.GetPageTransition();
   if (!ui::PageTransitionTypeIncludingQualifiersIs(
           ui::PageTransitionGetQualifier(transition),
           ui::PageTransition::PAGE_TRANSITION_FROM_ADDRESS_BAR)) {
-    return nullptr;
+    return;
   }
+  registry.AddThrottle(std::make_unique<AIChatThrottle>(registry));
 #endif  // BUILDFLAG(IS_ANDROID)
-
-  return std::make_unique<AiChatThrottle>(navigation_handle);
 }
 
-AiChatThrottle::AiChatThrottle(content::NavigationHandle* handle)
-    : content::NavigationThrottle(handle) {}
+AIChatThrottle::AIChatThrottle(content::NavigationThrottleRegistry& registry)
+    : content::NavigationThrottle(registry) {}
 
-AiChatThrottle::~AiChatThrottle() {}
+AIChatThrottle::~AIChatThrottle() {}
 
-AiChatThrottle::ThrottleCheckResult AiChatThrottle::WillStartRequest() {
+AIChatThrottle::ThrottleCheckResult AIChatThrottle::WillStartRequest() {
   return CANCEL_AND_IGNORE;
 }
 
-const char* AiChatThrottle::GetNameForLogging() {
-  return "AiChatThrottle";
+const char* AIChatThrottle::GetNameForLogging() {
+  return "AIChatThrottle";
 }
 
 }  // namespace ai_chat

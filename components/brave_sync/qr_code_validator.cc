@@ -9,8 +9,8 @@
 #include <string_view>
 #include <vector>
 
+#include "base/check.h"
 #include "base/logging.h"
-#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
@@ -109,7 +109,8 @@ bool QrCodeDataValidator::IsValidSeedHex(const std::string& seed_hex) {
       base::SplitResult::SPLIT_WANT_NONEMPTY);
 
   if (words.size() != kPassphraseWordsCount) {
-    NOTREACHED() << "Passphrase words number is " << words.size();
+    VLOG(1) << "IsValidSeedHex: unexpected passphrase words number: "
+            << words.size();
     return false;
   }
 

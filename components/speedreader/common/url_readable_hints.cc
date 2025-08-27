@@ -5,8 +5,8 @@
 
 #include "brave/components/speedreader/common/url_readable_hints.h"
 
+#include "base/check.h"
 #include "base/no_destructor.h"
-#include "base/strings/string_util.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 
@@ -45,8 +45,9 @@ bool IsURLLooksReadable(const GURL& url) {
   if (!url.has_path() || url.path() == "/")
     return false;
 
-  if (base::StartsWith(url.host_piece(), kReadableBlogSubdomain))
+  if (url.host_piece().starts_with(kReadableBlogSubdomain)) {
     return true;
+  }
 
   // Look for single components such as /blog/, /news/, /article/ and for
   // multi-path components like /YYYY/MM/DD

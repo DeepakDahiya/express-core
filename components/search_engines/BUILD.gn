@@ -1,3 +1,8 @@
+# Copyright (c) 2021 The Brave Authors. All rights reserved.
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this file,
+# You can obtain one at https://mozilla.org/MPL/2.0/.
+
 group("search_engines") {
   deps = [ "//components/search_engines" ]
 }
@@ -10,6 +15,8 @@ source_set("unit_tests") {
   deps = [
     "//brave/components/search_engines",
     "//components/search_engines",
+    "//components/search_engines:test_support",
     "//testing/gtest",
   ]
+  configs += [ "//build/config/compiler:wexit_time_destructors" ]
 }

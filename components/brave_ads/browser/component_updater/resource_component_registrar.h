@@ -6,10 +6,11 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_BROWSER_COMPONENT_UPDATER_RESOURCE_COMPONENT_REGISTRAR_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_BROWSER_COMPONENT_UPDATER_RESOURCE_COMPONENT_REGISTRAR_H_
 
+#include <optional>
 #include <string>
 
+#include "base/memory/raw_ref.h"
 #include "brave/components/brave_component_updater/browser/brave_component.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilePath;
@@ -19,7 +20,7 @@ namespace brave_ads {
 
 class ResourceComponentRegistrarDelegate;
 
-class ResourceComponentRegistrar
+class ResourceComponentRegistrar final
     : public brave_component_updater::BraveComponent {
  public:
   ResourceComponentRegistrar(Delegate* component_updater_delegate,
@@ -28,10 +29,6 @@ class ResourceComponentRegistrar
 
   ResourceComponentRegistrar(const ResourceComponentRegistrar&) = delete;
   ResourceComponentRegistrar& operator=(const ResourceComponentRegistrar&) =
-      delete;
-
-  ResourceComponentRegistrar(ResourceComponentRegistrar&&) noexcept = delete;
-  ResourceComponentRegistrar& operator=(ResourceComponentRegistrar&&) noexcept =
       delete;
 
   ~ResourceComponentRegistrar() override;
@@ -46,9 +43,9 @@ class ResourceComponentRegistrar
 
   void OnComponentUnregistered(const std::string& component_id);
 
-  raw_ref<ResourceComponentRegistrarDelegate>
+  const raw_ref<ResourceComponentRegistrarDelegate>
       resource_component_registrar_delegate_;
-  absl::optional<std::string> resource_component_id_;
+  std::optional<std::string> resource_component_id_;
 };
 
 }  // namespace brave_ads

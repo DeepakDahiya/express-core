@@ -16,7 +16,7 @@ import {
   Description,
   StyledButton,
   ButtonText,
-  LoadIcon
+  LoadIcon,
 } from './buy-option-item-styles'
 import { Row } from '../style'
 
@@ -37,21 +37,23 @@ export const BuyOptionItem = (props: Props) => {
   return (
     <StyledWrapper layoutType={layoutType}>
       <Row justifyContent='flex-start'>
-        <Logo src={icon} />
+        <Logo
+          src={`chrome://image?url=${encodeURIComponent(icon)}&staticEncode=true`}
+        />
         <Content>
           <Name>{name}</Name>
           <Description>{description}</Description>
         </Content>
       </Row>
       <StyledButton onClick={onClick}>
-          {selectedOption === id &&
-            <>
-              <LoadIcon />
-              &nbsp;
-            </>
-          }
-          <ButtonText>{actionText}</ButtonText>
-        </StyledButton>
+        {selectedOption === id && (
+          <>
+            <LoadIcon />
+            &nbsp;
+          </>
+        )}
+        <ButtonText>{actionText}</ButtonText>
+      </StyledButton>
     </StyledWrapper>
   )
 }

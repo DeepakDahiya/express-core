@@ -5,17 +5,17 @@
 
 #include "brave/components/brave_ads/core/internal/serving/targeting/segments/top_segments.h"
 
+#include <algorithm>
+
 #include "brave/components/brave_ads/core/internal/segments/segment_util.h"
 
 namespace brave_ads {
 
 namespace {
 
-SegmentList FilterTopSegments(const SegmentList& segments,
-                              const int max_count) {
+SegmentList FilterTopSegments(const SegmentList& segments, size_t max_count) {
   SegmentList top_segments;
-
-  int count = 0;
+  top_segments.reserve(max_count);
 
   for (const auto& segment : segments) {
     if (ShouldFilterSegment(segment)) {
@@ -23,8 +23,7 @@ SegmentList FilterTopSegments(const SegmentList& segments,
     }
 
     top_segments.push_back(segment);
-    count++;
-    if (count == max_count) {
+    if (top_segments.size() == max_count) {
       break;
     }
   }
@@ -35,22 +34,25 @@ SegmentList FilterTopSegments(const SegmentList& segments,
 }  // namespace
 
 SegmentList GetTopSegments(const SegmentList& segments,
-                           const int max_count,
-                           const bool parent_only) {
+                           size_t max_count,
+                           bool parent_only) {
   return FilterTopSegments(parent_only ? GetParentSegments(segments) : segments,
                            max_count);
 }
 
-absl::optional<std::string> GetTopSegment(const SegmentList& segments,
-                                          const bool parent_only) {
-  const SegmentList top_segments =
-      FilterTopSegments(parent_only ? GetParentSegments(segments) : segments,
-                        /*max_count=*/1);
-  if (top_segments.empty()) {
-    return absl::nullopt;
+std::optional<std::string> GetTopSegment(const SegmentList& segments,
+                                         bool parent_only) {
+  const SegmentList& target_segments =
+      parent_only ? GetParentSegments(segments) : segments;
+  const auto iter = std::ranges::find_if(
+      target_segments,
+      [](const auto& segment) { return !ShouldFilterSegment(segment); });
+
+  if (iter == target_segments.cend()) {
+    return std::nullopt;
   }
 
-  return top_segments.front();
+  return *iter;
 }
 
 }  // namespace brave_ads

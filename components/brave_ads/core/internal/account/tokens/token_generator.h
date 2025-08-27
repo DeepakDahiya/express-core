@@ -6,19 +6,16 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_TOKENS_TOKEN_GENERATOR_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_TOKENS_TOKEN_GENERATOR_H_
 
-#include <vector>
+#include <cstddef>
 
 #include "brave/components/brave_ads/core/internal/account/tokens/token_generator_interface.h"
+#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/token.h"
 
 namespace brave_ads {
 
-namespace cbr {
-class Token;
-}  // namespace cbr
-
-class TokenGenerator : public TokenGeneratorInterface {
+class TokenGenerator final : public TokenGeneratorInterface {
  public:
-  std::vector<cbr::Token> Generate(size_t count) const override;
+  cbr::TokenList Generate(size_t count) const override;
 };
 
 }  // namespace brave_ads

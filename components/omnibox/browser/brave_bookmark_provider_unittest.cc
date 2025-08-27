@@ -17,10 +17,10 @@
 #include "components/omnibox/browser/autocomplete_input.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "components/prefs/pref_service.h"
+#include "components/search_engines/search_engines_test_environment.h"
 #include "components/search_engines/template_url_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 
 class BraveBookmarkProviderTest : public testing::Test {
  public:
@@ -34,15 +34,15 @@ class BraveBookmarkProviderTest : public testing::Test {
   }
 
   void SetUp() override {
-    EXPECT_CALL(client_, GetLocalOrSyncableBookmarkModel())
+    EXPECT_CALL(client_, GetBookmarkModel())
         .WillRepeatedly(testing::Return(model_.get()));
     EXPECT_CALL(client_, GetSchemeClassifier())
         .WillRepeatedly(testing::ReturnRef(classifier_));
-    auto* node = client_.GetLocalOrSyncableBookmarkModel()->other_node();
-    client_.GetLocalOrSyncableBookmarkModel()->AddURL(
-        node, 0, u"Hello", GURL("https://example.com"));
+    auto* node = client_.GetBookmarkModel()->other_node();
+    client_.GetBookmarkModel()->AddURL(node, 0, u"Hello",
+                                       GURL("https://example.com"));
     client_.set_template_url_service(
-        std::make_unique<TemplateURLService>(nullptr, 0));
+        search_engines_test_environment_.template_url_service());
     provider_ = base::MakeRefCounted<BraveBookmarkProvider>(&client_);
   }
 
@@ -50,6 +50,7 @@ class BraveBookmarkProviderTest : public testing::Test {
 
  protected:
   TestSchemeClassifier classifier_;
+  search_engines::SearchEnginesTestEnvironment search_engines_test_environment_;
   BraveFakeAutocompleteProviderClient client_;
   std::unique_ptr<bookmarks::BookmarkModel> model_;
   scoped_refptr<BraveBookmarkProvider> provider_;
@@ -65,4 +66,67 @@ TEST_F(BraveBookmarkProviderTest, SuggestionsEnabledHasResults) {
   prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
   provider_->Start(CreateAutocompleteInput("Hello"), true);
   EXPECT_FALSE(provider_->matches().empty());
+}
+
+TEST_F(BraveBookmarkProviderTest, TitleContainsQueryCanBeDefaultMatch) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  provider_->Start(CreateAutocompleteInput("Hello"), true);
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+}
+
+TEST_F(BraveBookmarkProviderTest, URLContainsQueryCanBeDefaultMatch) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  provider_->Start(CreateAutocompleteInput("example"), true);
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+}
+
+TEST_F(BraveBookmarkProviderTest, ContainsIsCaseInsensitive) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  provider_->Start(CreateAutocompleteInput("EXAMPLE"), true);
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+
+  provider_->Start(CreateAutocompleteInput("HELLO"), true);
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+}
+
+TEST_F(BraveBookmarkProviderTest, QueryIsNotExactCannotBeDefaultMatch) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  provider_->Start(CreateAutocompleteInput("Hello example"), true);
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_FALSE(provider_->matches()[0].allowed_to_be_default_match);
+}
+
+TEST_F(BraveBookmarkProviderTest, DontBumpContainsQueryIfKeywordIsUsed) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  auto input = CreateAutocompleteInput("Hello");
+  input.set_keyword_mode_entry_method(
+      metrics::OmniboxEventProto::KeywordModeEntryMethod::
+          OmniboxEventProto_KeywordModeEntryMethod_KEYBOARD_SHORTCUT);
+  input.set_prefer_keyword(true);
+  input.set_allow_exact_keyword_match(true);
+  provider_->Start(input, true);
+
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_FALSE(provider_->matches()[0].allowed_to_be_default_match);
+}
+
+TEST_F(BraveBookmarkProviderTest, ContainsQueryBumpsRelevance) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  provider_->Start(CreateAutocompleteInput("Hello"), true);
+  EXPECT_FALSE(provider_->matches().empty());
+  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+  // Note: 1199 is the max relevance score for a bookmark upstream.
+  EXPECT_GT(provider_->matches()[0].relevance, 1199);
+}
+
+TEST_F(BraveBookmarkProviderTest, TitleOnlyMatchSetsURL) {
+  prefs()->SetBoolean(omnibox::kBookmarkSuggestionsEnabled, true);
+  provider_->Start(CreateAutocompleteInput("Hello"), true);
+  EXPECT_EQ(provider_->matches().size(), 1u);
+  EXPECT_TRUE(provider_->matches()[0].allowed_to_be_default_match);
+  EXPECT_EQ(provider_->matches()[0].contents, u"example.com");
 }

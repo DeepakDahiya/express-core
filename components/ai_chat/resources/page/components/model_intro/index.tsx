@@ -5,31 +5,32 @@
 
 import * as React from 'react'
 import Icon from '@brave/leo/react/icon'
-import formatMessage from '$web-common/formatMessage'
-import { getLocale } from '$web-common/locale'
-import * as mojom from '../../api/page_handler'
-import DataContext from '../../state/context'
+import Tooltip from '@brave/leo/react/tooltip'
+import Button from '@brave/leo/react/button'
+import { getLocale, formatLocale } from '$web-common/locale'
+import * as Mojom from '../../../common/mojom'
+import { useAIChat } from '../../state/ai_chat_context'
+import { useConversation } from '../../state/conversation_context'
 import styles from './style.module.scss'
+import { getKeysForMojomEnum } from '$web-common/mojomUtils'
 
-function getCategoryName (category: mojom.ModelCategory) {
+function getCategoryName(category: Mojom.ModelCategory) {
   // To avoid problems when order of enum values change, we base the key
   // on the enum name rather than the number value, e.g. "CHAT" vs 0
-  const categoryKey = Object.keys(mojom.ModelCategory)[category]
-  const key = `modelCategory-${categoryKey.toLowerCase()}`
-  return getLocale(key)
+  const categoryKey = getKeysForMojomEnum(Mojom.ModelCategory)[category]
+  return getLocale('CHAT_UI_MODEL_CATEGORY_' + categoryKey)
 }
 
-function getIntroMessage (model: mojom.Model) {
-  const key = `introMessage-${model.key}`
-  return getLocale(key)
+function getIntroMessageKey(model: Mojom.Model) {
+  return `CHAT_UI_INTRO_MESSAGE_${model.key.toUpperCase().replaceAll('-', '_')}`
 }
 
-export default function ModelIntro () {
-  const context = React.useContext(DataContext)
+export default function ModelIntro() {
+  const aiChatContext = useAIChat()
+  const conversationContext = useConversation()
 
-  const model = context.currentModel
+  const model = conversationContext.currentModel
   if (!model) {
-    console.error('Rendered ModelIntro when currentModel does not exist!')
     return <></>
   }
 
@@ -39,16 +40,50 @@ export default function ModelIntro () {
         <Icon name='product-brave-leo' />
       </div>
       <div className={styles.meta}>
-        <h4 className={styles.category}>{getCategoryName(model.category)}</h4>
+        <h4 className={styles.category}>
+          {conversationContext.isCurrentModelLeo
+            ? getCategoryName(model.options.leoModelOptions!.category)
+            : model.displayName}
+        </h4>
         <h3 className={styles.name}>
-          {formatMessage(getLocale('modelNameSyntax'), {
-            placeholders: {
-              $1: model.displayName,
-              $2: model.displayMaker
-            }
-          })}
+          {conversationContext.isCurrentModelLeo
+            ? model.displayName
+            : model.options.customModelOptions?.modelRequestName}
+          {conversationContext.isCurrentModelLeo && (
+            <Tooltip
+              mode='default'
+              className={styles.tooltip}
+              offset={4}
+            >
+              <div
+                slot='content'
+                className={styles.tooltipContent}
+              >
+                {formatLocale(getIntroMessageKey(model), {
+                  $1: (content) => {
+                      return (
+                        <button
+                          key={content}
+                          onClick={() =>
+                            aiChatContext.uiHandler?.openModelSupportUrl()
+                          }
+                        >
+                          {content}
+                        </button>
+                      )
+                  }
+                })}
+              </div>
+              <Button
+                fab
+                kind='plain-faint'
+                className={styles.tooltipButton}
+              >
+                <Icon name='info-outline' />
+              </Button>
+            </Tooltip>
+          )}
         </h3>
-        <p className={styles.modelIntro}>{getIntroMessage(model)}</p>
       </div>
     </div>
   )

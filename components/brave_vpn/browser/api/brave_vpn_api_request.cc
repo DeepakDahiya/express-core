@@ -7,8 +7,10 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/debug/dump_without_crashing.h"
 #include "base/json/json_writer.h"
+#include "base/logging.h"
 #include "brave/components/brave_vpn/browser/api/brave_vpn_api_helper.h"
 #include "brave/components/brave_vpn/browser/api/vpn_response_parser.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
@@ -62,11 +64,13 @@ BraveVpnAPIRequest::BraveVpnAPIRequest(
 
 BraveVpnAPIRequest::~BraveVpnAPIRequest() = default;
 
-void BraveVpnAPIRequest::GetAllServerRegions(ResponseCallback callback) {
+void BraveVpnAPIRequest::GetServerRegions(ResponseCallback callback,
+                                          const std::string& region_precision) {
   auto internal_callback =
       base::BindOnce(&BraveVpnAPIRequest::OnGetResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-  GURL base_url = GetURLWithPath(kVpnHost, kAllServerRegions);
+  GURL base_url =
+      GetURLWithPath(kVpnHost, kServerRegionsWithCities + region_precision);
   OAuthRequest(base_url, "GET", "", std::move(internal_callback));
 }
 
@@ -78,8 +82,10 @@ void BraveVpnAPIRequest::GetTimezonesForRegions(ResponseCallback callback) {
   OAuthRequest(base_url, "GET", "", std::move(internal_callback));
 }
 
-void BraveVpnAPIRequest::GetHostnamesForRegion(ResponseCallback callback,
-                                               const std::string& region) {
+void BraveVpnAPIRequest::GetHostnamesForRegion(
+    ResponseCallback callback,
+    const std::string& region,
+    const std::string& region_precision) {
   DCHECK(!region.empty());
   static bool dump_sent = false;
   if (!dump_sent && region.empty()) {
@@ -90,9 +96,10 @@ void BraveVpnAPIRequest::GetHostnamesForRegion(ResponseCallback callback,
   auto internal_callback =
       base::BindOnce(&BraveVpnAPIRequest::OnGetResponse,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback));
-  GURL base_url = GetURLWithPath(kVpnHost, kHostnameForRegion);
+  GURL base_url = GetURLWithPath(kVpnHost, kHostnameForRegionNew);
   base::Value::Dict dict;
   dict.Set("region", region);
+  dict.Set("region-precision", region_precision);
   std::string request_body = CreateJSONRequestBody(dict);
   OAuthRequest(base_url, "POST", request_body, std::move(internal_callback));
 }
@@ -256,7 +263,7 @@ void BraveVpnAPIRequest::OnGetResponse(
   // requests. |body| will be empty when the response from service is invalid
   // json.
   const bool success = result.response_code() == 200;
-  std::move(callback).Run(result.body(), success);
+  std::move(callback).Run(result.SerializeBodyToString(), success);
 }
 
 void BraveVpnAPIRequest::OnGetSubscriberCredential(
@@ -264,8 +271,8 @@ void BraveVpnAPIRequest::OnGetSubscriberCredential(
     APIRequestResult api_request_result) {
   bool success = api_request_result.response_code() == 200;
   std::string error;
-  std::string subscriber_credential =
-      ParseSubscriberCredentialFromJson(api_request_result.body(), &error);
+  std::string subscriber_credential = ParseSubscriberCredentialFromJson(
+      api_request_result.value_body(), &error);
   if (!success) {
     subscriber_credential = error;
     VLOG(1) << __func__ << " Response from API was not HTTP 200 (Received "
@@ -280,7 +287,7 @@ void BraveVpnAPIRequest::OnCreateSupportTicket(
   bool success = api_request_result.response_code() == 200;
   VLOG(2) << "OnCreateSupportTicket success=" << success
           << "\nresponse_code=" << api_request_result.response_code();
-  std::move(callback).Run(api_request_result.body(), success);
+  std::move(callback).Run(api_request_result.SerializeBodyToString(), success);
 }
 
 }  // namespace brave_vpn

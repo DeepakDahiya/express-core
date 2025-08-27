@@ -6,35 +6,34 @@
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens.h"
 
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_info.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsPaymentTokensTest : public UnitTestBase {};
+class BraveAdsPaymentTokensTest : public test::TestBase {};
 
 TEST_F(BraveAdsPaymentTokensTest, GetToken) {
   // Arrange
-  const PaymentTokenList tokens = BuildPaymentTokensForTesting(/*count=*/2);
-  ASSERT_EQ(2U, tokens.size());
+  const PaymentTokenList tokens = test::BuildPaymentTokens(/*count=*/2);
+  ASSERT_THAT(tokens, ::testing::SizeIs(2));
 
   PaymentTokens payment_tokens;
   payment_tokens.SetTokens(tokens);
 
   // Act & Assert
-  const PaymentTokenInfo& expected_token = tokens.at(0);
-  EXPECT_EQ(expected_token, payment_tokens.GetToken());
+  EXPECT_EQ(tokens.front(), payment_tokens.GetToken());
 }
 
 TEST_F(BraveAdsPaymentTokensTest, GetAllTokens) {
   // Arrange
   PaymentTokens payment_tokens;
-  payment_tokens.SetTokens(BuildPaymentTokensForTesting(/*count=*/2));
+  payment_tokens.SetTokens(test::BuildPaymentTokens(/*count=*/2));
 
   // Act & Assert
-  EXPECT_EQ(BuildPaymentTokensForTesting(/*count=*/2),
+  EXPECT_EQ(test::BuildPaymentTokens(/*count=*/2),
             payment_tokens.GetAllTokens());
 }
 
@@ -43,10 +42,10 @@ TEST_F(BraveAdsPaymentTokensTest, SetTokens) {
   PaymentTokens payment_tokens;
 
   // Act
-  payment_tokens.SetTokens(BuildPaymentTokensForTesting(/*count=*/2));
+  payment_tokens.SetTokens(test::BuildPaymentTokens(/*count=*/2));
 
   // Assert
-  EXPECT_EQ(BuildPaymentTokensForTesting(/*count=*/2),
+  EXPECT_EQ(test::BuildPaymentTokens(/*count=*/2),
             payment_tokens.GetAllTokens());
 }
 
@@ -63,8 +62,8 @@ TEST_F(BraveAdsPaymentTokensTest, SetEmptyTokens) {
 
 TEST_F(BraveAdsPaymentTokensTest, AddTokens) {
   // Arrange
-  const PaymentTokenList tokens = BuildPaymentTokensForTesting(/*count=*/2);
-  ASSERT_EQ(2U, tokens.size());
+  const PaymentTokenList tokens = test::BuildPaymentTokens(/*count=*/2);
+  ASSERT_THAT(tokens, ::testing::SizeIs(2));
 
   PaymentTokens payment_tokens;
   payment_tokens.SetTokens({tokens.at(0)});
@@ -89,7 +88,7 @@ TEST_F(BraveAdsPaymentTokensTest, AddEmptyTokens) {
 
 TEST_F(BraveAdsPaymentTokensTest, DoNotAddDuplicateTokens) {
   // Arrange
-  const PaymentTokenInfo payment_token = BuildPaymentTokenForTesting();
+  const PaymentTokenInfo payment_token = test::BuildPaymentToken();
 
   PaymentTokens payment_tokens;
   payment_tokens.AddTokens({payment_token});
@@ -103,8 +102,8 @@ TEST_F(BraveAdsPaymentTokensTest, DoNotAddDuplicateTokens) {
 
 TEST_F(BraveAdsPaymentTokensTest, RemoveToken) {
   // Arrange
-  const PaymentTokenList tokens = BuildPaymentTokensForTesting(/*count=*/2);
-  ASSERT_EQ(2U, tokens.size());
+  const PaymentTokenList tokens = test::BuildPaymentTokens(/*count=*/2);
+  ASSERT_THAT(tokens, ::testing::SizeIs(2));
 
   PaymentTokens payment_tokens;
   payment_tokens.SetTokens(tokens);
@@ -121,8 +120,8 @@ TEST_F(BraveAdsPaymentTokensTest, RemoveToken) {
 
 TEST_F(BraveAdsPaymentTokensTest, RemoveTokens) {
   // Arrange
-  const PaymentTokenList tokens = BuildPaymentTokensForTesting(/*count=*/3);
-  ASSERT_EQ(3U, tokens.size());
+  const PaymentTokenList tokens = test::BuildPaymentTokens(/*count=*/3);
+  ASSERT_THAT(tokens, ::testing::SizeIs(3));
 
   PaymentTokens payment_tokens;
   payment_tokens.SetTokens(tokens);
@@ -141,7 +140,7 @@ TEST_F(BraveAdsPaymentTokensTest, RemoveTokens) {
 TEST_F(BraveAdsPaymentTokensTest, RemoveAllTokens) {
   // Arrange
   PaymentTokens payment_tokens;
-  payment_tokens.SetTokens(BuildPaymentTokensForTesting(/*count=*/2));
+  payment_tokens.SetTokens(test::BuildPaymentTokens(/*count=*/2));
 
   // Act
   payment_tokens.RemoveAllTokens();
@@ -152,7 +151,7 @@ TEST_F(BraveAdsPaymentTokensTest, RemoveAllTokens) {
 
 TEST_F(BraveAdsPaymentTokensTest, TokenDoesExist) {
   // Arrange
-  const PaymentTokenInfo payment_token = BuildPaymentTokenForTesting();
+  const PaymentTokenInfo payment_token = test::BuildPaymentToken();
 
   PaymentTokens payment_tokens;
   payment_tokens.SetTokens({payment_token});
@@ -166,13 +165,13 @@ TEST_F(BraveAdsPaymentTokensTest, TokenDoesNotExist) {
   PaymentTokens payment_tokens;
 
   // Act & Assert
-  EXPECT_FALSE(payment_tokens.TokenExists(BuildPaymentTokenForTesting()));
+  EXPECT_FALSE(payment_tokens.TokenExists(test::BuildPaymentToken()));
 }
 
 TEST_F(BraveAdsPaymentTokensTest, Count) {
   // Arrange
   PaymentTokens payment_tokens;
-  payment_tokens.SetTokens(BuildPaymentTokensForTesting(/*count=*/3));
+  payment_tokens.SetTokens(test::BuildPaymentTokens(/*count=*/3));
 
   // Act & Assert
   EXPECT_EQ(3U, payment_tokens.Count());
@@ -189,7 +188,7 @@ TEST_F(BraveAdsPaymentTokensTest, IsEmpty) {
 TEST_F(BraveAdsPaymentTokensTest, IsNotEmpty) {
   // Arrange
   PaymentTokens payment_tokens;
-  payment_tokens.SetTokens(BuildPaymentTokensForTesting(/*count=*/1));
+  payment_tokens.SetTokens(test::BuildPaymentTokens(/*count=*/1));
 
   // Act & Assert
   EXPECT_FALSE(payment_tokens.IsEmpty());

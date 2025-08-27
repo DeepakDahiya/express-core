@@ -6,12 +6,15 @@
 #include "brave/components/sync/service/brave_sync_auth_manager.h"
 
 #include "base/base64.h"
+#include "base/check.h"
+#include "base/logging.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "brave/components/brave_sync/crypto/crypto.h"
 #include "brave/components/brave_sync/network_time_helper.h"
 #include "brave/components/constants/brave_services_key.h"
 #include "brave/components/constants/network_constants.h"
+#include "google_apis/gaia/gaia_id.h"
 
 namespace syncer {
 
@@ -24,11 +27,8 @@ std::string AppendBraveServiceKeyHeaderString() {
 
 BraveSyncAuthManager::BraveSyncAuthManager(
     signin::IdentityManager* identity_manager,
-    const AccountStateChangedCallback& account_state_changed,
-    const CredentialsChangedCallback& credentials_changed)
-    : SyncAuthManager(identity_manager,
-                      account_state_changed,
-                      credentials_changed) {}
+    SyncAuthManager::Delegate* delegate)
+    : SyncAuthManager(identity_manager, delegate) {}
 
 BraveSyncAuthManager::~BraveSyncAuthManager() = default;
 
@@ -78,7 +78,7 @@ SyncAccountInfo BraveSyncAuthManager::DetermineAccountToUse() const {
         base::HexEncode(public_key_.data(), public_key_.size());
     AccountInfo account_info;
     account_info.account_id = CoreAccountId::FromString(client_id);
-    account_info.gaia = client_id;
+    account_info.gaia = GaiaId(client_id);
     // about:sync-internals needs space separator in order to confine table
     // data within specific width. (ex. client_version and encrypted_types)
     account_info.email =
@@ -114,8 +114,7 @@ std::string BraveSyncAuthManager::GenerateAccessToken(
   // base64(timestamp_hex|signed_timestamp_hex|public_key_hex)
   const std::string access_token =
       timestamp_hex + "|" + signed_timestamp_hex + "|" + public_key_hex;
-  std::string encoded_access_token;
-  base::Base64Encode(access_token, &encoded_access_token);
+  std::string encoded_access_token = base::Base64Encode(access_token);
   DCHECK(!encoded_access_token.empty());
 
   return encoded_access_token + AppendBraveServiceKeyHeaderString();
@@ -123,13 +122,13 @@ std::string BraveSyncAuthManager::GenerateAccessToken(
 
 void BraveSyncAuthManager::OnNetworkTimeFetched(const base::Time& time) {
   std::string timestamp =
-      std::to_string(int64_t(time.InMillisecondsFSinceUnixEpoch()));
+      base::NumberToString(int64_t(time.InMillisecondsFSinceUnixEpoch()));
   if (public_key_.empty() || private_key_.empty()) {
     return;
   }
   access_token_ = GenerateAccessToken(timestamp);
   if (registered_for_auth_notifications_) {
-    credentials_changed_callback_.Run();
+    delegate_->SyncAuthCredentialsChanged();
   }
 }
 

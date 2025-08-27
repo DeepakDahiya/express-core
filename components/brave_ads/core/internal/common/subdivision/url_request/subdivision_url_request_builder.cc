@@ -7,7 +7,6 @@
 
 #include <string>
 
-#include "base/strings/strcat.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request_builder_util.h"
 #include "brave/components/brave_ads/core/internal/common/url/request_builder/host/url_host_util.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
@@ -18,19 +17,18 @@ namespace brave_ads {
 namespace {
 
 GURL BuildUrl() {
-  const std::string spec =
-      base::StrCat({GetGeoUrlHost(), BuildSubdivisionUrlPath()});
+  const std::string spec = GetGeoUrlHost() + BuildSubdivisionUrlPath();
   return GURL(spec);
 }
 
 }  // namespace
 
 mojom::UrlRequestInfoPtr GetSubdivisionUrlRequestBuilder::Build() {
-  mojom::UrlRequestInfoPtr url_request = mojom::UrlRequestInfo::New();
-  url_request->url = BuildUrl();
-  url_request->method = mojom::UrlRequestMethodType::kGet;
+  mojom::UrlRequestInfoPtr mojom_url_request = mojom::UrlRequestInfo::New();
+  mojom_url_request->url = BuildUrl();
+  mojom_url_request->method = mojom::UrlRequestMethodType::kGet;
 
-  return url_request;
+  return mojom_url_request;
 }
 
 }  // namespace brave_ads

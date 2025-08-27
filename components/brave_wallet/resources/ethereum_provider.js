@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-(function() {
+;(function () {
   if (!window.braveEthereum) {
     return
   }
@@ -12,19 +12,19 @@
   $Object.defineProperties(window.braveEthereum, {
     on: {
       value: BraveWeb3ProviderEventEmitter.on,
-      writable: false
+      writable: false,
     },
     emit: {
       value: BraveWeb3ProviderEventEmitter.emit,
-      writable: false
+      writable: false,
     },
     removeListener: {
       value: BraveWeb3ProviderEventEmitter.removeListener,
-      writable: false
+      writable: false,
     },
     removeAllListeners: {
       value: BraveWeb3ProviderEventEmitter.removeAllListeners,
-      writable: false
-    }
+      writable: false,
+    },
   })
 })()

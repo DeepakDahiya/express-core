@@ -28,7 +28,7 @@ import {
   FiatBalance,
   ContractAddress,
   HideTokenButton,
-  modalWidth
+  modalWidth,
 } from './token-details-modal-styles'
 import { AssetIcon } from '../../style'
 
@@ -50,7 +50,7 @@ export const TokenDetailsModal = (props: Props) => {
     assetBalance,
     formattedFiatBalance,
     onClose,
-    onShowHideTokenModal
+    onShowHideTokenModal,
   } = props
 
   return (
@@ -63,24 +63,36 @@ export const TokenDetailsModal = (props: Props) => {
         <StyledWrapper>
           <TokenBalanceRow>
             <CryptoBalance>{assetBalance}</CryptoBalance>
-            <AssetIconWithPlaceholder asset={selectedAsset} network={selectedAssetNetwork} />
+            <AssetIconWithPlaceholder asset={selectedAsset} />
           </TokenBalanceRow>
-          <FiatBalance>{formattedFiatBalance || <Skeleton width='20%' />}</FiatBalance>
+          <FiatBalance>
+            {formattedFiatBalance || <Skeleton width='20%' />}
+          </FiatBalance>
           <DetailColumn>
-            <TokenDetailLabel>{getLocale('braveWalletTokenContractAddress')}</TokenDetailLabel>
+            <TokenDetailLabel>
+              {getLocale('braveWalletTokenContractAddress')}
+            </TokenDetailLabel>
             <CopyTooltip text={selectedAsset.contractAddress}>
               <ContractAddress>{selectedAsset.contractAddress}</ContractAddress>
             </CopyTooltip>
           </DetailColumn>
           <DetailColumn>
-            <TokenDetailLabel>{getLocale('braveWalletTokenDecimal')}</TokenDetailLabel>
+            <TokenDetailLabel>
+              {getLocale('braveWalletTokenDecimal')}
+            </TokenDetailLabel>
             <TokenDetailValue>{selectedAsset.decimals}</TokenDetailValue>
           </DetailColumn>
           <DetailColumn>
-            <TokenDetailLabel>{getLocale('braveWalletTransactionDetailNetwork')}</TokenDetailLabel>
-            <TokenDetailValue>{selectedAssetNetwork.chainName}</TokenDetailValue>
+            <TokenDetailLabel>
+              {getLocale('braveWalletTransactionDetailNetwork')}
+            </TokenDetailLabel>
+            <TokenDetailValue>
+              {selectedAssetNetwork.chainName}
+            </TokenDetailValue>
           </DetailColumn>
-          <HideTokenButton onClick={onShowHideTokenModal}>{getLocale('braveWalletHideTokenModalTitle')}</HideTokenButton>
+          <HideTokenButton onClick={onShowHideTokenModal}>
+            {getLocale('braveWalletHideTokenModalTitle')}
+          </HideTokenButton>
         </StyledWrapper>
       </PopupModal>
     </>

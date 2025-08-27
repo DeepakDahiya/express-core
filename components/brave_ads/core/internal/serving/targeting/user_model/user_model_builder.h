@@ -12,8 +12,7 @@ namespace brave_ads {
 
 struct UserModelInfo;
 
-using BuildUserModelCallback =
-    base::OnceCallback<void(const UserModelInfo& user_model)>;
+using BuildUserModelCallback = base::OnceCallback<void(UserModelInfo)>;
 
 void BuildUserModel(BuildUserModelCallback callback);
 

@@ -5,7 +5,7 @@
 
 #include "brave/components/brave_ads/core/internal/account/user_data/fixed/version_number_user_data.h"
 
-#include "brave/components/brave_ads/core/internal/browser/browser_util.h"
+#include "brave/components/brave_ads/core/internal/application_state/browser_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 
 namespace brave_ads {
@@ -15,15 +15,11 @@ constexpr char kVersionNumberKey[] = "versionNumber";
 }  // namespace
 
 base::Value::Dict BuildVersionNumberUserData() {
-  base::Value::Dict user_data;
-
   if (!UserHasJoinedBraveRewards()) {
-    return user_data;
+    return {};
   }
 
-  user_data.Set(kVersionNumberKey, GetBrowserVersionNumber());
-
-  return user_data;
+  return base::Value::Dict().Set(kVersionNumberKey, GetBrowserVersionNumber());
 }
 
 }  // namespace brave_ads

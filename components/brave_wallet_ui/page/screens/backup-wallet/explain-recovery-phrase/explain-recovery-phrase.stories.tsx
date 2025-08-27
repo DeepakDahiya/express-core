@@ -8,14 +8,17 @@ import * as React from 'react'
 import WalletPageStory from '../../../../stories/wrappers/wallet-page-story-wrapper'
 import { RecoveryPhraseExplainer } from './explain-recovery-phrase'
 
-export const _BackupRecoveryPhraseExplainer = () => {
-  return <WalletPageStory>
-    <RecoveryPhraseExplainer />
-  </WalletPageStory>
+export const _BackupRecoveryPhraseExplainer = {
+  render: () => {
+    return (
+      <WalletPageStory>
+        <RecoveryPhraseExplainer />
+      </WalletPageStory>
+    )
+  },
 }
 
-_BackupRecoveryPhraseExplainer.story = {
-  name: 'Explain Backup Recovery Phrase'
+export default {
+  title: 'Wallet/Desktop/Screens/Backup Wallet',
+  component: RecoveryPhraseExplainer,
 }
-
-export default _BackupRecoveryPhraseExplainer

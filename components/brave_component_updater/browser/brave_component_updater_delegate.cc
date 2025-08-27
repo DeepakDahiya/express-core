@@ -5,8 +5,6 @@
 
 #include "brave/components/brave_component_updater/browser/brave_component_updater_delegate.h"
 
-#include <utility>
-
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "brave/components/brave_component_updater/browser/brave_component_installer.h"
@@ -18,7 +16,22 @@ using brave_component_updater::BraveComponent;
 using brave_component_updater::BraveOnDemandUpdater;
 using component_updater::ComponentUpdateService;
 
-namespace brave {
+namespace brave_component_updater {
+
+namespace {
+
+void RegisterComponent(component_updater::ComponentUpdateService* cus,
+                       const std::string& name,
+                       const std::string& base64_public_key,
+                       base::OnceClosure registered_callback,
+                       BraveComponent::ReadyCallback ready_callback) {
+  auto installer = base::MakeRefCounted<component_updater::ComponentInstaller>(
+      std::make_unique<BraveComponentInstallerPolicy>(
+          name, base64_public_key, std::move(ready_callback)));
+  installer->Register(cus, std::move(registered_callback));
+}
+
+}  // namespace
 
 BraveComponentUpdaterDelegate::BraveComponentUpdaterDelegate(
     ComponentUpdateService* component_updater,
@@ -39,10 +52,12 @@ void BraveComponentUpdaterDelegate::Register(
     const std::string& component_base64_public_key,
     base::OnceClosure registered_callback,
     BraveComponent::ReadyCallback ready_callback) {
-  brave::RegisterComponent(base::to_address(component_updater_), component_name,
-                           component_base64_public_key,
-                           std::move(registered_callback),
-                           std::move(ready_callback));
+  if (!BraveOnDemandUpdater::GetInstance()->is_component_update_disabled()) {
+    RegisterComponent(base::to_address(component_updater_), component_name,
+                      component_base64_public_key,
+                      std::move(registered_callback),
+                      std::move(ready_callback));
+  }
 }
 
 bool BraveComponentUpdaterDelegate::Unregister(
@@ -50,9 +65,9 @@ bool BraveComponentUpdaterDelegate::Unregister(
   return component_updater_->UnregisterComponent(component_id);
 }
 
-void BraveComponentUpdaterDelegate::OnDemandUpdate(
+void BraveComponentUpdaterDelegate::EnsureInstalled(
     const std::string& component_id) {
-  BraveOnDemandUpdater::GetInstance()->OnDemandUpdate(component_id);
+  BraveOnDemandUpdater::GetInstance()->EnsureInstalled(component_id);
 }
 
 void BraveComponentUpdaterDelegate::AddObserver(ComponentObserver* observer) {
@@ -77,4 +92,4 @@ PrefService* BraveComponentUpdaterDelegate::local_state() {
   return base::to_address(local_state_);
 }
 
-}  // namespace brave
+}  // namespace brave_component_updater

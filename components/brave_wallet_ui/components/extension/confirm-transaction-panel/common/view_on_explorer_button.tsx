@@ -11,14 +11,15 @@ import { getLocale } from '../../../../../common/locale'
 // types
 import {
   BlockExplorerUrlTypes, //
-  BraveWallet
+  BraveWallet,
 } from '../../../../constants/types'
 
 // hooks
 import { useExplorer } from '../../../../common/hooks/explorer'
 
 // styles
-import { InlineAddressButton, LaunchIcon } from '../style'
+import { LaunchIcon } from '../../../shared/style'
+import { InlineAddressButton } from '../style'
 
 export type ChainInfo = Pick<
   BraveWallet.NetworkInfo,
@@ -29,7 +30,7 @@ export function InlineViewOnBlockExplorerIconButton({
   address,
   id,
   network,
-  urlType
+  urlType,
 }: {
   address: string
   id?: string

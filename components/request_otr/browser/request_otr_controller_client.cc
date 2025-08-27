@@ -57,7 +57,7 @@ void RequestOTRControllerClient::GoBack() {
 
 void RequestOTRControllerClient::Proceed() {
   RequestOTRStorageTabHelper* tab_storage =
-      RequestOTRStorageTabHelper::GetOrCreate(web_contents_);
+      RequestOTRStorageTabHelper::GetOrCreate(web_contents());
   tab_storage->set_is_proceeding(true);
   if (dont_warn_again_) {
     if (PrefService* prefs = GetPrefService()) {
@@ -72,7 +72,7 @@ void RequestOTRControllerClient::Proceed() {
 
 void RequestOTRControllerClient::ProceedOTR() {
   RequestOTRStorageTabHelper* tab_storage =
-      RequestOTRStorageTabHelper::GetOrCreate(web_contents_);
+      RequestOTRStorageTabHelper::GetOrCreate(web_contents());
   tab_storage->set_is_proceeding(true);
   tab_storage->set_requested_otr(true);
   if (dont_warn_again_) {
@@ -84,12 +84,16 @@ void RequestOTRControllerClient::ProceedOTR() {
   }
   tab_storage->MaybeEnable1PESForUrl(
       ephemeral_storage_service_, request_url_,
-      base::BindOnce(&RequestOTRControllerClient::ReloadPage,
+      base::BindOnce(&RequestOTRControllerClient::On1PESState,
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
 void RequestOTRControllerClient::ReloadPage() {
-  web_contents_->GetController().Reload(content::ReloadType::NORMAL, false);
+  web_contents()->GetController().Reload(content::ReloadType::NORMAL, false);
+}
+
+void RequestOTRControllerClient::On1PESState(bool is_1pes_enabled) {
+  ReloadPage();
 }
 
 void RequestOTRControllerClient::SetDontWarnAgain(bool value) {

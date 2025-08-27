@@ -10,16 +10,13 @@ export const gasFeeOptions: GasFeeOption[] = [
   {
     id: 'slow',
     name: 'braveSwapSlow',
-    icon: 'send'
   },
   {
     id: 'average',
     name: 'braveSwapAverage',
-    icon: 'network-speed-average'
   },
   {
     id: 'fast',
     name: 'braveSwapFast',
-    icon: 'rocket'
-  }
+  },
 ]

@@ -6,58 +6,60 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_PREDICTION_MODEL_BASED_INPUT_VARIABLE_CREATIVE_AD_MODEL_BASED_PREDICTOR_INPUT_VARIABLE_UTIL_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_PREDICTION_MODEL_BASED_INPUT_VARIABLE_CREATIVE_AD_MODEL_BASED_PREDICTOR_INPUT_VARIABLE_UTIL_H_
 
+#include <optional>
 #include <string>
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/allocation/seen_ads_util.h"
-#include "brave/components/brave_ads/core/internal/serving/eligible_ads/allocation/seen_advertisers_util.h"
-#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/creative_ad_model_based_predictor_segment_input_variable_info.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/last_seen/creative_ad_model_based_predictor_last_seen_input_variable_info.h"
+#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/weight/segment/creative_ad_model_based_predictor_segment_weight_info.h"
 
 namespace brave_ads {
 
+struct CreativeAdModelBasedPredictorSegmentInputVariablesInfo;
+struct CreativeAdModelBasedPredictorUntargetedSegmentInputVariableInfo;
 struct UserModelInfo;
 
-CreativeAdPredictorSegmentInputVariableInfo
-ComputeCreativeAdPredictorIntentSegmentInputVariable(
+CreativeAdModelBasedPredictorSegmentInputVariablesInfo
+ComputeCreativeAdModelBasedPredictorIntentSegmentInputVariable(
     const UserModelInfo& user_model,
-    const std::string& segment);
+    const std::string& segment,
+    const CreativeAdModelBasedPredictorSegmentWeightInfo& weights);
 
-CreativeAdPredictorSegmentInputVariableInfo
-ComputeCreativeAdPredictorLatentInterestSegmentInputVariable(
+CreativeAdModelBasedPredictorSegmentInputVariablesInfo
+ComputeCreativeAdModelBasedPredictorLatentInterestSegmentInputVariable(
     const UserModelInfo& user_model,
-    const std::string& segment);
+    const std::string& segment,
+    const CreativeAdModelBasedPredictorSegmentWeightInfo& weights);
 
-CreativeAdPredictorSegmentInputVariableInfo
-ComputeCreativeAdPredictorInterestSegmentInputVariable(
+CreativeAdModelBasedPredictorSegmentInputVariablesInfo
+ComputeCreativeAdModelBasedPredictorInterestSegmentInputVariable(
     const UserModelInfo& user_model,
-    const std::string& segment);
+    const std::string& segment,
+    const CreativeAdModelBasedPredictorSegmentWeightInfo& weights);
+
+CreativeAdModelBasedPredictorUntargetedSegmentInputVariableInfo
+ComputeCreativeAdModelBasedPredictorUntargetedSegmentInputVariable(
+    const std::string& segment,
+    double weight);
 
 template <typename T>
-absl::optional<base::TimeDelta>
-ComputeCreativeAdPredictorLastSeenAdInputVariable(
+CreativeAdModelBasedPredictorLastSeenInputVariableInfo
+ComputeCreativeAdModelBasedPredictorLastSeenAdInputVariable(
     const T& creative_ad,
-    const AdEventList& ad_events) {
-  const absl::optional<base::Time> last_seen_at =
-      GetLastSeenAdAt(ad_events, creative_ad);
-  if (!last_seen_at) {
-    return absl::nullopt;
+    const AdEventList& ad_events,
+    double weight) {
+  CreativeAdModelBasedPredictorLastSeenInputVariableInfo
+      last_seen_ad_input_variable;
+
+  std::optional<base::Time> last_seen_ad_at =
+      GetLastSeenAdAt(ad_events, creative_ad.creative_instance_id);
+  if (last_seen_ad_at) {
+    last_seen_ad_input_variable.value = base::Time::Now() - *last_seen_ad_at;
   }
 
-  return base::Time::Now() - *last_seen_at;
-}
+  last_seen_ad_input_variable.weight = weight;
 
-template <typename T>
-absl::optional<base::TimeDelta>
-ComputeCreativeAdPredictorLastSeenAdvertiserInputVariable(
-    const T& creative_ad,
-    const AdEventList& ad_events) {
-  const absl::optional<base::Time> last_seen_at =
-      GetLastSeenAdvertiserAt(ad_events, creative_ad);
-  if (!last_seen_at) {
-    return absl::nullopt;
-  }
-
-  return base::Time::Now() - *last_seen_at;
+  return last_seen_ad_input_variable;
 }
 
 }  // namespace brave_ads

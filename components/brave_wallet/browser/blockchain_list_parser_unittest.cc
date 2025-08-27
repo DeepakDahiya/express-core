@@ -3,11 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/brave_wallet/browser/blockchain_list_parser.h"
+
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
-#include "brave/components/brave_wallet/browser/blockchain_list_parser.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,121 +20,127 @@ namespace brave_wallet {
 TEST(BlockchainListParseUnitTest, ParseTokenList) {
   std::string json(R"(
     {
-     "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d": {
-       "name": "Crypto Kitties",
-       "logo": "CryptoKitties-Kitty-13733.svg",
-       "erc20": false,
-       "erc721": true,
-       "symbol": "CK",
-       "decimals": 0
-     },
-     "0x0D8775F648430679A709E98d2b0Cb6250d2887EF": {
-       "name": "Basic Attention Token",
-       "logo": "bat.svg",
-       "erc20": true,
-       "symbol": "BAT",
-       "decimals": 18,
-       "coingeckoId": "basic-attention-token"
-     },
-     "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984": {
-       "name": "Uniswap",
-       "logo": "uni.svg",
-       "erc20": true,
-       "symbol": "UNI",
-       "decimals": 18,
-       "chainId": "0x5"
-     }
+      "0x1": {
+        "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d": {
+          "name": "Crypto Kitties",
+          "logo": "CryptoKitties-Kitty-13733.svg",
+          "erc20": false,
+          "erc721": true,
+          "symbol": "CK",
+          "decimals": 0
+        },
+        "0x0D8775F648430679A709E98d2b0Cb6250d2887EF": {
+          "name": "Basic Attention Token",
+          "logo": "bat.svg",
+          "erc20": true,
+          "symbol": "BAT",
+          "decimals": 18,
+          "coingeckoId": "basic-attention-token"
+        }
+      },
+      "0xaa36a7": {
+        "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984": {
+          "name": "Uniswap",
+          "logo": "uni.svg",
+          "erc20": true,
+          "symbol": "UNI",
+          "decimals": 18
+        }
+      },
+      "0x65": {
+        "So11111111111111111111111111111111111111112": {
+          "name": "Wrapped SOL",
+          "logo": "So11111111111111111111111111111111111111112.png",
+          "erc20": false,
+          "symbol": "SOL",
+          "decimals": 9,
+          "coingeckoId": "solana"
+        },
+        "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+          "name": "USD Coin",
+          "logo": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.png",
+          "erc20": false,
+          "symbol": "USDC",
+          "decimals": 6,
+          "coingeckoId": "usd-coin"
+        },
+        "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ": {
+          "name": "Tesla Inc.",
+          "logo": "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ.png",
+          "erc20": false,
+          "token2022": true,
+          "symbol": "TSLA",
+          "decimals": 8
+        }
+      }
     }
   )");
 
   TokenListMap token_list_map;
-  ASSERT_TRUE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
+  ASSERT_TRUE(ParseTokenList(json, &token_list_map));
   ASSERT_EQ(token_list_map["ethereum.0x1"].size(), 2UL);
   EXPECT_EQ(token_list_map["ethereum.0x2"].size(), 0UL);
-  ASSERT_EQ(token_list_map["ethereum.0x5"].size(), 1UL);
+  ASSERT_EQ(token_list_map["ethereum.0xaa36a7"].size(), 1UL);
 
-  const auto& mainnet_token_list = token_list_map["ethereum.0x1"];
-  EXPECT_EQ(mainnet_token_list[0]->name, "Crypto Kitties");
-  EXPECT_EQ(mainnet_token_list[0]->contract_address,
+  const auto& ethereum_token_list = token_list_map["ethereum.0x1"];
+  EXPECT_EQ(ethereum_token_list[0]->name, "Crypto Kitties");
+  EXPECT_EQ(ethereum_token_list[0]->contract_address,
             "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d");
-  EXPECT_FALSE(mainnet_token_list[0]->is_erc20);
-  EXPECT_TRUE(mainnet_token_list[0]->is_erc721);
-  EXPECT_TRUE(mainnet_token_list[0]->is_nft);
-  EXPECT_EQ(mainnet_token_list[0]->symbol, "CK");
-  EXPECT_EQ(mainnet_token_list[0]->logo, "CryptoKitties-Kitty-13733.svg");
-  EXPECT_EQ(mainnet_token_list[0]->decimals, 0);
-  EXPECT_TRUE(mainnet_token_list[0]->coingecko_id.empty());
+  EXPECT_FALSE(ethereum_token_list[0]->is_erc20);
+  EXPECT_TRUE(ethereum_token_list[0]->is_erc721);
+  EXPECT_TRUE(ethereum_token_list[0]->is_nft);
+  EXPECT_EQ(ethereum_token_list[0]->symbol, "CK");
+  EXPECT_EQ(ethereum_token_list[0]->logo, "CryptoKitties-Kitty-13733.svg");
+  EXPECT_EQ(ethereum_token_list[0]->decimals, 0);
+  EXPECT_TRUE(ethereum_token_list[0]->coingecko_id.empty());
+  EXPECT_EQ(ethereum_token_list[0]->spl_token_program,
+            mojom::SPLTokenProgram::kUnsupported);
 
-  EXPECT_EQ(mainnet_token_list[1]->name, "Basic Attention Token");
-  EXPECT_EQ(mainnet_token_list[1]->contract_address,
+  EXPECT_EQ(ethereum_token_list[1]->name, "Basic Attention Token");
+  EXPECT_EQ(ethereum_token_list[1]->contract_address,
             "0x0D8775F648430679A709E98d2b0Cb6250d2887EF");
-  EXPECT_TRUE(mainnet_token_list[1]->is_erc20);
-  EXPECT_FALSE(mainnet_token_list[1]->is_erc721);
-  EXPECT_FALSE(mainnet_token_list[1]->is_erc1155);
-  EXPECT_FALSE(mainnet_token_list[1]->is_nft);
-  EXPECT_EQ(mainnet_token_list[1]->symbol, "BAT");
-  EXPECT_EQ(mainnet_token_list[1]->logo, "bat.svg");
-  EXPECT_EQ(mainnet_token_list[1]->decimals, 18);
-  EXPECT_EQ(mainnet_token_list[1]->coingecko_id, "basic-attention-token");
+  EXPECT_TRUE(ethereum_token_list[1]->is_erc20);
+  EXPECT_FALSE(ethereum_token_list[1]->is_erc721);
+  EXPECT_FALSE(ethereum_token_list[1]->is_erc1155);
+  EXPECT_FALSE(ethereum_token_list[1]->is_nft);
+  EXPECT_EQ(ethereum_token_list[1]->symbol, "BAT");
+  EXPECT_EQ(ethereum_token_list[1]->logo, "bat.svg");
+  EXPECT_EQ(ethereum_token_list[1]->decimals, 18);
+  EXPECT_EQ(ethereum_token_list[1]->coingecko_id, "basic-attention-token");
+  EXPECT_EQ(ethereum_token_list[1]->spl_token_program,
+            mojom::SPLTokenProgram::kUnsupported);
 
-  const auto& goerli_token_list = token_list_map["ethereum.0x5"];
-  EXPECT_EQ(goerli_token_list[0]->name, "Uniswap");
-  EXPECT_EQ(goerli_token_list[0]->contract_address,
+  const auto& sepolia_token_list = token_list_map["ethereum.0xaa36a7"];
+  EXPECT_EQ(sepolia_token_list[0]->name, "Uniswap");
+  EXPECT_EQ(sepolia_token_list[0]->contract_address,
             "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984");
-  EXPECT_TRUE(goerli_token_list[0]->is_erc20);
-  EXPECT_FALSE(goerli_token_list[0]->is_erc721);
-  EXPECT_FALSE(goerli_token_list[0]->is_erc1155);
-  EXPECT_FALSE(goerli_token_list[0]->is_nft);
-  EXPECT_EQ(goerli_token_list[0]->symbol, "UNI");
-  EXPECT_EQ(goerli_token_list[0]->logo, "uni.svg");
-  EXPECT_EQ(goerli_token_list[0]->decimals, 18);
-  EXPECT_TRUE(mainnet_token_list[0]->coingecko_id.empty());
+  EXPECT_TRUE(sepolia_token_list[0]->is_erc20);
+  EXPECT_FALSE(sepolia_token_list[0]->is_erc721);
+  EXPECT_FALSE(sepolia_token_list[0]->is_erc1155);
+  EXPECT_FALSE(sepolia_token_list[0]->is_nft);
+  EXPECT_EQ(sepolia_token_list[0]->symbol, "UNI");
+  EXPECT_EQ(sepolia_token_list[0]->logo, "uni.svg");
+  EXPECT_EQ(sepolia_token_list[0]->decimals, 18);
+  EXPECT_TRUE(sepolia_token_list[0]->coingecko_id.empty());
+  EXPECT_EQ(sepolia_token_list[0]->spl_token_program,
+            mojom::SPLTokenProgram::kUnsupported);
 
-  std::string solana_json(R"(
-    {
-      "So11111111111111111111111111111111111111112": {
-        "name": "Wrapped SOL",
-        "logo": "So11111111111111111111111111111111111111112.png",
-        "erc20": false,
-        "symbol": "SOL",
-        "decimals": 9,
-        "chainId": "0x65",
-        "coingeckoId": "solana"
-      },
-      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
-        "name": "USD Coin",
-        "logo": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.png",
-        "erc20": false,
-        "symbol": "USDC",
-        "decimals": 6,
-        "chainId": "0x65",
-        "coingeckoId": "usd-coin"
-      },
-      "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ": {
-        "name": "Tesla Inc.",
-        "logo": "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ.png",
-        "erc20": false,
-        "symbol": "TSLA",
-        "decimals": 8,
-        "chainId": "0x65"
-      }
-    }
-  )");
-  EXPECT_TRUE(
-      ParseTokenList(solana_json, &token_list_map, mojom::CoinType::SOL));
+  ASSERT_EQ(token_list_map["solana.0x65"].size(), 3UL);
   auto wrapped_sol = mojom::BlockchainToken::New(
       "So11111111111111111111111111111111111111112", "Wrapped SOL",
       "So11111111111111111111111111111111111111112.png", false, false, false,
-      false, false, "SOL", 9, true, "", "solana", "0x65", mojom::CoinType::SOL);
+      false, mojom::SPLTokenProgram::kToken, false, false, "SOL", 9, true, "",
+      "solana", "0x65", mojom::CoinType::SOL, false);
   auto usdc = mojom::BlockchainToken::New(
       "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v", "USD Coin",
       "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.png", false, false, false,
-      false, false, "USDC", 6, true, "", "usd-coin", "0x65",
-      mojom::CoinType::SOL);
+      false, mojom::SPLTokenProgram::kToken, false, false, "USDC", 6, true, "",
+      "usd-coin", "0x65", mojom::CoinType::SOL, false);
   auto tsla = mojom::BlockchainToken::New(
       "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ", "Tesla Inc.",
       "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ.png", false, false, false,
-      false, false, "TSLA", 8, true, "", "", "0x65", mojom::CoinType::SOL);
+      false, mojom::SPLTokenProgram::kToken2022, false, false, "TSLA", 8, true,
+      "", "", "0x65", mojom::CoinType::SOL, false);
   std::vector<mojom::BlockchainTokenPtr> solana_token_list;
   solana_token_list.push_back(std::move(tsla));
   solana_token_list.push_back(std::move(usdc));
@@ -141,19 +149,20 @@ TEST(BlockchainListParseUnitTest, ParseTokenList) {
 
   token_list_map.clear();
   json = R"({})";
-  EXPECT_TRUE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
+  EXPECT_TRUE(ParseTokenList(json, &token_list_map));
   EXPECT_TRUE(token_list_map.empty());
-  json = R"({"0x0D8775F648430679A709E98d2b0Cb6250d2887EF": 3})";
-  EXPECT_FALSE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
-  json = R"({"0x0D8775F648430679A709E98d2b0Cb6250d2887EF": {}})";
+  json = R"({"0x1": { "0x0D8775F648430679A709E98d2b0Cb6250d2887EF": 3}})";
+  EXPECT_TRUE(ParseTokenList(json, &token_list_map));
   EXPECT_TRUE(token_list_map.empty());
-  EXPECT_TRUE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
+  json = R"({"0x1": {}})";
+  EXPECT_TRUE(ParseTokenList(json, &token_list_map));
+  EXPECT_TRUE(token_list_map.empty());
   json = "3";
-  EXPECT_FALSE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
+  EXPECT_FALSE(ParseTokenList(json, &token_list_map));
   json = "[3]";
-  EXPECT_FALSE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
+  EXPECT_FALSE(ParseTokenList(json, &token_list_map));
   json = "";
-  EXPECT_FALSE(ParseTokenList(json, &token_list_map, mojom::CoinType::ETH));
+  EXPECT_FALSE(ParseTokenList(json, &token_list_map));
 }
 
 TEST(ParseTokenListUnitTest, GetTokenListKey) {
@@ -175,6 +184,8 @@ TEST(BlockchainListParseUnitTest, ParseChainList) {
       "rpc": [
         "https://mainnet.infura.io/v3/${INFURA_API_KEY}",
         "wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}",
+        "http://api.com/eth",
+        "http://127.0.0.1:5566/eth",
         "https://api.mycryptoapi.com/eth",
         "https://cloudflare-eth.com"
       ],
@@ -190,6 +201,16 @@ TEST(BlockchainListParseUnitTest, ParseChainList) {
         {
           "name": "etherscan",
           "url": "https://etherscan.io",
+          "standard": "EIP3091"
+        },
+        {
+          "name": "invalid http",
+          "url": "http://test.com",
+          "standard": "EIP3091"
+        },
+        {
+          "name": "localhost",
+          "url": "http://localhost:8080",
           "standard": "EIP3091"
         }
       ]
@@ -234,18 +255,18 @@ TEST(BlockchainListParseUnitTest, ParseChainList) {
   EXPECT_THAT(
       chain1->rpc_endpoints,
       ElementsAreArray({GURL("https://mainnet.infura.io/v3/${INFURA_API_KEY}"),
-                        GURL("wss://mainnet.infura.io/ws/v3/${INFURA_API_KEY}"),
+                        GURL("http://127.0.0.1:5566/eth"),
                         GURL("https://api.mycryptoapi.com/eth"),
                         GURL("https://cloudflare-eth.com")}));
-  EXPECT_EQ(2, chain1->active_rpc_endpoint_index);
-  EXPECT_THAT(chain1->block_explorer_urls,
-              ElementsAreArray({"https://etherscan.io"}));
+  EXPECT_EQ(1, chain1->active_rpc_endpoint_index);
+  EXPECT_THAT(
+      chain1->block_explorer_urls,
+      ElementsAreArray({"https://etherscan.io", "http://localhost:8080"}));
   EXPECT_EQ("Ether", chain1->symbol_name);
   EXPECT_EQ("ETH", chain1->symbol);
   EXPECT_EQ(18, chain1->decimals);
   EXPECT_EQ(0u, chain1->icon_urls.size());
   EXPECT_EQ(chain1->coin, mojom::CoinType::ETH);
-  EXPECT_FALSE(chain1->is_eip1559);
 
   auto& chain2 = result[1];
   ASSERT_TRUE(chain2);
@@ -267,7 +288,6 @@ TEST(BlockchainListParseUnitTest, ParseChainList) {
   EXPECT_EQ(18, chain2->decimals);
   EXPECT_EQ(0u, chain2->icon_urls.size());
   EXPECT_EQ(chain2->coin, mojom::CoinType::ETH);
-  EXPECT_FALSE(chain2->is_eip1559);
 }
 
 TEST(BlockchainListParseUnitTest, ParseDappLists) {
@@ -286,6 +306,28 @@ TEST(BlockchainListParseUnitTest, ParseDappLists) {
           "logo": "https://dashboard-assets.dappradar.com/document/20419/gametrademarket-dapp-marketplaces-matic-logo_e3e698e60ebd9bfe8ed1421bb41b890d.png",
           "link": "https://dappradar.com/solana/marketplaces/gametrade-market-2",
           "website": "https://gametrade.market/",
+          "chains": [
+            "polygon",
+            "solana",
+            "binance-smart-chain"
+          ],
+          "categories": [
+            "marketplaces"
+          ],
+          "metrics": {
+            "transactions": "1513120",
+            "uaw": "917737",
+            "volume": "32352.38",
+            "balance": "3.81"
+          }
+        },
+        {
+          "dappId": "1111",
+          "name": "Some app",
+          "description": null,
+          "logo": "https://appdomain.com/applogo.png",
+          "link": "https://appdomain.com/app",
+          "website": "https://appdomain.com/",
           "chains": [
             "polygon",
             "solana",
@@ -415,12 +457,12 @@ TEST(BlockchainListParseUnitTest, ParseDappLists) {
   })";
 
   // Parse the dapp list
-  absl::optional<DappListMap> dapp_list_map = ParseDappLists(dapp_list);
+  std::optional<DappListMap> dapp_list_map = ParseDappLists(dapp_list);
   ASSERT_TRUE(dapp_list_map);
 
-  // There should be eight lists, for Ethereum, Solana, Polygon, Binance Smart
-  // Chain, Optimism, Aurora, Avalanche, and Fantom
-  ASSERT_EQ(8u, dapp_list_map->size());
+  // There should be seven lists, for Ethereum, Solana, Polygon, Binance Smart
+  // Chain, Optimism, Avalanche, and Fantom
+  ASSERT_EQ(7u, dapp_list_map->size());
 
   // There should be one dapp in the Ethereum list
   auto it = dapp_list_map->find(
@@ -457,7 +499,25 @@ TEST(BlockchainListParseUnitTest, ParseDappLists) {
       GetTokenListKey(mojom::CoinType::SOL, mojom::kSolanaMainnet));
   EXPECT_TRUE(it_s != dapp_list_map->end());
   const auto& sol_dapp_list = it_s->second;
-  EXPECT_EQ(sol_dapp_list.size(), 1u);
+  EXPECT_EQ(sol_dapp_list.size(), 2u);
+  {
+    const auto& sol_dapp = sol_dapp_list[0];
+    EXPECT_EQ(sol_dapp->range, "30d");
+    EXPECT_EQ(sol_dapp->name, "GameTrade Market");
+    EXPECT_EQ(sol_dapp->description,
+              "Discover, buy, sell and trade in-game NFTs");
+    EXPECT_EQ(sol_dapp->logo,
+              "https://dashboard-assets.dappradar.com/document/20419/"
+              "gametrademarket-dapp-marketplaces-matic-logo_"
+              "e3e698e60ebd9bfe8ed1421bb41b890d.png");
+  }
+  {
+    const auto& sol_dapp = sol_dapp_list[1];
+    EXPECT_EQ(sol_dapp->range, "30d");
+    EXPECT_EQ(sol_dapp->name, "Some app");
+    EXPECT_EQ(sol_dapp->description, "");
+    EXPECT_EQ(sol_dapp->logo, "https://appdomain.com/applogo.png");
+  }
   const auto& sol_dapp = sol_dapp_list[0];
   EXPECT_EQ(sol_dapp->range, "30d");
   EXPECT_EQ(sol_dapp->name, "GameTrade Market");
@@ -491,7 +551,7 @@ TEST(BlockchainListParseUnitTest, ParseDappLists) {
 
 TEST(BlockchainListParseUnitTest, ParseOnRampTokensListMap) {
   // Invalid JSON is not parsed
-  absl::optional<RampTokenListMaps> supported_tokens_list_map =
+  std::optional<RampTokenListMaps> supported_tokens_list_map =
       ParseRampTokenListMaps(R"({)");
   ASSERT_FALSE(supported_tokens_list_map);
 
@@ -700,7 +760,7 @@ TEST(BlockchainListParseUnitTest, ParseOffRampTokensListMap) {
     ]
   })";
 
-  absl::optional<RampTokenListMaps> supported_tokens_list_map =
+  std::optional<RampTokenListMaps> supported_tokens_list_map =
       ParseRampTokenListMaps(supported_tokens_list);
   ASSERT_TRUE(supported_tokens_list_map);
   EXPECT_EQ((*supported_tokens_list_map).second.size(), 1UL);
@@ -727,8 +787,8 @@ TEST(BlockchainListParseUnitTest, ParseOffRampTokensListMap) {
 
 TEST(ParseOnRampCurrencyListTest, ParseOnRampCurrencyLists) {
   // Invalid JSON is not parsed
-  absl::optional<std::vector<mojom::OnRampCurrency>>
-      supported_currencies_lists = ParseOnRampCurrencyLists(R"({)");
+  std::optional<std::vector<mojom::OnRampCurrency>> supported_currencies_lists =
+      ParseOnRampCurrencyLists(R"({)");
   ASSERT_FALSE(supported_currencies_lists);
 
   const std::string supported_currencies_lists_json = R"({
@@ -788,8 +848,7 @@ TEST(BlockchainListParseUnitTest, ParseCoingeckoIdsMap) {
     }
   })";
 
-  absl::optional<CoingeckoIdsMap> coingecko_ids_map =
-      ParseCoingeckoIdsMap(json);
+  std::optional<CoingeckoIdsMap> coingecko_ids_map = ParseCoingeckoIdsMap(json);
 
   ASSERT_TRUE(coingecko_ids_map);
 
@@ -822,7 +881,7 @@ TEST(BlockchainListParseUnitTest, ParseOfacAddressesList) {
     ]
   })";
 
-  absl::optional<std::vector<std::string>> ofac_addresses_list =
+  std::optional<std::vector<std::string>> ofac_addresses_list =
       ParseOfacAddressesList(json);
   ASSERT_TRUE(ofac_addresses_list);
 

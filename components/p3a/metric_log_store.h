@@ -6,6 +6,7 @@
 #ifndef BRAVE_COMPONENTS_P3A_METRIC_LOG_STORE_H_
 #define BRAVE_COMPONENTS_P3A_METRIC_LOG_STORE_H_
 
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -15,12 +16,13 @@
 #include "base/time/time.h"
 #include "brave/components/p3a/metric_log_type.h"
 #include "components/metrics/log_store.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 class PrefService;
 class PrefRegistrySimple;
 
 namespace p3a {
+
+std::string GetUploadType(const std::string& histogram_name);
 
 // Stores all given values in memory and persists in prefs on the fly.
 // All logs (not only unsent are persistent), and all logs could be loaded
@@ -34,17 +36,16 @@ class MetricLogStore : public metrics::LogStore {
     virtual std::string SerializeLog(std::string_view histogram_name,
                                      uint64_t value,
                                      MetricLogType log_type,
-                                     bool is_constellation,
                                      const std::string& upload_type) = 0;
-    // Returns false if the metric is obsolete and should be cleaned up.
-    virtual bool IsActualMetric(const std::string& histogram_name) const = 0;
+    // Returns std::nullopt if the metric is obsolete and should be cleaned up.
+    virtual std::optional<MetricLogType> GetLogTypeForHistogram(
+        std::string_view histogram_name) const = 0;
     virtual bool IsEphemeralMetric(const std::string& histogram_name) const = 0;
     virtual ~Delegate() {}
   };
 
   MetricLogStore(Delegate& delegate,
                  PrefService& local_state,
-                 bool is_constellation,
                  MetricLogType type);
   ~MetricLogStore() override;
 
@@ -52,6 +53,10 @@ class MetricLogStore : public metrics::LogStore {
   MetricLogStore& operator=(const MetricLogStore&) = delete;
 
   static void RegisterPrefs(PrefRegistrySimple* registry);
+
+  static void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry);
+
+  static void MigrateObsoleteLocalStatePrefs(PrefService* local_state);
 
   void UpdateValue(const std::string& histogram_name, uint64_t value);
   // Removes and also unstages the metric value if it is known and/or staged.
@@ -67,7 +72,7 @@ class MetricLogStore : public metrics::LogStore {
   const std::string& staged_log_key() const;
   const std::string& staged_log_hash() const override;
   const std::string& staged_log_signature() const override;
-  absl::optional<uint64_t> staged_log_user_id() const override;
+  std::optional<uint64_t> staged_log_user_id() const override;
   void StageNextLog() override;
   void DiscardStagedLog(std::string_view reason = "") override;
   void MarkStagedLogAsSent() override;
@@ -78,6 +83,7 @@ class MetricLogStore : public metrics::LogStore {
   void TrimAndPersistUnsentLogs(bool overwrite_in_memory_store) override;
   // Returns early if founds malformed persisted values.
   void LoadPersistedUnsentLogs() override;
+  void RemoveObsoleteLogs();
 
  private:
   struct LogEntry {
@@ -100,7 +106,7 @@ class MetricLogStore : public metrics::LogStore {
   const char* GetPrefName() const;
 
   const raw_ref<Delegate> delegate_;
-  const raw_ref<PrefService> local_state_;
+  const raw_ref<PrefService, DanglingUntriaged> local_state_;
 
   MetricLogType type_;
 
@@ -114,8 +120,6 @@ class MetricLogStore : public metrics::LogStore {
   // Not used for now.
   std::string staged_log_hash_;
   std::string staged_log_signature_;
-
-  bool is_constellation_;
 };
 
 }  // namespace p3a

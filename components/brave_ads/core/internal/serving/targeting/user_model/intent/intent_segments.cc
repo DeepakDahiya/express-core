@@ -5,20 +5,21 @@
 
 #include "brave/components/brave_ads/core/internal/serving/targeting/user_model/intent/intent_segments.h"
 
-#include "base/containers/extend.h"
+#include <utility>
+
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/purchase_intent/model/purchase_intent_model.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/purchase_intent/purchase_intent_feature.h"
 
 namespace brave_ads {
 
-SegmentList BuildIntentSegments() {
+void BuildIntentSegments(BuildSegmentsCallback callback) {
   SegmentList segments;
 
   if (base::FeatureList::IsEnabled(kPurchaseIntentFeature)) {
-    base::Extend(segments, GetPurchaseIntentSegments());
+    segments = GetPurchaseIntentSegments();
   }
 
-  return segments;
+  std::move(callback).Run(segments);
 }
 
 }  // namespace brave_ads

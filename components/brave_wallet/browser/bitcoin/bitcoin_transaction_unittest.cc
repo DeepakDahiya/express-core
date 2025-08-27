@@ -7,11 +7,13 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/test/values_test_util.h"
-#include "brave/components/brave_wallet/browser/bitcoin_rpc_responses.h"
-#include "brave/components/json/rs/src/lib.rs.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_rpc_responses.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_serializer.h"
+#include "brave/components/json/json_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -19,12 +21,12 @@ using testing::_;
 
 namespace brave_wallet {
 namespace {
-const char kTxid1[] =
+constexpr char kTxid1[] =
     "aa388f50b725767653e150ad8990ec11a2146d75acafbe492af08213849fe2c5";
-const char kTxid2[] =
+constexpr char kTxid2[] =
     "bd1c9cfb126a519f3ee593bbbba41a0f9d55b4d267e9483673a848242bc5c2be";
-const char kAddress1[] = "tb1qya3rarek59486w345v45tv6nra4fy2xxgky26x";
-const char kAddress2[] = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
+constexpr char kAddress1[] = "tb1qya3rarek59486w345v45tv6nra4fy2xxgky26x";
+constexpr char kAddress2[] = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
 
 }  // namespace
 
@@ -57,6 +59,17 @@ TEST(BitcoinTransaction, TxInput_Value) {
   EXPECT_EQ(parsed->script_sig, input.script_sig);
   EXPECT_EQ(parsed->witness, input.witness);
   EXPECT_EQ(parsed->n_sequence(), 0xfffffffd);
+  EXPECT_FALSE(parsed->raw_outpoint_tx);
+
+  input.raw_outpoint_tx = {3, 2, 1};
+  parsed = input.FromValue(input.ToValue());
+  ASSERT_TRUE(parsed);
+  EXPECT_EQ(*parsed->raw_outpoint_tx, input.raw_outpoint_tx);
+
+  input.raw_outpoint_tx->clear();
+  parsed = input.FromValue(input.ToValue());
+  ASSERT_TRUE(parsed);
+  ASSERT_FALSE(parsed->raw_outpoint_tx);
 }
 
 TEST(BitcoinTransaction, TxInput_FromRpcUtxo) {
@@ -75,7 +88,7 @@ TEST(BitcoinTransaction, TxInput_FromRpcUtxo) {
   )";
 
   auto rpc_utxo = bitcoin_rpc::UnspentOutput::FromValue(base::test::ParseJson(
-      std::string(json::convert_all_numbers_to_string(rpc_utxo_json, ""))));
+      json::convert_all_numbers_to_string(rpc_utxo_json, "")));
   ASSERT_TRUE(rpc_utxo);
 
   auto input = BitcoinTransaction::TxInput::FromRpcUtxo(kAddress1, *rpc_utxo);
@@ -94,43 +107,51 @@ TEST(BitcoinTransaction, TxInput_FromRpcUtxo) {
 TEST(BitcoinTransaction, TxOutput_Value) {
   BitcoinTransaction::TxOutput output;
   output.address = kAddress2;
+  output.script_pubkey.assign({0, 1, 2, 7});
   output.amount = 555666777;
 
   auto parsed = output.FromValue(output.ToValue());
   ASSERT_TRUE(parsed);
   EXPECT_EQ(*parsed, output);
   EXPECT_EQ(parsed->address, output.address);
+  EXPECT_EQ(parsed->script_pubkey, output.script_pubkey);
   EXPECT_EQ(parsed->amount, output.amount);
 }
 
 TEST(BitcoinTransaction, Value) {
   BitcoinTransaction tx;
 
-  tx.inputs().reserve(2);
-
-  auto& input1 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input1;
   input1.utxo_address = kAddress1;
   input1.utxo_outpoint.index = 123;
   base::HexStringToSpan(kTxid1, input1.utxo_outpoint.txid);
   input1.utxo_value = 555666777;
   input1.script_sig = {1, 2, 3};
   input1.witness = {4, 5, 6};
+  tx.AddInput(std::move(input1));
 
-  auto& input2 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input2;
   input2.utxo_address = kAddress2;
   input2.utxo_outpoint.index = 7;
   base::HexStringToSpan(kTxid2, input2.utxo_outpoint.txid);
   input2.utxo_value = 555;
   input2.script_sig = {1, 2};
   input2.witness = {4, 5};
+  tx.AddInput(std::move(input2));
 
-  auto& output1 = tx.outputs().emplace_back();
+  BitcoinTransaction::TxOutput output1;
   output1.address = kAddress1;
+  output1.script_pubkey =
+      BitcoinSerializer::AddressToScriptPubkey(kAddress1, true);
   output1.amount = 5;
+  tx.AddOutput(std::move(output1));
 
-  auto& output2 = tx.outputs().emplace_back();
+  BitcoinTransaction::TxOutput output2;
   output2.address = kAddress2;
+  output2.script_pubkey =
+      BitcoinSerializer::AddressToScriptPubkey(kAddress2, true);
   output2.amount = 50;
+  tx.AddOutput(std::move(output2));
 
   tx.set_to(kAddress1);
   tx.set_amount(12345);
@@ -150,9 +171,7 @@ TEST(BitcoinTransaction, IsSigned) {
   BitcoinTransaction tx;
   EXPECT_FALSE(tx.IsSigned());
 
-  tx.inputs().reserve(2);
-
-  auto& input1 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input1;
   input1.utxo_address = kAddress1;
   input1.utxo_outpoint.index = 123;
   base::HexStringToSpan(kTxid1, input1.utxo_outpoint.txid);
@@ -160,51 +179,50 @@ TEST(BitcoinTransaction, IsSigned) {
   input1.script_sig = {1, 2, 3};
   input1.witness = {4, 5, 6};
   EXPECT_TRUE(input1.IsSigned());
+  tx.AddInput(std::move(input1));
   EXPECT_TRUE(tx.IsSigned());
 
-  auto& input2 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input2;
   input2.utxo_address = kAddress2;
   input2.utxo_outpoint.index = 7;
   base::HexStringToSpan(kTxid2, input2.utxo_outpoint.txid);
   input2.utxo_value = 555;
   EXPECT_FALSE(input2.IsSigned());
-  EXPECT_FALSE(tx.IsSigned());
 
   input2.witness = {4, 5};
   EXPECT_TRUE(input2.IsSigned());
-  EXPECT_TRUE(tx.IsSigned());
 
   input2.script_sig = {1, 2};
   input2.witness = {};
   EXPECT_TRUE(input2.IsSigned());
+  tx.AddInput(std::move(input2));
   EXPECT_TRUE(tx.IsSigned());
 
-  tx.ClearSignatures();
-  EXPECT_FALSE(input1.IsSigned());
-  EXPECT_FALSE(input2.IsSigned());
-  EXPECT_FALSE(tx.IsSigned());
+  EXPECT_TRUE(tx.inputs()[0].IsSigned());
+  EXPECT_TRUE(tx.inputs()[1].IsSigned());
+  EXPECT_TRUE(tx.IsSigned());
 }
 
 TEST(BitcoinTransaction, TotalInputsAmount) {
   BitcoinTransaction tx;
   EXPECT_EQ(tx.TotalInputsAmount(), 0u);
 
-  tx.inputs().reserve(2);
-
-  auto& input1 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input1;
   input1.utxo_address = kAddress1;
   input1.utxo_outpoint.index = 123;
   base::HexStringToSpan(kTxid1, input1.utxo_outpoint.txid);
   input1.utxo_value = 555666777;
   input1.script_sig = {1, 2, 3};
   input1.witness = {4, 5, 6};
+  tx.AddInput(std::move(input1));
   EXPECT_EQ(tx.TotalInputsAmount(), 555666777u);
 
-  auto& input2 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input2;
   input2.utxo_address = kAddress2;
   input2.utxo_outpoint.index = 7;
   base::HexStringToSpan(kTxid2, input2.utxo_outpoint.txid);
   input2.utxo_value = 555;
+  tx.AddInput(std::move(input2));
   EXPECT_EQ(tx.TotalInputsAmount(), 555666777u + 555u);
 }
 
@@ -212,14 +230,16 @@ TEST(BitcoinTransaction, TotalOutputsAmount) {
   BitcoinTransaction tx;
   EXPECT_EQ(tx.TotalOutputsAmount(), 0u);
 
-  auto& output1 = tx.outputs().emplace_back();
+  BitcoinTransaction::TxOutput output1;
   output1.address = kAddress1;
   output1.amount = 5;
+  tx.AddOutput(std::move(output1));
   EXPECT_EQ(tx.TotalOutputsAmount(), 5u);
 
-  auto& output2 = tx.outputs().emplace_back();
+  BitcoinTransaction::TxOutput output2;
   output2.address = kAddress2;
   output2.amount = 50;
+  tx.AddOutput(std::move(output2));
   EXPECT_EQ(tx.TotalOutputsAmount(), 50u + 5u);
 }
 
@@ -227,32 +247,34 @@ TEST(BitcoinTransaction, EffectiveFeeAmount) {
   BitcoinTransaction tx;
   EXPECT_EQ(tx.EffectiveFeeAmount(), 0u);
 
-  tx.inputs().reserve(2);
-
-  auto& input1 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input1;
   input1.utxo_address = kAddress1;
   input1.utxo_outpoint.index = 123;
   base::HexStringToSpan(kTxid1, input1.utxo_outpoint.txid);
   input1.utxo_value = 555666777;
   input1.script_sig = {1, 2, 3};
   input1.witness = {4, 5, 6};
+  tx.AddInput(std::move(input1));
   EXPECT_EQ(tx.EffectiveFeeAmount(), 555666777u);
 
-  auto& input2 = tx.inputs().emplace_back();
+  BitcoinTransaction::TxInput input2;
   input2.utxo_address = kAddress2;
   input2.utxo_outpoint.index = 7;
   base::HexStringToSpan(kTxid2, input2.utxo_outpoint.txid);
   input2.utxo_value = 555;
+  tx.AddInput(std::move(input2));
   EXPECT_EQ(tx.EffectiveFeeAmount(), 555666777u + 555u);
 
-  auto& output1 = tx.outputs().emplace_back();
+  BitcoinTransaction::TxOutput output1;
   output1.address = kAddress1;
   output1.amount = 5;
+  tx.AddOutput(std::move(output1));
   EXPECT_EQ(tx.EffectiveFeeAmount(), 555666777u + 555u - 5u);
 
-  auto& output2 = tx.outputs().emplace_back();
+  BitcoinTransaction::TxOutput output2;
   output2.address = kAddress2;
   output2.amount = 50;
+  tx.AddOutput(std::move(output2));
   EXPECT_EQ(tx.EffectiveFeeAmount(), 555666777u + 555u - 5u - 50u);
 }
 

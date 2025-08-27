@@ -5,8 +5,6 @@
 
 #include "brave/components/ai_chat/core/common/pref_names.h"
 
-#include <string>
-
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -21,13 +19,5 @@ class AIChatPrefMigrationTest : public ::testing::Test {
 
   TestingPrefServiceSimple pref_service_;
 };
-
-TEST_F(AIChatPrefMigrationTest, ChangeOldDefaultKey) {
-  pref_service_.SetString(kDefaultModelKey, "chat-default");
-  MigrateProfilePrefs(&pref_service_);
-
-  EXPECT_EQ(pref_service_.GetUserPrefValue(kDefaultModelKey)->GetString(),
-            "chat-basic");
-}
 
 }  // namespace ai_chat::prefs

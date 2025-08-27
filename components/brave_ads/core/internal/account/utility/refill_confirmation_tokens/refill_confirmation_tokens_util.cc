@@ -14,7 +14,7 @@ bool ShouldRefillConfirmationTokens() {
   return ConfirmationTokenCount() < kMinConfirmationTokens.Get();
 }
 
-int CalculateAmountOfConfirmationTokensToRefill() {
+size_t CalculateAmountOfConfirmationTokensToRefill() {
   return kMaxConfirmationTokens.Get() - ConfirmationTokenCount();
 }
 

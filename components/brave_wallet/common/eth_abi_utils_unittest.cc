@@ -5,11 +5,12 @@
 
 #include "brave/components/brave_wallet/common/eth_abi_utils.h"
 
-#include <memory>
+#include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
-#include "base/ranges/algorithm.h"
+#include "base/containers/span.h"
 #include "brave/components/brave_wallet/common/hex_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -22,54 +23,51 @@ namespace {
 // bytes callData, bytes4 callbackFunction, bytes extraData)` for
 // offchainexample.eth. https://eips.ethereum.org/EIPS/eip-3668
 
-std::string GetOffchainLookupResponse() {
-  constexpr char kOffchainLookupResponse[] =
-      // clang-format off
-      "556f1830"
-      "000000000000000000000000c1735677a60884abbcf72295e88d47764beda282"
-      "00000000000000000000000000000000000000000000000000000000000000a0"
-      "0000000000000000000000000000000000000000000000000000000000000160"
-      "f4d4d2f800000000000000000000000000000000000000000000000000000000"
-      "0000000000000000000000000000000000000000000000000000000000000280"
-      "0000000000000000000000000000000000000000000000000000000000000001"
-      "0000000000000000000000000000000000000000000000000000000000000020"
-      "0000000000000000000000000000000000000000000000000000000000000047"
-      "68747470733a2f2f6f6666636861696e2d7265736f6c7665722d6578616d706c"
-      "652e75632e722e61707073706f742e636f6d2f7b73656e6465727d2f7b646174"
-      "617d2e6a736f6e00000000000000000000000000000000000000000000000000"
-      "00000000000000000000000000000000000000000000000000000000000000e4"
-      "9061b92300000000000000000000000000000000000000000000000000000000"
-      "0000004000000000000000000000000000000000000000000000000000000000"
-      "0000008000000000000000000000000000000000000000000000000000000000"
-      "000000150f6f6666636861696e6578616d706c65036574680000000000000000"
-      "0000000000000000000000000000000000000000000000000000000000000000"
-      "000000243b3b57de42041b0018edd29d7c17154b0c671acc0502ea0b3693cafb"
-      "eadf58e6beaaa16c000000000000000000000000000000000000000000000000"
-      "0000000000000000000000000000000000000000000000000000000000000000"
-      "00000000000000000000000000000000000000000000000000000000000000e4"
-      "9061b92300000000000000000000000000000000000000000000000000000000"
-      "0000004000000000000000000000000000000000000000000000000000000000"
-      "0000008000000000000000000000000000000000000000000000000000000000"
-      "000000150f6f6666636861696e6578616d706c65036574680000000000000000"
-      "0000000000000000000000000000000000000000000000000000000000000000"
-      "000000243b3b57de42041b0018edd29d7c17154b0c671acc0502ea0b3693cafb"
-      "eadf58e6beaaa16c000000000000000000000000000000000000000000000000"
-      "0000000000000000000000000000000000000000000000000000000000000000";
-  // clang-format on
-  return kOffchainLookupResponse;
-}
+constexpr std::string_view kOffchainLookupResponse =
+    // clang-format off
+    "556f1830"
+    "000000000000000000000000c1735677a60884abbcf72295e88d47764beda282"
+    "00000000000000000000000000000000000000000000000000000000000000a0"
+    "0000000000000000000000000000000000000000000000000000000000000160"
+    "f4d4d2f800000000000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000280"
+    "0000000000000000000000000000000000000000000000000000000000000001"
+    "0000000000000000000000000000000000000000000000000000000000000020"
+    "0000000000000000000000000000000000000000000000000000000000000047"
+    "68747470733a2f2f6f6666636861696e2d7265736f6c7665722d6578616d706c"
+    "652e75632e722e61707073706f742e636f6d2f7b73656e6465727d2f7b646174"
+    "617d2e6a736f6e00000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000e4"
+    "9061b92300000000000000000000000000000000000000000000000000000000"
+    "0000004000000000000000000000000000000000000000000000000000000000"
+    "0000008000000000000000000000000000000000000000000000000000000000"
+    "000000150f6f6666636861696e6578616d706c65036574680000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "000000243b3b57de42041b0018edd29d7c17154b0c671acc0502ea0b3693cafb"
+    "eadf58e6beaaa16c000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "00000000000000000000000000000000000000000000000000000000000000e4"
+    "9061b92300000000000000000000000000000000000000000000000000000000"
+    "0000004000000000000000000000000000000000000000000000000000000000"
+    "0000008000000000000000000000000000000000000000000000000000000000"
+    "000000150f6f6666636861696e6578616d706c65036574680000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000"
+    "000000243b3b57de42041b0018edd29d7c17154b0c671acc0502ea0b3693cafb"
+    "eadf58e6beaaa16c000000000000000000000000000000000000000000000000"
+    "0000000000000000000000000000000000000000000000000000000000000000";
+// clang-format on
 
-std::vector<uint8_t> ToBytes(const std::string& hex) {
-  return *brave_wallet::PrefixedHexStringToBytes("0x" + hex);
+std::vector<uint8_t> ToBytes(std::string_view hex) {
+  return *brave_wallet::PrefixedHexStringToBytes("0x" + std::string(hex));
 }
 }  // namespace
 
 namespace brave_wallet::eth_abi {
 
 TEST(EthAbiUtilsTest, OffchainLookup) {
-  auto bytes = ToBytes(GetOffchainLookupResponse());
+  auto bytes = ToBytes(kOffchainLookupResponse);
 
-  auto [selector, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
+  auto [selector, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
 
   EXPECT_EQ("0x556f1830", ToHex(selector));
 
@@ -90,7 +88,7 @@ TEST(EthAbiUtilsTest, OffchainLookup) {
             "3b3b57de42041b0018edd29d7c17154b0c671acc0502ea0b3693cafbeadf58e6be"
             "aaa16c00000000000000000000000000000000000000000000000000000000");
 
-  EXPECT_EQ(ToHex(*ExtractFixedBytesFromTuple(args, 4, 3)), "0xf4d4d2f8");
+  EXPECT_EQ(ToHex(*ExtractFixedBytesFromTuple<4>(args, 3)), "0xf4d4d2f8");
 
   EXPECT_EQ(ToHex(*ExtractBytesFromTuple(args, 4)),
             "0x9061b92300000000000000000000000000000000000000000000000000000000"
@@ -103,7 +101,7 @@ TEST(EthAbiUtilsTest, OffchainLookup) {
 }
 
 TEST(EthAbiUtilsTest, OffchainLookupBy1Test) {
-  std::vector<uint8_t> bytes_base = ToBytes(GetOffchainLookupResponse());
+  std::vector<uint8_t> bytes_base = ToBytes(kOffchainLookupResponse);
 
   // Try to alter each byte and expect no crashes.
   for (auto i = 0u; i < bytes_base.size(); ++i) {
@@ -111,12 +109,12 @@ TEST(EthAbiUtilsTest, OffchainLookupBy1Test) {
       auto bytes = bytes_base;
       bytes[i] += d;
 
-      auto [_, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
+      auto [_, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
 
       ExtractAddressFromTuple(args, 0);
       ExtractStringArrayFromTuple(args, 1);
       ExtractBytesFromTuple(args, 2);
-      ExtractFixedBytesFromTuple(args, 4, 3);
+      ExtractFixedBytesFromTuple<4>(args, 3);
       ExtractBytesFromTuple(args, 4);
     }
   }
@@ -124,43 +122,36 @@ TEST(EthAbiUtilsTest, OffchainLookupBy1Test) {
 
 TEST(EthAbiUtilsTest, ExtractFunctionSelectorAndArgsFromCall) {
   {
-    std::vector<uint8_t> bytes = ToBytes(GetOffchainLookupResponse());
-    auto [selector, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
-    EXPECT_EQ(GetOffchainLookupResponse().substr(0, 8),
-              ToHex(selector).substr(2));
-    EXPECT_EQ(GetOffchainLookupResponse().substr(8), ToHex(args).substr(2));
+    std::vector<uint8_t> bytes = ToBytes(kOffchainLookupResponse);
+    auto [selector, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
+    EXPECT_EQ(kOffchainLookupResponse.substr(0, 8), ToHex(selector).substr(2));
+    EXPECT_EQ(kOffchainLookupResponse.substr(8), ToHex(args).substr(2));
   }
 
   {
     // Only selector.
     std::vector<uint8_t> bytes = {0x01, 0x02, 0x03, 0x04};
-    auto [selector, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
-    EXPECT_TRUE(base::ranges::equal(bytes, selector));
+    auto [selector, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
+    EXPECT_TRUE(std::ranges::equal(bytes, selector));
     EXPECT_TRUE(args.empty());
   }
 
   {
     // Not enough for selector.
     std::vector<uint8_t> bytes = {0x01, 0x02, 0x03};
-    auto [selector, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
-    EXPECT_TRUE(selector.empty());
-    EXPECT_TRUE(args.empty());
+    EXPECT_FALSE(ExtractFunctionSelectorAndArgsFromCall(bytes));
   }
 
   {
     // Bad args alignment.
     std::vector<uint8_t> bytes = {0x01, 0x02, 0x03, 0x04, 0x05};
-    auto [selector, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
-    EXPECT_TRUE(selector.empty());
-    EXPECT_TRUE(args.empty());
+    EXPECT_FALSE(ExtractFunctionSelectorAndArgsFromCall(bytes));
   }
 
   {
     // Empty case.
     std::vector<uint8_t> bytes = {};
-    auto [selector, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
-    EXPECT_TRUE(selector.empty());
-    EXPECT_TRUE(args.empty());
+    EXPECT_FALSE(ExtractFunctionSelectorAndArgsFromCall(bytes));
   }
 }
 
@@ -168,7 +159,7 @@ TEST(EthAbiUtilsTest, ExtractAddress) {
   {
     auto bytes = ToBytes(
         "000000000000000000000000c1735677a60884abbcf72295e88d47764beda282");
-    EXPECT_EQ(ExtractAddress(base::make_span(bytes)).ToHex(),
+    EXPECT_EQ(ExtractAddress(bytes).ToHex(),
               "0xc1735677a60884abbcf72295e88d47764beda282");
   }
 
@@ -190,13 +181,13 @@ TEST(EthAbiUtilsTest, ExtractAddress) {
     // Zero address.
     auto bytes = ToBytes(
         "0000000000000000000000000000000000000000000000000000000000000000");
-    EXPECT_EQ(ExtractAddress(base::make_span(bytes)).ToHex(),
+    EXPECT_EQ(ExtractAddress(bytes).ToHex(),
               "0x0000000000000000000000000000000000000000");
   }
 
   {  // Empty.
     auto bytes = std::vector<uint8_t>{};
-    EXPECT_TRUE(ExtractAddress(base::make_span(bytes)).IsEmpty());
+    EXPECT_TRUE(ExtractAddress(bytes).IsEmpty());
   }
 }
 
@@ -468,9 +459,9 @@ TEST(EthAbiUtilsTest, ExtractStringArray) {
 }
 
 TEST(EthAbiUtilsTest, ExtractStringArrayFromTuple) {
-  auto bytes = ToBytes(GetOffchainLookupResponse());
+  auto bytes = ToBytes(kOffchainLookupResponse);
 
-  auto [_, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
+  auto [_, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
 
   EXPECT_THAT(
       *ExtractStringArrayFromTuple(args, 1),
@@ -494,9 +485,9 @@ TEST(EthAbiUtilsTest, ExtractStringArrayFromTuple) {
 }
 
 TEST(EthAbiUtilsTest, ExtractBytesFromTuple) {
-  auto bytes = ToBytes(GetOffchainLookupResponse());
+  auto bytes = ToBytes(kOffchainLookupResponse);
 
-  auto [_, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
+  auto [_, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
 
   EXPECT_EQ(ToHex(*ExtractBytesFromTuple(args, 2)).substr(2),
             "9061b92300000000000000000000000000000000000000000000000000000000"
@@ -540,7 +531,7 @@ TEST(EthAbiUtilsTest, ExtractBytesFromTuple) {
 
 TEST(EthAbiUtilsTest, ExtractBoolAndBytes) {
   // (true, some data)
-  absl::optional<std::pair<bool, std::vector<uint8_t>>> result =
+  std::optional<std::pair<bool, std::vector<uint8_t>>> result =
       ExtractBoolAndBytes(ToBytes(
           "0000000000000000000000000000000000000000000000000000000000000001"
           "0000000000000000000000000000000000000000000000000000000000000040"
@@ -576,7 +567,7 @@ TEST(EthAbiUtilsTest, ExtractBoolAndBytes) {
 }
 
 TEST(EthAbiUtilsTest, ExtractBoolBytesTupleArray) {
-  absl::optional<std::vector<std::pair<bool, std::vector<uint8_t>>>> result =
+  std::optional<std::vector<std::pair<bool, std::vector<uint8_t>>>> result =
       ExtractBoolBytesArrayFromTuple(
           ToBytes(
               // offset of start of the (bool, bytes)[] element in the tuple
@@ -684,31 +675,30 @@ TEST(EthAbiUtilsTest, ExtractBoolBytesTupleArray) {
 }
 
 TEST(EthAbiUtilsTest, ExtractFixedBytesFromTuple) {
-  auto bytes = ToBytes(GetOffchainLookupResponse());
+  auto bytes = ToBytes(kOffchainLookupResponse);
 
-  auto [_, args] = ExtractFunctionSelectorAndArgsFromCall(bytes);
+  auto [_, args] = *ExtractFunctionSelectorAndArgsFromCall(bytes);
 
-  EXPECT_EQ(ToHex(*ExtractFixedBytesFromTuple(args, 4, 3)), "0xf4d4d2f8");
+  EXPECT_EQ(ToHex(*ExtractFixedBytesFromTuple<4>(args, 3)), "0xf4d4d2f8");
 
   // Bad tuple pos.
-  EXPECT_FALSE(ExtractFixedBytesFromTuple(args, 4, 0));
-  EXPECT_FALSE(ExtractFixedBytesFromTuple(args, 4, 1000));
+  EXPECT_FALSE(ExtractFixedBytesFromTuple<4>(args, 0));
+  EXPECT_FALSE(ExtractFixedBytesFromTuple<4>(args, 1000));
 
   // Empty data.
-  EXPECT_FALSE(ExtractFixedBytesFromTuple({}, 4, 0));
+  EXPECT_FALSE(ExtractFixedBytesFromTuple<4>({}, 0));
 
   bytes[101] = 0;
-  EXPECT_EQ(ToHex(*ExtractFixedBytesFromTuple(args, 4, 3)), "0xf400d2f8");
+  EXPECT_EQ(ToHex(*ExtractFixedBytesFromTuple<4>(args, 3)), "0xf400d2f8");
 
   // Bad padding.
   bytes[111] = 1;
-  EXPECT_FALSE(ExtractFixedBytesFromTuple(args, 4, 3));
+  EXPECT_FALSE(ExtractFixedBytesFromTuple<4>(args, 3));
 }
 
 TEST(EthAbiTupleEncoderTest, EncodeCall) {
   std::vector<uint8_t> data(33, 0xbb);
-  auto selector_bytes = ToBytes("f400d2f8");
-  Span4 selector(selector_bytes.begin(), 4u);
+  Bytes4 selector({0xf4, 0x00, 0xd2, 0xf8});
   // f(bytes,bytes)
   EXPECT_EQ(
       "f400d2f8"
@@ -739,7 +729,7 @@ TEST(EthAbiTupleEncoderTest, EncodeCall) {
       "f400d2f8"
       "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
       ToHex(TupleEncoder()
-                .AddFixedBytes(Span32(data.begin(), 32u))
+                .AddFixedBytes(base::span(data).first(32u))
                 .EncodeWithSelector(selector))
           .substr(2));
 }

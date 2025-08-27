@@ -7,14 +7,15 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_BROWSER_BITCOIN_BITCOIN_BLOCK_TRACKER_H_
 
 #include <map>
+#include <optional>
 #include <string>
 
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
 #include "base/types/expected.h"
 #include "brave/components/brave_wallet/browser/block_tracker.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_wallet {
 
@@ -24,7 +25,7 @@ class BitcoinRpc;
 
 class BitcoinBlockTracker : public BlockTracker {
  public:
-  explicit BitcoinBlockTracker(bitcoin_rpc::BitcoinRpc* bitcoin_rpc);
+  explicit BitcoinBlockTracker(bitcoin_rpc::BitcoinRpc& bitcoin_rpc);
   ~BitcoinBlockTracker() override;
   BitcoinBlockTracker(const BitcoinBlockTracker&) = delete;
   BitcoinBlockTracker operator=(const BitcoinBlockTracker&) = delete;
@@ -39,7 +40,7 @@ class BitcoinBlockTracker : public BlockTracker {
   void RemoveObserver(Observer* observer);
 
   void Start(const std::string& chain_id, base::TimeDelta interval) override;
-  absl::optional<uint32_t> GetLatestHeight(const std::string& chain_id) const;
+  std::optional<uint32_t> GetLatestHeight(const std::string& chain_id) const;
 
  private:
   void GetBlockHeight(const std::string& chain_id);
@@ -50,7 +51,7 @@ class BitcoinBlockTracker : public BlockTracker {
   std::map<std::string, uint32_t> latest_height_map_;
   base::ObserverList<Observer> observers_;
 
-  raw_ptr<bitcoin_rpc::BitcoinRpc> bitcoin_rpc_ = nullptr;
+  const raw_ref<bitcoin_rpc::BitcoinRpc> bitcoin_rpc_;
 
   base::WeakPtrFactory<BitcoinBlockTracker> weak_ptr_factory_{this};
 };

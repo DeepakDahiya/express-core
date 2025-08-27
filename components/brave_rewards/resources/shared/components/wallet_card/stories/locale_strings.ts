@@ -3,6 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 export const localeStrings = {
+  loading: 'Loading...',
   rewardsLearnMore: 'Learn more',
   rewardsLogInToSeeBalance: '$1Log in to $2$3 to see your balance',
   rewardsPaymentCheckStatus: 'Check status',
@@ -14,7 +15,7 @@ export const localeStrings = {
   walletAutoContribute: 'Auto-Contribute',
   walletBalanceTitle: 'Balance',
   walletDisconnected: 'Logged out',
-  walletEstimatedEarnings: 'Earnings so far',
+  walletEstimatedEarnings: 'Ads seen this month',
   walletEarningInfoText: 'This reflects your estimated earnings range for Brave Ads this month.',
   walletLogIntoYourAccount: 'Log in to your $1 account',
   walletManageAds: 'Manage ads',

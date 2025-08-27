@@ -7,8 +7,7 @@
 
 #include <utility>
 
-#include "base/ranges/algorithm.h"
-#include "base/strings/string_util.h"
+#include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
 
 namespace brave_ads {
@@ -22,13 +21,19 @@ bool DoesRespectCap(const AdEventList& ad_events,
     return true;
   }
 
-  const size_t count = base::ranges::count_if(
-      ad_events, [&creative_ad](const AdEventInfo& ad_event) {
-        return ad_event.confirmation_type == ConfirmationType::kServed &&
-               ad_event.creative_set_id == creative_ad.creative_set_id;
-      });
+  int count = 0;
+  for (const auto& ad_event : ad_events) {
+    if (ad_event.confirmation_type ==
+            mojom::ConfirmationType::kServedImpression &&
+        ad_event.creative_set_id == creative_ad.creative_set_id) {
+      ++count;
+      if (count >= creative_ad.total_max) {
+        return false;
+      }
+    }
+  }
 
-  return static_cast<int>(count) < creative_ad.total_max;
+  return true;
 }
 
 }  // namespace
@@ -38,20 +43,20 @@ TotalMaxExclusionRule::TotalMaxExclusionRule(AdEventList ad_events)
 
 TotalMaxExclusionRule::~TotalMaxExclusionRule() = default;
 
-std::string TotalMaxExclusionRule::GetUuid(
+std::string TotalMaxExclusionRule::GetCacheKey(
     const CreativeAdInfo& creative_ad) const {
   return creative_ad.creative_set_id;
 }
 
-base::expected<void, std::string> TotalMaxExclusionRule::ShouldInclude(
+bool TotalMaxExclusionRule::ShouldInclude(
     const CreativeAdInfo& creative_ad) const {
   if (!DoesRespectCap(ad_events_, creative_ad)) {
-    return base::unexpected(base::ReplaceStringPlaceholders(
-        "creativeSetId $1 has exceeded the totalMax frequency cap",
-        {creative_ad.creative_set_id}, nullptr));
+    BLOG(1, "creativeSetId " << creative_ad.creative_set_id
+                             << " has exceeded the totalMax frequency cap");
+    return false;
   }
 
-  return base::ok();
+  return true;
 }
 
 }  // namespace brave_ads

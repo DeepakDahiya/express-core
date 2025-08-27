@@ -7,9 +7,10 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/command_line.h"
+#include "base/notimplemented.h"
 #include "base/notreached.h"
-#include "base/strings/string_util.h"
 #include "brave/components/skus/browser/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -44,9 +45,7 @@ std::string GetDomain(const std::string& prefix,
     return prefix + ".brave.software";
   }
 
-  NOTREACHED();
-
-  return "";
+  NOTREACHED() << "Unsupported environment: " << environment;
 }
 
 std::string GetEnvironmentForDomain(const std::string& domain) {
@@ -60,6 +59,11 @@ std::string GetEnvironmentForDomain(const std::string& domain) {
     return kEnvDevelopment;
   NOTIMPLEMENTED();
   return "";
+}
+
+bool DomainIsForProduct(const std::string& domain, const std::string& product) {
+  std::string::size_type index = domain.find(product + ".", 0);
+  return index == 0;
 }
 
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry) {

@@ -4,7 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import styled from 'styled-components'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 
 // Shared Styles
@@ -36,7 +36,7 @@ export const AccountBalanceText = styled(Text)`
 `
 
 export const CopyIcon = styled(Icon).attrs({
-  name: 'copy'
+  name: 'copy',
 })`
   cursor: pointer;
   --leo-icon-size: 14px;

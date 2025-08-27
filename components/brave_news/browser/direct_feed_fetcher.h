@@ -9,6 +9,7 @@
 #include <list>
 #include <memory>
 #include <string>
+#include <variant>
 #include <vector>
 
 #include "base/functional/callback_forward.h"
@@ -16,12 +17,11 @@
 #include "brave/components/brave_news/common/brave_news.mojom-forward.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "services/network/public/cpp/simple_url_loader.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 
 namespace brave_news {
 
-constexpr std::size_t kMaxArticlesPerDirectFeedSource = 100;
+inline constexpr std::size_t kMaxArticlesPerDirectFeedSource = 100;
 
 struct FeedData;
 
@@ -49,7 +49,7 @@ struct DirectFeedResponse {
   std::string charset;
 
   // If success, this will be |FeedData|, otherwise an error.
-  absl::variant<DirectFeedResult, DirectFeedError> result;
+  std::variant<DirectFeedResult, DirectFeedError> result;
 
   DirectFeedResponse();
   ~DirectFeedResponse();
@@ -67,33 +67,63 @@ void ConvertFeedDataToArticles(std::vector<mojom::ArticlePtr>& articles,
 
 class DirectFeedFetcher {
  public:
-  explicit DirectFeedFetcher(
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    struct HTTPSUpgradeInfo {
+      bool should_upgrade;
+      bool should_force;
+    };
+
+    virtual HTTPSUpgradeInfo GetURLHTTPSUpgradeInfo(const GURL& url) = 0;
+    virtual base::WeakPtr<DirectFeedFetcher::Delegate> AsWeakPtr() = 0;
+  };
+
+  DirectFeedFetcher(
+      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+      base::WeakPtr<Delegate> delegate);
   DirectFeedFetcher(const DirectFeedFetcher&) = delete;
   DirectFeedFetcher& operator=(const DirectFeedFetcher&) = delete;
   ~DirectFeedFetcher();
 
   // |publisher_id| can be empty, if one we're speculatively downloading a feed.
   // This |publisher_id| will be used for any returned articles.
-  void DownloadFeed(const GURL& url,
+  void DownloadFeed(GURL url,
                     std::string publisher_id,
                     DownloadFeedCallback callback);
 
  private:
   using SimpleURLLoaderList =
       std::list<std::unique_ptr<network::SimpleURLLoader>>;
-  void OnFeedDownloaded(SimpleURLLoaderList::iterator iter,
-                        DownloadFeedCallback callback,
-                        const GURL& feed_url,
-                        std::string publisher_id,
-                        const std::unique_ptr<std::string> response_body);
+
+  void DownloadFeedHelper(
+      GURL url,
+      GURL original_url,
+      std::string publisher_id,
+      size_t redirect_count,
+      DownloadFeedCallback callback,
+      std::optional<Delegate::HTTPSUpgradeInfo> https_upgrade_info);
+  void OnFeedDownloaded(
+      SimpleURLLoaderList::iterator iter,
+      DownloadFeedCallback callback,
+      GURL url,
+      GURL original_url,
+      std::string publisher_id,
+      std::optional<Delegate::HTTPSUpgradeInfo> https_upgrade_info,
+      bool https_upgraded,
+      size_t redirect_count,
+      const std::unique_ptr<std::string> response_body);
   void OnParsedFeedData(DownloadFeedCallback callback,
                         DirectFeedResponse result,
-                        absl::variant<DirectFeedResult, DirectFeedError> data);
+                        std::variant<DirectFeedResult, DirectFeedError> data);
 
   SimpleURLLoaderList url_loaders_;
 
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+
+  base::WeakPtr<Delegate> delegate_;
+
   base::WeakPtrFactory<DirectFeedFetcher> weak_ptr_factory_{this};
 };
 

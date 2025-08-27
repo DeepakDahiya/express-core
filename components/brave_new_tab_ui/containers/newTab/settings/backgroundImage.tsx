@@ -30,8 +30,6 @@ import SponsoredImageToggle from './sponsoredImagesToggle'
 import { RANDOM_SOLID_COLOR_VALUE, RANDOM_GRADIENT_COLOR_VALUE, MAX_CUSTOM_IMAGE_BACKGROUNDS } from 'gen/brave/components/brave_new_tab_ui/brave_new_tab_page.mojom.m.js'
 import BackgroundImageTiles from './backgroundImageTiles'
 
-import * as mojom from '../../../../brave_rewards/resources/shared/lib/mojom'
-
 interface Props {
   newTabData: NewTab.State
   toggleBrandedWallpaperOptIn: () => void
@@ -149,6 +147,18 @@ class BackgroundImageSettings extends React.PureComponent<Props, State> {
                 size='small'
               />
             </SettingsRow>
+            {braveRewardsSupported && (
+              <SettingsRow>
+                <SponsoredImageToggle
+                  onChange={toggleBrandedWallpaperOptIn}
+                  onEnableRewards={onEnableRewards}
+                  checked={showBackgroundImage && brandedWallpaperOptIn}
+                  disabled={!showBackgroundImage /* This option can only be enabled if users opt in for background images */}
+                  rewardsEnabled={this.props.newTabData.rewardsState.rewardsEnabled}
+                  isExternalWalletConnected={
+                    Boolean(this.props.newTabData.rewardsState.externalWallet)} />
+              </SettingsRow>
+            )}
             {showBackgroundImage && featureCustomBackgroundEnabled && (
               <StyledCustomBackgroundSettings>
                 {this.renderUploadButton(this.onClickCustomBackground, usingCustomImageBackground, /* showTitle= */ true, this.props.newTabData.customImageBackgrounds)}
@@ -189,20 +199,6 @@ class BackgroundImageSettings extends React.PureComponent<Props, State> {
                   </StyledCustomBackgroundOptionLabel>
                 </StyledCustomBackgroundOption>
               </StyledCustomBackgroundSettings>
-            )}
-            <div style={{ height: '16px' }}/>
-            {braveRewardsSupported && !this.props.newTabData.rewardsState.isUnsupportedRegion && (
-              <SettingsRow>
-                <SponsoredImageToggle
-                  onChange={toggleBrandedWallpaperOptIn}
-                  onEnableRewards={onEnableRewards}
-                  checked={showBackgroundImage && brandedWallpaperOptIn}
-                  disabled={!showBackgroundImage /* This option can only be enabled if users opt in for background images */}
-                  rewardsEnabled={this.props.newTabData.rewardsState.rewardsEnabled}
-                  isExternalWalletConnected={
-                    this.props.newTabData.rewardsState.externalWallet?.status !==
-                    mojom.WalletStatus.kNotConnected} />
-              </SettingsRow>
             )}
           </div>
         )}

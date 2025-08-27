@@ -11,7 +11,10 @@
 #include <vector>
 
 #include "base/memory/raw_ref.h"
+#include "base/memory/weak_ptr.h"
+#include "base/types/optional_ref.h"
 #include "brave/components/brave_ads/core/internal/tabs/tab_manager_observer.h"
+#include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/model/text_classification_alias.h"
 
 class GURL;
 
@@ -27,21 +30,23 @@ class TextClassificationProcessor final : public TabManagerObserver {
   TextClassificationProcessor& operator=(const TextClassificationProcessor&) =
       delete;
 
-  TextClassificationProcessor(TextClassificationProcessor&&) noexcept = delete;
-  TextClassificationProcessor& operator=(
-      TextClassificationProcessor&&) noexcept = delete;
-
   ~TextClassificationProcessor() override;
 
   void Process(const std::string& text);
 
  private:
+  void ClassifyPageCallback(
+      uint64_t trace_id,
+      base::optional_ref<const TextClassificationProbabilityMap> probabilities);
+
   // TabManagerObserver:
   void OnTextContentDidChange(int32_t tab_id,
                               const std::vector<GURL>& redirect_chain,
                               const std::string& text) override;
 
   const raw_ref<TextClassificationResource> resource_;
+
+  base::WeakPtrFactory<TextClassificationProcessor> weak_factory_{this};
 };
 
 }  // namespace brave_ads

@@ -1,10 +1,11 @@
 include_rules = [
-  "+third_party/brotli",
-  "+third_party/re2",
+  "+components/country_codes",
+  "+components/prefs",
 ]
 
 specific_include_rules = {
-  "json_helper.h": [
-    "+rapidjson",
+  "rewards_util\.cc": [
+    "+brave/components/l10n/common/locale_util.h",
+    "+brave/components/l10n/common/ofac_sanction_util.h",
   ],
 }

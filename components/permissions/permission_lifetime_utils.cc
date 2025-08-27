@@ -6,29 +6,32 @@
 #include "brave/components/permissions/permission_lifetime_utils.h"
 
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/command_line.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "components/grit/brave_components_strings.h"
 #include "components/permissions/features.h"
 #include "components/permissions/permission_request.h"
 #include "net/base/features.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace permissions {
 
 namespace {
 
 // Returns manually set option to ease manual testing.
-absl::optional<PermissionLifetimeOption> GetTestSecondsOption() {
+std::optional<PermissionLifetimeOption> GetTestSecondsOption() {
   const char kPermissionLifetimeTestSeconds[] =
       "permission-lifetime-test-seconds";
-  static absl::optional<int> test_seconds;
+  static std::optional<int> test_seconds;
   if (!test_seconds.has_value()) {
     const std::string& test_seconds_str =
         base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
@@ -37,10 +40,10 @@ absl::optional<PermissionLifetimeOption> GetTestSecondsOption() {
     test_seconds = base::StringToInt(test_seconds_str, &val) ? val : 0;
   }
   if (!*test_seconds) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   return PermissionLifetimeOption(
-      base::UTF8ToUTF16(base::StringPrintf("%d seconds", *test_seconds)),
+      base::UTF8ToUTF16(absl::StrFormat("%d seconds", *test_seconds)),
       base::Seconds(*test_seconds));
 }
 
@@ -53,19 +56,19 @@ std::vector<PermissionLifetimeOption> CreatePermissionLifetimeOptions() {
 
   if (base::FeatureList::IsEnabled(net::features::kBraveEphemeralStorage)) {
     options.emplace_back(
-        brave_l10n::GetLocalizedResourceUTF16String(
+        l10n_util::GetStringUTF16(
             IDS_PERMISSIONS_BUBBLE_UNTIL_PAGE_CLOSE_LIFETIME_OPTION),
         base::TimeDelta());
   }
-  options.emplace_back(brave_l10n::GetLocalizedResourceUTF16String(
+  options.emplace_back(l10n_util::GetStringUTF16(
                            IDS_PERMISSIONS_BUBBLE_24_HOURS_LIFETIME_OPTION),
                        base::Hours(24));
-  options.emplace_back(brave_l10n::GetLocalizedResourceUTF16String(
-                           IDS_PERMISSIONS_BUBBLE_1_WEEK_LIFETIME_OPTION),
-                       base::Days(7));
-  options.emplace_back(brave_l10n::GetLocalizedResourceUTF16String(
-                           IDS_PERMISSIONS_BUBBLE_FOREVER_LIFETIME_OPTION),
-                       absl::nullopt);
+  options.emplace_back(
+      l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_1_WEEK_LIFETIME_OPTION),
+      base::Days(7));
+  options.emplace_back(
+      l10n_util::GetStringUTF16(IDS_PERMISSIONS_BUBBLE_FOREVER_LIFETIME_OPTION),
+      std::nullopt);
   DCHECK_LE(options.size(), kOptionsCount);
 
   // This is strictly for manual testing.
@@ -90,8 +93,8 @@ bool ShouldShowLifetimeOptions(PermissionPrompt::Delegate* delegate) {
 void SetRequestsLifetime(const std::vector<PermissionLifetimeOption>& options,
                          size_t index,
                          PermissionPrompt::Delegate* delegate) {
-  for (auto* request : delegate->Requests()) {
-    SetRequestLifetime(options, index, request);
+  for (const auto& request : delegate->Requests()) {
+    SetRequestLifetime(options, index, request.get());
   }
 }
 

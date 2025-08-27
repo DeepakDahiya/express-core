@@ -6,30 +6,34 @@
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/network_connection_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/mock_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rule_feature.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsNetworkConnectionPermissionRuleTest : public UnitTestBase {
- protected:
-  const NetworkConnectionPermissionRule permission_rule_;
-};
+class BraveAdsNetworkConnectionPermissionRuleTest : public test::TestBase {};
 
 TEST_F(BraveAdsNetworkConnectionPermissionRuleTest, ShouldAllow) {
+  // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasNetworkConnectionPermission());
 }
 
 TEST_F(BraveAdsNetworkConnectionPermissionRuleTest, ShouldNotAllow) {
   // Arrange
-  MockIsNetworkConnectionAvailable(ads_client_mock_, false);
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
+  test::MockIsNetworkConnectionAvailable(ads_client_mock_, false);
 
   // Act & Assert
-  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_FALSE(HasNetworkConnectionPermission());
 }
 
 TEST_F(BraveAdsNetworkConnectionPermissionRuleTest,
@@ -40,10 +44,10 @@ TEST_F(BraveAdsNetworkConnectionPermissionRuleTest,
       kPermissionRulesFeature,
       {{"should_only_serve_ads_with_valid_internet_connection", "false"}});
 
-  MockIsNetworkConnectionAvailable(ads_client_mock_, false);
+  test::MockIsNetworkConnectionAvailable(ads_client_mock_, false);
 
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasNetworkConnectionPermission());
 }
 
 }  // namespace brave_ads

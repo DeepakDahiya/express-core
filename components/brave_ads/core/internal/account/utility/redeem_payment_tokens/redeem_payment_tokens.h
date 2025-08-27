@@ -6,15 +6,17 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_PAYMENT_TOKENS_REDEEM_PAYMENT_TOKENS_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_PAYMENT_TOKENS_REDEEM_PAYMENT_TOKENS_H_
 
+#include <string>
+#include <tuple>
+
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/values.h"
+#include "base/types/expected.h"
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_info.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/redeem_payment_tokens_delegate.h"
 #include "brave/components/brave_ads/core/internal/account/wallet/wallet_info.h"
 #include "brave/components/brave_ads/core/internal/common/timer/backoff_timer.h"
-#include "brave/components/brave_ads/core/internal/common/timer/timer.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 
 namespace brave_ads {
@@ -26,9 +28,6 @@ class RedeemPaymentTokens final {
   RedeemPaymentTokens(const RedeemPaymentTokens&) = delete;
   RedeemPaymentTokens& operator=(const RedeemPaymentTokens&) = delete;
 
-  RedeemPaymentTokens(RedeemPaymentTokens&&) noexcept = delete;
-  RedeemPaymentTokens& operator=(RedeemPaymentTokens&&) noexcept = delete;
-
   ~RedeemPaymentTokens();
 
   void SetDelegate(RedeemPaymentTokensDelegate* delegate) {
@@ -39,10 +38,14 @@ class RedeemPaymentTokens final {
   void MaybeRedeemAfterDelay(const WalletInfo& wallet);
 
  private:
+  void RedeemAfterDelay();
   void Redeem();
-  void BuildRedeemPaymentTokensUserDataCallback(base::Value::Dict user_data);
   void RedeemCallback(const PaymentTokenList& payment_tokens,
-                      const mojom::UrlResponseInfo& url_response);
+                      const mojom::UrlResponseInfo& mojom_url_response);
+
+  static base::expected<void, std::tuple<std::string, bool>>
+  HandleRedeemPaymentTokensUrlResponse(
+      const mojom::UrlResponseInfo& mojom_url_response);
 
   void SuccessfullyRedeemed(const PaymentTokenList& payment_tokens);
   void FailedToRedeem(bool should_retry);
@@ -60,14 +63,13 @@ class RedeemPaymentTokens final {
   void NotifyWillRetryRedeemingPaymentTokens(base::Time retry_at) const;
   void NotifyDidRetryRedeemingPaymentTokens() const;
 
-  raw_ptr<RedeemPaymentTokensDelegate> delegate_ = nullptr;
+  raw_ptr<RedeemPaymentTokensDelegate> delegate_ = nullptr;  // Not owned.
 
   WalletInfo wallet_;
 
-  bool is_processing_ = false;
+  bool is_redeeming_ = false;
 
-  Timer timer_;
-  BackoffTimer retry_timer_;
+  BackoffTimer timer_;
 
   base::WeakPtrFactory<RedeemPaymentTokens> weak_factory_{this};
 };

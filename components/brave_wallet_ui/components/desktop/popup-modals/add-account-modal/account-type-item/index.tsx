@@ -13,7 +13,7 @@ import {
   Title,
   Description,
   NetworkIcon,
-  LeftSide
+  LeftSide,
 } from './style'
 
 export interface Props {
@@ -25,13 +25,7 @@ export interface Props {
 }
 
 const AccountTypeItem = (props: Props) => {
-  const {
-    title,
-    description,
-    buttonText,
-    icon,
-    onClickCreate
-  } = props
+  const { title, description, buttonText, icon, onClickCreate } = props
 
   return (
     <StyledWrapper>

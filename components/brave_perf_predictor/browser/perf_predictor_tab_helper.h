@@ -13,7 +13,6 @@
 #include "brave/components/brave_perf_predictor/browser/p3a_bandwidth_savings_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
-#include "url/gurl.h"
 
 class PrefRegistrySimple;
 
@@ -56,7 +55,7 @@ class PerfPredictorTabHelper
   static void RegisterProfilePrefs(PrefRegistrySimple* registry);
   // Called from Brave Shields
   static void DispatchBlockedEvent(const std::string& subresource,
-                                   int frame_tree_node_id);
+                                   content::FrameTreeNodeId frame_tree_node_id);
 
  private:
   friend class content::WebContentsUserData<PerfPredictorTabHelper>;

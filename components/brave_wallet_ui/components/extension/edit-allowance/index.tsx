@@ -19,12 +19,10 @@ import {
   Description,
   AllowanceTitle,
   AllowanceContent,
-  AllowanceOption
+  AllowanceOption,
 } from './style'
 
-type AllowanceTypes =
-  | 'proposed'
-  | 'custom'
+type AllowanceTypes = 'proposed' | 'custom'
 
 export interface Props {
   onCancel: () => void
@@ -36,7 +34,8 @@ export interface Props {
 }
 
 export const EditAllowance = (props: Props) => {
-  const [allowanceType, setAllowanceType] = React.useState<AllowanceTypes>('proposed')
+  const [allowanceType, setAllowanceType] =
+    React.useState<AllowanceTypes>('proposed')
   const [customAllowance, setCustomAllowance] = React.useState<string>('')
 
   const {
@@ -45,14 +44,16 @@ export const EditAllowance = (props: Props) => {
     proposedAllowance,
     approvalTarget,
     symbol,
-    isApprovalUnlimited
+    isApprovalUnlimited,
   } = props
 
   const toggleAllowanceRadio = (key: AllowanceTypes) => {
     setAllowanceType(key)
   }
 
-  const onChangeCustomAllowance = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const onChangeCustomAllowance = (
+    event: React.ChangeEvent<HTMLInputElement>,
+  ) => {
     setCustomAllowance(event.target.value)
   }
 
@@ -78,13 +79,16 @@ export const EditAllowance = (props: Props) => {
     >
       <StyledWrapper>
         <Description>
-          {getLocale('braveWalletEditPermissionsDescription').replace('$1', approvalTarget)}
+          {getLocale('braveWalletEditPermissionsDescription').replace(
+            '$1',
+            approvalTarget,
+          )}
         </Description>
         <FormColumn>
           <Radio
             value={{
               proposed: allowanceType === 'proposed',
-              custom: allowanceType === 'custom'
+              custom: allowanceType === 'custom',
             }}
             onChange={toggleAllowanceRadio}
           >

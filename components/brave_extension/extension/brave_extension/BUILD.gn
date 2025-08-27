@@ -15,10 +15,6 @@ transpile_web_ui("brave_extension") {
       rebase_path("background.ts"),
     ],
     [
-      "content_element_picker",
-      rebase_path("content_element_picker.ts"),
-    ],
-    [
       "webstore",
       rebase_path("webstore.ts"),
     ],
@@ -39,6 +35,8 @@ transpile_web_ui("brave_extension") {
       [ rebase_path("//brave/vendor/web-discovery-project/node_modules") ]
 
   public_asset_path = "/out/"
+
+  sync_wasm = true
 
   deps =
       [ "//brave/components/brave_extension:web_discovery_project_resources" ]

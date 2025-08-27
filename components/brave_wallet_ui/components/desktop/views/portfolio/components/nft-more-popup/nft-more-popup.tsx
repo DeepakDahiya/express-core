@@ -13,7 +13,7 @@ import {
   ButtonIcon,
   Popup,
   PopupButton,
-  PopupButtonText
+  PopupButtonText,
 } from './nft-more-popup.styles'
 
 interface Props {
@@ -24,6 +24,7 @@ interface Props {
   onHideNft: () => void
   onUnHideNft: () => void
   onUnSpam: () => void
+  onMarkAsSpam: () => void
   onRemoveNft: () => void
   onClose: () => void
 }
@@ -38,7 +39,8 @@ export const NftMorePopup = (props: Props) => {
     onUnHideNft,
     onUnSpam,
     onRemoveNft,
-    onClose
+    onClose,
+    onMarkAsSpam,
   } = props
 
   const popupRef = React.useRef<HTMLDivElement>(null)
@@ -47,7 +49,10 @@ export const NftMorePopup = (props: Props) => {
   useOnClickOutside(popupRef, onClose, isOpen)
 
   return (
-    <Popup isOpen={isOpen} ref={popupRef}>
+    <Popup
+      isOpen={isOpen}
+      ref={popupRef}
+    >
       {/* show hide and edit option if a token is not hidden or not spam */}
       {!isTokenHidden && !isTokenSpam && (
         <>
@@ -62,11 +67,19 @@ export const NftMorePopup = (props: Props) => {
         </>
       )}
 
-      {/* show mark as not junk if a token is junk/spam */}
-      {isTokenSpam && (
+      {isTokenSpam ? (
+        // show mark as not junk if a token is junk/spam
         <PopupButton onClick={onUnSpam}>
-          <ButtonIcon name='disable-outline' />
+          <ButtonIcon name='junk-false' />
           <PopupButtonText>{getLocale('braveWalletNftUnspam')}</PopupButtonText>
+        </PopupButton>
+      ) : (
+        // show mark as spam option if a token is not marked as junk
+        <PopupButton onClick={onMarkAsSpam}>
+          <ButtonIcon name='junk-true' />
+          <PopupButtonText>
+            {getLocale('braveWalletNftMoveToSpam')}
+          </PopupButtonText>
         </PopupButton>
       )}
 
@@ -76,7 +89,7 @@ export const NftMorePopup = (props: Props) => {
           <ButtonIcon name='eye-on' />
           <PopupButtonText>{getLocale('braveNftsTabUnhide')}</PopupButtonText>
         </PopupButton>
-      ): null}
+      ) : null}
 
       {/* remove option */}
       <PopupButton onClick={onRemoveNft}>

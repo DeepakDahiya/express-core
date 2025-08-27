@@ -7,14 +7,16 @@ import * as React from 'react'
 import styled from 'styled-components'
 
 // Common components
-import { SettingsText } from '../../../components/default'
+import {
+  LearnMoreLink,
+  LearnMoreText,
+  SettingsText } from '../../../components/default'
 import Toggle from '@brave/leo/react/toggle'
-
-// Assets
-import { SponsoredImageInfoIcon } from './icons/sponsoredImageInfo'
+import Flex from '$web-common/Flex'
 
 // Utilities
 import { getLocale } from '../../../../common/locale'
+import { loadTimeData } from '$web-common/loadTimeData'
 
 interface Props {
   onChange: () => void
@@ -39,74 +41,7 @@ const ControlsContainer = styled.span`
   display: flex;
   justify-content: space-between;
   align-items: center;
-`
-
-const InfoIcon = styled.span`
-  position: relative;
-  margin: 0px 18px;
-
-  > .icon {
-    height: 17px;
-    width: auto;
-    vertical-align: middle;
-  }
-
-  .tooltip {
-    position: absolute;
-    bottom: 100%;
-    inset-inline-start: -200px;
-    width: 264px;
-    padding-bottom: 12px;
-    display: none;
-  }
-
-  &:hover .tooltip {
-    display: initial;
-  }
-
-  &:focus .tooltip {
-    display: initial;
-  }
-
-  &:focus {
-    outline-style: solid;
-    outline-color: ${p => p.theme.color.brandBrave};
-    outline-width: 1px;
-  }
-`
-
-const InfoIconTooltip = styled.div`
-  position: relative;
-  background: var(--background1);
-  box-shadow: 0px 0px 24px rgba(99, 105, 110, 0.36);
-  border-radius: 6px;
-  font-family: var(--brave-font-family-non-serif);
-  letter-spacing: 0.01em;
-  padding: 24px;
-
-  &:before {
-    content: '';
-    position: absolute;
-    bottom: -7px;
-    inset-inline-start: 201px;
-    background: inherit;
-    height: 15px;
-    width: 15px;
-    transform: rotate(45deg);
-  }
-`
-
-const InfoIconTooltipTitle = styled.div`
-  font-weight: 600;
-  font-size: 14px;
-  line-height: 24px;
-  margin-bottom: 8px;
-`
-
-const InfoIconTooltipBody = styled.div`
-  font-weight: 400;
-  font-size: 12px;
-  line-height: 18px;
+  margin-left: 24px;
 `
 
 const Container = styled.div`
@@ -155,16 +90,6 @@ const EnableRewardsButton = styled.button`
   align-self: start;
 `
 
-function getInfoTooltipText (checked: boolean, rewardsEnabled: boolean) {
-  if (!checked) {
-    return rewardsEnabled
-      ? getLocale('sponsoredImageOffRewardsOnDescription')
-      : getLocale('sponsoredImageRewardsOffDescription')
-  }
-
-  return getLocale('sponsoredImageOnDescription')
-}
-
 function getDescriptionText (rewardsEnabled: boolean) {
   if (!rewardsEnabled) {
     return getLocale('sponsoredImageRewardsOffDescription')
@@ -186,13 +111,6 @@ export default function SponsoredImageToggle (
     onChange, onEnableRewards, checked, disabled, rewardsEnabled,
     isExternalWalletConnected
   }: Props) {
-  // Info icon is shown when:
-  // 1. SI toggle is off
-  // 2. Rewards is enabled (with a custodian connected)
-  const showInfoIcon =
-    !disabled &&
-    (!checked || (rewardsEnabled && isExternalWalletConnected))
-
   // Description is shown when SI toggle is on and:
   // 1. Rewards is not enabled (to show the button to enable Rewards)
   // 2. Rewards custodian is not connected (to show the button to go to Rewards)
@@ -204,25 +122,24 @@ export default function SponsoredImageToggle (
   return (
     <div>
       <ToggleRow>
-        <SettingsText>{getLocale('brandedWallpaperOptIn')}</SettingsText>
+        <Flex direction="column">
+          <SettingsText>{getLocale('brandedWallpaperOptIn')}</SettingsText>
+          <LearnMoreText>
+            {
+              checked && rewardsEnabled && isExternalWalletConnected
+                ? getLocale('sponsoredImageEarningDescription')
+                : getLocale('sponsoredImageCanEarnDescription')
+            }
+            {' '}
+            <LearnMoreLink
+              href={loadTimeData.getString('newTabTakeoverLearnMoreLinkUrl')}
+              target='_blank'
+              rel='noopener noreferrer'>
+              {getLocale('sponsoredImageLearnMore')}
+            </LearnMoreLink>
+          </LearnMoreText>
+        </Flex>
         <ControlsContainer>
-          {showInfoIcon &&
-            <InfoIcon title='' tabIndex={0}>
-              {SponsoredImageInfoIcon}
-              <div className='tooltip'>
-                <InfoIconTooltip>
-                  <InfoIconTooltipTitle>
-                    {checked
-                      ? getLocale('sponsoredImageEarningTitle')
-                      : getLocale('sponsoredImageNotEarningTitle')}
-                  </InfoIconTooltipTitle>
-                  <InfoIconTooltipBody>
-                    {getInfoTooltipText(checked, rewardsEnabled)}
-                  </InfoIconTooltipBody>
-                </InfoIconTooltip>
-              </div>
-            </InfoIcon>
-          }
           <Toggle onChange={onChange} checked={checked} disabled={disabled}
             size='small' />
         </ControlsContainer>

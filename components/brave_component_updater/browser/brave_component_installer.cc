@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_string_value_serializer.h"
@@ -19,8 +20,6 @@
 #include "components/update_client/update_client.h"
 #include "components/update_client/update_client_errors.h"
 #include "crypto/sha2.h"
-
-using brave_component_updater::BraveComponent;
 
 namespace {
 using Result = update_client::CrxInstaller::Result;
@@ -64,7 +63,7 @@ std::string GetManifestString(base::Value::Dict* manifest,
 
 }  // namespace
 
-namespace brave {
+namespace brave_component_updater {
 
 BraveComponentInstallerPolicy::BraveComponentInstallerPolicy(
     const std::string& name,
@@ -139,15 +138,8 @@ BraveComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
-void RegisterComponent(component_updater::ComponentUpdateService* cus,
-                       const std::string& name,
-                       const std::string& base64_public_key,
-                       base::OnceClosure registered_callback,
-                       BraveComponent::ReadyCallback ready_callback) {
-  auto installer = base::MakeRefCounted<component_updater::ComponentInstaller>(
-      std::make_unique<BraveComponentInstallerPolicy>(
-          name, base64_public_key, std::move(ready_callback)));
-  installer->Register(cus, std::move(registered_callback));
+bool BraveComponentInstallerPolicy::IsBraveComponent() const {
+  return true;
 }
 
-}  // namespace brave
+}  // namespace brave_component_updater

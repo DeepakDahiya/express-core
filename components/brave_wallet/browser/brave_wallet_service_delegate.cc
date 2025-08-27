@@ -5,10 +5,12 @@
 
 #include "brave/components/brave_wallet/browser/brave_wallet_service_delegate.h"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
-#include "base/notreached.h"
+#include "base/notimplemented.h"
+#include "base/types/expected.h"
 
 namespace brave_wallet {
 
@@ -31,7 +33,7 @@ void BraveWalletServiceDelegate::GetImportInfoFromExternalWallet(
     const std::string& password,
     GetImportInfoCallback callback) {
   NOTIMPLEMENTED();
-  std::move(callback).Run(false, ImportInfo(), ImportError::kInternalError);
+  std::move(callback).Run(base::unexpected(ImportError::kInternalError));
 }
 
 bool BraveWalletServiceDelegate::AddPermission(mojom::CoinType coin,
@@ -61,9 +63,9 @@ bool BraveWalletServiceDelegate::IsPermissionDenied(mojom::CoinType coin,
   return false;
 }
 
-absl::optional<url::Origin> BraveWalletServiceDelegate::GetActiveOrigin() {
+std::optional<url::Origin> BraveWalletServiceDelegate::GetActiveOrigin() {
   NOTIMPLEMENTED();
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void BraveWalletServiceDelegate::ClearWalletUIStoragePartition() {}

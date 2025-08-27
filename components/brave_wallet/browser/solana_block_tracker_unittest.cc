@@ -9,11 +9,13 @@
 #include <string>
 
 #include "base/scoped_observation.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
 #include "brave/components/brave_wallet/browser/json_rpc_service.h"
+#include "brave/components/brave_wallet/browser/network_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -56,8 +58,9 @@ class SolanaBlockTrackerUnitTest : public testing::Test {
 
   void SetUp() override {
     brave_wallet::RegisterProfilePrefs(prefs_.registry());
-    json_rpc_service_ =
-        std::make_unique<JsonRpcService>(shared_url_loader_factory_, &prefs_);
+    network_manager_ = std::make_unique<NetworkManager>(&prefs_);
+    json_rpc_service_ = std::make_unique<JsonRpcService>(
+        shared_url_loader_factory_, network_manager_.get(), &prefs_, nullptr);
     tracker_ = std::make_unique<SolanaBlockTracker>(json_rpc_service_.get());
   }
 
@@ -65,7 +68,7 @@ class SolanaBlockTrackerUnitTest : public testing::Test {
     return "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":"
            "{\"context\":{\"slot\":1069},\"value\":{\"blockhash\":\"" +
            response_blockhash_ + "\", \"lastValidBlockHeight\":" +
-           std::to_string(response_last_valid_block_height_) + "}}}";
+           base::NumberToString(response_last_valid_block_height_) + "}}}";
   }
 
   void TestGetLatestBlockhash(const base::Location& location,
@@ -102,6 +105,7 @@ class SolanaBlockTrackerUnitTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  std::unique_ptr<NetworkManager> network_manager_;
   std::unique_ptr<JsonRpcService> json_rpc_service_;
   std::unique_ptr<SolanaBlockTracker> tracker_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
@@ -248,11 +252,11 @@ TEST_F(SolanaBlockTrackerUnitTest, GetLatestBlockhashWithoutStartTracker) {
                            mojom::SolanaProviderError::kSuccess, "");
     EXPECT_TRUE(testing::Mock::VerifyAndClearExpectations(&observer));
 
-    // Cached value would expire after kBlockTrackerDefaultTimeInSeconds.
+    // Cached value would expire after kSolanaBlockTrackerTimeInSeconds.
     response_blockhash_ = "hash3";
     response_last_valid_block_height_ = 3490;
     task_environment_.FastForwardBy(
-        base::Seconds(kBlockTrackerDefaultTimeInSeconds));
+        base::Seconds(kSolanaBlockTrackerTimeInSeconds));
     EXPECT_CALL(observer, OnLatestBlockhashUpdated(chain_id, "hash3", 3490u))
         .Times(1);
     TestGetLatestBlockhash(FROM_HERE, chain_id, true, "hash3", 3490,
@@ -278,7 +282,7 @@ TEST_F(SolanaBlockTrackerUnitTest, GetLatestBlockhashWithoutStartTracker) {
     TestGetLatestBlockhash(FROM_HERE, chain_id, true, "hash3", 3490,
                            mojom::SolanaProviderError::kSuccess, "");
     task_environment_.FastForwardBy(
-        base::Seconds(kBlockTrackerDefaultTimeInSeconds));
+        base::Seconds(kSolanaBlockTrackerTimeInSeconds));
     TestGetLatestBlockhash(FROM_HERE, chain_id, false, "", 0,
                            mojom::SolanaProviderError::kInternalError,
                            l10n_util::GetStringUTF8(IDS_WALLET_INTERNAL_ERROR));

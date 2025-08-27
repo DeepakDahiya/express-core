@@ -5,33 +5,40 @@
 
 #include "brave/components/brave_ads/core/internal/catalog/catalog_util.h"
 
-#include "brave/components/brave_ads/core/internal/catalog/catalog_unittest_constants.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_time_util.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/mock_callback.h"
+#include "brave/components/brave_ads/core/internal/catalog/catalog_test_constants.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/common/test/time_test_util.h"
+#include "brave/components/brave_ads/core/internal/prefs/pref_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsCatalogUtilTest : public UnitTestBase {};
+class BraveAdsCatalogUtilTest : public test::TestBase {};
 
 TEST_F(BraveAdsCatalogUtilTest, ResetCatalog) {
   // Arrange
-  SetCatalogId(kCatalogId);
+  SetCatalogId(test::kCatalogId);
   SetCatalogVersion(1);
   SetCatalogPing(base::Hours(1));
-  SetCatalogLastUpdated(Now());
+  SetCatalogLastUpdated(test::Now());
 
   // Act
-  ResetCatalog();
+  base::RunLoop run_loop;
+  base::MockCallback<ResultCallback> callback;
+  EXPECT_CALL(callback, Run(/*success=*/true))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  ResetCatalog(callback.Get());
+  run_loop.Run();
 
   // Assert
-  EXPECT_TRUE(ads_client_mock_.GetStringPref(prefs::kCatalogId).empty());
-  EXPECT_EQ(0, ads_client_mock_.GetIntegerPref(prefs::kCatalogVersion));
-  EXPECT_EQ(7'200'000, ads_client_mock_.GetInt64Pref(prefs::kCatalogPing));
-  EXPECT_TRUE(
-      ads_client_mock_.GetTimePref(prefs::kCatalogLastUpdated).is_null());
+  EXPECT_THAT(GetProfileStringPref(prefs::kCatalogId), ::testing::IsEmpty());
+  EXPECT_EQ(0, GetProfileIntegerPref(prefs::kCatalogVersion));
+  EXPECT_EQ(7'200'000, GetProfileInt64Pref(prefs::kCatalogPing));
+  EXPECT_TRUE(GetProfileTimePref(prefs::kCatalogLastUpdated).is_null());
 }
 
 TEST_F(BraveAdsCatalogUtilTest, CatalogExists) {
@@ -52,7 +59,7 @@ TEST_F(BraveAdsCatalogUtilTest, CatalogDoesNotExist) {
 
 TEST_F(BraveAdsCatalogUtilTest, CatalogHasChanged) {
   // Arrange
-  SetCatalogId(kCatalogId);
+  SetCatalogId(test::kCatalogId);
 
   // Act & Assert
   EXPECT_TRUE(HasCatalogChanged(
@@ -61,15 +68,15 @@ TEST_F(BraveAdsCatalogUtilTest, CatalogHasChanged) {
 
 TEST_F(BraveAdsCatalogUtilTest, CatalogHasNotChanged) {
   // Arrange
-  SetCatalogId(kCatalogId);
+  SetCatalogId(test::kCatalogId);
 
   // Act & Assert
-  EXPECT_FALSE(HasCatalogChanged(kCatalogId));
+  EXPECT_FALSE(HasCatalogChanged(test::kCatalogId));
 }
 
 TEST_F(BraveAdsCatalogUtilTest, CatalogHasExpired) {
   // Arrange
-  SetCatalogLastUpdated(Now());
+  SetCatalogLastUpdated(test::Now());
 
   AdvanceClockBy(base::Days(1));
 
@@ -79,7 +86,7 @@ TEST_F(BraveAdsCatalogUtilTest, CatalogHasExpired) {
 
 TEST_F(BraveAdsCatalogUtilTest, CatalogHasNotExpired) {
   // Arrange
-  SetCatalogLastUpdated(Now());
+  SetCatalogLastUpdated(test::Now());
 
   AdvanceClockBy(base::Days(1) - base::Milliseconds(1));
 

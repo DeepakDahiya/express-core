@@ -4,24 +4,39 @@
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 static_library("common") {
+  # Brave l10n components are deprecated. Use Chromium's functionality
+  # unless no equivalent is available.
+  visibility = [
+    ":*",
+    "//brave/browser/ui",
+    "//brave/components/ai_chat/core/browser",
+    "//brave/components/brave_ads/browser",
+    "//brave/components/brave_ads/core/internal",
+    "//brave/components/brave_ads/core/test:brave_ads_unit_tests",
+    "//brave/components/brave_news/browser",
+    "//brave/components/brave_news/common",
+    "//brave/components/brave_rewards/core",
+    "//brave/components/p3a",
+    "//brave/components/sidebar/browser",
+    "//brave/components/text_recognition/browser",
+    "//brave/ios/browser/api/ads",
+    "//brave/ios/browser/shared/prefs",
+    "//brave/test:*",
+    "//chrome/browser",
+  ]
+
   friend = [
     ":test_support",
     ":unit_tests",
   ]
 
   public = [
-    "country_code_util.h",
     "locale_util.h",
-    "localization_util.h",
     "ofac_sanction_util.h",
     "prefs.h",
-    "un_m49_code_util.h",
   ]
 
   sources = [
-    "country_code_feature.cc",
-    "country_code_feature.h",
-    "country_code_util.cc",
     "default_locale.cc",
     "default_locale.h",
     "locale_subtag_info.cc",
@@ -30,16 +45,11 @@ static_library("common") {
     "locale_subtag_parser_util.h",
     "locale_util.cc",
     "locale_util.h",
-    "localization_util.cc",
-    "localization_util.h",
     "ofac_sanction_util.cc",
     "ofac_sanction_util.h",
     "ofac_sanctioned_iso_3166_1_country_code_constants.h",
     "ofac_sanctioned_un_m49_code_constants.h",
     "prefs.cc",
-    "un_m49_code_constants.h",
-    "un_m49_code_util.cc",
-    "un_m49_code_util.h",
   ]
 
   deps = [
@@ -68,12 +78,9 @@ source_set("unit_tests") {
   testonly = true
 
   sources = [
-    "country_code_util_unittest.cc",
     "locale_subtag_parser_util_unittest.cc",
     "locale_util_unittest.cc",
-    "localization_util_unittest.cc",
     "ofac_sanction_util_unittest.cc",
-    "un_m49_code_util_unittest.cc",
   ]
 
   deps = [

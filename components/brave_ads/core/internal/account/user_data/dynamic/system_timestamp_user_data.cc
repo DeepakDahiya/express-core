@@ -16,16 +16,12 @@ constexpr char kSystemTimestampKey[] = "systemTimestamp";
 }  // namespace
 
 base::Value::Dict BuildSystemTimestampUserData() {
-  base::Value::Dict user_data;
-
   if (!UserHasJoinedBraveRewards()) {
-    return user_data;
+    return {};
   }
 
-  user_data.Set(kSystemTimestampKey,
-                TimeToPrivacyPreservingISO8601(base::Time::Now()));
-
-  return user_data;
+  return base::Value::Dict().Set(
+      kSystemTimestampKey, TimeToPrivacyPreservingIso8601(base::Time::Now()));
 }
 
 }  // namespace brave_ads

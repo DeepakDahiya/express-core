@@ -4,7 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 import styled from 'styled-components'
 import Icon from '@brave/leo/react/icon'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 
 import { WalletButton } from '../../../../../shared/style'
 
@@ -69,11 +69,13 @@ export const DropDown = styled.div<{ isOpen: boolean }>`
   align-items: flex-start;
   gap: ${leo.spacing.s};
   border-radius: ${leo.spacing.m};
-  border: 1px solid  ${leo.color.divider.subtle};
+  border: 1px solid ${leo.color.divider.subtle};
   background-color: ${leo.color.container.background};
   box-shadow: 0px 4px 16px -2px rgba(0, 0, 0, 0.08);
   display: ${({ isOpen }) => (isOpen ? 'flex' : 'none')};
-  transition: opacity 0.3s, transform 0.3s;
+  transition:
+    opacity 0.3s,
+    transform 0.3s;
   opacity: ${({ isOpen }) => (isOpen ? 1 : 0)};
   transform: translateY(${({ isOpen }) => (isOpen ? '0' : '-10px')});
   z-index: 2;

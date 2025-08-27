@@ -7,10 +7,9 @@
 
 #include <utility>
 
-#include "base/features.h"
 #include "base/functional/bind.h"
 #include "base/task/sequenced_task_runner.h"
-#include "brave/components/brave_wallet/common/features.h"
+#include "brave/components/brave_wallet/common/common_utils.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_interstitial_controller_client.h"
 #include "brave/components/decentralized_dns/content/decentralized_dns_opt_in_page.h"
 #include "brave/components/decentralized_dns/content/ens_offchain_lookup_interstitial_controller_client.h"
@@ -27,27 +26,38 @@
 namespace decentralized_dns {
 
 // static
-std::unique_ptr<DecentralizedDnsNavigationThrottle>
-DecentralizedDnsNavigationThrottle::MaybeCreateThrottleFor(
-    content::NavigationHandle* navigation_handle,
+void DecentralizedDnsNavigationThrottle::MaybeCreateAndAdd(
+    content::NavigationThrottleRegistry& registry,
+    PrefService* user_prefs,
     PrefService* local_state,
     const std::string& locale) {
+  content::NavigationHandle& navigation_handle = registry.GetNavigationHandle();
   content::BrowserContext* context =
-      navigation_handle->GetWebContents()->GetBrowserContext();
-  if (context->IsOffTheRecord())
-    return nullptr;
+      navigation_handle.GetWebContents()->GetBrowserContext();
+  if (context->IsOffTheRecord()) {
+    return;
+  }
 
-  return std::make_unique<DecentralizedDnsNavigationThrottle>(
-      navigation_handle, local_state, locale);
+  if (!navigation_handle.IsInMainFrame()) {
+    return;
+  }
+
+  // Don't create the throttle if Brave Wallet is disabled by policy
+  if (!brave_wallet::IsAllowed(user_prefs)) {
+    return;
+  }
+
+  registry.AddThrottle(std::make_unique<DecentralizedDnsNavigationThrottle>(
+      registry, user_prefs, local_state, locale));
 }
 
 DecentralizedDnsNavigationThrottle::DecentralizedDnsNavigationThrottle(
-    content::NavigationHandle* navigation_handle,
+    content::NavigationThrottleRegistry& registry,
+    PrefService* user_prefs,
     PrefService* local_state,
     const std::string& locale)
-    : content::NavigationThrottle(navigation_handle),
-      user_prefs_(user_prefs::UserPrefs::Get(
-          navigation_handle->GetWebContents()->GetBrowserContext())),
+    : content::NavigationThrottle(registry),
+      user_prefs_(user_prefs),
       local_state_(local_state),
       locale_(locale) {}
 
@@ -60,9 +70,7 @@ DecentralizedDnsNavigationThrottle::WillStartRequest() {
   if ((IsUnstoppableDomainsTLD(url.host_piece()) &&
        IsUnstoppableDomainsResolveMethodAsk(local_state_)) ||
       (IsENSTLD(url.host_piece()) && IsENSResolveMethodAsk(local_state_)) ||
-      (base::FeatureList::IsEnabled(
-           brave_wallet::features::kBraveWalletSnsFeature) &&
-       IsSnsTLD(url.host_piece()) && IsSnsResolveMethodAsk(local_state_))) {
+      (IsSnsTLD(url.host_piece()) && IsSnsResolveMethodAsk(local_state_))) {
     base::SequencedTaskRunner::GetCurrentDefault()->PostTask(
         FROM_HERE,
         base::BindOnce(&DecentralizedDnsNavigationThrottle::ShowInterstitial,

@@ -5,19 +5,17 @@
 
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/url_request_builders/redeem_payment_tokens_url_request_builder.h"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "base/check.h"
 #include "base/json/json_writer.h"
-#include "base/notreached.h"
 #include "base/strings/string_util.h"
-#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/token_preimage.h"
-#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/verification_key.h"
-#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/verification_signature.h"
+#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/credential_builder.h"
 #include "brave/components/brave_ads/core/internal/common/url/request_builder/host/url_host_util.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 #include "url/gurl.h"
 
 namespace brave_ads {
@@ -26,35 +24,6 @@ namespace {
 
 std::vector<std::string> BuildHeaders() {
   return {"accept: application/json"};
-}
-
-base::Value::Dict BuildCredential(const PaymentTokenInfo& payment_token,
-                                  const std::string& payload) {
-  CHECK(!payload.empty());
-
-  absl::optional<cbr::VerificationKey> verification_key =
-      payment_token.unblinded_token.DeriveVerificationKey();
-  CHECK(verification_key);
-
-  const absl::optional<cbr::VerificationSignature> verification_signature =
-      verification_key->Sign(payload);
-  CHECK(verification_signature);
-
-  const absl::optional<std::string> verification_signature_base64 =
-      verification_signature->EncodeBase64();
-  CHECK(verification_signature_base64);
-
-  const absl::optional<cbr::TokenPreimage> token_preimage =
-      payment_token.unblinded_token.GetTokenPreimage();
-  CHECK(token_preimage);
-
-  const absl::optional<std::string> token_preimage_base64 =
-      token_preimage->EncodeBase64();
-  CHECK(token_preimage_base64);
-
-  return base::Value::Dict()
-      .Set("signature", *verification_signature_base64)
-      .Set("t", *token_preimage_base64);
 }
 
 }  // namespace
@@ -74,15 +43,15 @@ RedeemPaymentTokensUrlRequestBuilder::~RedeemPaymentTokensUrlRequestBuilder() =
     default;
 
 mojom::UrlRequestInfoPtr RedeemPaymentTokensUrlRequestBuilder::Build() {
-  mojom::UrlRequestInfoPtr url_request = mojom::UrlRequestInfo::New();
-  url_request->url = BuildUrl();
-  url_request->headers = BuildHeaders();
+  mojom::UrlRequestInfoPtr mojom_url_request = mojom::UrlRequestInfo::New();
+  mojom_url_request->url = BuildUrl();
+  mojom_url_request->headers = BuildHeaders();
   const std::string payload = BuildPayload();
-  url_request->content = BuildBody(payload);
-  url_request->content_type = "application/json";
-  url_request->method = mojom::UrlRequestMethodType::kPut;
+  mojom_url_request->content = BuildBody(payload);
+  mojom_url_request->content_type = "application/json";
+  mojom_url_request->method = mojom::UrlRequestMethodType::kPut;
 
-  return url_request;
+  return mojom_url_request;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -111,10 +80,9 @@ std::string RedeemPaymentTokensUrlRequestBuilder::BuildBody(
 }
 
 std::string RedeemPaymentTokensUrlRequestBuilder::BuildPayload() const {
-  const auto dict = base::Value::Dict().Set("paymentId", wallet_.payment_id);
-
   std::string json;
-  CHECK(base::JSONWriter::Write(dict, &json));
+  CHECK(base::JSONWriter::Write(
+      base::Value::Dict().Set("paymentId", wallet_.payment_id), &json));
   return json;
 }
 
@@ -125,21 +93,21 @@ base::Value::List RedeemPaymentTokensUrlRequestBuilder::BuildPaymentRequestDTO(
   base::Value::List list;
 
   for (const auto& payment_token : payment_tokens_) {
-    auto dict = base::Value::Dict()
-                    .Set("credential",
-                         base::Value(BuildCredential(payment_token, payload)))
-                    .Set("confirmationType",
-                         payment_token.confirmation_type.ToString());
-
-    const absl::optional<std::string> public_key_base64 =
-        payment_token.public_key.EncodeBase64();
-    if (!public_key_base64) {
-      NOTREACHED_NORETURN();
-    } else {
-      dict.Set("publicKey", *public_key_base64);
+    std::optional<base::Value::Dict> credential =
+        cbr::MaybeBuildCredential(payment_token.unblinded_token, payload);
+    if (!credential) {
+      continue;
     }
 
-    list.Append(std::move(dict));
+    std::optional<std::string> public_key_base64 =
+        payment_token.public_key.EncodeBase64();
+    CHECK(public_key_base64);
+
+    list.Append(
+        base::Value::Dict()
+            .Set("confirmationType", ToString(payment_token.confirmation_type))
+            .Set("credential", std::move(*credential))
+            .Set("publicKey", *public_key_base64));
   }
 
   return list;

@@ -8,64 +8,79 @@
 
 namespace brave_ads::prefs {
 
-// Brave Ads version pref
-extern const char kVersion[];
+// IMPORTANT: Prefs that need clearing should be prefixed with
+// `brave.brave_ads`.
 
-// p2a pref
-extern const char kP2APrefPathPrefix[];
+// Ads prefs.
+inline constexpr char kDiagnosticId[] = "brave.brave_ads.diagnostics.id";
 
-// Notification prefs
-extern const char kShouldShowOnboardingNotification[];
-extern const char kNotificationAdLastNormalizedDisplayCoordinateX[];
-extern const char kNotificationAdLastNormalizedDisplayCoordinateY[];
-extern const char kNotificationAdDidFallbackToCustom[];
+inline constexpr char kOptedInToNotificationAds[] = "brave.brave_ads.enabled";
+inline constexpr char kMaximumNotificationAdsPerHour[] =
+    "brave.brave_ads.ads_per_hour";
 
-// Migration prefs
-extern const char kSupportedCountryCodesLastSchemaVersion[];
+inline constexpr char kOptedInToSearchResultAds[] =
+    "brave.brave_ads.opted_in_to_search_result_ads";
 
-// Brave Ads enabled/disabled pref
-extern const char kOptedInToNotificationAds[];
-extern const char kEnabledForLastProfile[];
-extern const char kEverEnabledForAnyProfile[];
+inline constexpr char kShouldAllowSubdivisionTargeting[] =
+    "brave.brave_ads.should_allow_ads_subdivision_targeting";
+inline constexpr char kSubdivisionTargetingUserSelectedSubdivision[] =
+    "brave.brave_ads.ads_subdivision_targeting_code";
+inline constexpr char kSubdivisionTargetingAutoDetectedSubdivision[] =
+    "brave.brave_ads.automatically_detected_ads_subdivision_targeting_code";
 
-// Diagnostic id prefs
-extern const char kDiagnosticId[];
+inline constexpr char kCatalogId[] = "brave.brave_ads.catalog_id";
+inline constexpr char kCatalogVersion[] = "brave.brave_ads.catalog_version";
+inline constexpr char kCatalogPing[] = "brave.brave_ads.catalog_ping";
+inline constexpr char kCatalogLastUpdated[] =
+    "brave.brave_ads.catalog_last_updated";
 
-// Notification prefs
-extern const char kMaximumNotificationAdsPerHour[];
-extern const char kNotificationAds[];
-extern const char kServeAdAt[];
-extern const char kBrowserVersionNumber[];
+inline constexpr char kIssuerPing[] = "brave.brave_ads.issuer_ping";
+inline constexpr char kIssuers[] = "brave.brave_ads.issuers";
 
-// Subdivision targeting prefs
-extern const char kShouldAllowSubdivisionTargeting[];
-extern const char kSubdivisionTargetingSubdivision[];
-extern const char kSubdivisionTargetingAutoDetectedSubdivision[];
+inline constexpr char kNotificationAds[] = "brave.brave_ads.notification_ads";
+inline constexpr char kServeAdAt[] = "brave.brave_ads.serve_ad_at";
 
-// Catalog prefs
-extern const char kCatalogId[];
-extern const char kCatalogVersion[];
-extern const char kCatalogPing[];
-extern const char kCatalogLastUpdated[];
+inline constexpr char kNextPaymentTokenRedemptionAt[] =
+    "brave.brave_ads.rewards.next_time_redemption_at";
 
-// Issuer prefs
-extern const char kIssuerPing[];
-extern const char kIssuers[];
+inline constexpr char kAdReactions[] = "brave.brave_ads.reactions.ads";
+inline constexpr char kSegmentReactions[] =
+    "brave.brave_ads.reactions.segments";
+inline constexpr char kSaveAds[] = "brave.brave_ads.reactions.saved_ads";
+inline constexpr char kMarkedAsInappropriate[] =
+    "brave.brave_ads.reactions.marked_as_inappropriate";
 
-// Epsilon greedy bandit prefs
-extern const char kEpsilonGreedyBanditArms[];
-extern const char kEpsilonGreedyBanditEligibleSegments[];
+inline constexpr char kHasMigratedState[] =
+    "brave.brave_ads.state.has_migrated.v2";
+inline constexpr char kHasMigratedClientState[] =
+    "brave.brave_ads.state.has_migrated.client.v7";
+inline constexpr char kHasMigratedConfirmationState[] =
+    "brave.brave_ads.state.has_migrated.confirmations.v8";
 
-// Unblinded token prefs
-extern const char kNextTokenRedemptionAt[];
+inline constexpr char kBrowserVersionNumber[] =
+    "brave.brave_ads.browser_version_number";
 
-// Migration prefs
-extern const char kHasMigratedClientState[];
-extern const char kHasMigratedConfirmationState[];
-extern const char kHasMigratedConversionState[];
-extern const char kHasMigratedNotificationState[];
-extern const char kHasMigratedRewardsState[];
-extern const char kShouldMigrateVerifiedRewardsUser[];
+// Ads service prefs.
+inline constexpr char kNotificationAdLastNormalizedCoordinateX[] =
+    "brave.brave_ads.ad_notification.last_normalized_coordinate_x";
+inline constexpr char kNotificationAdLastNormalizedCoordinateY[] =
+    "brave.brave_ads.ad_notification.last_normalized_coordinate_y";
+inline constexpr char kNotificationAdDidFallbackToCustom[] =
+    "brave.brave_ads.ad_notification.did_fallback_to_custom";
+
+inline constexpr char kShouldShowOnboardingNotification[] =
+    "brave.brave_ads.should_show_my_first_ad_notification";
+
+// Brave stats prefs.
+inline constexpr char kEnabledForLastProfile[] =
+    "brave.brave_ads.enabled_last_profile";
+inline constexpr char kEverEnabledForAnyProfile[] =
+    "brave.brave_ads.ever_enabled_any_profile";
+
+// We don't prefix `brave.brave_ads` to this pref path because we don't want
+// them cleared if the user clears ads data or resets Brave Rewards.
+inline constexpr char kShouldShowSearchResultAdClickedInfoBar[] =
+    "brave.search.search_result_ad.should_show_clicked_infobar";
 
 }  // namespace brave_ads::prefs
 

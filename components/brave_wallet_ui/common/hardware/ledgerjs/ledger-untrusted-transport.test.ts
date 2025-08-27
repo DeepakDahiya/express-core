@@ -16,9 +16,11 @@ const createWindow = (): Window => {
   let iframe = document.createElement('iframe')
   document.body.appendChild(iframe)
   Object.defineProperty(iframe.contentWindow, 'origin', {
-    value: 'chrome-untrusted://ledger-bridge'
+    value: 'chrome-untrusted://ledger-bridge',
   })
-  if (!iframe.contentWindow) { fail('transport should be defined') }
+  if (!iframe.contentWindow) {
+    fail('transport should be defined')
+  }
   return iframe.contentWindow
 }
 
@@ -26,7 +28,7 @@ test('constructor', async () => {
   const targetWindow = createWindow()
   const untrustedTransport = new LedgerUntrustedMessagingTransport(
     targetWindow,
-    targetWindow.origin
+    targetWindow.origin,
   )
   expect(untrustedTransport['handlers'].size).toEqual(0)
 })

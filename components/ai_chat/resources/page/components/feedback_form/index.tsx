@@ -6,46 +6,51 @@
 import * as React from 'react'
 import DropDown from '@brave/leo/react/dropdown'
 import Button from '@brave/leo/react/button'
-import { getLocale } from '$web-common/locale'
-import formatMessage from '$web-common/formatMessage'
-import DataContext from '../../state/context'
+import Checkbox from '@brave/leo/react/checkbox'
+import { getLocale , formatLocale } from '$web-common/locale'
+import { useAIChat } from '../../state/ai_chat_context'
+import { useConversation } from '../../state/conversation_context'
 import styles from './style.module.scss'
 
 const CATEGORY_OPTIONS = new Map([
-  ['not-helpful', getLocale('optionNotHelpful')],
-  ['incorrect', getLocale('optionIncorrect')],
-  ['unsafe-harmful', getLocale('optionUnsafeHarmful')],
-  ['other', getLocale('optionOther')]
+  ['not-helpful', getLocale(S.CHAT_UI_OPTION_NOT_HELPFUL)],
+  ['incorrect', getLocale(S.CHAT_UI_OPTION_INCORRECT)],
+  ['unsafe-harmful', getLocale(S.CHAT_UI_OPTION_UNSAFE_HARMFUL)],
+  ['other', getLocale(S.CHAT_UI_OPTION_OTHER)]
 ])
 
-interface FeedbackFormProps {
-  onCancel?: () => void
-  onSubmit?: (selectedCategory: string, feedbackText: string) => void
-  isDisabled?: boolean
+const getHostName = (url: string) => {
+  try {
+    return new URL(url).hostname
+  } catch (e) {
+    return ''
+  }
 }
 
-function FeedbackForm(props: FeedbackFormProps) {
+function FeedbackForm() {
   const ref = React.useRef<HTMLDivElement>(null)
   const [category, setCategory] = React.useState('')
   const [feedbackText, setFeedbackText] = React.useState('')
-  const context = React.useContext(DataContext)
+  const aiChatContext = useAIChat()
+  const conversationContext = useConversation()
+  const [shouldSendUrl, setShouldSendUrl] = React.useState(true)
 
-  const canSubmit = !!category && !props.isDisabled
-
-  const handleCancelClick = () => {
-    props.onCancel?.()
-  }
+  const canSubmit = !!category
 
   const handleSubmit = () => {
-    props.onSubmit?.(category, feedbackText)
+    conversationContext.handleFeedbackFormSubmit(category, feedbackText, shouldSendUrl)
   }
 
-  const handleSelectOnChange = (e: any) => {
-    setCategory(e.detail.value)
+  const handleSelectOnChange = ({ value }: { value: string }) => {
+    setCategory(value)
   }
 
   const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setFeedbackText(e.target.value)
+  }
+
+  const handleCheckboxChange = ({ checked }: { checked: boolean; }) => {
+    setShouldSendUrl(checked)
   }
 
   React.useEffect(() => {
@@ -57,17 +62,17 @@ function FeedbackForm(props: FeedbackFormProps) {
 
   return (
     <div ref={ref} className={styles.form}>
-      <h4>{getLocale('provideFeedbackTitle')}</h4>
+      <h4>{getLocale(S.CHAT_UI_PROVIDE_FEEDBACK_TITLE)}</h4>
       <form>
         <fieldset>
           <DropDown
             className={styles.dropdown}
-            placeholder={getLocale('selectFeedbackTopic')}
+            placeholder={getLocale(S.CHAT_UI_SELECT_FEEDBACK_TOPIC)}
             onChange={handleSelectOnChange}
             required={true}
             value={CATEGORY_OPTIONS.get(category)}
           >
-            <div slot='label'>{getLocale('feedbackCategoryLabel')}</div>
+            <div slot='label'>{getLocale(S.CHAT_UI_FEEDBACK_CATEGORY_LABEL)}</div>
             {[...CATEGORY_OPTIONS.keys()].map((key) => {
               return (
                 <leo-option key={key} value={key}>
@@ -79,32 +84,41 @@ function FeedbackForm(props: FeedbackFormProps) {
         </fieldset>
         <fieldset>
           <label>
-            {getLocale('feedbackDescriptionLabel')}
+            {getLocale(S.CHAT_UI_FEEDBACK_DESCRIPTION_LABEL)}
             <textarea
               onChange={handleInputChange}
-              placeholder={getLocale('feedbackDescriptionLabel')}
+              placeholder={getLocale(S.CHAT_UI_FEEDBACK_DESCRIPTION_LABEL)}
             />
           </label>
         </fieldset>
-        {!context.isPremiumUser && (
+        {conversationContext.associatedContentInfo.length > 0 && (
+          <fieldset>
+            <Checkbox checked={shouldSendUrl} onChange={handleCheckboxChange}>
+              <label>{
+                formatLocale(S.CHAT_UI_SEND_SITE_HOSTNAME_LABEL, {
+                  $1: conversationContext.associatedContentInfo.map(c => getHostName(c.url.url)).join(', ')
+                })
+              }</label>
+            </Checkbox>
+          </fieldset>
+        )}
+        {!aiChatContext.isPremiumUser && (
           <div className={styles.premiumNote}>
-            {formatMessage(getLocale('feedbackPremiumNote'), {
-              tags: {
-                $1: (linkText) => (
-                  <Button kind='plain' size='medium' onClick={context.goPremium}>
+            {formatLocale(S.CHAT_UI_FEEDBACK_PREMIUM_NOTE, {
+              $1: (linkText) => (
+                  <Button kind='plain' size='medium' onClick={aiChatContext.goPremium}>
                     {linkText}
                   </Button>
                 )
-              }
             })}
           </div>
         )}
         <fieldset className={styles.actions}>
-          <Button onClick={handleCancelClick} kind='plain-faint'>
-            {getLocale('cancelButtonLabel')}
+          <Button onClick={conversationContext.handleFeedbackFormCancel} kind='plain-faint'>
+            {getLocale(S.CHAT_UI_CANCEL_BUTTON_LABEL)}
           </Button>
           <Button isDisabled={!canSubmit} onClick={handleSubmit}>
-            {getLocale('submitButtonLabel')}
+            {getLocale(S.CHAT_UI_SUBMIT_BUTTON_LABEL)}
           </Button>
         </fieldset>
       </form>

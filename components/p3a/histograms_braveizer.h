@@ -33,9 +33,9 @@ class HistogramsBraveizer
   // i.e. reemitted using a different name and custom buckets.
   void InitCallbacks();
 
-  void DoHistogramBravetization(const char* histogram_name,
+  void DoHistogramBravetization(std::string_view histogram_name,
                                 uint64_t name_hash,
-                                base::HistogramBase::Sample sample);
+                                base::HistogramBase::Sample32 sample);
 
   std::vector<
       std::unique_ptr<base::StatisticsRecorder::ScopedHistogramSampleObserver>>

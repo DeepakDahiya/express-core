@@ -5,28 +5,44 @@
 
 #include "brave/components/brave_wallet/browser/zcash/zcash_tx_meta.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/zcash/zcash_transaction.h"
+#include "brave/components/brave_wallet/common/zcash_utils.h"
 
 namespace brave_wallet {
 namespace {
-mojom::ZecTxDataPtr ToZecTxData(ZCashTransaction& tx) {
+mojom::ZecTxDataPtr ToZecTxData(const std::string& chain_id,
+                                ZCashTransaction& tx) {
   std::vector<mojom::ZecTxInputPtr> mojom_inputs;
-  for (auto& input : tx.inputs()) {
+  for (auto& input : tx.transparent_part().inputs) {
     mojom_inputs.push_back(
         mojom::ZecTxInput::New(input.utxo_address, input.utxo_value));
   }
   std::vector<mojom::ZecTxOutputPtr> mojom_outputs;
-  for (auto& output : tx.outputs()) {
+  for (auto& output : tx.transparent_part().outputs) {
     mojom_outputs.push_back(
         mojom::ZecTxOutput::New(output.address, output.amount));
   }
-  return mojom::ZecTxData::New(tx.to(), tx.amount(), tx.fee(),
-                               std::move(mojom_inputs),
-                               std::move(mojom_outputs));
+  for (auto& output : tx.orchard_part().outputs) {
+    auto orchard_unified_addr =
+        GetOrchardUnifiedAddress(output.addr, chain_id == mojom::kZCashTestnet);
+    if (orchard_unified_addr) {
+      mojom_outputs.push_back(
+          mojom::ZecTxOutput::New(*orchard_unified_addr, output.value));
+    }
+  }
+
+  bool use_shielded_pool = !tx.orchard_part().inputs.empty();
+  DCHECK(!use_shielded_pool || tx.transparent_part().inputs.empty());
+  return mojom::ZecTxData::New(
+      use_shielded_pool, tx.to(), false, OrchardMemoToVec(tx.memo()),
+      tx.amount(), tx.fee(), std::move(mojom_inputs), std::move(mojom_outputs));
 }
 }  // namespace
 
@@ -46,21 +62,27 @@ ZCashTxMeta::~ZCashTxMeta() = default;
 
 base::Value::Dict ZCashTxMeta::ToValue() const {
   base::Value::Dict dict = TxMeta::ToValue();
-  dict.Set("tx", tx_->ToValue());
+  if (tx_) {
+    dict.Set("tx", tx_->ToValue());
+  }
   return dict;
 }
 
 mojom::TransactionInfoPtr ZCashTxMeta::ToTransactionInfo() const {
   return mojom::TransactionInfo::New(
-      id_, absl::nullopt, from_.Clone(), tx_hash_,
-      mojom::TxDataUnion::NewZecTxData(ToZecTxData(*tx_)), status_,
+      id_, from_.Clone(), tx_hash_,
+      mojom::TxDataUnion::NewZecTxData(ToZecTxData(chain_id_, *tx_)), status_,
       mojom::TransactionType::Other, std::vector<std::string>() /* tx_params */,
       std::vector<std::string>() /* tx_args */,
       base::Milliseconds(created_time_.InMillisecondsSinceUnixEpoch()),
       base::Milliseconds(submitted_time_.InMillisecondsSinceUnixEpoch()),
       base::Milliseconds(confirmed_time_.InMillisecondsSinceUnixEpoch()),
       origin_.has_value() ? MakeOriginInfo(*origin_) : nullptr, chain_id_,
-      tx_->to());
+      tx_->to(), false, nullptr);
+}
+
+mojom::CoinType ZCashTxMeta::GetCoinType() const {
+  return mojom::CoinType::ZEC;
 }
 
 }  // namespace brave_wallet

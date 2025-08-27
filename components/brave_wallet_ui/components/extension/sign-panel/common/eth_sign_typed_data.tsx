@@ -16,14 +16,14 @@ import {
   MessageBox,
   MessageHeader,
   MessageText,
-  WarningTitleRow
+  WarningTitleRow,
 } from '../style'
 
 import {
   WarningBox,
   WarningTitle,
   LearnMoreButton,
-  WarningIcon
+  WarningIcon,
 } from '../../shared-panel-styles'
 
 interface Props {
@@ -39,7 +39,8 @@ export function EthSignTypedData(props: Props) {
 
   return (
     <>
-      {(hasUnicode(data?.message ?? '') || hasUnicode(data?.domain ?? '')) && (
+      {(hasUnicode(data?.messageJson ?? '')
+        || hasUnicode(data?.domainJson ?? '')) && (
         <WarningBox warningType='warning'>
           <WarningTitleRow>
             <WarningIcon color={'warningIcon'} />
@@ -56,23 +57,26 @@ export function EthSignTypedData(props: Props) {
       )}
 
       {data && (
-        <MessageBox height={height ?? '180px'} width={width}>
+        <MessageBox
+          height={height ?? '180px'}
+          width={width}
+        >
           <MessageHeader>
             {getLocale('braveWalletSignTransactionEIP712MessageDomain')}:
           </MessageHeader>
           <MessageText>
-            {!renderUnicode && hasUnicode(data.domain)
-              ? unicodeEscape(data.domain)
-              : data.domain}
+            {!renderUnicode && hasUnicode(data.domainJson)
+              ? unicodeEscape(data.domainJson)
+              : data.domainJson}
           </MessageText>
 
           <MessageHeader>
             {getLocale('braveWalletSignTransactionMessageTitle')}:
           </MessageHeader>
           <MessageText>
-            {!renderUnicode && hasUnicode(data.message)
-              ? unicodeEscape(data.message)
-              : data.message}
+            {!renderUnicode && hasUnicode(data.messageJson)
+              ? unicodeEscape(data.messageJson)
+              : data.messageJson}
           </MessageText>
         </MessageBox>
       )}

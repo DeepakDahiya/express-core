@@ -5,6 +5,9 @@
 
 import * as React from 'react'
 
+// types
+import { NftDropdownOptionId } from '../../../../../../constants/types'
+
 // styles
 import {
   DropdownButton,
@@ -13,10 +16,8 @@ import {
   DropDownIcon,
   DropDown,
   DropDownItem,
-  DropdownContainer
+  DropdownContainer,
 } from './nft-group-selector.styles'
-
-export type NftDropdownOptionId = 'collected' | 'hidden'
 
 export interface NftDropdownOption {
   id: NftDropdownOptionId
@@ -50,11 +51,17 @@ export const NftDropdown = ({ selectedOptionId, options, onSelect }: Props) => {
             {selectedOption.labelSummary}
           </DropdownButtonLabel>
         ) : null}
-        <DropDownIcon name='carat-down' isOpen={isOpen} />
+        <DropDownIcon
+          name='carat-down'
+          isOpen={isOpen}
+        />
       </DropdownButton>
       <DropDown isOpen={isOpen}>
         {options.map((option) => (
-          <DropDownItem key={option.id} onClick={() => onSelectOption(option)}>
+          <DropDownItem
+            key={option.id}
+            onClick={() => onSelectOption(option)}
+          >
             {option.label}
           </DropDownItem>
         ))}

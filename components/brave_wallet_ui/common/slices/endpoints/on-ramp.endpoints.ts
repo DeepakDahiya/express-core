@@ -4,27 +4,19 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 // Types
-import {
-  BraveWallet,
-  SupportedOnRampNetworks,
-} from '../../../constants/types'
-import {
-  WalletApiEndpointBuilderParams
-} from '../api-base.slice'
+import { BraveWallet, SupportedOnRampNetworks } from '../../../constants/types'
+import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
 // Utils
 import {
-  getBatTokensFromList,
-  getNativeTokensFromList,
-  getUniqueAssets
+  addLogoToToken,
+  getUniqueAssets,
+  sortNativeAndAndBatAssetsToTop,
 } from '../../../utils/asset-utils'
-import { addLogoToToken } from '../../async/lib'
 import { mapLimit } from 'async'
 import { handleEndpointError } from '../../../utils/api-utils'
 
-export const onRampEndpoints = ({
-  query
-}: WalletApiEndpointBuilderParams) => {
+export const onRampEndpoints = ({ query }: WalletApiEndpointBuilderParams) => {
   return {
     getOnRampAssets: query<
       {
@@ -40,7 +32,8 @@ export const onRampEndpoints = ({
       queryFn: async (_arg, _store, _extraOptions, baseQuery) => {
         try {
           const {
-            data: { blockchainRegistry }
+            data: { blockchainRegistry },
+            cache,
           } = baseQuery(undefined)
           const { kRamp, kSardine, kTransak, kStripe, kCoinbase } =
             BraveWallet.OnRampProvider
@@ -49,161 +42,89 @@ export const onRampEndpoints = ({
             SupportedOnRampNetworks,
             10,
             async (chainId: string) =>
-              await blockchainRegistry.getBuyTokens(kRamp, chainId)
+              await blockchainRegistry.getBuyTokens(kRamp, chainId),
           )
 
           const sardineAssets = await mapLimit(
             SupportedOnRampNetworks,
             10,
             async (chainId: string) =>
-              await blockchainRegistry.getBuyTokens(kSardine, chainId)
+              await blockchainRegistry.getBuyTokens(kSardine, chainId),
           )
 
           const transakAssets = await mapLimit(
             SupportedOnRampNetworks,
             10,
             async (chainId: string) =>
-              await blockchainRegistry.getBuyTokens(kTransak, chainId)
+              await blockchainRegistry.getBuyTokens(kTransak, chainId),
           )
           const stripeAssets = await mapLimit(
             SupportedOnRampNetworks,
             10,
             async (chainId: string) =>
-              await blockchainRegistry.getBuyTokens(kStripe, chainId)
+              await blockchainRegistry.getBuyTokens(kStripe, chainId),
           )
 
           const coinbaseAssets = await mapLimit(
             SupportedOnRampNetworks,
             10,
             async (chainId: string) =>
-              await blockchainRegistry.getBuyTokens(kCoinbase, chainId)
+              await blockchainRegistry.getBuyTokens(kCoinbase, chainId),
           )
+
+          const updateLogo = async (token: BraveWallet.BlockchainToken) => {
+            const tokenLogo = await cache.getTokenLogo(token)
+            return addLogoToToken(token, tokenLogo)
+          }
 
           // add token logos
           const rampAssetOptions: BraveWallet.BlockchainToken[] =
             await mapLimit(
               rampAssets.flatMap((p) => p.tokens),
               10,
-              async (token: BraveWallet.BlockchainToken) =>
-                await addLogoToToken(token)
+              updateLogo,
             )
 
           const sardineAssetOptions: BraveWallet.BlockchainToken[] =
             await mapLimit(
               sardineAssets.flatMap((p) => p.tokens),
               10,
-              async (token: BraveWallet.BlockchainToken) =>
-                await addLogoToToken(token)
+              updateLogo,
             )
 
           const transakAssetOptions: BraveWallet.BlockchainToken[] =
             await mapLimit(
               transakAssets.flatMap((p) => p.tokens),
               10,
-              async (token: BraveWallet.BlockchainToken) =>
-                await addLogoToToken(token)
+              updateLogo,
             )
 
           const stripeAssetOptions: BraveWallet.BlockchainToken[] =
             await mapLimit(
               stripeAssets.flatMap((p) => p.tokens),
               10,
-              async (token: BraveWallet.BlockchainToken) =>
-                await addLogoToToken(token)
+              updateLogo,
             )
 
           const coinbaseAssetOptions: BraveWallet.BlockchainToken[] =
             await mapLimit(
               coinbaseAssets.flatMap((p) => p.tokens),
               10,
-              async (token: BraveWallet.BlockchainToken) =>
-                await addLogoToToken(token)
+              updateLogo,
             )
-
-          // separate native assets from tokens
-          const {
-            tokens: rampTokenOptions,
-            nativeAssets: rampNativeAssetOptions
-          } = getNativeTokensFromList(rampAssetOptions)
-
-          const {
-            tokens: sardineTokenOptions,
-            nativeAssets: sardineNativeAssetOptions
-          } = getNativeTokensFromList(sardineAssetOptions)
-
-          const {
-            tokens: transakTokenOptions,
-            nativeAssets: transakNativeAssetOptions
-          } = getNativeTokensFromList(transakAssetOptions)
-
-          const {
-            tokens: stripeTokenOptions,
-            nativeAssets: stripeNativeAssetOptions
-          } = getNativeTokensFromList(stripeAssetOptions)
-
-          const {
-            tokens: coinbaseTokenOptions,
-            nativeAssets: coinbaseNativeAssetOptions
-          } = getNativeTokensFromList(coinbaseAssetOptions)
-
-          // separate BAT from other tokens
-          const {
-            bat: rampBatTokens,
-            nonBat: rampNonBatTokens
-          } = getBatTokensFromList(rampTokenOptions)
-
-          const {
-            bat: sardineBatTokens,
-            nonBat: sardineNonBatTokens
-          } = getBatTokensFromList(sardineTokenOptions)
-
-          const {
-            bat: transakBatTokens,
-            nonBat: transakNonBatTokens
-          } = getBatTokensFromList(transakTokenOptions)
-
-          const {
-            bat: stripeBatTokens,
-            nonBat: stripeNonBatTokens
-          } = getBatTokensFromList(stripeTokenOptions)
-
-          const {
-            bat: coinbaseBatTokens,
-            nonBat: coinbaseNonBatTokens
-          } = getBatTokensFromList(coinbaseTokenOptions)
 
           // sort lists
           // Move Gas coins and BAT to front of list
           const sortedRampOptions =
-            [
-              ...rampNativeAssetOptions,
-              ...rampBatTokens,
-              ...rampNonBatTokens
-            ]
+            sortNativeAndAndBatAssetsToTop(rampAssetOptions)
           const sortedSardineOptions =
-            [
-              ...sardineNativeAssetOptions,
-              ...sardineBatTokens,
-              ...sardineNonBatTokens
-            ]
+            sortNativeAndAndBatAssetsToTop(sardineAssetOptions)
           const sortedTransakOptions =
-            [
-              ...transakNativeAssetOptions,
-              ...transakBatTokens,
-              ...transakNonBatTokens
-            ]
+            sortNativeAndAndBatAssetsToTop(transakAssetOptions)
           const sortedStripeOptions =
-            [
-              ...stripeNativeAssetOptions,
-              ...stripeBatTokens,
-              ...stripeNonBatTokens
-            ]
-
-          const sortedCoinbaseOptions = [
-            ...coinbaseNativeAssetOptions,
-            ...coinbaseBatTokens,
-            ...coinbaseNonBatTokens
-          ]
+            sortNativeAndAndBatAssetsToTop(stripeAssetOptions)
+          const sortedCoinbaseOptions =
+            sortNativeAndAndBatAssetsToTop(coinbaseAssetOptions)
 
           const results = {
             rampAssetOptions: sortedRampOptions,
@@ -211,30 +132,34 @@ export const onRampEndpoints = ({
             transakAssetOptions: sortedTransakOptions,
             stripeAssetOptions: sortedStripeOptions,
             coinbaseAssetOptions: sortedCoinbaseOptions,
-            allAssetOptions: getUniqueAssets([
-              ...sortedRampOptions,
-              ...sortedSardineOptions,
-              ...sortedTransakOptions,
-              ...sortedStripeOptions
-            ])
+            allAssetOptions: sortNativeAndAndBatAssetsToTop(
+              getUniqueAssets(
+                sortedRampOptions.concat(
+                  sortedSardineOptions,
+                  sortedTransakOptions,
+                  sortedStripeOptions,
+                ),
+              ),
+            ),
           }
 
           return {
-            data: results
+            data: results,
           }
         } catch (error) {
           const errorMessage = `Unable to fetch onRamp assets: ${error}`
           console.log(errorMessage)
           return {
-            error: errorMessage
+            error: errorMessage,
           }
         }
-      }, providesTags: (_results, error, _arg) => {
+      },
+      providesTags: (_results, error, _arg) => {
         if (error) {
           return ['UNKNOWN_ERROR']
         }
         return ['OnRampAssets']
-      }
+      },
     }),
 
     getOnRampFiatCurrencies: query<BraveWallet.OnRampCurrency[], void>({
@@ -247,26 +172,29 @@ export const onRampEndpoints = ({
             throw new Error('No currencies found')
           }
           return {
-            data: currencies
+            data: currencies,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Failed to fetch on-ramp fiat currencies',
-            error
+            error,
           )
         }
-      }
+      },
     }),
 
-    getBuyUrl: query<string, {
-      onRampProvider: BraveWallet.OnRampProvider,
-      chainId: string,
-      address: string,
-      assetSymbol: string,
-      amount: string,
-      currencyCode: string
-    }>({
+    getBuyUrl: query<
+      string,
+      {
+        onRampProvider: BraveWallet.OnRampProvider
+        chainId: string
+        address: string
+        assetSymbol: string
+        amount: string
+        currencyCode: string
+      }
+    >({
       queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
         try {
           const { data: api } = baseQuery(undefined)
@@ -276,7 +204,7 @@ export const onRampEndpoints = ({
             arg.address,
             arg.assetSymbol,
             arg.amount,
-            arg.currencyCode
+            arg.currencyCode,
           )
 
           if (error) {
@@ -284,17 +212,28 @@ export const onRampEndpoints = ({
           }
 
           return {
-            data: url
+            data: url,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
-            `Failed to get buy URL for: ${JSON.stringify(arg, undefined, 2)}`,
-            error
+            `Failed to get ${getRampProviderName(
+              arg.onRampProvider,
+            )} buy URL for: ${JSON.stringify(arg, undefined, 2)}`,
+            error,
           )
         }
       },
     }),
   }
+}
 
+// internals
+function getRampProviderName(onRampProvider: BraveWallet.OnRampProvider) {
+  return Object.keys(BraveWallet.OnRampProvider)
+    .find(
+      (key: keyof typeof BraveWallet.OnRampProvider) =>
+        BraveWallet.OnRampProvider[key] === onRampProvider,
+    )
+    ?.substring(1)
 }

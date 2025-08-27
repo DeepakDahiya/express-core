@@ -19,16 +19,17 @@ import {
   PageState,
   WalletRoutes,
   WalletState,
-  UIState
+  UIState,
 } from '../../constants/types'
 
-// components
-import { LibContext } from '../../common/context/lib.context'
+// theme
+import LightDarkThemeProvider from '../../../common/BraveCoreThemeProvider'
+import walletDarkTheme from '../../theme/wallet-dark'
+import walletLightTheme from '../../theme/wallet-light'
 
 // Mocks
-import * as Lib from '../../common/async/__mocks__/lib'
-import { ApiProxyContext } from '../../common/context/api-proxy.context'
-import { WalletApiDataOverrides, getMockedAPIProxy } from '../../common/async/__mocks__/bridge'
+import { WalletApiDataOverrides } from '../../constants/testing_types'
+import '../locale'
 
 export interface WalletPageStoryProps {
   walletStateOverride?: Partial<WalletState>
@@ -39,16 +40,16 @@ export interface WalletPageStoryProps {
   initialRoute?: WalletRoutes
 }
 
-const mockedProxy = getMockedAPIProxy()
-
-export const WalletPageStory: React.FC<React.PropsWithChildren<WalletPageStoryProps>> = ({
+export const WalletPageStory: React.FC<
+  React.PropsWithChildren<WalletPageStoryProps>
+> = ({
   children,
   pageStateOverride,
   walletStateOverride,
   accountTabStateOverride,
   uiStateOverride,
   apiOverrides,
-  initialRoute
+  initialRoute,
 }) => {
   // redux
   const store = React.useMemo(() => {
@@ -57,34 +58,35 @@ export const WalletPageStory: React.FC<React.PropsWithChildren<WalletPageStoryPr
         accountTabStateOverride,
         pageStateOverride,
         walletStateOverride,
-        uiStateOverride
+        uiStateOverride,
       },
-      apiOverrides
+      apiOverrides,
     )
   }, [
     accountTabStateOverride,
     pageStateOverride,
     walletStateOverride,
-    uiStateOverride
+    uiStateOverride,
+    apiOverrides,
   ])
 
   React.useEffect(() => {
-    store && store.dispatch(WalletActions.initialize({}))
+    store && store.dispatch(WalletActions.initialize())
   }, [store])
 
   // render
   return (
-    <MemoryRouter
-      initialEntries={[initialRoute || WalletRoutes.OnboardingWelcome]}
+    <LightDarkThemeProvider
+      initialThemeType={'Light'}
+      dark={walletDarkTheme}
+      light={walletLightTheme}
     >
-      <Provider store={store}>
-        <ApiProxyContext.Provider value={mockedProxy}>
-          <LibContext.Provider value={Lib as any}>
-            {children}
-          </LibContext.Provider>
-        </ApiProxyContext.Provider>
-      </Provider>
-    </MemoryRouter>
+      <MemoryRouter
+        initialEntries={[initialRoute || WalletRoutes.OnboardingWelcome]}
+      >
+        <Provider store={store}>{children}</Provider>
+      </MemoryRouter>
+    </LightDarkThemeProvider>
   )
 }
 

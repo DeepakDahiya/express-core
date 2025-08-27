@@ -7,16 +7,16 @@ import {
   createEntityAdapter,
   createSelector,
   EntityAdapter,
-  EntityId
+  EntityId,
 } from '@reduxjs/toolkit'
 import { getEntitiesListFromEntityState } from '../../../utils/entities.utils'
 import {
   ParsedTransactionWithoutFiatValues,
-  transactionSortByDateComparer
+  transactionSortByDateComparer,
 } from '../../../utils/tx-utils'
 import {
   BraveWallet,
-  SerializableTransactionInfo
+  SerializableTransactionInfo,
 } from '../../../constants/types'
 
 export type TransactionEntity = ParsedTransactionWithoutFiatValues
@@ -24,11 +24,11 @@ export type TransactionEntityAdaptor = EntityAdapter<TransactionEntity>
 
 export const transactionEntityAdapter: TransactionEntityAdaptor =
   createEntityAdapter<TransactionEntity>({
-    sortComparer: transactionSortByDateComparer('descending')
+    sortComparer: transactionSortByDateComparer('descending'),
   })
 
 export type TransactionEntityState = ReturnType<
-  typeof transactionEntityAdapter['getInitialState']
+  (typeof transactionEntityAdapter)['getInitialState']
 > & {
   idsByChainId: Record<EntityId, EntityId[]>
   pendingIds: EntityId[]
@@ -39,45 +39,46 @@ export const transactionEntityInitialState: TransactionEntityState = {
   ...transactionEntityAdapter.getInitialState(),
   idsByChainId: {},
   pendingIds: [],
-  pendingIdsByChainId: {}
+  pendingIdsByChainId: {},
 }
 
 export const combineTransactionRegistries = (
   initialRegistry: TransactionEntityState,
-  registriesToAdd: TransactionEntityState[]
+  registriesToAdd: TransactionEntityState[],
 ): TransactionEntityState => {
-  const idsByChainId = {}
-  const pendingIdsByChainId = {}
+  const idsByChainId: typeof initialRegistry.idsByChainId = {}
+  const pendingIdsByChainId: typeof initialRegistry.pendingIdsByChainId = {}
   const pendingIds: EntityId[] = []
   const combinedRegistry: TransactionEntityState = registriesToAdd.reduce(
     (combinedReg, registry) => {
-      for (const key in registry.idsByChainId) {
+      for (const keyUntyped in registry.idsByChainId) {
+        const key: EntityId = keyUntyped
         idsByChainId[key] = Array.from(
-          new Set((idsByChainId[key] || []).concat(registry.idsByChainId[key]))
+          new Set((idsByChainId[key] || []).concat(registry.idsByChainId[key])),
         )
       }
       for (const key in registry.pendingIdsByChainId) {
         pendingIdsByChainId[key] = Array.from(
           new Set(
             (pendingIdsByChainId[key] || []).concat(
-              registry.pendingIdsByChainId[key]
-            )
-          )
+              registry.pendingIdsByChainId[key],
+            ),
+          ),
         )
       }
       pendingIds.push(...registry.pendingIds)
       return transactionEntityAdapter.upsertMany(
         combinedReg,
-        getEntitiesListFromEntityState(registry)
+        getEntitiesListFromEntityState(registry),
       )
     },
-    initialRegistry
+    initialRegistry,
   )
   return {
     ...combinedRegistry,
     idsByChainId,
     pendingIds,
-    pendingIdsByChainId
+    pendingIdsByChainId,
   }
 }
 
@@ -90,7 +91,7 @@ export const selectPendingTransactions = createSelector(
   // output
   (transactions) => {
     return transactions.filter(
-      (tx) => tx.txStatus === BraveWallet.TransactionStatus.Unapproved
+      (tx) => tx.txStatus === BraveWallet.TransactionStatus.Unapproved,
     )
-  }
+  },
 )

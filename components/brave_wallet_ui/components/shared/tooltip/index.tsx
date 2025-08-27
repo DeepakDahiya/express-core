@@ -11,7 +11,7 @@ import {
   Tip,
   Pointer,
   ActionNotification,
-  TipAndChildrenWrapper
+  TipAndChildrenWrapper,
 } from './style'
 
 export interface ToolTipProps {
@@ -41,7 +41,7 @@ export const Tooltip: React.FC<ToolTipProps> = ({
   text,
   verticalPosition = 'below',
   maxWidth,
-  minWidth
+  minWidth,
 }) => {
   // state
   const [active, setActive] = React.useState(!!disableHoverEvents)
@@ -56,41 +56,54 @@ export const Tooltip: React.FC<ToolTipProps> = ({
   }, [disableHoverEvents])
 
   // memos
-  const toolTipPointer = React.useMemo(() => (
-    <Pointer
-      position={pointerPosition ?? 'center'}
-      verticalPosition={verticalPosition ?? 'below'}
-    />
-  ), [position, verticalPosition, pointerPosition])
+  const toolTipPointer = React.useMemo(
+    () => (
+      <Pointer
+        position={pointerPosition ?? 'center'}
+        verticalPosition={verticalPosition ?? 'below'}
+      />
+    ),
+    [verticalPosition, pointerPosition],
+  )
 
-  const toolTip = React.useMemo(() => active && isVisible && (
-    <TipWrapper
-      position={position ?? 'center'}
-      verticalPosition={verticalPosition ?? 'below'}
-    >
+  const toolTip = React.useMemo(
+    () =>
+      active
+      && isVisible && (
+        <TipWrapper
+          position={position ?? 'center'}
+          verticalPosition={verticalPosition ?? 'below'}
+        >
+          {!isActionVisible && verticalPosition === 'below' && toolTipPointer}
 
-      {!isActionVisible && verticalPosition === 'below' && toolTipPointer}
-
-      {isActionVisible
-        ? <ActionNotification>
-            {actionText}
-          </ActionNotification>
-
-        : <Tip maxWidth={maxWidth} minWidth={minWidth} isAddress={isAddress}>
-            {text}
-          </Tip>
-      }
-      {!isActionVisible && verticalPosition === 'above' && toolTipPointer}
-    </TipWrapper>
-  ), [
-    active,
-    isVisible,
-    position,
-    verticalPosition,
-    isAddress,
-    text,
-    isActionVisible
-  ])
+          {isActionVisible ? (
+            <ActionNotification>{actionText}</ActionNotification>
+          ) : (
+            <Tip
+              maxWidth={maxWidth}
+              minWidth={minWidth}
+              isAddress={isAddress}
+            >
+              {text}
+            </Tip>
+          )}
+          {!isActionVisible && verticalPosition === 'above' && toolTipPointer}
+        </TipWrapper>
+      ),
+    [
+      active,
+      isVisible,
+      position,
+      verticalPosition,
+      isActionVisible,
+      toolTipPointer,
+      actionText,
+      maxWidth,
+      minWidth,
+      isAddress,
+      text,
+    ],
+  )
 
   // render
   return (
@@ -106,7 +119,7 @@ export const Tooltip: React.FC<ToolTipProps> = ({
 }
 
 Tooltip.defaultProps = {
-  isVisible: true
+  isVisible: true,
 }
 
 export default Tooltip

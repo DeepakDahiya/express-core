@@ -2,10 +2,9 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
-
 import styled from 'styled-components'
 import { ArrowRightIcon, LoaderIcon } from 'brave-ui/components/icons'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 
 import LinkIcon from '../../../assets/svg-icons/link-icon.svg'
@@ -14,17 +13,19 @@ import { WarningBoxIcon } from '../shared-panel-styles'
 import {
   AssetIconProps,
   AssetIconFactory,
-  WalletButton
+  WalletButton,
+  styledScrollbarMixin,
 } from '../../shared/style'
 
 export const StyledWrapper = styled.div`
   display: flex;
-  height: 100%;
+  flex: 1;
   width: 100%;
   flex-direction: column;
   align-items: center;
   justify-content: space-between;
   background-color: ${(p) => p.theme.color.background01};
+  padding: 0px 16px;
 `
 
 export const TopRow = styled.div`
@@ -89,6 +90,8 @@ export const TransactionAmountBig = styled.span`
   letter-spacing: 0.02em;
   color: ${(p) => p.theme.color.text01};
   font-weight: 600;
+  word-break: break-all;
+  text-align: center;
 `
 
 export const TransactionFiatAmountBig = styled.span`
@@ -98,9 +101,11 @@ export const TransactionFiatAmountBig = styled.span`
   letter-spacing: 0.01em;
   color: ${(p) => p.theme.color.text01};
   margin-bottom: 10px;
+  word-break: break-all;
+  text-align: center;
 `
 
-export const MessageBox = styled.div<{ isApprove: boolean, isDetails: boolean }>`
+export const MessageBox = styled.div<{ isDetails: boolean; width?: string }>`
   display: flex;
   align-items: flex-start;
   justify-content: 'flex-start';
@@ -108,13 +113,14 @@ export const MessageBox = styled.div<{ isApprove: boolean, isDetails: boolean }>
   border: 1px solid ${(p) => p.theme.color.divider01};
   box-sizing: border-box;
   border-radius: 4px;
-  width: 255px;
-  height: ${(p) => p.isApprove ? '120px' : '140px'};
-  padding: ${(p) => p.isDetails ? '14px' : '4px 14px'};
-  margin-bottom: 14px;
+  width: ${(p) => p.width ?? '90%'};
+  height: 140px;
+  padding: ${(p) => (p.isDetails ? '14px' : '4px 14px')};
   overflow-y: scroll;
   overflow-x: hidden;
   position: relative;
+  word-break: break-all;
+  ${styledScrollbarMixin}
 `
 
 export const TransactionTitle = styled.span`
@@ -133,22 +139,14 @@ export const TransactionTypeText = styled.span`
   letter-spacing: 0.01em;
   color: ${(p) => p.theme.color.text03};
   font-weight: 600;
-`
-
-export const FromToRow = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  width: 100%;
-  margin-bottom: 8px;
+  word-break: break-all;
+  text-align: left;
 `
 
 export const ArrowIcon = styled(ArrowRightIcon)`
-  width: auto;
+  display: inline-block;
+  width: 16px;
   height: 16px;
-  margin-right: 6px;
-  margin-left: 6px;
   color: ${(p) => p.theme.color.text03};
 `
 
@@ -201,13 +199,15 @@ export const TransactionText = styled.span<{ hasError?: boolean }>`
   font-size: 12px;
   line-height: 18px;
   letter-spacing: 0.01em;
-  color: ${(p) => p.hasError ? p.theme.color.errorText : p.theme.color.text03};
+  color: ${(p) =>
+    p.hasError ? p.theme.color.errorText : p.theme.color.text03};
   text-align: left;
+  word-break: break-all;
 `
 
 export const AssetIcon = AssetIconFactory<AssetIconProps>({
   width: '40px',
-  height: 'auto'
+  height: 'auto',
 })
 
 export const WarningIcon = styled(WarningBoxIcon)`
@@ -217,10 +217,10 @@ export const WarningIcon = styled(WarningBoxIcon)`
 `
 
 export const LoadIcon = styled(LoaderIcon)`
-  color: ${p => p.theme.color.interactive08};
+  color: ${(p) => p.theme.color.interactive08};
   height: 25px;
   width: 24px;
-  opacity: .4;
+  opacity: 0.4;
 `
 
 export const ContractButton = styled(WalletButton)`
@@ -246,26 +246,28 @@ export const InlineAddressButton = styled(ContractButton)`
   display: inline-flex;
   flex-direction: row;
   align-items: center;
-  margin-left: 4px;
   gap: 4px;
   text-align: left;
   vertical-align: center;
   color: ${leo.color.text.secondary};
-  font-size: 11px;
+  font: ${leo.font.xSmall.regular};
 `
 
 export const ExplorerIcon = styled.div`
- -webkit-mask-image: url(${LinkIcon});
- mask-image: url(${LinkIcon});
- width: 12px;
- height: 12px;
- margin-left: 8px;
- mask-size: contain;
- background-color: ${(p) => p.theme.color.interactive05};
+  mask-image: url(${LinkIcon});
+  width: 12px;
+  height: 12px;
+  margin-left: 8px;
+  mask-size: contain;
+  mask-repeat: no-repeat;
+  background-color: ${(p) => p.theme.color.interactive05};
 `
 
-export const LaunchIcon = styled(Icon).attrs({ name: 'launch' })`
-  --leo-icon-size: 14px;
-  --leo-icon-color: ${leo.color.icon.interactive};
-  margin-bottom: 1px;
+export const WarningInfoCircleIcon = styled(Icon).attrs({
+  name: 'warning-circle-outline',
+})`
+  --leo-icon-size: 16px;
+  width: 16px;
+  height: 16px;
+  color: ${leo.color.systemfeedback.warningIcon};
 `

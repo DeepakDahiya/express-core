@@ -6,13 +6,20 @@
 import * as React from 'react'
 
 import * as S from './style'
-import Button from '$web-components/button'
+import Button from '@brave/leo/react/button'
 import LeftArrowSVG from '../svg/left-arrow'
 import AvatarIconSVG from '../svg/avatar-icon'
 import DataContext from '../../state/context'
-import { ViewType } from '../../state/component_types'
-import { WelcomeBrowserProxyImpl, ImportDataBrowserProxyImpl, defaultImportTypes, P3APhase } from '../../api/welcome_browser_proxy'
+import { useViewTypeTransition } from '../../state/hooks'
+import {
+  WelcomeBrowserProxyImpl,
+  ImportDataBrowserProxyImpl,
+  ImportDataStatus,
+  defaultImportTypes,
+  P3APhase,
+} from '../../api/welcome_browser_proxy'
 import { getLocale } from '$web-common/locale'
+import { addWebUiListener } from 'chrome://resources/js/cr.js'
 
 interface ProfileItemProps {
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void
@@ -45,13 +52,44 @@ function ProfileItem (props: ProfileItemProps) {
 }
 
 function SelectProfile () {
-  const { browserProfiles, currentSelectedBrowser, setViewType, incrementCount } = React.useContext(DataContext)
-  const filteredProfiles = browserProfiles?.filter(profile => profile.browserType === currentSelectedBrowser)
+  const {
+    viewType,
+    setViewType,
+    incrementCount,
+    currentSelectedBrowserProfiles
+  } = React.useContext(DataContext)
   const [selectedProfiles, setSelectedProfiles] = React.useState<Set<number>>(new Set())
 
-  const handleBackButton = () => {
-    setViewType(ViewType.ImportSelectBrowser)
+  const { back } = useViewTypeTransition(viewType)
+  const handleBackButton = () => setViewType(back!)
+
+  const [importStatus, setImportStatus] = React.useState<ImportDataStatus>(
+    ImportDataStatus.INITIAL,
+  )
+
+  const isImportInProgress = () => {
+    return importStatus === ImportDataStatus.IN_PROGRESS
   }
+
+  React.useEffect(() => {
+    addWebUiListener('import-data-status-changed', (status: string) => {
+      switch (status) {
+        case 'inProgress':
+          setImportStatus(ImportDataStatus.IN_PROGRESS)
+          break
+        case 'failed':
+          setImportStatus(ImportDataStatus.FAILED)
+          break
+        case 'succeeded':
+          setImportStatus(ImportDataStatus.SUCCEEDED)
+          break
+        default:
+          setImportStatus(ImportDataStatus.INITIAL)
+          break
+      }
+    })
+  }, [])
+
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { id, checked } = e.target
@@ -67,7 +105,9 @@ function SelectProfile () {
   }
 
   const selectAll = () => {
-    setSelectedProfiles(new Set(filteredProfiles?.map(profile => profile.index)))
+    setSelectedProfiles(
+      new Set(currentSelectedBrowserProfiles?.map((profile) => profile.index))
+    )
   }
 
   const handleImportProfiles = () => {
@@ -113,7 +153,7 @@ function SelectProfile () {
               <button onClick={selectAll}>{getLocale('braveWelcomeSelectAllButtonLabel')}</button>
             </div>
           </div>
-          {filteredProfiles?.map(entry => {
+          {currentSelectedBrowserProfiles?.map((entry) => {
             return (<ProfileItem
               key={entry.index}
               id={entry.index}
@@ -126,9 +166,10 @@ function SelectProfile () {
       </S.ProfileListBox>
       <S.ActionBox>
         <Button
-          isPrimary={true}
+          kind="filled"
           onClick={handleImportProfiles}
-          scale="jumbo"
+          isDisabled={selectedProfiles.size === 0 || isImportInProgress()}
+          size="large"
         >
           {getLocale('braveWelcomeImportProfilesButtonLabel')}
         </Button>

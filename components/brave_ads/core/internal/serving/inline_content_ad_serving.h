@@ -6,15 +6,17 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_INLINE_CONTENT_AD_SERVING_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_INLINE_CONTENT_AD_SERVING_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/types/expected.h"
 #include "brave/components/brave_ads/core/internal/creatives/inline_content_ads/creative_inline_content_ad_info.h"
 #include "brave/components/brave_ads/core/internal/serving/inline_content_ad_serving_delegate.h"
+#include "brave/components/brave_ads/core/internal/serving/targeting/user_model/user_model_info.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/ad_events/ad_event_info.h"
 #include "brave/components/brave_ads/core/public/ads_callback.h"
 
 namespace brave_ads {
@@ -23,7 +25,6 @@ class AntiTargetingResource;
 class EligibleInlineContentAdsBase;
 class SubdivisionTargeting;
 struct InlineContentAdInfo;
-struct UserModelInfo;
 
 class InlineContentAdServing final {
  public:
@@ -33,9 +34,6 @@ class InlineContentAdServing final {
   InlineContentAdServing(const InlineContentAdServing&) = delete;
   InlineContentAdServing& operator=(const InlineContentAdServing&) = delete;
 
-  InlineContentAdServing(InlineContentAdServing&&) noexcept = delete;
-  InlineContentAdServing& operator=(InlineContentAdServing&&) noexcept = delete;
-
   ~InlineContentAdServing();
 
   void SetDelegate(InlineContentAdServingDelegate* delegate) {
@@ -44,25 +42,40 @@ class InlineContentAdServing final {
   }
 
   void MaybeServeAd(const std::string& dimensions,
-                    MaybeServeInlineContentAdCallback callback) const;
+                    MaybeServeInlineContentAdCallback callback);
 
  private:
-  base::expected<void, std::string> CanServeAd() const;
-
   bool IsSupported() const { return !!eligible_ads_; }
+
+  bool CanServeAd(const AdEventList& ad_events) const;
+
+  void GetAdEvents(int32_t tab_id,
+                   const std::string& dimensions,
+                   MaybeServeInlineContentAdCallback callback);
+  void GetAdEventsCallback(int32_t tab_id,
+                           const std::string& dimensions,
+                           MaybeServeInlineContentAdCallback callback,
+                           bool success,
+                           const AdEventList& ad_events);
+
+  void GetUserModel(int32_t tab_id,
+                    const std::string& dimensions,
+                    MaybeServeInlineContentAdCallback callback);
+  void GetUserModelCallback(int32_t tab_id,
+                            const std::string& dimensions,
+                            MaybeServeInlineContentAdCallback callback,
+                            uint64_t trace_id,
+                            UserModelInfo user_model) const;
 
   void GetEligibleAds(int32_t tab_id,
                       const std::string& dimensions,
-                      MaybeServeInlineContentAdCallback callback) const;
-  void BuildUserModelCallback(int32_t tab_id,
+                      MaybeServeInlineContentAdCallback callback,
+                      UserModelInfo user_model) const;
+  void GetEligibleAdsCallback(int32_t tab_id,
                               const std::string& dimensions,
                               MaybeServeInlineContentAdCallback callback,
-                              const UserModelInfo& user_model) const;
-  void GetEligibleAdsForUserModelCallback(
-      int32_t tab_id,
-      const std::string& dimensions,
-      MaybeServeInlineContentAdCallback callback,
-      const CreativeInlineContentAdList& creative_ads) const;
+                              uint64_t trace_id,
+                              CreativeInlineContentAdList creative_ads) const;
 
   void ServeAd(int32_t tab_id,
                const InlineContentAdInfo& ad,
@@ -78,7 +91,7 @@ class InlineContentAdServing final {
                                      const InlineContentAdInfo& ad) const;
   void NotifyFailedToServeInlineContentAd() const;
 
-  raw_ptr<InlineContentAdServingDelegate> delegate_ = nullptr;
+  raw_ptr<InlineContentAdServingDelegate> delegate_ = nullptr;  // Not owned.
 
   std::unique_ptr<EligibleInlineContentAdsBase> eligible_ads_;
 

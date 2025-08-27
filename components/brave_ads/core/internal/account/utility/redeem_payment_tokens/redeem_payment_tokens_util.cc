@@ -7,9 +7,9 @@
 
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/redeem_payment_tokens_feature.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/random/random_util.h"
 #include "brave/components/brave_ads/core/internal/flags/debug/debug_flag_util.h"
+#include "brave/components/brave_ads/core/internal/prefs/pref_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 
 namespace brave_ads {
@@ -20,16 +20,11 @@ constexpr base::TimeDelta kDebugRedeemPaymentTokensAfter = base::Minutes(2);
 constexpr base::TimeDelta kMinimumDelayBeforeRedeemingTokens = base::Minutes(1);
 
 base::Time NextTokenRedemptionAt() {
-  return AdsClientHelper::GetInstance()->GetTimePref(
-      prefs::kNextTokenRedemptionAt);
+  return GetProfileTimePref(prefs::kNextPaymentTokenRedemptionAt);
 }
 
 bool HasPreviouslyRedeemedTokens() {
   return !NextTokenRedemptionAt().is_null();
-}
-
-base::TimeDelta DelayBeforeRedeemingTokens() {
-  return NextTokenRedemptionAt() - base::Time::Now();
 }
 
 bool ShouldHaveRedeemedTokensInThePast() {
@@ -38,9 +33,9 @@ bool ShouldHaveRedeemedTokensInThePast() {
 
 }  // namespace
 
-void SetNextTokenRedemptionAt(const base::Time next_token_redemption_at) {
-  AdsClientHelper::GetInstance()->SetTimePref(prefs::kNextTokenRedemptionAt,
-                                              next_token_redemption_at);
+void SetNextTokenRedemptionAt(base::Time next_payment_token_redemption_at) {
+  SetProfileTimePref(prefs::kNextPaymentTokenRedemptionAt,
+                     next_payment_token_redemption_at);
 }
 
 base::Time ScheduleNextTokenRedemptionAt() {
@@ -58,7 +53,7 @@ base::TimeDelta CalculateDelayBeforeRedeemingTokens() {
     return kMinimumDelayBeforeRedeemingTokens;
   }
 
-  const base::TimeDelta delay = DelayBeforeRedeemingTokens();
+  const base::TimeDelta delay = NextTokenRedemptionAt() - base::Time::Now();
   if (delay < kMinimumDelayBeforeRedeemingTokens) {
     return kMinimumDelayBeforeRedeemingTokens;
   }

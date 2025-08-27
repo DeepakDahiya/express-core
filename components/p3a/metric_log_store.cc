@@ -5,15 +5,18 @@
 
 #include "brave/components/p3a/metric_log_store.h"
 
+#include <optional>
 #include <string_view>
 #include <vector>
 
-#include "base/check_op.h"
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/notreached.h"
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
+#include "brave/components/p3a/metric_log_type.h"
+#include "brave/components/p3a/pref_names.h"
 #include "brave/components/p3a/uploader.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
@@ -22,13 +25,10 @@
 namespace p3a {
 
 namespace {
-constexpr char kTypicalJsonLogPrefName[] = "p3a.logs";
-constexpr char kSlowJsonLogPrefName[] = "p3a.logs_slow";
-constexpr char kExpressJsonLogPrefName[] = "p3a.logs_express";
-constexpr char kConstellationPrepPrefName[] = "p3a.logs_constellation_prep";
-constexpr char kLogValueKey[] = "value";
-constexpr char kLogSentKey[] = "sent";
-constexpr char kLogTimestampKey[] = "timestamp";
+
+inline constexpr char kLogValueKey[] = "value";
+inline constexpr char kLogSentKey[] = "sent";
+inline constexpr char kLogTimestampKey[] = "timestamp";
 
 void RecordSentAnswersCount(uint64_t answers_count) {
   int answer = 0;
@@ -42,69 +42,60 @@ void RecordSentAnswersCount(uint64_t answers_count) {
   UMA_HISTOGRAM_EXACT_LINEAR("Brave.P3A.SentAnswersCount", answer, 3);
 }
 
-bool IsMetricP2A(const std::string& histogram_name) {
-  return base::StartsWith(histogram_name, "Brave.P2A",
-                          base::CompareCase::SENSITIVE);
+bool IsMetricCreative(const std::string& histogram_name) {
+  return histogram_name.starts_with(kCreativeMetricPrefix) ||
+         histogram_name.starts_with(kCampaignMetricPrefix);
 }
 
-bool IsMetricCreative(const std::string& histogram_name) {
-  return base::StartsWith(histogram_name, kCreativeMetricPrefix,
-                          base::CompareCase::SENSITIVE);
-}
+}  // namespace
 
 std::string GetUploadType(const std::string& histogram_name) {
-  if (IsMetricP2A(histogram_name)) {
-    return kP2AUploadType;
-  } else if (IsMetricCreative(histogram_name)) {
+  if (IsMetricCreative(histogram_name)) {
     return kP3ACreativeUploadType;
   }
   return kP3AUploadType;
 }
 
-}  // namespace
-
 MetricLogStore::MetricLogStore(Delegate& delegate,
                                PrefService& local_state,
-                               bool is_constellation,
                                MetricLogType type)
-    : delegate_(delegate),
-      local_state_(local_state),
-      type_(type),
-      is_constellation_(is_constellation) {}
+    : delegate_(delegate), local_state_(local_state), type_(type) {}
 
 MetricLogStore::~MetricLogStore() = default;
 
 void MetricLogStore::RegisterPrefs(PrefRegistrySimple* registry) {
+  registry->RegisterDictionaryPref(kTypicalConstellationPrepPrefName);
+  registry->RegisterDictionaryPref(kExpressConstellationPrepPrefName);
+  registry->RegisterDictionaryPref(kSlowConstellationPrepPrefName);
+}
+
+void MetricLogStore::RegisterLocalStatePrefsForMigration(
+    PrefRegistrySimple* registry) {
+  // Added 06/2025
   registry->RegisterDictionaryPref(kTypicalJsonLogPrefName);
   registry->RegisterDictionaryPref(kExpressJsonLogPrefName);
   registry->RegisterDictionaryPref(kSlowJsonLogPrefName);
-  registry->RegisterDictionaryPref(kConstellationPrepPrefName);
+}
+
+void MetricLogStore::MigrateObsoleteLocalStatePrefs(PrefService* local_state) {
+  local_state->ClearPref(kTypicalJsonLogPrefName);
+  local_state->ClearPref(kExpressJsonLogPrefName);
+  local_state->ClearPref(kSlowJsonLogPrefName);
 }
 
 const char* MetricLogStore::GetPrefName() const {
-  if (is_constellation_) {
-    return kConstellationPrepPrefName;
-  } else {
-    switch (type_) {
-      case MetricLogType::kTypical:
-        return kTypicalJsonLogPrefName;
-      case MetricLogType::kExpress:
-        return kExpressJsonLogPrefName;
-      case MetricLogType::kSlow:
-        return kSlowJsonLogPrefName;
-    }
+  switch (type_) {
+    case MetricLogType::kTypical:
+      return kTypicalConstellationPrepPrefName;
+    case MetricLogType::kExpress:
+      return kExpressConstellationPrepPrefName;
+    case MetricLogType::kSlow:
+      return kSlowConstellationPrepPrefName;
   }
 }
 
 void MetricLogStore::UpdateValue(const std::string& histogram_name,
                                  uint64_t value) {
-  if (is_constellation_) {
-    if (IsMetricP2A(histogram_name) || IsMetricCreative(histogram_name)) {
-      // Only non-creative P3A metrics are currently supported for
-      // Constellation.
-      return;
-    }
-  }
   LogEntry& entry = log_[histogram_name];
   entry.value = value;
 
@@ -141,7 +132,9 @@ void MetricLogStore::ResetUploadStamps() {
       DCHECK(!it->second.sent_timestamp.is_null());
       DCHECK(!unsent_entries_.contains(it->first));
 
-      if (delegate_->IsEphemeralMetric(it->first)) {
+      auto metric_log_type = delegate_->GetLogTypeForHistogram(it->first);
+      if (!metric_log_type || metric_log_type != type_ ||
+          delegate_->IsEphemeralMetric(it->first)) {
         // Ephemeral metrics should only be sent once.
         // Remove value from log store so it doesn't get
         // sent again (unless another histogram value is recorded)
@@ -205,17 +198,14 @@ const std::string& MetricLogStore::staged_log_key() const {
 
 const std::string& MetricLogStore::staged_log_hash() const {
   NOTREACHED();
-  return staged_log_hash_;
 }
 
 const std::string& MetricLogStore::staged_log_signature() const {
   NOTREACHED();
-  return staged_log_signature_;
 }
 
-absl::optional<uint64_t> MetricLogStore::staged_log_user_id() const {
+std::optional<uint64_t> MetricLogStore::staged_log_user_id() const {
   NOTREACHED();
-  return absl::nullopt;
 }
 
 void MetricLogStore::StageNextLog() {
@@ -226,9 +216,9 @@ void MetricLogStore::StageNextLog() {
   DCHECK(!log_.find(staged_entry_key_)->second.sent);
 
   uint64_t staged_entry_value = log_[staged_entry_key_].value;
-  staged_log_ = delegate_->SerializeLog(staged_entry_key_, staged_entry_value,
-                                        type_, is_constellation_,
-                                        GetUploadType(staged_entry_key_));
+  staged_log_ =
+      delegate_->SerializeLog(staged_entry_key_, staged_entry_value, type_,
+                              GetUploadType(staged_entry_key_));
 
   VLOG(2) << "MetricLogStore::StageNextLog: staged " << staged_entry_key_;
 }
@@ -271,18 +261,9 @@ void MetricLogStore::LoadPersistedUnsentLogs() {
 
   const char* pref_name = GetPrefName();
 
-  std::vector<std::string> metrics_to_remove;
-
   const base::Value::Dict& log_dict = local_state_->GetDict(pref_name);
   for (const auto [name, value] : log_dict) {
     LogEntry entry;
-    // Check if the metric is obsolete.
-    if (!delegate_->IsActualMetric(name)) {
-      // Drop it from the local state.
-      metrics_to_remove.push_back(name);
-      continue;
-    }
-    // Value.
     const base::Value::Dict& dict = value.GetDict();
     if (const std::string* v = dict.FindString(kLogValueKey)) {
       if (!base::StringToUint64(*v, &entry.value)) {
@@ -313,12 +294,18 @@ void MetricLogStore::LoadPersistedUnsentLogs() {
       unsent_entries_.insert(name);
     }
   }
+}
 
-  if (!metrics_to_remove.empty()) {
-    ScopedDictPrefUpdate update(&*local_state_, pref_name);
-    for (const std::string& name : metrics_to_remove) {
-      update->Remove(name);
+void MetricLogStore::RemoveObsoleteLogs() {
+  std::vector<std::string> metrics_to_remove;
+  for (const auto& [name, entry] : log_) {
+    auto metric_log_type = delegate_->GetLogTypeForHistogram(name);
+    if (!metric_log_type || *metric_log_type != type_) {
+      metrics_to_remove.push_back(name);
     }
+  }
+  for (const auto& name : metrics_to_remove) {
+    RemoveValueIfExists(name);
   }
 }
 

@@ -5,9 +5,11 @@
 
 #include "brave/components/brave_wallet/browser/unstoppable_domains_multichain_calls.h"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "url/gurl.h"
 
 namespace brave_wallet::unstoppable_domains {
@@ -53,6 +55,11 @@ MultichainCall<ResultType>::GetEffectiveResponse() {
     return nullptr;
   }
 
+  auto base_result = responses_.find(mojom::kBaseMainnetChainId);
+  if (base_result == responses_.end()) {
+    return nullptr;
+  }
+
   auto eth_mainnet_result = responses_.find(mojom::kMainnetChainId);
   if (eth_mainnet_result == responses_.end()) {
     return nullptr;
@@ -60,6 +67,10 @@ MultichainCall<ResultType>::GetEffectiveResponse() {
 
   if (polygon_result->second.result || polygon_result->second.error) {
     return &polygon_result->second;
+  }
+
+  if (base_result->second.result || base_result->second.error) {
+    return &base_result->second;
   }
 
   return &eth_mainnet_result->second;
@@ -80,12 +91,6 @@ bool MultichainCall<ResultType>::MaybeResolveCallbacks() {
   }
 
   return true;
-}
-
-template <class KeyType, class ResultType>
-std::vector<std::string> MultichainCalls<KeyType, ResultType>::GetChains()
-    const {
-  return {mojom::kPolygonMainnetChainId, mojom::kMainnetChainId};
 }
 
 template <class KeyType, class ResultType>
@@ -146,6 +151,6 @@ void MultichainCalls<KeyType, ResultType>::SetError(const KeyType& key,
 
 template class MultichainCalls<std::string, std::string>;
 template class MultichainCalls<WalletAddressKey, std::string>;
-template class MultichainCalls<std::string, absl::optional<GURL>>;
+template class MultichainCalls<std::string, std::optional<GURL>>;
 
 }  // namespace brave_wallet::unstoppable_domains

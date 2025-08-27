@@ -9,7 +9,6 @@
 #include <string>
 #include <utility>
 
-#include "base/notreached.h"
 #include "components/browsing_topics/common/common_types.h"
 #include "components/content_settings/core/browser/cookie_settings.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
@@ -27,16 +26,6 @@ BravePrivacySandboxSettings::BravePrivacySandboxSettings(
   // Register observers for the Privacy Sandbox.
   user_prefs_registrar_.Init(pref_service_);
   user_prefs_registrar_.Add(
-      prefs::kPrivacySandboxApisEnabled,
-      base::BindRepeating(
-          &BravePrivacySandboxSettings::OnPrivacySandboxPrefChanged,
-          base::Unretained(this)));
-  user_prefs_registrar_.Add(
-      prefs::kPrivacySandboxApisEnabledV2,
-      base::BindRepeating(
-          &BravePrivacySandboxSettings::OnPrivacySandboxPrefChanged,
-          base::Unretained(this)));
-  user_prefs_registrar_.Add(
       prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
       base::BindRepeating(
           &BravePrivacySandboxSettings::OnPrivacySandboxPrefChanged,
@@ -48,12 +37,6 @@ BravePrivacySandboxSettings::~BravePrivacySandboxSettings() = default;
 void BravePrivacySandboxSettings::OnPrivacySandboxPrefChanged() {
   // Make sure that Private Sandbox features remain disabled even if we manually
   // access the Pref service and try to change the preferences from there.
-  if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabled)) {
-    pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabled, false);
-  }
-  if (pref_service_->GetBoolean(prefs::kPrivacySandboxApisEnabledV2)) {
-    pref_service_->SetBoolean(prefs::kPrivacySandboxApisEnabledV2, false);
-  }
   if (pref_service_->GetBoolean(
           prefs::kPrivacySandboxRelatedWebsiteSetsEnabled)) {
     pref_service_->SetBoolean(prefs::kPrivacySandboxRelatedWebsiteSetsEnabled,
@@ -148,19 +131,31 @@ bool BravePrivacySandboxSettings::IsEventReportingDestinationAttested(
 bool BravePrivacySandboxSettings::IsSharedStorageAllowed(
     const url::Origin& top_frame_origin,
     const url::Origin& accessing_origin,
-    content::RenderFrameHost* console_frame) const {
+    std::string* out_debug_message,
+    content::RenderFrameHost* console_frame,
+    bool* out_block_is_site_setting_specific) const {
   return false;
 }
 
 bool BravePrivacySandboxSettings::IsSharedStorageSelectURLAllowed(
     const url::Origin& top_frame_origin,
-    const url::Origin& accessing_origin) const {
+    const url::Origin& accessing_origin,
+    std::string* out_debug_message,
+    bool* out_block_is_site_setting_specific) const {
+  return false;
+}
+
+bool BravePrivacySandboxSettings::IsFencedStorageReadAllowed(
+    const url::Origin& top_frame_origin,
+    const url::Origin& accessing_origin,
+    content::RenderFrameHost* console_frame) const {
   return false;
 }
 
 bool BravePrivacySandboxSettings::IsPrivateAggregationAllowed(
     const url::Origin& top_frame_origin,
-    const url::Origin& reporting_origin) const {
+    const url::Origin& reporting_origin,
+    bool* out_block_is_site_setting_specific) const {
   return false;
 }
 
@@ -187,13 +182,8 @@ bool BravePrivacySandboxSettings::IsCookieDeprecationLabelAllowedForContext(
   return false;
 }
 
-bool BravePrivacySandboxSettings::IsPrivacySandboxEnabled() const {
-  return false;
-}
-
 void BravePrivacySandboxSettings::SetAllPrivacySandboxAllowedForTesting() {}
 void BravePrivacySandboxSettings::SetTopicsBlockedForTesting() {}
-void BravePrivacySandboxSettings::SetPrivacySandboxEnabled(bool enabled) {}
 
 bool BravePrivacySandboxSettings::IsPrivacySandboxRestricted() const {
   return true;

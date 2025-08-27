@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook, waitFor } from '@testing-library/react'
 
 // utils
 import {
   createMockStore,
-  renderHookOptionsWithMockStore
+  renderHookOptionsWithMockStore,
 } from '../../../utils/test-utils'
 
 // hooks
@@ -23,17 +23,17 @@ describe('useAccountQuery', () => {
     const store = createMockStore(
       {},
       {
-        accountInfos: [mockAccount]
-      }
+        accountInfos: [mockAccount],
+      },
     )
     const renderOptions = renderHookOptionsWithMockStore(store)
     const hook = renderHook(
       () => useAccountQuery(mockAccount.accountId),
-      renderOptions
+      renderOptions,
     )
     const hookInstance2 = renderHook(
       () => useAccountQuery(mockAccount.accountId),
-      renderOptions
+      renderOptions,
     )
 
     // initial state
@@ -42,7 +42,11 @@ describe('useAccountQuery', () => {
     expect(hook.result.current.account).not.toBeDefined()
 
     // loading
-    await hook.waitFor(() => hook.result.all.length > 2)
+    await waitFor(() =>
+      expect(
+        !hook.result.current.isLoading && hook.result.current.account,
+      ).toBeTruthy(),
+    )
 
     // loaded
     expect(hook.result.current.isLoading).toBe(false)
@@ -53,7 +57,7 @@ describe('useAccountQuery', () => {
     // additional instances should not
     // create more than one account in memory
     expect(hookInstance2.result.current.account).toBe(
-      hook.result.current.account
+      hook.result.current.account,
     )
   })
 })

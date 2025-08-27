@@ -4,11 +4,10 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import styled from 'styled-components'
 
 // components
 import {
-  WalletPageStory
+  WalletPageStory, //
 } from '../../../stories/wrappers/wallet-page-story-wrapper'
 import WalletPageLayout from '../wallet-page-layout'
 import WalletSubViewLayout from '../wallet-sub-view-layout'
@@ -16,43 +15,20 @@ import { PortfolioTransactionItem } from './portfolio_transaction_item'
 
 // mocks
 import {
-  mockTransactionInfo
+  mockTransactionInfo, //
 } from '../../../stories/mock-data/mock-transaction-info'
 
-export const CryptoViewWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  position: relative;
-`
+export const _PortfolioTransactionItem = {}
 
-const PortfolioWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  width: 100%;
-  margin-bottom: 20px;
-`
-
-export const _PortfolioTransactionItem: React.FC = () => {
-  return (
+export default {
+  title: 'Wallet/Desktop/Components/Transaction',
+  render: () => (
     <WalletPageStory>
       <WalletPageLayout>
         <WalletSubViewLayout>
-          <CryptoViewWrapper>
-            <PortfolioWrapper>
-              <PortfolioTransactionItem
-                transaction={mockTransactionInfo}
-              />
-            </PortfolioWrapper>
-          </CryptoViewWrapper>
+          <PortfolioTransactionItem transaction={mockTransactionInfo} />
         </WalletSubViewLayout>
       </WalletPageLayout>
     </WalletPageStory>
-  )
+  ),
 }
-
-export default _PortfolioTransactionItem

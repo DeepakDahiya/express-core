@@ -8,14 +8,10 @@ import Button from '@brave/leo/react/button'
 import { useHistory } from 'react-router'
 
 // Types
-import {
-  WalletRoutes
-} from '../../../../../../constants/types'
+import { WalletRoutes } from '../../../../../../constants/types'
 
 // Utils
-import {
-  getLocale
-} from '../../../../../../../common/locale'
+import { getLocale } from '../../../../../../../common/locale'
 
 // Styled Components
 import {
@@ -23,12 +19,12 @@ import {
   Title,
   Description,
   ButtonWrapper,
-  EmptyStateIcon
+  EmptyStateIcon,
 } from './empty-token-list-state.style'
 import {
   Row,
   VerticalSpace,
-  HorizontalSpace
+  HorizontalSpace,
 } from '../../../../../shared/style'
 
 export const EmptyTokenListState = () => {
@@ -55,15 +51,11 @@ export const EmptyTokenListState = () => {
         {getLocale('braveWalletNoAvailableAssetsDescription')}
       </Description>
       <VerticalSpace space='24px' />
-      <Row
-        marginBottom={4}
-      >
+      <Row marginBottom={4}>
         <ButtonWrapper>
           <Button
             kind='outline'
-            onClick={
-              () => history.push(WalletRoutes.FundWalletPageStart)
-            }
+            onClick={() => history.push(WalletRoutes.FundWalletPageStart)}
           >
             {getLocale('braveWalletBuyCryptoButton')}
           </Button>
@@ -72,9 +64,7 @@ export const EmptyTokenListState = () => {
         <ButtonWrapper>
           <Button
             kind='outline'
-            onClick={
-              () => history.push(WalletRoutes.DepositFundsPageStart)
-            }
+            onClick={() => history.push(WalletRoutes.DepositFundsPageStart)}
           >
             {getLocale('braveWalletDepositCryptoButton')}
           </Button>
@@ -88,13 +78,10 @@ export const EmptyTokenListState = () => {
       </Description>
       <Button
         kind='plain'
-        onClick={
-          () => history.push(WalletRoutes.AddAssetModal)
-        }
+        onClick={() => history.push(WalletRoutes.AddAssetModal)}
       >
         {getLocale('braveWalletWatchlistAddCustomAsset')}
       </Button>
-
     </StyledWrapper>
   )
 }

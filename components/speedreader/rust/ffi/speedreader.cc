@@ -7,7 +7,6 @@
 
 #include <iostream>
 
-#include "base/logging.h"
 #include "brave/components/speedreader/rust/ffi/speedreader_ffi.h"
 
 namespace speedreader {
@@ -19,7 +18,12 @@ SpeedReader::~SpeedReader() {
 }
 
 std::unique_ptr<Rewriter> SpeedReader::MakeRewriter(const std::string& url) {
-  return std::make_unique<Rewriter>(raw_, url);
+  std::unique_ptr<Rewriter> rewriter(new Rewriter(raw_, url));
+  if (rewriter->raw_ == nullptr) {
+    // Underlying implementation failed to create a rewriter for some reason.
+    return nullptr;
+  }
+  return rewriter;
 }
 
 Rewriter::Rewriter(C_SpeedReader* speedreader, const std::string& url)
@@ -46,7 +50,7 @@ Rewriter::Rewriter(C_SpeedReader* speedreader,
                         output_sink_user_data)) {}
 
 Rewriter::~Rewriter() {
-  if (!ended_) {
+  if (!ended_ && raw_) {
     rewriter_free(raw_.ExtractAsDangling());
   }
 }
@@ -77,6 +81,10 @@ void Rewriter::SetColumnWidth(const std::string& column_width) {
   if (!column_width.empty()) {
     rewriter_set_column_width(raw_, column_width.c_str());
   }
+}
+
+void Rewriter::SetDebugView(bool debug_view) {
+  rewriter_set_debug_view(raw_, debug_view);
 }
 
 int Rewriter::Write(const char* chunk, size_t chunk_len) {

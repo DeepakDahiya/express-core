@@ -4,15 +4,9 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useHistory } from 'react-router-dom'
 
 // Hooks
 import { useOnClickOutside } from '../../../../common/hooks/useOnClickOutside'
-
-// Types
-import {
-  WalletRoutes
-} from '../../../../constants/types'
 
 // Styled Components
 import {
@@ -20,14 +14,14 @@ import {
   BraveLogo,
   SettingsButton,
   SettingsIcon,
-  SettingsWrapper
+  SettingsWrapper,
 } from './tab-header.style'
 import { Row } from '../../send/shared.styles'
 
 // Components
 import {
-  WalletSettingsMenu
-} from '../../../../components/desktop/wallet-menus/wallet-settings-menu'
+  WalletSettingsMenu, //
+} from '../../../../components/desktop/wallet-menus/wallet_settings_menu'
 
 export interface Props {
   hideHeaderMenu?: boolean
@@ -36,49 +30,41 @@ export interface Props {
 export const TabHeader = (props: Props) => {
   const { hideHeaderMenu } = props
 
-  // Routing
-  const history = useHistory()
-
   // State
   const [showSettings, setShowSettings] = React.useState<boolean>(false)
 
   // Refs
   const settingsModalRef = React.useRef<HTMLDivElement>(null)
 
-  // Methods
-  const onShowBackup = () => {
-    history.push(WalletRoutes.Backup)
-  }
-
   // Hooks
   useOnClickOutside(
     settingsModalRef,
     () => setShowSettings(false),
-    showSettings
+    showSettings,
   )
 
   // render
   return (
     <HeaderWrapper>
-      <Row rowHeight='full' verticalAlign='center'>
+      <Row
+        rowHeight='full'
+        verticalAlign='center'
+      >
         <BraveLogo />
       </Row>
-      {!hideHeaderMenu &&
-        <SettingsWrapper
-          ref={settingsModalRef}
-        >
-          <SettingsButton onClick={() => setShowSettings(prev => !prev)}>
-            <SettingsIcon name='more-horizontal' />
+      {!hideHeaderMenu && (
+        <SettingsWrapper ref={settingsModalRef}>
+          <SettingsButton onClick={() => setShowSettings((prev) => !prev)}>
+            <SettingsIcon name='more-vertical' />
           </SettingsButton>
-          {showSettings &&
+          {showSettings && (
             <WalletSettingsMenu
-              onClickBackup={onShowBackup}
               onClosePopup={() => setShowSettings(false)}
               yPosition={50}
             />
-          }
+          )}
         </SettingsWrapper>
-      }
+      )}
     </HeaderWrapper>
   )
 }

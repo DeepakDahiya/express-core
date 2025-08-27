@@ -6,17 +6,25 @@
 #ifndef BRAVE_COMPONENTS_AI_CHAT_CORE_BROWSER_AI_CHAT_CREDENTIAL_MANAGER_H_
 #define BRAVE_COMPONENTS_AI_CHAT_CORE_BROWSER_AI_CHAT_CREDENTIAL_MANAGER_H_
 
+#include <optional>
 #include <string>
 
 #include "base/functional/callback.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "brave/components/ai_chat/core/common/mojom/ai_chat.mojom.h"
 #include "brave/components/skus/common/skus_sdk.mojom.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "mojo/public/cpp/bindings/remote_set.h"
 
 class PrefService;
+namespace mojo {
+template <typename Interface>
+class PendingRemote;
+}  // namespace mojo
 
 namespace ai_chat {
 
@@ -36,37 +44,51 @@ class AIChatCredentialManager {
 
   AIChatCredentialManager(const AIChatCredentialManager&) = delete;
   AIChatCredentialManager& operator=(const AIChatCredentialManager&) = delete;
-  ~AIChatCredentialManager();
+  virtual ~AIChatCredentialManager();
 
-  void GetPremiumStatus(
-      ai_chat::mojom::PageHandler::GetPremiumStatusCallback callback);
+  virtual void GetPremiumStatus(
+      mojom::Service::GetPremiumStatusCallback callback);
 
-  void FetchPremiumCredential(
-      base::OnceCallback<void(absl::optional<CredentialCacheEntry> credential)>
+  virtual void FetchPremiumCredential(
+      base::OnceCallback<void(std::optional<CredentialCacheEntry> credential)>
           callback);
 
   void PutCredentialInCache(CredentialCacheEntry credential);
+
+#if BUILDFLAG(IS_ANDROID)
+  void CreateOrderFromReceipt(
+      const std::string& purchase_token,
+      const std::string& package,
+      const std::string& subscription_id,
+      skus::mojom::SkusService::CreateOrderFromReceiptCallback callback);
+  void FetchOrderCredentials(
+      const std::string& order_id,
+      skus::mojom::SkusService::FetchOrderCredentialsCallback callback);
+  void RefreshOrder(const std::string& order_id,
+                    skus::mojom::SkusService::RefreshOrderCallback callback);
+#endif
 
  private:
   bool EnsureMojoConnected();
 
   void OnMojoConnectionError();
 
-  void OnCredentialSummary(
-      ai_chat::mojom::PageHandler::GetPremiumStatusCallback callback,
-      const std::string& domain,
-      const std::string& summary_string);
+  void OnCredentialSummary(mojom::Service::GetPremiumStatusCallback callback,
+                           const std::string& domain,
+                           const bool credential_in_cache,
+                           skus::mojom::SkusResultPtr summary_result);
 
   void OnGetPremiumStatus(
-      base::OnceCallback<void(absl::optional<CredentialCacheEntry> credential)>
+      base::OnceCallback<void(std::optional<CredentialCacheEntry> credential)>
           callback,
-      ai_chat::mojom::PremiumStatus);
+      mojom::PremiumStatus,
+      mojom::PremiumInfoPtr);
 
   void OnPrepareCredentialsPresentation(
-      base::OnceCallback<void(absl::optional<CredentialCacheEntry> credential)>
+      base::OnceCallback<void(std::optional<CredentialCacheEntry> credential)>
           callback,
       const std::string& domain,
-      const std::string& credential_as_cookie);
+      skus::mojom::SkusResultPtr credential_as_cookie);
 
   base::RepeatingCallback<mojo::PendingRemote<skus::mojom::SkusService>()>
       skus_service_getter_;

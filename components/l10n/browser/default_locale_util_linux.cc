@@ -3,25 +3,34 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include <cstdlib>
-
 #include "brave/components/l10n/browser/default_locale_util.h"
+
+#include <optional>
+#include <string>
+
+#include "base/environment.h"
 
 namespace brave_l10n {
 
-absl::optional<std::string> MaybeGetDefaultLocaleString() {
-  // LC_ALL should always override the LANG variable, whether it is set or not.
-  char const* language = language = std::getenv("LC_ALL");
+namespace {
 
-  if (!language || !*language) {
-    language = std::getenv("LANG");
+constexpr char kEnvVarLcAll[] = "LC_ALL";
+constexpr char kEnvVarLang[] = "LANG";
+
+}  // namespace
+
+std::optional<std::string> MaybeGetDefaultLocaleString() {
+  std::unique_ptr<base::Environment> env = base::Environment::Create();
+
+  std::optional<std::string> language = env->GetVar(kEnvVarLcAll);
+  if (!language || language->empty()) {
+    language = env->GetVar(kEnvVarLang);
+    if (!language || language->empty()) {
+      return std::nullopt;
+    }
   }
 
-  if (!language || !*language) {
-    return absl::nullopt;
-  }
-
-  return {language};
+  return language;
 }
 
 }  // namespace brave_l10n

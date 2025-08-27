@@ -5,31 +5,42 @@
 
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/promoted_content_ads/promoted_content_ad_permission_rules.h"
 
+#include <vector>
+
+#include "base/trace_event/trace_event.h"
+#include "brave/components/brave_ads/core/internal/ad_units/promoted_content_ad/promoted_content_ad_feature.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/ads_per_day_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/ads_per_hour_permission_rule.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/catalog_permission_rule.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rule_util.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/promoted_content_ads/promoted_content_ads_per_day_permission_rule.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/promoted_content_ads/promoted_content_ads_per_hour_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/ad_events/ad_event_util.h"
+#include "brave/components/brave_ads/core/public/ads_constants.h"
 
 namespace brave_ads {
 
 // static
-bool PromotedContentAdPermissionRules::HasPermission() {
+bool PromotedContentAdPermissionRules::HasPermission(
+    const AdEventList& ad_events) {
+  TRACE_EVENT(kTraceEventCategory,
+              "PromotedContentAdPermissionRules::HasPermission");
+
   if (!PermissionRulesBase::HasPermission()) {
     return false;
   }
 
-  const CatalogPermissionRule catalog_permission_rule;
-  if (!ShouldAllow(catalog_permission_rule)) {
+  if (!HasCatalogPermission()) {
     return false;
   }
 
-  const PromotedContentAdsPerDayPermissionRule ads_per_day_permission_rule;
-  if (!ShouldAllow(ads_per_day_permission_rule)) {
+  const std::vector<base::Time> history = ToHistory(ad_events);
+
+  if (!HasAdsPerDayPermission(history,
+                              /*cap=*/kMaximumPromotedContentAdsPerDay.Get())) {
     return false;
   }
 
-  const PromotedContentAdsPerHourPermissionRule ads_per_hour_permission_rule;
-  return ShouldAllow(ads_per_hour_permission_rule);
+  return HasAdsPerHourPermission(
+      history,
+      /*cap=*/kMaximumPromotedContentAdsPerHour.Get());
 }
 
 }  // namespace brave_ads

@@ -9,7 +9,7 @@ import {
   StyledWrapper,
   PopupButton,
   PopupButtonText,
-  ClickAwayContainer
+  ClickAwayContainer,
 } from './style'
 
 interface TransactionPopupItemProps {
@@ -30,9 +30,7 @@ interface Props {
 const TransactionPopup = (props: Props) => {
   return (
     <>
-      <StyledWrapper>
-        {props.children}
-      </StyledWrapper>
+      <StyledWrapper>{props.children}</StyledWrapper>
       <ClickAwayContainer />
     </>
   )

@@ -6,31 +6,33 @@
 #include "brave/components/brave_ads/core/internal/catalog/catalog.h"
 
 #include "base/check.h"
+#include "base/functional/bind.h"
 #include "base/time/time.h"
+#include "brave/components/brave_ads/core/internal/ads_client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_url_request.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_util.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/database/database_manager.h"
+#include "brave/components/brave_ads/core/internal/prefs/pref_path_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
-#include "brave/components/brave_ads/core/public/ads_feature.h"
-#include "brave/components/brave_ads/core/public/prefs/pref_names.h"
-#include "brave/components/brave_news/common/pref_names.h"
-#include "brave/components/brave_rewards/common/pref_names.h"
-#include "brave/components/ntp_background_images/common/pref_names.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client.h"
 
 namespace brave_ads {
 
 namespace {
 
 bool DoesRequireResourceForNewTabPageAds() {
-  return UserHasOptedInToNewTabPageAds() &&
-         (UserHasJoinedBraveRewards() ||
-          ShouldAlwaysTriggerNewTabPageAdEvents());
+  // Require resource only if:
+  // - The user has opted into new tab page ads and joined Brave Rewards.
+  return UserHasJoinedBraveRewards() && UserHasOptedInToNewTabPageAds();
 }
 
 bool DoesRequireResource() {
+  // Require resource only if:
+  // - The user has opted into Brave News ads.
+  // - The user has opted into new tab page ads and and joined Brave Rewards.
+  // - The user has joined Brave Rewards and opted into notification ads.
   return UserHasOptedInToBraveNewsAds() ||
          DoesRequireResourceForNewTabPageAds() ||
          UserHasOptedInToNotificationAds();
@@ -39,22 +41,24 @@ bool DoesRequireResource() {
 }  // namespace
 
 Catalog::Catalog() {
-  AdsClientHelper::AddObserver(this);
+  GetAdsClient().AddObserver(this);
   DatabaseManager::GetInstance().AddObserver(this);
 }
 
 Catalog::~Catalog() {
-  AdsClientHelper::RemoveObserver(this);
+  GetAdsClient().RemoveObserver(this);
   DatabaseManager::GetInstance().RemoveObserver(this);
 }
 
-void Catalog::AddObserver(CatalogObserver* observer) {
+void Catalog::AddObserver(CatalogObserver* const observer) {
   CHECK(observer);
+
   observers_.AddObserver(observer);
 }
 
-void Catalog::RemoveObserver(CatalogObserver* observer) {
+void Catalog::RemoveObserver(CatalogObserver* const observer) {
   CHECK(observer);
+
   observers_.RemoveObserver(observer);
 }
 
@@ -83,8 +87,7 @@ void Catalog::ShutdownCatalogUrlRequest() {
     catalog_url_request_.reset();
     BLOG(1, "Shutdown catalog URL request");
 
-    ResetCatalog();
-    BLOG(1, "Reset catalog");
+    ResetCatalog(/*intentional*/ base::DoNothing());
   }
 }
 
@@ -94,15 +97,15 @@ void Catalog::MaybeFetchCatalog() const {
   }
 }
 
-void Catalog::NotifyDidUpdateCatalog(const CatalogInfo& catalog) const {
+void Catalog::NotifyDidFetchCatalog(const CatalogInfo& catalog) const {
   for (CatalogObserver& observer : observers_) {
-    observer.OnDidUpdateCatalog(catalog);
+    observer.OnDidFetchCatalog(catalog);
   }
 }
 
-void Catalog::NotifyFailedToUpdateCatalog() const {
+void Catalog::NotifyFailedToFetchCatalog() const {
   for (CatalogObserver& observer : observers_) {
-    observer.OnFailedToUpdateCatalog();
+    observer.OnFailedToFetchCatalog();
   }
 }
 
@@ -111,13 +114,12 @@ void Catalog::OnNotifyDidInitializeAds() {
 }
 
 void Catalog::OnNotifyPrefDidChange(const std::string& path) {
-  if (path == brave_rewards::prefs::kEnabled ||
-      path == prefs::kOptedInToNotificationAds ||
-      path == brave_news::prefs::kBraveNewsOptedIn ||
-      path == brave_news::prefs::kNewTabPageShowToday ||
-      path == ntp_background_images::prefs::kNewTabPageShowBackgroundImage ||
-      path == ntp_background_images::prefs::
-                  kNewTabPageShowSponsoredImagesBackgroundImage) {
+  if (DoesMatchUserHasJoinedBraveRewardsPrefPath(path) ||
+      DoesMatchUserHasOptedInToBraveNewsAdsPrefPath(path) ||
+      DoesMatchUserHasOptedInToNewTabPageAdsPrefPath(path) ||
+      DoesMatchUserHasOptedInToNotificationAdsPrefPath(path)) {
+    // This condition should include all the preferences that are present in the
+    // `DoesRequireResource` function.
     Initialize();
   }
 }
@@ -125,22 +127,33 @@ void Catalog::OnNotifyPrefDidChange(const std::string& path) {
 void Catalog::OnDidFetchCatalog(const CatalogInfo& catalog) {
   SetCatalogLastUpdated(base::Time::Now());
 
+  // Update the ping after fetching, even if saving fails or the catalog is
+  // unchanged, to allow server-side control.
+  SetCatalogPing(catalog.ping);
+
   if (!HasCatalogChanged(catalog.id)) {
     return BLOG(1, "Catalog id " << catalog.id << " is up to date");
   }
 
-  SaveCatalog(catalog);
+  SaveCatalog(catalog, base::BindOnce(&Catalog::OnDidFetchCatalogCallback,
+                                      weak_factory_.GetWeakPtr(), catalog));
+}
 
-  NotifyDidUpdateCatalog(catalog);
+void Catalog::OnDidFetchCatalogCallback(const CatalogInfo& catalog,
+                                        bool success) {
+  if (success) {
+    NotifyDidFetchCatalog(catalog);
+  } else {
+    NotifyFailedToFetchCatalog();
+  }
 }
 
 void Catalog::OnFailedToFetchCatalog() {
-  NotifyFailedToUpdateCatalog();
+  NotifyFailedToFetchCatalog();
 }
 
-void Catalog::OnDidMigrateDatabase(const int /*from_version=*/,
-                                   const int /*to_version=*/) {
-  ResetCatalog();
+void Catalog::OnDidMigrateDatabase(int /*from_version*/, int /*to_version*/) {
+  ResetCatalog(/*intentional*/ base::DoNothing());
 }
 
 }  // namespace brave_ads

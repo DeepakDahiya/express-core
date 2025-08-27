@@ -5,125 +5,93 @@
 
 #include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 
-#include "base/debug/crash_logging.h"
+#include "base/containers/fixed_flat_map.h"
 #include "base/notreached.h"
+#include "base/types/cxx23_to_underlying.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
 
 namespace brave_ads {
 
 namespace {
 
 // Do not change the following string values as they are used for persisting and
-// restoring state
+// restoring state.
 constexpr char kUndefinedType[] = "";
 constexpr char kClickedType[] = "click";
 constexpr char kDismissedType[] = "dismiss";
-constexpr char kViewedType[] = "view";
-constexpr char kServedType[] = "served";
-constexpr char kTransferredType[] = "landed";
-constexpr char kSavedType[] = "bookmark";
-constexpr char kFlaggedType[] = "flag";
-constexpr char kUpvotedType[] = "upvote";
-constexpr char kDownvotedType[] = "downvote";
+constexpr char kViewedImpressionType[] = "view";
+constexpr char kServedImpressionType[] = "served";
+constexpr char kLandedType[] = "landed";
+constexpr char kSavedAdType[] = "bookmark";
+constexpr char kMarkAdAsInappropriateType[] = "flag";
+constexpr char kLikedAdType[] = "upvote";
+constexpr char kDislikedAdType[] = "downvote";
 constexpr char kConversionType[] = "conversion";
+constexpr char kInteractionType[] = "interaction";
+constexpr char kMediaPlayType[] = "media_play";
+constexpr char kMedia25Type[] = "media_25";
+constexpr char kMedia100Type[] = "media_100";
+
+constexpr auto kStringToMojomConfirmationTypeMap =
+    base::MakeFixedFlatMap<std::string_view, mojom::ConfirmationType>(
+        {{kUndefinedType, mojom::ConfirmationType::kUndefined},
+         {kClickedType, mojom::ConfirmationType::kClicked},
+         {kDismissedType, mojom::ConfirmationType::kDismissed},
+         {kViewedImpressionType, mojom::ConfirmationType::kViewedImpression},
+         {kServedImpressionType, mojom::ConfirmationType::kServedImpression},
+         {kLandedType, mojom::ConfirmationType::kLanded},
+         {kSavedAdType, mojom::ConfirmationType::kSavedAd},
+         {kMarkAdAsInappropriateType,
+          mojom::ConfirmationType::kMarkAdAsInappropriate},
+         {kLikedAdType, mojom::ConfirmationType::kLikedAd},
+         {kDislikedAdType, mojom::ConfirmationType::kDislikedAd},
+         {kConversionType, mojom::ConfirmationType::kConversion},
+         {kInteractionType, mojom::ConfirmationType::kInteraction},
+         {kMediaPlayType, mojom::ConfirmationType::kMediaPlay},
+         {kMedia25Type, mojom::ConfirmationType::kMedia25},
+         {kMedia100Type, mojom::ConfirmationType::kMedia100}});
+
+constexpr auto kMojomConfirmationTypeToStringMap =
+    base::MakeFixedFlatMap<mojom::ConfirmationType, std::string_view>(
+        {{mojom::ConfirmationType::kUndefined, kUndefinedType},
+         {mojom::ConfirmationType::kClicked, kClickedType},
+         {mojom::ConfirmationType::kDismissed, kDismissedType},
+         {mojom::ConfirmationType::kViewedImpression, kViewedImpressionType},
+         {mojom::ConfirmationType::kServedImpression, kServedImpressionType},
+         {mojom::ConfirmationType::kLanded, kLandedType},
+         {mojom::ConfirmationType::kSavedAd, kSavedAdType},
+         {mojom::ConfirmationType::kMarkAdAsInappropriate,
+          kMarkAdAsInappropriateType},
+         {mojom::ConfirmationType::kLikedAd, kLikedAdType},
+         {mojom::ConfirmationType::kDislikedAd, kDislikedAdType},
+         {mojom::ConfirmationType::kConversion, kConversionType},
+         {mojom::ConfirmationType::kInteraction, kInteractionType},
+         {mojom::ConfirmationType::kMediaPlay, kMediaPlayType},
+         {mojom::ConfirmationType::kMedia25, kMedia25Type},
+         {mojom::ConfirmationType::kMedia100, kMedia100Type}});
 
 }  // namespace
 
-ConfirmationType::ConfirmationType() = default;
-
-ConfirmationType::ConfirmationType(const std::string& value) {
-  if (value == kUndefinedType) {
-    value_ = kUndefined;
-  } else if (value == kClickedType) {
-    value_ = kClicked;
-  } else if (value == kDismissedType) {
-    value_ = kDismissed;
-  } else if (value == kViewedType) {
-    value_ = kViewed;
-  } else if (value == kServedType) {
-    value_ = kServed;
-  } else if (value == kTransferredType) {
-    value_ = kTransferred;
-  } else if (value == kSavedType) {
-    value_ = kSaved;
-  } else if (value == kFlaggedType) {
-    value_ = kFlagged;
-  } else if (value == kUpvotedType) {
-    value_ = kUpvoted;
-  } else if (value == kDownvotedType) {
-    value_ = kDownvoted;
-  } else if (value == kConversionType) {
-    value_ = kConversion;
-  } else {
-    SCOPED_CRASH_KEY_STRING32("ConfirmationType", "value", value);
-    NOTREACHED() << "Unexpected value for ConfirmationType: " << value;
-  }
-}
-
-ConfirmationType::Value ConfirmationType::value() const {
-  return value_;
-}
-
-std::string ConfirmationType::ToString() const {
-  switch (value_) {
-    case kUndefined: {
-      return kUndefinedType;
-    }
-
-    case kClicked: {
-      return kClickedType;
-    }
-
-    case kDismissed: {
-      return kDismissedType;
-    }
-
-    case kViewed: {
-      return kViewedType;
-    }
-
-    case kServed: {
-      return kServedType;
-    }
-
-    case kTransferred: {
-      return kTransferredType;
-    }
-
-    case kSaved: {
-      return kSavedType;
-    }
-
-    case kFlagged: {
-      return kFlaggedType;
-    }
-
-    case kUpvoted: {
-      return kUpvotedType;
-    }
-
-    case kDownvoted: {
-      return kDownvotedType;
-    }
-
-    case kConversion: {
-      return kConversionType;
-    }
+mojom::ConfirmationType ToMojomConfirmationType(std::string_view value) {
+  const auto iter = kStringToMojomConfirmationTypeMap.find(value);
+  if (iter != kStringToMojomConfirmationTypeMap.cend()) {
+    const auto [_, mojom_confirmation_type] = *iter;
+    return mojom_confirmation_type;
   }
 
-  NOTREACHED_NORETURN() << "Unexpected value for Value: " << value_;
+  NOTREACHED() << "Unexpected value for mojom::ConfirmationType: " << value;
 }
 
-bool operator==(const ConfirmationType& lhs, const ConfirmationType& rhs) {
-  return lhs.value() == rhs.value();
-}
+const char* ToString(mojom::ConfirmationType mojom_confirmation_type) {
+  const auto iter =
+      kMojomConfirmationTypeToStringMap.find(mojom_confirmation_type);
+  if (iter != kMojomConfirmationTypeToStringMap.cend()) {
+    const auto [_, confirmation_type] = *iter;
+    return confirmation_type.data();
+  }
 
-bool operator!=(const ConfirmationType& lhs, const ConfirmationType& rhs) {
-  return !(lhs == rhs);
-}
-
-std::ostream& operator<<(std::ostream& os, const ConfirmationType& type) {
-  os << type.ToString();
-  return os;
+  NOTREACHED() << "Unexpected value for mojom::ConfirmationType: "
+               << base::to_underlying(mojom_confirmation_type);
 }
 
 }  // namespace brave_ads

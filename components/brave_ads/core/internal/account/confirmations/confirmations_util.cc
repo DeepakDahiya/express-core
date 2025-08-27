@@ -5,22 +5,19 @@
 
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 
+#include <optional>
 #include <string>
 
 #include "base/base64url.h"
+#include "base/check.h"
 #include "base/json/json_reader.h"
-#include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/payload/confirmation_payload_json_writer.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/reward/reward_info.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_util.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/unblinded_token.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/verification_key.h"
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/verification_signature.h"
-#include "brave/components/brave_ads/core/internal/deprecated/confirmations/confirmation_state_manager.h"
-#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
-#include "brave/components/brave_ads/core/public/units/ad_type.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
 
 namespace brave_ads {
 
@@ -31,7 +28,7 @@ constexpr char kVerificationSignatureKey[] = "signature";
 bool Verify(const ConfirmationInfo& confirmation) {
   CHECK(confirmation.reward);
 
-  absl::optional<cbr::VerificationKey> verification_key =
+  std::optional<cbr::VerificationKey> verification_key =
       confirmation.reward->unblinded_token.DeriveVerificationKey();
   if (!verification_key) {
     return false;
@@ -44,13 +41,13 @@ bool Verify(const ConfirmationInfo& confirmation) {
     return false;
   }
 
-  const absl::optional<base::Value> root = base::JSONReader::Read(credential);
-  if (!root || !root->is_dict()) {
+  std::optional<base::Value::Dict> dict =
+      base::JSONReader::ReadDict(credential);
+  if (!dict) {
     return false;
   }
-  const base::Value::Dict& dict = root->GetDict();
 
-  if (const auto* const value = dict.FindString(kVerificationSignatureKey)) {
+  if (const auto* const value = dict->FindString(kVerificationSignatureKey)) {
     const cbr::VerificationSignature verification_signature =
         cbr::VerificationSignature(*value);
     if (!verification_signature.has_value()) {
@@ -70,9 +67,9 @@ bool Verify(const ConfirmationInfo& confirmation) {
 bool IsValid(const ConfirmationInfo& confirmation) {
   if (confirmation.transaction_id.empty() ||
       confirmation.creative_instance_id.empty() ||
-      confirmation.type == ConfirmationType::kUndefined ||
-      confirmation.ad_type == AdType::kUndefined ||
-      confirmation.created_at.is_null()) {
+      confirmation.type == mojom::ConfirmationType::kUndefined ||
+      confirmation.ad_type == mojom::AdType::kUndefined ||
+      !confirmation.created_at) {
     return false;
   }
 
@@ -85,15 +82,6 @@ bool IsValid(const ConfirmationInfo& confirmation) {
   }
 
   return Verify(confirmation);
-}
-
-void ResetTokens() {
-  ConfirmationStateManager::GetInstance().reset_confirmations();
-  ConfirmationStateManager::GetInstance().Save();
-
-  RemoveAllConfirmationTokens();
-
-  RemoveAllPaymentTokens();
 }
 
 }  // namespace brave_ads

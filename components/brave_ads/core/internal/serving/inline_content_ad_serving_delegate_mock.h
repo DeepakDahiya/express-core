@@ -6,6 +6,8 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_INLINE_CONTENT_AD_SERVING_DELEGATE_MOCK_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_INLINE_CONTENT_AD_SERVING_DELEGATE_MOCK_H_
 
+#include <cstdint>
+
 #include "brave/components/brave_ads/core/internal/serving/inline_content_ad_serving_delegate.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -21,19 +23,13 @@ class InlineContentAdServingDelegateMock
   InlineContentAdServingDelegateMock& operator=(
       const InlineContentAdServingDelegateMock&) = delete;
 
-  InlineContentAdServingDelegateMock(
-      InlineContentAdServingDelegateMock&&) noexcept = delete;
-  InlineContentAdServingDelegateMock& operator=(
-      InlineContentAdServingDelegateMock&&) noexcept = delete;
-
   ~InlineContentAdServingDelegateMock() override;
 
   MOCK_METHOD(void, OnOpportunityAroseToServeInlineContentAd, ());
 
   MOCK_METHOD(void,
               OnDidServeInlineContentAd,
-              (const int32_t tab_id, const InlineContentAdInfo& ad));
-
+              (int32_t, const InlineContentAdInfo&));
   MOCK_METHOD(void, OnFailedToServeInlineContentAd, ());
 };
 

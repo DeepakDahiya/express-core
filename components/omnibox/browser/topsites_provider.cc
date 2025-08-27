@@ -528,10 +528,6 @@ constexpr std::array<std::string_view, 502> kTopSites = {
 
 }  // namespace
 
-// As from autocomplete_provider.h:
-// Search Secondary Provider (suggestion)                              |  100++
-const int TopSitesProvider::kRelevance = 100;
-
 
 TopSitesProvider::TopSitesProvider(AutocompleteProviderClient* client)
     : AutocompleteProvider(AutocompleteProvider::TYPE_SEARCH), client_(client) {
@@ -541,7 +537,7 @@ void TopSitesProvider::Start(const AutocompleteInput& input,
                             bool minimal_changes) {
   matches_.clear();
   auto* prefs = client_->GetPrefs();
-  if (!prefs || !prefs->GetBoolean(omnibox::kTopSiteSuggestionsEnabled)) {
+  if (!prefs || !prefs->GetBoolean(omnibox::kTopSuggestionsEnabled)) {
     return;
   }
 
@@ -553,7 +549,7 @@ void TopSitesProvider::Start(const AutocompleteInput& input,
   const std::string input_text =
       base::ToLowerASCII(base::UTF16ToUTF8(input.text()));
 
-  for (auto* i = kTopSites.begin();
+  for (auto i = kTopSites.begin();
        (i != kTopSites.end()) && (matches_.size() < provider_max_matches());
        ++i) {
     const std::string_view& current_site = *i;
@@ -610,11 +606,10 @@ void TopSitesProvider::AddMatch(const std::u16string& match_string,
                                 const ACMatchClassifications& styles) {
   constexpr const std::u16string_view kScheme(u"https://");
   AutocompleteMatch match(this, kRelevance, false,
-                          AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED);
+                          AutocompleteMatchType::NAVSUGGEST);
   match.fill_into_edit = match_string;
   match.destination_url = GURL(base::StrCat({kScheme, match_string}));
   match.contents = match_string;
   match.contents_class = styles;
-  match.keyword = u"brave";
   matches_.push_back(match);
 }

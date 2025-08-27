@@ -6,6 +6,7 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_PERF_PREDICTOR_BROWSER_BANDWIDTH_LINREG_H_
 #define BRAVE_COMPONENTS_BRAVE_PERF_PREDICTOR_BROWSER_BANDWIDTH_LINREG_H_
 
+#include <array>
 #include <string>
 #include <vector>
 
@@ -14,9 +15,9 @@
 
 namespace brave_perf_predictor {
 
-constexpr double kOutlierThreshold = 6;
+inline constexpr double kOutlierThreshold = 6;
 // if above 20MB _and_ more than 6x of the transfer size, probably an outlier
-constexpr double kSavingsAbsoluteOutlier = 20 << 20;
+inline constexpr double kSavingsAbsoluteOutlier = 20 << 20;
 
 // Computes prediction based on the provided feature vector.
 // It is the client's responsibility to provide features in

@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/strings/strcat.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/payload/confirmation_payload_json_writer.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/non_reward/url_request_builders/create_non_reward_confirmation_url_request_builder_util.h"
@@ -34,26 +33,26 @@ CreateNonRewardConfirmationUrlRequestBuilder::
 }
 
 mojom::UrlRequestInfoPtr CreateNonRewardConfirmationUrlRequestBuilder::Build() {
-  mojom::UrlRequestInfoPtr url_request = mojom::UrlRequestInfo::New();
-  url_request->url = BuildUrl();
-  url_request->headers = BuildHeaders();
-  url_request->content = BuildBody();
-  url_request->content_type = "application/json";
-  url_request->method = mojom::UrlRequestMethodType::kPost;
+  mojom::UrlRequestInfoPtr mojom_url_request = mojom::UrlRequestInfo::New();
+  mojom_url_request->url = BuildUrl();
+  mojom_url_request->headers = BuildHeaders();
+  mojom_url_request->content = BuildBody();
+  mojom_url_request->content_type = "application/json";
+  mojom_url_request->method = mojom::UrlRequestMethodType::kPost;
 
-  return url_request;
+  return mojom_url_request;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 GURL CreateNonRewardConfirmationUrlRequestBuilder::BuildUrl() const {
-  const std::string url_host = confirmation_.ad_type == AdType::kSearchResultAd
-                                   ? GetAnonymousSearchUrlHost()
-                                   : GetAnonymousUrlHost();
+  const std::string url_host =
+      confirmation_.ad_type == mojom::AdType::kSearchResultAd
+          ? GetAnonymousSearchUrlHost()
+          : GetAnonymousUrlHost();
 
-  const std::string spec = base::StrCat(
-      {url_host,
-       BuildCreateNonRewardConfirmationUrlPath(confirmation_.transaction_id)});
+  const std::string spec = url_host + BuildCreateNonRewardConfirmationUrlPath(
+                                          confirmation_.transaction_id);
 
   return GURL(spec);
 }

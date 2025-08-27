@@ -19,7 +19,7 @@ import AccountTypeItem from '../account-type-item'
 import {
   SelectAccountItemWrapper,
   SelectAccountTitle,
-  SelectAccountTypeWrapper
+  SelectAccountTypeWrapper,
 } from './select-account-type.style'
 
 interface Props {
@@ -31,7 +31,7 @@ interface Props {
 export const SelectAccountType = ({
   createAccountOptions,
   buttonText,
-  onSelectAccountType
+  onSelectAccountType,
 }: Props) => {
   // render
   return (
@@ -43,7 +43,7 @@ export const SelectAccountType = ({
       <DividerLine />
 
       {createAccountOptions.map((network, index) => (
-        <SelectAccountItemWrapper key={network.coin}>
+        <SelectAccountItemWrapper key={network.name}>
           <AccountTypeItem
             onClickCreate={onSelectAccountType(network)}
             icon={network.icon}

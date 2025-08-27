@@ -5,17 +5,21 @@
 
 #include "brave/components/brave_ads/core/internal/creatives/notification_ads/notification_ad_manager.h"
 
+#include <algorithm>
+
 #include "base/check.h"
-#include "base/ranges/algorithm.h"
 #include "base/values.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/ads_client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/global_state/global_state.h"
+#include "brave/components/brave_ads/core/internal/prefs/pref_util.h"
+#include "brave/components/brave_ads/core/public/ad_units/notification_ad/notification_ad_info.h"
+#include "brave/components/brave_ads/core/public/ad_units/notification_ad/notification_ad_value_util.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
-#include "brave/components/brave_ads/core/public/units/notification_ad/notification_ad_value_util.h"
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_ANDROID)
-#include "brave/components/brave_ads/core/internal/browser/browser_util.h"
+#include "brave/components/brave_ads/core/internal/application_state/browser_util.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 
 namespace brave_ads {
@@ -23,7 +27,7 @@ namespace brave_ads {
 namespace {
 
 #if BUILDFLAG(IS_ANDROID)
-constexpr int kMaximumNotificationAds = 3;
+constexpr size_t kMaximumNotificationAds = 3;
 #endif  // BUILDFLAG(IS_ANDROID)
 
 }  // namespace
@@ -39,15 +43,14 @@ NotificationAdManager& NotificationAdManager::GetInstance() {
   return GlobalState::GetInstance()->GetNotificationAdManager();
 }
 
-absl::optional<NotificationAdInfo>
-NotificationAdManager::MaybeGetForPlacementId(
+std::optional<NotificationAdInfo> NotificationAdManager::MaybeGetForPlacementId(
     const std::string& placement_id) const {
   CHECK(!placement_id.empty());
 
   const auto iter =
-      base::ranges::find(ads_, placement_id, &NotificationAdInfo::placement_id);
+      std::ranges::find(ads_, placement_id, &NotificationAdInfo::placement_id);
   if (iter == ads_.cend()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return *iter;
@@ -58,63 +61,62 @@ void NotificationAdManager::Add(const NotificationAdInfo& ad) {
 
   ads_.push_back(ad);
 
+  GetAdsClient().ShowNotificationAd(ad);
+
 #if BUILDFLAG(IS_ANDROID)
   if (ads_.size() > kMaximumNotificationAds) {
-    AdsClientHelper::GetInstance()->CloseNotificationAd(
-        ads_.front().placement_id);
-
+    GetAdsClient().CloseNotificationAd(ads_.front().placement_id);
     ads_.pop_front();
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 
-  AdsClientHelper::GetInstance()->SetListPref(prefs::kNotificationAds,
-                                              NotificationAdsToValue(ads_));
+  SetProfileListPref(prefs::kNotificationAds, NotificationAdsToValue(ads_));
 }
 
-bool NotificationAdManager::Remove(const std::string& placement_id) {
+void NotificationAdManager::Remove(const std::string& placement_id,
+                                   bool should_close) {
   CHECK(!placement_id.empty());
 
+  if (should_close) {
+    GetAdsClient().CloseNotificationAd(placement_id);
+  }
+
   const auto iter =
-      base::ranges::find(ads_, placement_id, &NotificationAdInfo::placement_id);
+      std::ranges::find(ads_, placement_id, &NotificationAdInfo::placement_id);
   if (iter == ads_.cend()) {
-    return false;
+    return;
   }
 
   ads_.erase(iter);
 
-  AdsClientHelper::GetInstance()->SetListPref(prefs::kNotificationAds,
-                                              NotificationAdsToValue(ads_));
-
-  return true;
+  SetProfileListPref(prefs::kNotificationAds, NotificationAdsToValue(ads_));
 }
 
-void NotificationAdManager::RemoveAll() {
-  ads_.clear();
-
-  AdsClientHelper::GetInstance()->SetListPref(prefs::kNotificationAds,
-                                              NotificationAdsToValue(ads_));
-}
-
-void NotificationAdManager::CloseAll() {
-  for (const auto& ad : ads_) {
-    AdsClientHelper::GetInstance()->CloseNotificationAd(ad.placement_id);
+void NotificationAdManager::RemoveAll(bool should_close) {
+  if (should_close) {
+    for (const auto& ad : ads_) {
+      GetAdsClient().CloseNotificationAd(ad.placement_id);
+    }
   }
 
-  RemoveAll();
+  ads_.clear();
+  ads_.shrink_to_fit();
+
+  SetProfileListPref(prefs::kNotificationAds, NotificationAdsToValue(ads_));
 }
 
 bool NotificationAdManager::Exists(const std::string& placement_id) const {
   CHECK(!placement_id.empty());
 
-  return base::ranges::find(ads_, placement_id,
-                            &NotificationAdInfo::placement_id) != ads_.cend();
+  return std::ranges::find(ads_, placement_id,
+                           &NotificationAdInfo::placement_id) != ads_.cend();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 void NotificationAdManager::Initialize() {
-  const absl::optional<base::Value::List> list =
-      AdsClientHelper::GetInstance()->GetListPref(prefs::kNotificationAds);
+  std::optional<base::Value::List> list =
+      GetProfileListPref(prefs::kNotificationAds);
   if (!list) {
     return;
   }
@@ -128,7 +130,7 @@ void NotificationAdManager::MaybeRemoveAll() {
   if (WasBrowserUpgraded()) {
     // Android deletes notifications after upgrading an app, so we should remove
     // orphaned notification ads after a browser upgrade.
-    RemoveAll();
+    RemoveAll(/*should_close=*/false);
   }
 #endif  // BUILDFLAG(IS_ANDROID)
 }

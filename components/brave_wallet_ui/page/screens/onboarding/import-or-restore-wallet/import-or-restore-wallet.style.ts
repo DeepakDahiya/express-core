@@ -10,14 +10,11 @@ import BraveWalletSvg from '../../../../assets/svg-icons/onboarding/brave-wallet
 import BraveWalletSvgDark from '../../../../assets/svg-icons/onboarding/brave-wallet-dark.svg'
 import MMSvg from '../../../../assets/svg-icons/onboarding/import-from-metamask.svg'
 import MMSvgDark from '../../../../assets/svg-icons/onboarding/import-from-metamask-dark.svg'
-import LegacyWalletSvg from '../../../../assets/svg-icons/onboarding/reset-to-brave-wallet.svg'
-import LegacyWalletSvgDark from '../../../../assets/svg-icons/onboarding/reset-to-brave-wallet-dark.svg'
 
 // styles
 import { WalletLink } from '../../../../components/shared/style'
 
 export const CardButton = styled(WalletLink)`
-
   cursor: pointer;
 
   box-sizing: border-box;
@@ -39,13 +36,12 @@ export const CardButton = styled(WalletLink)`
 
   &:hover {
     outline-style: solid;
-    outline-color: ${p => p.theme.palette.blurple300};
+    outline-color: ${(p) => p.theme.palette.blurple300};
     outline-width: 2px;
   }
 `
 
 export const CardButtonTextContainer = styled.div`
-
   max-width: 70%;
 
   & > p {
@@ -59,7 +55,7 @@ export const CardButtonTextContainer = styled.div`
     text-align: left;
     margin: 2px;
   }
-  
+
   & > p:first-of-type {
     font-weight: 500;
     font-size: 14px;
@@ -86,18 +82,6 @@ export const MetaMaskIcon = styled.div`
   background-position: center;
   @media (prefers-color-scheme: dark) {
     background-image: url(${MMSvgDark});
-  }
-`
-
-export const LegacyWalletIcon = styled.div`
-  width: 80px;
-  height: 80px;
-  background-image: url(${LegacyWalletSvg});
-  background-repeat: no-repeat;
-  background-size: 100%;
-  background-position: center;
-  @media (prefers-color-scheme: dark) {
-    background-image: url(${LegacyWalletSvgDark});
   }
 `
 

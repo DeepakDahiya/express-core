@@ -12,9 +12,11 @@ namespace brave_ads {
 
 class UrlRequestBuilderInterface {
  public:
-  virtual ~UrlRequestBuilderInterface() = default;
-
+  // Invoked to build and return a URL request.
   virtual mojom::UrlRequestInfoPtr Build() = 0;
+
+ protected:
+  virtual ~UrlRequestBuilderInterface() = default;
 };
 
 }  // namespace brave_ads

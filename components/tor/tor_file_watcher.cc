@@ -8,10 +8,11 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/compiler_specific.h"
 #include "base/files/file.h"
 #include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/string_util.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
@@ -37,7 +38,7 @@ constexpr char kControlAuthCookieName[] = "control_auth_cookie";
 constexpr char kControlPortName[] = "controlport";
 }  // namespace
 
-TorFileWatcher::TorFileWatcher(const base::FilePath& watch_dir_path)
+TorFileWatcher::TorFileWatcher(base::FilePath watch_dir_path)
     : polling_(false),
       repoll_(false),
       watch_dir_path_(std::move(watch_dir_path)),
@@ -195,7 +196,7 @@ bool TorFileWatcher::EatControlCookie(std::vector<uint8_t>& cookie,
   // indicate the file is abnormally large.
   constexpr size_t kBufSiz = 33;
   char buf[kBufSiz];
-  int nread = cookiefile.ReadAtCurrentPos(buf, kBufSiz);
+  int nread = UNSAFE_TODO(cookiefile.ReadAtCurrentPos(buf, kBufSiz));
   if (nread <= 0) {
     VLOG(0) << "tor: failed to read Tor control auth cookie";
     return false;
@@ -206,7 +207,7 @@ bool TorFileWatcher::EatControlCookie(std::vector<uint8_t>& cookie,
   }
 
   // Success!
-  cookie.assign(buf, buf + nread);
+  cookie.assign(buf, UNSAFE_TODO(buf + nread));
   mtime = info.last_accessed;
   VLOG(3) << "Control cookie " << base::HexEncode(buf, nread) << ", mtime "
           << mtime;
@@ -240,7 +241,7 @@ bool TorFileWatcher::EatControlPort(int& port, base::Time& mtime) {
   // Read up to 27/28 octets, the maximum we will ever need.
   const size_t kBufSiz = sizeof(kControlPortMaxTmpl);
   char buf[kBufSiz];
-  int nread = portfile.ReadAtCurrentPos(buf, sizeof buf);
+  int nread = UNSAFE_TODO(portfile.ReadAtCurrentPos(buf, sizeof buf));
   if (nread < 0) {
     VLOG(0) << "tor: failed to read control port";
     return false;
@@ -254,12 +255,11 @@ bool TorFileWatcher::EatControlPort(int& port, base::Time& mtime) {
     return false;
   }
 
-  buf[nread] = '\0';
+  UNSAFE_TODO(buf[nread]) = '\0';
   std::string text(buf);
 
   // Sanity-check the content.
-  if (!base::StartsWith(text, "PORT=", base::CompareCase::SENSITIVE) ||
-      !base::EndsWith(text, kLineBreak, base::CompareCase::SENSITIVE)) {
+  if (!text.starts_with("PORT=") || !text.ends_with(kLineBreak)) {
     VLOG(0) << "tor: invalid control port: "
             << "`" << text << ";";  // XXX escape
     return false;
@@ -267,7 +267,7 @@ bool TorFileWatcher::EatControlPort(int& port, base::Time& mtime) {
 
   // Verify that it's localhost.
   const char expected[] = "PORT=127.0.0.1:";
-  if (!base::StartsWith(text, expected, base::CompareCase::SENSITIVE)) {
+  if (!text.starts_with(expected)) {
     VLOG(0) << "tor: control port has non-local control address";
     return false;
   }

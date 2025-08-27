@@ -12,21 +12,27 @@
 #include <variant>
 
 #include "base/functional/bind.h"
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/task/thread_pool.h"
+#include "brave/components/brave_news/browser/lib.rs.h"
 #include "brave/components/brave_news/browser/network.h"
 #include "brave/components/brave_news/common/brave_news.mojom.h"
-#include "brave/components/brave_news/rust/lib.rs.h"
+#include "content/public/browser/browser_thread.h"
 #include "net/base/load_flags.h"
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
+#include "third_party/rust/cxx/v1/cxx.h"
 #include "ui/base/l10n/time_format.h"
+#include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace brave_news {
 
 namespace {
+
+constexpr size_t kMaxRedirectCount = 7;
 
 std::string GetResponseCharset(network::SimpleURLLoader* loader) {
   auto* response_info = loader->ResponseInfo();
@@ -66,7 +72,7 @@ mojom::ArticlePtr RustFeedItemToArticle(const FeedItem& rust_feed_item,
 }
 
 using ParseFeedCallback =
-    base::OnceCallback<void(absl::variant<DirectFeedResult, DirectFeedError>)>;
+    base::OnceCallback<void(std::variant<DirectFeedResult, DirectFeedError>)>;
 void ParseFeedDataOffMainThread(const GURL& feed_url,
                                 std::string publisher_id,
                                 std::string body_content,
@@ -78,7 +84,7 @@ void ParseFeedDataOffMainThread(const GURL& feed_url,
       base::BindOnce(
           [](const GURL& feed_url, std::string publisher_id,
              std::string body_content)
-              -> absl::variant<DirectFeedResult, DirectFeedError> {
+              -> std::variant<DirectFeedResult, DirectFeedError> {
             brave_news::FeedData data;
             if (!parse_feed_bytes(::rust::Slice<const uint8_t>(
                                       (const uint8_t*)body_content.data(),
@@ -144,48 +150,117 @@ DirectFeedResponse::~DirectFeedResponse() = default;
 DirectFeedResponse::DirectFeedResponse(DirectFeedResponse&&) = default;
 
 DirectFeedFetcher::DirectFeedFetcher(
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : url_loader_factory_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    base::WeakPtr<Delegate> delegate)
+    : url_loader_factory_(url_loader_factory), delegate_(delegate) {}
 DirectFeedFetcher::~DirectFeedFetcher() = default;
 
-void DirectFeedFetcher::DownloadFeed(const GURL& url,
+void DirectFeedFetcher::DownloadFeed(GURL url,
                                      std::string publisher_id,
                                      DownloadFeedCallback callback) {
+  DownloadFeedHelper(url, url, publisher_id, 0, std::move(callback),
+                     std::nullopt);
+}
+
+void DirectFeedFetcher::DownloadFeedHelper(
+    GURL url,
+    GURL original_url,
+    std::string publisher_id,
+    size_t redirect_count,
+    DownloadFeedCallback callback,
+    std::optional<Delegate::HTTPSUpgradeInfo> https_upgrade_info) {
+  if (!https_upgrade_info && url.SchemeIs(url::kHttpScheme)) {
+    content::GetUIThreadTaskRunner({})->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            [](base::WeakPtr<Delegate> delegate,
+               scoped_refptr<base::SingleThreadTaskRunner> source_task_runner,
+               base::OnceCallback<void(
+                   std::optional<Delegate::HTTPSUpgradeInfo>)> callback,
+               GURL url) {
+              if (delegate.WasInvalidated()) {
+                return;
+              }
+              auto upgrade_info = delegate->GetURLHTTPSUpgradeInfo(url);
+              source_task_runner->PostTask(
+                  FROM_HERE,
+                  base::BindOnce(
+                      [](base::OnceCallback<void(
+                             std::optional<Delegate::HTTPSUpgradeInfo>)>
+                             callback,
+                         Delegate::HTTPSUpgradeInfo result) {
+                        std::move(callback).Run(result);
+                      },
+                      std::move(callback), upgrade_info));
+            },
+            delegate_, base::SingleThreadTaskRunner::GetCurrentDefault(),
+            base::BindOnce(&DirectFeedFetcher::DownloadFeedHelper,
+                           weak_ptr_factory_.GetWeakPtr(), url, original_url,
+                           publisher_id, redirect_count, std::move(callback)),
+            url));
+    return;
+  }
   // Make request
   auto request = std::make_unique<network::ResourceRequest>();
+  bool https_upgraded = false;
+
+  if (https_upgrade_info && https_upgrade_info->should_upgrade) {
+    GURL::Replacements replacements;
+    replacements.SetSchemeStr(url::kHttpsScheme);
+    url = url.ReplaceComponents(replacements);
+    https_upgraded = true;
+  }
+
   request->url = url;
   request->load_flags = net::LOAD_DO_NOT_SAVE_COOKIES;
   request->credentials_mode = network::mojom::CredentialsMode::kOmit;
   request->method = net::HttpRequestHeaders::kGetMethod;
+  request->redirect_mode = network::mojom::RedirectMode::kError;
   auto url_loader = network::SimpleURLLoader::Create(
       std::move(request), GetNetworkTrafficAnnotationTag());
   url_loader->SetRetryOptions(
       1, network::SimpleURLLoader::RetryMode::RETRY_ON_5XX |
              network::SimpleURLLoader::RetryMode::RETRY_ON_NETWORK_CHANGE);
+  url_loader->SetTimeoutDuration(GetDefaultRequestTimeout());
   url_loader->SetAllowHttpErrorResults(true);
   auto iter = url_loaders_.insert(url_loaders_.begin(), std::move(url_loader));
+
   iter->get()->DownloadToString(
       url_loader_factory_.get(),
       // Handle response
       base::BindOnce(&DirectFeedFetcher::OnFeedDownloaded,
                      weak_ptr_factory_.GetWeakPtr(), iter, std::move(callback),
-                     url, std::move(publisher_id)),
+                     url, original_url, std::move(publisher_id),
+                     https_upgrade_info, https_upgraded, redirect_count),
       5 * 1024 * 1024);
 }
 
 void DirectFeedFetcher::OnFeedDownloaded(
     SimpleURLLoaderList::iterator iter,
     DownloadFeedCallback callback,
-    const GURL& feed_url,
+    GURL url,
+    GURL original_url,
     std::string publisher_id,
+    std::optional<Delegate::HTTPSUpgradeInfo> https_upgrade_info,
+    bool https_upgraded,
+    size_t redirect_count,
     std::unique_ptr<std::string> response_body) {
   auto* loader = iter->get();
+
+  if (loader->NetError() == net::ERR_FAILED && loader->GetFinalURL() != url &&
+      redirect_count < kMaxRedirectCount) {
+    // Redirect detected. Make another request
+    DownloadFeedHelper(loader->GetFinalURL(), original_url, publisher_id,
+                       redirect_count + 1, std::move(callback), std::nullopt);
+    return;
+  }
+
   auto response_code = -1;
 
   auto result = DirectFeedResponse();
   result.charset = GetResponseCharset(loader);
-  result.url = feed_url;
-  result.final_url = loader->GetFinalURL();
+  result.url = original_url;
+  result.final_url = url;
 
   if (loader->ResponseInfo()) {
     auto headers_list = loader->ResponseInfo()->headers;
@@ -200,7 +275,17 @@ void DirectFeedFetcher::OnFeedDownloaded(
   std::string body_content = response_body ? *response_body : "";
 
   if (response_code < 200 || response_code >= 300 || body_content.empty()) {
-    VLOG(1) << feed_url.spec() << " invalid response, state: " << response_code;
+    VLOG(1) << url.spec() << " invalid response, state: " << response_code;
+    if (https_upgraded && https_upgrade_info &&
+        !https_upgrade_info->should_force) {
+      GURL::Replacements replacements;
+      replacements.SetSchemeStr(url::kHttpScheme);
+      url = url.ReplaceComponents(replacements);
+      https_upgrade_info->should_upgrade = false;
+      DownloadFeedHelper(url, original_url, publisher_id, redirect_count,
+                         std::move(callback), https_upgrade_info);
+      return;
+    }
     DirectFeedError error;
     error.body_content = std::move(body_content);
     result.result = std::move(error);
@@ -209,7 +294,7 @@ void DirectFeedFetcher::OnFeedDownloaded(
   }
 
   ParseFeedDataOffMainThread(
-      feed_url, std::move(publisher_id), std::move(body_content),
+      url, std::move(publisher_id), std::move(body_content),
       base::BindOnce(&DirectFeedFetcher::OnParsedFeedData,
                      weak_ptr_factory_.GetWeakPtr(), std::move(callback),
                      std::move(result)));
@@ -218,7 +303,7 @@ void DirectFeedFetcher::OnFeedDownloaded(
 void DirectFeedFetcher::OnParsedFeedData(
     DownloadFeedCallback callback,
     DirectFeedResponse result,
-    absl::variant<DirectFeedResult, DirectFeedError> data) {
+    std::variant<DirectFeedResult, DirectFeedError> data) {
   result.result = std::move(data);
   std::move(callback).Run(std::move(result));
 }

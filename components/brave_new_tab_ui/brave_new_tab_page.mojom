@@ -6,11 +6,13 @@
 module brave_new_tab_page.mojom;
 
 import "url/mojom/url.mojom";
+import "brave/components/brave_vpn/common/mojom/brave_vpn.mojom";
+import "brave/components/ntp_background_images/browser/mojom/ntp_background_images.mojom";
 
 const string kRandomSolidColorValue = "solid";
 const string kRandomGradientColorValue = "gradient";
 
-const int8 kMaxCustomImageBackgrounds = 24;
+const int8 kMaxCustomImageBackgrounds = 48;
 
 struct BraveBackground {
   string name;
@@ -23,10 +25,10 @@ struct BraveBackground {
 struct CustomBackground {
   url.mojom.Url url;
 
-  // |color| is a 
-  //   * color value for css background property or 'gradient' when 
+  // |color| is a
+  //   * color value for css background property or 'gradient' when
   //     |use_random_item| is false.
-  //   * either kRandomSlidColorValue or kRandomGradientColorValue when 
+  //   * either kRandomSlidColorValue or kRandomGradientColorValue when
   //     |use_random_item| is true
   string color;
 
@@ -43,7 +45,17 @@ interface PageHandlerFactory {
   // The WebUI page's |BrowserProxy| singleton calls this method when the page
   // is first initialized.
   CreatePageHandler(pending_remote<Page> page,
-                    pending_receiver<PageHandler> handler);
+                    pending_receiver<PageHandler> handler,
+                    pending_receiver<NewTabMetrics> new_tab_metrics,
+                    pending_receiver<ntp_background_images.mojom.SponsoredRichMediaAdEventHandler> rich_media_events_handler);
+};
+
+struct SearchEngineInfo {
+  int64 prepopulate_id;
+  string name;
+  string keyword;
+  string host;
+  url.mojom.Url favicon_url;
 };
 
 // Browser-side handler for requests from WebUI page.
@@ -58,17 +70,33 @@ interface PageHandler {
   // When |seleteceBackground| is empty, should use random background.
   UseBraveBackground(string selected_background);
   GetBraveBackgrounds() => (array<BraveBackground> backgrounds);
-  
-  // |color| is a 
-  //   * color value for css background property or 'gradient' when 
+
+  // |color| is a
+  //   * color value for css background property or 'gradient' when
   //     |use_random_color| is false.
-  //   * either kRandomSlidColorValue or kRandomGradientColorValue when 
+  //   * either kRandomSlidColorValue or kRandomGradientColorValue when
   //     |use_random_color| is true
   UseColorBackground(string color, bool use_random_color);
 
   TryBraveSearchPromotion(string input, bool open_new_tab);
   DismissBraveSearchPromotion();
   IsSearchPromotionEnabled() => (bool enabled);
+
+  GetSearchEngines() => (array<SearchEngineInfo> search_engines);
+  SearchWhatYouTyped(string host, string query, bool alt_key, bool ctrl_key, bool meta_key, bool shift_key);
+
+  // BraveVPN
+  [EnableIf=enable_brave_vpn]
+  RefreshVPNState();
+
+  [EnableIf=enable_brave_vpn]
+  LaunchVPNPanel();
+
+  [EnableIf=enable_brave_vpn]
+  OpenVPNAccountPage(brave_vpn.mojom.ManageURLType type);
+
+  [EnableIf=enable_brave_vpn]
+  ReportVPNWidgetUsage();
 };
 
 // WebUI-side handler for requests from the browser.
@@ -78,4 +106,12 @@ interface Page {
   OnCustomImageBackgroundsUpdated(array<CustomBackground> backgrounds);
 
   OnSearchPromotionDisabled();
+};
+
+// Reporter for NTP metrics.
+interface NewTabMetrics {
+  // Report the default engine for the NTP search widget.
+  ReportNTPSearchDefaultEngine(int64? prepopulate_id);
+  // Report a usage of the NTP search widget.
+  ReportNTPSearchUsage(int64 prepopulate_id);
 };

@@ -10,7 +10,7 @@ import {
   Header,
   Title,
   CloseButton,
-  Modal
+  Modal,
 } from './popup-modals.style'
 
 interface Props {
@@ -24,11 +24,14 @@ const ESC_KEY = 'Escape'
 export const PopupModal = (props: Props) => {
   const { title, onClose, children } = props
 
-  const handleKeyDown = React.useCallback((event: KeyboardEvent) => {
-    if (event.key === ESC_KEY) {
-      onClose()
-    }
-  }, [onClose])
+  const handleKeyDown = React.useCallback(
+    (event: KeyboardEvent) => {
+      if (event.key === ESC_KEY) {
+        onClose()
+      }
+    },
+    [onClose],
+  )
 
   React.useEffect(() => {
     document.addEventListener('keydown', handleKeyDown)

@@ -2,129 +2,118 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
+
 import { mapLimit } from 'async'
-import { SKIP_PRICE_LOOKUP_COINGECKO_ID } from '../common/constants/magics'
-import WalletApiProxy from '../common/wallet_api_proxy'
-import { BraveWallet, SupportedCoinTypes, SupportedTestNetworks } from '../constants/types'
-import {
-  externalWalletProviders
-} from '../common/async/brave_rewards_api_proxy'
+import { Store } from 'redux'
 
-export const getPriceIdForToken = (
-  token: Pick<
-    BraveWallet.BlockchainToken,
-    | 'contractAddress'
-    | 'symbol'
-    | 'coingeckoId'
-    | 'chainId'
-    >
-) => {
-  if (token?.coingeckoId) {
-    return token.coingeckoId.toLowerCase()
-  }
+// actions
+import { PanelActions } from '../panel/actions'
 
-  // Skip price of testnet tokens other than goerli-eth
-  if (SupportedTestNetworks.includes(token.chainId)) {
-    // Goerli ETH has a real-world value
-    if (
-      token.chainId === BraveWallet.GOERLI_CHAIN_ID &&
-      !token.contractAddress
-    ) {
-      return 'goerli-eth' // coingecko id
-    }
-    return SKIP_PRICE_LOOKUP_COINGECKO_ID
-  }
+// types
+import type WalletApiProxy from '../common/wallet_api_proxy'
+import { BraveWallet } from '../constants/types'
 
-  const isEthereumNetwork = token.chainId === BraveWallet.MAINNET_CHAIN_ID
-  if (
-    (isEthereumNetwork ||
-      externalWalletProviders
-        .includes(token.chainId)
-    ) &&
-    token.contractAddress
-  ) {
-    return token.contractAddress.toLowerCase()
-  }
-
-  return token.symbol.toLowerCase()
-}
+// utils
+import getAPIProxy from '../common/async/bridge'
 
 export function handleEndpointError(
   endpointName: string,
   friendlyMessage: string,
-  error: any
+  error: any,
 ) {
   const message = `${friendlyMessage}: ${error?.message || error}`
   console.log(`error in: ${endpointName || 'endpoint'}: ${message}`)
   console.error(error)
   return {
-    error: friendlyMessage
+    error: friendlyMessage,
   }
 }
 
-export async function getEnabledCoinTypes(api: WalletApiProxy) {
-  const {
-    isFilecoinEnabled, isSolanaEnabled, isBitcoinEnabled, isZCashEnabled
-  } = (await api.walletHandler.getWalletInfo()).walletInfo
-
-  // Get All Networks
-  return SupportedCoinTypes.filter((coin) => {
-    // MULTICHAIN: While we are still in development for FIL and SOL,
-    // we will not use their networks unless enabled by brave://flags
-    return (
-      (coin === BraveWallet.CoinType.FIL && isFilecoinEnabled) ||
-      (coin === BraveWallet.CoinType.SOL && isSolanaEnabled) ||
-      (coin === BraveWallet.CoinType.BTC && isBitcoinEnabled) ||
-      (coin === BraveWallet.CoinType.ZEC && isZCashEnabled) ||
-      coin === BraveWallet.CoinType.ETH
-    )
-  })
-}
-
-export async function getAllNetworksList(api: WalletApiProxy) {
+export async function getVisibleNetworksList(api: WalletApiProxy) {
   const { jsonRpcService } = api
 
-  const enabledCoinTypes = await getEnabledCoinTypes(api)
+  const { enabledCoins } = (await api.walletHandler.getWalletInfo()).walletInfo
 
-  // Get All Networks
-  const networks = (
-    await mapLimit(
-      enabledCoinTypes, 10, (async (coin: number) => {
-        const { networks } = await jsonRpcService.getAllNetworks(coin)
-        return networks
-      })
-    )
-  ).flat(1)
-
-  return networks
-}
-
-export async function getNetwork(
-  api: WalletApiProxy,
-  arg: Pick<BraveWallet.NetworkInfo, 'chainId' | 'coin'>
-): Promise<BraveWallet.NetworkInfo | undefined> {
-  const networksList = await getAllNetworksList(api)
-
-  return networksList.find(
-    (n) => n.chainId === arg.chainId && n.coin === arg.coin
-  )
-}
-
-export async function getVisibleNetworksList(
-  api: WalletApiProxy
-) {
-  const { jsonRpcService } = api
-
-  const enabledCoinTypes = await getEnabledCoinTypes(api)
+  const { networks: allNetworks } = await jsonRpcService.getAllNetworks()
 
   const networks = (
-    await mapLimit(enabledCoinTypes, 10, async (coin: number) => {
-      const { networks } = await jsonRpcService.getAllNetworks(coin)
+    await mapLimit(enabledCoins, 10, async (coin: number) => {
       const { chainIds: hiddenChainIds } =
         await jsonRpcService.getHiddenNetworks(coin)
-      return networks.filter((n) => !hiddenChainIds.includes(n.chainId))
+      return allNetworks.filter((n) => !hiddenChainIds.includes(n.chainId))
     })
   ).flat(1)
 
   return networks
+}
+
+export function navigateToConnectHardwareWallet(
+  panelHandler: BraveWallet.PanelHandlerRemote,
+  store: Pick<Store, 'dispatch' | 'getState'>,
+) {
+  panelHandler.setCloseOnDeactivate(false)
+
+  const selectedPanel: string | undefined =
+    store.getState()?.panel?.selectedPanel
+
+  if (selectedPanel === 'connectHardwareWallet') {
+    return
+  }
+
+  store.dispatch(PanelActions.navigateTo('connectHardwareWallet'))
+  store.dispatch(PanelActions.setHardwareWalletInteractionError(undefined))
+}
+
+export const getHasPendingRequests = async () => {
+  const { braveWalletService, jsonRpcService, txService } = getAPIProxy()
+
+  const { count: pendingTxsCount } =
+    await txService.getPendingTransactionsCount()
+  if (pendingTxsCount > 0) {
+    return true
+  }
+
+  const { requests: signSolTxsRequests } =
+    await braveWalletService.getPendingSignSolTransactionsRequests()
+  if (signSolTxsRequests.length) {
+    return true
+  }
+
+  const { requests: signMessageRequests } =
+    await braveWalletService.getPendingSignMessageRequests()
+  if (signMessageRequests.length) {
+    return true
+  }
+
+  const { requests: addTokenRequests } =
+    await braveWalletService.getPendingAddSuggestTokenRequests()
+  if (addTokenRequests.length) {
+    return true
+  }
+
+  const { requests: decryptRequests } =
+    await braveWalletService.getPendingDecryptRequests()
+  if (decryptRequests.length) {
+    return true
+  }
+
+  const { requests: publicKeyRequests } =
+    await braveWalletService.getPendingGetEncryptionPublicKeyRequests()
+  if (publicKeyRequests.length) {
+    return true
+  }
+
+  const { requests: addChainRequests } =
+    await jsonRpcService.getPendingAddChainRequests()
+  if (addChainRequests.length) {
+    return true
+  }
+
+  const { requests: switchChainRequests } =
+    await jsonRpcService.getPendingSwitchChainRequests()
+  if (switchChainRequests.length) {
+    return true
+  }
+
+  return false
 }

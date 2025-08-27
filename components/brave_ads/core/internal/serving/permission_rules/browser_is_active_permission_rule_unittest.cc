@@ -6,34 +6,37 @@
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/browser_is_active_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rule_feature.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsBrowserIsActivePermissionRuleTest : public UnitTestBase {
- protected:
-  const BrowserIsActivePermissionRule permission_rule_;
-};
+class BraveAdsBrowserIsActivePermissionRuleTest : public test::TestBase {};
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest, ShouldAllow) {
   // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterForeground();
 
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasBrowserIsActivePermission());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest, ShouldNotAllow) {
   // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
   NotifyBrowserDidResignActive();
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_FALSE(HasBrowserIsActivePermission());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
@@ -48,37 +51,46 @@ TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasBrowserIsActivePermission());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
        ShouldNotAllowIfWindowIsActiveAndBrowserIsBackgrounded) {
   // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_FALSE(HasBrowserIsActivePermission());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
        ShouldNotAllowIfWindowIsInactiveAndBrowserIsForegrounded) {
   // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
   NotifyBrowserDidResignActive();
   NotifyBrowserDidEnterForeground();
 
   // Act & Assert
-  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_FALSE(HasBrowserIsActivePermission());
 }
 
 TEST_F(BraveAdsBrowserIsActivePermissionRuleTest,
        ShouldNotAllowIfWindowIsInactiveAndBrowserIsBackgrounded) {
   // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
   NotifyBrowserDidResignActive();
   NotifyBrowserDidEnterBackground();
 
   // Act & Assert
-  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_FALSE(HasBrowserIsActivePermission());
 }
 
 }  // namespace brave_ads

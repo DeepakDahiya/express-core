@@ -6,6 +6,7 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REFILL_CONFIRMATION_TOKENS_REFILL_CONFIRMATION_TOKENS_DELEGATE_MOCK_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REFILL_CONFIRMATION_TOKENS_REFILL_CONFIRMATION_TOKENS_DELEGATE_MOCK_H_
 
+#include <cstddef>
 #include <string>
 
 #include "brave/components/brave_ads/core/internal/account/utility/refill_confirmation_tokens/refill_confirmation_tokens_delegate.h"
@@ -23,25 +24,17 @@ class RefillConfirmationTokensDelegateMock
   RefillConfirmationTokensDelegateMock& operator=(
       const RefillConfirmationTokensDelegateMock&) = delete;
 
-  RefillConfirmationTokensDelegateMock(
-      RefillConfirmationTokensDelegateMock&&) noexcept = delete;
-  RefillConfirmationTokensDelegateMock& operator=(
-      RefillConfirmationTokensDelegateMock&&) noexcept = delete;
-
   ~RefillConfirmationTokensDelegateMock() override;
 
+  MOCK_METHOD(void, OnWillRefillConfirmationTokens, (size_t));
   MOCK_METHOD(void, OnDidRefillConfirmationTokens, ());
-
   MOCK_METHOD(void, OnFailedToRefillConfirmationTokens, ());
-
-  MOCK_METHOD(void,
-              OnWillRetryRefillingConfirmationTokens,
-              (const base::Time retry_at));
+  MOCK_METHOD(void, OnWillRetryRefillingConfirmationTokens, (base::Time));
   MOCK_METHOD(void, OnDidRetryRefillingConfirmationTokens, ());
 
   MOCK_METHOD(void,
               OnCaptchaRequiredToRefillConfirmationTokens,
-              (const std::string& captcha_id));
+              (const std::string&));
 };
 
 }  // namespace brave_ads

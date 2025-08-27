@@ -6,17 +6,19 @@
 #include "brave/components/brave_wallet/browser/solana_transaction.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/containers/extend.h"
 #include "base/test/bind.h"
 #include "base/test/gtest_util.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/test/task_environment.h"
 #include "base/test/values_test_util.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
 #include "brave/components/brave_wallet/browser/json_rpc_service.h"
 #include "brave/components/brave_wallet/browser/keyring_service.h"
+#include "brave/components/brave_wallet/browser/network_manager.h"
 #include "brave/components/brave_wallet/browser/solana_account_meta.h"
 #include "brave/components/brave_wallet/browser/solana_instruction.h"
 #include "brave/components/brave_wallet/browser/test_utils.h"
@@ -24,7 +26,6 @@
 #include "brave/components/brave_wallet/common/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/common/brave_wallet_types.h"
 #include "brave/components/brave_wallet/common/encoding_utils.h"
-#include "brave/components/brave_wallet/common/features.h"
 #include "brave/components/brave_wallet/common/solana_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -52,8 +53,9 @@ class SolanaTransactionUnitTest : public testing::Test {
                 &url_loader_factory_)) {
     brave_wallet::RegisterProfilePrefs(prefs_.registry());
     brave_wallet::RegisterLocalStatePrefs(local_state_.registry());
-    json_rpc_service_ =
-        std::make_unique<JsonRpcService>(shared_url_loader_factory_, &prefs_);
+    network_manager_ = std::make_unique<NetworkManager>(&prefs_);
+    json_rpc_service_ = std::make_unique<JsonRpcService>(
+        shared_url_loader_factory_, network_manager_.get(), &prefs_, nullptr);
     keyring_service_ = std::make_unique<KeyringService>(json_rpc_service_.get(),
                                                         &prefs_, &local_state_);
   }
@@ -96,22 +98,24 @@ class SolanaTransactionUnitTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable local_state_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  std::unique_ptr<NetworkManager> network_manager_;
   std::unique_ptr<JsonRpcService> json_rpc_service_;
   std::unique_ptr<KeyringService> keyring_service_;
 };
 
 TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitAndEnableFeature(
-      brave_wallet::features::kBraveWalletSolanaFeature);
   ASSERT_TRUE(
       RestoreWallet(keyring_service(), kMnemonicDivideCruise, "brave", false));
 
-  ASSERT_TRUE(AddAccount(keyring_service(), "Account 1"));
+  auto selected_dapp_account = AddAccount(keyring_service(), "Account 1");
+  ASSERT_TRUE(selected_dapp_account);
   auto from_account = AddAccount(keyring_service(), "Account 2");
   ASSERT_TRUE(from_account);
   ASSERT_EQ(from_account->address, kFromAccount);
-  SetSelectedAccount(from_account->account_id);
+
+  // Set selected account to be different from the one we expect to be used in
+  // signing the transaction (from_account).
+  SetSelectedAccount(selected_dapp_account->account_id);
 
   uint64_t last_valid_block_height = 3090;
 
@@ -119,10 +123,10 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
       // Program ID
       mojom::kSolanaSystemProgramId,
       // Accounts
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, false, true)},
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, false, true)},
       // Data
-      {2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0});
+      std::vector<uint8_t>({2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0}));
   auto msg = SolanaMessage::CreateLegacyMessage(
       kRecentBlockhash, last_valid_block_height, kFromAccount, {instruction});
   ASSERT_TRUE(msg);
@@ -166,8 +170,9 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
       12,                                       // data length
       2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0  // data
   };
-  std::string expected_tx = base::Base64Encode(expected_bytes);
-  EXPECT_EQ(transaction.GetSignedTransaction(keyring_service()), expected_tx);
+  EXPECT_EQ(transaction.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id, nullptr),
+            expected_bytes);
 
   // Test three signers where one is fee payer and two signatures are from
   // sign_transaction_param. Create two transactions where signer accounts
@@ -176,15 +181,15 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
   // signer/signature order in the passed in message.
   instruction = SolanaInstruction(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kTestAccount, absl::nullopt, true, true)},
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount, std::nullopt, true, true)},
       {});
   SolanaInstruction instruction2(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kTestAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, true, true)},
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, true, true)},
       {});
   auto msg2 = SolanaMessage::CreateLegacyMessage(
       kRecentBlockhash, last_valid_block_height, kFromAccount, {instruction});
@@ -203,11 +208,11 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
   std::vector<uint8_t> test_sig1(64, 1);
   std::vector<uint8_t> test_sig2(64, 2);
   sign_tx_param->signatures.push_back(
-      mojom::SignaturePubkeyPair::New(absl::nullopt, kFromAccount));
-  sign_tx_param->signatures.push_back(
-      mojom::SignaturePubkeyPair::New(test_sig1, kToAccount));
-  sign_tx_param->signatures.push_back(
-      mojom::SignaturePubkeyPair::New(test_sig2, kTestAccount));
+      mojom::SignaturePubkeyPair::New(nullptr, kFromAccount));
+  sign_tx_param->signatures.push_back(mojom::SignaturePubkeyPair::New(
+      mojom::SolanaSignature::New(test_sig1), kToAccount));
+  sign_tx_param->signatures.push_back(mojom::SignaturePubkeyPair::New(
+      mojom::SolanaSignature::New(test_sig2), kTestAccount));
   transaction2.set_sign_tx_param(sign_tx_param.Clone());
 
   // Should have 3 signatures, 1 from signing the passed in serialized msg
@@ -218,7 +223,7 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
   ASSERT_TRUE(Base58Decode(sign_tx_param->encoded_serialized_msg,
                            &message_bytes, kSolanaMaxTxSize, false));
   std::vector<uint8_t> signature =
-      keyring_service()->SignMessageBySolanaKeyring(*from_account->account_id,
+      keyring_service()->SignMessageBySolanaKeyring(from_account->account_id,
                                                     message_bytes);
   expected_bytes.insert(expected_bytes.end(), signature.begin(),
                         signature.end());
@@ -228,15 +233,18 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
                         test_sig1.end());
   expected_bytes.insert(expected_bytes.end(), message_bytes.begin(),
                         message_bytes.end());
-  expected_tx = base::Base64Encode(expected_bytes);
-  EXPECT_EQ(transaction2.GetSignedTransaction(keyring_service()), expected_tx);
+  EXPECT_EQ(transaction2.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id, nullptr),
+            expected_bytes);
 
   // Test when there are redundant signatures not in signers, we will only use
   // those in signers.
   sign_tx_param->signatures.push_back(mojom::SignaturePubkeyPair::New(
-      std::vector<uint8_t>({64, 3}), kTestAccount2));
+      mojom::SolanaSignature::New(std::vector<uint8_t>(64, 3)), kTestAccount2));
   transaction2.set_sign_tx_param(sign_tx_param.Clone());
-  EXPECT_EQ(transaction2.GetSignedTransaction(keyring_service()), expected_tx);
+  EXPECT_EQ(transaction2.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id, nullptr),
+            expected_bytes);
 
   // Test when num of signatures available is less than signers.size in message,
   // the # of signature should still be the same to signers.size and unavaliable
@@ -251,25 +259,24 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransaction) {
   expected_bytes.insert(expected_bytes.end(), kSolanaSignatureSize * 2, 0);
   expected_bytes.insert(expected_bytes.end(), message_bytes.begin(),
                         message_bytes.end());
-  EXPECT_EQ(transaction2.GetSignedTransaction(keyring_service()),
-            base::Base64Encode(expected_bytes));
-
-  // Test key_service is nullptr.
-  EXPECT_TRUE(transaction2.GetSignedTransaction(nullptr).empty());
+  EXPECT_EQ(transaction2.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id, nullptr),
+            expected_bytes);
 
   std::vector<uint8_t> oversized_data(1232, 1);
   instruction = SolanaInstruction(
       // Program ID
       mojom::kSolanaSystemProgramId,
       // Accounts
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, false, true)},
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, false, true)},
       oversized_data);
   auto msg4 = SolanaMessage::CreateLegacyMessage(
       kRecentBlockhash, last_valid_block_height, kFromAccount, {instruction});
   ASSERT_TRUE(msg4);
   SolanaTransaction transaction4 = SolanaTransaction(std::move(*msg4));
-  EXPECT_TRUE(transaction4.GetSignedTransaction(keyring_service()).empty());
+  EXPECT_FALSE(transaction4.GetSignedTransactionBytes(
+      keyring_service(), from_account->account_id, nullptr));
 }
 
 TEST_F(SolanaTransactionUnitTest, FromSignedTransactionBytes) {
@@ -348,10 +355,10 @@ TEST_F(SolanaTransactionUnitTest, FromSignedTransactionBytes) {
       // Program ID
       mojom::kSolanaSystemProgramId,
       // Accounts
-      {SolanaAccountMeta(from_account, absl::nullopt, true, true),
-       SolanaAccountMeta(to_account, absl::nullopt, true, true)},
+      {SolanaAccountMeta(from_account, std::nullopt, true, true),
+       SolanaAccountMeta(to_account, std::nullopt, true, true)},
       // Data
-      {2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0});
+      std::vector<uint8_t>({2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0}));
   auto msg = SolanaMessage::CreateLegacyMessage(
       recent_blockhash, last_valid_block_height, from_account, {instruction});
   ASSERT_TRUE(msg);
@@ -383,8 +390,8 @@ TEST_F(SolanaTransactionUnitTest, FromToSolanaTxData) {
       // Program ID
       mojom::kSolanaSystemProgramId,
       // Accounts
-      {SolanaAccountMeta(from_account, absl::nullopt, true, true),
-       SolanaAccountMeta(to_account, absl::nullopt, false, true),
+      {SolanaAccountMeta(from_account, std::nullopt, true, true),
+       SolanaAccountMeta(to_account, std::nullopt, false, true),
        SolanaAccountMeta(kTestAccount, 2, false, true),
        SolanaAccountMeta(kTestAccount2, 3, false, false)},
       data);
@@ -417,9 +424,11 @@ TEST_F(SolanaTransactionUnitTest, FromToSolanaTxData) {
   auto sign_tx_param = mojom::SolanaSignTransactionParam::New();
   sign_tx_param->encoded_serialized_msg = "encoded_serialized_message";
   sign_tx_param->signatures.push_back(
-      mojom::SignaturePubkeyPair::New(absl::nullopt, "public_key1"));
+      mojom::SignaturePubkeyPair::New(nullptr, "public_key1"));
   sign_tx_param->signatures.push_back(mojom::SignaturePubkeyPair::New(
-      std::vector<uint8_t>(kSolanaSignatureSize, 1), "public_key2"));
+      mojom::SolanaSignature::New(
+          std::vector<uint8_t>(kSolanaSignatureSize, 1)),
+      "public_key2"));
   transaction.set_sign_tx_param(sign_tx_param->Clone());
 
   auto solana_tx_data = transaction.ToSolanaTxData();
@@ -428,7 +437,7 @@ TEST_F(SolanaTransactionUnitTest, FromToSolanaTxData) {
   EXPECT_EQ(solana_tx_data->last_valid_block_height, last_valid_block_height);
   EXPECT_EQ(solana_tx_data->fee_payer, from_account);
   EXPECT_EQ(solana_tx_data->to_wallet_address, to_account);
-  EXPECT_EQ(solana_tx_data->spl_token_mint_address, "");
+  EXPECT_EQ(solana_tx_data->token_address, "");
   EXPECT_EQ(solana_tx_data->lamports, 10000000u);
   EXPECT_EQ(solana_tx_data->amount, 0u);
   EXPECT_EQ(solana_tx_data->tx_type,
@@ -493,8 +502,8 @@ TEST_F(SolanaTransactionUnitTest, FromToValue) {
       // Program ID
       mojom::kSolanaSystemProgramId,
       // Accounts
-      {SolanaAccountMeta(from_account, absl::nullopt, true, true),
-       SolanaAccountMeta(to_account, absl::nullopt, false, true),
+      {SolanaAccountMeta(from_account, std::nullopt, true, true),
+       SolanaAccountMeta(to_account, std::nullopt, false, true),
        SolanaAccountMeta(kTestAccount, 2, false, true),
        SolanaAccountMeta(kTestAccount2, 3, false, false)},
       data);
@@ -523,10 +532,16 @@ TEST_F(SolanaTransactionUnitTest, FromToValue) {
   auto sign_tx_param = mojom::SolanaSignTransactionParam::New();
   sign_tx_param->encoded_serialized_msg = "encoded_serialized_message";
   sign_tx_param->signatures.push_back(
-      mojom::SignaturePubkeyPair::New(absl::nullopt, "public_key1"));
+      mojom::SignaturePubkeyPair::New(nullptr, "public_key1"));
   sign_tx_param->signatures.push_back(mojom::SignaturePubkeyPair::New(
-      std::vector<uint8_t>(2, 1), "public_key2"));
+      mojom::SolanaSignature::New(std::vector<uint8_t>(2, 1)), "public_key2"));
   transaction.set_sign_tx_param(sign_tx_param->Clone());
+
+  auto fee_estimation = mojom::SolanaFeeEstimation::New();
+  fee_estimation->base_fee = 5000;
+  fee_estimation->compute_units = 200;
+  fee_estimation->fee_per_compute_unit = 25;
+  transaction.set_fee_estimation(std::move(fee_estimation));
 
   base::Value::Dict value = transaction.ToValue();
   auto expect_tx_value = base::test::ParseJson(R"(
@@ -615,6 +630,7 @@ TEST_F(SolanaTransactionUnitTest, FromToValue) {
         "lamports": "10000000",
         "amount": "0",
         "tx_type": 6,
+        "wired_tx": "",
         "send_options": {
           "maxRetries": "1",
           "preflightCommitment": "confirmed",
@@ -626,6 +642,11 @@ TEST_F(SolanaTransactionUnitTest, FromToValue) {
             {"public_key": "public_key1"},
             {"signature": "AQE=", "public_key": "public_key2"}
           ]
+        },
+        "fee_estimation": {
+          "base_fee": "5000",
+          "compute_units": "200",
+          "fee_per_compute_unit": "25"
         }
       }
   )");
@@ -679,7 +700,8 @@ TEST_F(SolanaTransactionUnitTest, SetTxType) {
           SolanaSPLTokenTransferWithAssociatedTokenAccountCreation,
       mojom::TransactionType::SolanaDappSignAndSendTransaction,
       mojom::TransactionType::SolanaDappSignTransaction,
-      mojom::TransactionType::SolanaSwap};
+      mojom::TransactionType::SolanaSwap,
+      mojom::TransactionType::SolanaCompressedNftTransfer};
   for (int i = 0; i <= max; i++) {
     auto type = static_cast<mojom::TransactionType>(i);
     if (valid_types.contains(type)) {
@@ -701,10 +723,10 @@ TEST_F(SolanaTransactionUnitTest, GetBase64EncodedMessage) {
       // Program ID
       mojom::kSolanaSystemProgramId,
       // Accounts
-      {SolanaAccountMeta(from_account, absl::nullopt, true, true),
-       SolanaAccountMeta(to_account, absl::nullopt, false, true)},
+      {SolanaAccountMeta(from_account, std::nullopt, true, true),
+       SolanaAccountMeta(to_account, std::nullopt, false, true)},
       // Data
-      {2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0});
+      std::vector<uint8_t>({2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0}));
   auto msg =
       SolanaMessage::CreateLegacyMessage("", 0, from_account, {instruction});
   ASSERT_TRUE(msg);
@@ -734,15 +756,15 @@ TEST_F(SolanaTransactionUnitTest, GetBase64EncodedMessage) {
 TEST_F(SolanaTransactionUnitTest, GetSerializedMessage) {
   SolanaInstruction ins1(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kTestAccount, absl::nullopt, true, true)},
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount, std::nullopt, true, true)},
       {});
   SolanaInstruction ins2(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kTestAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, true, true)},
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, true, true)},
       {});
 
   auto msg1 = SolanaMessage::CreateLegacyMessage(kRecentBlockhash, 0,
@@ -780,52 +802,55 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransactionBytes) {
   ASSERT_TRUE(
       RestoreWallet(keyring_service(), kMnemonicDivideCruise, "brave", false));
 
-  ASSERT_TRUE(AddAccount(keyring_service(), "Account 1"));
+  auto selected_dapp_account = AddAccount(keyring_service(), "Account 1");
+  ASSERT_TRUE(selected_dapp_account);
   auto from_account = AddAccount(keyring_service(), "Account 2");
   ASSERT_TRUE(from_account);
   ASSERT_EQ(from_account->address, kFromAccount);
-  SetSelectedAccount(from_account->account_id);
+
+  // Set selected account to be different from the one we expect to be used in
+  // signing the transaction (from_account).
+  SetSelectedAccount(selected_dapp_account->account_id);
 
   // Empty message is invalid
-  std::vector<uint8_t> signature_bytes;
-  std::string signature =
+  auto signature_bytes = mojom::SolanaSignature::New(*Base58Decode(
       "fJaHU9cDUoLsWLXJSPTgW3bAkhuZL319v2479igQtSp1ZyBjPi923jWkALg48uS75z5fp1JK"
-      "1T4vdWi2D35fFEj";
-  EXPECT_TRUE(Base58Decode(signature, &signature_bytes, kSolanaSignatureSize));
+      "1T4vdWi2D35fFEj",
+      kSolanaSignatureSize));
   SolanaTransaction transaction(mojom::SolanaMessageVersion::kLegacy, "", 0, "",
                                 SolanaMessageHeader(), {}, {}, {});
-  EXPECT_EQ(transaction.GetSignedTransactionBytes(keyring_service(),
-                                                  &signature_bytes),
-            absl::nullopt);
+  EXPECT_EQ(transaction.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id, signature_bytes),
+            std::nullopt);
 
   // Valid
   SolanaInstruction instruction_one_signer(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kTestAccount2, absl::nullopt, false, true)},
-      {2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0});
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount2, std::nullopt, false, true)},
+      std::vector<uint8_t>({2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0}));
   auto message = SolanaMessage::CreateLegacyMessage(
       "9sHcv6xwn9YkB8nxTUGKDwPwNnmqVp5oAXxU8Fdkm4J6", 0, kFromAccount,
       {instruction_one_signer});
   ASSERT_TRUE(message);
   SolanaTransaction transaction2(std::move(*message));
-  EXPECT_NE(transaction2.GetSignedTransactionBytes(keyring_service(),
-                                                   &signature_bytes),
-            absl::nullopt);
+  EXPECT_NE(transaction2.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id, signature_bytes),
+            std::nullopt);
 
   // Empty signature is invalid
-  std::vector<uint8_t> empty_signature_bytes;
-  EXPECT_EQ(transaction2.GetSignedTransactionBytes(keyring_service(),
-                                                   &empty_signature_bytes),
-            absl::nullopt);
+  EXPECT_EQ(transaction2.GetSignedTransactionBytes(
+                keyring_service(), from_account->account_id,
+                mojom::SolanaSignature::New()),
+            std::nullopt);
 
   // Test empty signature will be appended for non-selected-account signers.
   SolanaInstruction instruction_three_signers(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kFromAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kTestAccount2, absl::nullopt, true, true),
-       SolanaAccountMeta(kToAccount, absl::nullopt, true, true)},
-      {2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0});
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount2, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, true, true)},
+      std::vector<uint8_t>({2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0}));
   message = SolanaMessage::CreateLegacyMessage(
       "9sHcv6xwn9YkB8nxTUGKDwPwNnmqVp5oAXxU8Fdkm4J6", 0, kFromAccount,
       {instruction_three_signers});
@@ -833,69 +858,64 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransactionBytes) {
   SolanaTransaction transaction3(std::move(*message));
   std::vector<mojom::SignaturePubkeyPairPtr> sig_key_pairs;
   sig_key_pairs.emplace_back(
-      mojom::SignaturePubkeyPair::New(absl::nullopt, kFromAccount));
+      mojom::SignaturePubkeyPair::New(nullptr, kFromAccount));
   sig_key_pairs.emplace_back(
-      mojom::SignaturePubkeyPair::New(absl::nullopt, kTestAccount2));
+      mojom::SignaturePubkeyPair::New(nullptr, kTestAccount2));
   sig_key_pairs.emplace_back(
-      mojom::SignaturePubkeyPair::New(signature_bytes, kToAccount));
-  auto seriazlied_msg = transaction3.message()->Serialize(nullptr);
-  ASSERT_TRUE(seriazlied_msg);
+      mojom::SignaturePubkeyPair::New(signature_bytes.Clone(), kToAccount));
+  auto serialized_msg = transaction3.message()->Serialize(nullptr);
+  ASSERT_TRUE(serialized_msg);
   transaction3.set_sign_tx_param(mojom::SolanaSignTransactionParam::New(
-      Base58Encode(*seriazlied_msg), std::move(sig_key_pairs)));
+      Base58Encode(*serialized_msg), std::move(sig_key_pairs)));
   auto signed_tx_bytes = transaction3.GetSignedTransactionBytes(
-      keyring_service(), &signature_bytes);
+      keyring_service(), from_account->account_id, signature_bytes);
   ASSERT_TRUE(signed_tx_bytes);
   std::vector<uint8_t> expect_signed_tx_bytes = {3};
-  expect_signed_tx_bytes.insert(expect_signed_tx_bytes.end(),
-                                signature_bytes.begin(), signature_bytes.end());
-  expect_signed_tx_bytes.insert(expect_signed_tx_bytes.end(),
-                                kSolanaSignatureSize, 0);
-  expect_signed_tx_bytes.insert(expect_signed_tx_bytes.end(),
-                                signature_bytes.begin(), signature_bytes.end());
-  expect_signed_tx_bytes.insert(expect_signed_tx_bytes.end(),
-                                seriazlied_msg->begin(), seriazlied_msg->end());
+  base::Extend(expect_signed_tx_bytes, signature_bytes->bytes);
+  base::Extend(expect_signed_tx_bytes,
+               std::vector<uint8_t>(kSolanaSignatureSize, 0));
+  base::Extend(expect_signed_tx_bytes, signature_bytes->bytes);
+  base::Extend(expect_signed_tx_bytes, *serialized_msg);
   EXPECT_EQ(*signed_tx_bytes, expect_signed_tx_bytes);
 
   transaction3.set_sign_tx_param(nullptr);
   std::vector<uint8_t> expect_signed_tx_bytes2 = {3};
-  expect_signed_tx_bytes2.insert(expect_signed_tx_bytes2.end(),
-                                 signature_bytes.begin(),
-                                 signature_bytes.end());
-  expect_signed_tx_bytes2.insert(expect_signed_tx_bytes2.end(),
-                                 kSolanaSignatureSize * 2, 0);
-  expect_signed_tx_bytes2.insert(expect_signed_tx_bytes2.end(),
-                                 seriazlied_msg->begin(),
-                                 seriazlied_msg->end());
-  EXPECT_EQ(transaction3
-                .GetSignedTransactionBytes(keyring_service(), &signature_bytes)
-                .value(),
-            expect_signed_tx_bytes2);
+  base::Extend(expect_signed_tx_bytes2, signature_bytes->bytes);
+  base::Extend(expect_signed_tx_bytes2,
+               std::vector<uint8_t>(kSolanaSignatureSize * 2, 0));
+  base::Extend(expect_signed_tx_bytes2, *serialized_msg);
+  EXPECT_EQ(
+      transaction3
+          .GetSignedTransactionBytes(keyring_service(),
+                                     from_account->account_id, signature_bytes)
+          .value(),
+      expect_signed_tx_bytes2);
 
   // Test selected account is not the fee payer.
   SolanaInstruction ins_not_fee_payer(
       mojom::kSolanaSystemProgramId,
-      {SolanaAccountMeta(kTestAccount, absl::nullopt, true, true),
-       SolanaAccountMeta(kFromAccount, absl::nullopt, true, true)},
-      {2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0});
+      {SolanaAccountMeta(kTestAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kFromAccount, std::nullopt, true, true)},
+      std::vector<uint8_t>({2, 0, 0, 0, 128, 150, 152, 0, 0, 0, 0, 0}));
   message = SolanaMessage::CreateLegacyMessage(
       kRecentBlockhash, 0, kTestAccount, {ins_not_fee_payer});
   ASSERT_TRUE(message);
   SolanaTransaction transaction4(std::move(*message));
   std::vector<uint8_t> passed_sig_bytes(kSolanaSignatureSize, 1);
   sig_key_pairs.clear();
+  sig_key_pairs.emplace_back(mojom::SignaturePubkeyPair::New(
+      mojom::SolanaSignature::New(passed_sig_bytes), kTestAccount));
   sig_key_pairs.emplace_back(
-      mojom::SignaturePubkeyPair::New(passed_sig_bytes, kTestAccount));
-  sig_key_pairs.emplace_back(
-      mojom::SignaturePubkeyPair::New(absl::nullopt, kFromAccount));
-  seriazlied_msg = transaction4.message()->Serialize(nullptr);
-  ASSERT_TRUE(seriazlied_msg);
+      mojom::SignaturePubkeyPair::New(nullptr, kFromAccount));
+  serialized_msg = transaction4.message()->Serialize(nullptr);
+  ASSERT_TRUE(serialized_msg);
   transaction4.set_sign_tx_param(mojom::SolanaSignTransactionParam::New(
-      Base58Encode(*seriazlied_msg), std::move(sig_key_pairs)));
+      Base58Encode(*serialized_msg), std::move(sig_key_pairs)));
 
   expect_signed_tx_bytes = {2};  // 2 signatures
   std::vector<uint8_t> selected_account_sig =
-      keyring_service()->SignMessageBySolanaKeyring(*from_account->account_id,
-                                                    *seriazlied_msg);
+      keyring_service()->SignMessageBySolanaKeyring(from_account->account_id,
+                                                    *serialized_msg);
   expect_signed_tx_bytes.insert(expect_signed_tx_bytes.end(),
                                 passed_sig_bytes.begin(),
                                 passed_sig_bytes.end());
@@ -903,10 +923,92 @@ TEST_F(SolanaTransactionUnitTest, GetSignedTransactionBytes) {
                                 selected_account_sig.begin(),
                                 selected_account_sig.end());
   expect_signed_tx_bytes.insert(expect_signed_tx_bytes.end(),
-                                seriazlied_msg->begin(), seriazlied_msg->end());
-  auto result = transaction4.GetSignedTransactionBytes(keyring_service());
+                                serialized_msg->begin(), serialized_msg->end());
+  auto result = transaction4.GetSignedTransactionBytes(
+      keyring_service(), from_account->account_id, nullptr);
   ASSERT_TRUE(result);
   EXPECT_EQ(*result, expect_signed_tx_bytes);
+}
+
+TEST_F(SolanaTransactionUnitTest, IsPartialSigned) {
+  auto msg = SolanaMessage::CreateLegacyMessage("", 0, kFromAccount, {});
+  ASSERT_TRUE(msg);
+  auto tx = SolanaTransaction(std::move(*msg));
+  EXPECT_FALSE(tx.IsPartialSigned());
+
+  auto param = mojom::SolanaSignTransactionParam::New(
+      "encoded_serialized_message",
+      std::vector<mojom::SignaturePubkeyPairPtr>());
+  tx.set_sign_tx_param(param.Clone());
+  EXPECT_FALSE(tx.IsPartialSigned());
+
+  param->signatures.emplace_back(
+      mojom::SignaturePubkeyPair::New(nullptr, kFromAccount));
+  tx.set_sign_tx_param(param.Clone());
+  EXPECT_FALSE(tx.IsPartialSigned());
+
+  param->signatures.emplace_back(mojom::SignaturePubkeyPair::New(
+      mojom::SolanaSignature::New(
+          std::vector<uint8_t>(kSolanaSignatureSize, 0)),
+      kFromAccount));
+  tx.set_sign_tx_param(param.Clone());
+  EXPECT_FALSE(tx.IsPartialSigned());
+
+  param->signatures.emplace_back(mojom::SignaturePubkeyPair::New(
+      mojom::SolanaSignature::New(
+          std::vector<uint8_t>(kSolanaSignatureSize, 1)),
+      kFromAccount));
+  tx.set_sign_tx_param(param.Clone());
+  EXPECT_TRUE(tx.IsPartialSigned());
+}
+
+TEST_F(SolanaTransactionUnitTest, GetUnsignedTransaction) {
+  auto msg1 =
+      SolanaMessage::CreateLegacyMessage(kRecentBlockhash, 0, kFromAccount, {});
+  auto tx1 = SolanaTransaction(std::move(*msg1));
+  EXPECT_EQ(tx1.GetUnsignedTransaction(), "");
+
+  SolanaInstruction ins1(
+      mojom::kSolanaSystemProgramId,
+      {SolanaAccountMeta(kFromAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kToAccount, std::nullopt, true, true),
+       SolanaAccountMeta(kTestAccount, std::nullopt, true, true)},
+      {});
+
+  auto msg2 = SolanaMessage::CreateLegacyMessage(kRecentBlockhash, 0,
+                                                 kFromAccount, {ins1});
+  ASSERT_TRUE(msg2);
+  auto tx2 = SolanaTransaction(std::move(*msg2));
+  EXPECT_EQ(tx2.GetUnsignedTransaction(),
+            "AwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA"
+            "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMAAQQi"
+            "Qpz5e+d8NwrhAMqG/WfddvN4Tz69QaQxYsK2YW+h/v/"
+            "g5PVe7heEzihS+dvLZ55u2135j4bPrLNMQwappJUmItA1NksucDd7D+"
+            "gJLbL8xD5AqdVCV8AQmGz+"
+            "lLcnM8AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAIO/U8lswd7/"
+            "sEOI0dsqBqnwiY65qQYRV3sGKjeiQHhbAQMDAAECAA==");
+
+  // Test unsigned transaction over kSolanaMaxTransactionSize.
+  std::vector<SolanaAccountMeta> large_accounts;
+  for (size_t i = 0; i < 50; ++i) {
+    large_accounts.emplace_back(kFromAccount, std::nullopt, true, true);
+    large_accounts.emplace_back(kToAccount, std::nullopt, true, true);
+  }
+
+  std::vector<uint8_t> large_data(1000, 0xAA);
+
+  SolanaInstruction large_instruction(mojom::kSolanaSystemProgramId,
+                                      std::move(large_accounts), large_data,
+                                      std::nullopt);
+
+  auto large_message = SolanaMessage::CreateLegacyMessage(
+      kRecentBlockhash, 0, kFromAccount, {large_instruction});
+  ASSERT_TRUE(large_message);
+
+  SolanaTransaction large_tx(std::move(*large_message));
+  EXPECT_EQ(large_tx.GetUnsignedTransaction(), "");
 }
 
 }  // namespace brave_wallet

@@ -6,13 +6,23 @@
 #include "brave/components/brave_vpn/common/wireguard/wireguard_utils.h"
 
 #include <stdint.h>
+
+#include <optional>
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/compiler_specific.h"
+#include "base/logging.h"
 #include "base/strings/string_util.h"
 #include "crypto/openssl_util.h"
+#include "net/base/ip_address.h"
+#include "net/base/url_util.h"
 #include "third_party/boringssl/src/include/openssl/base64.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
+#include "third_party/re2/src/re2/re2.h"
+#include "url/url_util.h"
 
 namespace brave_vpn {
 
@@ -22,10 +32,7 @@ namespace {
 std::string EncodeBase64(const std::vector<uint8_t>& in) {
   std::string res;
   size_t size = 0;
-  if (!EVP_EncodedLength(&size, in.size())) {
-    DCHECK(false);
-    return "";
-  }
+  CHECK(EVP_EncodedLength(&size, in.size()));
   std::vector<uint8_t> out(size);
   size_t numEncBytes = EVP_EncodeBlock(&out.front(), &in.front(), in.size());
   DCHECK_NE(numEncBytes, 0u);
@@ -35,6 +42,8 @@ std::string EncodeBase64(const std::vector<uint8_t>& in) {
 
 constexpr char kCloudflareIPv4[] = "1.1.1.1";
 // Template for wireguard config generation.
+// For a quick reference on the keys/values, please see:
+// https://github.com/pirate/wireguard-docs?tab=readme-ov-file#config-reference
 constexpr char kWireguardConfigTemplate[] = R"(
   [Interface]
   PrivateKey = {client_private_key}
@@ -48,14 +57,14 @@ constexpr char kWireguardConfigTemplate[] = R"(
 
 }  // namespace
 
-absl::optional<std::string> CreateWireguardConfig(
+std::optional<std::string> CreateWireguardConfig(
     const std::string& client_private_key,
     const std::string& server_public_key,
     const std::string& vpn_server_hostname,
     const std::string& mapped_ipv4_address) {
   if (client_private_key.empty() || server_public_key.empty() ||
       vpn_server_hostname.empty() || mapped_ipv4_address.empty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   std::string config = kWireguardConfigTemplate;
   base::ReplaceSubstringsAfterOffset(&config, 0, "{client_private_key}",
@@ -72,12 +81,90 @@ absl::optional<std::string> CreateWireguardConfig(
 }
 
 WireguardKeyPair GenerateNewX25519Keypair() {
-  crypto::EnsureOpenSSLInit();
   uint8_t pubkey[32] = {}, privkey[32] = {};
   X25519_keypair(pubkey, privkey);
   return std::make_tuple(
-      EncodeBase64(std::vector<uint8_t>(pubkey, pubkey + 32)),
-      EncodeBase64(std::vector<uint8_t>(privkey, privkey + 32)));
+      EncodeBase64(std::vector<uint8_t>(pubkey, UNSAFE_TODO(pubkey + 32))),
+      EncodeBase64(std::vector<uint8_t>(privkey, UNSAFE_TODO(privkey + 32))));
+}
+
+std::optional<std::string> ValidateKey(const std::string& key,
+                                       const std::string& field_name) {
+  if (key.length() == 0) {
+    VLOG(1) << "`" << field_name << "` does not have a value";
+    return std::nullopt;
+  }
+
+  if (!re2::RE2::FullMatch(key, R"(^[-A-Za-z0-9+\/=]+$)")) {
+    VLOG(1) << "`" << field_name << "` contains invalid characters";
+    return std::nullopt;
+  }
+
+  std::string decoded_config;
+  if (!base::Base64Decode(key, &decoded_config) || decoded_config.empty()) {
+    VLOG(1) << "`" << field_name << "` is not base64 encoded";
+    return std::nullopt;
+  }
+
+  if (decoded_config.length() != 32) {
+    VLOG(1) << "`" << field_name << "` is not the correct length";
+    return std::nullopt;
+  }
+
+  return key;
+}
+
+std::optional<std::string> ValidateAddress(const std::string& address) {
+  if (!re2::RE2::FullMatch(address, R"(^[A-Za-z0-9._\-:[\]]+$)")) {
+    VLOG(1) << "address contains invalid characters";
+    return std::nullopt;
+  }
+
+  auto parsed = net::IPAddress::FromIPLiteral(address);
+  if (!parsed.has_value()) {
+    VLOG(1) << "failed parsing address";
+    return std::nullopt;
+  }
+
+  auto parsed_ip = parsed.value();
+  if (!parsed_ip.IsValid()) {
+    VLOG(1) << "address is not valid";
+    return std::nullopt;
+  }
+
+  if (!parsed_ip.IsIPv4()) {
+    VLOG(1) << "address must be IPv4";
+    return std::nullopt;
+  }
+
+  if (parsed_ip.IsLinkLocal() && parsed_ip.IsLoopback()) {
+    VLOG(1) << "address should not be local / loopback";
+    return std::nullopt;
+  }
+
+  return parsed_ip.ToString();
+}
+
+std::optional<std::string> ValidateEndpoint(const std::string& endpoint) {
+  if (!re2::RE2::FullMatch(endpoint, R"(^[A-Za-z0-9._\-:]+$)")) {
+    VLOG(1) << "endpoint contains invalid characters";
+    return std::nullopt;
+  }
+
+  std::string parsed_host;
+  int parsed_port = 0;
+  if (!net::ParseHostAndPort(endpoint, &parsed_host, &parsed_port)) {
+    VLOG(1) << "failed parsing endpoint";
+    return std::nullopt;
+  }
+
+  if (!url::DomainIs(parsed_host, "guardianapp.com") &&
+      !url::DomainIs(parsed_host, "sudosecuritygroup.com")) {
+    VLOG(1) << "endpoint is not a valid hostname";
+    return std::nullopt;
+  }
+
+  return parsed_host;
 }
 
 }  // namespace wireguard

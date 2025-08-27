@@ -3,15 +3,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/brave_wallet/browser/permission_utils.h"
+
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
-#include "brave/components/brave_wallet/browser/permission_utils.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/permissions/permission_lifetime_utils.h"
+#include "components/permissions/request_type.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 
@@ -43,30 +47,22 @@ TEST(PermissionUtilsUnitTest, GetConcatOriginFromWalletAddresses) {
       }};
 
   url::Origin origin = url::Origin::Create(GURL("https://test.com"));
-  for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
-    url::Origin out_origin;
-    EXPECT_TRUE(
-        GetConcatOriginFromWalletAddresses(origin, cases[i].addrs, &out_origin))
-        << "case: " << i;
-    EXPECT_EQ(out_origin,
-              url::Origin::Create(GURL(cases[i].expected_out_origin)))
-        << "case: " << i;
+  for (const auto& test_case : cases) {
+    SCOPED_TRACE(testing::Message() << test_case.expected_out_origin);
 
-    EXPECT_FALSE(GetConcatOriginFromWalletAddresses(
-        url::Origin(), cases[i].addrs, &out_origin))
-        << "case: " << i;
-    EXPECT_FALSE(GetConcatOriginFromWalletAddresses(
-        origin, std::vector<std::string>(), &out_origin))
-        << "case: " << i;
+    EXPECT_EQ(GetConcatOriginFromWalletAddresses(origin, test_case.addrs),
+              url::Origin::Create(GURL(test_case.expected_out_origin)));
+
+    EXPECT_FALSE(
+        GetConcatOriginFromWalletAddresses(url::Origin(), test_case.addrs));
+    EXPECT_FALSE(
+        GetConcatOriginFromWalletAddresses(origin, std::vector<std::string>()));
 
     // Origin with port case:
-    EXPECT_TRUE(GetConcatOriginFromWalletAddresses(
-        url::Origin::Create(GURL("https://test.com:123")), cases[i].addrs,
-        &out_origin))
-        << "case: " << i;
-    EXPECT_EQ(out_origin,
-              url::Origin::Create(GURL(cases[i].expected_out_origin_with_port)))
-        << "case: " << i;
+    EXPECT_EQ(
+        GetConcatOriginFromWalletAddresses(
+            url::Origin::Create(GURL("https://test.com:123")), test_case.addrs),
+        url::Origin::Create(GURL(test_case.expected_out_origin_with_port)));
   }
 }
 
@@ -89,45 +85,53 @@ TEST(PermissionUtilsUnitTest, ParseRequestingOriginFromSubRequest) {
        "https://test.com--BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8/path",
        "https://test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
        "https://test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8:123",
-       "BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8"}};
+       "BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8"},
+      {permissions::RequestType::kBraveCardano,
+       "https://"
+       "test.com--"
+       "1815_0_0_0",
+       "https://"
+       "test.com--"
+       "1815_0_0_0/path",
+       "https://"
+       "test.com__"
+       "1815_0_0_0",
+       "https://"
+       "test.com__"
+       "1815_0_0_0:123",
+       "1815_0_0_0"}};
 
   url::Origin requesting_origin;
   std::string account;
-  for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+  for (auto& test_case : cases) {
+    SCOPED_TRACE(testing::Message() << test_case.account);
+
     // Invalid requesting_origin format:
     EXPECT_FALSE(ParseRequestingOriginFromSubRequest(
-        cases[i].type, url::Origin::Create(GURL(cases[i].invalid_origin)),
-        nullptr, nullptr))
-        << "case: " << i;
+        test_case.type, url::Origin::Create(GURL(test_case.invalid_origin)),
+        nullptr, nullptr));
     EXPECT_FALSE(ParseRequestingOriginFromSubRequest(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].invalid_origin_with_path)), nullptr,
-        nullptr))
-        << "case: " << i;
+        test_case.type,
+        url::Origin::Create(GURL(test_case.invalid_origin_with_path)), nullptr,
+        nullptr));
     EXPECT_FALSE(ParseRequestingOriginFromSubRequest(
-        cases[i].type, url::Origin(), nullptr, nullptr))
-        << "case: " << i;
+        test_case.type, url::Origin(), nullptr, nullptr));
     // invalid type
     EXPECT_FALSE(ParseRequestingOriginFromSubRequest(
         permissions::RequestType::kGeolocation,
-        url::Origin::Create(GURL(cases[i].valid_origin)), nullptr, nullptr))
-        << "case: " << i;
+        url::Origin::Create(GURL(test_case.valid_origin)), nullptr, nullptr));
     EXPECT_TRUE(ParseRequestingOriginFromSubRequest(
-        cases[i].type, url::Origin::Create(GURL(cases[i].valid_origin)),
-        &requesting_origin, &account))
-        << "case: " << i;
+        test_case.type, url::Origin::Create(GURL(test_case.valid_origin)),
+        &requesting_origin, &account));
     EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com"));
-    EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(account, cases[i].account))
-        << "case: " << i;
+    EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(account, test_case.account));
 
     EXPECT_TRUE(ParseRequestingOriginFromSubRequest(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].valid_origin_with_port)),
-        &requesting_origin, &account))
-        << "case: " << i;
+        test_case.type,
+        url::Origin::Create(GURL(test_case.valid_origin_with_port)),
+        &requesting_origin, &account));
     EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com:123"));
-    EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(account, cases[i].account))
-        << "case: " << i;
+    EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(account, test_case.account));
   }
 
   // separator in domain would still work
@@ -187,87 +191,98 @@ TEST(PermissionUtilsUnitTest, ParseRequestingOrigin) {
        "test.com{addr=BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8&addr="
        "JDqrvDz8d8tFCADashbUKQDKfJZFobNy13ugN65t1wvV}:123",
        "BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
-       "JDqrvDz8d8tFCADashbUKQDKfJZFobNy13ugN65t1wvV"}};
+       "JDqrvDz8d8tFCADashbUKQDKfJZFobNy13ugN65t1wvV"},
+      {permissions::RequestType::kBraveCardano,
+       "https://"
+       "test.com--"
+       "1815_0_0_0",
+       "https://"
+       "test.com__"
+       "1815_0_0_0/path",
+       "https://"
+       "test.com{addr="
+       "1815_0_0_0}",
+       "https://"
+       "test.com{addr="
+       "1815_0_0_0}:123",
+       "https://"
+       "test.com{addr="
+       "1815_0_0_0&addr="
+       "1815_0_0_0}",
+       "https://"
+       "test.com{addr="
+       "1815_0_0_0&addr="
+       "1815_0_0_0}:123",
+       "1815_0_0_0", "1815_0_0_0"}};
 
   std::string account;
-  for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
+  for (auto& test_case : cases) {
+    SCOPED_TRACE(testing::Message() << test_case.account1);
+
     // Invalid requesting_origin format:
     EXPECT_FALSE(ParseRequestingOrigin(
-        cases[i].type, url::Origin::Create(GURL(cases[i].invalid_origin)),
-        nullptr, nullptr))
-        << "case: " << i;
+        test_case.type, url::Origin::Create(GURL(test_case.invalid_origin)),
+        nullptr, nullptr));
     EXPECT_FALSE(ParseRequestingOrigin(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].invalid_origin_with_path)), nullptr,
-        nullptr))
-        << "case: " << i;
+        test_case.type,
+        url::Origin::Create(GURL(test_case.invalid_origin_with_path)), nullptr,
+        nullptr));
     EXPECT_FALSE(
-        ParseRequestingOrigin(cases[i].type, url::Origin(), nullptr, nullptr))
-        << "case: " << i;
+        ParseRequestingOrigin(test_case.type, url::Origin(), nullptr, nullptr));
     // invalid type
     EXPECT_FALSE(ParseRequestingOrigin(
         permissions::RequestType::kGeolocation,
-        url::Origin::Create(GURL(cases[i].valid_origin)), nullptr, nullptr))
-        << "case: " << i;
+        url::Origin::Create(GURL(test_case.valid_origin)), nullptr, nullptr));
 
     std::queue<std::string> address_queue;
 
     // Origin without port:
     url::Origin requesting_origin;
     EXPECT_TRUE(ParseRequestingOrigin(
-        cases[i].type, url::Origin::Create(GURL(cases[i].valid_origin)),
+        test_case.type, url::Origin::Create(GURL(test_case.valid_origin)),
         &requesting_origin, &address_queue));
-    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com"))
-        << "case: " << i;
-    EXPECT_EQ(address_queue.size(), 1u) << "case: " << i;
+    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com"));
+    EXPECT_EQ(address_queue.size(), 1u);
     EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(address_queue.front(),
-                                                 cases[i].account1))
-        << "case: " << i;
+                                                 test_case.account1));
 
     EXPECT_TRUE(ParseRequestingOrigin(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].valid_origin_two_accounts)),
-        &requesting_origin, nullptr))
-        << "case: " << i;
-    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com"))
-        << "case: " << i;
+        test_case.type,
+        url::Origin::Create(GURL(test_case.valid_origin_two_accounts)),
+        &requesting_origin, nullptr));
+    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com"));
 
     // Origin with port:
     EXPECT_TRUE(ParseRequestingOrigin(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].valid_origin_with_port)),
-        &requesting_origin, nullptr))
-        << "case: " << i;
-    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com:123"))
-        << "case: " << i;
+        test_case.type,
+        url::Origin::Create(GURL(test_case.valid_origin_with_port)),
+        &requesting_origin, nullptr));
+    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com:123"));
 
     EXPECT_FALSE(ParseRequestingOrigin(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].valid_origin_two_accounts_with_port)),
+        test_case.type,
+        url::Origin::Create(
+            GURL(test_case.valid_origin_two_accounts_with_port)),
         &requesting_origin, &address_queue))
-        << "Non-empty address_queue param should return false. case: " << i;
+        << "Non-empty address_queue param should return false.";
 
     address_queue = std::queue<std::string>();
     EXPECT_TRUE(ParseRequestingOrigin(
-        cases[i].type,
-        url::Origin::Create(GURL(cases[i].valid_origin_two_accounts_with_port)),
-        &requesting_origin, &address_queue))
-        << "case: " << i;
-    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com:123"))
-        << "case: " << i;
-    EXPECT_EQ(address_queue.size(), 2u) << "case: " << i;
+        test_case.type,
+        url::Origin::Create(
+            GURL(test_case.valid_origin_two_accounts_with_port)),
+        &requesting_origin, &address_queue));
+    EXPECT_EQ(requesting_origin.GetURL(), GURL("https://test.com:123"));
+    EXPECT_EQ(address_queue.size(), 2u);
     EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(address_queue.front(),
-                                                 cases[i].account1))
-        << "case: " << i;
+                                                 test_case.account1));
     address_queue.pop();
     EXPECT_TRUE(base::EqualsCaseInsensitiveASCII(address_queue.front(),
-                                                 cases[i].account2))
-        << "case: " << i;
+                                                 test_case.account2));
   }
 }
 
 TEST(PermissionUtilsUnitTest, GetSubRequestOrigin) {
-  url::Origin new_origin;
   url::Origin old_origin = url::Origin::Create(GURL("https://test.com"));
   url::Origin old_origin_with_port =
       url::Origin::Create(GURL("https://test.com:123"));
@@ -286,33 +301,31 @@ TEST(PermissionUtilsUnitTest, GetSubRequestOrigin) {
        "BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
        "https://test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8",
        "https://"
-       "test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8:123"}};
-  for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
-    EXPECT_FALSE(GetSubRequestOrigin(cases[i].type, url::Origin(),
-                                     cases[i].account, &new_origin))
-        << "case: " << i;
+       "test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8:123"},
+      {permissions::RequestType::kBraveCardano, "1815_0_0_0",
+       "https://"
+       "test.com__"
+       "1815_0_0_0",
+       "https://"
+       "test.com__"
+       "1815_0_0_0:123"}};
+  for (auto& test_case : cases) {
+    SCOPED_TRACE(testing::Message() << test_case.account);
+
+    EXPECT_FALSE(
+        GetSubRequestOrigin(test_case.type, url::Origin(), test_case.account));
     // invalid type
     EXPECT_FALSE(GetSubRequestOrigin(permissions::RequestType::kGeolocation,
-                                     old_origin, cases[i].account, &new_origin))
-        << "case: " << i;
-    EXPECT_FALSE(
-        GetSubRequestOrigin(cases[i].type, old_origin, "", &new_origin))
-        << "case: " << i;
-    EXPECT_FALSE(GetSubRequestOrigin(cases[i].type, old_origin,
-                                     cases[i].account, nullptr))
-        << "case: " << i;
+                                     old_origin, test_case.account));
+    EXPECT_FALSE(GetSubRequestOrigin(test_case.type, old_origin, ""));
 
-    EXPECT_TRUE(GetSubRequestOrigin(cases[i].type, old_origin, cases[i].account,
-                                    &new_origin))
-        << "case: " << i;
-    EXPECT_EQ(new_origin,
-              url::Origin::Create(GURL(cases[i].expected_new_origin)));
-    EXPECT_TRUE(GetSubRequestOrigin(cases[i].type, old_origin_with_port,
-                                    cases[i].account, &new_origin))
-        << "case: " << i;
-    EXPECT_EQ(new_origin,
-              url::Origin::Create(GURL(cases[i].expected_new_origin_with_port)))
-        << "case: " << i;
+    EXPECT_EQ(
+        GetSubRequestOrigin(test_case.type, old_origin, test_case.account),
+        url::Origin::Create(GURL(test_case.expected_new_origin)));
+    EXPECT_EQ(
+        GetSubRequestOrigin(test_case.type, old_origin_with_port,
+                            test_case.account),
+        url::Origin::Create(GURL(test_case.expected_new_origin_with_port)));
   }
 }
 
@@ -334,10 +347,19 @@ TEST(PermissionUtilsUnitTest, GetConnectWithSiteWebUIURL) {
        "chrome://wallet-panel.top-chrome/"
        "?addr=BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8&addr="
        "JDqrvDz8d8tFCADashbUKQDKfJZFobNy13ugN65t1wvV&origin-spec=https://"
+       "a.test.com:123&etld-plus-one=test.com#connectWithSite"},
+      {{"1815_0_0_0", "1815_0_0_1"},
+       "chrome://wallet-panel.top-chrome/"
+       "?addr=1815_0_0_0&addr="
+       "1815_0_0_1&origin-spec=https://"
        "a.test.com:123&etld-plus-one=test.com#connectWithSite"}};
-  for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
-    GURL url_out = GetConnectWithSiteWebUIURL(base_url, cases[i].addrs, origin);
-    EXPECT_EQ(url_out.spec(), cases[i].expected_out_url) << "case: " << i;
+
+  for (auto& test_case : cases) {
+    SCOPED_TRACE(testing::Message() << test_case.addrs[0]);
+
+    GURL url_out =
+        GetConnectWithSiteWebUIURL(base_url, test_case.addrs, origin);
+    EXPECT_EQ(url_out.spec(), test_case.expected_out_url);
   }
 }
 
@@ -370,7 +392,7 @@ TEST(PermissionUtilsUnitTest, SyncingWithCreatePermissionLifetimeOptions) {
   EXPECT_EQ(
       options[static_cast<size_t>(mojom::PermissionLifetimeOption::kForever)]
           .lifetime,
-      absl::nullopt);
+      std::nullopt);
 }
 
 TEST(PermissionUtilsUnitTest, CoinTypeToPermissionType) {
@@ -380,6 +402,9 @@ TEST(PermissionUtilsUnitTest, CoinTypeToPermissionType) {
   type = CoinTypeToPermissionType(mojom::CoinType::SOL);
   ASSERT_TRUE(type);
   EXPECT_EQ(*type, blink::PermissionType::BRAVE_SOLANA);
+  type = CoinTypeToPermissionType(mojom::CoinType::ADA);
+  ASSERT_TRUE(type);
+  EXPECT_EQ(*type, blink::PermissionType::BRAVE_CARDANO);
   EXPECT_FALSE(CoinTypeToPermissionType(mojom::CoinType::FIL));
   EXPECT_FALSE(CoinTypeToPermissionType(mojom::CoinType::BTC));
 }
@@ -391,6 +416,9 @@ TEST(PermissionUtilsUnitTest, CoinTypeToPermissionRequestType) {
   request = CoinTypeToPermissionRequestType(mojom::CoinType::SOL);
   ASSERT_TRUE(request);
   EXPECT_EQ(*request, permissions::RequestType::kBraveSolana);
+  request = CoinTypeToPermissionRequestType(mojom::CoinType::ADA);
+  ASSERT_TRUE(request);
+  EXPECT_EQ(*request, permissions::RequestType::kBraveCardano);
   EXPECT_FALSE(CoinTypeToPermissionType(mojom::CoinType::FIL));
   EXPECT_FALSE(CoinTypeToPermissionType(mojom::CoinType::BTC));
 }

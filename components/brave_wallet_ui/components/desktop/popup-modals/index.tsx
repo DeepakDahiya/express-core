@@ -9,21 +9,24 @@ import {
   StyledWrapper,
   Header,
   Title,
-  CloseButton,
+  HeaderButton,
+  CloseIcon,
+  BackIcon,
   Modal,
-  Divider
+  Divider,
+  ModalContent,
 } from './style'
 
 export interface Props {
   children?: React.ReactNode
   onClose: () => void
+  onBack?: () => void
   title: string
   width?: string
   showDivider?: boolean
   hideHeader?: boolean
-  headerPaddingVertical?: number
-  headerPaddingHorizontal?: number
-  borderRadius?: number
+  headerPaddingVertical?: string
+  headerPaddingHorizontal?: string
   height?: string
 }
 
@@ -34,21 +37,24 @@ export const PopupModal = React.forwardRef<HTMLDivElement, Props>(
     const {
       title,
       width,
-      borderRadius,
       headerPaddingVertical,
       headerPaddingHorizontal,
       showDivider,
       hideHeader,
       onClose,
+      onBack,
       height,
-      children
+      children,
     } = props
 
-    const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === ESC_KEY) {
-        onClose()
-      }
-    }
+    const handleKeyDown = React.useCallback(
+      (event: KeyboardEvent) => {
+        if (event.key === ESC_KEY) {
+          onClose()
+        }
+      },
+      [onClose],
+    )
 
     React.useEffect(() => {
       document.addEventListener('keydown', handleKeyDown)
@@ -56,31 +62,42 @@ export const PopupModal = React.forwardRef<HTMLDivElement, Props>(
       return () => {
         document.removeEventListener('keydown', handleKeyDown)
       }
-    }, [])
+    }, [handleKeyDown])
 
     return (
       <StyledWrapper>
         <Modal
           width={width}
-          borderRadius={borderRadius}
           height={height}
           ref={forwardedRef}
         >
-          {!hideHeader &&
+          {!hideHeader && (
             <Header
               headerPaddingHorizontal={headerPaddingHorizontal}
               headerPaddingVertical={headerPaddingVertical}
             >
+              {onBack && (
+                <HeaderButton onClick={onBack}>
+                  <BackIcon />
+                </HeaderButton>
+              )}
               <Title>{title}</Title>
-              <CloseButton onClick={onClose} />
+              <HeaderButton onClick={onClose}>
+                <CloseIcon />
+              </HeaderButton>
             </Header>
-          }
+          )}
           {showDivider && <Divider />}
-          {children}
+          <ModalContent
+            fullWidth
+            flex={1}
+          >
+            {children}
+          </ModalContent>
         </Modal>
       </StyledWrapper>
     )
-  }
+  },
 )
 
 export default PopupModal

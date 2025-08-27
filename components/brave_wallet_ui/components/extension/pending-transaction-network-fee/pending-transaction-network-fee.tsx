@@ -16,9 +16,9 @@ import { getCoinFromTxDataUnion } from '../../../utils/network-utils'
 import {
   getGasFeeFiatValue,
   getTransactionGasFee,
-  isSolanaTransaction
+  isSolanaTransaction,
 } from '../../../utils/tx-utils'
-import { getPriceIdForToken } from '../../../utils/api-utils'
+import { getPriceIdForToken } from '../../../utils/pricing-utils'
 import { makeNetworkAsset } from '../../../options/asset-options'
 
 // components
@@ -28,13 +28,13 @@ import { EditButton } from '../confirm-transaction-panel/style'
 
 // hooks
 import {
-  useSelectedPendingTransaction //
+  useSelectedPendingTransaction, //
 } from '../../../common/hooks/use-pending-transaction'
 import {
   useGetDefaultFiatCurrencyQuery,
   useGetNetworkQuery,
   useGetSolanaEstimatedFeeQuery,
-  useGetTokenSpotPricesQuery
+  useGetTokenSpotPricesQuery,
 } from '../../../common/slices/api.slice'
 
 // style
@@ -44,12 +44,13 @@ import {
   NetworkFeeTitle,
   NetworkFeeValue,
   Settings,
-  SettingsIcon
+  SettingsIcon,
 } from './pending-transaction-network-fee.style'
 
 interface Props {
   onToggleEditGas?: () => void
   onToggleAdvancedTransactionSettings?: () => void
+  showEditGas: boolean
   feeDisplayMode?: 'fiat' | 'crypto'
   showNetworkLogo?: boolean
 }
@@ -57,24 +58,25 @@ interface Props {
 export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
   onToggleAdvancedTransactionSettings,
   onToggleEditGas,
+  showEditGas,
   feeDisplayMode = 'fiat',
-  showNetworkLogo
+  showNetworkLogo,
 }) => {
   // custom hooks
-  const selectedPendingTransaction = useSelectedPendingTransaction()
+  const { selectedPendingTransaction } = useSelectedPendingTransaction()
 
   // queries
   const { data: txNetwork } = useGetNetworkQuery(
     selectedPendingTransaction
       ? {
           chainId: selectedPendingTransaction.chainId,
-          coin: getCoinFromTxDataUnion(selectedPendingTransaction.txDataUnion)
+          coin: getCoinFromTxDataUnion(selectedPendingTransaction.txDataUnion),
         }
-      : skipToken
+      : skipToken,
   )
 
   const { data: defaultFiatCurrency } = useGetDefaultFiatCurrencyQuery(
-    feeDisplayMode === 'fiat' ? undefined : skipToken
+    feeDisplayMode === 'fiat' ? undefined : skipToken,
   )
 
   const networkTokenPriceId = txNetwork
@@ -86,9 +88,9 @@ export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
       ? {
           ids: [networkTokenPriceId],
           toCurrency: defaultFiatCurrency,
-          timeframe: BraveWallet.AssetPriceTimeframe.Live
+          timeframe: BraveWallet.AssetPriceTimeframe.Live,
         }
-      : skipToken
+      : skipToken,
   )
 
   const isSolTx = isSolanaTransaction(selectedPendingTransaction)
@@ -97,9 +99,9 @@ export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
     selectedPendingTransaction && isSolTx
       ? {
           chainId: selectedPendingTransaction?.chainId || '',
-          txId: selectedPendingTransaction?.id || ''
+          txId: selectedPendingTransaction?.id || '',
         }
-      : skipToken
+      : skipToken,
   )
 
   // computed
@@ -112,7 +114,7 @@ export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
   const networkFeeFiat = getGasFeeFiatValue({
     gasFee: networkFee,
     networkSpotPrice: pricesRegistry?.[networkTokenPriceId]?.price || '',
-    txNetwork
+    txNetwork,
   })
 
   // render
@@ -122,7 +124,10 @@ export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
         <NetworkFeeTitle>{getLocale('braveWalletNetworkFees')}</NetworkFeeTitle>
         <NetworkFeeValue>
           {showNetworkLogo ? (
-            <CreateNetworkIcon network={txNetwork} marginRight={0} />
+            <CreateNetworkIcon
+              network={txNetwork}
+              marginRight={0}
+            />
           ) : null}
           {feeDisplayMode === 'fiat' ? (
             networkFeeFiat ? (
@@ -137,9 +142,11 @@ export const PendingTransactionNetworkFeeAndSettings: React.FC<Props> = ({
           ) : (
             <LoadingSkeleton width={38} />
           )}
-          <EditButton onClick={onToggleEditGas}>
-            {getLocale('braveWalletAllowSpendEditButton')}
-          </EditButton>
+          {showEditGas && (
+            <EditButton onClick={onToggleEditGas}>
+              {getLocale('braveWalletAllowSpendEditButton')}
+            </EditButton>
+          )}
         </NetworkFeeValue>
       </NetworkFeeContainer>
 

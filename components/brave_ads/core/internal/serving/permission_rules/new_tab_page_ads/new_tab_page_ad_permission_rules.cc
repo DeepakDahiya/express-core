@@ -5,19 +5,27 @@
 
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ad_permission_rules.h"
 
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/catalog_permission_rule.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ads_minimum_wait_time_permission_rule.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ads_per_day_permission_rule.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/new_tab_page_ads/new_tab_page_ads_per_hour_permission_rule.h"
-#include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rule_util.h"
+#include <vector>
+
+#include "base/trace_event/trace_event.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/ads_per_day_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/ads_per_hour_permission_rule.h"
+#include "brave/components/brave_ads/core/internal/serving/permission_rules/minimum_wait_time_permission_rule.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/user_activity_permission_rule.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/ad_events/ad_event_util.h"
+#include "brave/components/brave_ads/core/public/ad_units/new_tab_page_ad/new_tab_page_ad_feature.h"
+#include "brave/components/brave_ads/core/public/ads_constants.h"
 
 namespace brave_ads {
 
 // static
-bool NewTabPageAdPermissionRules::HasPermission() {
-  if (!UserHasJoinedBraveRewards()) {
+bool NewTabPageAdPermissionRules::HasPermission(const AdEventList& ad_events) {
+  TRACE_EVENT(kTraceEventCategory,
+              "NewTabPageAdPermissionRules::HasPermission");
+
+  if (!UserHasJoinedBraveRewardsAndConnectedWallet()) {
+    // If the user has not joined Brave Rewards, always grant permission.
     return true;
   }
 
@@ -25,29 +33,29 @@ bool NewTabPageAdPermissionRules::HasPermission() {
     return false;
   }
 
-  const UserActivityPermissionRule user_activity_permission_rule;
-  if (!ShouldAllow(user_activity_permission_rule)) {
+  if (!HasUserActivityPermission()) {
     return false;
   }
 
-  const CatalogPermissionRule catalog_permission_rule;
-  if (!ShouldAllow(catalog_permission_rule)) {
+  const std::vector<base::Time> history = ToHistory(ad_events);
+
+  if (!HasAdsPerDayPermission(history,
+                              /*cap=*/kMaximumNewTabPageAdsPerDay.Get())) {
     return false;
   }
 
-  const NewTabPageAdsPerDayPermissionRule ads_per_day_permission_rule;
-  if (!ShouldAllow(ads_per_day_permission_rule)) {
+  if (!HasAdsPerHourPermission(history,
+                               /*cap=*/kMaximumNewTabPageAdsPerHour.Get())) {
     return false;
   }
 
-  const NewTabPageAdsPerHourPermissionRule ads_per_hour_permission_rule;
-  if (!ShouldAllow(ads_per_hour_permission_rule)) {
+  if (!HasMinimumWaitTimePermission(
+          history,
+          /*time_constraint=*/kNewTabPageAdMinimumWaitTime.Get())) {
     return false;
   }
 
-  const NewTabPageAdMinimumWaitTimePermissionRule
-      minimum_wait_time_permission_rule;
-  return ShouldAllow(minimum_wait_time_permission_rule);
+  return true;
 }
 
 }  // namespace brave_ads

@@ -1,4 +1,4 @@
-/* Copyright (c) 2023 The Brave Authors. All rights reserved.
+/* Copyright (c) 2024 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
@@ -19,28 +19,21 @@ class ConfirmationQueueDelegateMock : public ConfirmationQueueDelegate {
   ConfirmationQueueDelegateMock& operator=(
       const ConfirmationQueueDelegateMock&) = delete;
 
-  ConfirmationQueueDelegateMock(ConfirmationQueueDelegateMock&&) noexcept =
-      delete;
-  ConfirmationQueueDelegateMock& operator=(
-      ConfirmationQueueDelegateMock&&) noexcept = delete;
-
   ~ConfirmationQueueDelegateMock() override;
 
+  MOCK_METHOD(void, OnDidAddConfirmationToQueue, (const ConfirmationInfo&));
   MOCK_METHOD(void,
-              OnDidAddConfirmationToQueue,
-              (const ConfirmationInfo& confirmation));
+              OnFailedToAddConfirmationToQueue,
+              (const ConfirmationInfo&));
 
   MOCK_METHOD(void,
               OnWillProcessConfirmationQueue,
-              (const ConfirmationInfo& confirmation, base::Time process_at));
-
-  MOCK_METHOD(void,
-              OnDidProcessConfirmationQueue,
-              (const ConfirmationInfo& confirmation));
-
+              (const ConfirmationInfo&, base::Time));
+  MOCK_METHOD(void, OnDidProcessConfirmationQueue, (const ConfirmationInfo&));
   MOCK_METHOD(void,
               OnFailedToProcessConfirmationQueue,
-              (const ConfirmationInfo& confirmation));
+              (const ConfirmationInfo&));
+  MOCK_METHOD(void, OnFailedToProcessNextConfirmationInQueue, ());
 
   MOCK_METHOD(void, OnDidExhaustConfirmationQueue, ());
 };

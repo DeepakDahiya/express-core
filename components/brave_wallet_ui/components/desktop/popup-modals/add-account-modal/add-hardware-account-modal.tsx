@@ -4,7 +4,6 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
 import { useHistory, useParams } from 'react-router'
 
 // utils
@@ -17,28 +16,25 @@ import { CreateAccountOptions } from '../../../../options/create-account-options
 import {
   CreateAccountOptionsType,
   WalletRoutes,
-  ImportAccountErrorType
 } from '../../../../constants/types'
-
-// actions
-import { WalletActions } from '../../../../common/actions'
 
 // components
 import { DividerLine } from '../../../extension/divider/index'
 import PopupModal from '..'
-import { HardwareWalletConnect } from './hardware-wallet-connect'
+import {
+  HardwareWalletConnect, //
+} from '../../hardware-wallet-connect/hardware_wallet_connect'
 import { SelectAccountType } from './select-account-type/select-account-type'
 
 // style
-import {
-  StyledWrapper
-} from './style'
-
-// hooks
-import { WalletSelectors } from '../../../../common/selectors'
+import { StyledWrapper } from './style'
 
 // selectors
+import { WalletSelectors } from '../../../../common/selectors'
+
+// hooks
 import { useSafeWalletSelector } from '../../../../common/hooks/use-safe-selector'
+import { useGetVisibleNetworksQuery } from '../../../../common/slices/api.slice'
 
 interface Params {
   accountTypeName: string
@@ -53,36 +49,34 @@ export const AddHardwareAccountModal = ({ onSelectAccountType }: Props) => {
   const history = useHistory()
   const { accountTypeName } = useParams<Params>()
 
-  // redux
-  const dispatch = useDispatch()
-  const isFilecoinEnabled = useSafeWalletSelector(WalletSelectors.isFilecoinEnabled)
-  const isSolanaEnabled = useSafeWalletSelector(WalletSelectors.isSolanaEnabled)
+  const isBitcoinLedgerEnabled = useSafeWalletSelector(
+    WalletSelectors.isBitcoinLedgerEnabled,
+  )
+
+  // queries
+  const { data: visibleNetworks = [] } = useGetVisibleNetworksQuery()
 
   // memos
   const createAccountOptions = React.useMemo(() => {
     return CreateAccountOptions({
-      isFilecoinEnabled,
-      isSolanaEnabled,
-      isBitcoinEnabled: false, // No bitcoin hardware accounts by now.
-      isZCashEnabled: false // No zcash hardware accounts by now.
+      visibleNetworks,
+      isBitcoinEnabled: isBitcoinLedgerEnabled,
+      isZCashEnabled: false, // No zcash hardware accounts by now.
+      isCardanoEnabled: false, // No cardano hardware accounts by now.
     })
-  }, [isFilecoinEnabled, isSolanaEnabled])
+  }, [visibleNetworks, isBitcoinLedgerEnabled])
 
-  const selectedAccountType: CreateAccountOptionsType | undefined = React.useMemo(() => {
-    return createAccountOptions.find((option) => {
-      return option.name.toLowerCase() === accountTypeName?.toLowerCase()
-    })
-  }, [createAccountOptions, accountTypeName])
+  const selectedAccountType: CreateAccountOptionsType | undefined =
+    React.useMemo(() => {
+      return createAccountOptions.find((option) => {
+        return option.name.toLowerCase() === accountTypeName?.toLowerCase()
+      })
+    }, [createAccountOptions, accountTypeName])
 
   // methods
-  const setImportError = React.useCallback((hasError: ImportAccountErrorType) => {
-    dispatch(WalletActions.setImportAccountError(hasError))
-  }, [])
-
   const closeModal = React.useCallback(() => {
-    setImportError(undefined)
     history.push(WalletRoutes.Accounts)
-  }, [setImportError])
+  }, [history])
 
   // render
   return (
@@ -90,25 +84,24 @@ export const AddHardwareAccountModal = ({ onSelectAccountType }: Props) => {
       title={getLocale('braveWalletAddAccountImportHardware')}
       onClose={closeModal}
     >
-
       <DividerLine />
 
-      {selectedAccountType &&
+      {selectedAccountType && (
         <StyledWrapper>
           <HardwareWalletConnect
             selectedAccountType={selectedAccountType}
             onSuccess={closeModal}
           />
         </StyledWrapper>
-      }
+      )}
 
-      {!selectedAccountType &&
+      {!selectedAccountType && (
         <SelectAccountType
           createAccountOptions={createAccountOptions}
           onSelectAccountType={onSelectAccountType}
           buttonText={getLocale('braveWalletAddAccountConnect')}
         />
-      }
+      )}
     </PopupModal>
   )
 }

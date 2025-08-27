@@ -9,25 +9,27 @@
 #include "base/feature_list.h"
 #include "base/metrics/field_trial_params.h"
 
-namespace brave_wallet {
-namespace features {
+namespace brave_wallet::features {
 
 BASE_DECLARE_FEATURE(kNativeBraveWalletFeature);
-extern const base::FeatureParam<bool> kShowToolbarTxStatus;
-BASE_DECLARE_FEATURE(kBraveWalletFilecoinFeature);
-BASE_DECLARE_FEATURE(kBraveWalletSolanaFeature);
-BASE_DECLARE_FEATURE(kBraveWalletNftPinningFeature);
-BASE_DECLARE_FEATURE(kBraveWalletPanelV2Feature);
-extern const base::FeatureParam<bool> kCreateDefaultSolanaAccount;
-BASE_DECLARE_FEATURE(kBraveWalletSolanaProviderFeature);
-BASE_DECLARE_FEATURE(kBraveWalletDappsSupportFeature);
-BASE_DECLARE_FEATURE(kBraveWalletENSL2Feature);
-BASE_DECLARE_FEATURE(kBraveWalletSnsFeature);
+
 BASE_DECLARE_FEATURE(kBraveWalletBitcoinFeature);
 extern const base::FeatureParam<int> kBitcoinRpcThrottle;
-BASE_DECLARE_FEATURE(kBraveWalletZCashFeature);
+extern const base::FeatureParam<bool> kBitcoinTestnetDiscovery;
+BASE_DECLARE_FEATURE(kBraveWalletBitcoinImportFeature);
+BASE_DECLARE_FEATURE(kBraveWalletBitcoinLedgerFeature);
 
-}  // namespace features
-}  // namespace brave_wallet
+BASE_DECLARE_FEATURE(kBraveWalletZCashFeature);
+// Adds shielded operations support for Z Cash
+extern const base::FeatureParam<bool> kZCashShieldedTransactionsEnabled;
+
+BASE_DECLARE_FEATURE(kBraveWalletCardanoFeature);
+extern const base::FeatureParam<int> kCardanoRpcThrottle;
+extern const base::FeatureParam<bool> kCardanoDAppSupport;
+
+BASE_DECLARE_FEATURE(kBraveWalletAnkrBalancesFeature);
+BASE_DECLARE_FEATURE(kBraveWalletTransactionSimulationsFeature);
+
+}  // namespace brave_wallet::features
 
 #endif  // BRAVE_COMPONENTS_BRAVE_WALLET_COMMON_FEATURES_H_

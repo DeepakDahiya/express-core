@@ -19,16 +19,11 @@ class InlineContentAdExclusionRules final : public ExclusionRulesBase {
       const AdEventList& ad_events,
       const SubdivisionTargeting& subdivision_targeting,
       const AntiTargetingResource& anti_targeting_resource,
-      const BrowsingHistoryList& browsing_history);
+      const SiteHistoryList& site_history);
 
   InlineContentAdExclusionRules(const InlineContentAdExclusionRules&) = delete;
   InlineContentAdExclusionRules& operator=(
       const InlineContentAdExclusionRules&) = delete;
-
-  InlineContentAdExclusionRules(InlineContentAdExclusionRules&&) noexcept =
-      delete;
-  InlineContentAdExclusionRules& operator=(
-      InlineContentAdExclusionRules&&) noexcept = delete;
 
   ~InlineContentAdExclusionRules() override;
 };

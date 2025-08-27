@@ -15,12 +15,11 @@
 namespace brave_ads {
 
 struct ConfirmationTokenInfo final {
-  bool operator==(const ConfirmationTokenInfo&) const;
-  bool operator!=(const ConfirmationTokenInfo&) const;
+  bool operator==(const ConfirmationTokenInfo&) const = default;
 
   cbr::UnblindedToken unblinded_token;
   cbr::PublicKey public_key;
-  std::string signature;
+  std::string signature_base64;
 };
 
 using ConfirmationTokenList = std::vector<ConfirmationTokenInfo>;

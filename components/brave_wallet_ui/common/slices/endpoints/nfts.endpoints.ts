@@ -4,108 +4,50 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { mapLimit } from 'async'
-import { EntityId } from '@reduxjs/toolkit'
 
 // types
 import {
+  AssetIdsByCollectionNameRegistry,
   BraveWallet,
-  ERC721Metadata,
-  NFTMetadataReturnType
+  NFTMetadataReturnType,
 } from '../../../constants/types'
-import {
-  WalletApiEndpointBuilderParams,
-  walletApiBase
-} from '../api-base.slice'
+import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
 // utils
 import {
+  getAssetIdKey,
   GetBlockchainTokenIdArg,
-  getAssetIdKey
+  tokenNameToNftCollectionName,
 } from '../../../utils/asset-utils'
-import { cacher } from '../../../utils/query-cache-utils'
+import { handleEndpointError } from '../../../utils/api-utils'
+import { baseQueryFunction } from '../../async/base-query-cache'
 import {
-  getAllNetworksList,
-  getNetwork,
-  handleEndpointError
-} from '../../../utils/api-utils'
-
-// entities
-import { blockchainTokenEntityAdaptor } from '../entities/blockchain-token.entity'
-
-export interface CommonNftMetadata {
-  attributes?: any[]
-  description?: string
-  image?: string
-  image_url?: string
-  name?: string
-}
+  getPersistedNftCollectionNamesRegistry,
+  setPersistedNftCollectionNamesRegistry,
+} from '../../../utils/local-storage-utils'
 
 export const nftsEndpoints = ({
   query,
-  mutation
+  mutation,
 }: WalletApiEndpointBuilderParams) => {
   return {
-    getERC721Metadata: query<
-      {
-        id: EntityId
-        metadata?: ERC721Metadata
-      },
-      GetBlockchainTokenIdArg
-    >({
-      queryFn: async (tokenArg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          if (!tokenArg.isErc721) {
-            throw new Error(
-              'Cannot fetch erc-721 metadata for non erc-721 token'
-            )
-          }
-
-          const { jsonRpcService } = baseQuery(undefined).data
-
-          const result = await jsonRpcService.getERC721Metadata(
-            tokenArg.contractAddress,
-            tokenArg.tokenId,
-            tokenArg.chainId
-          )
-
-          if (result.error || result.errorMessage) {
-            throw new Error(result.errorMessage)
-          }
-
-          const metadata: ERC721Metadata = JSON.parse(result.response)
-          return {
-            data: {
-              id: blockchainTokenEntityAdaptor.selectId(tokenArg),
-              metadata
-            }
-          }
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Error fetching ERC-721 metadata',
-            error
-          )
-        }
-      },
-      providesTags: cacher.cacheByBlockchainTokenArg('ERC721Metadata')
-    }),
     getNftDiscoveryEnabledStatus: query<boolean, void>({
       queryFn: async (_arg, { endpoint }, _extraOptions, baseQuery) => {
         try {
           const { braveWalletService } = baseQuery(undefined).data
           const result = await braveWalletService.getNftDiscoveryEnabled()
           return {
-            data: result.enabled
+            data: result.enabled,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Error getting NFT discovery status: ',
-            error
+            error,
           )
         }
       },
-      providesTags: ['NftDiscoveryEnabledStatus']
+      providesTags: ['NftDiscoveryEnabledStatus'],
     }),
     setNftDiscoveryEnabled: mutation<
       boolean, // success
@@ -117,408 +59,263 @@ export const nftsEndpoints = ({
           await braveWalletService.setNftDiscoveryEnabled(arg)
 
           return {
-            data: true
+            data: true,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Error setting NFT discovery status: ',
-            error
+            error,
           )
         }
       },
-      invalidatesTags: ['NftDiscoveryEnabledStatus']
+      invalidatesTags: ['NftDiscoveryEnabledStatus'],
     }),
-    getNftMetadata: query<NFTMetadataReturnType, BraveWallet.BlockchainToken>({
+    getNftMetadata: query<NFTMetadataReturnType, GetBlockchainTokenIdArg>({
       queryFn: async (arg, { endpoint }, _extraOptions, baseQuery) => {
         try {
-          const { data: api, cache } = baseQuery(undefined)
-          const { jsonRpcService } = api
-          const result =
-            arg.coin === BraveWallet.CoinType.ETH
-              ? await jsonRpcService.getERC721Metadata(
-                  arg.contractAddress,
-                  arg.tokenId,
-                  arg.chainId
-                )
-              : arg.coin === BraveWallet.CoinType.SOL
-              ? await jsonRpcService.getSolTokenMetadata(
-                  arg.chainId,
-                  arg.contractAddress
-                )
-              : undefined
+          const { cache } = baseQuery(undefined)
 
-          if (result?.error) throw new Error(result.errorMessage)
-
-          const response = result?.response
-            ? (JSON.parse(result.response) as CommonNftMetadata)
-            : undefined
-
-          const responseImageUrl = response?.image || response?.image_url
-          const imageURL = responseImageUrl?.startsWith('data:image/')
-            ? responseImageUrl
-            : await cache.getIpfsGatewayTranslatedNftUrl(responseImageUrl || '')
-
-          const attributes = Array.isArray(response?.attributes)
-            ? response?.attributes.map(
-                (attr: { trait_type: string; value: string }) => ({
-                  traitType: attr.trait_type,
-                  value: attr.value
-                })
-              )
-            : []
-          const tokenNetwork = await getNetwork(api, arg)
-          const nftMetadata: NFTMetadataReturnType = {
-            metadataUrl: result?.tokenUrl || '',
-            chainName: tokenNetwork?.chainName || '',
-            tokenType:
-              arg.coin === BraveWallet.CoinType.ETH
-                ? 'ERC721'
-                : arg.coin === BraveWallet.CoinType.SOL
-                ? 'SPL'
-                : '',
-            tokenID: arg.tokenId,
-            imageURL: imageURL || undefined,
-            imageMimeType: 'image/*',
-            floorFiatPrice: '',
-            floorCryptoPrice: '',
-            contractInformation: {
-              address: arg.contractAddress,
-              name: response?.name || '???',
-              description: response?.description || '???',
-              website: '',
-              facebook: '',
-              logo: '',
-              twitter: ''
-            },
-            attributes
-          }
+          const nftMetadata = await cache.getNftMetadata(arg)
 
           return {
-            data: nftMetadata
+            data: nftMetadata,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Error fetching NFT metadata',
-            error
+            error,
           )
         }
       },
       providesTags: (_result, err, arg) =>
         err
-          ? ['ERC721Metadata']
-          : [{ type: 'ERC721Metadata', id: getAssetIdKey(arg) }]
-    }),
-    getNftPinningStatus: query<
-      BraveWallet.TokenPinStatus | undefined,
-      BraveWallet.BlockchainToken
-    >({
-      queryFn: async (arg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          const { data: api } = baseQuery(undefined)
-          const { braveWalletPinService } = api
-          const result = await braveWalletPinService.getTokenStatus(arg)
-
-          if (result.error) {
-            throw new Error(result.error.message)
-          }
-
-          if (result.status?.local) {
-            return {
-              data: result.status.local
-            }
-          }
-
-          throw new Error('Local pinning status is null')
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Error fetching NFT Pinning status',
-            error
-          )
-        }
-      },
-      providesTags: (_result, err, arg) =>
-        err
-          ? ['NFTPinningStatus']
-          : [{ type: 'NFTPinningStatus', id: getAssetIdKey(arg) }]
-    }),
-    getAutopinEnabled: query<boolean, void>({
-      queryFn: async (_arg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          const { braveWalletAutoPinService } = baseQuery(undefined).data
-          const result = await braveWalletAutoPinService.isAutoPinEnabled()
-
-          return {
-            data: result.enabled
-          }
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Error getting autopin status',
-            error
-          )
-        }
-      },
-      providesTags: ['AutoPinEnabled']
-    }),
-    setAutopinEnabled: mutation<
-      boolean, // success
-      boolean
-    >({
-      queryFn: async (arg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          const { braveWalletAutoPinService } = baseQuery(undefined).data
-          await braveWalletAutoPinService.setAutoPinEnabled(arg)
-
-          return {
-            data: true
-          }
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Error setting autopin status',
-            error
-          )
-        }
-      },
-      invalidatesTags: ['AutoPinEnabled']
-    }),
-    getIPFSUrlFromGatewayLikeUrl: query<string | null, string>({
-      queryFn: async (urlArg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          const { cache } = baseQuery(undefined)
-          const ipfsUrl = await cache.getExtractedIPFSUrlFromGatewayLikeUrl(
-            urlArg
-          )
-          return {
-            data: ipfsUrl || null
-          }
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Failed to get IPFS URL from gateway-like URL',
-            error
-          )
-        }
-      }
+          ? ['NftMetadata']
+          : [{ type: 'NftMetadata', id: getAssetIdKey(arg) }],
     }),
     getIpfsGatewayTranslatedNftUrl: query<string | null, string>({
       queryFn: async (urlArg, { endpoint }, _extraOptions, baseQuery) => {
         try {
           const { cache } = baseQuery(undefined)
           const translatedUrl = await cache.getIpfsGatewayTranslatedNftUrl(
-            urlArg || ''
+            urlArg || '',
           )
 
           return {
-            data: translatedUrl || urlArg.trim()
+            data: translatedUrl || urlArg.trim(),
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Failed to translate NFT IPFS gateway URL',
-            error
+            error,
           )
         }
-      }
+      },
     }),
-    getSimpleHashSpamNfts: query<BraveWallet.BlockchainToken[], void>({
-      queryFn: async (_arg, { endpoint }, _extraOptions, baseQuery) => {
+    /**
+     * Fetches a registry of NFT collection names by collection asset id.
+     * Uses local storage to load the initial data and
+     * then fetches the latest data from the token contract or NFT metadata
+     */
+    getNftAssetIdsByCollectionRegistry: query<
+      /** collection names by collection asset id */
+      { registry: AssetIdsByCollectionNameRegistry; isStreaming: boolean },
+      /** asset id keys */
+      BraveWallet.BlockchainToken[]
+    >({
+      queryFn(_arg, api, _extraOptions, baseQuery) {
+        return {
+          data: {
+            isStreaming: true,
+            registry: getPersistedNftCollectionNamesRegistry(),
+          },
+        }
+      },
+      async onCacheEntryAdded(
+        arg,
+        { updateCachedData, cacheDataLoaded, cacheEntryRemoved },
+      ) {
         try {
-          const { data: api, cache } = baseQuery(undefined)
-          const { braveWalletService } = api
-          const chainIds = (await getAllNetworksList(api)).map(
-            (network) => network.chainId
-          )
+          // wait for the initial query to resolve before proceeding
+          const {
+            data: { registry: persistedRegistry },
+          } = await cacheDataLoaded
 
-          const { accounts } = await cache.getAllAccounts()
+          try {
+            const {
+              cache,
+              data: { jsonRpcService },
+            } = baseQueryFunction()
+
+            const registry: AssetIdsByCollectionNameRegistry = {}
+
+            // prevent looking up token info multiple times
+            const uniqueTokenChainIdAndContractAddresses: string[] = []
+            const uniqueTokens: BraveWallet.BlockchainToken[] = arg.filter(
+              (t) => {
+                const key = `${t.chainId}_${t.contractAddress}`
+                if (uniqueTokenChainIdAndContractAddresses.includes(key)) {
+                  return false
+                }
+                uniqueTokenChainIdAndContractAddresses.push(key)
+                return true
+              },
+            )
+
+            for (const token of uniqueTokens) {
+              let collectionName = ''
+
+              // EVM lookup using contract info
+              if (token.coin === BraveWallet.CoinType.ETH) {
+                const {
+                  token: tokenInfo,
+                  error,
+                  errorMessage,
+                } = await jsonRpcService.getEthTokenInfo(
+                  token.contractAddress,
+                  token.chainId,
+                )
+
+                if (error !== BraveWallet.ProviderError.kSuccess) {
+                  throw new Error(errorMessage)
+                }
+
+                collectionName = tokenInfo?.name || ''
+              }
+
+              // use NFT metadata to find collection name if it could not be
+              // found in the EVM token info
+              let nftMetadata = null
+              if (!collectionName) {
+                try {
+                  nftMetadata = await cache.getNftMetadata(token)
+                  collectionName =
+                    nftMetadata?.collection?.name
+                    // guess the collection name
+                    // if no contract or metadata could be found
+                    || tokenNameToNftCollectionName(token)
+                } catch (error) {
+                  handleEndpointError(
+                    'getNftCollectionNameRegistry -> cache.getNftMetadata',
+                    `Error fetching NFT metadata for token: ${
+                      token.name
+                    } (${getAssetIdKey(token)})`,
+                    error,
+                  )
+                }
+              }
+
+              // initialize the collection assets list in the registry if needed
+              if (!registry[collectionName]) {
+                registry[collectionName] = []
+              }
+
+              // add the asset id to the collection assets list
+              registry[collectionName].push(
+                // remove the token id to reduce the sie of the registry
+                getAssetIdKey({ ...token, tokenId: '' }),
+              )
+            }
+
+            updateCachedData((draft) => {
+              // rules of `immer` apply here:
+              // https://redux-toolkit.js.org/usage/immer-reducers#immer-usage-patterns
+              draft.isStreaming = false
+              draft.registry = registry
+            })
+
+            // update local-storage with the latest data
+            setPersistedNftCollectionNamesRegistry({
+              ...persistedRegistry,
+              ...registry,
+            })
+          } catch (error) {
+            handleEndpointError(
+              'getNftCollectionNameRegistry.onCacheEntryAdded',
+              'Error fetching NFT collection name registry',
+              error,
+            )
+          }
+        } catch {
+          // cacheDataLoaded` will throw if
+          // `cacheEntryRemoved` resolves before `cacheDataLoaded`
+        }
+        // cacheEntryRemoved will resolve when the cache subscription is no
+        // longer active
+      },
+      providesTags: (_result, err, arg) => [
+        { type: 'NftMetadata', id: 'COLLECTION_NAMES_REGISTRY' },
+      ],
+    }),
+
+    /** will get spam for all accounts if accounts arg is not provided */
+    getSimpleHashSpamNfts: query<
+      BraveWallet.BlockchainToken[],
+      void | undefined | { accounts: BraveWallet.AccountInfo[] }
+    >({
+      queryFn: async (arg, { endpoint }, _extraOptions, baseQuery) => {
+        try {
+          const { cache } = baseQuery(undefined)
+
+          const lookupAccounts =
+            arg?.accounts ?? (await cache.getAllAccounts()).accounts
+
           const spamNfts = (
             await mapLimit(
-              accounts,
+              lookupAccounts,
               10,
               async (account: BraveWallet.AccountInfo) => {
-                let currentCursor: string | null = null
-                const accountSpamNfts = []
-
-                do {
-                  const {
-                    tokens,
-                    cursor
-                  }: {
-                    tokens: BraveWallet.BlockchainToken[]
-                    cursor: string | null
-                  } = await braveWalletService.getSimpleHashSpamNFTs(
-                    account.address,
-                    chainIds,
-                    account.accountId.coin,
-                    currentCursor
-                  )
-
-                  accountSpamNfts.push(...tokens)
-                  currentCursor = cursor
-                } while (currentCursor)
-
-                return accountSpamNfts
-              }
+                return await cache.getSpamNftsForAccountId(account.accountId)
+              },
             )
           ).flat(1)
 
           return {
-            data: spamNfts
+            data: spamNfts,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Failed to fetch spam NFTs',
-            error
+            error,
           )
         }
       },
-      providesTags: ['SimpleHashSpamNFTs']
+      providesTags: ['SimpleHashSpamNFTs'],
     }),
-    updateNftSpamStatus: mutation<
-      boolean,
-      {
-        // Not using tokenId since spam NFTs are not
-        // included in token registry by default
-        token: BraveWallet.BlockchainToken
-        status: boolean
-      }
+
+    getNftOwner: query<
+      string, // owner address
+      { contract: string; tokenId: string; chainId: string }
     >({
-      queryFn: async (arg, { endpoint }, _extraOptions, baseQuery) => {
+      queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
         try {
           const { data: api } = baseQuery(undefined)
-          const { braveWalletService } = api
-          const { success } = await braveWalletService.setAssetSpamStatus(
-            arg.token,
-            arg.status
-          )
+          const { jsonRpcService } = api
+          const { errorMessage, ownerAddress } =
+            await jsonRpcService.getERC721OwnerOf(
+              arg.contract,
+              arg.tokenId,
+              arg.chainId,
+            )
+          if (errorMessage) {
+            throw new Error(errorMessage)
+          }
           return {
-            data: success
+            data: ownerAddress,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
-            'Error setting NFT spam status',
-            error
+            `Unable to fetch owner address for NFT(${
+              arg.contract //
+            }-${arg.tokenId}) on chain(${arg.chainId})`,
+            error,
           )
         }
       },
-      invalidatesTags: (_res, err, arg) => {
-        const tokenId = getAssetIdKey(arg.token)
-        return err
-          ? ['SimpleHashSpamNFTs', 'UserBlockchainTokens']
-          : [
-              { type: 'SimpleHashSpamNFTs', id: tokenId },
-              { type: 'UserBlockchainTokens', id: tokenId }
-            ]
-      }
     }),
-    getNftsPinningStatus: query<
-      /** `getAssetIdKey(asset)` */
-      {
-        [assetIdKey: string]: {
-          code: BraveWallet.TokenPinStatusCode | undefined
-          error: BraveWallet.PinError | undefined
-        }
-      },
-      void
-    >({
-      queryFn: async (_arg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          const { data: api, cache } = baseQuery(undefined)
-          const { braveWalletPinService } = api
-          const reg = await cache.getUserTokensRegistry()
-          const visibleTokens = reg.visibleTokenIds
-            .map((id) => reg.entities[id])
-            .filter((token) => token?.isErc721 || token?.isNft)
-          const results = await mapLimit(
-            visibleTokens,
-            10,
-            async (token: BraveWallet.BlockchainToken) =>
-              await braveWalletPinService.getTokenStatus(token)
-          )
-          const pinningStatus = {}
-          visibleTokens.forEach((token, index) => {
-            if (token) {
-              const { status, error } = results[index]
-              pinningStatus[getAssetIdKey(token)] = {
-                code: status?.local?.code,
-                error
-              }
-            }
-          })
-          return {
-            data: pinningStatus
-          }
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Error getting NFTs pinning status',
-            error
-          )
-        }
-      },
-      providesTags: ['NFTSPinningStatus']
-    }),
-    updateNftsPinningStatus: mutation<
-      boolean,
-      {
-        token: BraveWallet.BlockchainToken
-        status: BraveWallet.TokenPinStatus
-      }
-    >({
-      queryFn: () => ({ data: true }),
-      async onQueryStarted({ token, status }, { dispatch, queryFulfilled }) {
-        const patchResult = dispatch(
-          walletApiBaseUtils.updateQueryData(
-            'getNftsPinningStatus',
-            undefined,
-            (nftsPinningStatus: {}) => {
-              Object.assign(nftsPinningStatus, {
-                ...nftsPinningStatus,
-                [getAssetIdKey(token)]: {
-                  code: status?.code,
-                  error: status?.error
-                }
-              })
-            }
-          )
-        )
-        try {
-          await queryFulfilled
-        } catch {
-          patchResult.undo()
-        }
-      }
-    }),
-    getLocalIpfsNodeStatus: query<boolean, void>({
-      queryFn: async (_arg, { endpoint }, _extraOptions, baseQuery) => {
-        try {
-          const { braveWalletPinService } = baseQuery(undefined).data
-          const isNodeRunning = await (
-            await braveWalletPinService.isLocalNodeRunning()
-          ).result
-
-          return {
-            data: isNodeRunning
-          }
-        } catch (error) {
-          return handleEndpointError(
-            endpoint,
-            'Error fetching local node status',
-            error
-          )
-        }
-      },
-      providesTags: ['LocalIPFSNodeStatus']
-    })
   }
 }
-
-const walletApiBaseUtils = walletApiBase.injectEndpoints({
-  endpoints: nftsEndpoints,
-  overrideExisting: false
-}).util

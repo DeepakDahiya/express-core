@@ -5,7 +5,10 @@
 
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_tx_meta.h"
 
+#include <optional>
+
 #include "base/values.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_serializer.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_transaction.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/brave_wallet/common/common_utils.h"
@@ -14,21 +17,25 @@
 namespace brave_wallet {
 
 TEST(BitcoinTxMeta, ToTransactionInfo) {
-  auto btc_account_id =
-      MakeBitcoinAccountId(mojom::CoinType::BTC, mojom::KeyringId::kBitcoin84,
-                           mojom::AccountKind::kDerived, 1);
+  auto btc_account_id = MakeIndexBasedAccountId(
+      mojom::CoinType::BTC, mojom::KeyringId::kBitcoin84,
+      mojom::AccountKind::kDerived, 1);
 
   std::unique_ptr<BitcoinTransaction> tx =
       std::make_unique<BitcoinTransaction>();
   tx->set_amount(200000);
   tx->set_to("tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm");
-  tx->inputs().emplace_back();
-  tx->inputs().back().utxo_address =
-      "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
-  tx->inputs().back().utxo_value = 200000;
-  tx->outputs().emplace_back();
-  tx->outputs().back().address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
-  tx->outputs().back().amount = 200000 - 1000;
+  BitcoinTransaction::TxInput input;
+  input.utxo_address = "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
+  input.utxo_value = 200000;
+  tx->AddInput(std::move(input));
+
+  BitcoinTransaction::TxOutput output;
+  output.address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
+  output.script_pubkey = BitcoinSerializer::AddressToScriptPubkey(
+      "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm", true);
+  output.amount = 200000 - 1000;
+  tx->AddOutput(std::move(output));
 
   BitcoinTxMeta meta(btc_account_id, std::move(tx));
   meta.set_chain_id(mojom::kBitcoinTestnet);
@@ -41,7 +48,6 @@ TEST(BitcoinTxMeta, ToTransactionInfo) {
   mojom::TransactionInfoPtr ti = meta.ToTransactionInfo();
   EXPECT_EQ(ti->id, meta.id());
   EXPECT_EQ(ti->chain_id, meta.chain_id());
-  EXPECT_EQ(ti->from_address, absl::nullopt);
   EXPECT_EQ(ti->from_account_id, btc_account_id);
   EXPECT_EQ(ti->tx_status, meta.status());
   EXPECT_TRUE(ti->tx_data_union->is_btc_tx_data());
@@ -68,21 +74,26 @@ TEST(BitcoinTxMeta, ToTransactionInfo) {
 }
 
 TEST(BitcoinTxMeta, ToValue) {
-  auto btc_account_id =
-      MakeBitcoinAccountId(mojom::CoinType::BTC, mojom::KeyringId::kBitcoin84,
-                           mojom::AccountKind::kDerived, 1);
+  auto btc_account_id = MakeIndexBasedAccountId(
+      mojom::CoinType::BTC, mojom::KeyringId::kBitcoin84,
+      mojom::AccountKind::kDerived, 1);
 
   std::unique_ptr<BitcoinTransaction> tx =
       std::make_unique<BitcoinTransaction>();
   tx->set_amount(200000);
   tx->set_to("tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm");
-  tx->inputs().emplace_back();
-  tx->inputs().back().utxo_address =
-      "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
-  tx->inputs().back().utxo_value = 200000;
-  tx->outputs().emplace_back();
-  tx->outputs().back().address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
-  tx->outputs().back().amount = 200000 - 1000;
+
+  BitcoinTransaction::TxInput input;
+  input.utxo_address = "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
+  input.utxo_value = 200000;
+  tx->AddInput(std::move(input));
+
+  BitcoinTransaction::TxOutput output;
+  output.address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
+  output.script_pubkey = BitcoinSerializer::AddressToScriptPubkey(
+      "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm", true);
+  output.amount = 200000 - 1000;
+  tx->AddOutput(std::move(output));
   auto tx_value = tx->ToValue();
 
   BitcoinTxMeta meta(btc_account_id, std::move(tx));

@@ -7,9 +7,9 @@
 
 #include <vector>
 
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 #include "brave/components/brave_ads/core/internal/creatives/notification_ads/creative_notification_ad_info.h"
-#include "brave/components/brave_ads/core/internal/creatives/notification_ads/creative_notification_ad_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/creatives/notification_ads/creative_notification_ad_test_util.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/pacing/pacing_random_util.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
@@ -19,27 +19,25 @@ namespace brave_ads {
 namespace {
 
 std::vector<double> GetPacingRandomNumbers() {
-  return std::vector<double>{0.0, 0.5, 0.99};
+  return {0.0, 0.5, 0.99};
 }
 
 }  // namespace
 
-class BraveAdsPacingTest : public UnitTestBase {};
-
+class BraveAdsPacingTest : public test::TestBase {};
 TEST_F(BraveAdsPacingTest, PaceCreativeAdsWithMinPassThroughRate) {
   // Arrange
   CreativeNotificationAdList creative_ads;
   CreativeNotificationAdInfo creative_ad =
-      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
+      test::BuildCreativeNotificationAd(/*should_generate_random_uuids=*/true);
   creative_ad.pass_through_rate = 0.0;
   creative_ads.push_back(creative_ad);
 
   // Act & Assert
-  for (const double number : GetPacingRandomNumbers()) {
-    const ScopedPacingRandomNumberSetterForTesting scoped_setter(number);
-    const CreativeNotificationAdList paced_creative_ads =
-        PaceCreativeAds(creative_ads);
-    EXPECT_TRUE(paced_creative_ads.empty());
+  for (const double random_number : GetPacingRandomNumbers()) {
+    const ScopedPacingRandomNumberSetterForTesting scoped_setter(random_number);
+    PaceCreativeAds(creative_ads);
+    EXPECT_THAT(creative_ads, ::testing::IsEmpty());
   }
 }
 
@@ -47,15 +45,16 @@ TEST_F(BraveAdsPacingTest, DoNotPaceCreativeAdsWithMaxPassThroughRate) {
   // Arrange
   CreativeNotificationAdList creative_ads;
   CreativeNotificationAdInfo creative_ad =
-      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
+      test::BuildCreativeNotificationAd(/*should_generate_random_uuids=*/true);
   creative_ad.pass_through_rate = 1.0;
   creative_ads.push_back(creative_ad);
 
   // Act & Assert
-  const CreativeNotificationAdList expected_paced_creative_ads = {creative_ad};
-  for (const double number : GetPacingRandomNumbers()) {
-    const ScopedPacingRandomNumberSetterForTesting scoped_setter(number);
-    EXPECT_EQ(expected_paced_creative_ads, PaceCreativeAds(creative_ads));
+  const CreativeNotificationAdList expected_creative_ads = {creative_ad};
+  for (const double random_number : GetPacingRandomNumbers()) {
+    const ScopedPacingRandomNumberSetterForTesting scoped_setter(random_number);
+    PaceCreativeAds(creative_ads);
+    EXPECT_EQ(expected_creative_ads, creative_ads);
   }
 }
 
@@ -64,18 +63,17 @@ TEST_F(BraveAdsPacingTest,
   // Arrange
   CreativeNotificationAdList creative_ads;
   CreativeNotificationAdInfo creative_ad =
-      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
+      test::BuildCreativeNotificationAd(/*should_generate_random_uuids=*/true);
   creative_ad.pass_through_rate = 0.5;
   creative_ads.push_back(creative_ad);
 
   const ScopedPacingRandomNumberSetterForTesting scoped_setter(0.7);
 
   // Act
-  const CreativeNotificationAdList paced_creative_ads =
-      PaceCreativeAds(creative_ads);
+  PaceCreativeAds(creative_ads);
 
   // Assert
-  EXPECT_TRUE(paced_creative_ads.empty());
+  EXPECT_THAT(creative_ads, ::testing::IsEmpty());
 }
 
 TEST_F(BraveAdsPacingTest,
@@ -84,21 +82,23 @@ TEST_F(BraveAdsPacingTest,
   CreativeNotificationAdList creative_ads;
 
   CreativeNotificationAdInfo creative_ad_1 =
-      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
+      test::BuildCreativeNotificationAd(/*should_generate_random_uuids=*/true);
   creative_ad_1.pass_through_rate = 0.1;
   creative_ads.push_back(creative_ad_1);
 
   CreativeNotificationAdInfo creative_ad_2 =
-      BuildCreativeNotificationAdForTesting(/*should_use_random_uuids=*/true);
+      test::BuildCreativeNotificationAd(/*should_generate_random_uuids=*/true);
   creative_ad_2.pass_through_rate = 0.5;
   creative_ads.push_back(creative_ad_2);
 
   const ScopedPacingRandomNumberSetterForTesting scoped_setter(0.3);
 
-  // Act & Assert
-  const CreativeNotificationAdList expected_paced_creative_ads = {
-      creative_ad_2};
-  EXPECT_EQ(expected_paced_creative_ads, PaceCreativeAds(creative_ads));
+  // Act
+  PaceCreativeAds(creative_ads);
+
+  // Assert
+  const CreativeNotificationAdList expected_creative_ads = {creative_ad_2};
+  EXPECT_EQ(expected_creative_ads, creative_ads);
 }
 
 }  // namespace brave_ads

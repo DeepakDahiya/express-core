@@ -7,14 +7,17 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_BROWSER_BITCOIN_BITCOIN_TX_MANAGER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 
+#include "base/gtest_prod_util.h"
+#include "base/memory/raw_ref.h"
 #include "base/scoped_observation.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_block_tracker.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_tx_meta.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_wallet_service.h"
 #include "brave/components/brave_wallet/browser/tx_manager.h"
-
-class PrefService;
+#include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 
 namespace brave_wallet {
 
@@ -27,19 +30,44 @@ class BitcoinTxStateManager;
 class BitcoinTxManager : public TxManager,
                          public BitcoinBlockTracker::Observer {
  public:
-  BitcoinTxManager(TxService* tx_service,
-                   BitcoinWalletService* bitcoin_wallet_service,
-                   KeyringService* keyring_service,
-                   PrefService* prefs,
-                   TxStorageDelegate* delegate,
-                   AccountResolverDelegate* account_resolver_delegate);
+  using AddUnapprovedBitcoinTransactionCallback =
+      mojom::TxService::AddUnapprovedBitcoinTransactionCallback;
+  using GetBtcHardwareTransactionSignDataCallback =
+      mojom::BtcTxManagerProxy::GetBtcHardwareTransactionSignDataCallback;
+  using ProcessBtcHardwareSignatureCallback =
+      mojom::BtcTxManagerProxy::ProcessBtcHardwareSignatureCallback;
+
+  BitcoinTxManager(TxService& tx_service,
+                   BitcoinWalletService& bitcoin_wallet_service,
+                   KeyringService& keyring_service,
+                   TxStorageDelegate& delegate,
+                   AccountResolverDelegate& account_resolver_delegate);
   ~BitcoinTxManager() override;
   BitcoinTxManager(const BitcoinTxManager&) = delete;
   BitcoinTxManager& operator=(const BitcoinTxManager&) = delete;
+  std::unique_ptr<BitcoinTxMeta> GetTxForTesting(const std::string& tx_meta_id);
+
+  void AddUnapprovedBitcoinTransaction(
+      mojom::NewBitcoinTransactionParamsPtr params,
+      AddUnapprovedBitcoinTransactionCallback callback);
+
+  void GetBtcHardwareTransactionSignData(
+      const std::string& tx_meta_id,
+      GetBtcHardwareTransactionSignDataCallback callback);
+
+  void ProcessBtcHardwareSignature(
+      const std::string& tx_meta_id,
+      const mojom::BitcoinSignaturePtr& hw_signature,
+      ProcessBtcHardwareSignatureCallback callback);
 
  private:
-  BitcoinTxStateManager* GetBitcoinTxStateManager();
-  BitcoinBlockTracker* GetBitcoinBlockTracker();
+  friend class BitcoinTxManagerUnitTest;
+  FRIEND_TEST_ALL_PREFIXES(BitcoinTxManagerUnitTest, SubmitTransaction);
+  FRIEND_TEST_ALL_PREFIXES(BitcoinTxManagerUnitTest, SubmitTransactionError);
+  FRIEND_TEST_ALL_PREFIXES(BitcoinTxManagerUnitTest, SubmitTransactionError);
+
+  BitcoinTxStateManager& GetBitcoinTxStateManager();
+  BitcoinBlockTracker& GetBitcoinBlockTracker();
 
   // BitcoinBlockTracker::Observer
   void OnLatestHeightUpdated(const std::string& chain_id,
@@ -49,47 +77,42 @@ class BitcoinTxManager : public TxManager,
   void AddUnapprovedTransaction(const std::string& chain_id,
                                 mojom::TxDataUnionPtr tx_data_union,
                                 const mojom::AccountIdPtr& from,
-                                const absl::optional<url::Origin>& origin,
+                                const std::optional<url::Origin>& origin,
                                 AddUnapprovedTransactionCallback) override;
-  void ApproveTransaction(const std::string& chain_id,
-                          const std::string& tx_meta_id,
+  void ApproveTransaction(const std::string& tx_meta_id,
                           ApproveTransactionCallback) override;
-  void GetTransactionMessageToSign(
-      const std::string& chain_id,
-      const std::string& tx_meta_id,
-      GetTransactionMessageToSignCallback callback) override;
-
   void SpeedupOrCancelTransaction(
-      const std::string& chain_id,
       const std::string& tx_meta_id,
       bool cancel,
       SpeedupOrCancelTransactionCallback callback) override;
-  void RetryTransaction(const std::string& chain_id,
-                        const std::string& tx_meta_id,
+  void RetryTransaction(const std::string& tx_meta_id,
                         RetryTransactionCallback callback) override;
   mojom::CoinType GetCoinType() const override;
   void UpdatePendingTransactions(
-      const absl::optional<std::string>& chain_id) override;
+      const std::optional<std::string>& chain_id) override;
 
   void ContinueAddUnapprovedTransaction(
       const std::string& chain_id,
       const mojom::AccountIdPtr& from,
-      const absl::optional<url::Origin>& origin,
+      const std::optional<url::Origin>& origin,
       AddUnapprovedTransactionCallback callback,
       base::expected<BitcoinTransaction, std::string> bitcoin_transaction);
 
-  void ContinueApproveTransaction(const std::string& chain_id,
-                                  const std::string& tx_meta_id,
+  void ContinueApproveTransaction(const std::string& tx_meta_id,
                                   ApproveTransactionCallback callback,
                                   std::string tx_cid,
                                   BitcoinTransaction transaction,
                                   std::string error);
+  void ContinueProcessBtcHardwareSignature(
+      ProcessBtcHardwareSignatureCallback callback,
+      bool success,
+      mojom::ProviderErrorUnionPtr error,
+      const std::string& message);
 
-  void OnGetTransactionStatus(const std::string& chain_id,
-                              const std::string& tx_meta_id,
+  void OnGetTransactionStatus(const std::string& tx_meta_id,
                               base::expected<bool, std::string> confirm_status);
 
-  raw_ptr<BitcoinWalletService> bitcoin_wallet_service_ = nullptr;
+  const raw_ref<BitcoinWalletService> bitcoin_wallet_service_;
   base::ScopedObservation<BitcoinBlockTracker, BitcoinBlockTracker::Observer>
       block_tracker_observation_{this};
   base::WeakPtrFactory<BitcoinTxManager> weak_factory_{this};

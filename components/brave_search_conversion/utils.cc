@@ -7,8 +7,10 @@
 
 #include <algorithm>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/feature_list.h"
+#include "base/logging.h"
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -28,11 +30,29 @@ namespace brave_search_conversion {
 
 namespace {
 
-ConversionType GetConversionTypeFromBannerTypeParam(const std::string& param) {
-  if (param == "type_A") {
-    return ConversionType::kBannerTypeA;
+bool ShouldUseDuckDuckGoBanner(const TemplateURL* template_url) {
+  if (!base::FeatureList::IsEnabled(features::kOmniboxDDGBanner)) {
+    return false;
   }
 
+  const auto id = template_url->prepopulate_id();
+  if (id == TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO ||
+      id == TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_DUCKDUCKGO_DE ||
+      id == TemplateURLPrepopulateData::
+                PREPOPULATED_ENGINE_ID_DUCKDUCKGO_AU_NZ_IE) {
+    return true;
+  }
+
+  // If user adds manualy as default search provider, it could not have above
+  // id. So, check with host again.
+  if (GURL(template_url->url()).host() == "duckduckgo.com") {
+    return true;
+  }
+
+  return false;
+}
+
+ConversionType GetConversionTypeFromBannerTypeParam(const std::string& param) {
   if (param == "type_B") {
     return ConversionType::kBannerTypeB;
   }
@@ -50,20 +70,54 @@ ConversionType GetConversionTypeFromBannerTypeParam(const std::string& param) {
   return ConversionType::kNone;
 }
 
+ConversionType GetDDGConversionType(PrefService* prefs) {
+  const int ddg_banner_type_index =
+      prefs->GetInteger(prefs::kDDGBannerTypeIndex);
+  const int banner_type_index =
+      static_cast<int>(ConversionType::kDDGBannerTypeC) + ddg_banner_type_index;
+  return static_cast<ConversionType>(banner_type_index);
+}
+
+void UpdateDDGConversionType(PrefService* prefs) {
+  const base::Time last_ddg_banner_type_shown_time =
+      prefs->GetTime(prefs::kLatestDDGBannerTypeFirstShownTime);
+
+  // If it's initial state, configure now as first shown time to show
+  // type A at first.
+  if (last_ddg_banner_type_shown_time == base::Time()) {
+    prefs->SetTime(prefs::kLatestDDGBannerTypeFirstShownTime,
+                   base::Time::Now());
+    return;
+  }
+
+  // Record current type and the first time this type has been shown.
+  // Rotate when current type is used for 1 mins.
+  // If we rotate frequently, user can see different types while typing.
+  if (base::Time::Now() - last_ddg_banner_type_shown_time >= base::Minutes(1)) {
+    int ddg_banner_type_index = prefs->GetInteger(prefs::kDDGBannerTypeIndex);
+    prefs->SetInteger(prefs::kDDGBannerTypeIndex,
+                      (ddg_banner_type_index + 1) % 2);
+    prefs->SetTime(prefs::kLatestDDGBannerTypeFirstShownTime,
+                   base::Time::Now());
+  }
+}
+
 }  // namespace
 
 bool IsNTPPromotionEnabled(PrefService* prefs, TemplateURLService* service) {
   DCHECK(prefs);
   DCHECK(service);
 
-  if (prefs->GetBoolean(prefs::kDismissed))
+  if (prefs->GetBoolean(prefs::kDismissed)) {
     return false;
+  }
 
   // Don't need to prompt for conversion if user uses brave as a default
   // provider.
   auto* template_url = service->GetDefaultSearchProvider();
-  if (!template_url)
+  if (!template_url) {
     return false;
+  }
 
   const auto id = template_url->prepopulate_id();
   if (id == TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE ||
@@ -79,21 +133,20 @@ ConversionType GetConversionType(PrefService* prefs,
   DCHECK(prefs);
   DCHECK(service);
 
-  if (prefs->GetBoolean(prefs::kDismissed))
+  if (prefs->GetBoolean(prefs::kDismissed)) {
     return ConversionType::kNone;
+  }
 
   // Don't need to ask conversion if user uses brave as a default provider.
-  auto id = service->GetDefaultSearchProvider()->data().prepopulate_id;
-  if (id == TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE ||
-      id == TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE_TOR) {
+  const auto* template_url = service->GetDefaultSearchProvider();
+  if (template_url->prepopulate_id() ==
+          TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE ||
+      template_url->prepopulate_id() ==
+          TemplateURLPrepopulateData::PREPOPULATED_ENGINE_ID_BRAVE_TOR) {
     return ConversionType::kNone;
   }
 
-  if (base::FeatureList::IsEnabled(features::kOmniboxButton)) {
-    return ConversionType::kButton;
-  }
-
-  if (base::FeatureList::IsEnabled(features::kOmniboxBanner)) {
+  if (IsBraveSearchConversionFeatureEnabled()) {
     // Give conversion type after 3d passed since maybe later clicked time.
     auto clicked_time = prefs->GetTime(prefs::kMaybeLaterClickedTime);
     if (!clicked_time.is_null() &&
@@ -101,12 +154,16 @@ ConversionType GetConversionType(PrefService* prefs,
       return ConversionType::kNone;
     }
 
-    // Fetch banner type from griffin.
-    constexpr char kPromotionTrial[] = "BraveSearchPromotionBannerStudy";
-    constexpr char kBannerTypeParamName[] = "banner_type";
-    const std::string banner_type =
-        base::GetFieldTrialParamValue(kPromotionTrial, kBannerTypeParamName);
-    return GetConversionTypeFromBannerTypeParam(banner_type);
+    if (ShouldUseDuckDuckGoBanner(template_url)) {
+      UpdateDDGConversionType(prefs);
+      return GetDDGConversionType(prefs);
+    }
+
+    if (base::FeatureList::IsEnabled(features::kOmniboxBanner)) {
+      return GetConversionTypeFromBannerTypeParam(features::kBannerType.Get());
+    }
+
+    return ConversionType::kNone;
   }
 
   return ConversionType::kNone;
@@ -114,7 +171,14 @@ ConversionType GetConversionType(PrefService* prefs,
 
 void RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(prefs::kDismissed, false);
+  registry->RegisterBooleanPref(prefs::kShowNTPSearchBox, true);
+  registry->RegisterStringPref(prefs::kLastUsedNTPSearchEngine,
+                               "search.brave.com");
+  registry->RegisterBooleanPref(prefs::kPromptEnableSuggestions, true);
   registry->RegisterTimePref(prefs::kMaybeLaterClickedTime, base::Time());
+  registry->RegisterIntegerPref(prefs::kDDGBannerTypeIndex, 0);
+  registry->RegisterTimePref(prefs::kLatestDDGBannerTypeFirstShownTime,
+                             base::Time());
 }
 
 void SetDismissed(PrefService* prefs) {
@@ -137,8 +201,8 @@ GURL GetPromoURL(const std::string& search_term) {
 }
 
 bool IsBraveSearchConversionFeatureEnabled() {
-  return base::FeatureList::IsEnabled(features::kOmniboxButton) ||
-         base::FeatureList::IsEnabled(features::kOmniboxBanner);
+  return base::FeatureList::IsEnabled(features::kOmniboxBanner) ||
+         base::FeatureList::IsEnabled(features::kOmniboxDDGBanner);
 }
 
 }  // namespace brave_search_conversion

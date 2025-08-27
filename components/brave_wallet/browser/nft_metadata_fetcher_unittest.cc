@@ -9,15 +9,15 @@
 #include <string_view>
 
 #include "base/base64.h"
-#include "base/json/json_reader.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/test/values_test_util.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/json_rpc_service.h"
+#include "brave/components/brave_wallet/browser/network_manager.h"
 #include "brave/components/brave_wallet/common/hash_utils.h"
-#include "brave/components/ipfs/ipfs_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -29,21 +29,6 @@ namespace brave_wallet {
 
 namespace {
 
-// Compare two JSON strings, ignoring the order of the keys and other
-// insignificant whitespace differences.
-void CompareJSON(const std::string& response,
-                 const std::string& expected_response) {
-  auto response_val = base::JSONReader::Read(response);
-  auto expected_response_val = base::JSONReader::Read(expected_response);
-  EXPECT_EQ(response_val, expected_response_val);
-  if (response_val) {
-    // If the JSON is valid, compare the parsed values.
-    EXPECT_EQ(*response_val, *expected_response_val);
-  } else {
-    // If the JSON is invalid, compare the raw strings.
-    EXPECT_EQ(response, expected_response);
-  }
-}
 constexpr char https_metadata_response[] = R"({
     "attributes": [
       {
@@ -110,18 +95,14 @@ class NftMetadataFetcherUnitTest : public testing::Test {
                 &url_loader_factory_)) {}
   void SetUp() override {
     brave_wallet::RegisterProfilePrefs(prefs_.registry());
-    ipfs::IpfsService::RegisterProfilePrefs(prefs_.registry());
+    network_manager_ = std::make_unique<NetworkManager>(&prefs_);
     json_rpc_service_ = std::make_unique<brave_wallet::JsonRpcService>(
-        shared_url_loader_factory_, &prefs_);
+        shared_url_loader_factory_, network_manager_.get(), &prefs_, nullptr);
     nft_metadata_fetcher_ = std::make_unique<NftMetadataFetcher>(
         shared_url_loader_factory_, json_rpc_service_.get(), GetPrefs());
   }
 
   PrefService* GetPrefs() { return &prefs_; }
-
-  GURL GetNetwork(const std::string& chain_id, mojom::CoinType coin) {
-    return brave_wallet::GetNetworkURL(GetPrefs(), chain_id, coin);
-  }
 
   void TestFetchMetadata(const GURL& url,
                          const std::string& expected_response,
@@ -132,7 +113,12 @@ class NftMetadataFetcherUnitTest : public testing::Test {
         url,
         base::BindLambdaForTesting([&](const std::string& response, int error,
                                        const std::string& error_message) {
-          CompareJSON(response, expected_response);
+          if (response.empty()) {
+            EXPECT_EQ(response, expected_response);
+          } else {
+            EXPECT_EQ(base::test::ParseJson(response),
+                      base::test::ParseJson(expected_response));
+          }
           EXPECT_EQ(error, expected_error);
           EXPECT_EQ(error_message, expected_error_message);
           run_loop.Quit();
@@ -153,7 +139,12 @@ class NftMetadataFetcherUnitTest : public testing::Test {
         base::BindLambdaForTesting(
             [&](const std::string& url, const std::string& response,
                 mojom::ProviderError error, const std::string& error_message) {
-              CompareJSON(response, expected_response);
+              if (response.empty()) {
+                EXPECT_EQ(response, expected_response);
+              } else {
+                EXPECT_EQ(base::test::ParseJson(response),
+                          base::test::ParseJson(expected_response));
+              }
               EXPECT_EQ(error, expected_error);
               EXPECT_EQ(error_message, expected_error_message);
               run_loop.Quit();
@@ -173,7 +164,12 @@ class NftMetadataFetcherUnitTest : public testing::Test {
                                        const std::string& response,
                                        mojom::SolanaProviderError error,
                                        const std::string& error_message) {
-          CompareJSON(response, expected_response);
+          if (response.empty()) {
+            EXPECT_EQ(response, expected_response);
+          } else {
+            EXPECT_EQ(base::test::ParseJson(response),
+                      base::test::ParseJson(expected_response));
+          }
           EXPECT_EQ(error, expected_error);
           EXPECT_EQ(error_message, expected_error_message);
           loop.Quit();
@@ -217,7 +213,7 @@ class NftMetadataFetcherUnitTest : public testing::Test {
       net::HttpStatusCode token_uri_status = net::HTTP_OK,
       net::HttpStatusCode metadata_status = net::HTTP_OK) {
     GURL network_url =
-        GetNetworkURL(GetPrefs(), chain_id, mojom::CoinType::ETH);
+        network_manager_->GetNetworkURL(chain_id, mojom::CoinType::ETH);
     ASSERT_TRUE(network_url.is_valid());
     url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
         [&, interface_id, supports_interface_provider_response,
@@ -286,8 +282,8 @@ class NftMetadataFetcherUnitTest : public testing::Test {
   network::TestURLLoaderFactory url_loader_factory_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  std::unique_ptr<NetworkManager> network_manager_;
   std::unique_ptr<JsonRpcService> json_rpc_service_;
-  // NftMetadataFetcher nft_metadata_fetcher_;
   std::unique_ptr<NftMetadataFetcher> nft_metadata_fetcher_;
 };
 
@@ -688,7 +684,8 @@ TEST_F(NftMetadataFetcherUnitTest, GetSolTokenMetadata) {
     "seller_fee_basis_points": 1000,
     "symbol": ""
   })";
-  auto network_url = GetNetwork(mojom::kSolanaMainnet, mojom::CoinType::SOL);
+  auto network_url = network_manager_->GetNetworkURL(mojom::kSolanaMainnet,
+                                                     mojom::CoinType::SOL);
   SetSolTokenMetadataInterceptor(
       network_url, get_account_info_response,
       GURL("https://"

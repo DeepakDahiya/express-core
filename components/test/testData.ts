@@ -1,9 +1,9 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* Copyright (c) 2018 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Initial state
-import { defaultState as rewardsData } from '../../components/brave_rewards/resources/page/reducers/default_state'
 import { defaultState as adblockData } from '../../components/brave_adblock_ui/storage'
 
 export class ChromeEvent {
@@ -22,8 +22,6 @@ export class ChromeEvent {
   }
 }
 
-export const rewardsInitialState: Rewards.ApplicationState = { rewardsData }
-
 export const adblockInitialState: AdBlock.ApplicationState = { adblockData }
 
 export const newTabInitialState: NewTab.ApplicationState = {
@@ -40,7 +38,6 @@ export const newTabInitialState: NewTab.ApplicationState = {
     torCircuitEstablished: false,
     torInitProgress: '',
     isTor: false,
-    isQwant: false,
     stats: {
       adsBlockedStat: 0,
       javascriptBlockedStat: 0,
@@ -59,9 +56,6 @@ export const getMockChrome = () => {
   let mock = {
     send: (methodName: string, ...args: any[]) => undefined,
     getVariableValue: () => undefined,
-    braveRewards: {
-      getPublisherData: (id: number, url: string, favicon: string) => undefined
-    },
     runtime: {
       onMessage: new ChromeEvent(),
       onConnect: new ChromeEvent(),
@@ -166,6 +160,26 @@ export const getMockChrome = () => {
     }
   }
   return mock
+}
+
+export const getMockLoadTimeData = () => {
+  return {
+    getString(key) {
+      if (key === 'braveWalletLedgerBridgeUrl') {
+        return 'chrome-untrusted://ledger-bridge'
+      }
+      return key
+    },
+    getBoolean() {
+      return true
+    },
+    getInteger() {
+      return 2
+    },
+    getStringF(key) {
+      return key
+    }
+  }
 }
 
 export const window = () => {

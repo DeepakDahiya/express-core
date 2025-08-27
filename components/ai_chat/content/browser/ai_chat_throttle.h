@@ -6,19 +6,17 @@
 #ifndef BRAVE_COMPONENTS_AI_CHAT_CONTENT_BROWSER_AI_CHAT_THROTTLE_H_
 #define BRAVE_COMPONENTS_AI_CHAT_CONTENT_BROWSER_AI_CHAT_THROTTLE_H_
 
-#include <memory>
-
 #include "content/public/browser/navigation_throttle.h"
 
 namespace ai_chat {
 
-class AiChatThrottle : public content::NavigationThrottle {
+// Prevents navigation to certain AI Chat URLs
+class AIChatThrottle : public content::NavigationThrottle {
  public:
-  explicit AiChatThrottle(content::NavigationHandle* handle);
-  ~AiChatThrottle() override;
+  explicit AIChatThrottle(content::NavigationThrottleRegistry& registry);
+  ~AIChatThrottle() override;
 
-  static std::unique_ptr<AiChatThrottle> MaybeCreateThrottleFor(
-      content::NavigationHandle* navigation_handle);
+  static void MaybeCreateAndAdd(content::NavigationThrottleRegistry& registry);
 
   // content::NavigationThrottle:
   // ThrottleCheckResult WillProcessResponse() override;

@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "brave/components/api_request_helper/api_request_helper.h"
@@ -35,7 +36,7 @@ class WaybackMachineURLFetcher final {
   WaybackMachineURLFetcher(
       Client* client,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  virtual ~WaybackMachineURLFetcher();
+  ~WaybackMachineURLFetcher();
 
   WaybackMachineURLFetcher(const WaybackMachineURLFetcher&) = delete;
   WaybackMachineURLFetcher& operator=(const WaybackMachineURLFetcher&) = delete;

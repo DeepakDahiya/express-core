@@ -6,29 +6,24 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_ELIGIBLE_ADS_PACING_PACING_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_ELIGIBLE_ADS_PACING_PACING_H_
 
-#include <iterator>
+#include <vector>
 
-#include "base/ranges/algorithm.h"
+#include "base/trace_event/trace_event.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/pacing/pacing_util.h"
+#include "brave/components/brave_ads/core/public/ads_constants.h"
 
 namespace brave_ads {
 
 struct CreativeAdInfo;
 
 template <typename T>
-T PaceCreativeAds(const T& creative_ads) {
-  if (creative_ads.empty()) {
-    return {};
-  }
+void PaceCreativeAds(T& creative_ads) {
+  TRACE_EVENT(kTraceEventCategory, "Pacing::PaceCreativeAds", "creative_ads",
+              creative_ads.size());
 
-  T paced_creative_ads;
-
-  base::ranges::copy_if(creative_ads, std::back_inserter(paced_creative_ads),
-                        [](const CreativeAdInfo& creative_ad) {
-                          return !ShouldPaceAd(creative_ad);
-                        });
-
-  return paced_creative_ads;
+  std::erase_if(creative_ads, [](const CreativeAdInfo& creative_ad) {
+    return ShouldPaceAd(creative_ad);
+  });
 }
 
 }  // namespace brave_ads

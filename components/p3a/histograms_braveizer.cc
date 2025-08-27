@@ -5,6 +5,9 @@
 
 #include "brave/components/p3a/histograms_braveizer.h"
 
+#include <array>
+#include <string>
+
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
@@ -17,14 +20,12 @@ namespace {
 
 // Please keep this list sorted and synced with |DoHistogramBravezation|.
 // clang-format off
-constexpr const char* kBravezationHistograms[] = {
-    "Bookmarks.Count.OnProfileLoad",
-    "DefaultBrowser.State",
+constexpr auto kBravezationHistograms = std::to_array<std::string_view>({
     "Extensions.LoadExtension",
     "Tabs.TabCount",
     "Tabs.TabCountPerLoad",
     "Tabs.WindowCount",
-};
+});
 // clang-format on
 
 }  // namespace
@@ -41,7 +42,7 @@ HistogramsBraveizer::HistogramsBraveizer() = default;
 HistogramsBraveizer::~HistogramsBraveizer() = default;
 
 void HistogramsBraveizer::InitCallbacks() {
-  for (const char* histogram_name : kBravezationHistograms) {
+  for (std::string_view histogram_name : kBravezationHistograms) {
     histogram_sample_callbacks_.push_back(
         std::make_unique<
             base::StatisticsRecorder::ScopedHistogramSampleObserver>(
@@ -54,37 +55,10 @@ void HistogramsBraveizer::InitCallbacks() {
 // TODO(iefremov): Replace a bunch of 'if's with something more elegant.
 // Records the given sample using the proper Brave way.
 void HistogramsBraveizer::DoHistogramBravetization(
-    const char* histogram_name,
+    std::string_view histogram_name,
     uint64_t name_hash,
-    base::HistogramBase::Sample sample) {
-  DCHECK(histogram_name);
-  if (strcmp("Bookmarks.Count.OnProfileLoad", histogram_name) == 0) {
-    p3a_utils::RecordToHistogramBucket(
-        "Brave.Core.BookmarksCountOnProfileLoad.2",
-        {5, 20, 100, 500, 1000, 5000, 10000}, sample);
-    return;
-  }
-
-  if (strcmp("DefaultBrowser.State", histogram_name) == 0) {
-    int answer = 0;
-    switch (sample) {
-      case 0:  // Not default.
-      case 1:  // Default.
-        answer = sample;
-        break;
-      case 2:  // Unknown, merging to "Not default".
-        answer = 0;
-        break;
-      case 3:  // Other mode is default, merging to "Default".
-        answer = 1;
-        break;
-      default:
-        NOTREACHED();
-    }
-    UMA_HISTOGRAM_BOOLEAN("Brave.Core.IsDefault", answer);
-  }
-
-  if (strcmp("Extensions.LoadExtension", histogram_name) == 0) {
+    base::HistogramBase::Sample32 sample) {
+  if ("Extensions.LoadExtension" == histogram_name) {
     int answer = 0;
     if (sample == 1)
       answer = 1;
@@ -97,8 +71,8 @@ void HistogramsBraveizer::DoHistogramBravetization(
     return;
   }
 
-  if (strcmp("Tabs.TabCount", histogram_name) == 0 ||
-      strcmp("Tabs.TabCountPerLoad", histogram_name) == 0) {
+  if ("Tabs.TabCount" == histogram_name ||
+      "Tabs.TabCountPerLoad" == histogram_name) {
     int answer = 0;
     if (0 <= sample && sample <= 1) {
       answer = 0;
@@ -116,7 +90,7 @@ void HistogramsBraveizer::DoHistogramBravetization(
     return;
   }
 
-  if (strcmp("Tabs.WindowCount", histogram_name) == 0) {
+  if ("Tabs.WindowCount" == histogram_name) {
     int answer = 0;
     if (sample <= 0) {
       answer = 0;

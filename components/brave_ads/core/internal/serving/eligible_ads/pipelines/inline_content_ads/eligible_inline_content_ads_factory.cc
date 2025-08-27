@@ -6,7 +6,6 @@
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/pipelines/inline_content_ads/eligible_inline_content_ads_factory.h"
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/pipelines/inline_content_ads/eligible_inline_content_ads_base.h"
-#include "brave/components/brave_ads/core/internal/serving/eligible_ads/pipelines/inline_content_ads/eligible_inline_content_ads_v1.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/pipelines/inline_content_ads/eligible_inline_content_ads_v2.h"
 #include "brave/components/brave_ads/core/internal/targeting/behavioral/anti_targeting/resource/anti_targeting_resource.h"
 #include "brave/components/brave_ads/core/internal/targeting/geographical/subdivision/subdivision_targeting.h"
@@ -15,15 +14,10 @@ namespace brave_ads {
 
 std::unique_ptr<EligibleInlineContentAdsBase>
 EligibleInlineContentAdsFactory::Build(
-    const int version,
+    int version,
     const SubdivisionTargeting& subdivision_targeting,
     const AntiTargetingResource& anti_targeting_resource) {
   switch (version) {
-    case 1: {
-      return std::make_unique<EligibleInlineContentAdsV1>(
-          subdivision_targeting, anti_targeting_resource);
-    }
-
     case 2: {
       return std::make_unique<EligibleInlineContentAdsV2>(
           subdivision_targeting, anti_targeting_resource);

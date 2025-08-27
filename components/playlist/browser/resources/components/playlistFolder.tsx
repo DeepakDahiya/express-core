@@ -18,7 +18,7 @@ import {
   verticalListSortingStrategy
 } from '@dnd-kit/sortable'
 
-import { color, font, spacing } from '@brave/leo/tokens/css'
+import { color, font, spacing } from '@brave/leo/tokens/css/variables'
 import LeoButton from '@brave/leo/react/button'
 
 import { PlaylistItem as PlaylistItemMojo } from 'gen/brave/components/playlist/common/mojom/playlist.mojom.m'
@@ -61,6 +61,7 @@ const StyledEditActionContainer = styled.div`
 const StyledEditButton = styled(LeoButton)`
   width: fit-content;
   flex-grow: 0;
+  color: var(--leo-color-text-primary);
   --leo-button-padding: 10px 12px;
 
   &:last-child {
@@ -68,11 +69,11 @@ const StyledEditButton = styled(LeoButton)`
   }
 `
 
-function exitEditMode () {
+function exitEditMode() {
   getPlaylistActions().setPlaylistEditMode(undefined)
 }
 
-function EditActionsContainer ({
+function EditActionsContainer({
   playlistId,
   selectedIds
 }: {
@@ -98,7 +99,7 @@ function EditActionsContainer ({
         size='small'
         isDisabled={!selectedIds.size}
         onClick={() => {
-          selectedIds.forEach(itemId =>
+          selectedIds.forEach((itemId) =>
             getPlaylistAPI().removeItemFromPlaylist(playlistId, itemId)
           )
           exitEditMode()
@@ -117,7 +118,7 @@ function EditActionsContainer ({
   )
 }
 
-function useItemIdFromHash () {
+function useItemIdFromHash() {
   const [idFromHash, setIdFromHash] = React.useState<string>('')
 
   React.useEffect(() => {
@@ -130,7 +131,7 @@ function useItemIdFromHash () {
   return idFromHash
 }
 
-function useScrollToItem (itemId: string | undefined) {
+function useScrollToItem(itemId: string | undefined) {
   const [el, setEl] = React.useState<HTMLAnchorElement | null>(null)
 
   React.useEffect(() => {
@@ -160,13 +161,13 @@ const StyledEmptyFolderMessageContainer = styled.div`
 `
 
 const StyledEmptyFolderIcon = styled.div`
-  content: url(${`/${EmptyFolderIcon}`});
+  content: url(${EmptyFolderIcon});
 `
 
 const StyledEmptyFolderMessage = styled.div`
   color: ${color.text.tertiary};
   text-align: center;
-  font: ${font.primary.default.regular};
+  font: ${font.default.regular};
   padding: 0px 40px;
 `
 
@@ -175,7 +176,7 @@ const StyledSuggestedItemsContainer = styled.div`
   height: 230px;
 `
 
-export function EmptyPlaylistFolder () {
+export function EmptyPlaylistFolder() {
   return (
     <StyledEmptyFolderContainer>
       <StyledEmptyFolderMessageContainer>
@@ -191,7 +192,7 @@ export function EmptyPlaylistFolder () {
   )
 }
 
-export default function PlaylistFolder ({
+export default function PlaylistFolder({
   match
 }: RouteComponentProps<MatchParams>) {
   const playlist = usePlaylist(match.params.playlistId)
@@ -219,7 +220,7 @@ export default function PlaylistFolder ({
 
   // Share single callback among multiple items.
   const onItemClick = React.useCallback(
-    item => {
+    (item: PlaylistItemMojo) => {
       if (!playlist) return
 
       if (editMode === PlaylistEditMode.BULK_EDIT) {
@@ -262,11 +263,7 @@ export default function PlaylistFolder ({
     return <Redirect to='/' />
   }
 
-  const itemsToRender =
-    draggedOrder ??
-    (lastPlayerState?.shuffleEnabled
-      ? lastPlayerState.currentList?.items ?? playlist?.items
-      : playlist?.items)
+  const itemsToRender = draggedOrder ?? playlist?.items
 
   if (!itemsToRender.length) {
     return <EmptyPlaylistFolder />
@@ -292,10 +289,7 @@ export default function PlaylistFolder ({
         isEditing={editMode === PlaylistEditMode.BULK_EDIT}
         isSelected={selectedSet.has(item.id)}
         isHighlighted={!!ref}
-        canReorder={
-          editMode !== PlaylistEditMode.BULK_EDIT &&
-          !lastPlayerState?.shuffleEnabled
-        }
+        canReorder={editMode !== PlaylistEditMode.BULK_EDIT}
         shouldBeHidden={shouldBeHidden}
         onClick={onItemClick}
       />
@@ -320,8 +314,8 @@ export default function PlaylistFolder ({
         }
 
         if (active.id !== over.id) {
-          const oldIndex = draggedOrder.findIndex(i => i.id === active.id)
-          const newIndex = draggedOrder.findIndex(i => i.id === over.id)
+          const oldIndex = draggedOrder.findIndex((i) => i.id === active.id)
+          const newIndex = draggedOrder.findIndex((i) => i.id === over.id)
           // Lock the order until updating completes.
           setDraggedOrder(arrayMove(draggedOrder, oldIndex, newIndex))
 
@@ -347,7 +341,7 @@ export default function PlaylistFolder ({
             selectedIds={selectedSet}
           />
         )}
-        {itemsToRender.map(i =>
+        {itemsToRender.map((i) =>
           getPlaylistItem(
             i,
             /* forDragOverlay */ false,
@@ -357,7 +351,7 @@ export default function PlaylistFolder ({
       </SortableContext>
       <DragOverlay modifiers={restrictToVerticalAxis}>
         {getPlaylistItem(
-          itemsToRender.find(i => i.id === draggedId),
+          itemsToRender.find((i) => i.id === draggedId),
           /* forDragOverlay */ true,
           /* shouldBeHidden */ false
         )}

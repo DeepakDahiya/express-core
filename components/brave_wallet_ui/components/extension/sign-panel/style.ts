@@ -17,6 +17,7 @@ export const StyledWrapper = styled.div`
   align-items: center;
   justify-content: space-between;
   background-color: ${(p) => p.theme.color.background01};
+  padding: 0px 16px;
 `
 
 export const TopRow = styled.div`
@@ -25,7 +26,7 @@ export const TopRow = styled.div`
   justify-content: space-between;
   flex-direction: row;
   width: 100%;
-  padding: 15px 15px 0px 15px;
+  padding: 15px 0px;
 `
 
 export const AccountCircle = styled.div<Partial<StyleProps>>`
@@ -110,13 +111,14 @@ export const MessageText = styled.span`
   white-space: pre-wrap;
 `
 
-export const ButtonRow = styled.div`
+export const SignPanelButtonRow = styled.div`
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: row;
   width: 100%;
   margin-bottom: 14px;
+  gap: 8px;
 `
 
 export const WarningTitleRow = styled(WarningBoxTitleRow)`

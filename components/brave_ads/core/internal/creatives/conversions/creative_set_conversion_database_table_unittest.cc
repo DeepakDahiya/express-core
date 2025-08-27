@@ -5,18 +5,20 @@
 
 #include "brave/components/brave_ads/core/internal/creatives/conversions/creative_set_conversion_database_table.h"
 
+#include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
 #include "base/test/mock_callback.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/conversions/types/verifiable_conversion/verifiable_conversion_unittest_constants.h"
+#include "brave/components/brave_ads/core/internal/ad_units/ad_test_constants.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 #include "brave/components/brave_ads/core/internal/creatives/conversions/creative_set_conversion_database_table_util.h"
-#include "brave/components/brave_ads/core/internal/creatives/conversions/creative_set_conversion_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/units/ad_unittest_constants.h"
+#include "brave/components/brave_ads/core/internal/creatives/conversions/creative_set_conversion_test_util.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/conversions/types/verifiable_conversion/verifiable_conversion_test_constants.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsCreativeSetConversionDatabaseTableTest : public UnitTestBase {
+class BraveAdsCreativeSetConversionDatabaseTableTest : public test::TestBase {
  protected:
   database::table::CreativeSetConversions database_table_;
 };
@@ -26,10 +28,14 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest, EmptySave) {
   database::SaveCreativeSetConversions({});
 
   // Assert
-  base::MockCallback<database::table::GetConversionsCallback> callback;
+  base::MockCallback<database::table::GetCreativeSetConversionsCallback>
+      callback;
+  base::RunLoop run_loop;
   EXPECT_CALL(callback, Run(/*success=*/true,
-                            /*creative_set_conversions=*/::testing::IsEmpty()));
-  database_table_.GetAll(callback.Get());
+                            /*creative_set_conversions=*/::testing::IsEmpty()))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  database_table_.GetUnexpired(callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
@@ -38,15 +44,15 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   CreativeSetConversionList creative_set_conversions;
 
   const CreativeSetConversionInfo creative_set_conversion_1 =
-      BuildVerifiableCreativeSetConversionForTesting(
-          kCreativeSetId, /*url_pattern=*/"https://www.brave.com/*",
+      test::BuildVerifiableCreativeSetConversion(
+          test::kCreativeSetId, /*url_pattern=*/"https://www.brave.com/*",
           /*observation_window=*/base::Days(3),
-          kVerifiableConversionAdvertiserPublicKey);
+          test::kVerifiableConversionAdvertiserPublicKeyBase64);
   creative_set_conversions.push_back(creative_set_conversion_1);
 
   const CreativeSetConversionInfo creative_set_conversion_2 =
-      BuildCreativeSetConversionForTesting(
-          /*creative_set_id=*/"4e83a23c-1194-40f8-8fdc-2f38d7ed75c8",
+      test::BuildCreativeSetConversion(
+          test::kAnotherCreativeSetId,
           /*url_pattern=*/"https://www.brave.com/signup/*",
           /*observation_window=*/base::Days(30));
   creative_set_conversions.push_back(creative_set_conversion_2);
@@ -55,9 +61,13 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   database::SaveCreativeSetConversions(creative_set_conversions);
 
   // Assert
-  base::MockCallback<database::table::GetConversionsCallback> callback;
-  EXPECT_CALL(callback, Run(/*success=*/true, creative_set_conversions));
-  database_table_.GetAll(callback.Get());
+  base::MockCallback<database::table::GetCreativeSetConversionsCallback>
+      callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, Run(/*success=*/true, creative_set_conversions))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  database_table_.GetUnexpired(callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
@@ -66,10 +76,10 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   CreativeSetConversionList creative_set_conversions;
 
   const CreativeSetConversionInfo creative_set_conversion =
-      BuildVerifiableCreativeSetConversionForTesting(
-          kCreativeSetId, /*url_pattern=*/"https://www.brave.com/*",
+      test::BuildVerifiableCreativeSetConversion(
+          test::kCreativeSetId, /*url_pattern=*/"https://www.brave.com/*",
           /*observation_window=*/base::Days(3),
-          kVerifiableConversionAdvertiserPublicKey);
+          test::kVerifiableConversionAdvertiserPublicKeyBase64);
   creative_set_conversions.push_back(creative_set_conversion);
 
   database::SaveCreativeSetConversions(creative_set_conversions);
@@ -78,9 +88,13 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   database::SaveCreativeSetConversions(creative_set_conversions);
 
   // Assert
-  base::MockCallback<database::table::GetConversionsCallback> callback;
-  EXPECT_CALL(callback, Run(/*success=*/true, creative_set_conversions));
-  database_table_.GetAll(callback.Get());
+  base::MockCallback<database::table::GetCreativeSetConversionsCallback>
+      callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, Run(/*success=*/true, creative_set_conversions))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  database_table_.GetUnexpired(callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
@@ -89,15 +103,15 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   CreativeSetConversionList creative_set_conversions;
 
   const CreativeSetConversionInfo creative_set_conversion_1 =
-      BuildCreativeSetConversionForTesting(
-          kCreativeSetId,
+      test::BuildCreativeSetConversion(
+          test::kCreativeSetId,
           /*url_pattern=*/"https://www.brave.com/*",
           /*observation_window=*/base::Days(7));
   creative_set_conversions.push_back(creative_set_conversion_1);
 
   const CreativeSetConversionInfo creative_set_conversion_2 =
-      BuildCreativeSetConversionForTesting(
-          /*creative_set_id=*/"4e83a23c-1194-40f8-8fdc-2f38d7ed75c8",
+      test::BuildCreativeSetConversion(
+          test::kAnotherCreativeSetId,
           /*url_pattern=*/"https://www.brave.com/signup/*",
           /*observation_window=*/base::Days(3));  // Should be purged
   creative_set_conversions.push_back(creative_set_conversion_2);
@@ -110,10 +124,15 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   database::PurgeExpiredCreativeSetConversions();
 
   // Assert
-  base::MockCallback<database::table::GetConversionsCallback> callback;
-  EXPECT_CALL(callback, Run(/*success=*/true, CreativeSetConversionList{
-                                                  creative_set_conversion_1}));
-  database_table_.GetAll(callback.Get());
+  base::MockCallback<database::table::GetCreativeSetConversionsCallback>
+      callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback,
+              Run(/*success=*/true,
+                  CreativeSetConversionList{creative_set_conversion_1}))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  database_table_.GetUnexpired(callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
@@ -122,11 +141,11 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   CreativeSetConversionList creative_set_conversions_1;
 
   const CreativeSetConversionInfo creative_set_conversion_1 =
-      BuildVerifiableCreativeSetConversionForTesting(
-          kCreativeSetId,
+      test::BuildVerifiableCreativeSetConversion(
+          test::kCreativeSetId,
           /*url_pattern=*/"https://www.brave.com/1",
           /*observation_window=*/base::Days(3),
-          kVerifiableConversionAdvertiserPublicKey);
+          test::kVerifiableConversionAdvertiserPublicKeyBase64);
   creative_set_conversions_1.push_back(creative_set_conversion_1);
 
   database::SaveCreativeSetConversions(creative_set_conversions_1);
@@ -134,21 +153,26 @@ TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest,
   CreativeSetConversionList creative_set_conversions_2;
 
   const CreativeSetConversionInfo creative_set_conversion_2 =
-      BuildVerifiableCreativeSetConversionForTesting(
-          kCreativeSetId,
+      test::BuildVerifiableCreativeSetConversion(
+          test::kCreativeSetId,
           /*url_pattern=*/"https://www.brave.com/2",
           /*observation_window=*/base::Days(30),
-          kVerifiableConversionAdvertiserPublicKey);
+          test::kVerifiableConversionAdvertiserPublicKeyBase64);
   creative_set_conversions_2.push_back(creative_set_conversion_2);
 
   // Act
   database::SaveCreativeSetConversions(creative_set_conversions_2);
 
   // Assert
-  base::MockCallback<database::table::GetConversionsCallback> callback;
-  EXPECT_CALL(callback, Run(/*success=*/true, CreativeSetConversionList{
-                                                  creative_set_conversion_2}));
-  database_table_.GetAll(callback.Get());
+  base::MockCallback<database::table::GetCreativeSetConversionsCallback>
+      callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback,
+              Run(/*success=*/true,
+                  CreativeSetConversionList{creative_set_conversion_2}))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  database_table_.GetUnexpired(callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(BraveAdsCreativeSetConversionDatabaseTableTest, GetTableName) {

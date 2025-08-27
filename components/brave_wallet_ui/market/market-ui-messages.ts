@@ -8,17 +8,16 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import { loadTimeData } from '../../common/loadTimeData'
-import {
-  BraveWallet,
-  DefaultCurrencies
-} from '../constants/types'
+import { BraveWallet, MeldCryptoCurrency } from '../constants/types'
 import { isComponentInStorybook } from '../utils/string-utils'
 
 const marketUiOrigin = loadTimeData.getString('braveWalletMarketUiBridgeUrl')
 export const braveWalletPanelOrigin = 'chrome://wallet-panel.top-chrome'
 
 // remove trailing /
-export const braveMarketUiOrigin = marketUiOrigin.endsWith('/') ? marketUiOrigin.slice(0, -1) : marketUiOrigin
+export const braveMarketUiOrigin = marketUiOrigin.endsWith('/')
+  ? marketUiOrigin.slice(0, -1)
+  : marketUiOrigin
 export const braveWalletOrigin = 'chrome://wallet'
 
 export const enum MarketUiCommand {
@@ -29,7 +28,7 @@ export const enum MarketUiCommand {
   UpdateTradableAssets = 'update-tradable-assets',
   UpdateBuyableAssets = 'update-buyable-assets',
   UpdateDepositableAssets = 'update-depositable-assets',
-  UpdateIframeHeight = 'update-iframe-height'
+  UpdateIframeHeight = 'update-iframe-height',
 }
 
 export type MarketCommandMessage = {
@@ -39,7 +38,7 @@ export type MarketCommandMessage = {
 export type UpdateCoinMarketMessage = MarketCommandMessage & {
   payload: {
     coins: BraveWallet.CoinMarket[]
-    defaultCurrencies: DefaultCurrencies
+    defaultFiatCurrency: string
   }
 }
 
@@ -55,36 +54,33 @@ export type SelectDepositMessage = MarketCommandMessage & {
   payload: BraveWallet.CoinMarket
 }
 
-export type UpdateTradableAssetsMessage = MarketCommandMessage & {
-  payload: BraveWallet.BlockchainToken[]
-}
-
 export type UpdateBuyableAssetsMessage = MarketCommandMessage & {
-  payload: BraveWallet.BlockchainToken[]
+  payload: MeldCryptoCurrency[] | undefined
 }
 
 export type UpdateDepositableAssetsMessage = MarketCommandMessage & {
   payload: BraveWallet.BlockchainToken[]
 }
 
-export type UpdateIframeHeightMessage =
-  MarketCommandMessage & {
-    payload: number
-  }
+export type UpdateIframeHeightMessage = MarketCommandMessage & {
+  payload: number
+}
 
-export const sendMessageToMarketUiFrame = (targetWindow: Window | null, message: MarketCommandMessage) => {
+export const sendMessageToMarketUiFrame = (
+  targetWindow: Window | null,
+  message: MarketCommandMessage,
+) => {
   if (targetWindow && !isComponentInStorybook()) {
     targetWindow.postMessage(message, braveMarketUiOrigin)
   }
 }
 
-export const sendMessageToWalletUi =
-  (
-    targetWindow: Window | null,
-    message: MarketCommandMessage,
-    origin: string
-  ) => {
-    if (targetWindow) {
-      targetWindow.postMessage(message, origin)
-    }
+export const sendMessageToWalletUi = (
+  targetWindow: Window | null,
+  message: MarketCommandMessage,
+  origin: string,
+) => {
+  if (targetWindow) {
+    targetWindow.postMessage(message, origin)
   }
+}

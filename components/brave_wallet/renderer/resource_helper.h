@@ -8,12 +8,9 @@
 
 #include <string>
 
-#include "third_party/abseil-cpp/absl/types/optional.h"
-
 namespace brave_wallet {
 
-std::string LoadDataResource(const int id);
-absl::optional<std::string> LoadImageResourceAsDataUrl(const int id);
+std::string LoadDataResource(int id);
 
 }  // namespace brave_wallet
 

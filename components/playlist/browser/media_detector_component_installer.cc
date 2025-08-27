@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/containers/to_vector.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "brave/components/brave_component_updater/browser/brave_on_demand_updater.h"
@@ -53,12 +54,11 @@ class MediaDetectorComponentInstallerPolicy
   void GetHash(std::vector<uint8_t>* hash) const override;
   std::string GetName() const override;
   update_client::InstallerAttributes GetInstallerAttributes() const override;
+  bool IsBraveComponent() const override;
 
  private:
-  static constexpr size_t kHashSize = 32;
-
   OnComponentReadyCallback ready_callback_;
-  uint8_t component_hash_[kHashSize];
+  std::array<uint8_t, crypto::kSHA256Length> component_hash_;
 };
 
 MediaDetectorComponentInstallerPolicy::MediaDetectorComponentInstallerPolicy(
@@ -78,9 +78,9 @@ MediaDetectorComponentInstallerPolicy::MediaDetectorComponentInstallerPolicy(
       "BKd5TyxNr2MVjGYWKdA1nemhXdz1zvy76ZAUCYPLcSyyKgx5KiJnB8mhtXUWF"
       "Xw5qMzxOoIzAjHeQIDAQAB";
 
-  std::string decoded_public_key;
-  base::Base64Decode(kComponentPublicKey, &decoded_public_key);
-  crypto::SHA256HashString(decoded_public_key, component_hash_, kHashSize);
+  auto decoded_public_key = base::Base64Decode(kComponentPublicKey);
+  CHECK(decoded_public_key);
+  component_hash_ = crypto::SHA256Hash(*decoded_public_key);
 }
 
 MediaDetectorComponentInstallerPolicy::
@@ -124,7 +124,7 @@ base::FilePath MediaDetectorComponentInstallerPolicy::GetRelativeInstallDir()
 
 void MediaDetectorComponentInstallerPolicy::GetHash(
     std::vector<uint8_t>* hash) const {
-  hash->assign(component_hash_, component_hash_ + kHashSize);
+  *hash = base::ToVector(component_hash_);
 }
 
 std::string MediaDetectorComponentInstallerPolicy::GetName() const {
@@ -136,8 +136,12 @@ MediaDetectorComponentInstallerPolicy::GetInstallerAttributes() const {
   return update_client::InstallerAttributes();
 }
 
+bool MediaDetectorComponentInstallerPolicy::IsBraveComponent() const {
+  return true;
+}
+
 void OnRegisteredToComponentUpdateService() {
-  BraveOnDemandUpdater::GetInstance()->OnDemandUpdate(kComponentID);
+  BraveOnDemandUpdater::GetInstance()->EnsureInstalled(kComponentID);
 }
 
 }  // namespace
@@ -146,8 +150,10 @@ void RegisterMediaDetectorComponent(
     component_updater::ComponentUpdateService* cus,
     OnComponentReadyCallback callback) {
   // In test, |cus| could be nullptr.
-  if (!cus)
+  if (!cus ||
+      BraveOnDemandUpdater::GetInstance()->is_component_update_disabled()) {
     return;
+  }
 
   auto installer = base::MakeRefCounted<component_updater::ComponentInstaller>(
       std::make_unique<MediaDetectorComponentInstallerPolicy>(callback));

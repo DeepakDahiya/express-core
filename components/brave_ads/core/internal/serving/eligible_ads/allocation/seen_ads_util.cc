@@ -5,23 +5,24 @@
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/allocation/seen_ads_util.h"
 
-#include "base/ranges/algorithm.h"
+#include <algorithm>
+
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
 
 namespace brave_ads {
 
-absl::optional<base::Time> GetLastSeenAdAt(const AdEventList& ad_events,
-                                           const CreativeAdInfo& creative_ad) {
-  const auto iter = base::ranges::find_if(
-      ad_events, [&creative_ad](const AdEventInfo& ad_event) -> bool {
-        return ad_event.confirmation_type == ConfirmationType::kViewed &&
-               ad_event.creative_instance_id ==
-                   creative_ad.creative_instance_id;
+std::optional<base::Time> GetLastSeenAdAt(
+    const AdEventList& ad_events,
+    const std::string& creative_instance_id) {
+  const auto iter = std::ranges::find_if(
+      ad_events, [&creative_instance_id](const AdEventInfo& ad_event) {
+        return ad_event.confirmation_type ==
+                   mojom::ConfirmationType::kViewedImpression &&
+               ad_event.creative_instance_id == creative_instance_id;
       });
 
   if (iter == ad_events.cend()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return iter->created_at;

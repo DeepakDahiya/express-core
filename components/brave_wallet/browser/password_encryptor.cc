@@ -5,20 +5,85 @@
 
 #include "brave/components/brave_wallet/browser/password_encryptor.h"
 
+#include <array>
+#include <optional>
 #include <utility>
 
-#include "brave/components/brave_wallet/common/mem_utils.h"
+#include "base/base64.h"
+#include "base/check.h"
+#include "base/containers/span.h"
+#include "base/no_destructor.h"
 #include "crypto/aead.h"
-#include "crypto/openssl_util.h"
-#include "third_party/boringssl/src/include/openssl/evp.h"
+#include "crypto/kdf.h"
+#include "crypto/random.h"
 
 namespace brave_wallet {
+namespace {
+constexpr char kCiphertextKey[] = "ciphertext";
+constexpr char kNonceKey[] = "nonce";
+}  // namespace
 
-PasswordEncryptor::PasswordEncryptor(const std::vector<uint8_t> key)
-    : key_(key) {}
-PasswordEncryptor::~PasswordEncryptor() {
-  // zero key
-  SecureZeroData(key_.data(), key_.size());
+PasswordEncryptor::PasswordEncryptor(PassKey, base::span<uint8_t> key)
+    : key_(key.begin(), key.end()) {}
+PasswordEncryptor::~PasswordEncryptor() = default;
+
+// TODO(apaymyshev): Need to use much lesser value for unit tests where this
+// value is irrelevant. Otherwise it takes too much time for tests to pass.
+// static
+std::optional<int>& PasswordEncryptor::GetPbkdf2IterationsForTesting() {
+  static std::optional<int> iterations;
+  return iterations;
+}
+
+// static
+base::RepeatingCallback<std::vector<uint8_t>()>&
+PasswordEncryptor::GetCreateNonceCallbackForTesting() {
+  static base::NoDestructor<base::RepeatingCallback<std::vector<uint8_t>()>>
+      callback;
+  return *callback.get();
+}
+
+// static
+base::RepeatingCallback<std::vector<uint8_t>()>&
+PasswordEncryptor::GetCreateSaltCallbackForTesting() {
+  static base::NoDestructor<base::RepeatingCallback<std::vector<uint8_t>()>>
+      callback;
+  return *callback.get();
+}
+
+// static
+std::vector<uint8_t> PasswordEncryptor::CreateNonce() {
+  if (GetCreateNonceCallbackForTesting()) {
+    return GetCreateNonceCallbackForTesting().Run();  // IN-TEST
+  }
+  return crypto::RandBytesAsVector(kEncryptorNonceSize);
+}
+
+// static
+std::vector<uint8_t> PasswordEncryptor::CreateSalt() {
+  if (GetCreateSaltCallbackForTesting()) {
+    return GetCreateSaltCallbackForTesting().Run();  // IN-TEST
+  }
+  return crypto::RandBytesAsVector(kEncryptorSaltSize);
+}
+
+// static
+std::unique_ptr<PasswordEncryptor> PasswordEncryptor::CreateEncryptor(
+    const std::string& password,
+    base::span<const uint8_t> salt) {
+  if (password.empty()) {
+    return nullptr;
+  }
+
+  if (salt.size() != kEncryptorSaltSize) {
+    return nullptr;
+  }
+
+  const auto iterations =
+      GetPbkdf2IterationsForTesting().value_or(kPbkdf2Iterations);  // IN-TEST
+
+  return PasswordEncryptor::DeriveKeyFromPasswordUsingPbkdf2(password, salt,
+                                                             iterations);
 }
 
 // static
@@ -26,22 +91,15 @@ std::unique_ptr<PasswordEncryptor>
 PasswordEncryptor::DeriveKeyFromPasswordUsingPbkdf2(
     const std::string& password,
     base::span<const uint8_t> salt,
-    size_t iterations,
-    size_t key_size_in_bits) {
-  if (key_size_in_bits != 128 && key_size_in_bits != 256) {
+    uint32_t iterations) {
+  std::array<uint8_t, kPbkdf2KeySize> key = {};
+  if (!crypto::kdf::DeriveKeyPbkdf2HmacSha256({.iterations = iterations},
+                                              base::as_byte_span(password),
+                                              salt, key)) {
     return nullptr;
   }
 
-  size_t key_size_in_bytes = key_size_in_bits / 8;
-
-  crypto::OpenSSLErrStackTracer err_tracer(FROM_HERE);
-  std::vector<uint8_t> key(key_size_in_bytes);
-
-  int rv = PKCS5_PBKDF2_HMAC(password.data(), password.length(), salt.data(),
-                             salt.size(), static_cast<unsigned>(iterations),
-                             EVP_sha256(), key_size_in_bytes, key.data());
-  std::unique_ptr<PasswordEncryptor> encryptor(new PasswordEncryptor(key));
-  return rv == 1 ? std::move(encryptor) : nullptr;
+  return std::make_unique<PasswordEncryptor>(PassKey(), key);
 }
 
 std::vector<uint8_t> PasswordEncryptor::Encrypt(
@@ -52,7 +110,16 @@ std::vector<uint8_t> PasswordEncryptor::Encrypt(
   return aead.Seal(plaintext, nonce, std::vector<uint8_t>());
 }
 
-absl::optional<std::vector<uint8_t>> PasswordEncryptor::Decrypt(
+base::Value::Dict PasswordEncryptor::EncryptToDict(
+    base::span<const uint8_t> plaintext,
+    base::span<const uint8_t> nonce) {
+  base::Value::Dict result;
+  result.Set(kCiphertextKey, base::Base64Encode(Encrypt(plaintext, nonce)));
+  result.Set(kNonceKey, base::Base64Encode(nonce));
+  return result;
+}
+
+std::optional<std::vector<uint8_t>> PasswordEncryptor::Decrypt(
     base::span<const uint8_t> ciphertext,
     base::span<const uint8_t> nonce) {
   crypto::Aead aead(crypto::Aead::AES_256_GCM_SIV);
@@ -60,7 +127,30 @@ absl::optional<std::vector<uint8_t>> PasswordEncryptor::Decrypt(
   return aead.Open(ciphertext, nonce, std::vector<uint8_t>());
 }
 
-absl::optional<std::vector<uint8_t>> PasswordEncryptor::DecryptForImporter(
+std::optional<std::vector<uint8_t>> PasswordEncryptor::DecryptFromDict(
+    const base::Value::Dict& encrypted_value) {
+  auto* ciphertext_encoded = encrypted_value.FindString(kCiphertextKey);
+  if (!ciphertext_encoded) {
+    return std::nullopt;
+  }
+  auto ciphertext = base::Base64Decode(*ciphertext_encoded);
+  if (!ciphertext) {
+    return std::nullopt;
+  }
+
+  auto* nonce_encoded = encrypted_value.FindString(kNonceKey);
+  if (!nonce_encoded) {
+    return std::nullopt;
+  }
+  auto nonce = base::Base64Decode(*nonce_encoded);
+  if (!nonce) {
+    return std::nullopt;
+  }
+
+  return Decrypt(*ciphertext, *nonce);
+}
+
+std::optional<std::vector<uint8_t>> PasswordEncryptor::DecryptForImporter(
     base::span<const uint8_t> ciphertext,
     base::span<const uint8_t> nonce) {
   crypto::Aead aead(crypto::Aead::AES_256_GCM);

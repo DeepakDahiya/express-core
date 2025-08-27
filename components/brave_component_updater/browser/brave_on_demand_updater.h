@@ -7,8 +7,11 @@
 #define BRAVE_COMPONENTS_BRAVE_COMPONENT_UPDATER_BROWSER_BRAVE_ON_DEMAND_UPDATER_H_
 
 #include <string>
+#include <vector>
 
-#include "base/functional/callback.h"
+#include "base/component_export.h"
+#include "base/functional/callback_helpers.h"
+#include "components/component_updater/component_updater_service.h"
 
 namespace base {
 template <typename T>
@@ -17,23 +20,41 @@ class NoDestructor;
 
 namespace brave_component_updater {
 
-class BraveOnDemandUpdater {
+class COMPONENT_EXPORT(BRAVE_COMPONENT_UPDATER) BraveOnDemandUpdater {
  public:
-  using Callback = base::RepeatingCallback<void(const std::string&)>;
   static BraveOnDemandUpdater* GetInstance();
 
   BraveOnDemandUpdater(const BraveOnDemandUpdater&) = delete;
   BraveOnDemandUpdater& operator=(const BraveOnDemandUpdater&) = delete;
-  ~BraveOnDemandUpdater();
-  void OnDemandUpdate(const std::string& id);
 
-  void RegisterOnDemandUpdateCallback(Callback callback);
+  component_updater::OnDemandUpdater* RegisterOnDemandUpdater(
+      bool is_component_update_disabled,
+      component_updater::OnDemandUpdater* on_demand_updater);
+
+  // Install the component with the given id. If the component is already
+  // installed, do nothing.
+  void EnsureInstalled(
+      const std::string& id,
+      component_updater::Callback callback = base::DoNothing());
+
+  void OnDemandUpdate(const std::string& id,
+                      component_updater::OnDemandUpdater::Priority priority,
+                      component_updater::Callback callback = base::DoNothing());
+
+  void OnDemandUpdate(const std::vector<std::string>& ids,
+                      component_updater::OnDemandUpdater::Priority priority,
+                      component_updater::Callback callback = base::DoNothing());
+
+  bool is_component_update_disabled() { return is_component_update_disabled_; }
 
  private:
   friend base::NoDestructor<BraveOnDemandUpdater>;
   BraveOnDemandUpdater();
+  ~BraveOnDemandUpdater();
 
-  Callback on_demand_update_callback_;
+  raw_ptr<component_updater::OnDemandUpdater, DanglingUntriaged>
+      on_demand_updater_ = nullptr;
+  bool is_component_update_disabled_ = false;
 };
 
 }  // namespace brave_component_updater

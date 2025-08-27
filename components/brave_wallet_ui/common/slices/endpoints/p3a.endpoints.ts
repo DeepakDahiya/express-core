@@ -4,88 +4,33 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 // Types
-import {
-  BraveWallet,
-  SupportedCoinTypes,
-  SupportedTestNetworks
-} from '../../../constants/types'
-import { TokenBalancesRegistry } from '../../../common/slices/entities/token-balance.entity'
+import { BraveWallet } from '../../../constants/types'
 import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
 // Utils
-import { loadTimeData } from '../../../../common/loadTimeData'
+import { handleEndpointError } from '../../../utils/api-utils'
 
 export const p3aEndpoints = ({
   mutation,
-  query
+  query,
 }: WalletApiEndpointBuilderParams) => {
   return {
-    reportActiveWalletsToP3A: mutation<
-      { success: boolean },
-      TokenBalancesRegistry
-    >({
-      queryFn: async (registry, { dispatch }, extraOptions, baseQuery) => {
+    reportOnboardingAction: mutation<true, BraveWallet.OnboardingAction>({
+      queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
         try {
-          const {
-            data: { braveWalletP3A },
-            cache
-          } = baseQuery(undefined)
-
-          const { accounts } = await cache.getAllAccounts()
-
-          const activeWalletCount: {
-            [coin: BraveWallet.CoinType]: number
-          } = {}
-
-          const countTestNetworks = loadTimeData.getBoolean(
-            BraveWallet.P3A_COUNT_TEST_NETWORKS_LOAD_TIME_KEY
-          )
-
-          for (const address of Object.keys(registry)) {
-            const account = accounts.find(
-              (account) => account.accountId.address === address
-            )
-
-            if (!account) {
-              continue
-            }
-
-            const coin = account.accountId.coin
-
-            if (!SupportedCoinTypes.includes(coin)) {
-              continue
-            }
-
-            if (activeWalletCount[coin] === undefined) {
-              activeWalletCount[coin] = 0
-            }
-
-            if (
-              countTestNetworks &&
-              Object.keys(registry[address]).some((chainId) =>
-                SupportedTestNetworks.includes(chainId)
-              )
-            ) {
-              activeWalletCount[coin] += 1
-              continue
-            }
-
-            activeWalletCount[coin] += 1
-          }
-
-          for (const [coin, count] of Object.entries(activeWalletCount)) {
-            braveWalletP3A.recordActiveWalletCount(count, parseInt(coin))
-          }
-
+          const { data: api } = baseQuery(undefined)
+          api.braveWalletP3A.reportOnboardingAction(arg)
           return {
-            data: { success: true }
+            data: true,
           }
         } catch (error) {
-          return {
-            error: `Unable to record active wallet count: ${error}`
-          }
+          return handleEndpointError(
+            endpoint,
+            'Unable to report onboarding action',
+            error,
+          )
         }
-      }
-    })
+      },
+    }),
   }
 }

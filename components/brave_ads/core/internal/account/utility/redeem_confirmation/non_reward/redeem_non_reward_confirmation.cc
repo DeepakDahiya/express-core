@@ -12,12 +12,12 @@
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/non_reward/url_request_builders/create_non_reward_confirmation_url_request_builder.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/ads_client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
-#include "brave/components/brave_ads/core/internal/common/net/http/http_status_code.h"
 #include "brave/components/brave_ads/core/internal/common/url/url_request_string_util.h"
 #include "brave/components/brave_ads/core/internal/common/url/url_response_string_util.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client.h"
 #include "net/http/http_status_code.h"
 
 namespace brave_ads {
@@ -44,6 +44,7 @@ void RedeemNonRewardConfirmation::CreateAndRedeem(
 RedeemNonRewardConfirmation::RedeemNonRewardConfirmation(
     base::WeakPtr<RedeemConfirmationDelegate> delegate) {
   CHECK(delegate);
+
   delegate_ = std::move(delegate);
 }
 
@@ -67,12 +68,12 @@ void RedeemNonRewardConfirmation::CreateConfirmation(
 
   CreateNonRewardConfirmationUrlRequestBuilder url_request_builder(
       confirmation);
-  mojom::UrlRequestInfoPtr url_request = url_request_builder.Build();
-  BLOG(6, UrlRequestToString(url_request));
-  BLOG(7, UrlRequestHeadersToString(url_request));
+  mojom::UrlRequestInfoPtr mojom_url_request = url_request_builder.Build();
+  BLOG(6, UrlRequestToString(mojom_url_request));
+  BLOG(7, UrlRequestHeadersToString(mojom_url_request));
 
-  AdsClientHelper::GetInstance()->UrlRequest(
-      std::move(url_request),
+  GetAdsClient().UrlRequest(
+      std::move(mojom_url_request),
       base::BindOnce(&RedeemNonRewardConfirmation::CreateConfirmationCallback,
                      std::move(redeem_confirmation), confirmation));
 }
@@ -81,17 +82,14 @@ void RedeemNonRewardConfirmation::CreateConfirmation(
 void RedeemNonRewardConfirmation::CreateConfirmationCallback(
     RedeemNonRewardConfirmation redeem_confirmation,
     const ConfirmationInfo& confirmation,
-    const mojom::UrlResponseInfo& url_response) {
-  BLOG(6, UrlResponseToString(url_response));
-  BLOG(7, UrlResponseHeadersToString(url_response));
+    const mojom::UrlResponseInfo& mojom_url_response) {
+  BLOG(6, UrlResponseToString(mojom_url_response));
+  BLOG(7, UrlResponseHeadersToString(mojom_url_response));
 
-  if (url_response.status_code != net::kHttpImATeapot) {
-    const bool should_retry =
-        url_response.status_code != net::HTTP_CONFLICT &&
-        url_response.status_code != net::HTTP_BAD_REQUEST &&
-        url_response.status_code != net::HTTP_CREATED;
-    return redeem_confirmation.FailedToRedeemConfirmation(confirmation,
-                                                          should_retry);
+  if (mojom_url_response.status_code != net::HTTP_NO_CONTENT) {
+    return redeem_confirmation.FailedToRedeemConfirmation(
+        confirmation,
+        /*should_retry=*/true);
   }
 
   redeem_confirmation.SuccessfullyRedeemedConfirmation(confirmation);
@@ -110,8 +108,8 @@ void RedeemNonRewardConfirmation::SuccessfullyRedeemedConfirmation(
 
 void RedeemNonRewardConfirmation::FailedToRedeemConfirmation(
     const ConfirmationInfo& confirmation,
-    const bool should_retry) {
-  BLOG(1, "Failed to redeem non-reward "
+    bool should_retry) {
+  BLOG(0, "Failed to redeem non-reward "
               << confirmation.type << " confirmation for "
               << confirmation.ad_type << " with transaction id "
               << confirmation.transaction_id << " and creative instance id "
@@ -129,7 +127,7 @@ void RedeemNonRewardConfirmation::NotifyDidRedeemConfirmation(
 
 void RedeemNonRewardConfirmation::NotifyFailedToRedeemConfirmation(
     const ConfirmationInfo& confirmation,
-    const bool should_retry) const {
+    bool should_retry) const {
   if (delegate_) {
     delegate_->OnFailedToRedeemConfirmation(confirmation, should_retry);
   }

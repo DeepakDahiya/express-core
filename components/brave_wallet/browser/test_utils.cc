@@ -5,15 +5,20 @@
 
 #include "brave/components/brave_wallet/browser/test_utils.h"
 
+#include <memory>
 #include <utility>
 
+#include "base/check.h"
+#include "base/containers/contains.h"
 #include "base/files/scoped_temp_dir.h"
 #include "base/memory/raw_ref.h"
 #include "base/notreached.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
 #include "base/scoped_observation.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task/sequenced_task_runner.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_test_utils.h"
 #include "brave/components/brave_wallet/browser/keyring_service.h"
 #include "brave/components/brave_wallet/browser/tx_storage_delegate.h"
 #include "brave/components/brave_wallet/browser/tx_storage_delegate_impl.h"
@@ -39,12 +44,27 @@ std::string NewAccName(mojom::KeyringId keyring_id, uint32_t index) {
       case mojom::KeyringId::kBitcoin84Testnet:
         return "Bitcoin Testnet Account";
       case mojom::KeyringId::kZCashMainnet:
-        return "ZCash Mainnet Account";
+        return "Zcash Mainnet Account";
       case mojom::KeyringId::kZCashTestnet:
-        return "ZCash Testnet Account";
+        return "Zcash Testnet Account";
+      case mojom::KeyringId::kBitcoinImport:
+        return "Bitcoin Imported Account";
+      case mojom::KeyringId::kBitcoinImportTestnet:
+        return "Bitcoin Imported Testnet Account";
+      case mojom::KeyringId::kBitcoinHardware:
+        return "Bitcoin Hardware Account";
+      case mojom::KeyringId::kBitcoinHardwareTestnet:
+        return "Bitcoin Hardware Testnet Account";
+      case mojom::KeyringId::kCardanoMainnet:
+        return "Cardano Mainnet Account";
+      case mojom::KeyringId::kCardanoTestnet:
+        return "Cardano Testnet Account";
+      case mojom::KeyringId::kPolkadotMainnet:
+        return "Polkadot Mainnet Account";
+      case mojom::KeyringId::kPolkadotTestnet:
+        return "Polkadot Testnet Account";
     }
-    NOTREACHED();
-    return "";
+    NOTREACHED() << keyring_id;
   };
 
   return prefix() + " " + base::NumberToString(index);
@@ -52,8 +72,30 @@ std::string NewAccName(mojom::KeyringId keyring_id, uint32_t index) {
 
 }  // namespace
 
+base::FilePath BraveWalletComponentsTestDataFolder() {
+  return base::PathService::CheckedGet(base::DIR_SRC_TEST_DATA_ROOT)
+      .AppendASCII("brave")
+      .AppendASCII("components")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("brave_wallet");
+}
+
+base::FilePath BraveWalletTestDataFolder() {
+  return base::PathService::CheckedGet(base::DIR_SRC_TEST_DATA_ROOT)
+      .AppendASCII("brave")
+      .AppendASCII("test")
+      .AppendASCII("data")
+      .AppendASCII("brave_wallet");
+}
+
 AccountUtils::AccountUtils(KeyringService* keyring_service)
     : keyring_service_(keyring_service) {}
+
+void AccountUtils::CreateWallet(const std::string& mnemonic,
+                                const std::string& password) {
+  keyring_service_->CreateWalletInternal(mnemonic, password, false, false);
+}
 
 mojom::AccountInfoPtr AccountUtils::GetDerivedAccount(
     mojom::KeyringId keyring_id,
@@ -83,8 +125,114 @@ mojom::AccountInfoPtr AccountUtils::CreateDerivedAccount(
   return acc;
 }
 
+mojom::AccountInfoPtr AccountUtils::GetImportedAccount(
+    mojom::KeyringId keyring_id,
+    uint32_t index) {
+  EXPECT_TRUE(IsBitcoinImportKeyring(keyring_id));
+
+  auto all_accounts = keyring_service_->GetAllAccountsSync();
+  for (auto& acc : all_accounts->accounts) {
+    if (acc->account_id->keyring_id != keyring_id ||
+        acc->account_id->kind != mojom::AccountKind::kImported) {
+      continue;
+    }
+    if (index == 0) {
+      return acc->Clone();
+    }
+    --index;
+  }
+  return nullptr;
+}
+
+mojom::AccountInfoPtr AccountUtils::GetHardwareAccount(
+    mojom::KeyringId keyring_id,
+    uint32_t index) {
+  EXPECT_TRUE(IsBitcoinHardwareKeyring(keyring_id));
+
+  auto all_accounts = keyring_service_->GetAllAccountsSync();
+  for (auto& acc : all_accounts->accounts) {
+    if (acc->account_id->keyring_id != keyring_id ||
+        acc->account_id->kind != mojom::AccountKind::kHardware) {
+      continue;
+    }
+    if (index == 0) {
+      return acc->Clone();
+    }
+    --index;
+  }
+  return nullptr;
+}
+
+mojom::AccountInfoPtr AccountUtils::CreateImportedAccount(
+    mojom::KeyringId keyring_id,
+    const std::string& name) {
+  EXPECT_TRUE(IsBitcoinImportKeyring(keyring_id));
+  const auto network = GetNetworkForBitcoinKeyring(keyring_id);
+  auto acc =
+      keyring_service_
+          ->ImportBitcoinAccountSync(name,
+                                     (network == mojom::kBitcoinMainnet)
+                                         ? kBtcMainnetImportAccount0
+                                         : kBtcTestnetImportAccount0,
+                                     GetNetworkForBitcoinKeyring(keyring_id))
+          ->Clone();
+  EXPECT_TRUE(acc);
+  return acc;
+}
+
+mojom::AccountInfoPtr AccountUtils::CreateHardwareAccount(
+    mojom::KeyringId keyring_id,
+    const std::string& name) {
+  EXPECT_TRUE(IsBitcoinHardwareKeyring(keyring_id));
+  const auto network = GetNetworkForBitcoinKeyring(keyring_id);
+
+  mojom::HardwareWalletAccountPtr hw_account;
+  if (keyring_id == mojom::KeyringId::kBitcoinHardware) {
+    hw_account = mojom::HardwareWalletAccount::New(
+        "xpub6C9TRymDq1G8ueHrv4Etbvzv1ARp4fFAHezEuLQ7X3VcZM7ZKco3aBup3fyzSHhnbF"
+        "fXtXF3m8EWTwk1TMvTVSciQ1BHxtvjMGcGLkCE2nz",
+        "derivation_path", "Btc hw account", mojom::HardwareVendor::kLedger,
+        "device_id", mojom::KeyringId::kBitcoinHardware);
+  } else if (keyring_id == mojom::KeyringId::kBitcoinHardwareTestnet) {
+    hw_account = mojom::HardwareWalletAccount::New(
+        "tpubD6NzVbkrYhZ4XgiXtGrdW5XDAPFCL9h7we1vwNCpn8tGbBcgfVYjXyhWo4E1xkh56h"
+        "jod1RhGjxbaTLV3X4FyWuejifB9jusQ46QzG87VKp",
+        "derivation_path", "Btc hw testnet account",
+        mojom::HardwareVendor::kLedger, "device_id",
+        mojom::KeyringId::kBitcoinHardwareTestnet);
+  }
+  auto acc =
+      keyring_service_->AddBitcoinHardwareAccountSync(std::move(hw_account))
+          ->Clone();
+  EXPECT_TRUE(acc);
+  return acc;
+}
+
 mojom::AccountInfoPtr AccountUtils::EnsureAccount(mojom::KeyringId keyring_id,
                                                   uint32_t index) {
+  if (IsBitcoinImportKeyring(keyring_id)) {
+    for (auto i = 0u; i <= index; ++i) {
+      if (!GetImportedAccount(keyring_id, i)) {
+        EXPECT_TRUE(
+            CreateImportedAccount(keyring_id, NewAccName(keyring_id, i)));
+      }
+    }
+    auto acc = GetImportedAccount(keyring_id, index);
+    EXPECT_TRUE(acc);
+    return acc;
+  }
+  if (IsBitcoinHardwareKeyring(keyring_id)) {
+    for (auto i = 0u; i <= index; ++i) {
+      if (!GetHardwareAccount(keyring_id, i)) {
+        EXPECT_TRUE(
+            CreateHardwareAccount(keyring_id, NewAccName(keyring_id, i)));
+      }
+    }
+    auto acc = GetHardwareAccount(keyring_id, index);
+    EXPECT_TRUE(acc);
+    return acc;
+  }
+
   for (auto i = 0u; i <= index; ++i) {
     if (!GetDerivedAccount(keyring_id, i)) {
       EXPECT_TRUE(CreateDerivedAccount(keyring_id, NewAccName(keyring_id, i)));
@@ -139,6 +287,22 @@ mojom::AccountInfoPtr AccountUtils::EnsureBtcTestAccount(uint32_t index) {
   return EnsureAccount(mojom::KeyringId::kBitcoin84Testnet, index);
 }
 
+mojom::AccountInfoPtr AccountUtils::EnsureZecAccount(uint32_t index) {
+  return EnsureAccount(mojom::KeyringId::kZCashMainnet, index);
+}
+
+mojom::AccountInfoPtr AccountUtils::EnsureZecTestAccount(uint32_t index) {
+  return EnsureAccount(mojom::KeyringId::kZCashTestnet, index);
+}
+
+mojom::AccountInfoPtr AccountUtils::EnsureAdaAccount(uint32_t index) {
+  return EnsureAccount(mojom::KeyringId::kCardanoMainnet, index);
+}
+
+mojom::AccountInfoPtr AccountUtils::EnsureAdaTestAccount(uint32_t index) {
+  return EnsureAccount(mojom::KeyringId::kCardanoTestnet, index);
+}
+
 mojom::AccountInfoPtr AccountUtils::CreateEthAccount(const std::string& name) {
   return CreateDerivedAccount(mojom::KeyringId::kDefault, name);
 }
@@ -165,17 +329,45 @@ mojom::AccountInfoPtr AccountUtils::CreateBtcTestAccount(
   return CreateDerivedAccount(mojom::KeyringId::kBitcoin84Testnet, name);
 }
 
+mojom::AccountInfoPtr AccountUtils::CreateZecAccount(const std::string& name) {
+  return CreateDerivedAccount(mojom::KeyringId::kZCashMainnet, name);
+}
+
+mojom::AccountInfoPtr AccountUtils::CreateZecTestAccount(
+    const std::string& name) {
+  return CreateDerivedAccount(mojom::KeyringId::kZCashTestnet, name);
+}
+
+mojom::AccountInfoPtr AccountUtils::CreateAdaAccount(const std::string& name) {
+  return CreateDerivedAccount(mojom::KeyringId::kCardanoMainnet, name);
+}
+
+mojom::AccountInfoPtr AccountUtils::CreateAdaTestAccount(
+    const std::string& name) {
+  return CreateDerivedAccount(mojom::KeyringId::kCardanoTestnet, name);
+}
+
 mojom::AccountInfoPtr AccountUtils::CreateEthHWAccount() {
   std::string address = "0xA99D71De40D67394eBe68e4D0265cA6C9D421029";
 
   std::vector<mojom::HardwareWalletAccountPtr> hw_accounts;
   hw_accounts.push_back(mojom::HardwareWalletAccount::New(
-      address, "m/44'/60'/1'/0/0", "HW Account " + address, "Ledger", "device1",
-      mojom::CoinType::ETH, mojom::KeyringId::kDefault));
+      address, "m/44'/60'/1'/0/0", "HW Account " + address,
+      mojom::HardwareVendor::kLedger, "device1", mojom::KeyringId::kDefault));
 
   auto added_accounts =
       keyring_service_->AddHardwareAccountsSync(std::move(hw_accounts));
   return std::move(added_accounts[0]);
+}
+
+mojom::AccountInfoPtr AccountUtils::CreateBtcHWAccount() {
+  mojom::HardwareWalletAccountPtr account = mojom::HardwareWalletAccount::New(
+      "xpub661MyMwAqRbcFtXgS5sYJABqqG9YLmC4Q1Rdap9gSE8NqtwybGhePY2gZ29ESFjqJoCu"
+      "1Rupje8YtGqsefD265TMg7usUDFdp6W1EGMcet8",
+      "m/84'/0'/0'", "HW Account", mojom::HardwareVendor::kLedger, "device1",
+      mojom::KeyringId::kBitcoinHardware);
+
+  return keyring_service_->AddBitcoinHardwareAccountSync(account.Clone());
 }
 
 mojom::AccountIdPtr AccountUtils::FindAccountIdByAddress(
@@ -191,9 +383,14 @@ mojom::AccountIdPtr AccountUtils::FindAccountIdByAddress(
 
 std::vector<mojom::AccountInfoPtr> AccountUtils::AllAccounts(
     mojom::KeyringId keyring_id) {
+  return AllAccounts(std::vector<mojom::KeyringId>{keyring_id});
+}
+
+std::vector<mojom::AccountInfoPtr> AccountUtils::AllAccounts(
+    const std::vector<mojom::KeyringId>& keyring_ids) {
   std::vector<mojom::AccountInfoPtr> result;
   for (auto& acc : keyring_service_->GetAllAccountInfos()) {
-    if (acc->account_id->keyring_id == keyring_id) {
+    if (base::Contains(keyring_ids, acc->account_id->keyring_id)) {
       result.push_back(acc->Clone());
     }
   }
@@ -217,11 +414,49 @@ std::vector<mojom::AccountInfoPtr> AccountUtils::AllFilTestAccounts() {
 }
 
 std::vector<mojom::AccountInfoPtr> AccountUtils::AllBtcAccounts() {
-  return AllAccounts(mojom::KeyringId::kBitcoin84);
+  return AllAccounts({mojom::KeyringId::kBitcoin84,
+                      mojom::KeyringId::kBitcoinImport,
+                      mojom::KeyringId::kBitcoinHardware});
 }
 
 std::vector<mojom::AccountInfoPtr> AccountUtils::AllBtcTestAccounts() {
-  return AllAccounts(mojom::KeyringId::kBitcoin84Testnet);
+  return AllAccounts({mojom::KeyringId::kBitcoin84Testnet,
+                      mojom::KeyringId::kBitcoinImportTestnet,
+                      mojom::KeyringId::kBitcoinHardwareTestnet});
+}
+
+std::vector<mojom::AccountInfoPtr> AccountUtils::AllZecAccounts() {
+  return AllAccounts(mojom::KeyringId::kZCashMainnet);
+}
+
+std::vector<mojom::AccountInfoPtr> AccountUtils::AllZecTestAccounts() {
+  return AllAccounts(mojom::KeyringId::kZCashTestnet);
+}
+
+std::vector<mojom::AccountInfoPtr> AccountUtils::AllAdaAccounts() {
+  return AllAccounts(mojom::KeyringId::kCardanoMainnet);
+}
+
+std::vector<mojom::AccountInfoPtr> AccountUtils::AllAdaTestAccounts() {
+  return AllAccounts(mojom::KeyringId::kCardanoTestnet);
+}
+
+TestBraveWalletServiceDelegate::TestBraveWalletServiceDelegate() {
+  EXPECT_TRUE(temp_dir_.CreateUniqueTempDir());
+}
+
+base::FilePath TestBraveWalletServiceDelegate::GetWalletBaseDirectory() {
+  return temp_dir_.GetPath();
+}
+
+bool TestBraveWalletServiceDelegate::IsPrivateWindow() {
+  return false;
+}
+
+// static
+std::unique_ptr<BraveWalletServiceDelegate>
+TestBraveWalletServiceDelegate::Create() {
+  return std::make_unique<TestBraveWalletServiceDelegate>();
 }
 
 void WaitForTxStorageDelegateInitialized(TxStorageDelegate* delegate) {
@@ -243,7 +478,7 @@ void WaitForTxStorageDelegateInitialized(TxStorageDelegate* delegate) {
    private:
     base::ScopedObservation<TxStorageDelegate, TxStorageDelegate::Observer>
         observation_{this};
-    raw_ref<base::RunLoop> run_loop_;
+    const raw_ref<base::RunLoop> run_loop_;
   } observer(delegate, run_loop);
   run_loop.Run();
 }
@@ -260,8 +495,10 @@ scoped_refptr<value_store::TestValueStoreFactory> GetTestValueStoreFactory(
 std::unique_ptr<TxStorageDelegateImpl> GetTxStorageDelegateForTest(
     PrefService* prefs,
     scoped_refptr<value_store::ValueStoreFactory> store_factory) {
-  return std::make_unique<TxStorageDelegateImpl>(
+  auto delegate = std::make_unique<TxStorageDelegateImpl>(
       prefs, store_factory, base::SequencedTaskRunner::GetCurrentDefault());
+  WaitForTxStorageDelegateInitialized(delegate.get());
+  return delegate;
 }
 
 AccountResolverDelegateForTest::AccountResolverDelegateForTest() = default;
@@ -296,6 +533,38 @@ bool AccountResolverDelegateForTest::ValidateAccountId(
     }
   }
   return false;
+}
+
+std::optional<std::string> AccountResolverDelegateForTest::ResolveAddress(
+    const mojom::AccountIdPtr& account_id) {
+  for (auto& acc : accounts_) {
+    if (acc == account_id) {
+      return acc->address;
+    }
+  }
+  return std::nullopt;
+}
+
+SignMessageRequestWaiter::SignMessageRequestWaiter(
+    BraveWalletService* brave_wallet_service)
+    : brave_wallet_service_(brave_wallet_service) {
+  subscription_ =
+      brave_wallet_service_->RegisterSignMessageRequestAddedCallback(
+          base::BindRepeating(
+              &SignMessageRequestWaiter::OnSignMessageRequestAdded,
+              base::Unretained(this)));
+}
+SignMessageRequestWaiter::~SignMessageRequestWaiter() = default;
+
+void SignMessageRequestWaiter::OnSignMessageRequestAdded() {
+  future_.SetValue(
+      brave_wallet_service_->GetPendingSignMessageRequestsSync().back()->id);
+}
+
+void SignMessageRequestWaiter::WaitAndProcess(bool approved) {
+  auto id = future_.Get();
+  brave_wallet_service_->NotifySignMessageRequestProcessed(
+      approved, id, nullptr, std::nullopt);
 }
 
 }  // namespace brave_wallet

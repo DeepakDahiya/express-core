@@ -13,10 +13,8 @@ namespace brave_ads {
 
 namespace {
 
-constexpr auto kComponents = base::MakeFixedFlatMap<std::string_view,
-                                                    ComponentInfo>(
-    base::sorted_unique,
-    {
+constexpr auto kComponents =
+    base::MakeFixedFlatMap<std::string_view, ComponentInfo>({
         {"AD",
          {"pmlmnjficamnkblapnohndlnhkkoaoco",
           "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA1IG4IeV5LiqT1GWOdAXHp7Lk"
@@ -5079,10 +5077,10 @@ constexpr auto kComponents = base::MakeFixedFlatMap<std::string_view,
 
 }  // namespace
 
-absl::optional<ComponentInfo> GetComponentInfo(const std::string& id) {
-  const auto* const iter = kComponents.find(id);
+std::optional<ComponentInfo> GetComponentInfo(std::string_view id) {
+  const auto iter = kComponents.find(id);
   if (iter == kComponents.cend()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return iter->second;

@@ -1,7 +1,7 @@
 {
   "appName": {
     "message": "የ Brave የቀጠለ ",
-    "description": "The name of the the extension."
+    "description": "The name of the extension."
   },
   "shields": {
     "message": "መከላከያዎች",
@@ -176,7 +176,7 @@
     "description": "Message for context menu that opens a page for adding, editing, and removing custom cosmetic filters"
   },
   "elementPickerMode": {
-    "message": "Block element<br><br>",
+    "message": "Block element",
     "description": "Message for context menu that enables the element picker UI to apply cosmetic filter rules to the page."
   },
   "advancedView": {
@@ -216,11 +216,11 @@
     "description": "Message for removing an extension from Brave"
   },
   "addToChrome": {
-    "message": "",
+    "message": "Add to Chrome",
     "description": "Message for adding an extension to Chrome"
   },
   "removeFromChrome": {
-    "message": "",
+    "message": "Remove from Chrome",
     "description": "Message for removing an extension from Chrome"
   }
 }

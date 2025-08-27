@@ -27,17 +27,11 @@ class SubdivisionTargetingExclusionRule final
   SubdivisionTargetingExclusionRule& operator=(
       const SubdivisionTargetingExclusionRule&) = delete;
 
-  SubdivisionTargetingExclusionRule(
-      SubdivisionTargetingExclusionRule&&) noexcept = delete;
-  SubdivisionTargetingExclusionRule& operator=(
-      SubdivisionTargetingExclusionRule&&) noexcept = delete;
-
   ~SubdivisionTargetingExclusionRule() override;
 
-  std::string GetUuid(const CreativeAdInfo& creative_ad) const override;
-
-  base::expected<void, std::string> ShouldInclude(
-      const CreativeAdInfo& creative_ad) const override;
+  // ExclusionRuleInterface:
+  std::string GetCacheKey(const CreativeAdInfo& creative_ad) const override;
+  bool ShouldInclude(const CreativeAdInfo& creative_ad) const override;
 
  private:
   bool DoesRespectCap(const CreativeAdInfo& creative_ad) const;

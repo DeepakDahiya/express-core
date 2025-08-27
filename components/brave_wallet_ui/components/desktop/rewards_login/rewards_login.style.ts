@@ -4,7 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import styled from 'styled-components'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import LeoIcon from '@brave/leo/react/icon'
 
 // Shared Styles
@@ -28,7 +28,7 @@ export const InfoText = styled(Text)`
 `
 
 export const InfoIcon = styled(LeoIcon).attrs({
-  name: 'warning-circle-filled'
+  name: 'warning-circle-filled',
 })`
   --leo-icon-size: 20px;
   color: ${leo.color.systemfeedback.infoIcon};

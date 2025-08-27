@@ -6,50 +6,59 @@
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/full_screen_mode_permission_rule.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/mock_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/permission_rule_feature.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsFullScreenModePermissionRuleTest : public UnitTestBase {
- protected:
-  const FullScreenModePermissionRule permission_rule_;
-};
+class BraveAdsFullScreenModePermissionRuleTest : public test::TestBase {};
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAllow) {
-  // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  // Arrange
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
+  EXPECT_TRUE(HasFullScreenModePermission());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAlwaysAllowOnAndroid) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kAndroid);
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
 
-  MockIsBrowserInFullScreenMode(ads_client_mock_, true);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kAndroid);
+
+  test::MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasFullScreenModePermission());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldAlwaysAllowOnIOS) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kIOS);
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
 
-  MockIsBrowserInFullScreenMode(ads_client_mock_, true);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kIOS);
+
+  test::MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasFullScreenModePermission());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest, ShouldNotAllow) {
   // Arrange
-  MockIsBrowserInFullScreenMode(ads_client_mock_, true);
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kPermissionRulesFeature);
+
+  test::MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_FALSE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_FALSE(HasFullScreenModePermission());
 }
 
 TEST_F(BraveAdsFullScreenModePermissionRuleTest,
@@ -60,10 +69,10 @@ TEST_F(BraveAdsFullScreenModePermissionRuleTest,
       kPermissionRulesFeature,
       {{"should_only_serve_ads_in_windowed_mode", "false"}});
 
-  MockIsBrowserInFullScreenMode(ads_client_mock_, true);
+  test::MockIsBrowserInFullScreenMode(ads_client_mock_, true);
 
   // Act & Assert
-  EXPECT_TRUE(permission_rule_.ShouldAllow().has_value());
+  EXPECT_TRUE(HasFullScreenModePermission());
 }
 
 }  // namespace brave_ads

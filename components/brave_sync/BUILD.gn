@@ -10,7 +10,7 @@ import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
 
 declare_args() {
-  brave_sync_endpoint = ""
+  brave_sync_endpoint = "https://sync-v2.brave.com/v2"
 }
 
 if (is_official_build) {
@@ -51,8 +51,6 @@ source_set("features") {
 }
 
 static_library("network_time_helper") {
-  # Remove when https://github.com/brave/brave-browser/issues/10650 is resolved
-  check_includes = false
   sources = [
     "network_time_helper.cc",
     "network_time_helper.h",
@@ -62,10 +60,6 @@ static_library("network_time_helper") {
     "//base",
     "//components/network_time",
   ]
-
-  if (is_ios) {
-    deps += [ "//ios/web/public" ]
-  }
 }
 
 source_set("p3a") {
@@ -157,5 +151,6 @@ source_set("unit_tests") {
     "//components/os_crypt/sync:test_support",
     "//components/prefs:test_support",
     "//components/sync/base",
+    "//components/sync/service",
   ]
 }

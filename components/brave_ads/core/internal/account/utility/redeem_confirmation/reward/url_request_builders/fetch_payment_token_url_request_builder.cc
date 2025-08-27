@@ -9,7 +9,6 @@
 #include <utility>
 
 #include "base/check.h"
-#include "base/strings/strcat.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/reward/url_request_builders/fetch_payment_token_url_request_builder_util.h"
 #include "brave/components/brave_ads/core/internal/common/url/request_builder/host/url_host_util.h"
@@ -25,22 +24,23 @@ FetchPaymentTokenUrlRequestBuilder::FetchPaymentTokenUrlRequestBuilder(
 }
 
 mojom::UrlRequestInfoPtr FetchPaymentTokenUrlRequestBuilder::Build() {
-  mojom::UrlRequestInfoPtr url_request = mojom::UrlRequestInfo::New();
-  url_request->url = BuildUrl();
-  url_request->method = mojom::UrlRequestMethodType::kGet;
+  mojom::UrlRequestInfoPtr mojom_url_request = mojom::UrlRequestInfo::New();
+  mojom_url_request->url = BuildUrl();
+  mojom_url_request->method = mojom::UrlRequestMethodType::kGet;
 
-  return url_request;
+  return mojom_url_request;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 
 GURL FetchPaymentTokenUrlRequestBuilder::BuildUrl() const {
-  const std::string url_host = confirmation_.ad_type == AdType::kSearchResultAd
-                                   ? GetAnonymousSearchUrlHost()
-                                   : GetAnonymousUrlHost();
+  const std::string url_host =
+      confirmation_.ad_type == mojom::AdType::kSearchResultAd
+          ? GetAnonymousSearchUrlHost()
+          : GetAnonymousUrlHost();
 
-  const std::string spec = base::StrCat(
-      {url_host, BuildFetchPaymentTokenUrlPath(confirmation_.transaction_id)});
+  const std::string spec =
+      url_host + BuildFetchPaymentTokenUrlPath(confirmation_.transaction_id);
 
   return GURL(spec);
 }

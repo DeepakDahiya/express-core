@@ -46,7 +46,11 @@ export interface PlaylistData {
   playlistEditMode: PlaylistEditMode | undefined
 
   cachingProgress: Map<string, CachingProgress>
+
+  shouldShowAddMediaFromPage: boolean
 }
+
+type LoopMode = 'single-item' | 'all-items' | undefined
 
 export interface PlayerState {
   // This list could be in different order from the original list when users
@@ -62,6 +66,8 @@ export interface PlayerState {
   autoPlayEnabled: boolean
 
   shuffleEnabled: boolean
+
+  loopMode: LoopMode
 }
 
 export const usePlaylist = (id?: string) =>
@@ -106,5 +112,17 @@ export function useAutoPlayEnabled () {
 export function useInitialized() {
   return useSelector<ApplicationState, boolean>(
     applicationState => !!applicationState.playlistData?.lists.length
+  )
+}
+
+export function useLoopMode () {
+  return useSelector<ApplicationState, LoopMode>(
+    applicationState => applicationState.playerState?.loopMode
+  )
+}
+
+export function useShouldShowAddMediaFromPage () {
+  return useSelector<ApplicationState, boolean | undefined>(
+    applicationState => applicationState.playlistData?.shouldShowAddMediaFromPage
   )
 }

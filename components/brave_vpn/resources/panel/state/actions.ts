@@ -24,10 +24,13 @@ export type showMainViewPayload = {
   regions: Region[]
   connectionStatus: ConnectionState
   expired: boolean
+  outOfCredentials: boolean
+  stateDescription: string
 }
 
 export type initializedPayload = {
-  productUrls: ProductUrls
+  productUrls: ProductUrls,
+  smartProxyRoutingEnabled: boolean
 }
 
 export type selectedRegionPayload = {
@@ -39,15 +42,22 @@ export type purchasedStatePayload = {
   stateDescription?: string
 }
 
+export type outOfCredentialsPayload = {
+  description?: string
+}
+
 export const connect = createAction('connect')
 export const disconnect = createAction('disconnect')
 export const connectionFailed = createAction('connectionFailed')
 export const initialize = createAction('initialize')
 export const purchaseConfirmed = createAction('purchaseConfirmed')
 export const purchaseExpired = createAction('purchaseExpired')
+export const outOfCredentials = createAction<outOfCredentialsPayload>('outOfCredentials')
 export const showSellView = createAction('showSellView')
 export const showLoadingView = createAction('showLoadingView')
 export const resetConnectionState = createAction('resetConnectionState')
+export const connectToNewRegionAutomatically =
+  createAction('connectToNewRegionAutomatically')
 
 export const purchaseFailed =
   createAction<purchasedStatePayload>('purchaseFailed')
@@ -57,3 +67,4 @@ export const toggleRegionSelector = createAction<ToggleRegionSelectorPayload>('t
 export const connectionStateChanged = createAction<ConnectionStatePayload>('connectionStateChanged')
 export const connectToNewRegion = createAction<ConnectToNewRegionPayload>('connectToNewRegion', (region) => ({ region }))
 export const selectedRegionChanged = createAction<selectedRegionPayload>('selectedRegionChanged')
+export const smartProxyRoutingStateChanged = createAction<boolean>('smartProxyRoutingStateChanged')

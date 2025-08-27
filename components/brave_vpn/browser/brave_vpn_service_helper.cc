@@ -6,12 +6,12 @@
 #include "brave/components/brave_vpn/browser/brave_vpn_service_helper.h"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/json/values_util.h"
-#include "base/notreached.h"
-#include "base/ranges/algorithm.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
@@ -23,29 +23,18 @@
 #include "components/prefs/scoped_user_pref_update.h"
 
 namespace brave_vpn {
-
-mojom::RegionPtr GetRegionPtrWithNameFromRegionList(
-    const std::string& name,
-    const std::vector<mojom::Region> region_list) {
-  auto it = base::ranges::find(region_list, name, &mojom::Region::name);
-  if (it != region_list.end())
-    return it->Clone();
-  return mojom::RegionPtr();
-}
-
-bool IsValidCredentialSummary(const base::Value& summary) {
-  DCHECK(summary.is_dict());
-  const bool active = summary.GetDict().FindBool("active").value_or(false);
+bool IsValidCredentialSummary(const base::Value::Dict& summary) {
+  const bool active = summary.FindBool("active").value_or(false);
   const int remaining_credential_count =
-      summary.GetDict().FindInt("remaining_credential_count").value_or(0);
+      summary.FindInt("remaining_credential_count").value_or(0);
   return active && remaining_credential_count > 0;
 }
 
-bool IsValidCredentialSummaryButNeedActivation(const base::Value& summary) {
-  DCHECK(summary.is_dict());
-  const bool active = summary.GetDict().FindBool("active").value_or(false);
+bool IsValidCredentialSummaryButNeedActivation(
+    const base::Value::Dict& summary) {
+  const bool active = summary.FindBool("active").value_or(false);
   const int remaining_credential_count =
-      summary.GetDict().FindInt("remaining_credential_count").value_or(0);
+      summary.FindInt("remaining_credential_count").value_or(0);
   return !active && remaining_credential_count > 0;
 }
 
@@ -55,9 +44,9 @@ bool HasSubscriberCredential(PrefService* local_prefs) {
   return !sub_cred_dict.empty();
 }
 
-absl::optional<base::Time> GetExpirationTime(PrefService* local_prefs) {
+std::optional<base::Time> GetExpirationTime(PrefService* local_prefs) {
   if (!HasValidSubscriberCredential(local_prefs))
-    return absl::nullopt;
+    return std::nullopt;
 
   const base::Value::Dict& sub_cred_dict =
       local_prefs->GetDict(prefs::kBraveVPNSubscriberCredential);
@@ -66,7 +55,7 @@ absl::optional<base::Time> GetExpirationTime(PrefService* local_prefs) {
       sub_cred_dict.Find(kSubscriberCredentialExpirationKey);
 
   if (!expiration_time_value)
-    return absl::nullopt;
+    return std::nullopt;
 
   return base::ValueToTime(expiration_time_value);
 }
@@ -95,6 +84,7 @@ void SetSkusCredential(PrefService* local_prefs,
                 base::TimeToValue(expiration_time));
   local_prefs->SetDict(prefs::kBraveVPNSubscriberCredential,
                        std::move(cred_dict));
+  local_prefs->SetTime(prefs::kBraveVPNLastCredentialExpiry, expiration_time);
 }
 
 void SetSkusCredentialFetchingRetried(PrefService* local_prefs, bool retried) {

@@ -12,7 +12,6 @@ import { WithThemeVariables } from '../../with_theme_variables'
 import { WalletCard } from '../'
 
 import { localeStrings } from './locale_strings'
-import * as mojom from '../../../../shared/lib/mojom'
 import { optional } from '../../../../shared/lib/optional'
 
 const locale = createLocaleContextForTesting(localeStrings)
@@ -42,12 +41,10 @@ export function Wallet () {
   }
 
   const externalWallet: ExternalWallet = {
-    provider: 'uphold',
-    status: knobs.boolean('Wallet disconnected', false)
-      ? mojom.WalletStatus.kLoggedOut
-      : mojom.WalletStatus.kConnected,
-    username: 'brave123',
-    links: {}
+    provider: 'solana',
+    authenticated: !knobs.boolean('Wallet disconnected', false),
+    name: '66DcE...Vke3',
+    url: ''
   }
 
   const nextPaymentDate = getNextPaymentDate(
@@ -59,8 +56,8 @@ export function Wallet () {
         <div style={{ width: '375px' }}>
           <WalletCard
             userType={'connected'}
-            balance={optional(0)}
-            externalWallet={externalWallet && null}
+            balance={optional(123.032)}
+            externalWallet={externalWallet}
             providerPayoutStatus={'complete'}
             minEarningsThisMonth={0.25}
             maxEarningsThisMonth={0.75}
@@ -73,7 +70,6 @@ export function Wallet () {
             summaryData={summaryData}
             autoContributeEnabled={true}
             onExternalWalletAction={actionLogger('onExternalWalletAction')}
-            onViewStatement={actionLogger('onViewStatement')}
             onManageAds={actionLogger('onManageAds')}
           />
         </div>

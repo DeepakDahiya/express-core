@@ -8,6 +8,7 @@
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
 
@@ -17,12 +18,11 @@
 #include "base/functional/callback_forward.h"
 #include "base/functional/callback_helpers.h"
 #include "base/time/time.h"
+#include "base/types/expected.h"
 #include "base/values.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
-#include "services/data_decoder/public/cpp/data_decoder.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -35,7 +35,6 @@ class APIRequestResult {
  public:
   APIRequestResult();
   APIRequestResult(int response_code,
-                   std::string body,
                    base::Value value_body,
                    base::flat_map<std::string, std::string> headers,
                    int error_code,
@@ -54,10 +53,18 @@ class APIRequestResult {
 
   // HTTP response code.
   int response_code() const { return response_code_; }
-  // Sanitized json response.
-  const std::string& body() const { return body_; }
-  // `base::Value` of sanitized json response.
+
+  // Extract the sanitized response as base::Value.
+  base::Value TakeBody() &&;
+
+  // Returns the sanitized response as base::Value.
+  // Note: don't clone large responses, use TakeBody() instead.
   const base::Value& value_body() const { return value_body_; }
+
+  // Serialize the sanitized response and returns it as string.
+  // Note: use TakeBody()/value_body() instead where possible.
+  std::string SerializeBodyToString() const;
+
   // HTTP response headers.
   const base::flat_map<std::string, std::string>& headers() const {
     return headers_;
@@ -72,7 +79,6 @@ class APIRequestResult {
   friend class APIRequestHelper;
 
   int response_code_ = -1;
-  std::string body_;
   base::Value value_body_;
   base::flat_map<std::string, std::string> headers_;
   int error_code_ = -1;
@@ -83,8 +89,10 @@ struct APIRequestOptions {
   bool auto_retry_on_network_change = false;
   bool enable_cache = false;
   size_t max_body_size = -1u;
-  absl::optional<base::TimeDelta> timeout;
+  std::optional<base::TimeDelta> timeout;
 };
+
+using ValueOrError = base::expected<base::Value, std::string>;
 
 // Anyone is welcome to use APIRequestHelper to reduce boilerplate
 // Unit tests which need to use the data decoding from this class can use
@@ -92,16 +100,20 @@ struct APIRequestOptions {
 // in-process.
 class APIRequestHelper {
  public:
-  using DataReceivedCallback = base::RepeatingCallback<void(
-      data_decoder::DataDecoder::ValueOrError result)>;
+  using DataReceivedCallback =
+      base::RepeatingCallback<void(ValueOrError result)>;
   using ResultCallback = base::OnceCallback<void(APIRequestResult)>;
+  using ResponseStartedCallback =
+      base::OnceCallback<void(const std::string& url,
+                              const int64_t content_length)>;
   using ResponseConversionCallback =
-      base::OnceCallback<absl::optional<std::string>(
+      base::OnceCallback<std::optional<std::string>(
           const std::string& raw_response)>;
 
   class URLLoaderHandler : public network::SimpleURLLoaderStreamConsumer {
    public:
-    explicit URLLoaderHandler(APIRequestHelper* api_request_helper);
+    URLLoaderHandler(APIRequestHelper* api_request_helper,
+                     scoped_refptr<base::SequencedTaskRunner> task_runner);
     ~URLLoaderHandler() override;
     URLLoaderHandler(const URLLoaderHandler&) = delete;
     URLLoaderHandler& operator=(const URLLoaderHandler&) = delete;
@@ -117,7 +129,8 @@ class APIRequestHelper {
    private:
     friend class APIRequestHelper;
 
-    data_decoder::DataDecoder* GetDataDecoder();
+    void ParseJsonImpl(std::string json,
+                       base::OnceCallback<void(ValueOrError)> callback);
 
     // Run completion callback if there are no operations in progress.
     // If Cancel is needed even if url or data operations are in progress,
@@ -136,30 +149,26 @@ class APIRequestHelper {
                     const std::unique_ptr<std::string> response_body);
 
     // Decode one shot responses
-    void OnParseJsonResponse(
-        APIRequestResult result,
-        data_decoder::DataDecoder::ValueOrError result_value);
+    void OnParseJsonResponse(APIRequestResult result,
+                             ValueOrError result_value);
 
     std::unique_ptr<network::SimpleURLLoader> url_loader_;
     raw_ptr<APIRequestHelper> api_request_helper_;
 
     DataReceivedCallback data_received_callback_;
+    ResponseStartedCallback response_started_callback_;
     ResultCallback result_callback_;
     ResponseConversionCallback conversion_callback_;
 
     bool is_sse_ = false;
 
-    // To ensure ordered processing of stream chunks, we create our own
-    // instance of DataDecoder per request. This avoids the issue
-    // of unordered chunks that can occur when calling the static function,
-    // which creates a new instance of the process for each call. By using a
-    // single instance of the parser, we can reuse it for consecutive calls.
-    std::unique_ptr<data_decoder::DataDecoder> data_decoder_;
     // Keep track of number of in-progress data decoding operations
     // so that we can know if any are still in-progress when the request
     // completes.
     int current_decoding_operation_count_ = 0;
     bool request_is_finished_ = false;
+
+    const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
     base::WeakPtrFactory<URLLoaderHandler> weak_ptr_factory_{this};
   };
@@ -170,7 +179,7 @@ class APIRequestHelper {
   APIRequestHelper(
       net::NetworkTrafficAnnotationTag annotation_tag,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
-  ~APIRequestHelper();
+  virtual ~APIRequestHelper();
 
   // Each response is expected in json format and will be validated through
   // JsonSanitizer. In cases where json contains values that are not supported
@@ -178,7 +187,7 @@ class APIRequestHelper {
   // into string before validating the response. For these purposes
   // conversion_callback is added which receives raw response and can perform
   // necessary conversions.
-  Ticket Request(
+  virtual Ticket Request(
       const std::string& method,
       const GURL& url,
       const std::string& payload,
@@ -188,15 +197,29 @@ class APIRequestHelper {
       const APIRequestOptions& request_options = {},
       ResponseConversionCallback conversion_callback = base::NullCallback());
 
-  Ticket RequestSSE(
+  // TODO(petemill): Avoid needing this to be virtual only for mocking during
+  // testing by using an interface, delegates, intercepting streaming, or
+  // another pattern.
+  virtual Ticket RequestSSE(
       const std::string& method,
       const GURL& url,
       const std::string& payload,
       const std::string& payload_content_type,
       DataReceivedCallback data_received_callback,
       ResultCallback result_callback,
-      const base::flat_map<std::string, std::string>& headers = {},
-      const APIRequestOptions& request_options = {});
+      const base::flat_map<std::string, std::string>& headers,
+      const APIRequestOptions& request_options);
+
+  virtual Ticket RequestSSE(
+      const std::string& method,
+      const GURL& url,
+      const std::string& payload,
+      const std::string& payload_content_type,
+      DataReceivedCallback data_received_callback,
+      ResultCallback result_callback,
+      const base::flat_map<std::string, std::string>& headers,
+      const APIRequestOptions& request_options,
+      ResponseStartedCallback response_started_callback);
 
   void Cancel(const Ticket& ticket);
   void CancelAll();
@@ -236,8 +259,12 @@ class APIRequestHelper {
   net::NetworkTrafficAnnotationTag annotation_tag_;
   URLLoaderHandlerList url_loaders_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
+  const scoped_refptr<base::SequencedTaskRunner> task_runner_;
   base::WeakPtrFactory<APIRequestHelper> weak_ptr_factory_{this};
 };
+
+void ParseJsonNonBlocking(std::string json,
+                          base::OnceCallback<void(ValueOrError)> callback);
 
 }  // namespace api_request_helper
 

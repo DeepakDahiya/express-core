@@ -4,118 +4,106 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 // types
-import {
-  BraveWallet,
-  CoinTypes,
-  SerializableTransactionInfo,
-  TxSimulationOptInStatus
-} from '../../../constants/types'
+import { BraveWallet } from '../../../constants/types'
 import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
 // utils
-import { toMojoUnion } from '../../../utils/mojo-utils'
 import { handleEndpointError } from '../../../utils/api-utils'
-
-/**
- * Will be `undefined` until a preference is set
- */
-let txSimulationOptInStatus: TxSimulationOptInStatus = 'unset'
-
-export const getIsTxSimulationOptInStatus = () => txSimulationOptInStatus
-
-export const setTxSimulationOptInStatus = (
-  enabled: TxSimulationOptInStatus
-) => {
-  txSimulationOptInStatus = enabled
-}
 
 export const transactionSimulationEndpoints = ({
   mutation,
-  query
+  query,
 }: WalletApiEndpointBuilderParams) => {
   return {
-    getIsTxSimulationOptInStatus: query<TxSimulationOptInStatus, void>({
-      queryFn: async (arg, api, extraOptions, baseQuery) => {
+    getIsTxSimulationOptInStatus: query<BraveWallet.BlowfishOptInStatus, void>({
+      queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
+        const { data: api, cache } = baseQuery(undefined)
+
+        const { isTransactionSimulationsFeatureEnabled } =
+          await cache.getWalletInfo()
+
+        if (!isTransactionSimulationsFeatureEnabled) {
+          return {
+            data: BraveWallet.BlowfishOptInStatus.kDenied,
+          }
+        }
+
+        const { status } =
+          await api.braveWalletService.getTransactionSimulationOptInStatus()
+
         return {
-          data: getIsTxSimulationOptInStatus()
+          data: status,
         }
       },
-      providesTags: ['TransactionSimulationsEnabled']
+      providesTags: ['TransactionSimulationsOptIn'],
     }),
 
     setIsTxSimulationOptInStatus: mutation<
-      TxSimulationOptInStatus,
-      TxSimulationOptInStatus
+      BraveWallet.BlowfishOptInStatus,
+      BraveWallet.BlowfishOptInStatus
     >({
-      queryFn: async (status, api, extraOptions, baseQuery) => {
-        setTxSimulationOptInStatus(status)
+      queryFn: async (status, { endpoint }, extraOptions, baseQuery) => {
+        const { data: api, cache } = baseQuery(undefined)
+        api.braveWalletService.setTransactionSimulationOptInStatus(status)
+        cache.clearWalletInfo()
         return {
-          data: status
+          data: status,
         }
       },
-      invalidatesTags: ['TransactionSimulationsEnabled']
+      invalidatesTags: ['TransactionSimulationsOptIn'],
+    }),
+
+    getHasTransactionSimulationSupport: query<
+      boolean,
+      { chainId: string; coinType: BraveWallet.CoinType }
+    >({
+      queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
+        try {
+          const { data: api } = baseQuery(undefined)
+          const { result } =
+            await api.simulationService.hasTransactionScanSupport(
+              arg.chainId,
+              arg.coinType,
+            )
+          return {
+            data: result,
+          }
+        } catch (error) {
+          return handleEndpointError(
+            endpoint,
+            `Unable to check if this network (${
+              arg.chainId //
+            }) has transaction simulation support`,
+            error,
+          )
+        }
+      },
     }),
 
     getEVMTransactionSimulation: query<
       BraveWallet.EVMSimulationResponse,
-      Pick<SerializableTransactionInfo, 'chainId' | 'id'> & {
-        coinType: BraveWallet.CoinType
+      {
+        txMetaId: string
       }
     >({
       queryFn: async (txArg, { endpoint }, extraOptions, baseQuery) => {
         try {
-          if (getIsTxSimulationOptInStatus() !== 'allowed') {
-            throw new Error('Transaction simulation is not enabled')
-          }
-
-          const api = baseQuery(undefined).data
-          const { simulationService, txService } = api
-
-          if (txArg.coinType !== BraveWallet.CoinType.ETH) {
-            throw new Error(
-              `Invalid EVM transaction argument cointype for EVM simulation: ${
-                txArg.coinType //
-              }`
-            )
-          }
-
-          const { result } = await simulationService.hasTransactionScanSupport(
-            txArg.chainId,
-            txArg.coinType
-          )
-
-          if (!result) {
-            throw new Error(
-              `EVM transaction simulation not supported for chain/coin: ${
-                txArg.chainId //
-              }/${txArg.coinType}`
-            )
-          }
-
-          const { transactionInfo: tx } = await txService.getTransactionInfo(
-            txArg.coinType,
-            txArg.chainId,
-            txArg.id
-          )
-
-          if (!tx) {
-            throw new Error(
-              `could not lookup EVM tx by meta-ID/coin: ${
-                txArg.id //
-              }/${txArg.coinType}`
-            )
-          }
+          const { data: api } = baseQuery(undefined)
+          const { simulationService } = api
 
           const { errorResponse, errorString, response } =
-            await simulationService.scanEVMTransaction(tx, navigator.language)
+            await simulationService.scanEVMTransaction(
+              txArg.txMetaId,
+              navigator.language,
+            )
 
           if (errorResponse || errorString) {
             throw new Error(
               `EVM Transaction Simulation error for tx: ${
-                JSON.stringify(tx, undefined, 2)
+                txArg.txMetaId //
               } -- ${
                 errorString //
-              } -- ${errorResponse}`
+              } -- ${errorResponse}`,
             )
           }
 
@@ -124,117 +112,40 @@ export const transactionSimulationEndpoints = ({
           }
 
           return {
-            data: response
+            data: response,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Failed to simulate EVM transaction',
-            error
+            error,
           )
         }
-      }
+      },
     }),
 
     getSolanaTransactionSimulation: query<
       BraveWallet.SolanaSimulationResponse,
       {
-        mode: keyof Parameters<
-          BraveWallet.SimulationServiceRemote['scanSolanaTransaction']
-        >[0]
-        chainId: string
-        id: Pick<
-          | BraveWallet.SignAllTransactionsRequest
-          | BraveWallet.SignTransactionRequest
-          | BraveWallet.TransactionInfo,
-          'id'
-        >['id']
+        txMetaId: string
       }
     >({
       queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
         try {
-          if (getIsTxSimulationOptInStatus() !== 'allowed') {
-            throw new Error('Transaction simulation is not enabled')
-          }
-
-          const api = baseQuery(undefined).data
-          const { simulationService, braveWalletService, txService } = api
-
-          const params: Parameters<
-            BraveWallet.SimulationServiceRemote['scanSolanaTransaction']
-          >[0] = {
-            signAllTransactionsRequest: undefined,
-            signTransactionRequest: undefined,
-            transactionInfo: undefined
-          }
-
-          switch (arg.mode) {
-            case 'signAllTransactionsRequest': {
-              const { requests } = await braveWalletService //
-                .getPendingSignAllTransactionsRequests()
-
-              params.signAllTransactionsRequest = requests.find(
-                (r) => r.id === arg?.id
-              )
-              break
-            }
-
-            case 'signTransactionRequest': {
-              const { requests } =
-                await braveWalletService.getPendingSignTransactionRequests()
-              params.signTransactionRequest = requests.find(
-                (r) => r.id === arg?.id
-              )
-              break
-            }
-
-            case 'transactionInfo': {
-              const { transactionInfo } = await txService.getTransactionInfo(
-                CoinTypes.SOL,
-                arg.chainId,
-                arg.id.toString()
-              )
-              params.transactionInfo = transactionInfo || undefined
-              break
-            }
-
-            default: {
-              throw new Error(`Unsupported SVM simulation mode: ${arg.mode}`)
-            }
-          }
-
-          const request = params[arg.mode]
-          if (!request) {
-            throw new Error(
-              `Unable to find ${arg.mode || 'MODE'} with Id: ${arg.id}`
-            )
-          }
-
-          const { result } = await simulationService.hasTransactionScanSupport(
-            request.chainId,
-            CoinTypes.SOL
-          )
-
-          if (!result) {
-            throw new Error(
-              `Solana transaction simulation not supported for chain/coin: ${
-                request.chainId //
-              }/${CoinTypes.SOL}`
-            )
-          }
+          const { data: api } = baseQuery(undefined)
+          const { simulationService } = api
 
           const { errorResponse, errorString, response } =
             await simulationService.scanSolanaTransaction(
-              toMojoUnion(params, arg.mode),
-              navigator.language
+              arg.txMetaId,
+              navigator.language,
             )
 
           if (errorResponse || errorString) {
             throw new Error(
-              `scanSolanaTransaction({${
-                //
-                JSON.stringify(toMojoUnion(params, arg.mode))
-              }}) failed -- ${errorString}: ${errorResponse}`
+              `getSolanaTransactionSimulation({${
+                arg.txMetaId //
+              }}) failed -- ${errorString}: ${errorResponse}`,
             )
           }
 
@@ -243,16 +154,58 @@ export const transactionSimulationEndpoints = ({
           }
 
           return {
-            data: response
+            data: response,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Failed to simulate Solana transaction',
-            error
+            error,
           )
         }
+      },
+    }),
+
+    getSolanaSignTransactionsRequestSimulation: query<
+      BraveWallet.SolanaSimulationResponse,
+      {
+        signSolTransactionsRequestId: number
       }
-    })
+    >({
+      queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
+        try {
+          const { data: api } = baseQuery(undefined)
+          const { simulationService } = api
+
+          const { errorResponse, errorString, response } =
+            await simulationService.scanSignSolTransactionsRequest(
+              arg.signSolTransactionsRequestId,
+              navigator.language,
+            )
+
+          if (errorResponse || errorString) {
+            throw new Error(
+              `getSolanaSignTransactionsRequestSimulation({${
+                arg.signSolTransactionsRequestId //
+              }}) failed -- ${errorString}: ${errorResponse}`,
+            )
+          }
+
+          if (!response) {
+            throw new Error('empty Solana simulation response')
+          }
+
+          return {
+            data: response,
+          }
+        } catch (error) {
+          return handleEndpointError(
+            endpoint,
+            'Failed to simulate Solana transaction',
+            error,
+          )
+        }
+      },
+    }),
   }
 }

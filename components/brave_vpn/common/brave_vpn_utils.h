@@ -8,8 +8,10 @@
 
 #include <string>
 
+#include "brave/components/brave_vpn/common/mojom/brave_vpn.mojom.h"
 #include "build/build_config.h"
 
+class GURL;
 class PrefRegistrySimple;
 class PrefService;
 namespace user_prefs {
@@ -30,6 +32,7 @@ std::string GetBraveVPNPaymentsEnv(const std::string& env);
 std::string GetManageUrl(const std::string& env);
 void MigrateVPNSettings(PrefService* profile_prefs, PrefService* local_prefs);
 void RegisterLocalStatePrefs(PrefRegistrySimple* registry);
+void MigrateLocalStatePrefs(PrefService* local_prefs);
 void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 void RegisterAndroidProfilePrefs(PrefRegistrySimple* registry);
 bool HasValidSubscriberCredential(PrefService* local_prefs);
@@ -37,8 +40,10 @@ std::string GetSubscriberCredential(PrefService* local_prefs);
 bool HasValidSkusCredential(PrefService* local_prefs);
 std::string GetSkusCredential(PrefService* local_prefs);
 bool IsBraveVPNWireguardEnabled(PrefService* local_state);
+GURL GetManageURLForUIType(mojom::ManageURLType type, const GURL& manage_url);
+
 #if BUILDFLAG(IS_WIN)
-void MigrateWireguardFeatureFlag(PrefService* local_prefs);
+void EnableWireguardIfPossible(PrefService* local_prefs);
 #endif  // BUILDFLAG(IS_WIN)
 }  // namespace brave_vpn
 

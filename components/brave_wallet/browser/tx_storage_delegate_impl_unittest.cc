@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_wallet/browser/tx_storage_delegate_impl.h"
 
+#include <optional>
 #include <utility>
 
 #include "base/files/scoped_temp_dir.h"
@@ -20,6 +21,7 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using base::test::ParseJson;
 using base::test::ParseJsonDict;
 
 namespace brave_wallet {
@@ -35,12 +37,12 @@ class TxStorageDelegateImplUnitTest : public testing::Test {
     factory_ = GetTestValueStoreFactory(temp_dir_);
   }
 
-  absl::optional<base::Value> GetTxsFromDB(TxStorageDelegateImpl* delegate) {
+  std::optional<base::Value> GetTxsFromDB(TxStorageDelegateImpl* delegate) {
     base::RunLoop run_loop;
-    absl::optional<base::Value> value_out;
+    std::optional<base::Value> value_out;
     delegate->store_->Get(
         "transactions",
-        base::BindLambdaForTesting([&](absl::optional<base::Value> value) {
+        base::BindLambdaForTesting([&](std::optional<base::Value> value) {
           value_out = std::move(value);
           run_loop.Quit();
         }));
@@ -54,96 +56,8 @@ class TxStorageDelegateImplUnitTest : public testing::Test {
   scoped_refptr<value_store::TestValueStoreFactory> factory_;
 };
 
-TEST_F(TxStorageDelegateImplUnitTest, Initialize) {
-  {  // Nothing to migrate, ex. fresh profile
-    ASSERT_FALSE(
-        prefs_.GetBoolean(kBraveWalletTransactionsFromPrefsToDBMigrated));
-    ASSERT_FALSE(prefs_.HasPrefPath(kBraveWalletTransactions));
-    auto delegate = GetTxStorageDelegateForTest(&prefs_, factory_);
-    WaitForTxStorageDelegateInitialized(delegate.get());
-    EXPECT_TRUE(delegate->IsInitialized());
-    EXPECT_TRUE(
-        prefs_.GetBoolean(kBraveWalletTransactionsFromPrefsToDBMigrated));
-    EXPECT_FALSE(prefs_.HasPrefPath(kBraveWalletTransactions));
-    prefs_.ClearPref(kBraveWalletTransactionsFromPrefsToDBMigrated);
-  }
-  {  // already migrated
-    prefs_.SetBoolean(kBraveWalletTransactionsFromPrefsToDBMigrated, true);
-    auto delegate = GetTxStorageDelegateForTest(&prefs_, factory_);
-    WaitForTxStorageDelegateInitialized(delegate.get());
-    EXPECT_TRUE(delegate->IsInitialized());
-    EXPECT_TRUE(
-        prefs_.GetBoolean(kBraveWalletTransactionsFromPrefsToDBMigrated));
-    prefs_.ClearPref(kBraveWalletTransactionsFromPrefsToDBMigrated);
-  }
-  {  // migration happened
-    ASSERT_FALSE(
-        prefs_.GetBoolean(kBraveWalletTransactionsFromPrefsToDBMigrated));
-
-    base::Value::Dict txs_value = ParseJsonDict(R"({
-    "chain_id_migrated": true,
-    "ethereum": {
-        "goerli": {
-            "a336ef2c-9716-4cb7-8bb2-7fce8704a662": {
-                "chain_id": "0x5",
-                "confirmed_time": "13324786394428041",
-                "tx": {
-                    "data": "",
-                },
-            },
-            "c6d9bc1a-b8a2-4abe-919e-3f6c1dc78ef4": {
-                "chain_id": "0x5",
-            }
-        },
-        "mainnet": {
-            "71a841a4-83dc-4286-9acd-9b7f50e90fdb": {
-                "chain_id": "0x1",
-                "confirmed_time": "0",
-                "tx": {
-                    "data": "",
-                },
-                "tx_hash": "",
-                "tx_receipt": {
-                    "block_hash": "",
-                }
-            }
-        }
-    },
-    "solana": {
-        "devnet": {
-            "40fa081e-55c8-4052-a7e9-e32ffaa44ba8": {
-                "chain_id": "0x67",
-                "confirmed_time": "0",
-                "signature_status": {
-                    "confirmation_status": "",
-                    "confirmations": "0",
-                    "err": "",
-                    "slot": "0"
-                },
-                "status": 2,
-                "submitted_time": "0",
-                "tx_hash": ""
-            }
-        }
-    }
-    })");
-    prefs_.Set(kBraveWalletTransactions, base::Value(txs_value.Clone()));
-    auto delegate = GetTxStorageDelegateForTest(&prefs_, factory_);
-    auto txs_from_db = GetTxsFromDB(delegate.get());
-    ASSERT_TRUE(txs_from_db);
-    EXPECT_EQ(txs_from_db->GetDict(), txs_value);
-    EXPECT_EQ(delegate->GetTxs(), txs_value);
-    EXPECT_TRUE(delegate->IsInitialized());
-    EXPECT_TRUE(
-        prefs_.GetBoolean(kBraveWalletTransactionsFromPrefsToDBMigrated));
-    // We don't clear pref transactions for this migration
-    EXPECT_TRUE(prefs_.HasPrefPath(kBraveWalletTransactions));
-  }
-}
-
 TEST_F(TxStorageDelegateImplUnitTest, ReadWriteAndClear) {
   auto delegate = GetTxStorageDelegateForTest(&prefs_, factory_);
-  WaitForTxStorageDelegateInitialized(delegate.get());
   // OnTxRead with empty txs
   auto& txs = delegate->GetTxs();
   EXPECT_TRUE(txs.empty());

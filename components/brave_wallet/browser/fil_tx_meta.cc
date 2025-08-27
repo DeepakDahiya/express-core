@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/check_op.h"
 #include "base/values.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/fil_transaction.h"
@@ -37,7 +38,7 @@ base::Value::Dict FilTxMeta::ToValue() const {
 
 mojom::TransactionInfoPtr FilTxMeta::ToTransactionInfo() const {
   return mojom::TransactionInfo::New(
-      id_, from_->address, from_.Clone(), tx_hash_,
+      id_, from_.Clone(), tx_hash_,
       mojom::TxDataUnion::NewFilTxData(tx_->ToFilTxData()), status_,
       mojom::TransactionType::Other, std::vector<std::string>() /* tx_params */,
       std::vector<std::string>() /* tx_args */,
@@ -45,7 +46,11 @@ mojom::TransactionInfoPtr FilTxMeta::ToTransactionInfo() const {
       base::Milliseconds(submitted_time_.InMillisecondsSinceUnixEpoch()),
       base::Milliseconds(confirmed_time_.InMillisecondsSinceUnixEpoch()),
       origin_.has_value() ? MakeOriginInfo(*origin_) : nullptr, chain_id_,
-      tx_->ToFilTxData()->to);
+      tx_->ToFilTxData()->to, false, nullptr);
+}
+
+mojom::CoinType FilTxMeta::GetCoinType() const {
+  return mojom::CoinType::FIL;
 }
 
 }  // namespace brave_wallet

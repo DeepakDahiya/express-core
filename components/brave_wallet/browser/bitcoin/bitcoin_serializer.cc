@@ -5,10 +5,14 @@
 
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_serializer.h"
 
+#include <optional>
 #include <utility>
 
-#include "base/sys_byteorder.h"
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "brave/components/brave_wallet/common/bitcoin_utils.h"
+#include "brave/components/brave_wallet/common/btc_like_serializer_stream.h"
 #include "brave/components/brave_wallet/common/hash_utils.h"
 
 namespace brave_wallet {
@@ -20,14 +24,57 @@ constexpr uint32_t kWitnessScaleFactor = 4;
 
 namespace {
 
-void PushOutpoint(const BitcoinTransaction::Outpoint& outpoint,
-                  BitcoinSerializerStream& stream) {
-  stream.PushBytesReversed(outpoint.txid);
-  stream.Push32AsLE(outpoint.index);
+uint32_t WeightUnitsToVBytes(uint32_t wu) {
+  // Need ceiling
+  // https://github.com/bitcoin/bitcoin/blob/v25.1/src/policy/policy.cpp
+  // https://bitcoincore.org/en/segwit_wallet_dev/#transaction-fee-estimation
+  return (wu + kWitnessScaleFactor - 1) / kWitnessScaleFactor;
 }
 
-void PushScriptCodeForSigninig(const DecodedBitcoinAddress& decoded_address,
-                               BitcoinSerializerStream& stream) {
+const std::vector<uint8_t>& DummySignature() {
+  static std::vector<uint8_t> dummy_signature = []() {
+    constexpr size_t kRLength = 32;
+    constexpr size_t kSLength = 32;
+    std::vector<uint8_t> result;
+    result.assign(kRLength + kSLength + 7, 0);
+    result[0] = 0x30;
+    result[1] = kRLength + kSLength + 4;
+    result[2] = 0x02;
+    result[3] = kRLength;
+    result[4] = 0x01;
+    result[4 + kRLength] = 0x02;
+    result[5 + kRLength] = kSLength;
+    result[6 + kRLength] = 0x01;
+    result[6 + kRLength + kSLength] = kBitcoinSigHashAll;
+    return result;
+  }();
+  return dummy_signature;
+}
+
+const std::vector<uint8_t>& DummyPubkey() {
+  static std::vector<uint8_t> dummy_pubkey = []() {
+    constexpr size_t kLength = 33;
+    std::vector<uint8_t> result(kLength, 0);
+    return result;
+  }();
+  return dummy_pubkey;
+}
+
+const std::vector<uint8_t>& DummyWitness() {
+  static std::vector<uint8_t> dummy_witness = []() {
+    return BitcoinSerializer::SerializeWitness(DummySignature(), DummyPubkey());
+  }();
+  return dummy_witness;
+}
+
+void PushOutpoint(const BitcoinTransaction::Outpoint& outpoint,
+                  BtcLikeSerializerStream& stream) {
+  stream.PushBytesReversed(outpoint.txid);
+  stream.Push32(outpoint.index);
+}
+
+void PushScriptCodeForSigning(const DecodedBitcoinAddress& decoded_address,
+                              BtcLikeSerializerStream& stream) {
   // TODO(apaymyshev): support more.
   DCHECK_EQ(decoded_address.address_type,
             BitcoinAddressType::kWitnessV0PubkeyHash);
@@ -44,7 +91,7 @@ SHA256HashArray HashPrevouts(const BitcoinTransaction& tx) {
   DCHECK_EQ(tx.sighash_type(), kBitcoinSigHashAll);
 
   std::vector<uint8_t> data;
-  BitcoinSerializerStream stream(&data);
+  BtcLikeSerializerStream stream(&data);
   for (const auto& input : tx.inputs()) {
     PushOutpoint(input.utxo_outpoint, stream);
   }
@@ -56,45 +103,26 @@ SHA256HashArray HashSequence(const BitcoinTransaction& tx) {
   DCHECK_EQ(tx.sighash_type(), kBitcoinSigHashAll);
 
   std::vector<uint8_t> data;
-  BitcoinSerializerStream stream(&data);
+  BtcLikeSerializerStream stream(&data);
   for (const auto& input : tx.inputs()) {
-    stream.Push32AsLE(input.n_sequence());
+    stream.Push32(input.n_sequence());
   }
 
   return DoubleSHA256Hash(data);
 }
 
-std::vector<uint8_t> AddressToScriptPubkey(const std::string& address) {
-  auto decoded_address = DecodeBitcoinAddress(address);
-  // TODO(apaymyshev): support more types
-  if (decoded_address && decoded_address->address_type ==
-                             BitcoinAddressType::kWitnessV0PubkeyHash) {
-    auto pubkey_hash = std::move(decoded_address->pubkey_hash);
-    CHECK_EQ(pubkey_hash.size(), 20u);
-
-    // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh
-    std::vector<uint8_t> data;
-    BitcoinSerializerStream stream(&data);
-    stream.Push8AsLE(0);                   // OP_0
-    stream.Push8AsLE(pubkey_hash.size());  // OP_14
-    stream.PushBytes(pubkey_hash);
-    return data;
-  }
-
-  NOTREACHED_NORETURN();
-}
-
 void PushOutput(const BitcoinTransaction::TxOutput& output,
-                BitcoinSerializerStream& stream) {
-  stream.Push64AsLE(output.amount);
-  stream.PushSizeAndBytes(AddressToScriptPubkey(output.address));
+                BtcLikeSerializerStream& stream) {
+  stream.Push64(output.amount);
+  CHECK(output.script_pubkey.size());
+  stream.PushSizeAndBytes(output.script_pubkey);
 }
 
 SHA256HashArray HashOutputs(const BitcoinTransaction& tx) {
   DCHECK_EQ(tx.sighash_type(), kBitcoinSigHashAll);
 
   std::vector<uint8_t> data;
-  BitcoinSerializerStream stream(&data);
+  BtcLikeSerializerStream stream(&data);
   for (const auto& output : tx.outputs()) {
     PushOutput(output, stream);
   }
@@ -103,145 +131,219 @@ SHA256HashArray HashOutputs(const BitcoinTransaction& tx) {
 }
 
 void SerializeInputs(const BitcoinTransaction& tx,
-                     BitcoinSerializerStream& stream) {
-  stream.PushVarInt(tx.inputs().size());
+                     BtcLikeSerializerStream& stream) {
+  stream.PushCompactSize(tx.inputs().size());
   for (const auto& input : tx.inputs()) {
     PushOutpoint(input.utxo_outpoint, stream);
-    // TODO(apaymsyhev): we support only segwit inputs by now, so script_sig
+    // TODO(apaymyshev): we support only segwit inputs by now, so script_sig
     // should be emtpy.
     DCHECK(input.script_sig.empty());
     stream.PushSizeAndBytes(input.script_sig);
-    stream.Push32AsLE(input.n_sequence());
+    stream.Push32(input.n_sequence());
   }
 }
 
-uint32_t InputsSerializedSize(const BitcoinTransaction& tx) {
-  BitcoinSerializerStream stream(nullptr);
-  SerializeInputs(tx, stream);
-  return stream.serialized_bytes();
+uint32_t GetVarIntVBytes(uint64_t i) {
+  if (i < 0xfd) {
+    return 1;
+  } else if (i <= 0xffff) {
+    return 1 + 2;
+  } else if (i <= 0xffffffff) {
+    return 1 + 4;
+  } else {
+    return 1 + 8;
+  }
+}
+
+uint32_t GetVarArrayVBytes(const std::vector<uint8_t>& var_array) {
+  return GetVarIntVBytes(var_array.size()) + var_array.size();
+}
+
+uint32_t GetOutpointVBytes(const BitcoinTransaction::Outpoint& outpoint) {
+  uint32_t bytes = 0;
+  bytes += 32;  // txid
+  bytes += 4;   // index
+  return bytes;
+}
+
+uint32_t GetInputVBytes(const BitcoinTransaction::TxInput& input) {
+  uint32_t bytes = 0;
+  bytes += GetOutpointVBytes(input.utxo_outpoint);
+  DCHECK(input.script_sig.empty());
+  bytes += GetVarArrayVBytes(input.script_sig);
+  bytes += 4;  // n_sequence
+  return bytes;
+}
+
+uint32_t GetInputsVBytes(const BitcoinTransaction& tx) {
+  uint32_t bytes = 0;
+  bytes += GetVarIntVBytes(tx.inputs().size());
+  for (const auto& input : tx.inputs()) {
+    bytes += GetInputVBytes(input);
+  }
+  return bytes;
+}
+
+uint32_t GetOutputVBytes(const BitcoinTransaction::TxOutput& output) {
+  uint32_t bytes = 0;
+  bytes += 8;  // amount
+  bytes += GetVarArrayVBytes(output.script_pubkey);
+  return bytes;
+}
+
+uint32_t GetOutputsVBytes(const BitcoinTransaction& tx) {
+  uint32_t bytes = 0;
+  bytes += GetVarIntVBytes(tx.outputs().size());
+  for (const auto& input : tx.outputs()) {
+    bytes += GetOutputVBytes(input);
+  }
+  return bytes;
 }
 
 void SerializeOutputs(const BitcoinTransaction& tx,
-                      BitcoinSerializerStream& stream) {
-  stream.PushVarInt(tx.outputs().size());
+                      BtcLikeSerializerStream& stream) {
+  stream.PushCompactSize(tx.outputs().size());
   for (const auto& output : tx.outputs()) {
     PushOutput(output, stream);
   }
 }
 
-uint32_t OutputsSerializedSize(const BitcoinTransaction& tx) {
-  BitcoinSerializerStream stream(nullptr);
-  SerializeOutputs(tx, stream);
-  return stream.serialized_bytes();
-}
-
 void SerializeWitnesses(const BitcoinTransaction& tx,
-                        BitcoinSerializerStream& stream) {
+                        BtcLikeSerializerStream& stream) {
   for (const auto& input : tx.inputs()) {
     DCHECK(!input.witness.empty());
     stream.PushBytes(input.witness);
   }
 }
 
-uint32_t WitnessesSerializedSize(const BitcoinTransaction& tx) {
+uint32_t GetWitnessWeightUnits(const BitcoinTransaction::TxInput& input,
+                               bool dummy_signatures) {
+  if (dummy_signatures) {
+    return DummyWitness().size();
+  } else {
+    DCHECK(!input.witness.empty());
+    return input.witness.size();
+  }
+}
+
+uint32_t GetWitnessesWeightUnits(const BitcoinTransaction& tx,
+                                 bool dummy_signatures) {
   uint32_t weight = 0;
   for (const auto& input : tx.inputs()) {
-    DCHECK(!input.witness.empty());
-    // TODO(apaymyshev): For non-witness inputs we should skip empty witness
-    // placeholder though.
-    weight += input.witness.size();
+    weight += GetWitnessWeightUnits(input, dummy_signatures);
   }
   return weight;
 }
 
 }  // namespace
 
-void BitcoinSerializerStream::Push8AsLE(uint8_t i) {
-  base::span<uint8_t> data_to_insert(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-  PushBytes(data_to_insert);
-}
-
-void BitcoinSerializerStream::Push16AsLE(uint16_t i) {
-  i = base::ByteSwapToLE16(i);
-  base::span<uint8_t> data_to_insert(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-  PushBytes(data_to_insert);
-}
-
-void BitcoinSerializerStream::Push32AsLE(uint32_t i) {
-  i = base::ByteSwapToLE32(i);
-  base::span<uint8_t> data_to_insert(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-  PushBytes(data_to_insert);
-}
-
-void BitcoinSerializerStream::Push64AsLE(uint64_t i) {
-  i = base::ByteSwapToLE64(i);
-  base::span<uint8_t> data_to_insert(reinterpret_cast<uint8_t*>(&i), sizeof(i));
-  PushBytes(data_to_insert);
-}
-
-// https://developer.bitcoin.org/reference/transactions.html#compactsize-unsigned-integers
-void BitcoinSerializerStream::PushVarInt(uint64_t i) {
-  if (i < 0xfd) {
-    Push8AsLE(i);
-  } else if (i <= 0xffff) {
-    Push8AsLE(0xfd);
-    Push16AsLE(i);
-  } else if (i <= 0xffffffff) {
-    Push8AsLE(0xfe);
-    Push32AsLE(i);
-  } else {
-    Push8AsLE(0xff);
-    Push64AsLE(i);
+std::vector<uint8_t> BitcoinSerializer::AddressToScriptPubkey(
+    const std::string& address,
+    bool testnet) {
+  auto decoded_address = DecodeBitcoinAddress(address);
+  if (!decoded_address) {
+    return {};
   }
-}
 
-void BitcoinSerializerStream::PushSizeAndBytes(
-    base::span<const uint8_t> bytes) {
-  PushVarInt(bytes.size());
-  PushBytes(bytes);
-}
-
-void BitcoinSerializerStream::PushBytes(base::span<const uint8_t> bytes) {
-  if (to()) {
-    to()->insert(to()->end(), bytes.begin(), bytes.end());
+  if (testnet != decoded_address->testnet) {
+    return {};
   }
-  serialized_bytes_ += bytes.size();
-}
 
-void BitcoinSerializerStream::PushBytesReversed(
-    base::span<const uint8_t> bytes) {
-  if (to()) {
-    to()->insert(to()->end(), bytes.rbegin(), bytes.rend());
+  std::vector<uint8_t> data;
+  BtcLikeSerializerStream stream(&data);
+
+  // https://github.com/bitcoin/bitcoin/blob/v25.0/src/script/standard.cpp#L302-L325
+
+  // Size is always less than OP_PUSHDATA1, so we encode it as one byte.
+  CHECK_LT(decoded_address->pubkey_hash.size(), 0x4cUL);
+
+  if (decoded_address->address_type == BitcoinAddressType::kPubkeyHash) {
+    CHECK_EQ(decoded_address->pubkey_hash.size(), 20u);
+
+    stream.Push8(0x76);                              // OP_DUP
+    stream.Push8(0xa9);                              // OP_HASH
+    stream.Push8(0x14);                              // hash size
+    stream.PushBytes(decoded_address->pubkey_hash);  // hash
+    stream.Push8(0x88);                              // OP_EQUALVERIFY
+    stream.Push8(0xac);                              // OP_CHECKSIG
+
+    return data;
   }
-  serialized_bytes_ += bytes.size();
+
+  if (decoded_address->address_type == BitcoinAddressType::kScriptHash) {
+    CHECK_EQ(decoded_address->pubkey_hash.size(), 20u);
+
+    stream.Push8(0xa9);                              // OP_HASH
+    stream.Push8(0x14);                              // hash size
+    stream.PushBytes(decoded_address->pubkey_hash);  // hash
+    stream.Push8(0x87);                              // OP_EQUAL
+
+    return data;
+  }
+
+  if (decoded_address->address_type ==
+      BitcoinAddressType::kWitnessV0PubkeyHash) {
+    CHECK_EQ(decoded_address->pubkey_hash.size(), 20u);
+
+    stream.Push8(0x00);                              // OP_0
+    stream.Push8(0x14);                              // hash size
+    stream.PushBytes(decoded_address->pubkey_hash);  // hash
+    return data;
+  }
+
+  if (decoded_address->address_type ==
+      BitcoinAddressType::kWitnessV0ScriptHash) {
+    CHECK_EQ(decoded_address->pubkey_hash.size(), 32u);
+
+    stream.Push8(0x00);                              // OP_0
+    stream.Push8(0x20);                              // hash size
+    stream.PushBytes(decoded_address->pubkey_hash);  // hash
+    return data;
+  }
+
+  if (decoded_address->address_type == BitcoinAddressType::kWitnessV1Taproot) {
+    CHECK_EQ(decoded_address->pubkey_hash.size(), 32u);
+
+    stream.Push8(0x51);                              // OP_1
+    stream.Push8(0x20);                              // hash size
+    stream.PushBytes(decoded_address->pubkey_hash);  // hash
+    return data;
+  }
+
+  NOTREACHED();
 }
 
 // static
-absl::optional<SHA256HashArray> BitcoinSerializer::SerializeInputForSign(
+std::optional<SHA256HashArray> BitcoinSerializer::SerializeInputForSign(
     const BitcoinTransaction& tx,
     size_t input_index) {
   CHECK_LT(input_index, tx.inputs().size());
   auto& input = tx.inputs()[input_index];
   auto decoded_address = DecodeBitcoinAddress(input.utxo_address);
   if (!decoded_address) {
-    return absl::nullopt;
+    return std::nullopt;
+  }
+  // TODO(apaymyshev): support other account types.
+  if (decoded_address->address_type !=
+      BitcoinAddressType::kWitnessV0PubkeyHash) {
+    return std::nullopt;
   }
 
   std::vector<uint8_t> data;
-  BitcoinSerializerStream stream(&data);
+  BtcLikeSerializerStream stream(&data);
   // https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki#specification
-  stream.Push32AsLE(2);                // 1.
+  stream.Push32(2);                    // 1.
   stream.PushBytes(HashPrevouts(tx));  // 2.
   stream.PushBytes(HashSequence(tx));  // 3.
 
-  PushOutpoint(input.utxo_outpoint, stream);            // 4
-  PushScriptCodeForSigninig(*decoded_address, stream);  // 5.
-  stream.Push64AsLE(input.utxo_value);                  // 6.
-  stream.Push32AsLE(input.n_sequence());                // 7.
+  PushOutpoint(input.utxo_outpoint, stream);           // 4
+  PushScriptCodeForSigning(*decoded_address, stream);  // 5.
+  stream.Push64(input.utxo_value);                     // 6.
+  stream.Push32(input.n_sequence());                   // 7.
 
-  stream.PushBytes(HashOutputs(tx));     // 8.
-  stream.Push32AsLE(tx.locktime());      // 9.
-  stream.Push32AsLE(tx.sighash_type());  // 10.  1 byte but serialized as 4 LE.
+  stream.PushBytes(HashOutputs(tx));  // 8.
+  stream.Push32(tx.locktime());       // 9.
+  stream.Push32(tx.sighash_type());   // 10.  1 byte but serialized as 4 LE.
 
   return DoubleSHA256Hash(data);
 }
@@ -251,12 +353,21 @@ std::vector<uint8_t> BitcoinSerializer::SerializeWitness(
     const std::vector<uint8_t>& signature,
     const std::vector<uint8_t>& pubkey) {
   std::vector<uint8_t> result;
-  BitcoinSerializerStream witness_stream(&result);
+  BtcLikeSerializerStream witness_stream(&result);
   // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#transaction-id
   // https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh
-  witness_stream.PushVarInt(2);
+  witness_stream.PushCompactSize(2);
   witness_stream.PushSizeAndBytes(signature);
   witness_stream.PushSizeAndBytes(pubkey);
+  return result;
+}
+
+// static
+std::vector<uint8_t> BitcoinSerializer::SerializeOutputsForHardwareSigning(
+    const BitcoinTransaction& tx) {
+  std::vector<uint8_t> result;
+  BtcLikeSerializerStream outputs_stream(&result);
+  SerializeOutputs(tx, outputs_stream);
   return result;
 }
 
@@ -266,24 +377,37 @@ std::vector<uint8_t> BitcoinSerializer::SerializeSignedTransaction(
   DCHECK(tx.IsSigned());
 
   std::vector<uint8_t> data;
-  BitcoinSerializerStream stream(&data);
+  BtcLikeSerializerStream stream(&data);
 
   // https://github.com/bitcoin/bips/blob/master/bip-0144.mediawiki#specification
-  stream.Push32AsLE(kTransactionsVersion);  // version
-  stream.Push8AsLE(0);                      // marker
-  stream.Push8AsLE(1);                      // flag
+  stream.Push32(kTransactionsVersion);  // version
+  stream.Push8(0);                      // marker
+  stream.Push8(1);                      // flag
   SerializeInputs(tx, stream);
   SerializeOutputs(tx, stream);
   SerializeWitnesses(tx, stream);
-  stream.Push32AsLE(tx.locktime());
+  stream.Push32(tx.locktime());
 
   return data;
 }
 
 // static
-uint32_t BitcoinSerializer::CalcTransactionWeight(
-    const BitcoinTransaction& tx) {
-  // TODO(apaymsyhev): we support only segwit inputs by now, so script_sig
+uint32_t BitcoinSerializer::CalcOutputVBytesInTransaction(
+    const BitcoinTransaction::TxOutput& output) {
+  return GetOutputVBytes(output);
+}
+
+// static
+uint32_t BitcoinSerializer::CalcInputVBytesInTransaction(
+    const BitcoinTransaction::TxInput& input) {
+  return GetInputVBytes(input) +
+         WeightUnitsToVBytes(GetWitnessWeightUnits(input, true));
+}
+
+// static
+uint32_t BitcoinSerializer::CalcTransactionWeight(const BitcoinTransaction& tx,
+                                                  bool dummy_signatures) {
+  // TODO(apaymyshev): we support only segwit inputs by now, so script_sig
   // should be emtpy.
   for (const auto& input : tx.inputs()) {
     DCHECK(input.script_sig.empty());
@@ -296,10 +420,10 @@ uint32_t BitcoinSerializer::CalcTransactionWeight(
   if (is_segwit) {
     weight += 2;  // marker, flag
   }
-  weight += InputsSerializedSize(tx) * kWitnessScaleFactor;
-  weight += OutputsSerializedSize(tx) * kWitnessScaleFactor;
+  weight += GetInputsVBytes(tx) * kWitnessScaleFactor;
+  weight += GetOutputsVBytes(tx) * kWitnessScaleFactor;
   if (is_segwit) {
-    weight += WitnessesSerializedSize(tx);
+    weight += GetWitnessesWeightUnits(tx, dummy_signatures);
   }
   weight += 4 * kWitnessScaleFactor;  // lock_time
 
@@ -307,9 +431,9 @@ uint32_t BitcoinSerializer::CalcTransactionWeight(
 }
 
 // static
-uint32_t BitcoinSerializer::CalcVSize(const BitcoinTransaction& tx) {
-  return (CalcTransactionWeight(tx) + kWitnessScaleFactor - 1) /
-         kWitnessScaleFactor;
+uint32_t BitcoinSerializer::CalcTransactionVBytes(const BitcoinTransaction& tx,
+                                                  bool dummy_signatures) {
+  return WeightUnitsToVBytes(CalcTransactionWeight(tx, dummy_signatures));
 }
 
 }  // namespace brave_wallet

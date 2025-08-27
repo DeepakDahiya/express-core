@@ -15,21 +15,18 @@
 namespace brave_ads {
 
 struct PurchaseIntentSignalHistoryInfo final {
-  PurchaseIntentSignalHistoryInfo(base::Time created_at, int weight);
+  PurchaseIntentSignalHistoryInfo(base::Time at, int weight);
 
-  base::Time created_at;
+  bool operator==(const PurchaseIntentSignalHistoryInfo&) const = default;
+
+  base::Time at;
   int weight = 0;
 };
-
-bool operator==(const PurchaseIntentSignalHistoryInfo&,
-                const PurchaseIntentSignalHistoryInfo&);
-bool operator!=(const PurchaseIntentSignalHistoryInfo&,
-                const PurchaseIntentSignalHistoryInfo&);
 
 using PurchaseIntentSignalHistoryList =
     std::vector<PurchaseIntentSignalHistoryInfo>;
 using PurchaseIntentSignalHistoryMap =
-    std::map</*segment=*/std::string, PurchaseIntentSignalHistoryList>;
+    std::map</*segment*/ std::string, PurchaseIntentSignalHistoryList>;
 
 }  // namespace brave_ads
 

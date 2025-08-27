@@ -4,29 +4,44 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 import * as React from 'react'
 
+import Toggle from '@brave/leo/react/toggle'
+import Button from '@brave/leo/react/button'
+
 import * as S from './style'
-import Toggle from '../../../../../web-components/toggle'
 import AdvancedControlsContent from '../advanced-controls-content'
 import AdvancedControlsContentScroller from '../advanced-controls-scroller'
-import { getLocale, splitStringForTag } from '../../../../../common/locale'
+import { formatLocale, getLocale } from '$web-common/locale'
 import DataContext from '../../state/context'
 import getPanelBrowserAPI from '../../api/panel_browser_api'
-import Button from '$web-components/button'
 import { useIsExpanded } from '../../state/hooks'
+
+const handleLearnMoreClick = () => {
+  chrome.tabs.create({ url: 'https://brave.com/privacy-features/', active: true })
+}
 
 function MainPanel () {
   const { isExpanded, toggleIsExpanded } = useIsExpanded()
   const { siteBlockInfo, getSiteSettings } = React.useContext(DataContext)
 
-  const braveShieldsStatusText = splitStringForTag(siteBlockInfo?.isBraveShieldsEnabled ? getLocale('braveShieldsUp') : getLocale('braveShieldsDown'))
-  const braveShieldsBrokenText = splitStringForTag(getLocale('braveShieldsBroken'))
-  const braveShieldsNote = splitStringForTag(siteBlockInfo?.isBraveShieldsEnabled
-    ? getLocale('braveShieldsBlockedNote')
-    : getLocale('braveShieldsNOTBlockedNote'))
+  const braveShieldsStatus = formatLocale(siteBlockInfo?.isBraveShieldsEnabled
+    ? 'braveShieldsUp'
+    : 'braveShieldsDown', {
+        $1: (content) => <span>{content}</span>,
+    })
 
-  const handleToggleChange = async (isOn: boolean) => {
-    await getPanelBrowserAPI().dataHandler.setBraveShieldsEnabled(isOn)
-    if (isOn) {
+  const braveShieldsBrokenText = formatLocale('braveShieldsBroken', {
+    $1: content => <span>{content}</span>
+  })
+
+  const braveShieldsNote = formatLocale(siteBlockInfo?.isBraveShieldsEnabled
+    ? 'braveShieldsBlockedNote'
+    : 'braveShieldsNOTBlockedNote', {
+      $1: content => <a href="#" onClick={handleLearnMoreClick}>{content}</a>
+    })
+
+  const handleToggleChange = async (detail: { checked: boolean }) => {
+    await getPanelBrowserAPI().dataHandler.setBraveShieldsEnabled(detail.checked)
+    if (detail.checked) {
       if (getSiteSettings) getSiteSettings()
     }
   }
@@ -35,8 +50,29 @@ function MainPanel () {
     await getPanelBrowserAPI().dataHandler.openWebCompatWindow()
   }
 
-  const handleLearnMoreClick = () => {
-    chrome.tabs.create({ url: 'https://brave.com/privacy-features/', active: true })
+  const [areAnyBlockedElementsPresent,
+    setAreAnyBlockedElementsPresent] = React.useState(false);
+  React.useEffect(() => {
+    const getBlockedElementsAvailability = () => {
+       getPanelBrowserAPI().dataHandler.areAnyBlockedElementsPresent()
+        .then((data) => {
+          setAreAnyBlockedElementsPresent(data.isAvailable)
+        })
+    };
+
+    document.addEventListener('visibilitychange',
+      getBlockedElementsAvailability)
+    getBlockedElementsAvailability()
+
+    return () => {
+      document.removeEventListener('visibilitychange',
+        getBlockedElementsAvailability)
+    }
+  }, []);
+
+  const handleResetBlockedElements = async () => {
+    await getPanelBrowserAPI().dataHandler.resetBlockedElements()
+    setAreAnyBlockedElementsPresent(false)
   }
 
   const onSettingsClick = () => {
@@ -45,9 +81,7 @@ function MainPanel () {
 
   let reportSiteOrFootnoteElement = (
     <S.Footnote>
-      {braveShieldsBrokenText.beforeTag}
-      <span>{braveShieldsBrokenText.duringTag}</span>
-      {braveShieldsBrokenText.afterTag}
+      {braveShieldsBrokenText}
     </S.Footnote>
   )
   let managedFootnoteElement = (
@@ -99,7 +133,7 @@ function MainPanel () {
         <S.ReportSiteAction>
           <span>{getLocale('braveShieldsReportSiteDesc')}</span>
           <Button
-            isPrimary
+            kind="filled"
             onClick={handleReportSite}
           >
             {getLocale('braveShieldsReportSite')}
@@ -120,9 +154,7 @@ function MainPanel () {
       </S.SiteTitleBox>
       <S.CountBox>
         <S.BlockNote>
-          {braveShieldsNote.beforeTag}
-          <a href="#" onClick={handleLearnMoreClick}>{braveShieldsNote.duringTag}</a>
-          {braveShieldsNote.afterTag}
+          {braveShieldsNote}
         </S.BlockNote>
         {totalCountElement}
       </S.CountBox>
@@ -134,18 +166,12 @@ function MainPanel () {
             </svg>
           </S.ShieldsIcon>
           <S.StatusText>
-            <span>{braveShieldsStatusText.beforeTag}</span>
-            {braveShieldsStatusText.duringTag}
-            {braveShieldsStatusText.afterTag}
-            {' '}
-            {siteBlockInfo?.host}
+            {braveShieldsStatus}
           </S.StatusText>
           <S.StatusToggle>
             <Toggle
-              brand="shields"
-              isOn={siteBlockInfo?.isBraveShieldsEnabled}
+              checked={siteBlockInfo?.isBraveShieldsEnabled}
               onChange={handleToggleChange}
-              accessibleLabel={getLocale('braveShieldsEnable')}
               disabled={siteBlockInfo?.isBraveShieldsManaged}
             />
           </S.StatusToggle>
@@ -169,6 +195,15 @@ function MainPanel () {
         >
           <AdvancedControlsContent />
         </AdvancedControlsContentScroller>
+      }
+      {
+        areAnyBlockedElementsPresent &&
+        <S.GlobalDefaultsButton
+          type="button"
+          onClick={handleResetBlockedElements}
+        >
+          <span>{getLocale('braveShieldsShowAllBlockedElems')}</span>
+        </S.GlobalDefaultsButton>
       }
     </S.Box>
   )

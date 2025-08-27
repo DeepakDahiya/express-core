@@ -6,45 +6,45 @@
 #include "brave/components/brave_ads/core/internal/account/user_data/fixed/catalog_user_data.h"
 
 #include "base/test/values_test_util.h"
-#include "brave/components/brave_ads/core/internal/catalog/catalog_unittest_constants.h"
+#include "brave/components/brave_ads/core/internal/catalog/catalog_test_constants.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsCatalogUserDataTest : public UnitTestBase {
+class BraveAdsCatalogUserDataTest : public test::TestBase {
  protected:
   void SetUp() override {
-    UnitTestBase::SetUp();
+    test::TestBase::SetUp();
 
-    SetCatalogId(kCatalogId);
+    SetCatalogId(test::kCatalogId);
   }
 };
 
-TEST_F(BraveAdsCatalogUserDataTest, BuildCatalogUserDataForRewardsUser) {
+TEST_F(BraveAdsCatalogUserDataTest, BuildCatalogUserData) {
   // Act & Assert
   EXPECT_EQ(base::test::ParseJsonDict(
-                R"(
+                R"JSON(
                     {
                       "catalog": [
                         {
                           "id": "29e5c8bc0ba319069980bb390d8e8f9b58c05a20"
                         }
                       ]
-                    })"),
+                    })JSON"),
             BuildCatalogUserData());
 }
 
 TEST_F(BraveAdsCatalogUserDataTest,
        DoNotBuildCatalogUserDataForNonRewardsUser) {
   // Arrange
-  DisableBraveRewardsForTesting();
+  test::DisableBraveRewards();
 
   // Act & Assert
-  EXPECT_TRUE(BuildCatalogUserData().empty());
+  EXPECT_THAT(BuildCatalogUserData(), ::testing::IsEmpty());
 }
 
 }  // namespace brave_ads

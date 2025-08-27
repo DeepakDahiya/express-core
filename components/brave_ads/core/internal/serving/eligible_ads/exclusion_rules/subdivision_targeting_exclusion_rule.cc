@@ -5,12 +5,9 @@
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/exclusion_rules/subdivision_targeting_exclusion_rule.h"
 
-#include <vector>
+#include <algorithm>
 
-#include "base/containers/contains.h"
-#include "base/ranges/algorithm.h"
-#include "base/strings/string_split.h"
-#include "base/strings/string_util.h"
+#include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
 #include "brave/components/brave_ads/core/internal/targeting/geographical/subdivision/subdivision_targeting.h"
@@ -20,12 +17,9 @@ namespace brave_ads {
 namespace {
 
 bool DoesCreativeAdTargetSubdivision(const CreativeAdInfo& creative_ad) {
-  const auto iter = base::ranges::find_if(
+  const auto iter = std::ranges::find_if(
       creative_ad.geo_targets, [](const std::string& geo_target) {
-        const std::vector<std::string> components = base::SplitString(
-            geo_target, "-", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
-
-        return components.size() == 2;
+        return std::count(geo_target.cbegin(), geo_target.cend(), '-') == 1;
       });
 
   return iter != creative_ad.geo_targets.cend();
@@ -33,9 +27,9 @@ bool DoesCreativeAdTargetSubdivision(const CreativeAdInfo& creative_ad) {
 
 bool DoesCreativeAdTargetSubdivision(const CreativeAdInfo& creative_ad,
                                      const std::string& subdivision) {
-  return base::Contains(creative_ad.geo_targets, subdivision) ||
-         base::Contains(creative_ad.geo_targets,
-                        GetSubdivisionCountryCode(subdivision));
+  return creative_ad.geo_targets.contains(subdivision) ||
+         creative_ad.geo_targets.contains(
+             GetSubdivisionCountryCode(subdivision));
 }
 
 }  // namespace
@@ -47,21 +41,21 @@ SubdivisionTargetingExclusionRule::SubdivisionTargetingExclusionRule(
 SubdivisionTargetingExclusionRule::~SubdivisionTargetingExclusionRule() =
     default;
 
-std::string SubdivisionTargetingExclusionRule::GetUuid(
+std::string SubdivisionTargetingExclusionRule::GetCacheKey(
     const CreativeAdInfo& creative_ad) const {
   return creative_ad.creative_set_id;
 }
 
-base::expected<void, std::string>
-SubdivisionTargetingExclusionRule::ShouldInclude(
+bool SubdivisionTargetingExclusionRule::ShouldInclude(
     const CreativeAdInfo& creative_ad) const {
   if (!DoesRespectCap(creative_ad)) {
-    return base::unexpected(base::ReplaceStringPlaceholders(
-        "creativeSetId $1 excluded as not within the targeted subdivision",
-        {creative_ad.creative_set_id}, nullptr));
+    BLOG(1, "creativeSetId "
+                << creative_ad.creative_set_id
+                << " excluded as not within the targeted subdivision");
+    return false;
   }
 
-  return base::ok();
+  return true;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

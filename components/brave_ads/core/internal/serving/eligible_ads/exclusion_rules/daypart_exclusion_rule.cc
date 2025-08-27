@@ -5,63 +5,55 @@
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/exclusion_rules/daypart_exclusion_rule.h"
 
-#include "base/ranges/algorithm.h"
-#include "base/strings/string_util.h"
+#include <algorithm>
+
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/common/calendar/calendar_util.h"
+#include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/time/time_util.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_daypart_info.h"
+#include "brave/components/brave_ads/core/internal/serving/eligible_ads/exclusion_rules/daypart_exclusion_rule_util.h"
 
 namespace brave_ads {
 
 namespace {
 
-bool MatchDayOfWeek(const CreativeDaypartInfo& daypart,
-                    const char day_of_week) {
-  return daypart.days_of_week.find(day_of_week) != std::string::npos;
-}
-
-bool MatchTimeSlot(const CreativeDaypartInfo& daypart, const int minutes) {
-  return minutes >= daypart.start_minute && minutes <= daypart.end_minute;
-}
-
 bool DoesRespectCap(const CreativeAdInfo& creative_ad) {
   if (creative_ad.dayparts.empty()) {
-    // Always respect cap if there are no dayparts specified
+    // Always respect cap if there are no dayparts specified.
     return true;
   }
 
   const base::Time now = base::Time::Now();
+  const int day_of_week = DayOfWeek(now, /*is_local=*/true);
+  const int minutes = LocalTimeInMinutesSinceMidnight(now);
 
-  const int day_of_week = GetDayOfWeek(now, /*is_local=*/true);
-
-  const int local_time_in_minutes = GetLocalTimeInMinutes(now);
-
-  return base::ranges::any_of(
+  return std::ranges::any_of(
       creative_ad.dayparts,
-      [day_of_week, local_time_in_minutes](const CreativeDaypartInfo& daypart) {
-        return MatchDayOfWeek(daypart, static_cast<char>('0' + day_of_week)) &&
-               MatchTimeSlot(daypart, local_time_in_minutes);
+      [day_of_week, minutes](const CreativeDaypartInfo& daypart) {
+        return MatchDayOfWeek(daypart, day_of_week) &&
+               MatchTimeSlot(daypart, minutes);
       });
 }
 
 }  // namespace
 
-std::string DaypartExclusionRule::GetUuid(
+std::string DaypartExclusionRule::GetCacheKey(
     const CreativeAdInfo& creative_ad) const {
   return creative_ad.creative_set_id;
 }
 
-base::expected<void, std::string> DaypartExclusionRule::ShouldInclude(
+bool DaypartExclusionRule::ShouldInclude(
     const CreativeAdInfo& creative_ad) const {
   if (!DoesRespectCap(creative_ad)) {
-    return base::unexpected(base::ReplaceStringPlaceholders(
-        "creativeSetId $1 excluded as not within a scheduled time slot",
-        {creative_ad.creative_set_id}, nullptr));
+    BLOG(1, "creativeSetId "
+                << creative_ad.creative_set_id
+                << " excluded as not within a scheduled time slot");
+    return false;
   }
 
-  return base::ok();
+  return true;
 }
 
 }  // namespace brave_ads

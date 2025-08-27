@@ -5,42 +5,21 @@
 
 import {
   UserType,
-  userTypeFromString
+  userTypeFromString,
 } from '../../../brave_rewards/resources/shared/lib/user_type'
 
 import {
-  ExternalWallet,
-  externalWalletFromExtensionData
+  externalWalletFromExtensionData, //
 } from '../../../brave_rewards/resources/shared/lib/external_wallet'
-
-export const WalletStatus = {
-  kNotConnected: 0,
-  kConnected: 2,
-  kLoggedOut: 4
-} as const
-
-export const externalWalletProviders = [
-  'uphold',
-  'bitflyer',
-  'gemini',
-  'zebpay'
-]
-
-export type WalletStatus = (typeof WalletStatus)[keyof typeof WalletStatus]
-
-export type RewardsExternalWallet = Pick<
-  ExternalWallet,
-  'links' | 'provider' | 'username'
-> & {
-  status: WalletStatus
-}
+import { RewardsExternalWallet, WalletStatus } from '../../constants/types'
+import { BraveRewardsProxyOverrides } from '../../constants/testing_types'
 
 export class BraveRewardsProxy {
   getRewardsEnabled = () => {
     return new Promise<boolean>((resolve) =>
       chrome.braveRewards.getRewardsEnabled((enabled) => {
         resolve(enabled)
-      })
+      }),
     )
   }
 
@@ -48,7 +27,7 @@ export class BraveRewardsProxy {
     return new Promise<number | undefined>((resolve) =>
       chrome.braveRewards.fetchBalance((balance) => {
         resolve(balance)
-      })
+      }),
     )
   }
 
@@ -56,7 +35,7 @@ export class BraveRewardsProxy {
     return new Promise<RewardsExtension.BalanceReport>((resolve) =>
       chrome.braveRewards.getBalanceReport(month, year, (report) => {
         resolve(report)
-      })
+      }),
     )
   }
 
@@ -83,7 +62,9 @@ export class BraveRewardsProxy {
         const rewardsWallet: RewardsExternalWallet | null = externalWallet
           ? {
               ...externalWallet,
-              status: externalWallet.status as WalletStatus
+              status: externalWallet.authenticated
+                ? WalletStatus.kConnected
+                : WalletStatus.kLoggedOut,
             }
           : null
         resolve(rewardsWallet)
@@ -125,11 +106,7 @@ export class BraveRewardsProxy {
   onRewardsWalletCreated =
     chrome.braveRewards.onRewardsWalletCreated.addListener
 
-  onUnblindedTokensReady =
-    chrome.braveRewards.onUnblindedTokensReady.addListener
-
   openRewardsPanel = chrome.braveRewards.openRewardsPanel
-  showRewardsSetup = chrome.braveRewards.showRewardsSetup
 
   onInitialized = (callback: () => any) =>
     chrome.braveRewards.initialized.addListener((error) => {
@@ -144,7 +121,7 @@ export class BraveRewardsProxy {
     return new Promise<string[]>((resolve) =>
       chrome.braveRewards.getAvailableCountries((countries) => {
         resolve(countries)
-      })
+      }),
     )
   }
 
@@ -152,7 +129,7 @@ export class BraveRewardsProxy {
     return new Promise<RewardsExtension.RewardsParameters>((resolve) =>
       chrome.braveRewards.getRewardsParameters((params) => {
         resolve(params)
-      })
+      }),
     )
   }
 
@@ -175,4 +152,11 @@ export const getBraveRewardsProxy = () => {
   }
 
   return braveRewardsProxyInstance
+}
+
+/** For testing */
+export function resetRewardsProxy(
+  overrides?: BraveRewardsProxyOverrides | undefined,
+) {
+  // no-op in production
 }

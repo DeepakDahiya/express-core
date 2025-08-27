@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/task/sequenced_task_runner.h"
@@ -79,7 +80,7 @@ void BraveComponent::OnComponentRegistered(
     Delegate* delegate,
     const std::string& component_id) {
   VLOG(2) << "component registered: " << component_id;
-  delegate->OnDemandUpdate(component_id);
+  delegate->EnsureInstalled(component_id);
 }
 
 BraveComponent::Delegate* BraveComponent::delegate() {

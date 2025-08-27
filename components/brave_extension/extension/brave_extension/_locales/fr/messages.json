@@ -1,18 +1,18 @@
 {
   "appName": {
     "message": "L'extension Brave",
-    "description": "The name of the the extension."
+    "description": "The name of the extension."
   },
   "shields": {
-    "message": "Protections",
+    "message": "Boucliers",
     "description": "The Shields feature name"
   },
   "up": {
-    "message": "activées",
+    "message": "activés",
     "description": "Message for when shields is enabled"
   },
   "down": {
-    "message": "désactivées",
+    "message": "désactivés",
     "description": "Message for when shields is disabled"
   },
   "forThisSite": {
@@ -20,11 +20,11 @@
     "description": "Partial string for the phrase `shields is up *for this site*`"
   },
   "enabledMessage": {
-    "message": "Si le site semble ne pas fonctionner, essayez de désactiver les protections",
+    "message": "Si le site semble ne pas fonctionner, essayez de désactiver les boucliers.",
     "description": "Message telling the user to disable shields if a site appears broken"
   },
   "disabledMessage": {
-    "message": "Vous naviguez sur ce site sans la protection de la vie privée et de la sécurité de Brave. Est-ce qu'il ne fonctionne pas bien avec les boucliers en place ?",
+    "message": "Votre navigation sur ce site n'est pas protégée par Brave. Avez-vous rencontré des problèmes en utilisant les boucliers sur ce site ?",
     "description": "Message telling the user that shields are disabled, and prompting them towards reporting an issue if necessary"
   },
   "reportBrokenSite": {
@@ -52,31 +52,31 @@
     "description": "Message for the main blocked resources text when there is at least one ad/track/script blocked and one connection upgrade (singular)"
   },
   "thirdPartyTrackersBlocked": {
-    "message": "Trackers intersites bloqués",
+    "message": "Traqueurs intersites bloqués",
     "description": "Message for the scripts blocked row label"
   },
   "readOnlyAdsTrackersBlocking": {
-    "message": "Traceurs et annonces bloqués",
+    "message": "Traqueurs et pubs bloqués",
     "description": "Message for the option in the ads and trackers blocking select field in read only view"
   },
   "aggressiveAdsTrackersBlocking": {
-    "message": "Balises et pubs bloquées (agressif)",
+    "message": "Traqueurs et pubs bloqués (agressif)",
     "description": "Message for the option in the ads and trackers blocking select field to block ads and trackers with aggressive heuristics"
   },
   "standardAdsTrackersBlocking": {
-    "message": "Balises et pubs bloquées (standard)",
+    "message": "Traqueurs et pubs bloquée (standard)",
     "description": "Message for the option in the ads and trackers blocking select field to block ads and trackers with standard heuristics"
   },
   "allowAdsTrackers": {
-    "message": "Autoriser toutes les balises et pubs",
+    "message": "Autoriser tous les traqueurs et pubs",
     "description": "Message for the option in the ads and trackers blocking select field to allow all ads and trackers"
   },
   "connectionsUpgradedHTTPS": {
-    "message": "Les connexions passent à HTTPS",
+    "message": "Les connexions passent par HTTPS",
     "description": "Message for the connections upgraded row label and for the main blocked resources text when there is more than one connection upgraded (plural) and no other ads/trackers blocked"
   },
   "connectionUpgradedHTTPS": {
-    "message": "La connexion passe à HTTPS",
+    "message": "La connexion passe par HTTPS",
     "description": "Message for the main blocked resources text when there is one connection upgraded (singular) and no other ads/trackers blocked"
   },
   "scriptsBlocked": {
@@ -192,7 +192,7 @@
     "description": "Message in read-only view explaining what Brave Shields do"
   },
   "blockedResoucesExplanation": {
-    "message": "Traqueurs intersites et autres éléments bizarres bloqués",
+    "message": "Traqueurs intersites et autres nuisances bloqués",
     "description": "Message for the main trackers count in Shields simple view"
   },
   "webCompatWarning": {
@@ -212,7 +212,7 @@
     "description": "Message for adding an extension to Brave"
   },
   "removeFromBrave": {
-    "message": "Supprimer de Brave Software Brave",
+    "message": "Supprimer de Brave",
     "description": "Message for removing an extension from Brave"
   },
   "addToChrome": {

@@ -4,6 +4,7 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
+import { skipToken } from '@reduxjs/toolkit/query/react'
 
 // redux
 import { useDispatch } from 'react-redux'
@@ -11,47 +12,43 @@ import { useDispatch } from 'react-redux'
 // actions
 import { AccountsTabActions } from '../../../page/reducers/accounts-tab-reducer'
 
+// constants
+import { emptyRewardsInfo } from '../../../common/async/base-query-cache'
+
 // utils
 import { reduceAddress } from '../../../utils/reduce-address'
-import {
-  getAccountTypeDescription
-} from '../../../utils/account-utils'
-import {
-  getBalance
-} from '../../../utils/balance-utils'
-import {
-  computeFiatAmount
-} from '../../../utils/pricing-utils'
+import { getAccountTypeDescription } from '../../../utils/account-utils'
+import { getBalance } from '../../../utils/balance-utils'
+import { computeFiatAmount } from '../../../utils/pricing-utils'
 import Amount from '../../../utils/amount'
 import {
   getIsRewardsAccount,
   getIsRewardsToken,
-  getRewardsBATToken,
-  getRewardsTokenDescription
+  getRewardsTokenDescription,
 } from '../../../utils/rewards_utils'
 import { getLocale } from '../../../../common/locale'
+import { getEntitiesListFromEntityState } from '../../../utils/entities.utils'
 
 // hooks
 import { useOnClickOutside } from '../../../common/hooks/useOnClickOutside'
 
 // Selectors
-import {
-  UISelectors,
-  WalletSelectors
-} from '../../../common/selectors'
+import { UISelectors, WalletSelectors } from '../../../common/selectors'
 import {
   useSafeUISelector,
   useSafeWalletSelector,
-  useUnsafeWalletSelector
 } from '../../../common/hooks/use-safe-selector'
 
 // Queries
 import {
-  TokenBalancesRegistry
+  TokenBalancesRegistry, //
 } from '../../../common/slices/entities/token-balance.entity'
 import {
-  useGetExternalRewardsWalletQuery,
-  useGetRewardsBalanceQuery
+  useGetChainTipStatusQuery,
+  useGetDefaultFiatCurrencyQuery,
+  useGetRewardsInfoQuery,
+  useGetUserTokensRegistryQuery,
+  useGetZCashAccountInfoQuery,
 } from '../../../common/slices/api.slice'
 
 // types
@@ -59,33 +56,28 @@ import {
   BraveWallet,
   AccountButtonOptionsObjectType,
   AccountModalTypes,
-  SpotPriceRegistry
+  SpotPriceRegistry,
+  WalletStatus,
 } from '../../../constants/types'
-import {
-  WalletStatus
-} from '../../../common/async/brave_rewards_api_proxy'
 
 // options
 import { AccountButtonOptions } from '../../../options/account-list-button-options'
 
 // components
-import { CopyTooltip } from '../../shared/copy-tooltip/copy-tooltip'
 import {
-  AccountActionsMenu
+  AccountActionsMenu, //
 } from '../wallet-menus/account-actions-menu'
+import { RewardsMenu } from '../wallet-menus/rewards_menu'
 import {
-  RewardsMenu
-} from '../wallet-menus/rewards_menu'
-import {
-  CreateAccountIcon
+  CreateAccountIcon, //
 } from '../../shared/create-account-icon/create-account-icon'
-import {
-  TokenIconsStack
-} from '../../shared/icon-stacks/token-icons-stack'
+import { TokenIconsStack } from '../../shared/icon-stacks/token-icons-stack'
 import LoadingSkeleton from '../../shared/loading-skeleton'
+import { RewardsLogin } from '../rewards_login/rewards_login'
 import {
-  RewardsLogin
-} from '../rewards_login/rewards_login'
+  ShieldZCashAccountModal, //
+} from '../popup-modals/shield_zcash_account/shield_zcash_account'
+import { ShieldedLabel } from '../../shared/shielded_label/shielded_label'
 
 // style
 import {
@@ -95,57 +87,75 @@ import {
   AccountMenuButton,
   AccountMenuIcon,
   AccountBalanceText,
-  AccountDescription,
-  AccountNameWrapper
+  AccountNameWrapper,
+  AccountButton,
+  WarningIcon,
 } from './style'
-
-import {
-  AccountAddressButton,
-  AccountAndAddress,
-  AccountNameButton,
-  AddressAndButtonRow,
-  CopyIcon
-} from '../portfolio-account-item/style'
 
 import {
   HorizontalSpace,
   Row,
   BraveRewardsIndicator,
   VerticalSpacer,
+  Text,
+  Column,
 } from '../../shared/style'
 
 interface Props {
   onDelete?: () => void
   onClick: (account: BraveWallet.AccountInfo) => void
   account: BraveWallet.AccountInfo
-  tokenBalancesRegistry: TokenBalancesRegistry | undefined
+  tokenBalancesRegistry: TokenBalancesRegistry | undefined | null
+  isLoadingBalances: boolean
   spotPriceRegistry: SpotPriceRegistry | undefined
+  isLoadingSpotPrices: boolean
+  isShieldingAvailable: boolean | undefined
 }
 
 export const AccountListItem = ({
   account,
   onClick,
   tokenBalancesRegistry,
-  spotPriceRegistry
+  spotPriceRegistry,
+  isLoadingBalances,
+  isLoadingSpotPrices,
+  isShieldingAvailable,
 }: Props) => {
   // redux
   const dispatch = useDispatch()
 
   // selectors
-  const userVisibleTokensInfo = useUnsafeWalletSelector(
-    WalletSelectors.userVisibleTokensInfo
-  )
-  const defaultFiatCurrency = useSafeWalletSelector(
-    WalletSelectors.defaultFiatCurrency
-  )
   const isPanel = useSafeUISelector(UISelectors.isPanel)
+  const isAndroid = useSafeUISelector(UISelectors.isAndroid)
+
+  // redux
+  const isZCashShieldedTransactionsEnabled = useSafeWalletSelector(
+    WalletSelectors.isZCashShieldedTransactionsEnabled,
+  )
 
   // queries
-  const { data: rewardsBalance } = useGetRewardsBalanceQuery()
-  const { data: externalRewardsInfo } = useGetExternalRewardsWalletQuery()
+  const { data: defaultFiatCurrency = 'usd' } = useGetDefaultFiatCurrencyQuery()
+  const { data: userTokensRegistry } = useGetUserTokensRegistryQuery()
+  const { data: zcashAccountInfo } = useGetZCashAccountInfoQuery(
+    isZCashShieldedTransactionsEnabled
+      && account.accountId.coin === BraveWallet.CoinType.ZEC
+      ? account.accountId
+      : skipToken,
+  )
+
+  const {
+    data: {
+      balance: rewardsBalance,
+      provider,
+      status: rewardsStatus,
+      rewardsToken,
+    } = emptyRewardsInfo,
+  } = useGetRewardsInfoQuery()
 
   // state
   const [showAccountMenu, setShowAccountMenu] = React.useState<boolean>(false)
+  const [showShieldAccountModal, setShowShieldAccountModal] =
+    React.useState<boolean>(false)
 
   // refs
   const accountMenuRef = React.useRef<HTMLDivElement>(null)
@@ -154,7 +164,7 @@ export const AccountListItem = ({
   useOnClickOutside(
     accountMenuRef,
     () => setShowAccountMenu(false),
-    showAccountMenu
+    showAccountMenu,
   )
 
   // methods
@@ -166,90 +176,108 @@ export const AccountListItem = ({
     dispatch(
       AccountsTabActions.setAccountToRemove({
         accountId: account.accountId,
-        name: account.name
-      })
+        name: account.name,
+      }),
     )
-  }, [account])
-
-  const onShowAccountsModal = React.useCallback((modalType: AccountModalTypes) => {
-    dispatch(AccountsTabActions.setShowAccountModal(true))
-    dispatch(AccountsTabActions.setAccountModalType(modalType))
-    dispatch(AccountsTabActions.setSelectedAccount(account))
   }, [account, dispatch])
 
-  const onClickButtonOption = React.useCallback((id: AccountModalTypes) => {
-    if (id === 'details') {
-      onSelectAccount()
-      return
-    }
-    if (id === 'remove') {
-      onRemoveAccount()
-      return
-    }
-    onShowAccountsModal(id)
-  }, [onSelectAccount, onRemoveAccount, onShowAccountsModal])
+  const onShowAccountsModal = React.useCallback(
+    (modalType: AccountModalTypes) => {
+      dispatch(AccountsTabActions.setShowAccountModal(true))
+      dispatch(AccountsTabActions.setAccountModalType(modalType))
+      dispatch(AccountsTabActions.setSelectedAccount(account))
+    },
+    [account, dispatch],
+  )
+
+  const onClickButtonOption = React.useCallback(
+    (id: AccountModalTypes) => {
+      if (id === 'details') {
+        onSelectAccount()
+        return
+      }
+      if (id === 'remove') {
+        onRemoveAccount()
+        return
+      }
+      if (id === 'shield') {
+        setShowShieldAccountModal(true)
+        return
+      }
+      onShowAccountsModal(id)
+    },
+    [onSelectAccount, onRemoveAccount, onShowAccountsModal],
+  )
 
   // memos & computed
   const isRewardsAccount = getIsRewardsAccount(account.accountId)
 
   const isDisconnectedRewardsAccount =
-    isRewardsAccount &&
-    externalRewardsInfo?.status === WalletStatus.kLoggedOut
+    isRewardsAccount && rewardsStatus === WalletStatus.kLoggedOut
 
-  const externalProvider =
-    isRewardsAccount
-      ? externalRewardsInfo?.provider
-      : undefined
+  const externalProvider = isRewardsAccount ? provider : undefined
 
-  const rewardsToken = getRewardsBATToken(externalProvider)
+  const isShieldedAccount =
+    isZCashShieldedTransactionsEnabled
+    && !!zcashAccountInfo
+    && !!zcashAccountInfo.accountShieldBirthday
+
+  const { data: chainTipStatus } = useGetChainTipStatusQuery(
+    isShieldedAccount ? account.accountId : skipToken,
+  )
+
+  const blocksBehind = chainTipStatus
+    ? chainTipStatus.chainTip - chainTipStatus.latestScannedBlock
+    : 0
 
   const accountsFungibleTokens = React.useMemo(() => {
     if (isRewardsAccount && rewardsToken) {
       return [rewardsToken]
     }
-    return userVisibleTokensInfo.filter((asset) => asset.visible)
-      .filter((token) => token.coin === account.accountId.coin)
-      .filter((token) =>
-        !token.isErc721 && !token.isErc1155 && !token.isNft)
-  }, [
-    userVisibleTokensInfo,
-    account,
-    isRewardsAccount,
-    rewardsToken
-  ])
+
+    if (!userTokensRegistry) {
+      return []
+    }
+
+    return getEntitiesListFromEntityState(
+      userTokensRegistry,
+      userTokensRegistry.fungibleVisibleTokenIdsByCoinType[
+        account.accountId.coin
+      ],
+    )
+  }, [userTokensRegistry, account, isRewardsAccount, rewardsToken])
 
   const tokensWithBalances = React.useMemo(() => {
-    if (
-      isRewardsAccount
-      && rewardsToken
-      && rewardsBalance
-    ) {
+    if (isRewardsAccount && rewardsToken && rewardsBalance) {
       return [rewardsToken]
     }
-    return accountsFungibleTokens
-      .filter((token) =>
-        new Amount(getBalance(account.accountId, token, tokenBalancesRegistry)).gt(0))
+    return accountsFungibleTokens.filter((token) =>
+      new Amount(
+        getBalance(account.accountId, token, tokenBalancesRegistry),
+      ).gt(0),
+    )
   }, [
     accountsFungibleTokens,
     tokenBalancesRegistry,
     account,
     isRewardsAccount,
     rewardsToken,
-    rewardsBalance
+    rewardsBalance,
   ])
 
   const accountsFiatValue = React.useMemo(() => {
     // Return an empty string to display a loading
     // skeleton while assets are populated.
-    if (userVisibleTokensInfo.length === 0) {
+    if (!userTokensRegistry) {
       return Amount.empty()
     }
 
     // Return a 0 balance if the account has no
     // assets to display.
     if (
-      accountsFungibleTokens
-        .length === 0
+      accountsFungibleTokens.length === 0
+      && !isLoadingBalances
+      && !isLoadingSpotPrices
     ) {
       return new Amount(0)
     }
@@ -259,139 +287,210 @@ export const AccountListItem = ({
       return Amount.empty()
     }
 
-    const amounts =
-      accountsFungibleTokens
-        .map((asset) => {
-          const isRewardsToken = getIsRewardsToken(asset)
-          const balance =
-            isRewardsToken &&
-              rewardsBalance
-              ? new Amount(rewardsBalance)
-                .multiplyByDecimals(asset.decimals)
-                .format()
-              : getBalance(account.accountId, asset, tokenBalancesRegistry)
-          return computeFiatAmount({
-            spotPriceRegistry,
-            value: balance,
-            token: asset
-          })
-        })
-
-    const reducedAmounts =
-      amounts.reduce(function (a, b) {
-        return a.plus(b)
+    const amounts = accountsFungibleTokens.map((asset) => {
+      const isRewardsToken = getIsRewardsToken(asset)
+      const balance =
+        isRewardsToken && rewardsBalance
+          ? new Amount(rewardsBalance)
+              .multiplyByDecimals(asset.decimals)
+              .format()
+          : getBalance(account.accountId, asset, tokenBalancesRegistry)
+      return computeFiatAmount({
+        spotPriceRegistry,
+        value: balance,
+        token: asset,
       })
+    })
 
-    return !reducedAmounts.isUndefined()
-      ? reducedAmounts
-      : new Amount(0)
+    const reducedAmounts = amounts.reduce(function (a, b) {
+      return a.plus(b)
+    }, Amount.empty())
+
+    return !reducedAmounts.isUndefined() ? reducedAmounts : Amount.empty()
   }, [
     account,
-    userVisibleTokensInfo,
+    userTokensRegistry,
     accountsFungibleTokens,
     tokenBalancesRegistry,
     spotPriceRegistry,
-    rewardsBalance
+    rewardsBalance,
+    isLoadingBalances,
+    isLoadingSpotPrices,
   ])
 
   const buttonOptions = React.useMemo((): AccountButtonOptionsObjectType[] => {
     // We are not able to remove a Derived account so we filter out this option.
-    if (account.accountId.kind === BraveWallet.AccountKind.kDerived) {
-      return AccountButtonOptions.filter((option: AccountButtonOptionsObjectType) => option.id !== 'remove')
+    const canRemove =
+      account.accountId.kind !== BraveWallet.AccountKind.kDerived
+
+    // We are not able to fetch Private Keys for a Hardware account so we filter
+    // out this option. Also PK export is allowed only for ETH, SOL and FIL.
+    const canExportPrivateKey =
+      [
+        // TODO(apaymyshev): support BTC and ZEC
+        BraveWallet.CoinType.ETH,
+        BraveWallet.CoinType.SOL,
+        BraveWallet.CoinType.FIL,
+      ].includes(account.accountId.coin)
+      && account.accountId.kind !== BraveWallet.AccountKind.kHardware
+
+    const canShieldAccount =
+      isZCashShieldedTransactionsEnabled
+      && account.accountId.coin === BraveWallet.CoinType.ZEC
+      && isShieldingAvailable
+      && zcashAccountInfo
+      && !zcashAccountInfo.accountShieldBirthday
+
+    let options = [...AccountButtonOptions]
+
+    if (!canRemove) {
+      options = options.filter((option) => option.id !== 'remove')
     }
-    // We are not able to fetch Private Keys for a Hardware account so we filter out this option.
-    if (account.accountId.kind === BraveWallet.AccountKind.kHardware) {
-      return AccountButtonOptions.filter((option: AccountButtonOptionsObjectType) => option.id !== 'privateKey')
+    if (!canExportPrivateKey) {
+      options = options.filter((option) => option.id !== 'privateKey')
     }
-    return AccountButtonOptions
-  }, [account])
+    if (!canShieldAccount) {
+      options = options.filter((option) => option.id !== 'shield')
+    }
+    return options
+  }, [
+    account,
+    isZCashShieldedTransactionsEnabled,
+    isShieldingAvailable,
+    zcashAccountInfo,
+  ])
+
+  const showSyncWarning =
+    isShieldedAccount && (blocksBehind > 1000 || chainTipStatus === null)
 
   // render
   return (
-    <StyledWrapper>
-      <Row
-        justifyContent='space-between'
+    <>
+      <StyledWrapper
+        isRewardsAccount={isRewardsAccount}
+        isOutOfSync={showSyncWarning}
       >
-        <NameAndIcon>
-          <CreateAccountIcon
-            size='big'
-            account={account}
-            marginRight={16}
-            externalProvider={externalProvider}
-          />
-          <AccountAndAddress>
-            <AccountNameWrapper
-              width='unset'
-            >
-              <AccountNameButton
-                onClick={onSelectAccount}
-                disabled={isRewardsAccount}
+        <Row justifyContent='space-between'>
+          <AccountButton
+            onClick={onSelectAccount}
+            disabled={isRewardsAccount}
+          >
+            <NameAndIcon>
+              <CreateAccountIcon
+                size='huge'
+                account={account}
+                marginRight={16}
+                externalProvider={externalProvider}
+              />
+              <Column
+                alignItems='flex-start'
+                justifyContent='center'
               >
-                {account.name}
-              </AccountNameButton>
-              {isRewardsAccount &&
-                <>
-                  <VerticalSpacer space='4px' />
-                  <BraveRewardsIndicator>
-                    {getLocale('braveWalletBraveRewardsTitle')}
-                  </BraveRewardsIndicator>
-                  <VerticalSpacer space='4px' />
-                </>
-              }
-            </AccountNameWrapper>
-            {account.address && !isRewardsAccount && (
-              <AddressAndButtonRow>
-                <AccountAddressButton onClick={onSelectAccount}>
-                  {reduceAddress(account.address)}
-                </AccountAddressButton>
-                <CopyTooltip text={account.address}>
-                  <CopyIcon />
-                </CopyTooltip>
-              </AddressAndButtonRow>
-            )}
-            <AccountDescription>
-              {
-                isRewardsAccount ?
-                  getRewardsTokenDescription(externalProvider ?? null)
-                  : getAccountTypeDescription(account.accountId.coin)
-              }
-            </AccountDescription>
-          </AccountAndAddress>
-        </NameAndIcon>
-        {!isDisconnectedRewardsAccount &&
-          <Row width='unset'>
-            {!isPanel && !accountsFiatValue.isZero() ? (
-              tokensWithBalances.length ? (
-                <TokenIconsStack tokens={tokensWithBalances} />
-              ) : (
-                <>
-                  <LoadingSkeleton width={60} height={14} />
-                  <HorizontalSpace space='26px' />
-                </>
-              )
-            ) : null}
+                <AccountNameWrapper width='unset'>
+                  <Text
+                    textSize='14px'
+                    isBold={true}
+                    textColor='primary'
+                    textAlign='left'
+                  >
+                    {account.name}
+                  </Text>
+                  <HorizontalSpace space='6px' />
+                  {isShieldedAccount && <ShieldedLabel />}
+                  {isRewardsAccount && (
+                    <>
+                      <VerticalSpacer space='4px' />
+                      <BraveRewardsIndicator>
+                        {getLocale('braveWalletBraveRewardsTitle')}
+                      </BraveRewardsIndicator>
+                      <VerticalSpacer space='4px' />
+                    </>
+                  )}
+                </AccountNameWrapper>
+                {account.address && !isRewardsAccount && (
+                  <Text
+                    textSize='12px'
+                    isBold={false}
+                    textColor='primary'
+                    textAlign='left'
+                  >
+                    {reduceAddress(account.address)}
+                  </Text>
+                )}
+                <Text
+                  textSize='12px'
+                  isBold={false}
+                  textColor='secondary'
+                  textAlign='left'
+                >
+                  {isRewardsAccount
+                    ? getRewardsTokenDescription(externalProvider ?? null)
+                    : getAccountTypeDescription(account.accountId)}
+                </Text>
+                {showSyncWarning && (
+                  <Row
+                    justifyContent='flex-start'
+                    gap='4px'
+                  >
+                    <WarningIcon />
+                    <Text
+                      textColor='warning'
+                      textSize='14px'
+                      isBold={false}
+                    >
+                      {getLocale('braveWalletOutOfSyncTitle')}
+                    </Text>
+                  </Row>
+                )}
+              </Column>
+            </NameAndIcon>
 
-            {accountsFiatValue.isUndefined() ? (
-              <>
-                <LoadingSkeleton width={60} height={14} />
-                <HorizontalSpace space='12px' />
-              </>
-            ) : (
-              <>
-                <AccountBalanceText textSize='14px' isBold={true}>
-                  {accountsFiatValue.formatAsFiat(defaultFiatCurrency)}
-                </AccountBalanceText>
-              </>
+            {!isDisconnectedRewardsAccount && (
+              <Row width='unset'>
+                {!isAndroid && !isPanel && !accountsFiatValue.isZero() ? (
+                  tokensWithBalances.length ? (
+                    <TokenIconsStack tokens={tokensWithBalances} />
+                  ) : (
+                    <>
+                      <LoadingSkeleton
+                        width={60}
+                        height={14}
+                      />
+                      <HorizontalSpace space='26px' />
+                    </>
+                  )
+                ) : null}
+
+                {accountsFiatValue.isUndefined() ? (
+                  <>
+                    <LoadingSkeleton
+                      width={60}
+                      height={14}
+                    />
+                    <HorizontalSpace space='12px' />
+                  </>
+                ) : (
+                  <>
+                    <AccountBalanceText
+                      textSize='14px'
+                      isBold={true}
+                    >
+                      {accountsFiatValue.formatAsFiat(defaultFiatCurrency)}
+                    </AccountBalanceText>
+                  </>
+                )}
+              </Row>
             )}
-            <AccountMenuWrapper
-              ref={accountMenuRef}
-            >
+          </AccountButton>
+
+          {!isDisconnectedRewardsAccount && (
+            <AccountMenuWrapper ref={accountMenuRef}>
               <AccountMenuButton
-                onClick={() => setShowAccountMenu(prev => !prev)}
+                onClick={() => setShowAccountMenu((prev) => !prev)}
               >
                 <AccountMenuIcon />
               </AccountMenuButton>
-              {showAccountMenu &&
+              {showAccountMenu && (
                 <>
                   {isRewardsAccount ? (
                     <RewardsMenu />
@@ -402,20 +501,25 @@ export const AccountListItem = ({
                     />
                   )}
                 </>
-              }
+              )}
             </AccountMenuWrapper>
+          )}
+        </Row>
+        {isDisconnectedRewardsAccount && (
+          <Row padding='0px 0px 8px 8px'>
+            <RewardsLogin provider={provider} />
           </Row>
-        }
-      </Row>
-      {isDisconnectedRewardsAccount &&
-        <>
-          <VerticalSpacer space='12px' />
-          <RewardsLogin
-            externalRewardsInfo={externalRewardsInfo}
-          />
-        </>
-      }
-    </StyledWrapper>
+        )}
+      </StyledWrapper>
+      {showShieldAccountModal && (
+        <ShieldZCashAccountModal
+          account={account}
+          onClose={() => {
+            setShowShieldAccountModal(false)
+          }}
+        />
+      )}
+    </>
   )
 }
 

@@ -5,16 +5,19 @@
 
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/text_classification_processor.h"
 
+#include <algorithm>
+
 #include "base/check.h"
-#include "base/ranges/algorithm.h"
+#include "base/functional/bind.h"
+#include "base/trace_event/trace_event.h"
+#include "base/trace_event/trace_id_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/search_engine/search_engine_results_page_util.h"
 #include "brave/components/brave_ads/core/internal/common/search_engine/search_engine_util.h"
 #include "brave/components/brave_ads/core/internal/deprecated/client/client_state_manager.h"
-#include "brave/components/brave_ads/core/internal/ml/pipeline/text_processing/text_processing.h"
 #include "brave/components/brave_ads/core/internal/tabs/tab_manager.h"
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/resource/text_classification_resource.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "brave/components/brave_ads/core/public/ads_constants.h"
 #include "url/gurl.h"
 
 namespace brave_ads {
@@ -25,11 +28,11 @@ std::string GetTopSegmentFromPageProbabilities(
     const TextClassificationProbabilityMap& probabilities) {
   CHECK(!probabilities.empty());
 
-  return base::ranges::max_element(probabilities,
-                                   [](const SegmentProbabilityPair& lhs,
-                                      const SegmentProbabilityPair& rhs) {
-                                     return lhs.second < rhs.second;
-                                   })
+  return std::ranges::max_element(probabilities,
+                                  [](const SegmentProbabilityPair& lhs,
+                                     const SegmentProbabilityPair& rhs) {
+                                    return lhs.second < rhs.second;
+                                  })
       ->first;
 }
 
@@ -46,16 +49,24 @@ TextClassificationProcessor::~TextClassificationProcessor() {
 }
 
 void TextClassificationProcessor::Process(const std::string& text) {
-  if (!resource_->IsInitialized()) {
-    return;
+  if (resource_->IsLoaded()) {
+    const uint64_t trace_id = base::trace_event::GetNextGlobalTraceId();
+    TRACE_EVENT_NESTABLE_ASYNC_BEGIN0(
+        kTraceEventCategory, "TextClassificationProcessor::Process",
+        TRACE_ID_WITH_SCOPE("TextClassificationProcessor", trace_id));
+
+    resource_->ClassifyPage(
+        text, base::BindOnce(&TextClassificationProcessor::ClassifyPageCallback,
+                             weak_factory_.GetWeakPtr(), trace_id));
   }
+}
 
-  const absl::optional<ml::pipeline::TextProcessing>& text_processing =
-      resource_->get();
-  CHECK(text_processing);
-
-  const absl::optional<TextClassificationProbabilityMap> probabilities =
-      text_processing->ClassifyPage(text);
+void TextClassificationProcessor::ClassifyPageCallback(
+    uint64_t trace_id,
+    base::optional_ref<const TextClassificationProbabilityMap> probabilities) {
+  TRACE_EVENT_NESTABLE_ASYNC_END0(
+      kTraceEventCategory, "TextClassificationProcessor::Process",
+      TRACE_ID_WITH_SCOPE("TextClassificationProcessor", trace_id));
 
   if (!probabilities) {
     return BLOG(0, "Text classification failed due to an invalid model");
@@ -65,10 +76,10 @@ void TextClassificationProcessor::Process(const std::string& text) {
     return BLOG(1, "Text not classified as not enough content");
   }
 
-  const std::string segment =
+  const std::string top_segment =
       GetTopSegmentFromPageProbabilities(*probabilities);
-  CHECK(!segment.empty());
-  BLOG(1, "Classified text with the top segment as " << segment);
+  CHECK(!top_segment.empty());
+  BLOG(1, "Classified text with the top segment as " << top_segment);
 
   ClientStateManager::GetInstance()
       .AppendTextClassificationProbabilitiesToHistory(*probabilities);
@@ -77,12 +88,10 @@ void TextClassificationProcessor::Process(const std::string& text) {
 ///////////////////////////////////////////////////////////////////////////////
 
 void TextClassificationProcessor::OnTextContentDidChange(
-    const int32_t /*tab_id=*/,
+    int32_t /*tab_id*/,
     const std::vector<GURL>& redirect_chain,
     const std::string& text) {
-  if (redirect_chain.empty()) {
-    return;
-  }
+  CHECK(!redirect_chain.empty());
 
   const GURL& url = redirect_chain.back();
 

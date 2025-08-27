@@ -17,3 +17,15 @@
   position: relative;
   overflow: hidden;
 }
+
+.containerAlerts {
+  display: flex;
+  flex-direction: column;
+  gap: 1em;
+  padding: 1em;
+}
+
+.containerFull {
+  width: calc(100vw - 30px);
+  height: 95vh;
+}

@@ -12,6 +12,7 @@
 #include "base/containers/flat_set.h"
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_daypart_info.h"
+#include "brave/components/brave_ads/core/internal/serving/targeting/condition_matcher/condition_matcher_util.h"
 #include "url/gurl.h"
 
 namespace brave_ads {
@@ -39,16 +40,15 @@ struct CreativeAdInfo {
   int daily_cap = 0;
   int priority = 0;
   double pass_through_rate = 0.0;
-  bool has_conversion = false;
   int per_day = 0;
   int per_week = 0;
   int per_month = 0;
   int total_max = 0;
   double value = 0.0;
   std::string segment;
-  std::vector<float> embedding;
   std::string split_test_group;
-  CreativeDaypartList dayparts;
+  ConditionMatcherMap condition_matchers;
+  CreativeDaypartSet dayparts;
   base::flat_set<std::string> geo_targets;
   GURL target_url;
 };

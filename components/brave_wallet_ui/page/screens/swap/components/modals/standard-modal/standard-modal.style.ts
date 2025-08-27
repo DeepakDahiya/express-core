@@ -21,7 +21,7 @@ export const Wrapper = styled(StyledDiv)`
   z-index: 10;
 `
 
-export const Modal = styled(StyledDiv) <{
+export const Modal = styled(StyledDiv)<{
   modalHeight?: 'standard' | 'full' | 'dynamic'
   modalBackground?: 'background01' | 'background02'
 }>`

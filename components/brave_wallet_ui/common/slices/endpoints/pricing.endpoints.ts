@@ -8,11 +8,11 @@ import { mapLimit } from 'async'
 import {
   BraveWallet,
   TokenPriceHistory,
-  SpotPriceRegistry
+  SpotPriceRegistry,
 } from '../../../constants/types'
 import {
   TokenBalancesRegistry,
-  TokenBalancesForChainId
+  ChainBalances,
 } from '../entities/token-balance.entity'
 import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
@@ -21,11 +21,10 @@ import { maxConcurrentPriceRequests, maxBatchSizePrice } from '../constants'
 import { SKIP_PRICE_LOOKUP_COINGECKO_ID } from '../../constants/magics'
 
 // Utils
-import {
-  makeSerializableTimeDelta
-} from '../../../utils/model-serialization-utils'
-import { getPriceIdForToken } from '../../../utils/api-utils'
+import { makeSerializableTimeDelta } from '../../../utils/model-serialization-utils'
+import { getPriceIdForToken } from '../../../utils/pricing-utils'
 import Amount from '../../../utils/amount'
+import { findTokenByAssetId } from '../../../utils/asset-utils'
 
 interface GetTokenSpotPricesArg {
   ids: string[]
@@ -58,6 +57,8 @@ interface GetPricesHistoryArg {
       | 'decimals'
       | 'symbol'
       | 'coingeckoId'
+      | 'tokenId'
+      | 'isShielded'
     >
   >
 
@@ -80,7 +81,7 @@ interface GetPricesHistoryArg {
 
 export const pricingEndpoints = ({
   mutation,
-  query
+  query,
 }: WalletApiEndpointBuilderParams) => {
   return {
     getTokenSpotPrices: query<SpotPriceRegistry, GetTokenSpotPricesArg>({
@@ -88,21 +89,21 @@ export const pricingEndpoints = ({
         { ids, timeframe, toCurrency },
         { dispatch },
         extraOptions,
-        baseQuery
+        baseQuery,
       ) => {
         try {
           const {
-            data: { assetRatioService }
+            data: { assetRatioService },
           } = baseQuery(undefined)
-          
+
           if (!ids.length) {
             throw new Error('no token ids provided for price lookup')
           }
 
           // dedupe ids to prevent duplicate price requests
           const uniqueIds = [...new Set(ids)]
-            // skip flagged coins such as testnet coins other than Goerli-ETH
-            .filter(id => id !== SKIP_PRICE_LOOKUP_COINGECKO_ID)
+            // skip flagged coins such as testnet coins and null/undefined ids
+            .filter((id) => id && id !== SKIP_PRICE_LOOKUP_COINGECKO_ID)
 
           const chunkedParams = []
           for (let i = 0; i < uniqueIds.length; i += maxBatchSizePrice) {
@@ -118,7 +119,7 @@ export const pricingEndpoints = ({
               const { success, values } = await assetRatioService.getPrice(
                 params,
                 [toCurrency],
-                timeframe ?? BraveWallet.AssetPriceTimeframe.Live
+                timeframe ?? BraveWallet.AssetPriceTimeframe.Live,
               )
 
               if (success && values) {
@@ -133,7 +134,7 @@ export const pricingEndpoints = ({
                   const { success, values } = await assetRatioService.getPrice(
                     [param],
                     [toCurrency],
-                    timeframe ?? BraveWallet.AssetPriceTimeframe.Live
+                    timeframe ?? BraveWallet.AssetPriceTimeframe.Live,
                   )
 
                   if (success) {
@@ -143,20 +144,20 @@ export const pricingEndpoints = ({
                   console.log('Unable to fetch price using fallback:', param)
 
                   return []
-                }
+                },
               )
 
               return fallbackResults.flat()
-            }
+            },
           )
 
           const registry: SpotPriceRegistry = results
             .flat()
-            .reduce((acc, assetPrice) => {
+            .reduce<SpotPriceRegistry>((acc, assetPrice) => {
               acc[assetPrice.fromAsset.toLowerCase()] = assetPrice
               return acc
             }, {})
-          
+
           // add skipped value
           registry[SKIP_PRICE_LOOKUP_COINGECKO_ID] = {
             assetTimeframeChange: (
@@ -164,25 +165,25 @@ export const pricingEndpoints = ({
             ).toString(),
             fromAsset: SKIP_PRICE_LOOKUP_COINGECKO_ID,
             price: '0',
-            toAsset: toCurrency
+            toAsset: toCurrency,
           }
 
           return {
-            data: registry
+            data: registry,
           }
         } catch (error) {
           const msg = `Unable to fetch prices`
           console.error(`${msg}: ${error}`)
           return {
-            error: msg
+            error: msg,
           }
         }
       },
       providesTags: (result, error, { ids, timeframe }) =>
         ids.map((id) => ({
           type: 'TokenSpotPrices',
-          id: `${id}-${timeframe ?? BraveWallet.AssetPriceTimeframe.Live}`
-        }))
+          id: `${id}-${timeframe ?? BraveWallet.AssetPriceTimeframe.Live}`,
+        })),
     }),
 
     getPriceHistory: query<TokenPriceHistory[], GetPriceHistoryArg>({
@@ -190,37 +191,37 @@ export const pricingEndpoints = ({
         { tokenParam, vsAsset, timeFrame },
         _api,
         _extraOptions,
-        baseQuery
+        baseQuery,
       ) => {
         try {
           const {
-            data: { assetRatioService }
+            data: { assetRatioService },
           } = baseQuery(undefined)
           const { success, values } = await assetRatioService.getPriceHistory(
             tokenParam,
             vsAsset,
-            timeFrame
+            timeFrame,
           )
 
           if (success && values) {
             return {
               data: values.map((value) => ({
                 date: makeSerializableTimeDelta(value.date),
-                close: Number(value.price)
-              }))
+                close: Number(value.price),
+              })),
             }
           }
 
           throw new Error(
-            `Unable to fetch price history for token: ${tokenParam}`
+            `Unable to fetch price history for token: ${tokenParam}`,
           )
         } catch (error) {
           const message =
-            'Error getting price history: ' + error?.message ||
-            JSON.stringify(error)
+            'Error getting price history: ' + error?.message
+            || JSON.stringify(error)
           console.error('Error getting price history: ', error)
           return {
-            error: message
+            error: message,
           }
         }
       },
@@ -230,9 +231,9 @@ export const pricingEndpoints = ({
           : [
               {
                 type: 'PriceHistory',
-                id: `${arg.tokenParam}-${arg.vsAsset}-${arg.timeFrame}`
-              }
-            ]
+                id: `${arg.tokenParam}-${arg.vsAsset}-${arg.timeFrame}`,
+              },
+            ],
     }),
 
     getPricesHistory: query<TokenPriceHistory[], GetPricesHistoryArg>({
@@ -240,16 +241,16 @@ export const pricingEndpoints = ({
         { tokens, vsAsset, timeframe, tokenBalancesRegistry },
         { dispatch },
         extraOptions,
-        baseQuery
+        baseQuery,
       ) => {
         try {
           const {
-            data: { assetRatioService }
+            data: { assetRatioService },
           } = baseQuery(undefined)
 
           // dedupe tokens to prevent duplicate price history requests
           const uniqueIds = [...new Set(tokens.map(getPriceIdForToken))]
-            // skip flagged coins such as testnet coins other than Goerli-ETH
+            // skip flagged coins such as testnet coins
             .filter((id) => id !== SKIP_PRICE_LOOKUP_COINGECKO_ID)
 
           const history = await mapLimit(
@@ -263,39 +264,37 @@ export const pricingEndpoints = ({
                 values: success
                   ? values.map((value) => ({
                       date: makeSerializableTimeDelta(value.date),
-                      close: Number(value.price)
+                      close: Number(value.price),
                     }))
-                  : []
+                  : [],
               }
-            }
+            },
           )
 
-          const aggregatedBalances: Record<string, TokenBalancesForChainId> = {}
-          for (const chainIds of Object.values(tokenBalancesRegistry)) {
+          const aggregatedBalances: Record<string, ChainBalances> = {}
+          for (const chainIds of Object.values(
+            tokenBalancesRegistry.accounts,
+          )) {
             for (const [chainId, tokenBalancesForChainId] of Object.entries(
-              chainIds
+              chainIds.chains,
             )) {
               if (!aggregatedBalances[chainId]) {
-                aggregatedBalances[chainId] = {}
+                aggregatedBalances[chainId] = { tokenBalances: {} }
               }
 
-              for (const [contractAddress, tokenBalance] of Object.entries(
-                tokenBalancesForChainId
+              const chainBalances = aggregatedBalances[chainId].tokenBalances
+
+              for (const [assetId, tokenBalance] of Object.entries(
+                tokenBalancesForChainId.tokenBalances,
               )) {
-                if (
-                  !aggregatedBalances[chainId][contractAddress.toLowerCase()]
-                ) {
-                  aggregatedBalances[chainId][contractAddress.toLowerCase()] =
-                    tokenBalance
+                if (!chainBalances[assetId.toLowerCase()]) {
+                  chainBalances[assetId.toLowerCase()] = tokenBalance
                 } else {
-                  aggregatedBalances[chainId][contractAddress.toLowerCase()] =
-                    new Amount(tokenBalance)
-                      .plus(
-                        aggregatedBalances[chainId][
-                          contractAddress.toLowerCase()
-                        ]
-                      )
-                      .format()
+                  chainBalances[assetId.toLowerCase()] = new Amount(
+                    tokenBalance,
+                  )
+                    .plus(chainBalances[assetId.toLowerCase()])
+                    .format()
                 }
               }
             }
@@ -303,14 +302,9 @@ export const pricingEndpoints = ({
 
           const jointHistory = Object.entries(aggregatedBalances)
             .map(([chainId, tokenBalancesForChainId]) => {
-              return Object.entries(tokenBalancesForChainId).map(
-                ([contractAddress, balance]) => {
-                  const token = tokens.find(
-                    (t) =>
-                      t.chainId === chainId &&
-                      t.contractAddress.toLowerCase() ===
-                        contractAddress.toLowerCase()
-                  )
+              return Object.entries(tokenBalancesForChainId.tokenBalances).map(
+                ([assetId, balance]) => {
+                  const token = findTokenByAssetId(assetId, tokens)
 
                   if (token) {
                     const priceId = getPriceIdForToken(token)
@@ -321,13 +315,13 @@ export const pricingEndpoints = ({
                         price: new Amount(balance)
                           .divideByDecimals(token.decimals)
                           .times(v.close)
-                          .toNumber()
+                          .toNumber(),
                       }))
                     }
                   }
 
                   return []
-                }
+                },
               )
             })
             .flat(1)
@@ -347,18 +341,18 @@ export const pricingEndpoints = ({
                     date: token.date,
                     close: jointHistory
                       .map((price) => Number(price[tokenIndex].price) || 0)
-                      .reduce((sum, x) => sum + x, 0)
+                      .reduce((sum, x) => sum + x, 0),
                   }
                 })
               : []
 
           return {
-            data: sumOfHistory
+            data: sumOfHistory,
           }
         } catch (error) {
           console.error(error)
           return {
-            error: `Unable to fetch prices history`
+            error: `Unable to fetch prices history`,
           }
         }
       },
@@ -367,8 +361,8 @@ export const pricingEndpoints = ({
           ? ['PricesHistory']
           : tokens.map((token) => ({
               type: 'PricesHistory',
-              id: `${getPriceIdForToken(token)}-${vsAsset}-${timeframe}`
-            }))
-    })
+              id: `${getPriceIdForToken(token)}-${vsAsset}-${timeframe}`,
+            })),
+    }),
   }
 }

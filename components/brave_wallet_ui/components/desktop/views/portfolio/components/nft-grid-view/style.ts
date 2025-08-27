@@ -5,27 +5,9 @@
 
 import styled from 'styled-components'
 import { WalletButton } from '../../../../../shared/style'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 import Ipfs from '../../../../../../assets/svg-icons/nft-ipfs/ipfs-color.svg'
-
-export const StyledWrapper = styled.div`
-  display: grid;
-  grid-template-columns: repeat(5, 1fr);
-  grid-gap: 25px;
-  box-sizing: border-box;
-  width: 100%;
-  padding-top: 10px;
-  @media screen and (max-width: 1350px) {
-    grid-template-columns: repeat(4, 1fr);
-  }
-  @media screen and (max-width: 1150px) {
-    grid-template-columns: repeat(3, 1fr);
-  }
-  @media screen and (max-width: 950px) {
-    grid-template-columns: repeat(2, 1fr);
-  }
-`
 
 export const NFTWrapper = styled.div`
   display: flex;
@@ -44,7 +26,7 @@ export const NFTWrapper = styled.div`
   &:last-child {
     margin-right: 0px;
   }
-  z-index: 1;
+  z-index: 0;
 `
 
 export const IconWrapper = styled.div`
@@ -58,7 +40,6 @@ export const IconWrapper = styled.div`
 export const DIVForClickableArea = styled.div`
   display: block;
   position: absolute;
-  z-index: 4;
   top: 0;
   left: 0;
   bottom: 0;
@@ -132,7 +113,7 @@ export const MoreButton = styled(WalletButton)`
 `
 
 export const MoreIcon = styled(Icon).attrs({
-  name: 'more-horizontal'
+  name: 'more-vertical',
 })`
   --leo-icon-size: 22px;
   color: ${leo.color.text.secondary};
@@ -140,7 +121,7 @@ export const MoreIcon = styled(Icon).attrs({
 
 export const JunkMarker = styled.div`
   display: inline-flex;
-  height: 20px;
+  min-height: 20px;
   padding: 0px ${leo.spacing.s};
   align-items: center;
   gap: ${leo.spacing.s};
@@ -160,8 +141,15 @@ export const JunkMarker = styled.div`
   z-index: 2;
 `
 
+export const WatchOnlyMarker = styled(JunkMarker)`
+  background-color: ${leo.color.neutral[20]};
+  color: ${leo.color.neutral[60]};
+  left: unset;
+  right: 12px;
+`
+
 export const JunkIcon = styled(Icon).attrs({
-  name: 'warning-triangle-outline'
+  name: 'warning-triangle-outline',
 })`
   --leo-icon-size: 14px;
   color: ${leo.color.systemfeedback.errorIcon};

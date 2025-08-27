@@ -4,23 +4,22 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
+import { useLocation, useHistory } from 'react-router-dom'
+import NavigationMenu from '@brave/leo/react/navigationMenu'
+import NavigationItem from '@brave/leo/react/navigationItem'
 
 // Selectors
-import {
-  UISelectors
-} from '../../../common/selectors'
+import { useSafeUISelector } from '../../../common/hooks/use-safe-selector'
+import { UISelectors } from '../../../common/selectors'
 
-// Hooks
-import {
-  useSafeUISelector
-} from '../../../common/hooks/use-safe-selector'
+// Utils
+import { getLocale } from '../../../../common/locale'
 
 // Options
 import {
   NavOptions,
   PanelNavOptions,
-  BuySendSwapDepositOptions
+  BuySendSwapDepositOptions,
 } from '../../../options/nav-options'
 
 // Components
@@ -31,48 +30,71 @@ import {
   Wrapper,
   Section,
   PageOptionsWrapper,
-  PanelOptionsWrapper
+  PanelOptionsWrapper,
+  LeoNavigation,
+  WalletLogo,
 } from './wallet-nav.style'
-import { WalletRoutes } from '../../../constants/types'
-import { WalletActions } from '../../../common/actions'
+import { Row, VerticalDivider } from '../../shared/style'
 
 export const WalletNav = () => {
-  // redux
-  const dispatch = useDispatch()
+  // UI Selectors (safe)
   const isPanel = useSafeUISelector(UISelectors.isPanel)
 
+  // routing
+  const history = useHistory()
+  const { pathname: walletLocation } = useLocation()
+
+  // computed
+  const navigationOptions = isPanel ? PanelNavOptions : NavOptions
+
   return (
-    <Wrapper isPanel={isPanel}>
+    <Wrapper>
       <PanelOptionsWrapper>
         <Section>
-          {PanelNavOptions.map((option) => (
-            <WalletNavButton option={option} key={option.id} />
+          {navigationOptions.map((option) => (
+            <WalletNavButton
+              option={option}
+              key={option.id}
+            />
           ))}
         </Section>
       </PanelOptionsWrapper>
 
       <PageOptionsWrapper>
-        <Section showBorder={true}>
-          {NavOptions.map((option) => (
-            <WalletNavButton option={option} key={option.id} />
-          ))}
-        </Section>
-        <Section>
-          {BuySendSwapDepositOptions.map((option) => (
-            <WalletNavButton
-              option={option}
-              key={option.id}
-              onClick={() => {
-                if (
-                  option.route === WalletRoutes.FundWalletPageStart ||
-                  option.route === WalletRoutes.DepositFundsPageStart
-                ) {
-                  dispatch(WalletActions.selectOnRampAssetId(undefined))
-                }
-              }}
-            />
-          ))}
-        </Section>
+        <LeoNavigation>
+          <Row
+            justifyContent='flex-start'
+            padding='32px 0px 16px 24px'
+            slot='header'
+          >
+            <WalletLogo />
+          </Row>
+          <NavigationMenu>
+            {navigationOptions.map((option) => (
+              <NavigationItem
+                key={option.id}
+                icon={option.icon}
+                isCurrent={walletLocation.includes(option.route)}
+                onClick={() => history.push(option.route)}
+              >
+                {getLocale(option.name)}
+              </NavigationItem>
+            ))}
+            <Row>
+              <VerticalDivider />
+            </Row>
+            {BuySendSwapDepositOptions.map((option) => (
+              <NavigationItem
+                key={option.id}
+                icon={option.icon}
+                isCurrent={walletLocation.includes(option.route)}
+                onClick={() => history.push(option.route)}
+              >
+                {getLocale(option.name)}
+              </NavigationItem>
+            ))}
+          </NavigationMenu>
+        </LeoNavigation>
       </PageOptionsWrapper>
     </Wrapper>
   )

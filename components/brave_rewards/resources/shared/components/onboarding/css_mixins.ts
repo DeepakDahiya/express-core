@@ -3,10 +3,10 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 
 export const enableRewardsButton = `
-  color: ${leo.color.white};
+  color: ${leo.color.schemes.onPrimary};
   background: ${leo.color.button.background};
   border: none;
   padding: 12px 24px;
@@ -17,11 +17,12 @@ export const enableRewardsButton = `
   cursor: pointer;
 
   &[disabled] {
-    background: ${leo.color.primitive.gray[40]};
+    background: ${leo.color.primitive.neutral[70]};
+    color: ${leo.color.white};
     cursor: default;
 
     .brave-theme-dark & {
-      background: ${leo.color.primitive.gray[60]};
+      background: ${leo.color.primitive.neutral[40]};
     }
   }
 `

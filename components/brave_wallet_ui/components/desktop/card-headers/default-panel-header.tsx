@@ -5,110 +5,95 @@
 
 import * as React from 'react'
 
-// Hooks
+// Selectors
 import {
-  useOnClickOutside
-} from '../../../common/hooks/useOnClickOutside'
+  useSafeUISelector, //
+} from '../../../common/hooks/use-safe-selector'
+import { UISelectors } from '../../../common/selectors'
+
+// Types
+import { WalletRoutes } from '../../../constants/types'
+
+// Hooks
+import { useOnClickOutside } from '../../../common/hooks/useOnClickOutside'
+
+// Utils
+import { openWalletRouteTab } from '../../../utils/routes-utils'
 
 // Components
-import {
-  DefaultPanelMenu
-} from '../wallet-menus/default-panel-menu'
-import {
-  DAppConnectionSettings
-} from '../../extension/dapp-connection-settings/dapp-connection-settings'
+import { WalletSettingsMenu } from '../wallet-menus/wallet_settings_menu'
 
 // Styled Components
 import {
   Button,
   ButtonIcon,
   LeftRightContainer,
-  ClickAwayArea
+  ClickAwayArea,
 } from './shared-panel-headers.style'
-import {
-  HeaderTitle,
-  MenuWrapper
-} from './shared-card-headers.style'
+import { HeaderTitle, MenuWrapper } from './shared-card-headers.style'
 import { Row } from '../../shared/style'
 
 interface Props {
   title: string
+  expandRoute?: WalletRoutes
 }
 
 export const DefaultPanelHeader = (props: Props) => {
-  const {
-    title
-  } = props
+  const { title, expandRoute } = props
+
+  // UI Selectors (safe)
+  const isAndroid = useSafeUISelector(UISelectors.isAndroid)
 
   // State
-  const [showSettingsMenu, setShowSettingsMenu] =
-    React.useState<boolean>(false)
+  const [showSettingsMenu, setShowSettingsMenu] = React.useState<boolean>(false)
 
   // Refs
-  const settingsMenuRef =
-    React.useRef<HTMLDivElement>(null)
+  const settingsMenuRef = React.useRef<HTMLDivElement>(null)
 
   // Hooks
   useOnClickOutside(
     settingsMenuRef,
     () => setShowSettingsMenu(false),
-    showSettingsMenu
+    showSettingsMenu,
   )
 
   // Methods
   const onClickExpand = React.useCallback(() => {
-    chrome.tabs.create({ url: 'chrome://wallet/crypto' }, () => {
-      if (chrome.runtime.lastError) {
-        console.error('tabs.create failed: ' + chrome.runtime.lastError.message)
-      }
-    })
-  }, [])
+    if (expandRoute) {
+      openWalletRouteTab(expandRoute)
+      return
+    }
+    openWalletRouteTab(WalletRoutes.PortfolioAssets)
+  }, [expandRoute])
 
   return (
     <Row
-      padding='18px 16px'
+      padding='16px'
       justifyContent='space-between'
     >
       <LeftRightContainer
         width='unset'
         justifyContent='flex-start'
       >
-        <Button
-          onClick={onClickExpand}
-        >
-          <ButtonIcon name='expand' />
-        </Button>
+        {!isAndroid && expandRoute && (
+          <Button onClick={onClickExpand}>
+            <ButtonIcon name='expand' />
+          </Button>
+        )}
       </LeftRightContainer>
-      <HeaderTitle
-        isPanel={true}
-      >
-        {title}
-      </HeaderTitle>
+      <HeaderTitle isAndroidOrPanel={true}>{title}</HeaderTitle>
       <LeftRightContainer
         width='unset'
         justifyContent='flex-end'
       >
-        <DAppConnectionSettings />
-        <MenuWrapper
-          ref={settingsMenuRef}
-        >
-          <Button
-            onClick={
-              () => setShowSettingsMenu(prev => !prev)
-            }
-          >
-            <ButtonIcon
-              name='more-horizontal'
-            />
+        <MenuWrapper ref={settingsMenuRef}>
+          <Button onClick={() => setShowSettingsMenu((prev) => !prev)}>
+            <ButtonIcon name='more-vertical' />
           </Button>
-          {showSettingsMenu &&
-            <DefaultPanelMenu />
-          }
+          {showSettingsMenu && <WalletSettingsMenu />}
         </MenuWrapper>
       </LeftRightContainer>
-      {showSettingsMenu &&
-        <ClickAwayArea />
-      }
+      {showSettingsMenu && <ClickAwayArea />}
     </Row>
   )
 }

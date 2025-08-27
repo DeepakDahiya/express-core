@@ -8,10 +8,12 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
+#include "base/sequence_checker.h"
 #include "base/values.h"
-#include "brave/components/brave_shields/common/brave_shields.mojom.h"
+#include "brave/components/webcompat_reporter/common/webcompat_reporter.mojom.h"
 #include "url/gurl.h"
 
 namespace network {
@@ -27,25 +29,18 @@ class WebcompatReportUploader {
       scoped_refptr<network::SharedURLLoaderFactory>);
   WebcompatReportUploader(const WebcompatReportUploader&) = delete;
   WebcompatReportUploader& operator=(const WebcompatReportUploader&) = delete;
-  ~WebcompatReportUploader();
+  virtual ~WebcompatReportUploader();
 
-  void SubmitReport(const GURL& report_url,
-                    const bool shields_enabled,
-                    const std::string& ad_block_setting,
-                    const std::string& fp_block_setting,
-                    const std::string& ad_block_list_names,
-                    const std::string& languages,
-                    const bool language_farbling,
-                    const bool brave_vpn_connected,
-                    const base::Value& details,
-                    const base::Value& contact);
+  virtual void SubmitReport(mojom::ReportInfoPtr report_info);
 
  private:
   std::unique_ptr<network::SimpleURLLoader> simple_url_loader_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
   void CreateAndStartURLLoader(const GURL& upload_url,
+                               const std::string& content_type,
                                const std::string& post_data);
   void OnSimpleURLLoaderComplete(std::unique_ptr<std::string> response_body);
+  SEQUENCE_CHECKER(sequence_checker_);
 };
 
 }  // namespace webcompat_reporter

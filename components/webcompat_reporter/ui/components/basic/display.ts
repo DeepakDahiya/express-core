@@ -5,7 +5,7 @@
 
 import styled from 'styled-components'
 import { TextSection } from './structure'
-import { CheckCircleIcon } from 'brave-ui/components/icons'
+import { CheckCircleIcon, CloseStrokeIcon } from 'brave-ui/components/icons'
 import { Card } from 'brave-ui/components'
 import { CardProps } from 'brave-ui/components/layout/card'
 
@@ -33,13 +33,16 @@ export const DisclaimerText = styled(TextSection)`
   color: ${p => p.theme.color.text};
   font-size: 12px;
   font-family: ${p => p.theme.fontFamily.body};
-  margin: 0;
+  margin-top: 16px !important;
   line-height: 1.2;
+  a, a:visited, a:hover, a:active {
+    color: ${p => p.theme.color.text};
+  }
 `
 
 export const NonInteractiveURL = styled('p')<{}>`
   box-sizing: border-box;
-  color: ${p => p.theme.color.brandBrave};
+  color: ${p => p.theme.color.interactive05};
   font-size: 14px;
   font-weight: 500;
   display: inline-block;
@@ -55,8 +58,19 @@ export const SuccessIcon = styled(CheckCircleIcon)`
   margin-right: 10px;
 `
 
+export const CloseIcon = styled(CloseStrokeIcon)`
+  color: ${p => p.theme.color.subtle};
+  width: 24px;
+  height: 24px;
+  position: fixed;
+  top: 16px;
+  right: 16px;
+  cursor: pointer;
+`
+
 export const RectangularCard = styled(Card)<CardProps>`
   border-radius: 0;
+  user-select: none;
 `
 
 export const Input = styled.input`
@@ -83,6 +97,12 @@ export const Input = styled.input`
   }
 `
 
+export const Checkbox = styled(Input)`
+  width: unset;
+  margin-right: 6px;
+  vertical-align: middle;
+`
+
 export const InputLabel = styled.label`
   display: block;
   box-sizing: border-box;
@@ -90,6 +110,10 @@ export const InputLabel = styled.label`
   font-size: 12px;
   font-family: ${p => p.theme.fontFamily.body};
   padding-bottom: 4px;
+`
+
+export const CheckboxLabel = styled(InputLabel)`
+  display: unset;
 `
 
 export const TextArea = styled.textarea`
@@ -115,5 +139,50 @@ export const TextArea = styled.textarea`
   }
   :focus {
       outline: none;
+  }
+`
+
+export const ScreenshotLink = styled.a`
+  margin-top: 4px;
+  margin-bottom: -4px;
+  color: ${p => p.theme.color.text};
+  cursor: pointer;
+  text-decoration: underline;
+  :visited, :hover, :active {
+    color: ${p => p.theme.color.text};
+    cursor: pointer;
+    text-decoration: underline;
+  }
+`
+
+export const Dropdown = styled.select`
+  box-sizing: border-box;
+  width: 100%;
+  outline: none;
+  background-color: ${(p) => p.theme.color.background02};
+  box-shadow: none;
+  border: 1px solid ${(p) => p.theme.color.interactive08};
+  resize: none;
+  font-size: 13px;
+  font-family: ${p => p.theme.fontFamily.body};
+  font-weight: normal;
+  padding: 10px;
+  margin: 0px;
+  color: ${(p) => p.theme.color.text01};
+  border-radius: 4px;
+  & > option {
+    color: ${(p) => p.theme.color.text01};
+  }
+  & > option.hidden {
+    display: none;
+  }
+  :invalid {
+    color: ${(p) => p.theme.color.text03};
+    font-weight: normal;
+    font-size: 12px;
+    font-family: ${p => p.theme.fontFamily.body};
+  }
+  :focus {
+    outline: none;
   }
 `

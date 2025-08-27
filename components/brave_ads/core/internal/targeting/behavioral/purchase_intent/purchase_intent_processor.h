@@ -7,21 +7,23 @@
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_TARGETING_BEHAVIORAL_PURCHASE_INTENT_PURCHASE_INTENT_PROCESSOR_H_
 
 #include <cstdint>
+#include <map>
+#include <optional>
 #include <string>
-#include <vector>
 
 #include "base/memory/raw_ref.h"
 #include "brave/components/brave_ads/core/internal/segments/segment_alias.h"
 #include "brave/components/brave_ads/core/internal/tabs/tab_manager_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "brave/components/brave_ads/core/internal/targeting/behavioral/purchase_intent/keyphrase/purchase_intent_keyphrase_alias.h"
 
 class GURL;
 
 namespace brave_ads {
 
 class PurchaseIntentResource;
+struct PurchaseIntentFunnelInfo;
 struct PurchaseIntentSignalInfo;
-struct PurchaseIntentSiteInfo;
+struct TabInfo;
 
 class PurchaseIntentProcessor final : public TabManagerObserver {
  public:
@@ -29,28 +31,35 @@ class PurchaseIntentProcessor final : public TabManagerObserver {
 
   PurchaseIntentProcessor(const PurchaseIntentProcessor&) = delete;
   PurchaseIntentProcessor& operator=(const PurchaseIntentProcessor&) = delete;
-  PurchaseIntentProcessor(PurchaseIntentProcessor&&) noexcept = delete;
-  PurchaseIntentProcessor& operator=(PurchaseIntentProcessor&&) noexcept =
-      delete;
 
   ~PurchaseIntentProcessor() override;
 
   void Process(const GURL& url);
 
  private:
-  absl::optional<PurchaseIntentSignalInfo> ExtractSignal(const GURL& url) const;
+  bool ShouldProcess(int32_t tab_id, const GURL& url) const;
+  void MaybeProcess(int32_t tab_id, const GURL& url);
 
-  absl::optional<PurchaseIntentSiteInfo> GetSite(const GURL& url) const;
-
-  absl::optional<SegmentList> GetSegmentsForSearchQuery(
+  std::optional<PurchaseIntentSignalInfo> MaybeExtractSignal(
+      const GURL& url) const;
+  std::optional<PurchaseIntentSignalInfo> MaybeExtractSignalForSearchQuery(
       const std::string& search_query) const;
+  std::optional<SegmentList> MaybeGetSegmentsForSearchQuery(
+      const KeywordList& search_query_keywords) const;
+  int ComputeFunnelKeyphraseWeightForSearchQuery(
+      const KeywordList& search_query_keywords) const;
 
-  uint16_t GetFunnelWeightForSearchQuery(const std::string& search_query) const;
+  std::optional<PurchaseIntentSignalInfo> MaybeExtractSignalForUrl(
+      const GURL& url) const;
+  std::optional<PurchaseIntentFunnelInfo> MaybeGetFunnelForUrl(
+      const GURL& url) const;
 
   // TabManagerObserver:
-  void OnTextContentDidChange(int32_t tab_id,
-                              const std::vector<GURL>& redirect_chain,
-                              const std::string& text) override;
+  void OnDidOpenNewTab(const TabInfo& tab) override;
+  void OnTabDidChange(const TabInfo& tab) override;
+  void OnDidCloseTab(int32_t tab_id) override;
+
+  std::map</*tab_id*/ int32_t, GURL> tabs_;
 
   const raw_ref<PurchaseIntentResource> resource_;
 };

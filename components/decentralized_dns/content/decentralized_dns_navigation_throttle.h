@@ -6,15 +6,10 @@
 #ifndef BRAVE_COMPONENTS_DECENTRALIZED_DNS_CONTENT_DECENTRALIZED_DNS_NAVIGATION_THROTTLE_H_
 #define BRAVE_COMPONENTS_DECENTRALIZED_DNS_CONTENT_DECENTRALIZED_DNS_NAVIGATION_THROTTLE_H_
 
-#include <memory>
 #include <string>
 
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/navigation_throttle.h"
-
-namespace content {
-class NavigationHandle;
-}  // namespace content
 
 class PrefService;
 
@@ -23,7 +18,8 @@ namespace decentralized_dns {
 class DecentralizedDnsNavigationThrottle : public content::NavigationThrottle {
  public:
   explicit DecentralizedDnsNavigationThrottle(
-      content::NavigationHandle* navigation_handle,
+      content::NavigationThrottleRegistry& registry,
+      PrefService* user_prefs,
       PrefService* local_state,
       const std::string& locale);
   ~DecentralizedDnsNavigationThrottle() override;
@@ -33,10 +29,10 @@ class DecentralizedDnsNavigationThrottle : public content::NavigationThrottle {
   DecentralizedDnsNavigationThrottle& operator=(
       const DecentralizedDnsNavigationThrottle&) = delete;
 
-  static std::unique_ptr<DecentralizedDnsNavigationThrottle>
-  MaybeCreateThrottleFor(content::NavigationHandle* navigation_handle,
-                         PrefService* local_state,
-                         const std::string& locale);
+  static void MaybeCreateAndAdd(content::NavigationThrottleRegistry& registry,
+                                PrefService* user_prefs,
+                                PrefService* local_state,
+                                const std::string& locale);
 
   // content::NavigationThrottle implementation:
   ThrottleCheckResult WillStartRequest() override;

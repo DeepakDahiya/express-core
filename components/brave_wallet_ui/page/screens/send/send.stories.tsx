@@ -6,7 +6,7 @@
 import * as React from 'react'
 
 import {
-  WalletPageStory //
+  WalletPageStory, //
 } from '../../../stories/wrappers/wallet-page-story-wrapper'
 import { SendScreen } from './send_screen/send_screen'
 
@@ -14,28 +14,30 @@ import { SendScreen } from './send_screen/send_screen'
 import {
   mockAccount,
   mockNativeBalanceRegistry,
-  mockTokenBalanceRegistry
+  mockTokenBalanceRegistry,
 } from '../../../common/constants/mocks'
+import { Meta } from '@storybook/react'
 
-export const _SendScreen = () => {
-  return (
-    <WalletPageStory
-      walletStateOverride={{
-        isWalletCreated: true
-      }}
-      apiOverrides={{
-        selectedAccountId: mockAccount.accountId,
-        nativeBalanceRegistry: mockNativeBalanceRegistry,
-        tokenBalanceRegistry: mockTokenBalanceRegistry
-      }}
-    >
-      <SendScreen />
-    </WalletPageStory>
-  )
+export const SendScreenStory = {
+  render: () => {
+    return (
+      <WalletPageStory
+        walletStateOverride={{
+          isWalletCreated: true,
+        }}
+        apiOverrides={{
+          selectedAccountId: mockAccount.accountId,
+          nativeBalanceRegistry: mockNativeBalanceRegistry,
+          tokenBalanceRegistry: mockTokenBalanceRegistry,
+        }}
+      >
+        <SendScreen />
+      </WalletPageStory>
+    )
+  },
 }
 
-_SendScreen.story = {
-  name: 'Send Screen'
-}
-
-export default _SendScreen
+export default {
+  title: 'Wallet/Desktop/Screens',
+  component: SendScreen,
+} as Meta<typeof SendScreen>

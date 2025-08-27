@@ -12,9 +12,16 @@ import { querySubscriptionOptions60s } from '../slices/constants'
 // Types
 import { BraveWallet } from '../../constants/types'
 import { WalletSelectors } from '../selectors'
+import {
+  GetTokenBalancesRegistryArg, //
+} from '../slices/endpoints/token_balances.endpoints'
 
-interface Arg {
-  networks: BraveWallet.NetworkInfo[]
+// utils
+import {
+  getPersistedTokenBalancesSubset, //
+} from '../../utils/local-storage-utils'
+
+type Arg = Pick<GetTokenBalancesRegistryArg, 'networks' | 'isSpamRegistry'> & {
   accounts: BraveWallet.AccountInfo[]
 }
 
@@ -23,21 +30,45 @@ export const useBalancesFetcher = (arg: Arg | typeof skipToken) => {
   const isWalletLocked = useSafeWalletSelector(WalletSelectors.isWalletLocked)
   const isWalletCreated = useSafeWalletSelector(WalletSelectors.isWalletCreated)
   const hasInitialized = useSafeWalletSelector(WalletSelectors.hasInitialized)
+  const useAnkrBalancesFeature = useSafeWalletSelector(
+    WalletSelectors.isAnkrBalancesFeatureEnabled,
+  )
 
   return useGetTokenBalancesRegistryQuery(
-    arg !== skipToken &&
-    !isWalletLocked &&
-    isWalletCreated &&
-    hasInitialized &&
-    arg.accounts.length &&
-    arg.networks.length
+    arg !== skipToken
+      && !isWalletLocked
+      && isWalletCreated
+      && hasInitialized
+      && arg.accounts.length
+      && arg.networks.length
       ? {
-          accounts: arg.accounts.map(account => account.accountId),
-          networks: arg.networks
-            .map(({ chainId, coin }) => ({ chainId, coin }))
+          accountIds: arg.accounts.map((account) => account.accountId),
+          networks: arg.networks.map(
+            ({ chainId, coin, supportedKeyrings }) => ({
+              chainId,
+              coin,
+              supportedKeyrings,
+            }),
+          ),
+          useAnkrBalancesFeature,
+          isSpamRegistry: arg.isSpamRegistry,
         }
       : skipToken,
-    querySubscriptionOptions60s
+    {
+      ...querySubscriptionOptions60s,
+      selectFromResult: (res) => ({
+        data:
+          res.data
+          ?? (arg === skipToken
+            ? null
+            : getPersistedTokenBalancesSubset({
+                accountIds: arg.accounts.map((account) => account.accountId),
+                networks: arg.networks,
+                isSpamRegistry: arg.isSpamRegistry,
+              })),
+        isLoading: res.isLoading,
+      }),
+    },
   )
 }
 

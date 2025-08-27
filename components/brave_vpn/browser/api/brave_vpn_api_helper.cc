@@ -6,12 +6,12 @@
 #include "brave/components/brave_vpn/browser/api/brave_vpn_api_helper.h"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 
 #include "base/base64.h"
+#include "base/check.h"
 #include "base/json/values_util.h"
-#include "base/notreached.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_util.h"
 #include "base/time/time.h"
 #include "base/values.h"
@@ -20,7 +20,6 @@
 #include "brave/components/brave_vpn/common/pref_names.h"
 #include "brave/components/skus/browser/skus_utils.h"
 #include "components/prefs/pref_service.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/icu/source/i18n/unicode/timezone.h"
 
 namespace brave_vpn {
@@ -37,8 +36,9 @@ std::unique_ptr<Hostname> PickBestHostname(
               return a.capacity_score > b.capacity_score;
             });
 
-  if (filtered_hostnames.empty())
+  if (filtered_hostnames.empty()) {
     return std::make_unique<Hostname>();
+  }
 
   // Pick highest capacity score.
   return std::make_unique<Hostname>(filtered_hostnames[0]);
@@ -48,24 +48,30 @@ std::vector<Hostname> ParseHostnames(const base::Value::List& hostnames_value) {
   std::vector<Hostname> hostnames;
   for (const auto& value : hostnames_value) {
     DCHECK(value.is_dict());
-    if (!value.is_dict())
+    if (!value.is_dict()) {
       continue;
+    }
 
     const auto& dict = value.GetDict();
     constexpr char kHostnameKey[] = "hostname";
     constexpr char kDisplayNameKey[] = "display-name";
     constexpr char kOfflineKey[] = "offline";
     constexpr char kCapacityScoreKey[] = "capacity-score";
+    constexpr char kSmartRoutingEnabled[] = "smart-routing-enabled";
     const std::string* hostname_str = dict.FindString(kHostnameKey);
     const std::string* display_name_str = dict.FindString(kDisplayNameKey);
-    absl::optional<bool> offline = dict.FindBool(kOfflineKey);
-    absl::optional<int> capacity_score = dict.FindInt(kCapacityScoreKey);
+    std::optional<bool> offline = dict.FindBool(kOfflineKey);
+    std::optional<int> capacity_score = dict.FindInt(kCapacityScoreKey);
+    std::optional<bool> smart_routing_enabled =
+        dict.FindBool(kSmartRoutingEnabled);
 
-    if (!hostname_str || !display_name_str || !offline || !capacity_score)
+    if (!hostname_str || !display_name_str || !offline || !capacity_score) {
       continue;
+    }
 
-    hostnames.push_back(
-        Hostname{*hostname_str, *display_name_str, *offline, *capacity_score});
+    hostnames.push_back(Hostname{*hostname_str, *display_name_str, *offline,
+                                 *capacity_score,
+                                 smart_routing_enabled.value_or(false)});
   }
 
   return hostnames;
@@ -99,13 +105,12 @@ base::Value::Dict GetValueWithTicketInfos(
   base::TrimWhitespaceASCII(subject, base::TRIM_ALL, &subject_trimmed);
   base::TrimWhitespaceASCII(body_with_credential, base::TRIM_ALL,
                             &body_trimmed);
-  base::Base64Encode(body_trimmed, &body_encoded);
 
   // required fields
   dict.Set(kSupportTicketEmailKey, email_trimmed);
   dict.Set(kSupportTicketSubjectKey, subject_trimmed);
-  dict.Set(kSupportTicketSupportTicketKey, body_encoded);
-  dict.Set(kSupportTicketPartnerClientIdKey, "com.discourse.browser");
+  dict.Set(kSupportTicketSupportTicketKey, base::Base64Encode(body_trimmed));
+  dict.Set(kSupportTicketPartnerClientIdKey, "com.brave.browser");
   dict.Set(kSupportTicketTimezoneKey, timezone);
 
   return dict;

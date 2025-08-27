@@ -6,10 +6,7 @@
 import * as React from 'react'
 
 // Styled Components
-import {
-  Input,
-  SearchIconStyle
-} from './search-input.style'
+import { Input, SearchIconStyle } from './search-input.style'
 
 interface Props {
   onChange: (value: string) => void
@@ -25,12 +22,15 @@ export const SearchInput = (props: Props) => {
     (event: React.ChangeEvent<HTMLInputElement>) => {
       onChange(event.target.value)
     },
-    [onChange]
+    [onChange],
   )
 
   return (
     <>
-      <SearchIconStyle name='search' size={22} />
+      <SearchIconStyle
+        name='search'
+        size={22}
+      />
       <Input
         placeholder={placeholder}
         spellCheck={false}

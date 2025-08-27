@@ -5,7 +5,7 @@
 import * as React from 'react'
 
 // utils
-import { getLocale, splitStringForTag } from '../../../../../../../common/locale'
+import { getLocale, formatLocale } from '$web-common/locale'
 
 // styles
 import {
@@ -14,10 +14,9 @@ import {
   Heading,
   LoadingRing,
   RefreshText,
-  StyledWrapper
+  StyledWrapper,
 } from './auto-discovery-empty-state.styles'
 import { Row, VerticalSpace } from '../../../../../shared/style'
-
 
 interface Props {
   isRefreshingTokens: boolean
@@ -25,9 +24,22 @@ interface Props {
   onRefresh: () => void
 }
 
-export const AutoDiscoveryEmptyState = ({ isRefreshingTokens, onImportNft, onRefresh }: Props) => {
-  const { duringTag: refreshBtnText, afterTag } = splitStringForTag(getLocale('braveWalletAutoDiscoveryEmptyStateActions'))
-  const { beforeTag: or, duringTag: importText } = splitStringForTag(afterTag || '', 3)
+export const AutoDiscoveryEmptyState = ({
+  isRefreshingTokens,
+  onImportNft,
+  onRefresh,
+}: Props) => {
+  const emptyStateActions = formatLocale(
+    'braveWalletAutoDiscoveryEmptyStateActions',
+    {
+      $1: (content) => (
+        <ActionButton onClick={onRefresh}>{content}</ActionButton>
+      ),
+      $2: (content) => (
+        <ActionButton onClick={onImportNft}>{content}</ActionButton>
+      ),
+    },
+  )
 
   return (
     <StyledWrapper>
@@ -35,7 +47,9 @@ export const AutoDiscoveryEmptyState = ({ isRefreshingTokens, onImportNft, onRef
         <>
           <LoadingRing />
           <VerticalSpace space='16px' />
-          <RefreshText>{getLocale('braveWalletAutoDiscoveryEmptyStateRefresh')}...</RefreshText>
+          <RefreshText>
+            {getLocale('braveWalletAutoDiscoveryEmptyStateRefresh')}...
+          </RefreshText>
         </>
       ) : (
         <>
@@ -45,16 +59,15 @@ export const AutoDiscoveryEmptyState = ({ isRefreshingTokens, onImportNft, onRef
           <Description>
             {getLocale('braveWalletAutoDiscoveryEmptyStateSubHeading')}
           </Description>
-          <Row margin='48px 0 8px 0' marginBottom={8}>
+          <Row
+            margin='48px 0 8px 0'
+            marginBottom={8}
+          >
             <Description>
               {getLocale('braveWalletAutoDiscoveryEmptyStateFooter')}
             </Description>
           </Row>
-          <Description>
-            <ActionButton onClick={onRefresh}>{refreshBtnText}</ActionButton>
-            {or}
-            <ActionButton onClick={onImportNft}>{importText}</ActionButton>
-          </Description>
+          <Description>{emptyStateActions}</Description>
         </>
       )}
     </StyledWrapper>

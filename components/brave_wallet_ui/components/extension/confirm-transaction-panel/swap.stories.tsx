@@ -5,42 +5,73 @@
 
 import * as React from 'react'
 
+// Types
+import { BraveWallet } from '../../../constants/types'
+
 // Mocks
 import {
-  mockBasicAttentionToken,
-  mockBinanceCoinErc20Token
-} from '../../../stories/mock-data/mock-asset-options'
+  mockTransactionInfo, //
+} from '../../../stories/mock-data/mock-transaction-info'
+import { mockAccount } from '../../../common/constants/mocks'
 
 // Components
-import WalletPanelStory from '../../../stories/wrappers/wallet-panel-story-wrapper'
+import {
+  WalletPanelStory, //
+} from '../../../stories/wrappers/wallet-panel-story-wrapper'
 import { LongWrapper } from '../../../stories/style'
 import { PanelWrapper } from '../../../panel/style'
 import { ConfirmSwapTransaction } from './swap'
 
-export const _ConfirmSwapTransaction = () => {
+// Utils
+import {
+  deserializeTransaction, //
+} from '../../../utils/model-serialization-utils'
 
-  return (
-    <WalletPanelStory
-      walletStateOverride={{
-        fullTokenList: [mockBasicAttentionToken, mockBinanceCoinErc20Token],
-        hasInitialized: true,
-        isWalletCreated: true,
-      }}
-      panelStateOverride={{
-        hasInitialized: true
-      }}
-    >
-      <PanelWrapper isLonger={true}>
-        <LongWrapper>
-          <ConfirmSwapTransaction />
-        </LongWrapper>
-      </PanelWrapper>
-    </WalletPanelStory>
-  )
+export const _ConfirmSwapTransaction = {
+  render: () => {
+    return (
+      <WalletPanelStory
+        walletStateOverride={{
+          hasInitialized: true,
+          isWalletCreated: true,
+        }}
+        uiStateOverride={{
+          selectedPendingTransactionId: mockTransactionInfo.id,
+        }}
+        panelStateOverride={{
+          hasInitialized: true,
+        }}
+        walletApiDataOverrides={{
+          simulationOptInStatus: BraveWallet.BlowfishOptInStatus.kAllowed,
+          evmSimulationResponse: {
+            error: {
+              humanReadableError: 'Simulation failed',
+              kind: BraveWallet.BlowfishEVMErrorKind.kSimulationFailed,
+            },
+            expectedStateChanges: [],
+            action: BraveWallet.BlowfishSuggestedAction.kWarn,
+            warnings: [],
+          },
+          transactionInfos: [
+            deserializeTransaction({
+              ...mockTransactionInfo,
+              txStatus: BraveWallet.TransactionStatus.Unapproved,
+            }),
+          ],
+          accountInfos: [mockAccount],
+        }}
+      >
+        <PanelWrapper isLonger={true}>
+          <LongWrapper>
+            <ConfirmSwapTransaction />
+          </LongWrapper>
+        </PanelWrapper>
+      </WalletPanelStory>
+    )
+  },
 }
 
-_ConfirmSwapTransaction.story = {
-  name: 'Confirm Swap'
+export default {
+  title: 'Wallet/Panel/Panels/Confirm Transaction',
+  component: ConfirmSwapTransaction,
 }
-
-export default _ConfirmSwapTransaction

@@ -4,53 +4,49 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as React from 'react'
-
-import { getLocale } from '$web-common/locale'
 import Button from '@brave/leo/react/button'
-
+import { getLocale } from '$web-common/locale'
+import { useConversation } from '../../state/conversation_context'
 import styles from './style.module.scss'
-import PenroseTorusSVG from '../svg/penrose-torus'
-import RadiantStarburstSVG from '../svg/radiant-starburst'
-import getPageHandlerInstance from '../../api/page_handler'
-import DataContext from '../../state/context'
 
 function WelcomeGuide() {
-  const context = React.useContext(DataContext)
+  const conversationContext = useConversation()
 
   const summarizeNow = () => {
-    getPageHandlerInstance().pageHandler.submitSummarizationRequest()
+    conversationContext.conversationHandler?.submitSummarizationRequest()
   }
 
   return (
     <div className={styles.box}>
-      <h1 className={styles.title}>
-        {getLocale('welcomeGuideTitle')}
-      </h1>
-      <h2 className={styles.subtitle}>{getLocale('welcomeGuideSubtitle')}</h2>
+      <div className={styles.header}>
+        <h1 className={styles.title}>{getLocale(S.CHAT_UI_WELCOME_GUIDE_TITLE)}</h1>
+        <h2 className={styles.subtitle}>{getLocale(S.CHAT_UI_WELCOME_GUIDE_SUBTITLE)}</h2>
+      </div>
       <div className={`${styles.card} ${styles.siteHelpCard}`}>
-        <h4 className={styles.cardTitle}>{getLocale('welcomeGuideSiteHelpCardTitle')}</h4>
-        {(context.siteInfo?.isContentAssociationPossible && context.shouldSendPageContents) ? (
+        <h4 className={styles.cardTitle}>
+          {getLocale(S.CHAT_UI_WELCOME_GUIDE_SITE_HELP_CARD_TITLE)}
+        </h4>
+        {conversationContext.associatedContentInfo.length > 0 ? (
           <>
-            <p>{getLocale('welcomeGuideSiteHelpCardDescWithAction')}</p>
+            <p>{getLocale(S.CHAT_UI_WELCOME_GUIDE_SITE_HELP_CARD_WITH_ACTION)}</p>
             <div className={styles.actions}>
-              <Button kind='outline' onClick={summarizeNow}>
-                {getLocale('summarizePageButtonLabel')}
+              <Button
+                kind='outline'
+                onClick={summarizeNow}
+              >
+                {getLocale(S.CHAT_UI_SUMMARIZE_BUTTON_LABEL)}
               </Button>
             </div>
           </>
-        ) : <p>{getLocale('welcomeGuideSiteHelpCardDesc')}</p>}
-        <div className={styles.graphic}>
-          <PenroseTorusSVG />
-        </div>
+        ) : (
+          <p>{getLocale(S.CHAT_UI_WELCOME_GUIDE_SITE_HELP_CARD_DESC)}</p>
+        )}
       </div>
       <div className={`${styles.card} ${styles.chatCard}`}>
-        <h4 className={styles.cardTitle}>{getLocale('welcomeGuideShatCardTitle')}</h4>
-        <p>
-          {getLocale('welcomeGuideShatCardDesc')}
-        </p>
-        <div className={styles.graphic}>
-          <RadiantStarburstSVG />
-        </div>
+        <h4 className={styles.cardTitle}>
+          {getLocale(S.CHAT_UI_WELCOME_GUIDE_CHAT_CARD_TITLE)}
+        </h4>
+        <p>{getLocale(S.CHAT_UI_WELCOME_GUIDE_CHAT_CARD_DESC)}</p>
       </div>
     </div>
   )

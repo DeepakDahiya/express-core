@@ -4,19 +4,25 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "brave/components/brave_wallet/browser/blockchain_list_parser.h"
-#include "brave/components/brave_wallet/browser/blockchain_list_schemas.h"
 
 #include <map>
+#include <optional>
 #include <tuple>
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
+#include "brave/components/brave_wallet/browser/blockchain_list_schemas.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
+#include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/brave_wallet/common/common_utils.h"
+#include "brave/components/brave_wallet/common/solana_utils.h"
 #include "brave/components/brave_wallet/common/value_conversion_utils.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 
 namespace brave_wallet {
 
@@ -33,47 +39,51 @@ bool ParseResultFromDict(const base::Value::Dict* response_dict,
   return true;
 }
 
-absl::optional<double> ParseNullableStringAsDouble(const base::Value& value) {
+bool ParseOptionalBoolFromDict(const base::Value::Dict* response_dict,
+                               const std::string& key) {
+  return response_dict->FindBool(key).value_or(false);
+}
+
+std::optional<double> ParseNullableStringAsDouble(const base::Value& value) {
   if (value.is_none()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   double result;
   if (value.is_string()) {
     if (!base::StringToDouble(value.GetString(), &result)) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     return result;
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<uint32_t> ParseNullableStringAsUint32(const base::Value& value) {
+std::optional<uint32_t> ParseNullableStringAsUint32(const base::Value& value) {
   if (value.is_none()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   uint32_t result;
   if (value.is_string()) {
     if (!base::StringToUint(value.GetString(), &result)) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     return result;
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<base::Value> ParseJsonToDict(const std::string& json) {
-  absl::optional<base::Value> records_v =
-      base::JSONReader::Read(json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
-                                       base::JSONParserOptions::JSON_PARSE_RFC);
-  if (!records_v || !records_v->is_dict()) {
+std::optional<base::Value::Dict> ParseJsonToDict(const std::string& json) {
+  std::optional<base::Value::Dict> records_v = base::JSONReader::ReadDict(
+      json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
+                base::JSONParserOptions::JSON_PARSE_RFC);
+  if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
-    return absl::nullopt;
   }
   return records_v;
 }
@@ -85,7 +95,7 @@ std::string EmptyIfNull(const std::string* str) {
   return "";
 }
 
-absl::optional<mojom::OnRampProvider> ParseProvider(
+std::optional<mojom::OnRampProvider> ParseProvider(
     const std::string& provider_str) {
   if (provider_str == "ramp") {
     return mojom::OnRampProvider::kRamp;
@@ -99,7 +109,7 @@ absl::optional<mojom::OnRampProvider> ParseProvider(
     return mojom::OnRampProvider::kCoinbase;
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void AddDappListToMap(
@@ -118,7 +128,9 @@ void AddDappListToMap(
     dapp->id = dapp_id;
 
     dapp->name = dapp_from_component.name;
-    dapp->description = dapp_from_component.description;
+    if (dapp_from_component.description.is_string()) {
+      dapp->description = dapp_from_component.description.GetString();
+    }
     dapp->logo = dapp_from_component.logo;
     dapp->website = dapp_from_component.website;
     dapp->chains = std::vector<std::string>(dapp_from_component.chains.begin(),
@@ -128,28 +140,28 @@ void AddDappListToMap(
                                  dapp_from_component.categories.end());
 
     // If any of the metrics fields are null, skip the dapp
-    absl::optional<uint32_t> transactions =
+    std::optional<uint32_t> transactions =
         ParseNullableStringAsUint32(dapp_from_component.metrics.transactions);
     if (!transactions) {
       continue;
     }
     dapp->transactions = *transactions;
 
-    absl::optional<uint32_t> uaw =
+    std::optional<uint32_t> uaw =
         ParseNullableStringAsUint32(dapp_from_component.metrics.uaw);
     if (!uaw) {
       continue;
     }
     dapp->uaw = *uaw;
 
-    absl::optional<double> volume =
+    std::optional<double> volume =
         ParseNullableStringAsDouble(dapp_from_component.metrics.volume);
     if (!volume) {
       continue;
     }
     dapp->volume = *volume;
 
-    absl::optional<double> balance =
+    std::optional<double> balance =
         ParseNullableStringAsDouble(dapp_from_component.metrics.balance);
     if (!balance) {
       continue;
@@ -172,6 +184,8 @@ void AddTokenToMaps(const blockchain_lists::Token& token,
   blockchain_token->is_erc20 = token.is_erc20;
   blockchain_token->is_erc721 = token.is_erc721;
   blockchain_token->is_erc1155 = token.is_erc1155;
+  // Not used for on_ramp or off_ramp tokens.
+  blockchain_token->spl_token_program = mojom::SPLTokenProgram::kUnknown;
   blockchain_token->is_nft = token.is_nft;
   blockchain_token->symbol = token.symbol;
   blockchain_token->decimals = token.decimals;
@@ -201,112 +215,115 @@ void AddTokenToMaps(const blockchain_lists::Token& token,
 
 }  // namespace
 
-bool ParseTokenList(const std::string& json,
-                    TokenListMap* token_list_map,
-                    mojom::CoinType coin) {
+bool ParseTokenList(const std::string& json, TokenListMap* token_list_map) {
   DCHECK(token_list_map);
 
   // {
-  //  "0x0D8775F648430679A709E98d2b0Cb6250d2887EF": {
-  //    "name": "Basic Attention Token",
-  //    "logo": "bat.svg",
-  //    "erc20": true,
-  //    "symbol": "BAT",
-  //    "decimals": 18
-  //  },
-  //  "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d": {
-  //    "name": "Crypto Kitties",
-  //    "logo": "CryptoKitties-Kitty-13733.svg",
-  //    "erc20": false,
-  //    "erc721": true,
-  //    "symbol": "CK",
-  //    "decimals": 0
-  //  },
-  //  "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984": {
-  //    "name": "Uniswap",
-  //    "logo": "uni.svg",
-  //    "erc20": true,
-  //    "symbol": "UNI",
-  //    "decimals": 18,
-  //    "chainId": "0x1"
-  //  }
+  //   "0x1": {
+  //     "0xdac17f958d2ee523a2206206994597c13d831ec7": {
+  //       "name": "Tether",
+  //       "symbol": "usdt",
+  //       "coingeckoId": "tether",
+  //       "decimals": 6,
+  //       "logo":
+  //       "https://coin-images.coingecko.com/coins/images/325/large/Tether.png"
+  //     },
+  //     "0xb8c77482e45f1f44de1745f52c74426c631bdd52": {
+  //       "name": "BNB",
+  //       "symbol": "bnb",
+  //       "coingeckoId": "binancecoin",
+  //       "decimals": 18,
+  //       "logo":
+  //       "https://coin-images.coingecko.com/coins/images/825/large/bnb-icon2_2x.png"
+  //     },
+  //     "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d": {
+  //       "name": "Crypto Kitties",
+  //       "logo": "CryptoKitties-Kitty-13733.svg",
+  //       "erc20": false,
+  //       "erc721": true,
+  //       "symbol": "CK",
+  //       "decimals": 0
+  //     }
+  //   }
   // }
 
-  absl::optional<base::Value> records_v =
-      base::JSONReader::Read(json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
-                                       base::JSONParserOptions::JSON_PARSE_RFC);
-  if (!records_v || !records_v->is_dict()) {
+  std::optional<base::Value::Dict> records_v = base::JSONReader::ReadDict(
+      json, base::JSON_PARSE_CHROMIUM_EXTENSIONS |
+                base::JSONParserOptions::JSON_PARSE_RFC);
+  if (!records_v) {
     VLOG(1) << "Invalid response, could not parse JSON, JSON is: " << json;
     return false;
   }
 
-  const auto& response_dict = records_v->GetDict();
-  for (const auto blockchain_token_value_pair : response_dict) {
-    auto blockchain_token = mojom::BlockchainToken::New();
-    blockchain_token->contract_address = blockchain_token_value_pair.first;
-    const auto* blockchain_token_value =
-        blockchain_token_value_pair.second.GetIfDict();
-    if (!blockchain_token_value) {
-      return false;
-    }
-
-    absl::optional<bool> is_erc20_opt =
-        blockchain_token_value->FindBool("erc20");
-    if (is_erc20_opt) {
-      blockchain_token->is_erc20 = *is_erc20_opt;
-    } else {
-      blockchain_token->is_erc20 = false;
-    }
-
-    absl::optional<bool> is_erc721_opt =
-        blockchain_token_value->FindBool("erc721");
-    if (is_erc721_opt) {
-      blockchain_token->is_erc721 = *is_erc721_opt;
-    } else {
-      blockchain_token->is_erc721 = false;
-    }
-
-    blockchain_token->is_nft = blockchain_token->is_erc721;
-
-    if (!ParseResultFromDict(blockchain_token_value, "symbol",
-                             &blockchain_token->symbol)) {
+  const auto& chain_dict = *records_v;
+  // Iterate through chain IDs
+  for (const auto chain_pair : chain_dict) {
+    const std::string& chain_id = chain_pair.first;
+    const auto* tokens_dict = chain_pair.second.GetIfDict();
+    if (!tokens_dict) {
       continue;
     }
-    if (!ParseResultFromDict(blockchain_token_value, "name",
-                             &blockchain_token->name)) {
-      return false;
-    }
-    ParseResultFromDict(blockchain_token_value, "logo",
-                        &blockchain_token->logo);
 
-    absl::optional<int> decimals_opt =
-        blockchain_token_value->FindInt("decimals");
-    if (decimals_opt) {
+    // Determine coin type based on chain_id
+    mojom::CoinType coin = chain_id == mojom::kSolanaMainnet
+                               ? mojom::CoinType::SOL
+                               : mojom::CoinType::ETH;
+
+    // Iterate through tokens in this chain
+    for (const auto token_pair : *tokens_dict) {
+      auto blockchain_token = mojom::BlockchainToken::New();
+      blockchain_token->contract_address = token_pair.first;
+      const auto* token_info = token_pair.second.GetIfDict();
+      if (!token_info) {
+        continue;
+      }
+
+      // Parse required fields
+      if (!ParseResultFromDict(token_info, "symbol",
+                               &blockchain_token->symbol) ||
+          !ParseResultFromDict(token_info, "name", &blockchain_token->name)) {
+        continue;
+      }
+
+      // Parse optional fields
+      ParseResultFromDict(token_info, "logo", &blockchain_token->logo);
+      ParseResultFromDict(token_info, "coingeckoId",
+                          &blockchain_token->coingecko_id);
+      blockchain_token->is_erc721 =
+          ParseOptionalBoolFromDict(token_info, "erc721");
+
+      // Determining is_nft from blockchain list is not supported for Solana
+      blockchain_token->is_nft = blockchain_token->is_erc721;
+      bool is_token2022 = ParseOptionalBoolFromDict(token_info, "token2022");
+
+      std::optional<int> decimals_opt = token_info->FindInt("decimals");
+      if (!decimals_opt) {
+        continue;
+      }
       blockchain_token->decimals = *decimals_opt;
-    } else {
-      continue;
+
+      // Set default values
+      blockchain_token->chain_id = chain_id;
+      blockchain_token->coin = coin;
+      blockchain_token->visible = true;
+      blockchain_token->is_erc20 =
+          coin == mojom::CoinType::ETH && !blockchain_token->is_nft;
+      blockchain_token->is_erc1155 = false;
+      blockchain_token->spl_token_program =
+          IsSPLToken(blockchain_token)
+              ? (is_token2022 ? mojom::SPLTokenProgram::kToken2022
+                              : mojom::SPLTokenProgram::kToken)
+              : mojom::SPLTokenProgram::kUnsupported;
+
+      (*token_list_map)[GetTokenListKey(coin, chain_id)].push_back(
+          std::move(blockchain_token));
     }
-
-    // chain_id is only optional for ETH mainnet token lists.
-    blockchain_token->chain_id = "0x1";
-    if (!ParseResultFromDict(blockchain_token_value, "chainId",
-                             &blockchain_token->chain_id) &&
-        coin != mojom::CoinType::ETH) {
-      continue;
-    }
-
-    ParseResultFromDict(blockchain_token_value, "coingeckoId",
-                        &blockchain_token->coingecko_id);
-
-    blockchain_token->coin = coin;
-    (*token_list_map)[GetTokenListKey(coin, blockchain_token->chain_id)]
-        .push_back(std::move(blockchain_token));
   }
 
   return true;
 }
 
-absl::optional<RampTokenListMaps> ParseRampTokenListMaps(
+std::optional<RampTokenListMaps> ParseRampTokenListMaps(
     const std::string& json) {
   // {
   //   "tokens" : [
@@ -385,18 +402,18 @@ absl::optional<RampTokenListMaps> ParseRampTokenListMaps(
   //   ]
   // }
 
-  absl::optional<base::Value> records_v = ParseJsonToDict(json);
+  std::optional<base::Value::Dict> records_v = ParseJsonToDict(json);
   if (!records_v) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   OnRampTokensListMap on_ramp_supported_tokens_lists;
   OffRampTokensListMap off_ramp_supported_tokens_lists;
 
   const auto tokens_list =
-      blockchain_lists::OnRampTokenLists::FromValue(records_v->GetDict());
+      blockchain_lists::OnRampTokenLists::FromValue(*records_v);
   if (!tokens_list) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   for (const auto& token : (*tokens_list).tokens) {
@@ -408,18 +425,18 @@ absl::optional<RampTokenListMaps> ParseRampTokenListMaps(
                            std::move(off_ramp_supported_tokens_lists)};
 }
 
-absl::optional<std::vector<mojom::OnRampCurrency>> ParseOnRampCurrencyLists(
+std::optional<std::vector<mojom::OnRampCurrency>> ParseOnRampCurrencyLists(
     const std::string& json) {
-  absl::optional<base::Value> records_v = ParseJsonToDict(json);
+  std::optional<base::Value::Dict> records_v = ParseJsonToDict(json);
   if (!records_v) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   const auto on_ramp_supported_currencies_from_component =
-      blockchain_lists::OnRampCurrencyLists::FromValue(records_v->GetDict());
+      blockchain_lists::OnRampCurrencyLists::FromValue(*records_v);
 
   if (!on_ramp_supported_currencies_from_component) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::vector<mojom::OnRampCurrency> on_ramp_supported_currencies;
@@ -507,7 +524,7 @@ bool ParseChainList(const std::string& json, ChainList* result) {
     if (!chain_id) {
       continue;
     }
-    network->chain_id = base::StringPrintf("0x%x", chain_id);
+    network->chain_id = absl::StrFormat("0x%x", chain_id);
 
     network->chain_name = EmptyIfNull(chain_item->FindString("name"));
     if (network->chain_name.empty()) {
@@ -518,7 +535,7 @@ bool ParseChainList(const std::string& json, ChainList* result) {
       for (auto& item : *block_explorer_list) {
         if (auto* explorer = item.GetIfDict()) {
           if (auto* url = explorer->FindString("url")) {
-            if (GURL(*url).is_valid()) {
+            if (IsHTTPSOrLocalhostURL(*url)) {
               network->block_explorer_urls.push_back(*url);
             }
           }
@@ -532,7 +549,7 @@ bool ParseChainList(const std::string& json, ChainList* result) {
     if (auto* rpc_list = chain_item->FindList("rpc")) {
       for (auto& item : *rpc_list) {
         if (auto* url = item.GetIfString()) {
-          if (GURL(*url).is_valid()) {
+          if (IsHTTPSOrLocalhostURL(*url)) {
             network->rpc_endpoints.emplace_back(*url);
           }
         }
@@ -569,7 +586,7 @@ bool ParseChainList(const std::string& json, ChainList* result) {
   return true;
 }
 
-absl::optional<DappListMap> ParseDappLists(const std::string& json) {
+std::optional<DappListMap> ParseDappLists(const std::string& json) {
   // {
   //   "solana": {
   //     "success": true,
@@ -642,15 +659,15 @@ absl::optional<DappListMap> ParseDappLists(const std::string& json) {
   //   ...
   // }
 
-  absl::optional<base::Value> records_v = ParseJsonToDict(json);
+  std::optional<base::Value::Dict> records_v = ParseJsonToDict(json);
   if (!records_v) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto dapp_lists_from_component =
-      blockchain_lists::DappLists::FromValue(records_v->GetDict());
+      blockchain_lists::DappLists::FromValue(*records_v);
   if (!dapp_lists_from_component) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   DappListMap dapp_lists;
@@ -663,14 +680,11 @@ absl::optional<DappListMap> ParseDappLists(const std::string& json) {
       GetTokenListKey(mojom::CoinType::ETH, mojom::kPolygonMainnetChainId),
       dapp_lists_from_component->polygon, &dapp_lists);
   AddDappListToMap(GetTokenListKey(mojom::CoinType::ETH,
-                                   mojom::kBinanceSmartChainMainnetChainId),
+                                   mojom::kBnbSmartChainMainnetChainId),
                    dapp_lists_from_component->binance_smart_chain, &dapp_lists);
   AddDappListToMap(
       GetTokenListKey(mojom::CoinType::ETH, mojom::kOptimismMainnetChainId),
       dapp_lists_from_component->optimism, &dapp_lists);
-  AddDappListToMap(
-      GetTokenListKey(mojom::CoinType::ETH, mojom::kAuroraMainnetChainId),
-      dapp_lists_from_component->aurora, &dapp_lists);
   AddDappListToMap(
       GetTokenListKey(mojom::CoinType::ETH, mojom::kAvalancheMainnetChainId),
       dapp_lists_from_component->avalanche, &dapp_lists);
@@ -681,7 +695,7 @@ absl::optional<DappListMap> ParseDappLists(const std::string& json) {
   return dapp_lists;
 }
 
-absl::optional<CoingeckoIdsMap> ParseCoingeckoIdsMap(const std::string& json) {
+std::optional<CoingeckoIdsMap> ParseCoingeckoIdsMap(const std::string& json) {
   // {
   //   "0x1": {
   //     "0xb9ef770b6a5e12e45983c5d80545258aa38f3b78": "0chain",
@@ -695,23 +709,18 @@ absl::optional<CoingeckoIdsMap> ParseCoingeckoIdsMap(const std::string& json) {
   //   }
   // }
 
-  absl::optional<base::Value> records_v = ParseJsonToDict(json);
+  std::optional<base::Value::Dict> records_v = ParseJsonToDict(json);
   if (!records_v) {
-    return absl::nullopt;
-  }
-
-  const base::Value::Dict* chain_ids = records_v->GetIfDict();
-  if (!chain_ids) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::map<std::pair<std::string, std::string>, std::string> coingecko_ids_map;
-  for (const auto chain_id_record : *chain_ids) {
+  for (const auto chain_id_record : *records_v) {
     const auto& chain_id = base::ToLowerASCII(chain_id_record.first);
 
     const auto* contract_addresses = chain_id_record.second.GetIfDict();
     if (!contract_addresses) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     for (const auto contract_address_record : *contract_addresses) {
@@ -719,7 +728,7 @@ absl::optional<CoingeckoIdsMap> ParseCoingeckoIdsMap(const std::string& json) {
           base::ToLowerASCII(contract_address_record.first);
       const auto* coingecko_id = contract_address_record.second.GetIfString();
       if (!coingecko_id) {
-        return absl::nullopt;
+        return std::nullopt;
       }
 
       coingecko_ids_map[{chain_id, contract_address}] = *coingecko_id;
@@ -729,7 +738,7 @@ absl::optional<CoingeckoIdsMap> ParseCoingeckoIdsMap(const std::string& json) {
   return CoingeckoIdsMap(coingecko_ids_map.begin(), coingecko_ids_map.end());
 }
 
-absl::optional<std::vector<std::string>> ParseOfacAddressesList(
+std::optional<std::vector<std::string>> ParseOfacAddressesList(
     const std::string& json) {
   // {
   //   "addresses": [
@@ -738,15 +747,15 @@ absl::optional<std::vector<std::string>> ParseOfacAddressesList(
   //     ...
   //   ]
   // }
-  absl::optional<base::Value> records_v = ParseJsonToDict(json);
+  std::optional<base::Value::Dict> records_v = ParseJsonToDict(json);
   if (!records_v) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   auto ofac_list_from_component =
-      blockchain_lists::OfacAddressesList::FromValue(records_v->GetDict());
+      blockchain_lists::OfacAddressesList::FromValue(*records_v);
   if (!ofac_list_from_component) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::vector<std::string> ofac_list;

@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_ads/core/internal/account/user_data/fixed/created_at_timestamp_user_data.h"
 
+#include "base/check.h"
 #include "brave/components/brave_ads/core/internal/account/transactions/transaction_info.h"
 #include "brave/components/brave_ads/core/internal/common/time/time_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
@@ -17,16 +18,15 @@ constexpr char kCreatedAtTimestampKey[] = "createdAtTimestamp";
 
 base::Value::Dict BuildCreatedAtTimestampUserData(
     const TransactionInfo& transaction) {
-  base::Value::Dict user_data;
+  CHECK(transaction.IsValid());
 
   if (!UserHasJoinedBraveRewards()) {
-    return user_data;
+    return {};
   }
 
-  user_data.Set(kCreatedAtTimestampKey,
-                TimeToPrivacyPreservingISO8601(transaction.created_at));
-
-  return user_data;
+  return base::Value::Dict().Set(
+      kCreatedAtTimestampKey,
+      TimeToPrivacyPreservingIso8601(*transaction.created_at));
 }
 
 }  // namespace brave_ads

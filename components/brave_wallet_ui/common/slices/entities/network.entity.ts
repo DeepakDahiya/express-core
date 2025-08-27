@@ -7,10 +7,19 @@ import {
   createDraftSafeSelector,
   createEntityAdapter,
   EntityAdapter,
-  EntityId
+  EntityId,
 } from '@reduxjs/toolkit'
 import { BraveWallet } from '../../../constants/types'
 import { getEntitiesListFromEntityState } from '../../../utils/entities.utils'
+
+export const getNetworkId = ({
+  chainId,
+  coin,
+}: {
+  chainId: string
+  coin: BraveWallet.CoinType
+}): string =>
+  chainId === BraveWallet.LOCALHOST_CHAIN_ID ? `${chainId}-${coin}` : chainId
 
 export type NetworkEntityAdaptor = EntityAdapter<BraveWallet.NetworkInfo> & {
   selectId: (network: {
@@ -21,10 +30,7 @@ export type NetworkEntityAdaptor = EntityAdapter<BraveWallet.NetworkInfo> & {
 
 export const networkEntityAdapter: NetworkEntityAdaptor =
   createEntityAdapter<BraveWallet.NetworkInfo>({
-    selectId: ({ chainId, coin }): string =>
-      chainId === BraveWallet.LOCALHOST_CHAIN_ID
-        ? `${chainId}-${coin}`
-        : chainId
+    selectId: getNetworkId,
   })
 
 export type NetworksRegistry = ReturnType<
@@ -32,8 +38,9 @@ export type NetworksRegistry = ReturnType<
 > & {
   hiddenIds: string[]
   hiddenIdsByCoinType: Record<BraveWallet.CoinType, EntityId[]>
-  idsByCoinType: Record<BraveWallet.CoinType, EntityId[]>
+  visibleIdsByCoinType: Record<BraveWallet.CoinType, EntityId[]>
   mainnetIds: string[]
+  testnetIds: string[]
   onRampIds: string[]
   offRampIds: string[]
   visibleIds: string[]
@@ -43,11 +50,12 @@ export const emptyNetworksRegistry: NetworksRegistry = {
   ...networkEntityAdapter.getInitialState(),
   hiddenIds: [],
   hiddenIdsByCoinType: {},
-  idsByCoinType: {},
+  visibleIdsByCoinType: {},
   mainnetIds: [],
+  testnetIds: [],
   onRampIds: [],
   offRampIds: [],
-  visibleIds: []
+  visibleIds: [],
 }
 
 //
@@ -67,42 +75,30 @@ export const {
   selectTotal: selectTotalNetworksFromQueryResult,
 } = networkEntityAdapter.getSelectors(selectNetworksRegistryFromQueryResult)
 
-export const selectSwapSupportedNetworksFromQueryResult =
-  createDraftSafeSelector(
-    // inputs
-    [
-      selectNetworksRegistryFromQueryResult,
-      (registry, swapSupportedIds: string[]) => swapSupportedIds
-    ],
-    // output
-    (registry, swapSupportedIds) =>
-      getEntitiesListFromEntityState(registry, swapSupportedIds)
-  )
-
 export const selectMainnetNetworksFromQueryResult = createDraftSafeSelector(
   // inputs
   [selectNetworksRegistryFromQueryResult],
   // output
-  (registry) => getEntitiesListFromEntityState(registry, registry.mainnetIds)
+  (registry) => getEntitiesListFromEntityState(registry, registry.mainnetIds),
 )
 
 export const selectOnRampNetworksFromQueryResult = createDraftSafeSelector(
   // inputs
   [selectNetworksRegistryFromQueryResult],
   // output
-  (registry) => getEntitiesListFromEntityState(registry, registry.onRampIds)
+  (registry) => getEntitiesListFromEntityState(registry, registry.onRampIds),
 )
 
 export const selectOffRampNetworksFromQueryResult = createDraftSafeSelector(
   // inputs
   [selectNetworksRegistryFromQueryResult],
   // output
-  (registry) => getEntitiesListFromEntityState(registry, registry.offRampIds)
+  (registry) => getEntitiesListFromEntityState(registry, registry.offRampIds),
 )
 
 export const selectVisibleNetworksFromQueryResult = createDraftSafeSelector(
   // inputs
   [selectNetworksRegistryFromQueryResult],
   // output
-  (registry) => getEntitiesListFromEntityState(registry, registry.visibleIds)
+  (registry) => getEntitiesListFromEntityState(registry, registry.visibleIds),
 )

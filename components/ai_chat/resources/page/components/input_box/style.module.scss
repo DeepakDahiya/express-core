@@ -3,32 +3,31 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
-.container {
-  border-radius: var(--leo-radius-m);
-  border: 1px solid var(--leo-color-divider-subtle);
-}
-
 .form {
-  border-radius: var(--leo-radius-m);
-  border: 1px solid var(--leo-color-divider-strong);
+  border-radius: var(--leo-radius-xl);
+  border: 1px solid var(--leo-color-divider-subtle);
   width: 100%;
-  font: var(--leo-font-default-regular);
+  font: var(--leo-font-large-regular);
   color: var(--leo-color-text-primary);
   position: relative;
+  transition: all 0.2s ease-in-out;
 
   &:has(textarea:disabled) {
     border-color: var(--leo-color-divider-subtle);
     background: var(--leo-color-container-highlight);
 
     &::placeholder {
-      color: var(--leo-color-text-disabled);
+      color: var(--leo-color-text-tertiary);
     }
   }
+}
+.form:hover, .form:focus-visible{
+  box-shadow: var(--leo-effect-elevation-01);
 }
 
 .growWrap {
   display: grid;
-  grid-template-columns: calc(100% - 20px);
+  grid-template-columns: 1fr;
   max-height: 300px;
   overflow-y: auto;
 
@@ -51,7 +50,7 @@
 
   textarea,
   &::after {
-    padding: 10px var(--leo-spacing-xl);
+    padding: 12px var(--leo-spacing-xl) 8px var(--leo-spacing-xl);
     grid-area: 1 / 1 / 2 / 2;
   }
 
@@ -60,7 +59,7 @@
   }
 
   &::-webkit-scrollbar-thumb {
-    background: var(--leo-color-gray-20);
+    background: var(--leo-color-neutral-20);
     border-radius: var(--leo-spacing-m);
   }
 }
@@ -105,8 +104,67 @@
   color: var(--leo-color-systemfeedback-error-icon);
 }
 
-.actions {
-  position: absolute;
-  top: 2px;
-  right: var(--leo-spacing-m);
+.toolsContainer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--leo-spacing-m) var(--leo-spacing-m) var(--leo-spacing-xl);
+}
+
+.tools {
+  display: flex;
+  gap: var(--leo-spacing-xl);
+}
+
+.actionsLabelContainer {
+  padding: 10px var(--leo-spacing-xl) 0 var(--leo-spacing-xl);
+}
+
+.slashIconActive {
+  --leo-icon-color: var(--leo-color-icon-interactive);
+}
+
+.attachmentWrapper {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding: var(--leo-spacing-m) var(--leo-spacing-m) 0px var(--leo-spacing-m);
+  max-height: 240px;
+  overflow-y: auto;
+  gap: var(--leo-spacing-s);
+}
+
+.attachmentWrapperScrollStyles {
+  padding: var(--leo-spacing-m);
+  border-bottom: 1px solid var(--leo-color-divider-subtle);
+}
+
+.button {
+  --leo-button-radius: var(--leo-radius-full);
+  --leo-button-padding: var(--leo-spacing-m);
+}
+
+
+.sendButtonDisabled {
+  --leo-button-color: var(--leo-color-button-disabled);
+}
+
+.sendIconDisabled {
+  // Not able to use --leo-icon-color in .sendButtonDisabled class
+  // because it gets overridden by the button component's default styles.
+  --leo-icon-color: var(--leo-color-icon-disabled);
+}
+
+.contentAgentButtonEnabled {
+  --leo-icon-color: var(--leo-color-icon-interactive);
+}
+
+.streamingButton {
+  --leo-button-color:
+    color-mix(in srgb, var(--leo-color-button-background) 5%, transparent);
+}
+
+.streamingIcon {
+  // Same is applied to the icon in the .streamingButton class.
+  --leo-icon-color: var(--leo-color-icon-interactive);
 }

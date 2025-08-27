@@ -6,30 +6,34 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_CREATIVES_GEO_TARGETS_DATABASE_TABLE_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_CREATIVES_GEO_TARGETS_DATABASE_TABLE_H_
 
+#include <map>
 #include <string>
 
-#include "brave/components/brave_ads/core/internal/creatives/creative_ad_info.h"
+#include "base/containers/flat_set.h"
 #include "brave/components/brave_ads/core/internal/database/database_table_interface.h"
-#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
-#include "brave/components/brave_ads/core/public/client/ads_client_callback.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 
 namespace brave_ads::database::table {
 
 class GeoTargets final : public TableInterface {
  public:
-  void InsertOrUpdate(mojom::DBTransactionInfo* transaction,
-                      const CreativeAdList& creative_ads);
-
-  void Delete(ResultCallback callback) const;
+  void Insert(const mojom::DBTransactionInfoPtr& mojom_db_transaction,
+              const std::map</*campaign_id*/ std::string,
+                             base::flat_set<std::string>>& geo_targets);
 
   std::string GetTableName() const override;
 
-  void Create(mojom::DBTransactionInfo* transaction) override;
-  void Migrate(mojom::DBTransactionInfo* transaction, int to_version) override;
+  void Create(const mojom::DBTransactionInfoPtr& mojom_db_transaction) override;
+  void Migrate(const mojom::DBTransactionInfoPtr& mojom_db_transaction,
+               int to_version) override;
 
  private:
-  std::string BuildInsertOrUpdateSql(mojom::DBCommandInfo* command,
-                                     const CreativeAdList& creative_ads) const;
+  void MigrateToV48(const mojom::DBTransactionInfoPtr& mojom_db_transaction);
+
+  std::string BuildInsertSql(
+      const mojom::DBActionInfoPtr& mojom_db_action,
+      const std::map</*campaign_id*/ std::string, base::flat_set<std::string>>&
+          geo_targets) const;
 };
 
 }  // namespace brave_ads::database::table

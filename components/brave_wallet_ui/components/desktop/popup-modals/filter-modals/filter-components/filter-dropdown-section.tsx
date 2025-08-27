@@ -6,14 +6,10 @@
 import * as React from 'react'
 
 // Utils
-import {
-  getLocale
-} from '../../../../../../common/locale'
+import { getLocale } from '../../../../../../common/locale'
 
 // Types
-import {
-  DropdownFilterOption
-} from '../../../../../constants/types'
+import { DropdownFilterOption } from '../../../../../constants/types'
 
 // Styled Components
 import {
@@ -21,12 +17,9 @@ import {
   Description,
   IconWrapper,
   Icon,
-  DropdownFilter
+  DropdownFilter,
 } from './filter-components.style'
-import {
-  Row,
-  Column
-} from '../../../../shared/style'
+import { Row, Column } from '../../../../shared/style'
 
 interface Props {
   title: string
@@ -59,15 +52,15 @@ export const FilterDropdownSection = (props: Props) => {
     icon,
     dropdownOptions,
     selectedOptionId,
-    onSelectOption
+    onSelectOption,
   } = props
 
   // Memos
   const selectedDropdownName = React.useMemo(() => {
-    return dropdownOptions
-      .find(
-        (option) =>
-          option.id === selectedOptionId)?.name ?? ''
+    return (
+      dropdownOptions.find((option) => option.id === selectedOptionId)?.name
+      ?? ''
+    )
   }, [dropdownOptions, selectedOptionId])
 
   return (
@@ -82,9 +75,7 @@ export const FilterDropdownSection = (props: Props) => {
         <IconWrapper>
           <Icon name={icon} />
         </IconWrapper>
-        <Column
-          alignItems='flex-start'
-        >
+        <Column alignItems='flex-start'>
           <CheckboxText
             textSize='14px'
             isBold={true}
@@ -101,21 +92,18 @@ export const FilterDropdownSection = (props: Props) => {
         </Column>
       </Row>
       <DropdownFilter
-        onChange={(e) => onSelectOption(e.detail.value)}
+        onChange={(e) => onSelectOption(e.value!)}
         value={selectedOptionId}
       >
-        <div slot='value'>
-          {getLocale(selectedDropdownName)}
-        </div>
-        {dropdownOptions.map((option) =>
-
+        <div slot='value'>{getLocale(selectedDropdownName)}</div>
+        {dropdownOptions.map((option) => (
           <leo-option
             value={option.id}
             key={option.id}
           >
             {getLocale(option.name)}
           </leo-option>
-        )}
+        ))}
       </DropdownFilter>
     </Row>
   )

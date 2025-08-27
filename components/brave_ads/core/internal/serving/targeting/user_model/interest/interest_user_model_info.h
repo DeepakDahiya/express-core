@@ -7,14 +7,12 @@
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_TARGETING_USER_MODEL_INTEREST_INTEREST_USER_MODEL_INFO_H_
 
 #include "brave/components/brave_ads/core/internal/segments/segment_alias.h"
-#include "brave/components/brave_ads/core/internal/targeting/contextual/text_embedding/text_embedding_html_event_info.h"
 
 namespace brave_ads {
 
 struct InterestUserModelInfo final {
   InterestUserModelInfo();
-  InterestUserModelInfo(SegmentList segments,
-                        TextEmbeddingHtmlEventList text_embedding_html_events);
+  explicit InterestUserModelInfo(SegmentList segments);
 
   InterestUserModelInfo(const InterestUserModelInfo&);
   InterestUserModelInfo& operator=(const InterestUserModelInfo&);
@@ -24,12 +22,10 @@ struct InterestUserModelInfo final {
 
   ~InterestUserModelInfo();
 
-  SegmentList segments;
-  TextEmbeddingHtmlEventList text_embedding_html_events;
-};
+  bool operator==(const InterestUserModelInfo&) const = default;
 
-bool operator==(const InterestUserModelInfo&, const InterestUserModelInfo&);
-bool operator!=(const InterestUserModelInfo&, const InterestUserModelInfo&);
+  SegmentList segments;
+};
 
 }  // namespace brave_ads
 

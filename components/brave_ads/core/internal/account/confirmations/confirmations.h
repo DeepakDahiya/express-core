@@ -6,8 +6,10 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_CONFIRMATIONS_CONFIRMATIONS_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_CONFIRMATIONS_CONFIRMATIONS_H_
 
+#include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
+#include "base/values.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_delegate.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue_delegate.h"
@@ -15,20 +17,15 @@
 
 namespace brave_ads {
 
-class TokenGeneratorInterface;
 struct TransactionInfo;
-struct UserDataInfo;
 
 class Confirmations final : public ConfirmationQueueDelegate,
                             public RedeemConfirmationDelegate {
  public:
-  explicit Confirmations(TokenGeneratorInterface* token_generator);
+  Confirmations();
 
   Confirmations(const Confirmations&) = delete;
   Confirmations& operator=(const Confirmations&) = delete;
-
-  Confirmations(Confirmations&&) noexcept = delete;
-  Confirmations& operator=(Confirmations&&) noexcept = delete;
 
   ~Confirmations() override;
 
@@ -37,12 +34,9 @@ class Confirmations final : public ConfirmationQueueDelegate,
     delegate_ = delegate;
   }
 
-  void Confirm(const TransactionInfo& transaction);
+  void Confirm(const TransactionInfo& transaction, base::Value::Dict user_data);
 
  private:
-  void ConfirmCallback(const TransactionInfo& transaction,
-                       const UserDataInfo& user_data);
-
   void NotifyDidConfirm(const ConfirmationInfo& confirmation) const;
   void NotifyFailedToConfirm(const ConfirmationInfo& confirmation) const;
 
@@ -57,12 +51,9 @@ class Confirmations final : public ConfirmationQueueDelegate,
       const ConfirmationInfo& confirmation) override;
   void OnDidExhaustConfirmationQueue() override;
 
-  raw_ptr<ConfirmationDelegate> delegate_ = nullptr;
+  raw_ptr<ConfirmationDelegate> delegate_ = nullptr;  // Not owned.
 
-  const raw_ptr<TokenGeneratorInterface> token_generator_ =
-      nullptr;  // NOT OWNED
-
-  ConfirmationQueue queue_;
+  ConfirmationQueue confirmation_queue_;
 
   base::WeakPtrFactory<Confirmations> weak_factory_{this};
 };

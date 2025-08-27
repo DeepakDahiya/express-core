@@ -1,14 +1,16 @@
-/* Copyright 2021 The Brave Authors. All rights reserved.
+/* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "brave/components/time_period_storage/weekly_event_storage.h"
 
 #include <list>
 #include <memory>
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/values_util.h"
 #include "base/time/clock.h"
 #include "base/time/default_clock.h"
@@ -16,7 +18,6 @@
 #include "base/values.h"
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 static constexpr size_t kDaysInWeek = 7;
@@ -48,8 +49,8 @@ void WeeklyEventStorage::Add(int value) {
   Save();
 }
 
-absl::optional<int> WeeklyEventStorage::GetLatest() {
-  auto result = absl::optional<int>();
+std::optional<int> WeeklyEventStorage::GetLatest() {
+  auto result = std::optional<int>();
   if (HasEvent()) {
     // Assume the front is the most recent event.
     result = events_.front().value;

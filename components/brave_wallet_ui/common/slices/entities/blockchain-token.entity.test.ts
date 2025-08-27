@@ -17,17 +17,17 @@ describe('blockchain token entity', () => {
       const knownTokensList = mockErc20TokensList
       const userTokensList = [
         knownTokensList[0], // known token
-        mockMoonCatNFT
+        mockMoonCatNFT,
       ]
 
       const combinedListInstance = selectCombinedTokensList(
         knownTokensList,
-        userTokensList
+        userTokensList,
       )
 
       const secondCombinedListInstance = selectCombinedTokensList(
         knownTokensList,
-        userTokensList
+        userTokensList,
       )
 
       expect(combinedListInstance).not.toBe([...secondCombinedListInstance])

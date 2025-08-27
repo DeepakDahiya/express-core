@@ -4,7 +4,7 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 import * as React from 'react'
 
-export function useScrollIntoView () {
+export function useScrollIntoView() {
   // Prevents scrolling into view again if re-render occurs
   const alreadyScrolled = React.useRef(false)
   const scrollIntoView = React.useCallback(
@@ -13,12 +13,12 @@ export function useScrollIntoView () {
         ref?.scrollIntoView({
           behavior: 'smooth',
           block: 'center',
-          inline: 'center'
+          inline: 'center',
         })
         alreadyScrolled.current = true
       }
     },
-    [alreadyScrolled]
+    [alreadyScrolled],
   )
 
   return scrollIntoView

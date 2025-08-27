@@ -4,42 +4,42 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { useDispatch } from 'react-redux'
-import Button from '@brave/leo/react/button'
+import { skipToken } from '@reduxjs/toolkit/query/react'
+import Input, { InputEventDetail } from '@brave/leo/react/input'
+import Alert from '@brave/leo/react/alert'
 
 // utils
 import { BraveWallet } from '../../../constants/types'
 import Amount from '../../../utils/amount'
 import { getLocale } from '$web-common/locale'
-import { WalletActions } from '../../../common/actions'
-import { stripERC20TokenImageURL } from '../../../utils/string-utils'
 import {
   networkEntityAdapter,
-  emptyNetworksRegistry
+  emptyNetworksRegistry,
 } from '../../../common/slices/entities/network.entity'
+import withPlaceholderIcon from '../create-placeholder-icon'
+import {
+  getAssetIdKey,
+  type GetBlockchainTokenIdArg,
+} from '../../../utils/asset-utils'
 
 // hooks
-import useAssetManagement from '../../../common/hooks/assets-management'
-import { useLib } from '../../../common/hooks/useLib'
-import useTokenInfo from '../../../common/hooks/token'
+import useGetTokenInfo from '../../../common/hooks/use-get-token-info'
 import {
+  useAddUserTokenMutation,
+  useGetIsTokenOwnedByUserQuery,
   useGetNetworksRegistryQuery,
-  useGetSelectedChainQuery
+  useGetNftMetadataQuery,
+  useUpdateUserTokenMutation,
 } from '../../../common/slices/api.slice'
 import {
-  useGetCombinedTokensListQuery
-} from '../../../common/slices/api.slice.extra'
-import {
-  useSafeWalletSelector
-} from '../../../common/hooks/use-safe-selector'
-import { WalletSelectors } from '../../../common/selectors'
+  useGetCustomAssetSupportedNetworks, //
+} from '../../../common/hooks/use_get_custom_asset_supported_networks'
 
 // components
-import {
-  SelectNetworkDropdown //
-} from '../../desktop/select-network-dropdown/index'
-import Tooltip from '../tooltip'
+import { NetworksDropdown } from '../dropdowns/networks_dropdown'
 import { FormErrorsList } from './form-errors-list'
+import { NftIcon } from '../nft-icon/nft-icon'
+import { InfoIconTooltip } from '../info_icon_tooltip/info_icon_tooltip'
 
 // styles
 import {
@@ -48,18 +48,29 @@ import {
   ErrorText,
   FormWrapper,
   FullWidthFormColumn,
-  Input,
   InputLabel,
-  AddButtonWrapper
+  InputLoadingIndicator,
+  PreviewImageContainer,
+  TokenNamePreviewText,
+  TokenTickerPreviewText,
+  DescriptionRow,
 } from './add-custom-token-form-styles'
-import { HorizontalSpace } from '../style'
+import { Column, LeoSquaredButton, Row } from '../style'
+import { Skeleton } from '../loading-skeleton/styles'
+import Icon from '@brave/leo/react/icon'
+import Tooltip from '../tooltip'
+
+const NftIconWithPlaceholder = withPlaceholderIcon(NftIcon, {
+  size: 'extra-big',
+  marginLeft: 0,
+  marginRight: 0,
+})
 
 interface Props {
-  contractAddress: string
   selectedAsset?: BraveWallet.BlockchainToken
+  contractAddress: string
   onHideForm: () => void
-  onTokenFound?: (contractAddress: string) => void
-  onChangeContractAddress?: (contractAddress: string) => void
+  onChangeContractAddress: (contractAddress: string) => void
 }
 
 export const AddNftForm = (props: Props) => {
@@ -67,150 +78,266 @@ export const AddNftForm = (props: Props) => {
     selectedAsset,
     contractAddress: tokenContractAddress,
     onHideForm,
-    onTokenFound,
-    onChangeContractAddress
+    onChangeContractAddress,
   } = props
 
-  // redux
-  const dispatch = useDispatch()
-  const addUserAssetError = useSafeWalletSelector(
-    WalletSelectors.addUserAssetError
-  )
-
-  // queries
-  const { data: combinedTokensList } = useGetCombinedTokensListQuery()
-  const { data: selectedNetwork } = useGetSelectedChainQuery()
   const { data: networksRegistry = emptyNetworksRegistry } =
     useGetNetworksRegistryQuery()
-
   const selectedAssetNetwork = selectedAsset
     ? networksRegistry.entities[networkEntityAdapter.selectId(selectedAsset)]
     : undefined
 
   // state
-  const [showTokenIDRequired, setShowTokenIDRequired] = React.useState<boolean>(false)
-  const [showNetworkDropDown, setShowNetworkDropDown] = React.useState<boolean>(false)
-  const [hasError, setHasError] = React.useState<boolean>(addUserAssetError)
+  const [showNetworkDropDown, setShowNetworkDropDown] =
+    React.useState<boolean>(false)
+  const [hasError, setHasError] = React.useState<boolean>(false)
 
   // Form States
-  const [tokenName, setTokenName] = React.useState<string>(selectedAsset?.name || '')
-  const [tokenID, setTokenID] = React.useState<string>(selectedAsset?.tokenId ? parseInt(selectedAsset.tokenId, 16).toString() : '')
-  const [tokenSymbol, setTokenSymbol] = React.useState<string>(selectedAsset?.symbol || '')
+  const [customTokenName, setCustomTokenName] = React.useState(
+    selectedAsset?.name || '',
+  )
+  const [customTokenID, setCustomTokenID] = React.useState<string | undefined>(
+    selectedAsset?.tokenId,
+  )
+  const [customTokenSymbol, setCustomTokenSymbol] = React.useState(
+    selectedAsset?.symbol || '',
+  )
   const [customAssetsNetwork, setCustomAssetsNetwork] = React.useState<
     BraveWallet.NetworkInfo | undefined
   >(selectedAssetNetwork)
 
+  // mutations
+  const [addUserToken] = useAddUserTokenMutation()
+  const [updateUserToken] = useUpdateUserTokenMutation()
 
-  // custom hooks
-  const { getBlockchainTokenInfo } = useLib()
+  // queries
   const {
-    onFindTokenInfoByContractAddress,
-    foundTokenInfoByContractAddress
-  } = useTokenInfo(
-    getBlockchainTokenInfo,
-    combinedTokensList,
-    customAssetsNetwork || selectedNetwork
+    tokenInfo: matchedTokenInfo,
+    isLoading: isTokenInfoLoading,
+    isError: hasGetTokenInfoError,
+  } = useGetTokenInfo(
+    customAssetsNetwork
+      && tokenContractAddress
+      && (customAssetsNetwork.coin === BraveWallet.CoinType.ETH
+        ? !!customTokenID
+        : true)
+      ? {
+          contractAddress: tokenContractAddress,
+          tokenId: customTokenID,
+          network: {
+            chainId: customAssetsNetwork.chainId,
+            coin: customAssetsNetwork.coin,
+          },
+        }
+      : skipToken,
   )
-  const {
-    onAddCustomAsset
-  } = useAssetManagement()
 
-  // Handle Form Input Changes
-  const handleTokenNameChanged = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setHasError(false)
-    setTokenName(event.target.value)
-  }, [])
+  const networkList = useGetCustomAssetSupportedNetworks()
 
-  const handleTokenIDChanged = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setHasError(false)
-    setShowTokenIDRequired(false)
-    setTokenID(event.target.value)
-  }, [])
+  const metadataLookupArg: GetBlockchainTokenIdArg | undefined =
+    React.useMemo(() => {
+      if (!customAssetsNetwork || !tokenContractAddress) {
+        return undefined
+      }
 
-  const handleTokenSymbolChanged = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setHasError(false)
-    setTokenSymbol(event.target.value)
-  }, [])
-
-  const handleTokenAddressChanged = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    setHasError(false)
-    if (onChangeContractAddress) {
-      onChangeContractAddress(event.target.value)
-    }
-  }, [onChangeContractAddress])
-
-  // methods
-  const resetInputFields = React.useCallback(() => {
-    setTokenName('')
-    if (onChangeContractAddress) {
-      onChangeContractAddress('')
-    }
-    setTokenSymbol('')
-    setTokenID('')
-  }, [onChangeContractAddress])
-
-  const addOrUpdateToken = React.useCallback(() => {
-     if (selectedAsset) {
-       if (!customAssetsNetwork) return
-
-      const token = {
-        ...selectedAsset,
-        contractAddress: tokenContractAddress,
-        name: tokenName,
-        symbol: tokenSymbol,
-        tokenId: tokenID ? new Amount(tokenID).toHex() : '',
+      return {
         chainId: customAssetsNetwork.chainId,
         coin: customAssetsNetwork.coin,
-        logo: stripERC20TokenImageURL(selectedAsset.logo) || ''
-      }
-      dispatch(WalletActions.updateUserAsset({
-        existing: selectedAsset,
-        updated: token
-      }))
-      onHideForm()
-    } else {
-      onAddCustomToken()
-    }
-  }, [selectedAsset, tokenContractAddress, tokenName, tokenSymbol, customAssetsNetwork, tokenID])
-
-  const onAddCustomToken = React.useCallback(() => {
-    if (!customAssetsNetwork) return
-
-    if (foundTokenInfoByContractAddress) {
-      if (foundTokenInfoByContractAddress.isErc721) {
-        let token = { ...foundTokenInfoByContractAddress }
-        token.tokenId = tokenID ? new Amount(tokenID).toHex() : ''
-        token.chainId = customAssetsNetwork.chainId
-        token.name = tokenName
-        onAddCustomAsset(token)
-        onHideForm()
-        return
-      }
-      let foundToken = { ...foundTokenInfoByContractAddress }
-      foundToken.chainId = customAssetsNetwork.chainId
-      onAddCustomAsset(foundToken)
-    } else {
-      const newToken: BraveWallet.BlockchainToken = {
         contractAddress: tokenContractAddress,
-        decimals: 0,
-        isErc20: customAssetsNetwork.coin !== BraveWallet.CoinType.SOL && !tokenID,
-        isErc721: customAssetsNetwork.coin !== BraveWallet.CoinType.SOL && !!tokenID,
-        isErc1155: false,
+        tokenId:
+          customAssetsNetwork.coin !== BraveWallet.CoinType.SOL && customTokenID
+            ? new Amount(customTokenID).toHex()
+            : '',
+        isErc721:
+          !!customTokenID
+          && customAssetsNetwork.coin !== BraveWallet.CoinType.SOL,
         isNft: true,
-        isSpam: false,
-        name: tokenName,
-        symbol: tokenSymbol,
-        tokenId: tokenID ? new Amount(tokenID).toHex() : '',
-        logo: '',
-        visible: true,
-        coingeckoId: '',
-        chainId: customAssetsNetwork.chainId,
-        coin: customAssetsNetwork.coin
+        isShielded: false,
       }
-      onAddCustomAsset(newToken)
+    }, [customAssetsNetwork, tokenContractAddress, customTokenID])
+
+  // TODO: need symbol in response in order to simplify adding SOL NFTs
+  const {
+    data: nftMetadata,
+    isFetching: isFetchingNftMetadata,
+    isError: hasNftMetadataError,
+  } = useGetNftMetadataQuery(
+    metadataLookupArg
+      && (metadataLookupArg.coin === BraveWallet.CoinType.SOL
+        || metadataLookupArg.tokenId)
+      ? metadataLookupArg
+      : skipToken,
+  )
+
+  const { data: userOwnsNft, isFetching: isFetchingBalanceCheck } =
+    useGetIsTokenOwnedByUserQuery(metadataLookupArg ?? skipToken)
+
+  // computed
+  const customAssetsNetworkError = !customAssetsNetwork?.chainId
+  const tokenNameError = !customTokenName
+  const tokenSymbolError = !customTokenSymbol
+  const tokenIdError =
+    selectedAssetNetwork?.coin === BraveWallet.CoinType.ETH && !customTokenID
+  const tokenContractAddressError =
+    tokenContractAddress === ''
+    || (customAssetsNetwork?.coin !== BraveWallet.CoinType.SOL
+      && !tokenContractAddress.toLowerCase().startsWith('0x'))
+
+  const buttonDisabled =
+    isTokenInfoLoading
+    || tokenNameError
+    || tokenSymbolError
+    || tokenContractAddressError
+    || customAssetsNetworkError
+
+  // memos
+  const formErrors = React.useMemo(() => {
+    return [
+      tokenContractAddressError
+        && getLocale('braveWalletInvalidTokenContractAddressError'),
+      customAssetsNetworkError
+        && getLocale('braveWalletNetworkIsRequiredError'),
+      tokenNameError && getLocale('braveWalletTokenNameIsRequiredError'),
+      tokenSymbolError && getLocale('braveWalletTokenSymbolIsRequiredError'),
+      tokenIdError && getLocale('braveWalletWatchListTokenIdError'),
+    ]
+  }, [
+    tokenContractAddressError,
+    customAssetsNetworkError,
+    tokenNameError,
+    tokenSymbolError,
+    tokenIdError,
+  ])
+
+  const metadataAssetInfo:
+    | (GetBlockchainTokenIdArg
+        & Pick<BraveWallet.BlockchainToken, 'logo' | 'name' | 'symbol'>)
+    | undefined = React.useMemo(() => {
+    return metadataLookupArg
+      && !isFetchingNftMetadata
+      && (metadataLookupArg?.coin === BraveWallet.CoinType.SOL || customTokenID)
+      ? {
+          ...metadataLookupArg,
+          logo:
+            nftMetadata?.imageURL
+            || matchedTokenInfo?.logo
+            || selectedAsset?.logo
+            || '',
+          name: customTokenName,
+          // TODO: response from core currently doesn't have symbol
+          symbol: customTokenSymbol,
+        }
+      : undefined
+  }, [
+    customTokenID,
+    customTokenName,
+    customTokenSymbol,
+    isFetchingNftMetadata,
+    matchedTokenInfo?.logo,
+    nftMetadata?.imageURL,
+    selectedAsset?.logo,
+    metadataLookupArg,
+  ])
+
+  // methods
+  const resetBaseInputFields = React.useCallback(() => {
+    setCustomTokenID(undefined)
+  }, [])
+
+  const resetInputFields = React.useCallback(() => {
+    resetBaseInputFields()
+    onChangeContractAddress('')
+  }, [resetBaseInputFields, onChangeContractAddress])
+
+  const handleTokenNameChanged = React.useCallback(
+    (detail: InputEventDetail) => {
+      setHasError(false)
+      setCustomTokenName(detail.value)
+    },
+    [],
+  )
+
+  const handleTokenIDChanged = React.useCallback((detail: InputEventDetail) => {
+    setHasError(false)
+    setCustomTokenID(detail.value)
+  }, [])
+
+  const handleTokenSymbolChanged = React.useCallback(
+    (detail: InputEventDetail) => {
+      setHasError(false)
+      setCustomTokenSymbol(detail.value)
+    },
+    [],
+  )
+
+  const handleTokenAddressChanged = React.useCallback(
+    (event: InputEventDetail) => {
+      setHasError(false)
+      onChangeContractAddress(event.value)
+    },
+    [onChangeContractAddress],
+  )
+
+  const addOrUpdateToken = React.useCallback(async () => {
+    if (!customAssetsNetwork) {
+      return
     }
-    onHideForm()
-  }, [tokenContractAddress, foundTokenInfoByContractAddress, customAssetsNetwork, tokenName, tokenSymbol, tokenID, onAddCustomAsset, onHideForm])
+
+    const updatedToken: BraveWallet.BlockchainToken = {
+      name: customTokenName,
+      symbol: customTokenSymbol,
+      decimals: 0,
+      coingeckoId: '',
+      logo: matchedTokenInfo?.logo || selectedAsset?.logo || '',
+      isCompressed: false, // isCompressed will be set by the backend
+      isErc20: false,
+      isErc1155: false,
+      splTokenProgram: BraveWallet.SPLTokenProgram.kUnknown,
+      isSpam: false,
+      visible: true,
+      chainId: customAssetsNetwork.chainId,
+      coin: customAssetsNetwork.coin,
+      contractAddress: tokenContractAddress,
+      tokenId:
+        customAssetsNetwork.coin !== BraveWallet.CoinType.SOL && customTokenID
+          ? new Amount(customTokenID).toHex()
+          : '',
+      isNft: true,
+      isErc721:
+        matchedTokenInfo?.isErc721
+        ?? (!!customTokenID
+          && customAssetsNetwork.coin !== BraveWallet.CoinType.SOL),
+      isShielded: false,
+    }
+
+    if (selectedAsset) {
+      // remove existing token and add new one
+      await updateUserToken({
+        existingToken: selectedAsset,
+        updatedToken,
+      }).unwrap()
+      onHideForm()
+      return
+    }
+
+    try {
+      await addUserToken(updatedToken).unwrap()
+      onHideForm()
+    } catch (error) {
+      setHasError(true)
+    }
+  }, [
+    customAssetsNetwork,
+    customTokenName,
+    customTokenSymbol,
+    matchedTokenInfo,
+    selectedAsset,
+    tokenContractAddress,
+    customTokenID,
+    updateUserToken,
+    onHideForm,
+    addUserToken,
+  ])
 
   const onHideNetworkDropDown = React.useCallback(() => {
     if (showNetworkDropDown) {
@@ -218,183 +345,345 @@ export const AddNftForm = (props: Props) => {
     }
   }, [showNetworkDropDown])
 
-  const onShowNetworkDropDown = React.useCallback(() => {
-    setShowNetworkDropDown(true)
-  }, [])
-
-  const onSelectCustomNetwork = React.useCallback((network: BraveWallet.NetworkInfo) => {
-    setCustomAssetsNetwork(network)
-    onHideNetworkDropDown()
-  }, [onHideNetworkDropDown])
+  const onSelectCustomNetwork = React.useCallback(
+    (network: BraveWallet.NetworkInfo) => {
+      setCustomAssetsNetwork(network)
+      onHideNetworkDropDown()
+    },
+    [onHideNetworkDropDown],
+  )
 
   const onClickCancel = React.useCallback(() => {
     resetInputFields()
     onHideForm()
   }, [resetInputFields, onHideForm])
 
-  // computed
-  const customAssetsNetworkError = !customAssetsNetwork?.chainId
-  const tokenNameError = tokenName === ''
-  const tokenSymbolError = tokenSymbol === ''
-  const tokenContractAddressError =
-    tokenContractAddress === '' ||
-    (customAssetsNetwork?.coin !== BraveWallet.CoinType.SOL &&
-      !tokenContractAddress.toLowerCase().startsWith('0x')) ||
-    (customAssetsNetwork?.coin === BraveWallet.CoinType.ETH && tokenID === '')
-
-  const buttonDisabled = tokenNameError ||
-    tokenSymbolError ||
-    tokenContractAddressError ||
-    customAssetsNetworkError
-
-  // memos
-  const formErrors = React.useMemo(() => {
-    return [
-      tokenContractAddressError && getLocale('braveWalletInvalidTokenContractAddressError'),
-      customAssetsNetworkError && getLocale('braveWalletNetworkIsRequiredError'),
-      tokenNameError && getLocale('braveWalletTokenNameIsRequiredError'),
-      tokenSymbolError && getLocale('braveWalletTokenSymbolIsRequiredError')
-    ]
-  }, [
-    customAssetsNetworkError,
-    tokenNameError,
-    tokenContractAddressError,
-    tokenSymbolError
-  ])
-
   // effects
   React.useEffect(() => {
-    if (tokenContractAddress === '') {
-      resetInputFields()
+    // wait for new data before syncing
+    if (isFetchingNftMetadata || isTokenInfoLoading) {
       return
     }
-    onFindTokenInfoByContractAddress(tokenContractAddress)
-    if (foundTokenInfoByContractAddress) {
-      setTokenName(foundTokenInfoByContractAddress.name)
-      setTokenSymbol(foundTokenInfoByContractAddress.symbol)
-      const network =
-        networksRegistry.entities[
-          networkEntityAdapter.selectId(foundTokenInfoByContractAddress)
-        ]
-      if (network) setCustomAssetsNetwork(network)
+
+    // sync form fields with found token info
+    if (!hasGetTokenInfoError && matchedTokenInfo?.name) {
+      setCustomTokenName(matchedTokenInfo.name)
     }
-    if (foundTokenInfoByContractAddress?.isErc20 && onTokenFound) {
-      onTokenFound(tokenContractAddress)
+
+    if (!hasNftMetadataError && nftMetadata?.contractInformation.name) {
+      setCustomTokenName(nftMetadata.contractInformation.name)
+    }
+
+    if (!hasGetTokenInfoError && matchedTokenInfo?.symbol) {
+      setCustomTokenSymbol(matchedTokenInfo.symbol)
     }
   }, [
-    foundTokenInfoByContractAddress,
-    onFindTokenInfoByContractAddress,
-    tokenContractAddress,
-    resetInputFields,
-    networksRegistry,
-    onTokenFound
+    hasGetTokenInfoError,
+    hasNftMetadataError,
+    isFetchingNftMetadata,
+    isTokenInfoLoading,
+    matchedTokenInfo?.name,
+    matchedTokenInfo?.symbol,
+    nftMetadata?.contractInformation.name,
   ])
 
+  // render
   return (
     <>
-      <FormWrapper
-        onClick={onHideNetworkDropDown}
-      >
+      <FormWrapper onClick={onHideNetworkDropDown}>
+        {!selectedAsset && (
+          <FullWidthFormColumn>
+            <DescriptionRow>
+              {getLocale('braveWalletAddNftModalDescription')}
+            </DescriptionRow>
+          </FullWidthFormColumn>
+        )}
+
         <FullWidthFormColumn>
-          <InputLabel>
-            {customAssetsNetwork?.coin === BraveWallet.CoinType.SOL
-              ? getLocale('braveWalletTokenMintAddress')
-              : getLocale('braveWalletWatchListTokenAddress')
+          <NetworksDropdown
+            placeholder={getLocale('braveWalletSelectNetwork')}
+            networks={networkList}
+            onSelectNetwork={onSelectCustomNetwork}
+            selectedNetwork={customAssetsNetwork}
+            showAllNetworksOption={false}
+            label={
+              <InputLabel>{getLocale('braveWalletSelectNetwork')}</InputLabel>
             }
-          </InputLabel>
+          />
+        </FullWidthFormColumn>
+
+        <FullWidthFormColumn>
           <Input
             value={tokenContractAddress}
-            onChange={handleTokenAddressChanged}
-            width='100%'
-          />
-        </FullWidthFormColumn>
-        <FullWidthFormColumn>
-          <InputLabel>
-            {getLocale('braveWalletSelectNetwork')}
-          </InputLabel>
-          <SelectNetworkDropdown
-            selectedNetwork={customAssetsNetwork}
-            onClick={onShowNetworkDropDown}
-            showNetworkDropDown={showNetworkDropDown}
-            onSelectCustomNetwork={onSelectCustomNetwork}
-            useWithSearch={false}
-          />
-        </FullWidthFormColumn>
-        <FullWidthFormColumn>
-          <InputLabel>
-            {getLocale('braveWalletWatchListTokenName')}
-          </InputLabel>
-          <Input
-            value={tokenName}
-            onChange={handleTokenNameChanged}
-            width='100%'
-          />
-        </FullWidthFormColumn>
-        <FullWidthFormColumn>
-          <InputLabel>
-            {getLocale('braveWalletWatchListTokenSymbol')}
-          </InputLabel>
-          <Input
-            value={tokenSymbol}
-            onChange={handleTokenSymbolChanged}
-            width='100%'
-          />
-        </FullWidthFormColumn>
-        <FullWidthFormColumn>
-          {customAssetsNetwork?.coin !== BraveWallet.CoinType.SOL &&
-            <>
+            onInput={handleTokenAddressChanged}
+            placeholder={getLocale('braveWalletExempliGratia').replace(
+              '$1',
+              '0xbd3531da5cf5857e7cfaa92426877b022e612cf8',
+            )}
+          >
+            <Row
+              gap='4px'
+              justifyContent='flex-start'
+            >
               <InputLabel>
-                {getLocale('braveWalletWatchListTokenId')}
+                {customAssetsNetwork?.coin === BraveWallet.CoinType.SOL
+                  ? getLocale('braveWalletTokenMintAddress')
+                  : getLocale('braveWalletNFTDetailContractAddress')}
               </InputLabel>
-              <Input
-                value={tokenID}
-                onChange={handleTokenIDChanged}
-                type='number'
-                width='100%'
+              <InfoIconTooltip
+                placement='bottom'
+                text={getLocale('braveWalletWhatIsAnNftContractAddress')}
               />
-            </>
-          }
+            </Row>
+          </Input>
         </FullWidthFormColumn>
-        <>
-          {showTokenIDRequired &&
+
+        {customAssetsNetwork
+          && customAssetsNetwork?.coin !== BraveWallet.CoinType.SOL && (
+            <FullWidthFormColumn>
+              <Input
+                value={
+                  customTokenID
+                    ? new Amount(customTokenID).format(undefined, false)
+                    : ''
+                }
+                onInput={handleTokenIDChanged}
+                type='number'
+                placeholder={getLocale('braveWalletExempliGratia').replace(
+                  '$1',
+                  '1234',
+                )}
+              >
+                <Row
+                  gap='4px'
+                  justifyContent='flex-start'
+                >
+                  <InputLabel>
+                    {getLocale('braveWalletNFTDetailTokenID')}
+                  </InputLabel>
+                  <InfoIconTooltip
+                    placement='bottom'
+                    text={getLocale('braveWalletWhatIsAnNftTokenId')}
+                  />
+                </Row>
+              </Input>
+            </FullWidthFormColumn>
+          )}
+
+        <FullWidthFormColumn>
+          <Input
+            value={customTokenName}
+            onInput={handleTokenNameChanged}
+            type='text'
+            placeholder={getLocale('braveWalletExempliGratia').replace(
+              '$1',
+              'Pudgy Penguin #1234',
+            )}
+          >
+            <Row
+              gap='4px'
+              justifyContent='flex-start'
+            >
+              <InputLabel>
+                {getLocale('braveWalletWatchListTokenName')}
+              </InputLabel>
+              <InfoIconTooltip
+                placement='bottom'
+                text={getLocale('braveWalletNftNameFieldExplanation')}
+              />
+            </Row>
+
+            <div slot='left-icon'>
+              {(isFetchingNftMetadata || isTokenInfoLoading) && (
+                <InputLoadingIndicator />
+              )}
+            </div>
+          </Input>
+        </FullWidthFormColumn>
+
+        <FullWidthFormColumn>
+          <Input
+            value={customTokenSymbol}
+            onInput={handleTokenSymbolChanged}
+            disabled={
+              // prevent edits when data has been found on-chain
+              !hasGetTokenInfoError && !!matchedTokenInfo?.symbol
+            }
+            type='text'
+            placeholder={getLocale('braveWalletExempliGratia').replace(
+              '$1',
+              'PPG',
+            )}
+          >
+            <Row
+              gap='4px'
+              justifyContent='flex-start'
+            >
+              <InputLabel>
+                {getLocale('braveWalletWatchListTokenSymbol')}
+              </InputLabel>
+              <InfoIconTooltip
+                placement='bottom'
+                text={getLocale('braveWalletNftSymbolFieldExplanation')}
+              />
+            </Row>
+            <div slot='left-icon'>
+              {(isFetchingNftMetadata || isTokenInfoLoading) && (
+                <InputLoadingIndicator />
+              )}
+            </div>
+          </Input>
+        </FullWidthFormColumn>
+
+        {metadataLookupArg?.coin === BraveWallet.CoinType.ETH
+          && !metadataLookupArg?.tokenId && (
             <ErrorText>
               {getLocale('braveWalletWatchListTokenIdError')}
             </ErrorText>
-          }
-        </>
-        {hasError &&
-          <ErrorText>
-            {getLocale('braveWalletWatchListError')}
-          </ErrorText>
-        }
+          )}
+
+        {hasError ? (
+          <ErrorText>{getLocale('braveWalletWatchListError')}</ErrorText>
+        ) : (
+          <Column
+            fullWidth
+            alignItems='center'
+            justifyContent='center'
+          >
+            {isFetchingNftMetadata ? (
+              <Column
+                fullWidth
+                gap={'4px'}
+              >
+                <PreviewImageContainer>
+                  <Skeleton
+                    width={96}
+                    height={96}
+                    enableAnimation
+                  />
+                </PreviewImageContainer>
+
+                <Skeleton
+                  width={96}
+                  height={22}
+                  enableAnimation
+                />
+                <Skeleton
+                  width={96}
+                  height={22}
+                  enableAnimation
+                />
+              </Column>
+            ) : (
+              <>
+                {hasNftMetadataError ? (
+                  <Column>
+                    <ErrorText>
+                      {getLocale('braveWalletFetchNftMetadataError')}
+                    </ErrorText>
+                  </Column>
+                ) : (
+                  <>
+                    {metadataAssetInfo && (
+                      <Column
+                        fullWidth
+                        gap={'16px'}
+                      >
+                        <Row
+                          alignItems='center'
+                          gap='16px'
+                        >
+                          {selectedAsset && (
+                            <>
+                              <Column>
+                                <PreviewImageContainer>
+                                  <NftIconWithPlaceholder
+                                    key={getAssetIdKey(selectedAsset)}
+                                    asset={selectedAsset}
+                                    responsive
+                                  />
+                                </PreviewImageContainer>
+
+                                <TokenNamePreviewText>
+                                  {selectedAsset.name}
+                                </TokenNamePreviewText>
+                                <TokenTickerPreviewText>
+                                  {selectedAsset.symbol}
+                                </TokenTickerPreviewText>
+                              </Column>
+
+                              <Column>
+                                <Icon name={'carat-right'} />
+                              </Column>
+                            </>
+                          )}
+
+                          <Column>
+                            <PreviewImageContainer>
+                              <NftIconWithPlaceholder
+                                key={getAssetIdKey(metadataAssetInfo)}
+                                asset={metadataAssetInfo}
+                                responsive
+                              />
+                            </PreviewImageContainer>
+
+                            <TokenNamePreviewText>
+                              {customTokenName}
+                            </TokenNamePreviewText>
+                            <TokenTickerPreviewText>
+                              {metadataAssetInfo.symbol}
+                            </TokenTickerPreviewText>
+                          </Column>
+                        </Row>
+
+                        {!userOwnsNft && (
+                          <Alert type='info'>
+                            {getLocale('braveWalletUnownedNftAlert')}
+                          </Alert>
+                        )}
+                      </Column>
+                    )}
+                  </>
+                )}
+              </>
+            )}
+          </Column>
+        )}
+
         <ButtonRowSpacer />
       </FormWrapper>
-      <ButtonRow>
-        <Button
+
+      <ButtonRow gap='16px'>
+        <LeoSquaredButton
           onClick={onClickCancel}
-          kind='outline'
+          kind='plain-faint'
         >
           {getLocale('braveWalletButtonCancel')}
-        </Button>
-        <HorizontalSpace space='16px' />
+        </LeoSquaredButton>
+
         <Tooltip
           text={<FormErrorsList errors={formErrors} />}
           isVisible={buttonDisabled}
-          verticalPosition='above'
           maxWidth={120}
+          verticalPosition='above'
         >
-          <AddButtonWrapper>
-            <Button
+          <Row>
+            <LeoSquaredButton
               onClick={addOrUpdateToken}
               isDisabled={buttonDisabled}
-            >
-              {
-                selectedAsset
-                  ? getLocale('braveWalletButtonSaveChanges')
-                  : getLocale('braveWalletWatchListAdd')
+              isLoading={
+                isTokenInfoLoading
+                || isFetchingBalanceCheck
+                || isFetchingNftMetadata
               }
-            </Button>
-          </AddButtonWrapper>
+            >
+              {!userOwnsNft
+                ? getLocale('braveWalletWatchThisNft')
+                : selectedAsset
+                  ? getLocale('braveWalletButtonSaveChanges')
+                  : getLocale('braveWalletWatchListAdd')}
+            </LeoSquaredButton>
+          </Row>
         </Tooltip>
       </ButtonRow>
     </>

@@ -5,43 +5,32 @@
 
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/reward/redeem_reward_confirmation_util.h"
 
-#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsRedeemRewardConfirmationUtilTest : public UnitTestBase {};
+class BraveAdsRedeemRewardConfirmationUtilTest : public test::TestBase {};
 
 TEST_F(BraveAdsRedeemRewardConfirmationUtilTest, AddPaymentToken) {
   // Arrange
-  const PaymentTokenInfo payment_token = BuildPaymentTokenForTesting();
+  const PaymentTokenInfo payment_token = test::BuildPaymentToken();
 
-  // Act
-  const auto result = MaybeAddPaymentToken(payment_token);
-
-  // Assert
-  EXPECT_TRUE(result.has_value());
+  // Act & Assert
+  EXPECT_TRUE(MaybeAddPaymentToken(payment_token));
 }
 
 TEST_F(BraveAdsRedeemRewardConfirmationUtilTest,
        DoNotAddDuplicatePaymentToken) {
   // Arrange
-  const PaymentTokenInfo payment_token = BuildPaymentTokenForTesting();
+  const PaymentTokenInfo payment_token = test::BuildPaymentToken();
+  ASSERT_TRUE(MaybeAddPaymentToken(payment_token));
 
-  {
-    const auto result = MaybeAddPaymentToken(payment_token);
-    ASSERT_TRUE(result.has_value());
-  }
-
-  // Act
-  const auto result = MaybeAddPaymentToken(payment_token);
-
-  // Assert
-  EXPECT_FALSE(result.has_value());
+  // Act & Assert
+  EXPECT_FALSE(MaybeAddPaymentToken(payment_token));
 }
-
 TEST_F(BraveAdsRedeemRewardConfirmationUtilTest, LogPaymentTokenStatus) {
   // Act & Assert
   EXPECT_CALL(ads_client_mock_, Log);

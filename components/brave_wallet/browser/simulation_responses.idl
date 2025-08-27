@@ -4,45 +4,12 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Dummy comments to make the linter happy.
+[modernised_enums]
 namespace simulation_responses {
 
   enum WarningSeverity {
     CRITICAL,
     WARNING
-  };
-
-  // UI should defer to the supplied message if the kind isn't recognized
-  enum WarningKind {
-    APPROVAL_TO_E_O_A,
-    BLOCKLISTED_DOMAIN_CROSS_ORIGIN,
-    BULK_APPROVALS_REQUEST,
-    COMPROMISED_AUTHORITY_UPGRADE,
-    COPY_CAT_DOMAIN,
-    COPY_CAT_IMAGE_UNRESPONSIVE_DOMAIN,
-    DANGLING_APPROVAL,
-    DEVTOOLS_DISABLED,
-    ETH_SIGN_TX_HASH,
-    KNOWN_MALICIOUS,
-    MAINNET_REPLAY_POSSIBLE,
-    MULTI_COPY_CAT_DOMAIN,
-    NEW_DOMAIN,
-    NON_ASCII_URL,
-    OBFUSCATED_CODE,
-    PERMIT_NO_EXPIRATION,
-    PERMIT_UNLIMITED_ALLOWANCE,
-    POISONED_ADDRESS,
-    REFERENCED_OFAC_ADDRESS,
-    SEMI_TRUSTED_BLOCKLIST_DOMAIN,
-    SET_OWNER_AUTHORITY,
-    SUSPECTED_MALICIOUS,
-    TOO_MANY_TRANSACTIONS,
-    TRADE_FOR_NOTHING,
-    TRANSFERRING_ERC20_TO_OWN_CONTRACT,
-    TRUSTED_BLOCKLIST_DOMAIN,
-    UNLIMITED_ALLOWANCE_TO_NFTS,
-    UNUSUAL_GAS_CONSUMPTION,
-    USER_ACCOUNT_OWNER_CHANGE,
-    WHITELISTED_DOMAIN_CROSS_ORIGIN
   };
 
   enum EVMRawInfoKind {
@@ -97,15 +64,8 @@ namespace simulation_responses {
 
   enum SuggestedColor {
     CREDIT,
-    DEBIT
-  };
-
-  dictionary SolanaPrice {
-    AssetPriceSource source;
-
-    // FIXME: The fields below should be in camelCase. Needs an upstream fix.
-    DOMString last_updated_at;
-    DOMString dollar_value_per_token;
+    DEBIT,
+    INFO
   };
 
   dictionary Price {
@@ -116,7 +76,7 @@ namespace simulation_responses {
 
   dictionary Warning {
     WarningSeverity severity;
-    WarningKind kind;
+    DOMString kind;
     DOMString message;
   };
 
@@ -125,7 +85,7 @@ namespace simulation_responses {
     DOMString humanReadableError;
   };
 
-  dictionary EVMContract {
+  dictionary EVMCounterparty {
     EVMAddressKind kind;
     DOMString address;
   };
@@ -137,14 +97,17 @@ namespace simulation_responses {
 
   dictionary EVMAsset {
     DOMString address;
-    DOMString symbol;
-    DOMString name;
-    DOMString decimals;
-    boolean verified;
+    any? symbol;
+    any? name;
+    any? collection;
+    DOMString? decimals;
+    boolean? verified;
+
+    // This field is not be present in case of a native asset.
     DOMString[]? lists;
 
     // nullable field of type DOMString
-    any imageUrl;
+    any? imageUrl;
 
     // nullable field of type Price
     any price;
@@ -155,15 +118,16 @@ namespace simulation_responses {
   };
 
   dictionary ERC20TransferData {
-    EVMContract contract;
+    // nullable field of type EVMCounterparty
+    any counterparty;
+
     EVMAmount amount;
     EVMAsset asset;
   };
 
   dictionary ERC20ApprovalData {
-    EVMContract contract;
-    EVMContract owner;
-    EVMContract spender;
+    EVMCounterparty owner;
+    EVMCounterparty spender;
     EVMAmount amount;
     EVMAsset asset;
   };
@@ -171,71 +135,62 @@ namespace simulation_responses {
   dictionary NativeAssetTransferData {
     EVMAmount amount;
     EVMAsset asset;
-    EVMContract contract;
+
+    // nullable field of type EVMCounterparty
+    any counterparty;
   };
 
   dictionary ERC721TransferData {
     EVMAmount amount;
-    EVMContract contract;
+
+    // nullable field of type EVMCounterparty
+    any counterparty;
+
     NFTMetadata metadata;
-    DOMString name;
-    DOMString symbol;
 
     // nullable field of type DOMString
     any tokenId;
 
-    // nullable field of type Price
-    any assetPrice;
+    EVMAsset asset;
   };
 
   dictionary ERC721ApprovalData {
     EVMAmount amount;
-    EVMContract contract;
     NFTMetadata metadata;
-    DOMString name;
-    EVMContract owner;
-    EVMContract spender;
-    DOMString symbol;
+    EVMCounterparty owner;
+    EVMCounterparty spender;
 
     // nullable field of type DOMString
     any tokenId;
 
-    // nullable field of type Price
-    any assetPrice;
+    EVMAsset asset;
   };
 
   dictionary ERC721ApprovalForAllData {
     EVMAmount amount;
-    EVMContract contract;
-    DOMString name;
-    EVMContract owner;
-    EVMContract spender;
-    DOMString symbol;
-
-    // nullable field of type Price
-    any assetPrice;
+    EVMCounterparty owner;
+    EVMCounterparty spender;
+    EVMAsset asset;
   };
 
   dictionary ERC1155TransferData {
     EVMAmount amount;
-    EVMContract contract;
     NFTMetadata metadata;
-    DOMString name;
 
     // nullable field of type DOMString
     any tokenId;
 
-    // nullable field of type Price
-    any assetPrice;
+    // nullable field of type EVMCounterparty
+    any counterparty;
+
+    EVMAsset asset;
   };
 
   dictionary ERC1155ApprovalForAllData {
     EVMAmount amount;
-    EVMContract contract;
-    EVMContract owner;
-    EVMContract spender;
-    // nullable field of type Price
-    any assetPrice;
+    EVMCounterparty owner;
+    EVMCounterparty spender;
+    EVMAsset asset;
   };
 
   dictionary EVMStateChangeRawInfo {
@@ -258,11 +213,17 @@ namespace simulation_responses {
     EVMStateChangeRawInfo rawInfo;
   };
 
-  dictionary EVMSimulationResults {
-    EVMStateChange[] expectedStateChanges;
+  dictionary EVMAggregatedSimulationResults {
+    // object with key being the account address and value being of type
+    // EVMStateChange[].
+    any expectedStateChanges;
 
     // nullable field of type EVMError
     any error;
+  };
+
+  dictionary EVMSimulationResults {
+    EVMAggregatedSimulationResults aggregated;
   };
 
   dictionary EVMSimulationResponse {
@@ -351,48 +312,50 @@ namespace simulation_responses {
     DOMString humanReadableError;
   };
 
-  dictionary SOLTransferData {
+  dictionary SolanaAsset {
     DOMString symbol;
     DOMString name;
+    DOMString? mint;
     DOMString decimals;
+    any? imageUrl;
+    any price;
+
+    // Optional field of type MetaplexTokenStandardKind. We set the type to any
+    // because optional enums are not yet supported by the IDL compiler.
+    any? metaplexTokenStandard;
+  };
+
+  dictionary SOLTransferData {
+    SolanaAsset asset;
     SolanaDiff diff;
   };
 
   dictionary SPLTransferData {
-    DOMString symbol;
-    DOMString name;
-    DOMString mint;
-    DOMString decimals;
+    SolanaAsset asset;
     SolanaDiff diff;
-    DOMString supply;
-    MetaplexTokenStandardKind metaplexTokenStandard;
 
-    // nullable field of type SolanaPrice
-    any assetPrice;
+    // nullable field of type DOMString
+    any counterparty;
   };
 
   dictionary SPLApprovalData {
     DOMString delegate;
-    DOMString mint;
-    DOMString symbol;
-    DOMString name;
-    DOMString decimals;
     SolanaDiff diff;
-    DOMString supply;
-    MetaplexTokenStandardKind metaplexTokenStandard;
-
-    // nullable field of type SolanaPrice
-    any assetPrice;
+    SolanaAsset asset;
   };
 
   dictionary SOLStakeAuthorityChangeData {
     DOMString stakeAccount;
-    SolanaStakeAuthorities currAuthorities;
+    SolanaStakeAuthorities currentAuthorities;
     SolanaStakeAuthorities futureAuthorities;
-    DOMString symbol;
-    DOMString name;
-    DOMString decimals;
+    SolanaAsset asset;
     DOMString solStaked;
+  };
+
+  dictionary SolanaUserAccountOwnerChangeData {
+    DOMString account;
+    DOMString currentOwner;
+    DOMString futureOwner;
   };
 
   dictionary SolanaStateChangeRawInfo {
@@ -403,6 +366,11 @@ namespace simulation_responses {
     //   - SPLTransferData
     //   - SPLApprovalData
     //   - SOLStakeAuthorityChangeData
+    //   - SolanaUserAccountOwnerChangeData
+    //   - TODO(onyb): add BFPLoaderAuthorityChangeData
+    //   - TODO(onyb): add CompressedNFTTransferData
+    //   - TODO(onyb): add SOLStakeAccountDeposit
+    //   - TODO(onyb): add SOLStakeAccountWithdrawal
     any data;
   };
 
@@ -412,17 +380,20 @@ namespace simulation_responses {
     SolanaStateChangeRawInfo rawInfo;
   };
 
-  dictionary SolanaSimulationResults {
-    SolanaStateChange[] expectedStateChanges;
+  dictionary SolanaAggregatedSimulationResults {
+    DOMString action; // BLOCK | WARN | NONE
+    Warning[] warnings;
+
+    // object with key being the account address and value being of type
+    // SolanaStateChange[].
+    any expectedStateChanges;
 
     // nullable field of type SolanaError
     any error;
   };
 
   dictionary SolanaSimulationResponse {
-    DOMString action; // BLOCK | WARN | NONE
-    Warning[] warnings;
-    SolanaSimulationResults simulationResults;
+    SolanaAggregatedSimulationResults aggregated;
   };
 
   dictionary HTTPError {

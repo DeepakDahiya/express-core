@@ -5,10 +5,13 @@
 
 #include "brave/components/brave_wallet/renderer/js_solana_provider.h"
 
+#include <optional>
 #include <tuple>
 #include <utility>
 
+#include "base/check.h"
 #include "base/no_destructor.h"
+#include "base/notreached.h"
 #include "brave/components/brave_wallet/common/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/common/brave_wallet_response_helpers.h"
 #include "brave/components/brave_wallet/common/encoding_utils.h"
@@ -23,9 +26,9 @@
 #include "content/public/renderer/v8_value_converter.h"
 #include "gin/array_buffer.h"
 #include "gin/converter.h"
-#include "gin/handle.h"
 #include "gin/object_template_builder.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/scheduler/web_agent_group_scheduler.h"
 #include "third_party/blink/public/platform/web_string.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_console_message.h"
@@ -33,6 +36,8 @@
 #include "third_party/blink/public/web/web_script_source.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "v8/include/cppgc/allocation.h"
+#include "v8/include/v8-cppgc.h"
 #include "v8/include/v8-microtask-queue.h"
 #include "v8/include/v8-proxy.h"
 #include "v8/include/v8-typed-array.h"
@@ -85,49 +90,24 @@ constexpr char kSolanaProxyHandlerScript[] = R"((function() {
   return handler;
 })())";
 
+constexpr char kSolanaAccountChangedEvent[] = "accountChanged";
+
 }  // namespace
 
 JSSolanaProvider::JSSolanaProvider(content::RenderFrame* render_frame)
     : RenderFrameObserver(render_frame),
       v8_value_converter_(content::V8ValueConverter::Create()) {
   EnsureConnected();
-  v8_value_converter_->SetStrategy(&strategy_);
 }
 
 JSSolanaProvider::~JSSolanaProvider() = default;
 
-gin::WrapperInfo JSSolanaProvider::kWrapperInfo = {gin::kEmbedderNativeGin};
-
-// Convert Uint8Array to blob base::Value
-bool JSSolanaProvider::V8ConverterStrategy::FromV8ArrayBuffer(
-    v8::Local<v8::Object> value,
-    std::unique_ptr<base::Value>* out,
-    v8::Isolate* isolate) {
-  if (!value->IsTypedArray()) {
-    return false;
-  }
-  std::vector<uint8_t> bytes;
-  char* data = nullptr;
-  size_t data_length = 0;
-  gin::ArrayBufferView view;
-  if (gin::ConvertFromV8(isolate, value.As<v8::ArrayBufferView>(), &view)) {
-    data = reinterpret_cast<char*>(view.bytes());
-    data_length = view.num_bytes();
-    bytes.assign(data, data + data_length);
-  }
-  if (!bytes.size()) {
-    return false;
-  }
-  std::unique_ptr<base::Value> new_value = std::make_unique<base::Value>(bytes);
-  *out = std::move(new_value);
-
-  return true;
-}
-
 // static
 void JSSolanaProvider::Install(bool allow_overwrite_window_solana,
                                content::RenderFrame* render_frame) {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  CHECK(render_frame);
+  v8::Isolate* isolate =
+      render_frame->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       render_frame->GetWebFrame()->MainWorldScriptContext();
@@ -148,25 +128,22 @@ void JSSolanaProvider::Install(bool allow_overwrite_window_solana,
   }
 
   // v8 will manage the lifetime of JSSolanaProvider
-  gin::Handle<JSSolanaProvider> provider =
-      gin::CreateHandle(isolate, new JSSolanaProvider(render_frame));
-  if (provider.IsEmpty()) {
-    return;
-  }
-  v8::Local<v8::Value> provider_value = provider.ToV8();
+  JSSolanaProvider* provider = cppgc::MakeGarbageCollected<JSSolanaProvider>(
+      isolate->GetCppHeap()->GetAllocationHandle(), render_frame);
   v8::Local<v8::Object> provider_object =
-      provider_value->ToObject(context).ToLocalChecked();
+      provider->GetWrapper(isolate).ToLocalChecked();
 
   // Create a proxy to the actual JSSolanaProvider object which will be
   // exposed via window.braveSolana and window.solana.
   blink::WebLocalFrame* web_frame = render_frame->GetWebFrame();
-  v8::Local<v8::Proxy> solana_proxy;
-  auto solana_proxy_handler_val =
-      ExecuteScript(web_frame, kSolanaProxyHandlerScript);
+  v8::Local<v8::Value> solana_proxy_handler_val;
+  if (!ExecuteScript(web_frame, kSolanaProxyHandlerScript)
+           .ToLocal(&solana_proxy_handler_val)) {
+    return;
+  }
   v8::Local<v8::Object> solana_proxy_handler_obj =
-      solana_proxy_handler_val.ToLocalChecked()
-          ->ToObject(context)
-          .ToLocalChecked();
+      solana_proxy_handler_val->ToObject(context).ToLocalChecked();
+  v8::Local<v8::Proxy> solana_proxy;
   if (!v8::Proxy::New(context, provider_object, solana_proxy_handler_obj)
            .ToLocal(&solana_proxy)) {
     return;
@@ -190,8 +167,7 @@ void JSSolanaProvider::Install(bool allow_overwrite_window_solana,
        {"connect", "disconnect", "signAndSendTransaction", "signMessage",
         "request", "signTransaction", "signAllTransactions",
         "walletStandardInit"}) {
-    SetOwnPropertyWritable(context,
-                           provider_value->ToObject(context).ToLocalChecked(),
+    SetOwnPropertyWritable(context, provider_object,
                            gin::StringToV8(isolate, method), false);
   }
 
@@ -226,16 +202,17 @@ gin::ObjectTemplateBuilder JSSolanaProvider::GetObjectTemplateBuilder(
       .SetMethod("walletStandardInit", &JSSolanaProvider::WalletStandardInit);
 }
 
-const char* JSSolanaProvider::GetTypeName() {
-  return "JSSolanaProvider";
+const gin::WrapperInfo* JSSolanaProvider::wrapper_info() const {
+  return &kWrapperInfo;
 }
 
 void JSSolanaProvider::AccountChangedEvent(
-    const absl::optional<std::string>& account) {
+    const std::optional<std::string>& account) {
   if (!render_frame()) {
     return;
   }
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame()->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context =
       render_frame()->GetWebFrame()->MainWorldScriptContext();
@@ -248,11 +225,13 @@ void JSSolanaProvider::AccountChangedEvent(
     v8::Local<v8::Value> v8_public_key = CreatePublicKey(context, *account);
     args.push_back(std::move(v8_public_key));
   }
-  FireEvent(solana::kAccountChangedEvent, std::move(args));
+  FireEvent(kSolanaAccountChangedEvent, std::move(args));
 }
 
 void JSSolanaProvider::DisconnectEvent() {
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  CHECK(render_frame());
+  v8::Isolate* isolate =
+      render_frame()->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::HandleScope handle_scope(isolate);
   FireEvent(kDisconnectEvent, std::vector<v8::Local<v8::Value>>());
 }
@@ -271,7 +250,7 @@ bool JSSolanaProvider::EnsureConnected() {
     return false;
   }
   if (!solana_provider_.is_bound()) {
-    render_frame()->GetBrowserInterfaceBroker()->GetInterface(
+    render_frame()->GetBrowserInterfaceBroker().GetInterface(
         solana_provider_.BindNewPipeAndPassReceiver());
     solana_provider_->Init(receiver_.BindNewPipeAndPassRemote());
   }
@@ -319,7 +298,7 @@ v8::Local<v8::Promise> JSSolanaProvider::Connect(gin::Arguments* arguments) {
   }
 
   // Get base::Value arg to pass and ignore extra parameters
-  absl::optional<base::Value::Dict> arg = absl::nullopt;
+  std::optional<base::Value::Dict> arg = std::nullopt;
   v8::Local<v8::Value> v8_arg;
   if (arguments->Length() >= 1 && !arguments->GetNext(&v8_arg)) {
     arguments->ThrowTypeError(
@@ -395,7 +374,7 @@ v8::Local<v8::Promise> JSSolanaProvider::SignAndSendTransaction(
     return v8::Local<v8::Promise>();
   }
 
-  absl::optional<base::Value::Dict> send_options = absl::nullopt;
+  std::optional<base::Value::Dict> send_options = std::nullopt;
   v8::Local<v8::Value> v8_send_options;
   if (arguments->Length() > 1 && !arguments->GetNext(&v8_send_options)) {
     arguments->ThrowTypeError(
@@ -453,7 +432,7 @@ v8::Local<v8::Promise> JSSolanaProvider::SignMessage(
     return v8::Local<v8::Promise>();
   }
 
-  absl::optional<std::string> display_str = absl::nullopt;
+  std::optional<std::string> display_str = std::nullopt;
   v8::Local<v8::Value> display;
   if (arguments->GetNext(&display)) {
     std::unique_ptr<base::Value> display_value =
@@ -623,8 +602,11 @@ void JSSolanaProvider::WalletStandardInit(gin::Arguments* arguments) {
       {"(function() {", LoadDataResource(IDR_BRAVE_WALLET_STANDARD_JS),
        "return walletStandardBrave; })()"});
 
-  v8::Local<v8::Value> wallet_standard =
-      ExecuteScript(web_frame, wallet_standard_module_str).ToLocalChecked();
+  v8::Local<v8::Value> wallet_standard;
+  if (!ExecuteScript(web_frame, wallet_standard_module_str)
+           .ToLocal(&wallet_standard)) {
+    return;
+  }
   v8::Local<v8::Value> object;
   v8::Isolate* isolate = arguments->isolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
@@ -736,7 +718,7 @@ void JSSolanaProvider::OnSignMessage(
     const base::Value signature_value(signature_bytes);
     v8::Local<v8::Value> v8_signature =
         v8_value_converter_->ToV8Value(signature_value, context);
-    // From ArraryBuffer to Uint8Array
+    // From ArrayBuffer to Uint8Array
     v8_signature =
         v8::Uint8Array::New(v8::Local<v8::ArrayBuffer>::Cast(v8_signature), 0,
                             (kSolanaSignatureSize));
@@ -800,7 +782,7 @@ void JSSolanaProvider::OnSignAllTransactions(
   if (error == mojom::SolanaProviderError::kSuccess) {
     size_t serialized_txs_length = serialized_txs.size();
     v8::Local<v8::Array> tx_array =
-        v8::Array::New(context->GetIsolate(), serialized_txs_length);
+        v8::Array::New(v8::Isolate::GetCurrent(), serialized_txs_length);
     for (size_t i = 0; i < serialized_txs_length; ++i) {
       v8::Local<v8::Value> transaction =
           CreateTransaction(context, serialized_txs[i], versions[i]);
@@ -881,12 +863,13 @@ void JSSolanaProvider::SendResponse(
   }
 }
 
-absl::optional<std::string> JSSolanaProvider::GetSerializedMessage(
+std::optional<std::string> JSSolanaProvider::GetSerializedMessage(
     v8::Local<v8::Value> transaction) {
   if (!render_frame()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame()->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   v8::MaybeLocal<v8::Value> serialized_msg;
@@ -904,56 +887,57 @@ absl::optional<std::string> JSSolanaProvider::GetSerializedMessage(
   }
 
   if (serialized_msg.IsEmpty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::unique_ptr<base::Value> blob_value = v8_value_converter_->FromV8Value(
       serialized_msg.ToLocalChecked(), context);
   if (!blob_value->is_blob()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return Base58Encode(blob_value->GetBlob());
 }
 
-absl::optional<std::vector<uint8_t>>
+std::optional<std::vector<uint8_t>>
 JSSolanaProvider::GetSignatureBlobFromV8Signature(
     const v8::Local<v8::Value>& v8_signature,
     const v8::Local<v8::Context>& context) {
   std::unique_ptr<base::Value> sig_blob_value =
       v8_value_converter_->FromV8Value(v8_signature, context);
   if (!sig_blob_value || !sig_blob_value->is_blob()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return sig_blob_value->GetBlob();
 }
 
-absl::optional<std::string> JSSolanaProvider::GetPubkeyStringFromV8Pubkey(
+std::optional<std::string> JSSolanaProvider::GetPubkeyStringFromV8Pubkey(
     const v8::Local<v8::Value>& v8_pubkey_object,
     const v8::Local<v8::Context>& context) {
   v8::MaybeLocal<v8::Value> v8_pubkey =
       CallMethodOfObject(render_frame()->GetWebFrame(), v8_pubkey_object,
                          kToString, std::vector<v8::Local<v8::Value>>());
   if (v8_pubkey.IsEmpty()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   std::unique_ptr<base::Value> pubkey_value =
       v8_value_converter_->FromV8Value(v8_pubkey.ToLocalChecked(), context);
   if (!pubkey_value || !pubkey_value->is_string()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return pubkey_value->GetString();
 }
 
-absl::optional<std::vector<mojom::SignaturePubkeyPairPtr>>
+std::optional<std::vector<mojom::SignaturePubkeyPairPtr>>
 JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
   if (!render_frame()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
-  v8::Isolate* isolate = blink::MainThreadIsolate();
+  v8::Isolate* isolate =
+      render_frame()->GetWebFrame()->GetAgentGroupScheduler()->Isolate();
   v8::Local<v8::Context> context = isolate->GetCurrentContext();
 
   v8::Local<v8::Value> signatures;
@@ -978,7 +962,7 @@ JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
         static_account_keys.As<v8::Array>();
     uint32_t static_account_keys_count = static_account_keys_array->Length();
     if (static_account_keys_count < signatures_count) {
-      return absl::nullopt;
+      return std::nullopt;
     }
 
     for (uint32_t i = 0; i < signatures_count; ++i) {
@@ -988,7 +972,7 @@ JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
       auto signature_blob =
           GetSignatureBlobFromV8Signature(v8_signature, context);
       if (!signature_blob) {
-        return absl::nullopt;
+        return std::nullopt;
       }
 
       // Get pubkey.
@@ -997,10 +981,12 @@ JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
       auto pubkey_string =
           GetPubkeyStringFromV8Pubkey(v8_pubkey_object, context);
       if (!pubkey_string) {
-        return absl::nullopt;
+        return std::nullopt;
       }
-      sig_pubkey_pairs.push_back(
-          mojom::SignaturePubkeyPair::New(signature_blob, *pubkey_string));
+      sig_pubkey_pairs.push_back(mojom::SignaturePubkeyPair::New(
+          signature_blob ? mojom::SolanaSignature::New(*signature_blob)
+                         : mojom::SolanaSignaturePtr(),
+          *pubkey_string));
     }
   } else {  // Transaction
     for (uint32_t i = 0; i < signatures_count; ++i) {
@@ -1010,11 +996,11 @@ JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
           signatures_array->Get(context, i).ToLocalChecked();
       CHECK(GetProperty(context, v8_sig_pubkey_pair, kSignature)
                 .ToLocal(&v8_signature));
-      absl::optional<std::vector<uint8_t>> signature_blob = absl::nullopt;
+      std::optional<std::vector<uint8_t>> signature_blob = std::nullopt;
       if (!v8_signature->IsNullOrUndefined()) {
         signature_blob = GetSignatureBlobFromV8Signature(v8_signature, context);
         if (!signature_blob) {
-          return absl::nullopt;
+          return std::nullopt;
         }
       }
 
@@ -1025,11 +1011,13 @@ JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
       auto pubkey_string =
           GetPubkeyStringFromV8Pubkey(v8_pubkey_object, context);
       if (!pubkey_string) {
-        return absl::nullopt;
+        return std::nullopt;
       }
 
-      sig_pubkey_pairs.push_back(
-          mojom::SignaturePubkeyPair::New(signature_blob, *pubkey_string));
+      sig_pubkey_pairs.push_back(mojom::SignaturePubkeyPair::New(
+          signature_blob ? mojom::SolanaSignature::New(*signature_blob)
+                         : mojom::SolanaSignaturePtr(),
+          *pubkey_string));
     }
   }
 
@@ -1038,12 +1026,12 @@ JSSolanaProvider::GetSignatures(v8::Local<v8::Value> transaction) {
 
 mojom::SolanaSignTransactionParamPtr JSSolanaProvider::GetSignTransactionParam(
     v8::Local<v8::Value> transaction) {
-  absl::optional<std::string> serialized_message =
+  std::optional<std::string> serialized_message =
       GetSerializedMessage(transaction);
   if (!serialized_message) {
     return nullptr;
   }
-  absl::optional<std::vector<mojom::SignaturePubkeyPairPtr>> signatures =
+  std::optional<std::vector<mojom::SignaturePubkeyPairPtr>> signatures =
       GetSignatures(transaction);
   if (!signatures) {
     return nullptr;
@@ -1064,21 +1052,20 @@ bool JSSolanaProvider::LoadSolanaWeb3ModuleIfNeeded(v8::Isolate* isolate) {
       {"(function() {", LoadDataResource(IDR_BRAVE_WALLET_SOLANA_WEB3_JS),
        "return solanaWeb3; })()"});
 
-  solana_web3_module_.Reset(
-      isolate,
-      ExecuteScript(render_frame()->GetWebFrame(), solana_web3_module_str)
-          .ToLocalChecked());
+  v8::Local<v8::Value> solana_web3_module;
   // loading SolanaWeb3 module failed
-  if (solana_web3_module_.IsEmpty()) {
+  if (!ExecuteScript(render_frame()->GetWebFrame(), solana_web3_module_str)
+           .ToLocal(&solana_web3_module)) {
     return false;
   }
+  solana_web3_module_.Reset(isolate, solana_web3_module);
   return true;
 }
 
 v8::Local<v8::Value> JSSolanaProvider::CreatePublicKey(
     v8::Local<v8::Context> context,
     const std::string& base58_str) {
-  v8::Isolate* isolate = context->GetIsolate();
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
   v8::MicrotasksScope microtasks(isolate, context->GetMicrotaskQueue(),
                                  v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::Context::Scope context_scope(context);
@@ -1110,7 +1097,7 @@ v8::Local<v8::Value> JSSolanaProvider::CreateTransaction(
     v8::Local<v8::Context> context,
     const std::vector<uint8_t> serialized_tx,
     mojom::SolanaMessageVersion version) {
-  v8::Isolate* isolate = context->GetIsolate();
+  v8::Isolate* isolate = v8::Isolate::GetCurrent();
   if (!render_frame()) {
     return v8::Undefined(isolate);
   }
@@ -1149,7 +1136,7 @@ v8::Local<v8::Value> JSSolanaProvider::CreateTransaction(
                                      versioned_transaction_module, kDeserialize,
                                      std::move(args));
   } else {
-    NOTREACHED_NORETURN();
+    NOTREACHED();
   }
 
   if (transaction.IsEmpty()) {

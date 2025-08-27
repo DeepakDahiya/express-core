@@ -7,11 +7,11 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_BROWSER_EIP2930_TRANSACTION_H_
 
 #include <array>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "brave/components/brave_wallet/browser/eth_transaction.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_wallet {
 
@@ -37,23 +37,22 @@ class Eip2930Transaction : public EthTransaction {
   ~Eip2930Transaction() override;
   bool operator==(const Eip2930Transaction&) const;
 
-  static absl::optional<Eip2930Transaction> FromTxData(const mojom::TxDataPtr&,
-                                                       uint256_t chain_id,
-                                                       bool strict = true);
-  static absl::optional<Eip2930Transaction> FromValue(
+  static std::optional<Eip2930Transaction> FromTxData(const mojom::TxDataPtr&,
+                                                      uint256_t chain_id,
+                                                      bool strict = true);
+  static std::optional<Eip2930Transaction> FromValue(
       const base::Value::Dict& value);
 
   static base::Value::List AccessListToValue(const AccessList&);
-  static absl::optional<AccessList> ValueToAccessList(const base::Value::List&);
+  static std::optional<AccessList> ValueToAccessList(const base::Value::List&);
 
   uint256_t chain_id() const { return chain_id_; }
   const AccessList* access_list() const { return &access_list_; }
   AccessList* access_list() { return &access_list_; }
 
-  // keccak256(0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data,
-  // accessList]))
-  std::vector<uint8_t> GetMessageToSign(uint256_t chain_id = 0,
-                                        bool hash = true) const override;
+  // 0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data,
+  // accessList])
+  std::vector<uint8_t> GetMessageToSign(uint256_t chain_id) const override;
 
   // 0x01 || rlp([chainId, nonce, gasPrice, gasLimit, to, value, data,
   // accessList, signatureYParity, signatureR, signatureS])
@@ -63,10 +62,6 @@ class Eip2930Transaction : public EthTransaction {
   // accessList, signatureYParity, signatureR, signatureS]))
   std::string GetTransactionHash() const override;
 
-  void ProcessSignature(const std::vector<uint8_t> signature,
-                        int recid,
-                        uint256_t chain_id = 0) override;
-
   bool IsSigned() const override;
 
   base::Value::Dict ToValue() const override;
@@ -74,7 +69,7 @@ class Eip2930Transaction : public EthTransaction {
   uint256_t GetDataFee() const override;
 
  protected:
-  Eip2930Transaction(absl::optional<uint256_t> nonce,
+  Eip2930Transaction(std::optional<uint256_t> nonce,
                      uint256_t gas_price,
                      uint256_t gas_limit,
                      const EthAddress& to,
@@ -84,6 +79,8 @@ class Eip2930Transaction : public EthTransaction {
 
   uint256_t chain_id_;
   AccessList access_list_;
+
+  bool VIsRecid() const override;
 
  private:
   std::vector<uint8_t> Serialize() const;

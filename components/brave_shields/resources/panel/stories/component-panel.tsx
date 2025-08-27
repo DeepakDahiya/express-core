@@ -9,8 +9,6 @@ import { withKnobs, boolean, text } from '@storybook/addon-knobs'
 import './locale'
 import MainPanel from '../components/main-panel'
 import TreeList from '../components/tree-list'
-import shieldsDarkTheme from '../theme/shields-dark'
-import shieldsLightTheme from '../theme/shields-light'
 import ThemeProvider from '../../../../common/BraveCoreThemeProvider'
 import DataContext from '../state/context'
 import { AdBlockMode, FingerprintMode, CookieBlockMode, HttpsUpgradeMode } from '../api/panel_browser_api'
@@ -18,6 +16,8 @@ import {
   ViewType
 } from '../state/component_types'
 import { getLocale } from '../../../../common/locale'
+
+import '@brave/leo/tokens/css/variables.css'
 
 const LIST_JS = [
   { 'url': 'https://www.reddit.com/' },
@@ -63,26 +63,24 @@ export default {
           allowedJsList: LIST_JS,
           httpRedirectsList: [],
           fingerprintsList: [],
-          faviconUrl: { url: 'https://brave.com/static-assets/images/brave-favicon.png' }
+          faviconUrl: { url: 'https://brave.com/static-assets/images/brave-favicon.png' },
+          invokedWebcompatList: []
         },
         siteSettings: {
           adBlockMode: AdBlockMode.ALLOW,
-          fingerprintMode: FingerprintMode.ALLOW,
+          fingerprintMode: FingerprintMode.ALLOW_MODE,
           cookieBlockMode: CookieBlockMode.ALLOW,
-          isHttpsEverywhereEnabled: true,
-          httpsUpgradeMode: HttpsUpgradeMode.DISABLED,
+          httpsUpgradeMode: HttpsUpgradeMode.DISABLED_MODE,
           isNoscriptEnabled: false,
-          isForgetFirstPartyStorageEnabled: false
+          isForgetFirstPartyStorageEnabled: false,
+          webcompatSettings: {}
         },
         viewType: ViewType.Main
       }
 
       return (
         <DataContext.Provider value={store}>
-          <ThemeProvider
-            dark={shieldsDarkTheme}
-            light={shieldsLightTheme}
-          >
+          <ThemeProvider>
             <Story />
           </ThemeProvider>
         </DataContext.Provider>
@@ -92,29 +90,33 @@ export default {
   ]
 }
 
-export const _Main = () => {
-  return (
-    <S.PanelFrame>
-      <MainPanel />
-    </S.PanelFrame>
-  )
+export const _Main = {
+  render: () => {
+    return (
+      <S.PanelFrame>
+        <MainPanel />
+      </S.PanelFrame>
+    )
+  }
 }
 
-export const _ResourceList = () => {
-  const { siteBlockInfo } = React.useContext(DataContext)
+export const _ResourceList = {
+  render: () => {
+    const { siteBlockInfo } = React.useContext(DataContext)
 
-  if (!siteBlockInfo) {
-    return
+    if (!siteBlockInfo) {
+      return
+    }
+
+    return (
+      <S.PanelFrame>
+        <TreeList
+          blockedList={siteBlockInfo?.blockedJsList}
+          allowedList={siteBlockInfo?.allowedJsList}
+          totalAllowedTitle={getLocale('braveShieldsAllowedScriptsLabel')}
+          totalBlockedTitle={getLocale('braveShieldsBlockedScriptsLabel')}
+        />
+      </S.PanelFrame>
+    )
   }
-
-  return (
-    <S.PanelFrame>
-      <TreeList
-        blockedList={ siteBlockInfo?.blockedJsList }
-        allowedList={ siteBlockInfo?.allowedJsList }
-        totalAllowedTitle={getLocale('braveShieldsAllowedScriptsLabel')}
-        totalBlockedTitle={getLocale('braveShieldsBlockedScriptsLabel')}
-      />
-    </S.PanelFrame>
-  )
 }

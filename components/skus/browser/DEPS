@@ -1,6 +1,24 @@
 include_rules = [
+  "+components/keyed_service",
+  "+components/prefs",
+  "+components/sync_preferences/testing_pref_service_syncable.h",
   "+services/network/public",
+  "+services/data_decoder/public",
   "+services/preferences/public",
-  "+third_party/rust/chromium_crates_io/vendor/cxx-1.0.110/include",
-  "+third_party/rust/cxx",
+  "+services/network/test",
 ]
+
+specific_include_rules = {
+  "skus_url_loader_impl\.h": [
+    "+third_party/rust/cxx/v1/cxx.h"
+  ],
+  "skus_url_loader_impl_unittest\.cc": [
+    "+third_party/rust/cxx/v1/cxx.h"
+  ],
+  "skus_context_impl\.h": [
+    "+third_party/rust/cxx/v1/cxx.h"
+  ],
+  "skus_service_impl\.h": [
+    "+third_party/rust/cxx/v1/cxx.h"
+  ],
+}

@@ -5,42 +5,25 @@
 
 #include "brave/components/brave_wallet/browser/fil_tx_state_manager.h"
 
-#include <utility>
+#include <optional>
 
-#include "base/strings/strcat.h"
 #include "base/values.h"
-#include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/fil_tx_meta.h"
 #include "brave/components/brave_wallet/browser/tx_meta.h"
-#include "brave/components/brave_wallet/common/fil_address.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_wallet {
 
 FilTxStateManager::FilTxStateManager(
-    PrefService* prefs,
-    TxStorageDelegate* delegate,
-    AccountResolverDelegate* account_resolver_delegate)
-    : TxStateManager(prefs, delegate, account_resolver_delegate) {}
+    TxStorageDelegate& delegate,
+    AccountResolverDelegate& account_resolver_delegate)
+    : TxStateManager(delegate, account_resolver_delegate) {}
 
 FilTxStateManager::~FilTxStateManager() = default;
 
-std::unique_ptr<FilTxMeta> FilTxStateManager::GetFilTx(
-    const std::string& chain_id,
-    const std::string& id) {
+std::unique_ptr<FilTxMeta> FilTxStateManager::GetFilTx(const std::string& id) {
   return std::unique_ptr<FilTxMeta>{
-      static_cast<FilTxMeta*>(TxStateManager::GetTx(chain_id, id).release())};
-}
-
-std::string FilTxStateManager::GetTxPrefPathPrefix(
-    const absl::optional<std::string>& chain_id) {
-  if (chain_id.has_value()) {
-    return base::StrCat(
-        {kFilecoinPrefKey, ".",
-         GetNetworkId(prefs_, mojom::CoinType::FIL, *chain_id)});
-  }
-  return kFilecoinPrefKey;
+      static_cast<FilTxMeta*>(TxStateManager::GetTx(id).release())};
 }
 
 mojom::CoinType FilTxStateManager::GetCoinType() const {
@@ -64,7 +47,7 @@ std::unique_ptr<TxMeta> FilTxStateManager::ValueToTxMeta(
   if (!tx) {
     return nullptr;
   }
-  absl::optional<FilTransaction> tx_from_value = FilTransaction::FromValue(*tx);
+  std::optional<FilTransaction> tx_from_value = FilTransaction::FromValue(*tx);
   if (!tx_from_value) {
     return nullptr;
   }

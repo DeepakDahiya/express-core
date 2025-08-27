@@ -7,8 +7,9 @@ import * as React from 'react'
 import styled, { css } from 'styled-components'
 
 import Icon from '@brave/leo/react/icon'
-import ButtonMenu, { ButtonMenuProps } from '@brave/leo/react/buttonMenu'
-import { color, spacing } from '@brave/leo/tokens/css'
+import Button from '@brave/leo/react/button'
+import ButtonMenu from '@brave/leo/react/buttonMenu'
+import { color, spacing } from '@brave/leo/tokens/css/variables'
 
 interface MenuItemProps {
   name: string
@@ -17,7 +18,7 @@ interface MenuItemProps {
 }
 
 interface MenuProps {
-  items: MenuItemProps[]
+  items: Array<MenuItemProps | undefined>
   visible: boolean
   onShowMenu?: () => void
   onDismissMenu?: () => void
@@ -31,7 +32,7 @@ const StyledRow = styled.div`
 `
 
 const StyledButtonMenu = styled(ButtonMenu)<{ visible: boolean }>`
-  ${p =>
+  ${(p) =>
     !p.visible &&
     css`
       visibility: hidden;
@@ -40,33 +41,52 @@ const StyledButtonMenu = styled(ButtonMenu)<{ visible: boolean }>`
   color: ${color.text.secondary};
 `
 
+const StyledButton = styled(Button)`
+  --leo-button-padding: 0;
+`
+
 export default function ContextualMenuAnchorButton ({
   items,
   visible,
   onShowMenu,
   onDismissMenu
 }: MenuProps) {
-  const menuButtonProps: ButtonMenuProps = {}
-  // Force menu widget to be closed when the anchor button is not visible. In
-  // case where it's visible, the menuButtonProps doesn't contain isOpen property,
-  // so it won't affect the behavior of the menu.
-  if (!visible) menuButtonProps.isOpen = false
+  const [open, setOpen] = React.useState(false)
 
-  // TODO(sko) We don't have event for opening menu widget. Once it's ready,
-  // wire onShowMenu and onDismissMenu to corresponding events.
+  // When the anchor button isn't visible, hide the menu
+  React.useEffect(() => {
+    if (!visible) setOpen(false)
+  }, [visible])
+
   return (
-    <StyledButtonMenu tabIndex={0} visible={visible} {...menuButtonProps}>
-      <div slot='anchor-content'>
+    <StyledButtonMenu
+      visible={visible}
+      onChange={({ isOpen }) => {
+        if (isOpen) onShowMenu?.()
+        setOpen(isOpen)
+      }}
+      onClose={() => onDismissMenu?.()}
+      isOpen={open}
+    >
+      <StyledButton kind='plain-faint' size='small' slot='anchor-content'>
         <Icon name='more-horizontal' />
-      </div>
-      {items.map(i => (
-        <leo-menu-item key={i.name} onClick={i.onClick}>
-          <StyledRow>
-            <span>{i.name}</span>
-            <Icon name={i.iconName} />
-          </StyledRow>
-        </leo-menu-item>
-      ))}
+      </StyledButton>
+      {items
+        .filter((i) => i)
+        .map((i) => (
+          <leo-menu-item
+            key={i!.name}
+            onClick={(e) => {
+              e.stopPropagation()
+              i!.onClick()
+            }}
+          >
+            <StyledRow>
+              <span>{i!.name}</span>
+              <Icon name={i!.iconName} />
+            </StyledRow>
+          </leo-menu-item>
+        ))}
     </StyledButtonMenu>
   )
 }

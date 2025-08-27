@@ -10,6 +10,8 @@
 
 #include "base/apple/foundation_util.h"
 #include "base/apple/scoped_cftyperef.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/logging.h"
 #include "base/mac/mac_util.h"
 #include "base/strings/sys_string_conversions.h"
@@ -21,7 +23,8 @@
 
 namespace text_recognition {
 
-std::vector<std::string> GetTextFromImage(const SkBitmap& image) {
+std::pair<bool, std::vector<std::string>> GetTextFromImage(
+    const SkBitmap& image) {
   base::ScopedBlockingCall scoped_blocking_call(FROM_HERE,
                                                 base::BlockingType::WILL_BLOCK);
   std::vector<std::string> result;
@@ -77,7 +80,7 @@ std::vector<std::string> GetTextFromImage(const SkBitmap& image) {
     }
   }
 
-  return result;
+  return {true, result};
 }
 
 }  // namespace text_recognition

@@ -3,18 +3,18 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 import styled, { css } from 'styled-components'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 
 import {
   layoutPanelWidth,
-  layoutSmallWidth
+  layoutSmallWidth,
 } from '../../desktop/wallet-page-wrapper/wallet-page-wrapper.style'
 import { WalletButton, Text } from '../style'
 
 export const breakpoints = {
   panel: `${layoutPanelWidth}px`,
-  small: `${layoutSmallWidth}px`
+  small: `${layoutSmallWidth}px`,
 }
 
 export const StyledWrapper = styled.div`
@@ -53,8 +53,8 @@ export const HeaderItem = styled.div<{
 }>`
   display: flex;
   align-items: center;
-  gap: ${({ sortable }) => sortable ? '5px': '0px'};
-  cursor: ${({ sortable }) => sortable ? 'pointer' : 'auto'};
+  gap: ${({ sortable }) => (sortable ? '5px' : '0px')};
+  cursor: ${({ sortable }) => (sortable ? 'pointer' : 'auto')};
   font-family: Poppins;
   font-size: 12px;
   font-style: normal;
@@ -62,17 +62,20 @@ export const HeaderItem = styled.div<{
   line-height: 18px;
   color: ${leo.color.text.tertiary};
   ${({ hideOnPanel }) =>
-    hideOnPanel &&
-    css`
+    hideOnPanel
+    && css`
       @media (max-width: ${breakpoints.panel}) {
         display: none;
       }
     `}
   ${({ hideOnSmall }) =>
-    hideOnSmall &&
-    css`
-      @media (min-width: ${breakpoints.panel}) and
-      (max-width: ${breakpoints.small}) {
+    hideOnSmall
+    && css`
+      @media (min-width: ${
+          breakpoints.panel //
+        }) and (max-width: ${
+          breakpoints.small //
+        }) {
         display: none;
       }
     `}
@@ -88,8 +91,14 @@ export const GridRow = styled.div<{ templateColumns: string }>`
   display: grid;
   grid-template-columns: ${({ templateColumns }) => templateColumns};
   gap: 5px;
-  padding-top: 16px;
+  margin-top: 16px;
+  padding: 6px;
   cursor: pointer;
+  border-radius: 10px;
+  transition: background-color 300ms ease-out;
+  &:hover {
+    background-color: ${leo.color.page.background};
+  }
 `
 
 export const Cell = styled.div<{
@@ -107,17 +116,20 @@ export const Cell = styled.div<{
   color: ${leo.color.text.primary};
   overflow: hidden;
   ${({ hideOnPanel }) =>
-    hideOnPanel &&
-    css`
+    hideOnPanel
+    && css`
       @media (max-width: ${breakpoints.panel}) {
         display: none;
       }
     `}
   ${({ hideOnSmall }) =>
-    hideOnSmall &&
-    css`
-      @media (min-width: ${breakpoints.panel}) and
-      (max-width: ${breakpoints.small}) {
+    hideOnSmall
+    && css`
+      @media (min-width: ${
+          breakpoints.panel //
+        }) and (max-width: ${
+          breakpoints.small //
+        }) {
         display: none;
       }
     `}

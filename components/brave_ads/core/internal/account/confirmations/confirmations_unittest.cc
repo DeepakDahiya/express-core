@@ -7,63 +7,78 @@
 
 #include <memory>
 
-#include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
-#include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_mock.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/account/transactions/transactions_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "base/run_loop.h"
+#include "base/test/gmock_callback_support.h"
+#include "base/test/mock_callback.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue_database_table.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_test_util.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_test_util.h"
+#include "brave/components/brave_ads/core/internal/account/transactions/transaction_info.h"
+#include "brave/components/brave_ads/core/internal/account/transactions/transactions_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsConfirmationsTest : public UnitTestBase {
+class BraveAdsConfirmationsTest : public test::TestBase {
  protected:
   void SetUp() override {
-    UnitTestBase::SetUp();
+    test::TestBase::SetUp();
 
-    confirmations_ = std::make_unique<Confirmations>(&token_generator_mock_);
+    confirmations_ = std::make_unique<Confirmations>();
   }
 
-  TokenGeneratorMock token_generator_mock_;
-
   std::unique_ptr<Confirmations> confirmations_;
+
+  database::table::ConfirmationQueue confirmation_queue_database_table_;
 };
 
 TEST_F(BraveAdsConfirmationsTest, ConfirmForRewardsUser) {
   // Arrange
-  MockTokenGenerator(token_generator_mock_, /*count=*/1);
+  test::MockTokenGenerator(/*count=*/1);
+  test::RefillConfirmationTokens(/*count=*/1);
 
-  SetConfirmationTokensForTesting(/*count=*/1);
-
-  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
-      /*value=*/0.01, ConfirmationType::kViewed,
-      /*should_use_random_uuids=*/true);
+  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+      /*value=*/0.01, mojom::AdType::kNotificationAd,
+      mojom::ConfirmationType::kViewedImpression,
+      /*should_generate_random_uuids=*/false);
 
   // Act
-  confirmations_->Confirm(transaction);
+  confirmations_->Confirm(transaction, /*user_data=*/{});
 
   // Assert
-  EXPECT_TRUE(MaybeGetNextConfirmationQueueItem());
+  base::MockCallback<database::table::GetConfirmationQueueCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, Run(/*success=*/true,
+                            /*confirmation_queue_items=*/::testing::SizeIs(1)))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  confirmation_queue_database_table_.GetAll(callback.Get());
+  run_loop.Run();
 }
 
 TEST_F(BraveAdsConfirmationsTest, ConfirmForNonRewardsUser) {
   // Arrange
-  DisableBraveRewardsForTesting();
+  test::DisableBraveRewards();
 
-  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
-      /*value=*/0.01, ConfirmationType::kViewed,
-      /*should_use_random_uuids=*/true);
+  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+      /*value=*/0.01, mojom::AdType::kNotificationAd,
+      mojom::ConfirmationType::kViewedImpression,
+      /*should_generate_random_uuids=*/false);
 
   // Act
-  confirmations_->Confirm(transaction);
+  confirmations_->Confirm(transaction, /*user_data=*/{});
 
   // Assert
-  EXPECT_TRUE(MaybeGetNextConfirmationQueueItem());
+  base::MockCallback<database::table::GetConfirmationQueueCallback> callback;
+  base::RunLoop run_loop;
+  EXPECT_CALL(callback, Run(/*success=*/true,
+                            /*confirmation_queue_items=*/::testing::SizeIs(1)))
+      .WillOnce(base::test::RunOnceClosure(run_loop.QuitClosure()));
+  confirmation_queue_database_table_.GetAll(callback.Get());
+  run_loop.Run();
 }
 
 }  // namespace brave_ads

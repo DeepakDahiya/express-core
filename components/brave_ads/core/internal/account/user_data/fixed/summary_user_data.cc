@@ -9,6 +9,8 @@
 
 #include "brave/components/brave_ads/core/internal/account/user_data/fixed/summary_user_data_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
+#include "brave/components/brave_ads/core/public/ad_units/ad_type.h"
 
 namespace brave_ads {
 
@@ -20,29 +22,23 @@ constexpr char kAdFormatKey[] = "ad_format";
 }  // namespace
 
 base::Value::Dict BuildSummaryUserData(const PaymentTokenList& payment_tokens) {
-  base::Value::Dict user_data;
-
   if (!UserHasJoinedBraveRewards()) {
-    return user_data;
+    return {};
   }
 
-  const AdTypeBucketMap buckets = BuildBuckets(payment_tokens);
-
   base::Value::List list;
-
-  for (const auto& [ad_format, confirmations] : buckets) {
-    auto dict = base::Value::Dict().Set(kAdFormatKey, ad_format);
+  for (const auto& [mojom_ad_type, confirmations] :
+       BuildAdTypeBuckets(payment_tokens)) {
+    auto dict = base::Value::Dict().Set(kAdFormatKey, ToString(mojom_ad_type));
 
     for (const auto& [confirmation_type, count] : confirmations) {
-      dict.Set(confirmation_type, count);
+      dict.Set(ToString(confirmation_type), count);
     }
 
     list.Append(std::move(dict));
   }
 
-  user_data.Set(kSummaryKey, std::move(list));
-
-  return user_data;
+  return base::Value::Dict().Set(kSummaryKey, std::move(list));
 }
 
 }  // namespace brave_ads

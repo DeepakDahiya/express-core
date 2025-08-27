@@ -5,188 +5,172 @@
 
 #include "brave/components/brave_ads/core/internal/serving/permission_rules/do_not_disturb_permission_rule.h"
 
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_mock_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/mock_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsDoNotDisturbPermissionRuleTest : public UnitTestBase {};
+class BraveAdsDoNotDisturbPermissionRuleTest : public test::TestBase {};
 
 TEST_F(BraveAdsDoNotDisturbPermissionRuleTest,
        ShouldAllowWhileBrowserIsInactiveBetween6amAnd9pmOnAndroid) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kAndroid);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kAndroid);
 
   NotifyBrowserDidResignActive();
   NotifyBrowserDidEnterBackground();
 
-  AdvanceClockToMidnight(/*is_local=*/true);
+  AdvanceClockToLocalMidnight();
 
   // Act & Assert
   {
     // Verify 5:59 AM
     AdvanceClockBy(base::Hours(5) + base::Minutes(59));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_FALSE(permission_rule.ShouldAllow().has_value());
+    EXPECT_FALSE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 6:00 AM
     AdvanceClockBy(base::Minutes(1));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 8:59 PM
     AdvanceClockBy(base::Hours(14) + base::Minutes(59));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 9:00 PM
     AdvanceClockBy(base::Minutes(1));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_FALSE(permission_rule.ShouldAllow().has_value());
+    EXPECT_FALSE(HasDoNotDisturbPermission());
   }
 }
 
 TEST_F(BraveAdsDoNotDisturbPermissionRuleTest,
        ShouldAllowWhileBrowserIsActiveOnAndroid) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kAndroid);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kAndroid);
 
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterForeground();
 
-  AdvanceClockToMidnight(/*is_local=*/true);
+  AdvanceClockToLocalMidnight();
 
   // Act & Assert
   {
     // Verify 5:59 AM
     AdvanceClockBy(base::Hours(5) + base::Minutes(59));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 6:00 AM
     AdvanceClockBy(base::Minutes(1));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 8:59 PM
     AdvanceClockBy(base::Hours(14) + base::Minutes(59));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 9:00 PM
     AdvanceClockBy(base::Minutes(1));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 }
 
 TEST_F(BraveAdsDoNotDisturbPermissionRuleTest, ShouldAlwaysAllowOnIOS) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kIOS);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kIOS);
 
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterForeground();
 
-  AdvanceClockToMidnight(/*is_local=*/true);
+  AdvanceClockToLocalMidnight();
 
   // Act & Assert
   {
     // Verify 00:00 AM
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 12:00 PM
     AdvanceClockBy(base::Hours(12));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 }
 
 TEST_F(BraveAdsDoNotDisturbPermissionRuleTest, ShouldAlwaysAllowOnMacOS) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kMacOS);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kMacOS);
 
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterForeground();
 
-  AdvanceClockToMidnight(/*is_local=*/true);
+  AdvanceClockToLocalMidnight();
 
   // Act & Assert
   {
     // Verify 00:00 AM
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 12:00 PM
     AdvanceClockBy(base::Hours(12));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 }
 
 TEST_F(BraveAdsDoNotDisturbPermissionRuleTest, ShouldAlwaysAllowOnWindows) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kWindows);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kWindows);
 
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterForeground();
 
-  AdvanceClockToMidnight(/*is_local=*/true);
+  AdvanceClockToLocalMidnight();
 
   // Act & Assert
   {
     // Verify 00:00 AM
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 12:00 PM
     AdvanceClockBy(base::Hours(12));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 }
 
 TEST_F(BraveAdsDoNotDisturbPermissionRuleTest, ShouldAlwaysAllowOnLinux) {
   // Arrange
-  MockPlatformHelper(platform_helper_mock_, PlatformType::kLinux);
+  test::MockPlatformHelper(platform_helper_mock_, PlatformType::kLinux);
 
   NotifyBrowserDidBecomeActive();
   NotifyBrowserDidEnterForeground();
 
-  AdvanceClockToMidnight(/*is_local=*/true);
+  AdvanceClockToLocalMidnight();
 
   // Act & Assert
   {
     // Verify 00:00 AM
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 
   {
     // Verify 12:00 PM
     AdvanceClockBy(base::Hours(12));
-    const DoNotDisturbPermissionRule permission_rule;
-    EXPECT_TRUE(permission_rule.ShouldAllow().has_value());
+    EXPECT_TRUE(HasDoNotDisturbPermission());
   }
 }
 

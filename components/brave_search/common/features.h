@@ -12,14 +12,24 @@
 namespace brave_search {
 namespace features {
 
-constexpr char kBraveSearchDefaultAPIDailyLimitName[] =
+inline constexpr char kBraveSearchDefaultAPIDailyLimitName[] =
     "BraveSearchDefaultAPIDailyLimit";
-constexpr char kBraveSearchDefaultAPITotalLimitName[] =
+inline constexpr char kBraveSearchDefaultAPITotalLimitName[] =
     "BraveSearchDefaultAPITotalLimit";
 
 BASE_DECLARE_FEATURE(kBraveSearchDefaultAPIFeature);
 extern const base::FeatureParam<int> kBraveSearchDefaultAPIDailyLimit;
 extern const base::FeatureParam<int> kBraveSearchDefaultAPITotalLimit;
+
+// If enabled, the initial search page and subsequent redirected pages will
+// all be rendered, instead of just the initial page.
+BASE_DECLARE_FEATURE(kBackupResultsFullRender);
+// The amount of requests required to reach the actual search engine
+// results page. This count includes the original request and the subsequent
+// redirects.
+extern const base::FeatureParam<int> kBackupResultsFullRenderMaxRequests;
+
+bool IsBackupResultsFullRenderEnabled();
 
 }  // namespace features
 }  // namespace brave_search

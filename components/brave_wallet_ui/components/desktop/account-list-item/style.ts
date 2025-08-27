@@ -3,25 +3,60 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 import styled from 'styled-components'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 
 // Shared Styles
 import { WalletButton, Text, Row } from '../../shared/style'
-import {
-  layoutPanelWidth
-} from '../wallet-page-wrapper/wallet-page-wrapper.style'
+import { layoutPanelWidth } from '../wallet-page-wrapper/wallet-page-wrapper.style'
 
-export const StyledWrapper = styled.div`
+export const StyledWrapper = styled.div<{
+  isRewardsAccount: boolean
+  isOutOfSync: boolean
+}>`
+  cursor: ${(p) => (p.isRewardsAccount ? 'default' : 'pointer')};
   display: flex;
   align-items: center;
   justify-content: center;
   flex-direction: column;
   width: 100%;
-  padding: 8px;
-  border-radius: 12px;
-  border: 1px solid ${leo.color.divider.subtle};
-  margin-bottom: 8px;
+  padding-right: 14px;
+  border-bottom: 1px solid ${leo.color.divider.subtle};
+  background-color: ${(p) =>
+    p.isOutOfSync ? leo.color.yellow[5] : 'transparent'};
+  transition: background-color 300ms ease-out;
+  &:first-child {
+    border-radius: ${leo.radius.l} ${leo.radius.l} 0px 0px;
+  }
+  &:last-child {
+    border-bottom: none;
+    border-radius: 0px 0px ${leo.radius.l} ${leo.radius.l};
+  }
+  &:only-child {
+    border-radius: ${leo.radius.l};
+  }
+  &:hover {
+    background-color: ${(p) =>
+      p.isRewardsAccount ? 'transparent' : leo.color.page.background};
+  }
+`
+
+export const AccountButton = styled(WalletButton)`
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-direction: row;
+  width: 100%;
+  outline: none;
+  background: none;
+  border: none;
+  color: none;
+  margin: 0px;
+  padding: 14px 0px 14px 14px;
+  &:disabled {
+    cursor: default;
+  }
 `
 
 export const NameAndIcon = styled.div`
@@ -79,7 +114,7 @@ export const AccountMenuButton = styled(WalletButton)`
 `
 
 export const AccountMenuIcon = styled(Icon).attrs({
-  name: 'more-vertical'
+  name: 'more-vertical',
 })`
   --leo-icon-size: 24px;
   color: ${leo.color.icon.default};
@@ -90,17 +125,16 @@ export const AccountBalanceText = styled(Text)`
   margin-right: 12px;
 `
 
-export const AccountDescription = styled.span`
-  font-family: Poppins;
-  font-size: 12px;
-  line-height: 16px;
-  font-weight: 400;
-  color: ${leo.color.text.secondary};
-`
-
 export const AccountNameWrapper = styled(Row)`
   @media screen and (max-width: ${layoutPanelWidth}px) {
     flex-direction: column;
     align-items: flex-start;
   }
+`
+
+export const WarningIcon = styled(Icon).attrs({
+  name: 'warning-triangle-filled',
+})`
+  --leo-icon-size: 20px;
+  color: ${leo.color.systemfeedback.warningIcon};
 `

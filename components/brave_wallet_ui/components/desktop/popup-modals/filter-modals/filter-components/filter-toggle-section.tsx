@@ -11,7 +11,7 @@ import {
   CheckboxText,
   Description,
   IconWrapper,
-  Icon
+  Icon,
 } from './filter-components.style'
 import { Row, Column } from '../../../../shared/style'
 
@@ -24,13 +24,7 @@ interface Props {
 }
 
 export const FilterToggleSection = (props: Props) => {
-  const {
-    title,
-    description,
-    icon,
-    isSelected,
-    setIsSelected
-  } = props
+  const { title, description, icon, isSelected, setIsSelected } = props
 
   return (
     <Row
@@ -44,9 +38,7 @@ export const FilterToggleSection = (props: Props) => {
         <IconWrapper>
           <Icon name={icon} />
         </IconWrapper>
-        <Column
-          alignItems='flex-start'
-        >
+        <Column alignItems='flex-start'>
           <CheckboxText
             textSize='14px'
             isBold={true}

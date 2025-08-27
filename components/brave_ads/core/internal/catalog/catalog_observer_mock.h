@@ -18,14 +18,10 @@ class CatalogObserverMock : public CatalogObserver {
   CatalogObserverMock(const CatalogObserverMock&) = delete;
   CatalogObserverMock& operator=(const CatalogObserverMock&) = delete;
 
-  CatalogObserverMock(CatalogObserverMock&&) noexcept = delete;
-  CatalogObserverMock& operator=(CatalogObserverMock&&) noexcept = delete;
-
   ~CatalogObserverMock() override;
 
-  MOCK_METHOD(void, OnDidUpdateCatalog, (const CatalogInfo& catalog));
-
-  MOCK_METHOD(void, OnFailedToUpdateCatalog, ());
+  MOCK_METHOD(void, OnDidFetchCatalog, (const CatalogInfo&));
+  MOCK_METHOD(void, OnFailedToFetchCatalog, ());
 };
 
 }  // namespace brave_ads

@@ -20,7 +20,7 @@ import {
 } from '@dnd-kit/sortable'
 
 import Icon from '@brave/leo/react/icon'
-import { color, spacing } from '@brave/leo/tokens/css'
+import { color, spacing } from '@brave/leo/tokens/css/variables'
 
 import { Playlist } from 'gen/brave/components/playlist/common/mojom/playlist.mojom.m.js'
 
@@ -122,7 +122,7 @@ const PlayLaterCardOverlay = styled.div`
 
 const ColoredPlaylistInfo = styled(PlaylistInfo)<{ hasBackground: boolean }>`
   color: ${({ hasBackground }) =>
-    hasBackground ? color.primitive.gray[1] : color.text.primary};
+    hasBackground ? color.primitive.neutral[98] : color.text.primary};
 `
 
 const PlaylistThumbnailContainer = styled.div<ThumbnailProps>`

@@ -14,11 +14,15 @@ export const buildExplorerUrl = (
   network: Pick<BraveWallet.NetworkInfo, 'chainId' | 'blockExplorerUrls'>,
   type: BlockExplorerUrlTypes,
   value?: string,
-  id?: string
+  id?: string,
 ) => {
   const explorerURL = network.blockExplorerUrls[0]
 
   const fallbackURL = `${explorerURL}/${value}`
+
+  if (type === 'lifi') {
+    return `https://scan.li.fi/tx/${value}`
+  }
 
   if (type === 'nft') {
     return id
@@ -31,18 +35,26 @@ export const buildExplorerUrl = (
   }
 
   const isFileCoinNet =
-    network.chainId === BraveWallet.FILECOIN_TESTNET ||
-    network.chainId === BraveWallet.FILECOIN_MAINNET
+    network.chainId === BraveWallet.FILECOIN_TESTNET
+    || network.chainId === BraveWallet.FILECOIN_MAINNET
 
   const isFileCoinEvmNet =
-    network.chainId === BraveWallet.FILECOIN_ETHEREUM_MAINNET_CHAIN_ID ||
-    network.chainId === BraveWallet.FILECOIN_ETHEREUM_TESTNET_CHAIN_ID
+    network.chainId === BraveWallet.FILECOIN_ETHEREUM_MAINNET_CHAIN_ID
+    || network.chainId === BraveWallet.FILECOIN_ETHEREUM_TESTNET_CHAIN_ID
 
   const isSolanaMainNet = network.chainId === BraveWallet.SOLANA_MAINNET
 
   const isSolanaDevOrTestNet =
-    network.chainId === BraveWallet.SOLANA_TESTNET ||
-    network.chainId === BraveWallet.SOLANA_DEVNET
+    network.chainId === BraveWallet.SOLANA_TESTNET
+    || network.chainId === BraveWallet.SOLANA_DEVNET
+
+  const isZecNet =
+    network.chainId === BraveWallet.Z_CASH_MAINNET
+    || network.chainId === BraveWallet.Z_CASH_TESTNET
+
+  const isCardanoNet =
+    network.chainId === BraveWallet.CARDANO_MAINNET
+    || network.chainId === BraveWallet.CARDANO_TESTNET
 
   if (isFileCoinNet) {
     return `${explorerURL}?cid=${value}`
@@ -50,6 +62,14 @@ export const buildExplorerUrl = (
 
   if (isFileCoinEvmNet) {
     return `${explorerURL}/${value}`
+  }
+
+  if (isZecNet) {
+    return `${explorerURL}/${value}`
+  }
+
+  if (isCardanoNet) {
+    return `${explorerURL}/${type}/${value}`
   }
 
   if (isSolanaMainNet && type === 'token') {
@@ -60,8 +80,18 @@ export const buildExplorerUrl = (
     const explorerIndex = explorerURL.lastIndexOf('?')
     return `${explorerURL.substring(
       0,
-      explorerIndex
+      explorerIndex,
     )}/${type}/${value}${explorerURL.substring(explorerIndex)}`
+  }
+
+  if (network.chainId === BraveWallet.BITCOIN_MAINNET) {
+    if (type === 'tx') {
+      return `${explorerURL}/transactions/btc/${value}`
+    }
+    if (type === 'address') {
+      return `${explorerURL}/addresses/btc/${value}`
+    }
+    return `${explorerURL}/search?search=${value}`
   }
 
   return `${explorerURL}/${type}/${value}`
@@ -71,7 +101,7 @@ export const openBlockExplorerURL = ({
   id,
   network,
   type,
-  value
+  value,
 }: {
   id?: string | undefined
   network?: Pick<
@@ -100,7 +130,7 @@ export const openBlockExplorerURL = ({
       chrome.tabs.create({ url: url }, () => {
         if (chrome.runtime.lastError) {
           console.error(
-            'tabs.create failed: ' + chrome.runtime.lastError.message
+            'tabs.create failed: ' + chrome.runtime.lastError.message,
           )
         }
       })

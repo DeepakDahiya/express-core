@@ -6,11 +6,8 @@
 #ifndef BRAVE_COMPONENTS_EPHEMERAL_STORAGE_EPHEMERAL_STORAGE_SERVICE_DELEGATE_H_
 #define BRAVE_COMPONENTS_EPHEMERAL_STORAGE_EPHEMERAL_STORAGE_SERVICE_DELEGATE_H_
 
-#include <string>
-#include <utility>
-
+#include "base/functional/callback.h"
 #include "brave/components/ephemeral_storage/ephemeral_storage_types.h"
-#include "url/origin.h"
 
 namespace ephemeral_storage {
 
@@ -20,10 +17,12 @@ class EphemeralStorageServiceDelegate {
   virtual ~EphemeralStorageServiceDelegate() = default;
 
   // Cleanups ephemeral storages (local storage, cookies).
-  virtual void CleanupTLDEphemeralArea(const TLDEphemeralAreaKey& key) {}
+  virtual void CleanupTLDEphemeralArea(const TLDEphemeralAreaKey& key) = 0;
   // Cleanups non-ephemeral first party storage areas (cache, dom storage).
-  virtual void CleanupFirstPartyStorageArea(
-      const std::string& registerable_domain) {}
+  virtual void CleanupFirstPartyStorageArea(const TLDEphemeralAreaKey& key) = 0;
+  // Registers a callback to be called when the first window is opened.
+  virtual void RegisterFirstWindowOpenedCallback(
+      base::OnceClosure callback) = 0;
 };
 
 }  // namespace ephemeral_storage

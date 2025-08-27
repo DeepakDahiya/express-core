@@ -11,11 +11,8 @@ namespace brave_ads {
 
 InterestUserModelInfo::InterestUserModelInfo() = default;
 
-InterestUserModelInfo::InterestUserModelInfo(
-    SegmentList segments,
-    TextEmbeddingHtmlEventList text_embedding_html_events)
-    : segments(std::move(segments)),
-      text_embedding_html_events(std::move(text_embedding_html_events)) {}
+InterestUserModelInfo::InterestUserModelInfo(SegmentList segments)
+    : segments(std::move(segments)) {}
 
 InterestUserModelInfo::InterestUserModelInfo(
     const InterestUserModelInfo& other) = default;
@@ -30,19 +27,5 @@ InterestUserModelInfo& InterestUserModelInfo::operator=(
     InterestUserModelInfo&& other) noexcept = default;
 
 InterestUserModelInfo::~InterestUserModelInfo() = default;
-
-bool operator==(const InterestUserModelInfo& lhs,
-                const InterestUserModelInfo& rhs) {
-  const auto tie = [](const InterestUserModelInfo& user_model) {
-    return std::tie(user_model.segments, user_model.text_embedding_html_events);
-  };
-
-  return tie(lhs) == tie(rhs);
-}
-
-bool operator!=(const InterestUserModelInfo& lhs,
-                const InterestUserModelInfo& rhs) {
-  return !(lhs == rhs);
-}
 
 }  // namespace brave_ads

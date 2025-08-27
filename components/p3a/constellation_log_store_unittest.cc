@@ -8,17 +8,13 @@
 #include <memory>
 #include <set>
 
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "brave/components/p3a/metric_log_type.h"
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace p3a {
-
-namespace {
-
-constexpr size_t kTestKeepEpochCount = 4;
-
-}  // namespace
 
 class P3AConstellationLogStoreTest : public testing::Test {
  public:
@@ -26,83 +22,104 @@ class P3AConstellationLogStoreTest : public testing::Test {
 
  protected:
   void SetUp() override {
-    ConstellationLogStore::RegisterPrefs(local_state.registry());
-    log_store = std::make_unique<ConstellationLogStore>(local_state,
-                                                        kTestKeepEpochCount);
+    ConstellationLogStore::RegisterPrefs(local_state_.registry());
+  }
+
+  void SetUpLogStore(MetricLogType log_type) {
+    log_store_ =
+        std::make_unique<ConstellationLogStore>(local_state_, log_type);
   }
 
   std::string GenerateMockConstellationMessage() {
     return "log msg " +
-           base::NumberToString(curr_test_constellation_message_id++);
+           base::NumberToString(curr_test_constellation_message_id_++);
+  }
+
+  size_t GetMaxEpochsToRetain(MetricLogType log_type) {
+    switch (log_type) {
+      case MetricLogType::kSlow:
+        return kSlowMaxEpochsToRetain;
+      case MetricLogType::kTypical:
+        return kTypicalMaxEpochsToRetain;
+      case MetricLogType::kExpress:
+        return kExpressMaxEpochsToRetain;
+    }
+    NOTREACHED();
   }
 
   void UpdateSomeMessages(uint8_t epoch, size_t message_count) {
-    log_store->UpdateMessage("Brave.Test.Metric1", epoch,
-                             "should be overwritten");
+    log_store_->UpdateMessage("Brave.Test.Metric1", epoch,
+                              "should be overwritten");
     for (uint64_t i = 1; i <= message_count; i++) {
       std::string histogram_name =
           "Brave.Test.Metric" + base::NumberToString(i);
       std::string content = GenerateMockConstellationMessage();
-      log_store->UpdateMessage(histogram_name, epoch, content);
+      log_store_->UpdateMessage(histogram_name, epoch, content);
     }
   }
 
   void ConsumeMessages(size_t message_count) {
     std::set<std::string> consumed_log_set;
 
-    ASSERT_TRUE(log_store->has_unsent_logs());
-    ASSERT_FALSE(log_store->has_staged_log());
+    ASSERT_TRUE(log_store_->has_unsent_logs());
+    ASSERT_FALSE(log_store_->has_staged_log());
     for (uint64_t i = 1; i <= message_count; i++) {
-      log_store->StageNextLog();
-      ASSERT_TRUE(log_store->has_staged_log());
+      log_store_->StageNextLog();
+      ASSERT_TRUE(log_store_->has_staged_log());
 
-      ASSERT_EQ(consumed_log_set.find(log_store->staged_log()),
+      ASSERT_EQ(consumed_log_set.find(log_store_->staged_log()),
                 consumed_log_set.end());
-      consumed_log_set.insert(log_store->staged_log());
+      consumed_log_set.insert(log_store_->staged_log());
 
-      log_store->MarkStagedLogAsSent();
-      log_store->DiscardStagedLog();
-      ASSERT_FALSE(log_store->has_staged_log());
+      log_store_->MarkStagedLogAsSent();
+      log_store_->DiscardStagedLog();
+      ASSERT_FALSE(log_store_->has_staged_log());
     }
-    ASSERT_FALSE(log_store->has_unsent_logs());
-    ASSERT_FALSE(log_store->has_staged_log());
+    ASSERT_FALSE(log_store_->has_unsent_logs());
+    ASSERT_FALSE(log_store_->has_staged_log());
   }
 
-  size_t curr_test_constellation_message_id;
-  std::unique_ptr<ConstellationLogStore> log_store;
-  TestingPrefServiceSimple local_state;
+  ConstellationLogStore* log_store() { return log_store_.get(); }
+
+ private:
+  size_t curr_test_constellation_message_id_{0};
+  std::unique_ptr<ConstellationLogStore> log_store_;
+  TestingPrefServiceSimple local_state_;
 };
 
 TEST_F(P3AConstellationLogStoreTest, CurrentEpochStaging) {
-  log_store->SetCurrentEpoch(1);
+  SetUpLogStore(MetricLogType::kTypical);
+  log_store()->SetCurrentEpoch(1);
 
   UpdateSomeMessages(1, 8);
   ConsumeMessages(8);
 }
 
 TEST_F(P3AConstellationLogStoreTest, PreviousEpochStaging) {
-  log_store->SetCurrentEpoch(1);
+  SetUpLogStore(MetricLogType::kTypical);
+  log_store()->SetCurrentEpoch(1);
 
   UpdateSomeMessages(1, 5);
-  log_store->SetCurrentEpoch(2);
-  log_store->LoadPersistedUnsentLogs();
+  log_store()->SetCurrentEpoch(2);
+  log_store()->LoadPersistedUnsentLogs();
 
   // Should consume messages from first epoch
   ConsumeMessages(5);
 }
 
 TEST_F(P3AConstellationLogStoreTest, PreviousEpochsStaging) {
-  log_store->SetCurrentEpoch(1);
+  SetUpLogStore(MetricLogType::kTypical);
+  log_store()->SetCurrentEpoch(1);
   UpdateSomeMessages(1, 5);
 
-  log_store->SetCurrentEpoch(2);
+  log_store()->SetCurrentEpoch(2);
   UpdateSomeMessages(2, 7);
 
-  log_store->SetCurrentEpoch(3);
+  log_store()->SetCurrentEpoch(3);
   UpdateSomeMessages(3, 2);
 
-  log_store->SetCurrentEpoch(4);
-  log_store->LoadPersistedUnsentLogs();
+  log_store()->SetCurrentEpoch(4);
+  log_store()->LoadPersistedUnsentLogs();
   // The following 10 messages should not be staged because
   // they are not part of the previous epochs
   UpdateSomeMessages(4, 10);
@@ -112,10 +129,11 @@ TEST_F(P3AConstellationLogStoreTest, PreviousEpochsStaging) {
 }
 
 TEST_F(P3AConstellationLogStoreTest, UpdatePreviousEpochMessage) {
-  log_store->SetCurrentEpoch(1);
+  SetUpLogStore(MetricLogType::kTypical);
+  log_store()->SetCurrentEpoch(1);
 
-  log_store->SetCurrentEpoch(2);
-  log_store->LoadPersistedUnsentLogs();
+  log_store()->SetCurrentEpoch(2);
+  log_store()->LoadPersistedUnsentLogs();
 
   UpdateSomeMessages(1, 3);
 
@@ -123,41 +141,45 @@ TEST_F(P3AConstellationLogStoreTest, UpdatePreviousEpochMessage) {
 }
 
 TEST_F(P3AConstellationLogStoreTest, DiscardShouldNotDelete) {
-  log_store->SetCurrentEpoch(1);
+  SetUpLogStore(MetricLogType::kTypical);
+  log_store()->SetCurrentEpoch(1);
 
   UpdateSomeMessages(1, 1);
 
-  log_store->SetCurrentEpoch(2);
-  log_store->LoadPersistedUnsentLogs();
+  log_store()->SetCurrentEpoch(2);
+  log_store()->LoadPersistedUnsentLogs();
 
-  log_store->StageNextLog();
-  ASSERT_TRUE(log_store->has_staged_log());
+  log_store()->StageNextLog();
+  ASSERT_TRUE(log_store()->has_staged_log());
 
-  log_store->DiscardStagedLog();
-  ASSERT_FALSE(log_store->has_staged_log());
-  ASSERT_TRUE(log_store->has_unsent_logs());
+  log_store()->DiscardStagedLog();
+  ASSERT_FALSE(log_store()->has_staged_log());
+  ASSERT_TRUE(log_store()->has_unsent_logs());
 
-  log_store->StageNextLog();
-  ASSERT_TRUE(log_store->has_staged_log());
+  log_store()->StageNextLog();
+  ASSERT_TRUE(log_store()->has_staged_log());
 
-  log_store->MarkStagedLogAsSent();
-  log_store->DiscardStagedLog();
-  ASSERT_FALSE(log_store->has_staged_log());
-  ASSERT_FALSE(log_store->has_unsent_logs());
+  log_store()->MarkStagedLogAsSent();
+  log_store()->DiscardStagedLog();
+  ASSERT_FALSE(log_store()->has_staged_log());
+  ASSERT_FALSE(log_store()->has_unsent_logs());
 }
 
 TEST_F(P3AConstellationLogStoreTest, ShouldDeleteOldMessages) {
-  log_store->SetCurrentEpoch(1);
+  for (MetricLogType log_type : kAllMetricLogTypes) {
+    SetUpLogStore(log_type);
+    size_t max_epochs = GetMaxEpochsToRetain(log_type);
+    log_store()->SetCurrentEpoch(1);
 
-  UpdateSomeMessages(1, 3);
+    UpdateSomeMessages(1, 3);
 
-  log_store->SetCurrentEpoch(kTestKeepEpochCount + 1);
-  UpdateSomeMessages(kTestKeepEpochCount + 1, 8);
+    log_store()->SetCurrentEpoch(max_epochs + 1);
+    UpdateSomeMessages(max_epochs + 1, 8);
 
-  log_store->SetCurrentEpoch(kTestKeepEpochCount + 2);
-  log_store->LoadPersistedUnsentLogs();
-
-  // Should only consume messages from the latest previous epoch
+    // Should only consume messages from the latest previous epoch
+    log_store()->SetCurrentEpoch(max_epochs + 2);
+    log_store()->LoadPersistedUnsentLogs();
+  }
 }
 
 }  // namespace p3a

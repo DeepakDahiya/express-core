@@ -10,52 +10,40 @@ import { EntityState } from '@reduxjs/toolkit'
 // types
 import {
   BraveWallet,
-  P3ASendTransactionTypes,
-  SupportedTestNetworks,
   SerializableTransactionInfo,
   TimeDelta,
   SerializableTimeDelta,
   SortingOrder,
   TransactionInfo,
-  SpotPriceRegistry
+  SpotPriceRegistry,
 } from '../constants/types'
 import { SolanaTransactionTypes } from '../common/constants/solana'
 import {
   MAX_UINT256,
   NATIVE_EVM_ASSET_CONTRACT_ADDRESS,
-  UNKNOWN_TOKEN_COINGECKO_ID
+  UNKNOWN_TOKEN_COINGECKO_ID,
 } from '../common/constants/magics'
 import { SwapExchangeProxy } from '../common/constants/registry'
 
 // utils
 import { getLocale } from '../../common/locale'
-import { loadTimeData } from '../../common/loadTimeData'
 import {
   getSolInstructionAccountParamsObj,
   getSolInstructionParamsObj,
   getTypedSolanaTxInstructions,
-  TypedSolanaInstructionWithParams
+  TypedSolanaInstructionWithParams,
 } from './solana-instruction-utils'
 import { findTokenByContractAddress } from './asset-utils'
 import Amount from './amount'
 import { getCoinFromTxDataUnion, TxDataPresence } from './network-utils'
 import { toProperCase } from './string-utils'
-import { computeFiatAmount, getTokenPriceAmountFromRegistry } from './pricing-utils'
-import { makeNetworkAsset } from '../options/asset-options'
 import {
-  getAccountLabel,
-  getAddressLabel
-} from './account-utils'
+  computeFiatAmount,
+  getTokenPriceAmountFromRegistry,
+} from './pricing-utils'
+import { makeNetworkAsset } from '../options/asset-options'
+import { getAccountLabel, getAddressLabel } from './account-utils'
 import { makeSerializableTimeDelta } from './model-serialization-utils'
-
-export type EIP1559TransactionInfo = TransactionInfo & {
-  txDataUnion: {
-    ethTxData1559: BraveWallet.TxData1559
-    ethTxData: undefined
-    solanaTxData: undefined
-    filTxData: undefined
-  }
-}
 
 export type FileCoinTransactionInfo = TransactionInfo & {
   txDataUnion: {
@@ -120,6 +108,7 @@ export interface ParsedTransaction
   isSolanaDappTransaction: boolean
   isSolanaSPLTransaction: boolean
   isFilecoinTransaction: boolean
+  isCardanoTransaction: boolean
   coinType: BraveWallet.CoinType
 
   // Tokens
@@ -147,26 +136,29 @@ export interface ParsedTransaction
   // Fiat values
   fiatValue: string
   fiatTotal: string
+
+  // Solana Specific
+  isAssociatedTokenAccountCreation: boolean
+  hasSystemProgramAssignInstruction: boolean
+  zcashMemo: number[] | undefined
 }
 
 export type ParsedTransactionWithoutFiatValues = Omit<
   ParsedTransaction,
-  | 'fiatTotal'
-  | 'fiatValue'
-  | 'gasFeeFiat'
+  'fiatTotal' | 'fiatValue' | 'gasFeeFiat'
 >
 
 export const sortTransactionByDate = <
-  T extends { createdTime: TimeDelta | SerializableTimeDelta }
+  T extends { createdTime: TimeDelta | SerializableTimeDelta },
 >(
   transactions: T[],
-  order: SortingOrder = 'ascending'
+  order: SortingOrder = 'ascending',
 ): T[] => {
   return [...transactions].sort(transactionSortByDateComparer<T>(order))
 }
 
 export const getLocaleKeyForTxStatus = (
-  status: BraveWallet.TransactionStatus
+  status: BraveWallet.TransactionStatus,
 ) => {
   switch (status) {
     case BraveWallet.TransactionStatus.Unapproved:
@@ -195,8 +187,10 @@ export const getTransactionStatusString = (statusId: number) => {
 }
 
 export const transactionSortByDateComparer = <
-  T extends { createdTime: TimeDelta | SerializableTimeDelta }
-> (order: SortingOrder = 'ascending'): ((a: T, b: T) => number) | undefined => {
+  T extends { createdTime: TimeDelta | SerializableTimeDelta },
+>(
+  order: SortingOrder = 'ascending',
+): ((a: T, b: T) => number) | undefined => {
   return function (x: T, y: T) {
     return order === 'ascending'
       ? Number(x.createdTime.microseconds) - Number(y.createdTime.microseconds)
@@ -205,23 +199,24 @@ export const transactionSortByDateComparer = <
 }
 
 export function isSolanaTransaction(
-  tx?: Pick<TransactionInfo, 'txType' | 'txDataUnion'>
+  tx?: Pick<TransactionInfo, 'txType' | 'txDataUnion'>,
 ): tx is SolanaTransactionInfo {
   if (!tx) {
     return false
   }
   const {
     txType,
-    txDataUnion: { solanaTxData }
+    txDataUnion: { solanaTxData },
   } = tx
   return (
-    SolanaTransactionTypes.includes(txType) ||
-    (txType === BraveWallet.TransactionType.Other && solanaTxData !== undefined)
+    SolanaTransactionTypes.includes(txType)
+    || (txType === BraveWallet.TransactionType.Other
+      && solanaTxData !== undefined)
   )
 }
 
 export function isBitcoinTransaction(
-  tx?: Pick<TransactionInfo, 'txDataUnion'>
+  tx?: Pick<TransactionInfo, 'txDataUnion'>,
 ) {
   if (!tx) {
     return false
@@ -229,43 +224,48 @@ export function isBitcoinTransaction(
   return tx.txDataUnion.btcTxData !== undefined
 }
 
-export function isEthereumTransaction (tx?: TransactionInfo) {
-  return tx?.txDataUnion.ethTxData !== undefined || tx?.txDataUnion.ethTxData1559 !== undefined
+export function isZCashTransaction(tx?: Pick<TransactionInfo, 'txDataUnion'>) {
+  if (!tx) {
+    return false
+  }
+  return tx.txDataUnion.zecTxData !== undefined
 }
 
-export function shouldReportTransactionP3A({
-  txInfo
-}: {
-  txInfo: Pick<
-    BraveWallet.TransactionInfo | SerializableTransactionInfo,
-    'txType' | 'chainId'
-  > & { coinType: BraveWallet.CoinType }
-}) {
-  if (
-    P3ASendTransactionTypes.includes(txInfo.txType) ||
-    (txInfo.coinType === BraveWallet.CoinType.FIL &&
-      txInfo.txType === BraveWallet.TransactionType.Other)
-  ) {
-    const countTestNetworks = loadTimeData.getBoolean(
-      BraveWallet.P3A_COUNT_TEST_NETWORKS_LOAD_TIME_KEY
-    )
-    return countTestNetworks || !SupportedTestNetworks.includes(txInfo.chainId)
+export function isCardanoTransaction(
+  tx?: Pick<TransactionInfo, 'txDataUnion'>,
+) {
+  if (!tx) {
+    return false
   }
-  return false
+  return tx.txDataUnion.cardanoTxData !== undefined
+}
+
+export function isEthereumTransaction(
+  tx?: Pick<TransactionInfo, 'txDataUnion'>,
+) {
+  if (!tx) {
+    return false
+  }
+  return (
+    tx.txDataUnion.ethTxData !== undefined
+    || tx.txDataUnion.ethTxData1559 !== undefined
+  )
 }
 
 export const getTransactionNonce = (tx: TransactionInfo): string => {
   return tx.txDataUnion?.ethTxData1559?.baseData.nonce || ''
 }
 
-export function isSolanaDappTransaction (tx: TransactionInfo): tx is SolanaTransactionInfo {
+export function isSolanaDappTransaction(
+  tx: TransactionInfo,
+): tx is SolanaTransactionInfo {
   return (
-    tx.txDataUnion.solanaTxData !== undefined &&
-    [
+    tx.txDataUnion.solanaTxData !== undefined
+    && [
       BraveWallet.TransactionType.SolanaDappSignTransaction,
       BraveWallet.TransactionType.SolanaDappSignAndSendTransaction,
       BraveWallet.TransactionType.SolanaSwap,
-      BraveWallet.TransactionType.Other
+      BraveWallet.TransactionType.Other,
     ].includes(tx.txType)
   )
 }
@@ -277,12 +277,12 @@ export const isFilecoinTransaction = (tx?: {
 }
 
 function getTypedSolanaInstructionToAddress(
-  to: string
+  to: string,
 ): (value: TypedSolanaInstructionWithParams) => string {
   return (instruction) => {
     const { toAccount, newAccount } = getSolInstructionAccountParamsObj(
       instruction.accountParams,
-      instruction.accountMetas
+      instruction.accountMetas,
     )
 
     switch (instruction.type) {
@@ -306,23 +306,24 @@ function getTypedSolanaInstructionToAddress(
 }
 
 export const getToAddressesFromSolanaTransaction = (
-  tx: SolanaTransactionInfo
+  tx: SolanaTransactionInfo,
 ) => {
   const { solanaTxData } = tx.txDataUnion
-  const instructions = getTypedSolanaTxInstructions(solanaTxData)
   const to = solanaTxData?.toWalletAddress ?? ''
 
   if (to) {
     return [to]
   }
 
+  const instructions = getTypedSolanaTxInstructions(solanaTxData)
   const addresses = instructions.map(getTypedSolanaInstructionToAddress(to))
 
-  return [...new Set(addresses.filter(a => !!a))] // unique, non empty addresses
+  // unique, non empty addresses
+  return [...new Set(addresses.filter((a) => !!a))]
 }
 
 export const getTransactionToAddress = (
-  tx?: TransactionInfo | SerializableTransactionInfo
+  tx?: TransactionInfo | SerializableTransactionInfo,
 ): string => {
   if (!tx) {
     return ''
@@ -340,11 +341,23 @@ export const getTransactionToAddress = (
     return tx.txDataUnion.solanaTxData?.toWalletAddress ?? ''
   }
 
-  return ''
+  if (isZCashTransaction(tx)) {
+    return tx.txDataUnion.zecTxData?.to ?? ''
+  }
+
+  if (isBitcoinTransaction(tx)) {
+    return tx.txDataUnion.btcTxData?.to ?? ''
+  }
+
+  if (isCardanoTransaction(tx)) {
+    return tx.txDataUnion.cardanoTxData?.to ?? ''
+  }
+
+  assertNotReached('Unknown transaction type')
 }
 
 export function getTransactionInteractionAddress(
-  tx: Pick<TransactionInfo, 'txDataUnion' | 'txType'>
+  tx: Pick<TransactionInfo, 'txDataUnion' | 'txType'>,
 ): string {
   if (isSolanaTransaction(tx)) {
     return tx.txDataUnion.solanaTxData.toWalletAddress ?? ''
@@ -354,49 +367,101 @@ export function getTransactionInteractionAddress(
     return tx.txDataUnion.filTxData.to ?? ''
   }
 
-  return (
-    tx.txDataUnion.ethTxData1559?.baseData.to || // EVM (1559)
-    tx.txDataUnion.ethTxData?.to || // EVM
-    '' // Other
-  )
+  if (isZCashTransaction(tx)) {
+    return tx.txDataUnion.zecTxData?.to ?? ''
+  }
+
+  if (isBitcoinTransaction(tx)) {
+    return tx.txDataUnion.btcTxData?.to ?? ''
+  }
+
+  if (isCardanoTransaction(tx)) {
+    return tx.txDataUnion.cardanoTxData?.to ?? ''
+  }
+
+  if (isEthereumTransaction(tx)) {
+    return (
+      tx.txDataUnion.ethTxData1559?.baseData.to // EVM (1559)
+      || tx.txDataUnion.ethTxData?.to // EVM
+      || '' // Other
+    )
+  }
+
+  assertNotReached('Unknown transaction type')
 }
 
-export function isSolanaSplTransaction (tx: TransactionInfo): tx is SolanaTransactionInfo {
+export function isSolanaSplTransaction(
+  tx: TransactionInfo,
+): tx is SolanaTransactionInfo {
   return (
-    tx.txType === BraveWallet.TransactionType.SolanaSPLTokenTransfer ||
-    tx.txType === BraveWallet.TransactionType.SolanaSPLTokenTransferWithAssociatedTokenAccountCreation
+    tx.txType === BraveWallet.TransactionType.SolanaSPLTokenTransfer
+    || tx.txType
+      === BraveWallet.TransactionType
+        .SolanaSPLTokenTransferWithAssociatedTokenAccountCreation
   )
 }
 
 export const findTransactionToken = <
-  T extends Pick<BraveWallet.BlockchainToken, 'contractAddress'>
+  T extends Pick<
+    BraveWallet.BlockchainToken,
+    'contractAddress' | 'chainId' | 'coin' | 'isShielded'
+  >,
 >(
   tx: TransactionInfo | undefined,
-  tokensList: T[]
+  tokensList: T[],
 ): T | undefined => {
   if (!tx) {
     return undefined
   }
 
-  // Solana SPL
-  if (isSolanaSplTransaction(tx)) {
-    return findTokenByContractAddress(
-      tx.txDataUnion.solanaTxData.splTokenMintAddress ?? '',
-      tokensList
+  // Native Asset Send
+  if (
+    tx.txType === BraveWallet.TransactionType.SolanaSystemTransfer
+    || tx.txType
+      === BraveWallet.TransactionType.SolanaDappSignAndSendTransaction
+    || tx.txType === BraveWallet.TransactionType.SolanaDappSignTransaction
+    || tx.txType === BraveWallet.TransactionType.ETHSend
+    || tx.txDataUnion.filTxData
+    || tx.txDataUnion.btcTxData
+    || tx.txDataUnion.zecTxData
+  ) {
+    return tokensList.find(
+      (t) =>
+        t.contractAddress === ''
+        && t.chainId === tx.chainId
+        && t.coin === tx.fromAccountId.coin
+        && t.isShielded
+          === (tx.txDataUnion.zecTxData?.useShieldedPool ?? false),
     )
   }
 
-  // Solana, Filecoin & EVM
+  // Solana SPL
+  if (isSolanaSplTransaction(tx)) {
+    return findTokenByContractAddress(
+      tx.txDataUnion.solanaTxData.tokenAddress ?? '',
+      tokensList,
+    )
+  }
+
+  // Solana Dapps, Filecoin & EVM
   return findTokenByContractAddress(
-    getTransactionInteractionAddress(tx), // tx interacts with the contract address
-    tokensList
+    // tx interacts with the contract address
+    getTransactionInteractionAddress(tx),
+    tokensList,
   )
 }
 
+/**
+ * Use this function to synchronously extract swap/bridge details from a
+ * transaction.
+ *
+ * Prefer using useSwapTransactionParser() hook in React components, which
+ * can asynchronously extract details from the blockchain.
+ */
 export const getETHSwapTransactionBuyAndSellTokens = ({
   nativeAsset,
   tokensList,
-  tx
+  tx,
 }: {
   tx: TransactionInfo | undefined
   nativeAsset?: BraveWallet.BlockchainToken
@@ -410,72 +475,76 @@ export const getETHSwapTransactionBuyAndSellTokens = ({
   sellAmountWei: Amount
 } => {
   if (
-    !tx ||
-    tx.txType !== BraveWallet.TransactionType.ETHSwap
+    !tx
+    || !tx.swapInfo
+    || tx.txType !== BraveWallet.TransactionType.ETHSwap
   ) {
     return {
       buyToken: undefined,
       sellToken: undefined,
-      buyAmount: new Amount(''),
-      sellAmount: new Amount(''),
-      sellAmountWei: new Amount(''),
-      buyAmountWei: new Amount('')
+      buyAmount: Amount.empty(),
+      sellAmount: Amount.empty(),
+      sellAmountWei: Amount.empty(),
+      buyAmountWei: Amount.empty(),
     }
   }
 
-  // (bytes fillPath, uint256 sellAmount, uint256 minBuyAmount)
-  const [fillPath, sellAmountArg, minBuyAmountArg] = tx.txArgs
-
-  const fillContracts = fillPath
-    .slice(2)
-    .match(/.{1,40}/g)
-
-  const fillTokens: BraveWallet.BlockchainToken[] = (fillContracts || [])
-    .map(path => '0x' + path)
-    .map(address =>
-      address === NATIVE_EVM_ASSET_CONTRACT_ADDRESS
-        ? nativeAsset
-        : findTokenByContractAddress(address, tokensList) ||
+  const sellToken =
+    tx.swapInfo.fromAsset === NATIVE_EVM_ASSET_CONTRACT_ADDRESS
+      ? nativeAsset
+      : findTokenByContractAddress(tx.swapInfo.fromAsset, tokensList)
         // token not found
         // return a "faked" coin (will need to "discover" it later)
-        {
-          chainId: tx.chainId,
-          coin: getCoinFromTxDataUnion(tx.txDataUnion),
-          contractAddress: address,
+        || ({
+          chainId: tx.swapInfo.fromChainId,
+          coin: tx.swapInfo.fromCoin,
+          contractAddress: tx.swapInfo.fromAsset,
           symbol: '???',
           isErc20: true,
           coingeckoId: UNKNOWN_TOKEN_COINGECKO_ID,
-          name: address,
+          name: tx.swapInfo.fromAsset,
           logo: 'chrome://erc-token-images/',
           tokenId: '',
           isErc1155: false,
           isErc721: false,
           isNft: false,
           isSpam: false,
-          visible: true
-        } as BraveWallet.BlockchainToken
-    ).filter((t): t is BraveWallet.BlockchainToken => Boolean(t))
+          visible: true,
+        } as BraveWallet.BlockchainToken)
 
-  const sellToken = fillTokens.length === 1
-    ? nativeAsset
-    : fillTokens[0]
-
-
-  const sellAmountRaw = sellToken?.contractAddress === ''
-    ? (tx.txDataUnion.ethTxData1559?.baseData.value ||
-       tx.txDataUnion.ethTxData?.value ||
-       sellAmountArg ||
-       '')
-    : sellAmountArg || ''
-
-  const sellAmountWei = new Amount(sellAmountRaw)
-
+  const sellAmountWei = new Amount(tx.swapInfo.fromAmount)
   const sellAmount = sellToken
     ? sellAmountWei.divideByDecimals(sellToken.decimals)
     : Amount.empty()
 
-  const buyToken = fillTokens[fillTokens.length - 1]
-  const buyAmountWei = new Amount(minBuyAmountArg)
+  const buyToken =
+    tx.swapInfo.toAsset === NATIVE_EVM_ASSET_CONTRACT_ADDRESS
+      ? nativeAsset
+      : tx.swapInfo.toAsset
+        ? findTokenByContractAddress(tx.swapInfo.toAsset, tokensList)
+          // token not found
+          // return a "faked" coin (will need to "discover" it later)
+          || ({
+            chainId: tx.swapInfo.toChainId,
+            coin: tx.swapInfo.toCoin,
+            contractAddress: tx.swapInfo.toAsset,
+            symbol: '???',
+            isErc20: true,
+            coingeckoId: UNKNOWN_TOKEN_COINGECKO_ID,
+            name: tx.swapInfo.toAsset,
+            logo: 'chrome://erc-token-images/',
+            tokenId: '',
+            isErc1155: false,
+            isErc721: false,
+            isNft: false,
+            isSpam: false,
+            visible: true,
+          } as BraveWallet.BlockchainToken)
+        : undefined
+
+  const buyAmountWei = tx.swapInfo.toAmount
+    ? new Amount(tx.swapInfo.toAmount)
+    : Amount.empty()
   const buyAmount = buyToken
     ? buyAmountWei.divideByDecimals(buyToken.decimals)
     : Amount.empty()
@@ -486,64 +555,64 @@ export const getETHSwapTransactionBuyAndSellTokens = ({
     sellAmount,
     buyAmount,
     buyAmountWei,
-    sellAmountWei
+    sellAmountWei,
   }
 }
 
-export function getLamportsMovedFromInstructions (
+export function getLamportsMovedFromInstructions(
   instructions: TypedSolanaInstructionWithParams[],
-  fromAddress: string
+  fromAddress: string,
 ) {
-  return instructions.reduce((acc, instruction) => {
-    const { lamports } = getSolInstructionParamsObj(instruction.params)
+  return (
+    instructions.reduce((acc, instruction) => {
+      const { lamports } = getSolInstructionParamsObj(instruction.params)
 
-    const {
-      fromAccount,
-      nonceAccount,
-      toAccount
-    } = getSolInstructionAccountParamsObj(
-      instruction.accountParams,
-      instruction.accountMetas
-    )
+      const { fromAccount, nonceAccount, toAccount } =
+        getSolInstructionAccountParamsObj(
+          instruction.accountParams,
+          instruction.accountMetas,
+        )
 
-    switch (instruction.type) {
-      case 'Transfer':
-      case 'TransferWithSeed': {
-        // only show lamports as transferred if
-        // the amount is going to a different pubKey
-        if (toAccount !== fromAccount) {
+      switch (instruction.type) {
+        case 'Transfer':
+        case 'TransferWithSeed': {
+          // only show lamports as transferred if
+          // the amount is going to a different pubKey
+          if (toAccount !== fromAccount) {
+            return acc.plus(lamports)
+          }
+          return acc
+        }
+
+        case 'WithdrawNonceAccount': {
+          if (nonceAccount === fromAddress) {
+            return acc.plus(lamports)
+          }
+
+          if (toAccount === fromAddress) {
+            return acc.minus(lamports)
+          }
+
+          return acc
+        }
+
+        case 'CreateAccount':
+        case 'CreateAccountWithSeed': {
+          if (fromAccount === fromAddress) {
+            return acc.plus(lamports)
+          }
+
+          return acc
+        }
+
+        default:
           return acc.plus(lamports)
-        }
-        return acc
       }
-
-      case 'WithdrawNonceAccount': {
-        if (nonceAccount === fromAddress) {
-          return acc.plus(lamports)
-        }
-
-        if (toAccount === fromAddress) {
-          return acc.minus(lamports)
-        }
-
-        return acc
-      }
-
-      case 'CreateAccount':
-      case 'CreateAccountWithSeed': {
-        if (fromAccount === fromAddress) {
-          return acc.plus(lamports)
-        }
-
-        return acc
-      }
-
-      default: return acc.plus(lamports)
-    }
-  }, new Amount(0)) ?? 0
+    }, new Amount(0)) ?? 0
+  )
 }
 
-export function getTransactionBaseValue (tx: TransactionInfo) {
+export function getTransactionBaseValue(tx: TransactionInfo) {
   if (isSolanaSplTransaction(tx)) {
     return tx.txDataUnion.solanaTxData.amount.toString() ?? ''
   }
@@ -564,6 +633,14 @@ export function getTransactionBaseValue (tx: TransactionInfo) {
     return tx.txDataUnion.btcTxData?.amount.toString() ?? ''
   }
 
+  if (isZCashTransaction(tx)) {
+    return tx.txDataUnion.zecTxData?.amount.toString() ?? ''
+  }
+
+  if (isCardanoTransaction(tx)) {
+    return tx.txDataUnion.cardanoTxData?.amount.toString() ?? ''
+  }
+
   assertNotReached('Unknown transaction type')
 }
 
@@ -575,56 +652,61 @@ interface GetTransactionTransferredValueArgs {
   txNetwork: BraveWallet.NetworkInfo | undefined
 }
 
-export function getTransactionTransferredValue (args: GetTransactionTransferredValueArgs): {
+export function getTransactionTransferredValue(
+  args: GetTransactionTransferredValueArgs,
+): {
   wei: Amount
   normalized: Amount
 } {
-  const {tx, txAccount, txNetwork, token, sellToken} = args
+  const { tx, txAccount, txNetwork, token } = args
 
-  // Can't compute value with network decimals if no network or no account was provided
+  // Can't compute value with network decimals if no network or no account was
+  // provided
   if (!txAccount || !txNetwork) {
     return {
       normalized: Amount.empty(),
-      wei: Amount.empty()
+      wei: Amount.empty(),
     }
   }
 
   // ERC20 Approvals
   // ERC20 Transfers
   if (
-    tx.txType === BraveWallet.TransactionType.ERC20Approve ||
-    tx.txType === BraveWallet.TransactionType.ERC20Transfer
+    tx.txType === BraveWallet.TransactionType.ERC20Approve
+    || tx.txType === BraveWallet.TransactionType.ERC20Transfer
   ) {
     const [, amount] = tx.txArgs
     const wei = new Amount(amount)
     return {
       wei,
-      normalized: wei.divideByDecimals(token?.decimals ?? 18)
+      normalized: wei.divideByDecimals(token?.decimals ?? 18),
     }
   }
 
   // ERC721
   if (
-    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
   ) {
     // can only send 1 ERC721 NFT at a time
     return {
       wei: new Amount('1').multiplyByDecimals(18),
-      normalized: new Amount('1')
+      normalized: new Amount('1'),
     }
   }
 
   // ETH Swap
   if (tx.txType === BraveWallet.TransactionType.ETHSwap) {
-    // (bytes fillPath, uint256 sellAmount, uint256 minBuyAmount)
-    const [, sellAmountArg] = tx.txArgs
-    const wei = new Amount(sellAmountArg || getTransactionBaseValue(tx))
+    const { sellAmountWei, sellToken } = getETHSwapTransactionBuyAndSellTokens({
+      tx,
+      tokensList: [],
+    })
+    const wei = sellAmountWei
     return {
-      wei,
+      wei: sellAmountWei,
       normalized: sellToken
-        ? wei.divideByDecimals(sellToken.decimals ?? txNetwork.decimals)
-        : Amount.empty()
+        ? wei.divideByDecimals(sellToken.decimals)
+        : Amount.empty(),
     }
   }
 
@@ -632,15 +714,16 @@ export function getTransactionTransferredValue (args: GetTransactionTransferredV
   if (isSolanaDappTransaction(tx)) {
     const lamportsMovedFromInstructions = getLamportsMovedFromInstructions(
       getTypedSolanaTxInstructions(tx.txDataUnion.solanaTxData) || [],
-      tx.fromAddress ?? ''
+      txAccount.address ?? '',
     )
 
-    const transferredValue = new Amount(getTransactionBaseValue(tx))
-      .plus(lamportsMovedFromInstructions)
+    const transferredValue = new Amount(getTransactionBaseValue(tx)).plus(
+      lamportsMovedFromInstructions,
+    )
 
     return {
       wei: transferredValue,
-      normalized: transferredValue.divideByDecimals(txNetwork.decimals)
+      normalized: transferredValue.divideByDecimals(txNetwork.decimals),
     }
   }
 
@@ -649,7 +732,7 @@ export function getTransactionTransferredValue (args: GetTransactionTransferredV
     const wei = new Amount(getTransactionBaseValue(tx))
     return {
       wei,
-      normalized: wei.divideByDecimals(token?.decimals ?? 9)
+      normalized: wei.divideByDecimals(token?.decimals ?? 9),
     }
   }
 
@@ -662,12 +745,12 @@ export function getTransactionTransferredValue (args: GetTransactionTransferredV
   const wei = new Amount(getTransactionBaseValue(tx))
   return {
     wei: wei,
-    normalized: wei.divideByDecimals(txNetwork.decimals)
+    normalized: wei.divideByDecimals(txNetwork.decimals),
   }
 }
 
-export function getFormattedTransactionTransferredValue (
-  args: GetTransactionTransferredValueArgs
+export function getFormattedTransactionTransferredValue(
+  args: GetTransactionTransferredValueArgs,
 ): {
   normalizedTransferredValue: string
   normalizedTransferredValueExact: string
@@ -677,27 +760,28 @@ export function getFormattedTransactionTransferredValue (
   return {
     normalizedTransferredValue: normalized.format(6),
     normalizedTransferredValueExact: normalized.format(),
-    weiTransferredValue: wei.value?.toString() || ''
+    weiTransferredValue: wei.value?.toString() || '',
   }
 }
 
 export function getTransactionGasLimit(transaction: TransactionInfo) {
-  assert(isEthereumTransaction(transaction) || isFilecoinTransaction(transaction))
+  assert(
+    isEthereumTransaction(transaction) || isFilecoinTransaction(transaction),
+  )
 
   return isFilecoinTransaction(transaction)
     ? transaction.txDataUnion.filTxData.gasLimit
     : transaction.txDataUnion.ethTxData1559?.baseData.gasLimit || ''
 }
 
+/** For EVM and FIL transactions only */
 export const getTransactionGas = (
-  transaction: TransactionInfo
+  transaction: TransactionInfo,
 ): {
   gasPrice: string
   maxFeePerGas: string
   maxPriorityFeePerGas: string
 } => {
-  assert(isEthereumTransaction(transaction) || isFilecoinTransaction(transaction))
-
   if (isFilecoinTransaction(transaction)) {
     const { filTxData } = transaction.txDataUnion
     return {
@@ -707,7 +791,7 @@ export const getTransactionGas = (
       gasPrice:
         new Amount(filTxData.gasFeeCap)
           .minus(filTxData.gasPremium)
-          .value?.toString() || ''
+          .value?.toString() || '',
     }
   }
 
@@ -715,43 +799,57 @@ export const getTransactionGas = (
   return {
     gasPrice: ethTxData1559?.baseData.gasPrice || '',
     maxFeePerGas: ethTxData1559?.maxFeePerGas || '',
-    maxPriorityFeePerGas: ethTxData1559?.maxPriorityFeePerGas || ''
+    maxPriorityFeePerGas: ethTxData1559?.maxPriorityFeePerGas || '',
   }
 }
 
-export const isEIP1559Transaction = (transaction: TransactionInfo): transaction is EIP1559TransactionInfo => {
+export const isEIP1559Transaction = (transaction: TransactionInfo) => {
+  if (
+    !isEthereumTransaction(transaction)
+    && !isFilecoinTransaction(transaction)
+  ) {
+    return false
+  }
+
   const { maxFeePerGas, maxPriorityFeePerGas } = getTransactionGas(transaction)
   return maxPriorityFeePerGas !== '' && maxFeePerGas !== ''
 }
 
 /**
  * @param transaction the transaction to check
- * @param solFeeEstimates [FIXME] - Extract actual fees used in the Solana transaction, instead of populating current estimates.
+ * @param solFeeEstimates [FIXME] - Extract actual fees used in the Solana
+ * transaction, instead of populating current estimates.
  * @returns string value of the gas fee
  */
 export const getTransactionGasFee = (transaction: TransactionInfo): string => {
   assert(
-    isEthereumTransaction(transaction) ||
-    isFilecoinTransaction(transaction) ||
-    isBitcoinTransaction(transaction)
+    isEthereumTransaction(transaction)
+      || isFilecoinTransaction(transaction)
+      || isBitcoinTransaction(transaction)
+      || isZCashTransaction(transaction)
+      || isCardanoTransaction(transaction),
   )
 
   if (isBitcoinTransaction(transaction)) {
     return transaction.txDataUnion.btcTxData?.fee.toString() || ''
   }
 
+  if (isZCashTransaction(transaction)) {
+    return transaction.txDataUnion.zecTxData?.fee.toString() || ''
+  }
+
+  if (isCardanoTransaction(transaction)) {
+    return transaction.txDataUnion.cardanoTxData?.fee.toString() || ''
+  }
+
   const { maxFeePerGas, gasPrice } = getTransactionGas(transaction)
   const gasLimit = getTransactionGasLimit(transaction)
 
   if (isEIP1559Transaction(transaction)) {
-    return new Amount(maxFeePerGas)
-      .times(gasLimit)
-      .format()
+    return new Amount(maxFeePerGas).times(gasLimit).format()
   }
 
-  return new Amount(gasPrice)
-    .times(gasLimit)
-    .format()
+  return new Amount(gasPrice).times(gasLimit).format()
 }
 
 /**
@@ -759,28 +857,39 @@ export const getTransactionGasFee = (transaction: TransactionInfo): string => {
  *
  * @param tx - The transaction to check for a missing gas limit
  * @returns `true`, if the gas limit is missing, `false` otherwise
-*/
+ */
 export const isTransactionGasLimitMissing = (tx: TransactionInfo): boolean => {
   if (isSolanaTransaction(tx)) {
     return false
   }
 
   if (isBitcoinTransaction(tx)) {
-    return false;
+    return false
+  }
+
+  if (isZCashTransaction(tx)) {
+    return false
+  }
+
+  if (isCardanoTransaction(tx)) {
+    return false
   }
 
   if (isEthereumTransaction(tx) || isFilecoinTransaction(tx)) {
     const gasLimit = getTransactionGasLimit(tx)
-    return (gasLimit === '' || Amount.normalize(gasLimit) === '0')
+    return gasLimit === '' || Amount.normalize(gasLimit) === '0'
   }
 
   assertNotReached('Unknown transaction type')
 }
 
-export const parseTransactionFeesWithoutPrices = (
-  tx: TransactionInfo
-) => {
-  if (isSolanaTransaction(tx) || isBitcoinTransaction(tx)) {
+export const parseTransactionFeesWithoutPrices = (tx: TransactionInfo) => {
+  if (
+    isSolanaTransaction(tx)
+    || isBitcoinTransaction(tx)
+    || isZCashTransaction(tx)
+    || isCardanoTransaction(tx)
+  ) {
     return {
       gasLimit: '',
       gasPrice: '',
@@ -789,13 +898,14 @@ export const parseTransactionFeesWithoutPrices = (
       isEIP1559Transaction: false,
       isMissingGasLimit: false,
       gasPremium: '',
-      gasFeeCap: ''
+      gasFeeCap: '',
     }
   }
 
   if (isEthereumTransaction(tx) || isFilecoinTransaction(tx)) {
     const gasLimit = getTransactionGasLimit(tx)
-    const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } = getTransactionGas(tx)
+    const { gasPrice, maxFeePerGas, maxPriorityFeePerGas } =
+      getTransactionGas(tx)
 
     return {
       gasLimit: Amount.normalize(gasLimit),
@@ -809,14 +919,16 @@ export const parseTransactionFeesWithoutPrices = (
         : '',
       gasFeeCap: isFilecoinTransaction(tx)
         ? new Amount(tx.txDataUnion.filTxData.gasFeeCap).format()
-        : ''
+        : '',
     }
   }
 
   assertNotReached('Unknown transaction type')
 }
 
-export const getTransactionApprovalTargetAddress = (tx: TransactionInfo): string => {
+export const getTransactionApprovalTargetAddress = (
+  tx: TransactionInfo,
+): string => {
   if (tx.txType === BraveWallet.TransactionType.ERC20Approve) {
     const [spender] = tx.txArgs // (address spender, uint256 amount)
     return spender
@@ -825,12 +937,12 @@ export const getTransactionApprovalTargetAddress = (tx: TransactionInfo): string
   return ''
 }
 
-export function getTransactionDecimals ({
+export function getTransactionDecimals({
   tx,
   erc721Token,
   network,
   sellToken,
-  token
+  token,
 }: {
   tx: TransactionInfo
   network?: BraveWallet.NetworkInfo
@@ -855,21 +967,28 @@ export function getTransactionDecimals ({
   }
 
   switch (getCoinFromTxDataUnion(tx.txDataUnion)) {
-    case BraveWallet.CoinType.SOL: return 9
-    case BraveWallet.CoinType.ETH: return 18
-    case BraveWallet.CoinType.FIL: return 18
-    default: return 18
+    case BraveWallet.CoinType.SOL:
+      return 9
+    case BraveWallet.CoinType.ETH:
+      return 18
+    case BraveWallet.CoinType.FIL:
+      return 18
+    default:
+      return 18
   }
 }
 
 export const getTransactionErc721TokenId = (
-  tx: TransactionInfo
+  tx: TransactionInfo,
 ): string | undefined => {
-  if ([
-    BraveWallet.TransactionType.ERC721TransferFrom,
-    BraveWallet.TransactionType.ERC721SafeTransferFrom
-  ].includes(tx.txType)) {
-    const [, , tokenID] = tx.txArgs // (address owner, address to, uint256 tokenId)
+  if (
+    [
+      BraveWallet.TransactionType.ERC721TransferFrom,
+      BraveWallet.TransactionType.ERC721SafeTransferFrom,
+    ].includes(tx.txType)
+  ) {
+    // (address owner, address to, uint256 tokenId)
+    const [, , tokenID] = tx.txArgs
     return tokenID && `#${Amount.normalize(tokenID)}`
   }
   return undefined
@@ -893,30 +1012,32 @@ export const getTransactionErc721TokenId = (
  */
 function isKnownTokenContractAddress(
   address: string,
-  tokenList: BraveWallet.BlockchainToken[]
+  tokenList: BraveWallet.BlockchainToken[],
 ) {
   return tokenList?.some(
-    (token) => token.contractAddress.toLowerCase() === address.toLowerCase()
+    (token) => token.contractAddress.toLowerCase() === address.toLowerCase(),
   )
 }
 
 /**
- * Checks if a given transaction is sending funds to a known contract address from our token registry.
+ * Checks if a given transaction is sending funds to a known contract address
+ * from our token registry.
  *
  * @param tokenList - A list of Erc & SPL tokens to check against
  * @param tx - The transaction to check
- * @returns `true` if the to address is a known erc & SPL token contract address, `false` otherwise
-*/
+ * @returns `true` if the to address is a known erc & SPL token contract
+ * address, `false` otherwise
+ */
 export const isSendingToKnownTokenContractAddress = (
   tx: Pick<TransactionInfo, 'txType' | 'txArgs' | 'txDataUnion'>,
-  tokenList: BraveWallet.BlockchainToken[]
+  tokenList: BraveWallet.BlockchainToken[],
 ): boolean => {
   // ERC20Transfer
   if (tx.txType === BraveWallet.TransactionType.ERC20Transfer) {
     const [recipient] = tx.txArgs // [address recipient, uint256 amount]
     const contractAddressError = isKnownTokenContractAddress(
       recipient,
-      tokenList
+      tokenList,
     )
     return contractAddressError
   }
@@ -924,14 +1045,16 @@ export const isSendingToKnownTokenContractAddress = (
   // ERC721TransferFrom
   // ERC721SafeTransferFrom
   if (
-    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
   ) {
-    // The owner of the ERC721 must not be confused with the caller (fromAddress).
-    const [, toAddress] = tx.txArgs // address owner, address to, uint256 tokenId]
+    // The owner of the ERC721 must not be confused with the caller
+    // (fromAddress).
+    // [address owner, address to, uint256 tokenId]
+    const [, toAddress] = tx.txArgs
     const contractAddressError = isKnownTokenContractAddress(
       toAddress,
-      tokenList
+      tokenList,
     )
     return contractAddressError
   }
@@ -943,12 +1066,14 @@ export const isSendingToKnownTokenContractAddress = (
 
   // Solana SPL Token Transfer
   if (
-    tx.txType === BraveWallet.TransactionType.SolanaSPLTokenTransfer ||
-    tx.txType === BraveWallet.TransactionType.SolanaSPLTokenTransferWithAssociatedTokenAccountCreation
+    tx.txType === BraveWallet.TransactionType.SolanaSPLTokenTransfer
+    || tx.txType
+      === BraveWallet.TransactionType
+        .SolanaSPLTokenTransferWithAssociatedTokenAccountCreation
   ) {
     const contractAddressError = isKnownTokenContractAddress(
       getTransactionInteractionAddress(tx) ?? '',
-      tokenList
+      tokenList,
     )
     return contractAddressError
   }
@@ -961,55 +1086,63 @@ export const isSendingToKnownTokenContractAddress = (
  * are the same.
  *
  * @param tx - The transaction to check
-*/
+ */
 export const transactionHasSameAddressError = (
-  tx: TransactionInfo
+  tx: TransactionInfo,
+  txAccount: BraveWallet.AccountInfo,
 ): boolean => {
-  const { txArgs, txType, fromAddress: from = ''} = tx
+  const { txArgs, txType } = tx
 
   // transfer(address recipient, uint256 amount) → bool
   if (txType === BraveWallet.TransactionType.ERC20Transfer) {
     const [recipient] = txArgs // (address recipient, uint256 amount)
-    return recipient.toLowerCase() === from.toLowerCase()
+    return recipient.toLowerCase() === txAccount.address.toLowerCase()
   }
 
   // transferFrom(address owner, address to, uint256 tokenId)
   if (
-    txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
   ) {
-    // The owner of the ERC721 must not be confused with the caller (fromAddress).
-    const [owner, toAddress] = txArgs // (address owner, address to, uint256 tokenId)
+    // The owner of the ERC721 must not be confused with the caller
+    // (fromAddress).
+    // (address owner, address to, uint256 tokenId)
+    const [owner, toAddress] = txArgs
     return toAddress.toLowerCase() === owner.toLowerCase()
   }
 
   // approve(address spender, uint256 amount) → bool
   if (txType === BraveWallet.TransactionType.ERC20Approve) {
     const [spender] = txArgs // (address spender, uint256 amount)
-    return spender.toLowerCase() === from.toLowerCase()
+    return spender.toLowerCase() === txAccount.address.toLowerCase()
   }
 
   if (isSolanaSplTransaction(tx)) {
-    return (tx.txDataUnion.solanaTxData.toWalletAddress ?? '')
-      .toLowerCase() === from.toLowerCase()
+    return (
+      (tx.txDataUnion.solanaTxData.toWalletAddress ?? '').toLowerCase()
+      === txAccount.address.toLowerCase()
+    )
   }
 
   if (
-    BraveWallet.TransactionType.ETHSend ||
-    BraveWallet.TransactionType.ETHSwap ||
-    BraveWallet.TransactionType.Other
+    BraveWallet.TransactionType.ETHSend
+    || BraveWallet.TransactionType.ETHSwap
+    || BraveWallet.TransactionType.Other
   ) {
     return false
   }
 
   // unknown
-  return getTransactionToAddress(tx).toLowerCase() === from.toLowerCase()
+  return (
+    getTransactionToAddress(tx).toLowerCase()
+    === txAccount.address.toLowerCase()
+  )
 }
 
-export function getGasFeeFiatValue ({
+export function getGasFeeFiatValue({
   gasFee,
   networkSpotPrice,
-  txNetwork
+  txNetwork,
 }: {
   gasFee: string
   networkSpotPrice: string
@@ -1030,13 +1163,15 @@ export const accountHasInsufficientFundsForTransaction = ({
   accountTokenBalance,
   gasFee,
   tx,
+  txAccount,
   sellAmountWei = new Amount('0'),
-  sellTokenBalance
+  sellTokenBalance,
 }: {
   accountNativeBalance: string
   accountTokenBalance: string
   gasFee: string
   tx: TransactionInfo
+  txAccount: BraveWallet.AccountInfo
   sellAmountWei: Amount
   sellTokenBalance: string
 }): boolean => {
@@ -1045,15 +1180,17 @@ export const accountHasInsufficientFundsForTransaction = ({
   if (isSolanaDappTransaction(tx)) {
     const lamportsMovedFromInstructions = getLamportsMovedFromInstructions(
       getTypedSolanaTxInstructions(tx.txDataUnion.solanaTxData) || [],
-      tx.fromAddress || ''
+      txAccount.address || '',
     )
 
-    const transferredValue = new Amount(getTransactionBaseValue(tx))
-      .plus(lamportsMovedFromInstructions)
+    const transferredValue = new Amount(getTransactionBaseValue(tx)).plus(
+      lamportsMovedFromInstructions,
+    )
 
-    return accountNativeBalance !== '' && transferredValue
-      .plus(gasFee)
-      .gt(accountNativeBalance)
+    return (
+      accountNativeBalance !== ''
+      && transferredValue.plus(gasFee).gt(accountNativeBalance)
+    )
   }
 
   // ERC20
@@ -1063,41 +1200,60 @@ export const accountHasInsufficientFundsForTransaction = ({
 
   if (txType === BraveWallet.TransactionType.ERC20Transfer) {
     const [, amount] = txArgs // (address recipient, uint256 amount)
-    return accountTokenBalance !== '' && new Amount(amount)
-      .gt(accountTokenBalance)
+    return (
+      accountTokenBalance !== '' && new Amount(amount).gt(accountTokenBalance)
+    )
   }
 
   // ERC721
   if (
-    txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
   ) {
     return false
   }
 
   // SPL
   if (isSolanaSplTransaction(tx)) {
-    return accountTokenBalance !== '' && new Amount(getTransactionBaseValue(tx))
-      .gt(accountTokenBalance)
+    return (
+      accountTokenBalance !== ''
+      && new Amount(getTransactionBaseValue(tx)).gt(accountTokenBalance)
+    )
   }
 
   // Eth Swap
   if (txType === BraveWallet.TransactionType.ETHSwap) {
     return sellTokenBalance !== '' && sellAmountWei.gt(sellTokenBalance)
   }
+
+  if (
+    tx.chainId === BraveWallet.Z_CASH_MAINNET
+    || tx.chainId === BraveWallet.Z_CASH_TESTNET
+  ) {
+    return (
+      accountTokenBalance !== ''
+      && new Amount(getTransactionBaseValue(tx))
+        .plus(gasFee)
+        .gt(accountTokenBalance)
+    )
+  }
+
   // ETHSend
   // SolanaSystemTransfer
   // Other
-  return accountNativeBalance !== '' && new Amount(getTransactionBaseValue(tx))
-    .plus(gasFee)
-    .gt(accountNativeBalance)
+  return (
+    accountNativeBalance !== ''
+    && new Amount(getTransactionBaseValue(tx))
+      .plus(gasFee)
+      .gt(accountNativeBalance)
+  )
 }
 
-export function getTransactionTransferredToken ({
+export function getTransactionTransferredToken({
   tx,
   txNetwork,
   sellToken,
-  token
+  token,
 }: {
   tx: TransactionInfo
   txNetwork?: BraveWallet.NetworkInfo
@@ -1109,11 +1265,11 @@ export function getTransactionTransferredToken ({
   }
 
   if (
-    tx.txType === BraveWallet.TransactionType.ERC20Approve ||
-    tx.txType === BraveWallet.TransactionType.ERC20Transfer ||
-    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom ||
-    isSolanaSplTransaction(tx)
+    tx.txType === BraveWallet.TransactionType.ERC20Approve
+    || tx.txType === BraveWallet.TransactionType.ERC20Transfer
+    || tx.txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    || isSolanaSplTransaction(tx)
   ) {
     return token
   }
@@ -1123,11 +1279,11 @@ export function getTransactionTransferredToken ({
   return nativeAsset
 }
 
-export function getTransactionTokenSymbol ({
+export function getTransactionTokenSymbol({
   tx,
   txNetwork,
   sellToken,
-  token
+  token,
 }: {
   tx: TransactionInfo
   txNetwork?: Pick<BraveWallet.NetworkInfo, 'symbol'>
@@ -1143,11 +1299,11 @@ export function getTransactionTokenSymbol ({
   }
 
   if (
-    tx.txType === BraveWallet.TransactionType.ERC20Approve ||
-    tx.txType === BraveWallet.TransactionType.ERC20Transfer ||
-    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom ||
-    isSolanaSplTransaction(tx)
+    tx.txType === BraveWallet.TransactionType.ERC20Approve
+    || tx.txType === BraveWallet.TransactionType.ERC20Transfer
+    || tx.txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    || isSolanaSplTransaction(tx)
   ) {
     return token?.symbol || ''
   }
@@ -1164,7 +1320,7 @@ export const getTransactionIntent = ({
   sellToken,
   token,
   transactionNetwork,
-  tx
+  tx,
 }: {
   buyAmount?: Amount
   buyToken?: BraveWallet.BlockchainToken
@@ -1178,25 +1334,29 @@ export const getTransactionIntent = ({
 }): string => {
   // ERC20 Approve
   if (tx.txType === BraveWallet.TransactionType.ERC20Approve) {
-    return toProperCase(getLocale('braveWalletApprovalTransactionIntent')) + ' ' + token?.symbol ?? ''
+    return (
+      toProperCase(getLocale('braveWalletApprovalTransactionIntent'))
+      + ' '
+      + (token?.symbol ?? '')
+    )
   }
 
   // ERC20 Transfer
   if (tx.txType === BraveWallet.TransactionType.ERC20Transfer) {
     return getLocale('braveWalletTransactionIntentSend').replace(
       '$1',
-      new Amount(normalizedTransferredValue).formatAsAsset(6, token?.symbol)
+      new Amount(normalizedTransferredValue).formatAsAsset(6, token?.symbol),
     )
   }
 
   // ERC 721
   if (
-    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
   ) {
     return getLocale('braveWalletTransactionIntentSend').replace(
       '$1',
-      `${token?.symbol ?? ''} ${erc721TokenId}`
+      `${token?.symbol ?? ''} ${erc721TokenId}`,
     )
   }
 
@@ -1209,11 +1369,10 @@ export const getTransactionIntent = ({
 
   // SPL
   if (isSolanaSplTransaction(tx)) {
-    return getLocale('braveWalletTransactionIntentSend')
-      .replace(
-        '$1',
-        new Amount(normalizedTransferredValue).formatAsAsset(6, token?.symbol)
-      )
+    return getLocale('braveWalletTransactionIntentSend').replace(
+      '$1',
+      new Amount(normalizedTransferredValue).formatAsAsset(6, token?.symbol),
+    )
   }
 
   // ETHSwap
@@ -1228,19 +1387,21 @@ export const getTransactionIntent = ({
     '$1',
     new Amount(normalizedTransferredValue).formatAsAsset(
       6,
-      transactionNetwork?.symbol
-    )
+      transactionNetwork?.symbol,
+    ),
   )
 }
 
 export const accountHasInsufficientFundsForGas = ({
   accountNativeBalance,
-  gasFee
+  gasFee,
 }: {
   accountNativeBalance: string
   gasFee: string
 }): boolean => {
-  return accountNativeBalance !== '' && new Amount(gasFee).gt(accountNativeBalance)
+  return (
+    accountNativeBalance !== '' && new Amount(gasFee).gt(accountNativeBalance)
+  )
 }
 
 export const getIsTxApprovalUnlimited = (tx: TransactionInfo): boolean => {
@@ -1268,8 +1429,12 @@ export const isSwapTransaction = (tx: TransactionInfo) => {
 
   return [
     BraveWallet.TransactionType.ETHSwap,
-    BraveWallet.TransactionType.SolanaSwap
+    BraveWallet.TransactionType.SolanaSwap,
   ].includes(tx.txType)
+}
+
+export const isBridgeTransaction = (tx: TransactionInfo) => {
+  return tx.swapInfo?.fromChainId !== tx.swapInfo?.toChainId
 }
 
 export const getTransactionFormattedSendCurrencyTotal = ({
@@ -1277,7 +1442,7 @@ export const getTransactionFormattedSendCurrencyTotal = ({
   sellToken,
   token,
   tx,
-  txNetwork
+  txNetwork,
 }: {
   normalizedTransferredValue: string
   sellToken?: BraveWallet.BlockchainToken
@@ -1289,10 +1454,12 @@ export const getTransactionFormattedSendCurrencyTotal = ({
     tx,
     sellToken,
     token,
-    txNetwork
+    txNetwork,
   })
-  return new Amount(normalizedTransferredValue)
-    .formatAsAsset(6, sendToken?.symbol)
+  return new Amount(normalizedTransferredValue).formatAsAsset(
+    6,
+    sendToken?.symbol,
+  )
 }
 
 export const getTransactionFiatValues = ({
@@ -1305,7 +1472,7 @@ export const getTransactionFiatValues = ({
   token,
   transferredValueWei,
   tx,
-  txNetwork
+  txNetwork,
 }: {
   gasFee: string
   networkSpotPrice: string
@@ -1325,7 +1492,7 @@ export const getTransactionFiatValues = ({
   const gasFeeFiat = getGasFeeFiatValue({
     gasFee,
     networkSpotPrice,
-    txNetwork
+    txNetwork,
   })
 
   // Solana Dapps
@@ -1340,8 +1507,9 @@ export const getTransactionFiatValues = ({
             contractAddress: '',
             chainId: txNetwork.chainId,
             coin: txNetwork.coin,
-            coingeckoId: ''
-          }
+            coingeckoId: '',
+            isShielded: false,
+          },
         })
       : Amount.empty()
 
@@ -1350,7 +1518,7 @@ export const getTransactionFiatValues = ({
     return {
       gasFeeFiat,
       fiatValue: transferredAmountFiat.toNumber().toString(),
-      fiatTotal: totalAmountFiat.toNumber().toString()
+      fiatTotal: totalAmountFiat.toNumber().toString(),
     }
   }
 
@@ -1372,14 +1540,14 @@ export const getTransactionFiatValues = ({
       fiatTotal: new Amount(gasFeeFiat)
         .plus(sendAmountFiat)
         .toNumber()
-        .toString()
+        .toString(),
     }
   }
 
   // ERC721 TransferFrom
   if (
-    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom ||
-    tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
+    tx.txType === BraveWallet.TransactionType.ERC721TransferFrom
+    || tx.txType === BraveWallet.TransactionType.ERC721SafeTransferFrom
   ) {
     // The owner of the ERC721 must not be confused with the
     // caller (fromAddress).
@@ -1388,7 +1556,7 @@ export const getTransactionFiatValues = ({
     return {
       gasFeeFiat,
       fiatValue: '0', // Display NFT values in the future
-      fiatTotal: new Amount(totalAmountFiat).toNumber().toString()
+      fiatTotal: new Amount(totalAmountFiat).toNumber().toString(),
     }
   }
 
@@ -1397,7 +1565,7 @@ export const getTransactionFiatValues = ({
     return {
       gasFeeFiat,
       fiatValue: '0',
-      fiatTotal: gasFeeFiat
+      fiatTotal: gasFeeFiat,
     }
   }
 
@@ -1414,7 +1582,7 @@ export const getTransactionFiatValues = ({
       fiatTotal: new Amount(gasFeeFiat)
         .plus(sendAmountFiat)
         .toNumber()
-        .toString()
+        .toString(),
     }
   }
 
@@ -1425,7 +1593,7 @@ export const getTransactionFiatValues = ({
         ? computeFiatAmount({
             spotPriceRegistry,
             value: sellAmountWei,
-            token: sellToken
+            token: sellToken,
           })
         : Amount.empty()
 
@@ -1434,7 +1602,7 @@ export const getTransactionFiatValues = ({
     return {
       gasFeeFiat,
       fiatValue: sellAmountFiat.toNumber().toString(),
-      fiatTotal: totalAmountFiat.toNumber().toString()
+      fiatTotal: totalAmountFiat.toNumber().toString(),
     }
   }
 
@@ -1449,15 +1617,19 @@ export const getTransactionFiatValues = ({
           contractAddress: '',
           chainId: txNetwork.chainId,
           coin: txNetwork.coin,
-          coingeckoId: ''
-        }
+          coingeckoId: '',
+          isShielded: false,
+        },
       })
     : Amount.empty()
 
   return {
     gasFeeFiat,
     fiatValue: sendAmountFiat.toNumber().toString(),
-    fiatTotal: new Amount(gasFeeFiat).plus(sendAmountFiat).toNumber().toString()
+    fiatTotal: new Amount(gasFeeFiat)
+      .plus(sendAmountFiat)
+      .toNumber()
+      .toString(),
   }
 }
 
@@ -1466,7 +1638,7 @@ export const parseTransactionWithoutPrices = ({
   tx,
   transactionAccount,
   transactionNetwork,
-  tokensList
+  tokensList,
 }: {
   accounts: EntityState<BraveWallet.AccountInfo>
   tx: TransactionInfo
@@ -1475,37 +1647,37 @@ export const parseTransactionWithoutPrices = ({
   tokensList: BraveWallet.BlockchainToken[]
 }): ParsedTransactionWithoutFiatValues => {
   const to = getTransactionToAddress(tx)
-  const token = findTransactionToken(tx, tokensList)
-  const nativeAsset = makeNetworkAsset(transactionNetwork)
 
+  const nativeAsset = makeNetworkAsset(transactionNetwork)
+  const token = findTransactionToken(tx, tokensList)
   const {
     buyToken,
     sellToken,
     buyAmount,
     sellAmount,
     sellAmountWei,
-    buyAmountWei
+    buyAmountWei,
   } = getETHSwapTransactionBuyAndSellTokens({
     nativeAsset,
     tokensList,
-    tx
+    tx,
   })
 
   const {
     normalizedTransferredValue,
     normalizedTransferredValueExact,
-    weiTransferredValue
+    weiTransferredValue,
   } = getFormattedTransactionTransferredValue({
     tx,
     txAccount: transactionAccount,
     txNetwork: transactionNetwork,
     token,
-    sellToken
+    sellToken,
   })
 
   const erc721BlockchainToken = [
     BraveWallet.TransactionType.ERC721TransferFrom,
-    BraveWallet.TransactionType.ERC721SafeTransferFrom
+    BraveWallet.TransactionType.ERC721SafeTransferFrom,
   ].includes(tx.txType)
     ? token
     : undefined
@@ -1520,7 +1692,7 @@ export const parseTransactionWithoutPrices = ({
     isMissingGasLimit,
     maxFeePerGas,
     maxPriorityFeePerGas,
-    isEIP1559Transaction
+    isEIP1559Transaction,
   } = parseTransactionFeesWithoutPrices(tx)
 
   const erc721TokenId = getTransactionErc721TokenId(tx)
@@ -1535,7 +1707,7 @@ export const parseTransactionWithoutPrices = ({
 
   const contractAddressError = isSendingToKnownTokenContractAddress(
     tx,
-    tokensList
+    tokensList,
   )
     ? getLocale('braveWalletContractAddressError')
     : undefined
@@ -1545,12 +1717,15 @@ export const parseTransactionWithoutPrices = ({
     network: transactionNetwork,
     sellToken,
     erc721Token: erc721BlockchainToken,
-    token
+    token,
   })
 
   const instructions = getTypedSolanaTxInstructions(tx.txDataUnion.solanaTxData)
 
-  const sameAddressError = transactionHasSameAddressError(tx)
+  const sameAddressError = transactionHasSameAddressError(
+    tx,
+    transactionAccount,
+  )
     ? getLocale('braveWalletSameAddressError')
     : undefined
 
@@ -1558,7 +1733,7 @@ export const parseTransactionWithoutPrices = ({
     tx,
     txNetwork: transactionNetwork,
     token,
-    sellToken
+    sellToken,
   })
 
   const intent = getTransactionIntent({
@@ -1570,25 +1745,24 @@ export const parseTransactionWithoutPrices = ({
     sellAmount,
     sellToken,
     token,
-    transactionNetwork
+    transactionNetwork,
   })
 
   const isSendingToZeroXExchangeProxy =
-    tx.txDataUnion.ethTxData1559?.baseData.to.toLowerCase() ===
-    SwapExchangeProxy
+    tx.txDataUnion.ethTxData1559?.baseData.to.toLowerCase()
+    === SwapExchangeProxy
 
   const formattedSendCurrencyTotal = getTransactionFormattedSendCurrencyTotal({
     normalizedTransferredValue,
     sellToken,
     token,
     txNetwork: transactionNetwork,
-    tx
+    tx,
   })
 
   return {
     approvalTarget,
     approvalTargetLabel,
-    buyToken,
     chainId: transactionNetwork?.chainId || '',
     coinType,
     contractAddressError,
@@ -1607,8 +1781,9 @@ export const parseTransactionWithoutPrices = ({
     isApprovalUnlimited: getIsTxApprovalUnlimited(tx),
     isEIP1559Transaction,
     isFilecoinTransaction: isFilecoinTransaction(tx),
+    isCardanoTransaction: isCardanoTransaction(tx),
     isSendingToZeroXExchangeProxy,
-    isSolanaDappTransaction: isSolanaTransaction(tx),
+    isSolanaDappTransaction: isSolanaDappTransaction(tx),
     isSolanaSPLTransaction: isSolanaSplTransaction(tx),
     isSolanaTransaction: isSolanaTransaction(tx),
     isSwap: isSwapTransaction(tx),
@@ -1633,7 +1808,10 @@ export const parseTransactionWithoutPrices = ({
     value: normalizedTransferredValue,
     valueExact: normalizedTransferredValueExact,
     weiTransferredValue,
-    formattedSendCurrencyTotal
+    formattedSendCurrencyTotal,
+    isAssociatedTokenAccountCreation: isAssociatedTokenAccountCreationTx(tx),
+    hasSystemProgramAssignInstruction: hasSystemProgramAssignInstruction(tx),
+    zcashMemo: tx.txDataUnion.zecTxData?.memo ?? undefined,
   }
 }
 
@@ -1644,7 +1822,7 @@ export const parseTransactionWithPrices = ({
   transactionNetwork,
   spotPriceRegistry,
   gasFee,
-  tokensList
+  tokensList,
 }: {
   accounts: EntityState<BraveWallet.AccountInfo>
   tx: TransactionInfo
@@ -1659,7 +1837,8 @@ export const parseTransactionWithPrices = ({
         symbol: transactionNetwork.symbol,
         contractAddress: '',
         chainId: transactionNetwork.chainId,
-        coingeckoId: ''
+        coingeckoId: '',
+        isShielded: false,
       }).format()
     : ''
 
@@ -1675,7 +1854,7 @@ export const parseTransactionWithPrices = ({
     transactionAccount,
     transactionNetwork,
     tx,
-    tokensList
+    tokensList,
   })
 
   return {
@@ -1695,65 +1874,170 @@ export const parseTransactionWithPrices = ({
       sellToken,
       token,
       txNetwork: transactionNetwork,
-      transferredValueWei: weiTransferredValue
-    })
+      transferredValueWei: weiTransferredValue,
+    }),
+    zcashMemo: tx.txDataUnion.zecTxData?.memo ?? undefined,
   }
 }
 
 export function toTxDataUnion<D extends keyof BraveWallet.TxDataUnion>(
-  unionItem: Pick<BraveWallet.TxDataUnion, D>
+  unionItem: Pick<BraveWallet.TxDataUnion, D>,
 ) {
   return Object.assign({}, unionItem) as BraveWallet.TxDataUnion
 }
 
+export const isAssociatedTokenAccountCreationTx = (
+  tx: Pick<BraveWallet.TransactionInfo, 'txType'> | undefined,
+) =>
+  tx?.txType
+  === BraveWallet.TransactionType
+    .SolanaSPLTokenTransferWithAssociatedTokenAccountCreation
 
-export function isSolanaSignTransactionRequest(
-  request?:
-    | BraveWallet.SignTransactionRequest
-    | BraveWallet.SignAllTransactionsRequest
-): request is BraveWallet.SignTransactionRequest {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  return !!(request as BraveWallet.SignTransactionRequest | undefined)?.txData
-    ?.solanaTxData
-}
-
-export function isSolanaSignAllTransactionsRequest(
-  request?:
-    | BraveWallet.SignTransactionRequest
-    | BraveWallet.SignAllTransactionsRequest
-): request is BraveWallet.SignAllTransactionsRequest {
-  // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-  return !!(request as BraveWallet.SignAllTransactionsRequest | undefined)
-    ?.txDatas
-}
-
-export function getTxDataFromSolSignTxRequest(
-  selectedQueueData: BraveWallet.SignTransactionRequest
-): BraveWallet.SolanaTxData | undefined {
-  return selectedQueueData.txData?.solanaTxData
-}
-
-export function getTxDatasFromSolSignAllTxsRequest(
-  selectedQueueData: BraveWallet.SignAllTransactionsRequest
-): BraveWallet.SolanaTxData[] {
-  return selectedQueueData.txDatas
-    .map(({ solanaTxData }) => solanaTxData)
-    .filter((data): data is BraveWallet.SolanaTxData => !!data)
-}
-
-export function getTxDatasFromQueuedSolSignRequest(
-  selectedQueueData:
-    | BraveWallet.SignAllTransactionsRequest
-    | BraveWallet.SignTransactionRequest
-): BraveWallet.SolanaTxData[] {
-  if (isSolanaSignAllTransactionsRequest(selectedQueueData)) {
-    return getTxDatasFromSolSignAllTxsRequest(selectedQueueData)
+export function hasSystemProgramAssignInstruction(
+  tx: Pick<TransactionInfo, 'txType' | 'txDataUnion'>,
+): tx is SolanaTransactionInfo {
+  if (!isSolanaTransaction(tx)) {
+    return false
   }
 
-  if (isSolanaSignTransactionRequest(selectedQueueData)) {
-    const txData = getTxDataFromSolSignTxRequest(selectedQueueData)
-    return txData ? [txData] : []
+  const instructions = getTypedSolanaTxInstructions(tx.txDataUnion.solanaTxData)
+  return instructions.some(
+    (instruction) =>
+      instruction.type === 'Assign' || instruction.type === 'AssignWithSeed',
+  )
+}
+
+export function getTransactionTypeName(txType: BraveWallet.TransactionType) {
+  switch (txType) {
+    case BraveWallet.TransactionType.ERC1155SafeTransferFrom:
+      return getLocale('braveWalletTransactionTypeNameSafeTransferFrom')
+
+    case BraveWallet.TransactionType.ERC20Approve:
+      return getLocale('braveWalletTransactionTypeNameErc20Approve')
+
+    case BraveWallet.TransactionType.ERC20Transfer:
+      return getLocale('braveWalletTransactionTypeNameTokenTransfer')
+
+    case BraveWallet.TransactionType.ERC721SafeTransferFrom:
+      return getLocale('braveWalletTransactionTypeNameSafeTransferFrom')
+
+    case BraveWallet.TransactionType.ERC721TransferFrom:
+      return getLocale('braveWalletTransactionTypeNameNftTransfer')
+
+    case BraveWallet.TransactionType.ETHFilForwarderTransfer:
+      return getLocale('braveWalletTransactionTypeNameForwardFil')
+
+    case BraveWallet.TransactionType.ETHSend:
+      return getLocale('braveWalletTransactionIntentSend').replace('$1', 'ETH')
+
+    case BraveWallet.TransactionType.ETHSwap:
+      return getLocale('braveWalletSwap')
+
+    case BraveWallet.TransactionType.Other:
+      return getLocale('braveWalletTransactionTypeNameOther')
+
+    case BraveWallet.TransactionType.SolanaCompressedNftTransfer:
+      return getLocale('braveWalletTransactionTypeNameCompressedNftTransfer')
+
+    case BraveWallet.TransactionType.SolanaDappSignAndSendTransaction:
+      return getLocale(
+        'braveWalletTransactionTypeNameSignAndSendDappTransaction',
+      )
+
+    case BraveWallet.TransactionType.SolanaDappSignTransaction:
+      return getLocale('braveWalletTransactionTypeNameSignDappTransaction')
+
+    case BraveWallet.TransactionType.SolanaSPLTokenTransfer:
+      return getLocale('braveWalletTransactionTypeNameTokenTransfer')
+
+    case BraveWallet.TransactionType
+      .SolanaSPLTokenTransferWithAssociatedTokenAccountCreation:
+      return getLocale(
+        'braveWalletTransactionTypeNameSplTokenTransfer'
+          + 'WithAssociatedTokenAccountCreation',
+      )
+
+    case BraveWallet.TransactionType.SolanaSwap:
+      return getLocale('braveWalletSwap')
+
+    case BraveWallet.TransactionType.SolanaSystemTransfer:
+      return getLocale('braveWalletTransactionIntentSend').replace('$1', 'SOL')
+
+    default:
+      return getLocale('braveWalletTransactionTypeNameOther')
+  }
+}
+
+export const getIsSolanaAssociatedTokenAccountCreation = (
+  transaction: TransactionInfo,
+) => {
+  const txCoinType = getCoinFromTxDataUnion(transaction.txDataUnion)
+  // If the transaction is not a Solana transaction, return false
+  if (
+    txCoinType !== BraveWallet.CoinType.SOL
+    || transaction.txType
+      !== BraveWallet.TransactionType.SolanaDappSignAndSendTransaction
+    || !transaction.txDataUnion.solanaTxData?.staticAccountKeys.includes(
+      BraveWallet.SOLANA_ASSOCIATED_TOKEN_PROGRAM_ID,
+    )
+  ) {
+    return false
   }
 
-  return []
+  // Get the typed instructions from the transaction
+  const instructions = getTypedSolanaTxInstructions(
+    transaction.txDataUnion.solanaTxData,
+  )
+
+  // If there are no instructions, return false
+  if (!instructions) {
+    return false
+  }
+
+  // Get the user address from the transaction
+  const userAddress = transaction.fromAccountId.address.toLowerCase()
+
+  // Look for an instruction that creates an associated token account
+  return instructions.some((instruction) => {
+    const { accountMetas, data, programId } = instruction
+
+    // Instruction must have the associated token program id
+    if (programId !== BraveWallet.SOLANA_ASSOCIATED_TOKEN_PROGRAM_ID) {
+      return false
+    }
+
+    // If the instruction has data, return false
+    // (ATA creation is typically 0 bytes)
+    if (data.length !== 0) {
+      return false
+    }
+
+    // If the instruction has less than 5 account metas, return false
+    if (accountMetas.length < 5) {
+      return false
+    }
+
+    const payer = accountMetas[0].pubkey.toLowerCase()
+    const owner = accountMetas[2].pubkey.toLowerCase()
+
+    // If the payer and owner is not the user address, return false
+    if (payer !== userAddress && owner !== userAddress) {
+      return false
+    }
+
+    // Check if this is the only instruction involving the
+    // Associated Token Program
+    const otherInstructionsWithATP = instructions.filter(
+      (otherInstruction) =>
+        otherInstruction !== instruction
+        && otherInstruction.accountMetas.some(
+          (meta) =>
+            meta.pubkey === BraveWallet.SOLANA_ASSOCIATED_TOKEN_PROGRAM_ID,
+        ),
+    )
+
+    // If there are other instructions involving the Associated Token Program
+    // return false
+    return otherInstructionsWithATP.length === 0
+  })
 }

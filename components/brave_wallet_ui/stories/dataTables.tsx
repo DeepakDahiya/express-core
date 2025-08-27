@@ -4,54 +4,55 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as React from 'react'
-import { storiesOf } from '@storybook/react'
 import { withKnobs, object } from '@storybook/addon-knobs'
 
 // Components
 import { Table, Header, Row } from '../components/shared/datatable'
 
-storiesOf('Wallet/Desktop/Components', module)
-  .addDecorator(withKnobs)
-  .add('DataTable', () => {
-    const rowTheme = {
+export default {
+  title: 'Wallet/Desktop/Components',
+  decorators: [withKnobs],
+}
 
-    }
+export const DataTable = {
+  render: () => {
+    const rowTheme = {}
 
     const rows: Row[] = [
       {
         id: 'row-1',
         content: [
           {
-            content: 'Baker'
+            content: 'Baker',
           },
           {
             content: '40%',
-            customStyle: rowTheme
+            customStyle: rowTheme,
           },
           {
             content: '4',
-            customStyle: rowTheme
-          }
+            customStyle: rowTheme,
+          },
         ],
-        data: ''
+        data: '',
       },
       {
         id: 'row-2',
         content: [
           {
-            content: 'duckduckgo.com'
+            content: 'duckduckgo.com',
           },
           {
             content: '20%',
-            customStyle: rowTheme
+            customStyle: rowTheme,
           },
           {
             content: '2',
-            customStyle: rowTheme
-          }
+            customStyle: rowTheme,
+          },
         ],
-        data: ''
-      }
+        data: '',
+      },
     ]
 
     const header: Header[] = [
@@ -59,18 +60,18 @@ storiesOf('Wallet/Desktop/Components', module)
         id: 'site',
         content: 'Site visited',
         sortable: true,
-        sortOrder: 'desc'
+        sortOrder: 'desc',
       },
       {
         id: 'Attention',
         content: 'Attention',
-        sortOrder: 'desc'
+        sortOrder: 'desc',
       },
       {
         id: 'tokens',
         content: 'Tokens',
-        sortable: true
-      }
+        sortable: true,
+      },
     ]
 
     return (
@@ -84,4 +85,5 @@ storiesOf('Wallet/Desktop/Components', module)
         <br />
       </div>
     )
-  })
+  },
+}

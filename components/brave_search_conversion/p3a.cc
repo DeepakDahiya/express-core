@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_search_conversion/p3a.h"
 
+#include "base/check.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -15,96 +16,102 @@
 #include "components/prefs/pref_service.h"
 #include "components/prefs/scoped_user_pref_update.h"
 
-namespace brave_search_conversion {
-namespace p3a {
-
-const char kSearchPromoButtonHistogramName[] = "Brave.Search.Promo.Button";
-const char kSearchPromoBannerAHistogramName[] = "Brave.Search.Promo.BannerA";
-const char kSearchPromoBannerBHistogramName[] = "Brave.Search.Promo.BannerB";
-const char kSearchPromoBannerCHistogramName[] = "Brave.Search.Promo.BannerC";
-const char kSearchPromoBannerDHistogramName[] = "Brave.Search.Promo.BannerD";
-const char kSearchPromoNTPHistogramName[] = "Brave.Search.Promo.NewTabPage";
-const char kSearchQueriesBeforeChurnHistogramName[] =
-    "Brave.Search.QueriesBeforeChurn";
+namespace brave_search_conversion::p3a {
 
 namespace {
 
-const char kButtonShownKey[] = "button.shown";
-const char kButtonTriggeredKey[] = "button.triggered";
-const char kNTPShownKey[] = "ntp.shown";
-const char kNTPTriggeredKey[] = "ntp.triggered";
-const char kBannerAShownKey[] = "banner_a.shown";
-const char kBannerATriggeredKey[] = "banner_a.triggered";
-const char kBannerBShownKey[] = "banner_b.shown";
-const char kBannerBTriggeredKey[] = "banner_b.triggered";
-const char kBannerCShownKey[] = "banner_c.shown";
-const char kBannerCTriggeredKey[] = "banner_c.triggered";
-const char kBannerDShownKey[] = "banner_d.shown";
-const char kBannerDTriggeredKey[] = "banner_d.triggered";
+constexpr char kButtonShownKey[] = "button.shown";
+constexpr char kButtonTriggeredKey[] = "button.triggered";
+constexpr char kNTPShownKey[] = "ntp.shown";
+constexpr char kNTPTriggeredKey[] = "ntp.triggered";
+constexpr char kBannerBShownKey[] = "banner_b.shown";
+constexpr char kBannerBTriggeredKey[] = "banner_b.triggered";
+constexpr char kBannerCShownKey[] = "banner_c.shown";
+constexpr char kBannerCTriggeredKey[] = "banner_c.triggered";
+constexpr char kBannerDShownKey[] = "banner_d.shown";
+constexpr char kBannerDTriggeredKey[] = "banner_d.triggered";
+constexpr char kDDGBannerCShownKey[] = "ddg_banner_c.shown";
+constexpr char kDDGBannerCTriggeredKey[] = "ddg_banner_c.triggered";
+constexpr char kDDGBannerDShownKey[] = "ddg_banner_d.shown";
+constexpr char kDDGBannerDTriggeredKey[] = "ddg_banner_d.triggered";
 
-const char kSwitchSearchEngineMetric[] = "Brave.Search.SwitchEngine";
+constexpr char kSwitchSearchEngineMetric[] = "Brave.Search.SwitchEngine";
 
-const int kMaxStoredQueryCount = 41;
-const int kQueriesBeforeChurnBuckets[] = {0, 1, 2, 5, 10, 20, 40};
+constexpr int kMaxStoredQueryCount = 41;
+constexpr int kQueriesBeforeChurnBuckets[] = {0, 1, 2, 5, 10, 20, 40};
 
 const char* GetPromoShownKeyName(ConversionType type) {
   switch (type) {
     case ConversionType::kBannerTypeA:
-      return kBannerAShownKey;
+      break;
     case ConversionType::kBannerTypeB:
       return kBannerBShownKey;
     case ConversionType::kBannerTypeC:
       return kBannerCShownKey;
     case ConversionType::kBannerTypeD:
       return kBannerDShownKey;
+    case ConversionType::kDDGBannerTypeC:
+      return kDDGBannerCShownKey;
+    case ConversionType::kDDGBannerTypeD:
+      return kDDGBannerDShownKey;
     case ConversionType::kButton:
       return kButtonShownKey;
     case ConversionType::kNTP:
       return kNTPShownKey;
-    default:
-      NOTREACHED();
-      return nullptr;
+    case ConversionType::kNone:
+      break;
   }
+  NOTREACHED();
 }
 
 const char* GetPromoTriggeredKeyName(ConversionType type) {
   switch (type) {
     case ConversionType::kBannerTypeA:
-      return kBannerATriggeredKey;
+      break;
     case ConversionType::kBannerTypeB:
       return kBannerBTriggeredKey;
     case ConversionType::kBannerTypeC:
       return kBannerCTriggeredKey;
     case ConversionType::kBannerTypeD:
       return kBannerDTriggeredKey;
+    case ConversionType::kDDGBannerTypeC:
+      return kDDGBannerCTriggeredKey;
+    case ConversionType::kDDGBannerTypeD:
+      return kDDGBannerDTriggeredKey;
     case ConversionType::kButton:
+      // Deprecated but leave as it's used by migration code.
       return kButtonTriggeredKey;
     case ConversionType::kNTP:
       return kNTPTriggeredKey;
-    default:
-      NOTREACHED();
-      return nullptr;
+    case ConversionType::kNone:
+      break;
   }
+  NOTREACHED();
 }
 
 const char* GetPromoTypeHistogramName(ConversionType type) {
   switch (type) {
     case ConversionType::kBannerTypeA:
-      return kSearchPromoBannerAHistogramName;
+      break;
     case ConversionType::kBannerTypeB:
       return kSearchPromoBannerBHistogramName;
     case ConversionType::kBannerTypeC:
       return kSearchPromoBannerCHistogramName;
     case ConversionType::kBannerTypeD:
       return kSearchPromoBannerDHistogramName;
+    case ConversionType::kDDGBannerTypeC:
+      return kSearchPromoDDGBannerCHistogramName;
+    case ConversionType::kDDGBannerTypeD:
+      return kSearchPromoDDGBannerDHistogramName;
     case ConversionType::kButton:
+      // Deprecated but leave as it's used by migration code.
       return kSearchPromoButtonHistogramName;
     case ConversionType::kNTP:
       return kSearchPromoNTPHistogramName;
-    default:
-      NOTREACHED();
-      return nullptr;
+    case ConversionType::kNone:
+      break;
   }
+  NOTREACHED();
 }
 
 void UpdateHistograms(PrefService* prefs) {
@@ -113,9 +120,9 @@ void UpdateHistograms(PrefService* prefs) {
   UMA_HISTOGRAM_EXACT_LINEAR(kSwitchSearchEngineMetric, INT_MAX - 1, 8);
 
   const ConversionType types[] = {
-      ConversionType::kBannerTypeA, ConversionType::kBannerTypeB,
-      ConversionType::kBannerTypeC, ConversionType::kBannerTypeD,
-      ConversionType::kButton,      ConversionType::kNTP};
+      ConversionType::kBannerTypeB,    ConversionType::kBannerTypeC,
+      ConversionType::kBannerTypeD,    ConversionType::kDDGBannerTypeC,
+      ConversionType::kDDGBannerTypeD, ConversionType::kNTP};
 
   VLOG(1) << "SearchConversionP3A: updating histograms";
 
@@ -264,5 +271,4 @@ void RecordDefaultEngineChurn(PrefService* prefs) {
   prefs->ClearPref(prefs::kP3AQueryCountBeforeChurn);
 }
 
-}  // namespace p3a
-}  // namespace brave_search_conversion
+}  // namespace brave_search_conversion::p3a

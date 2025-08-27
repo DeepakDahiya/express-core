@@ -5,12 +5,11 @@
 
 #include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_value_util.h"
 
+#include <optional>
 #include <string>
-#include <utility>
 
 #include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/unblinded_token.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
@@ -27,24 +26,22 @@ base::Value::List ConfirmationTokensToValue(
   base::Value::List list;
 
   for (const auto& confirmation_token : confirmation_tokens) {
-    const absl::optional<std::string> unblinded_token_base64 =
+    std::optional<std::string> unblinded_token_base64 =
         confirmation_token.unblinded_token.EncodeBase64();
     if (!unblinded_token_base64) {
       continue;
     }
 
-    const absl::optional<std::string> public_key_base64 =
+    std::optional<std::string> public_key_base64 =
         confirmation_token.public_key.EncodeBase64();
     if (!public_key_base64) {
       continue;
     }
 
-    auto dict = base::Value::Dict()
+    list.Append(base::Value::Dict()
                     .Set(kUnblindedTokenKey, *unblinded_token_base64)
                     .Set(kPublicKey, *public_key_base64)
-                    .Set(kSignature, confirmation_token.signature);
-
-    list.Append(std::move(dict));
+                    .Set(kSignature, confirmation_token.signature_base64));
   }
 
   return list;
@@ -53,10 +50,11 @@ base::Value::List ConfirmationTokensToValue(
 ConfirmationTokenList ConfirmationTokensFromValue(
     const base::Value::List& list) {
   ConfirmationTokenList confirmation_tokens;
+  confirmation_tokens.reserve(list.size());
 
-  for (const auto& item : list) {
-    const auto* const item_dict = item.GetIfDict();
-    if (!item_dict) {
+  for (const auto& value : list) {
+    const auto* const dict = value.GetIfDict();
+    if (!dict) {
       BLOG(0, "Confirmation token should be a dictionary");
       continue;
     }
@@ -64,8 +62,10 @@ ConfirmationTokenList ConfirmationTokensFromValue(
     ConfirmationTokenInfo confirmation_token;
 
     // Unblinded token
-    if (const auto* const value = item_dict->FindString(kUnblindedTokenKey)) {
-      confirmation_token.unblinded_token = cbr::UnblindedToken(*value);
+    if (const auto* const unblinded_token =
+            dict->FindString(kUnblindedTokenKey)) {
+      confirmation_token.unblinded_token =
+          cbr::UnblindedToken(*unblinded_token);
       if (!confirmation_token.unblinded_token.has_value()) {
         BLOG(0, "Invalid confirmation unblinded token");
         continue;
@@ -76,8 +76,8 @@ ConfirmationTokenList ConfirmationTokensFromValue(
     }
 
     // Public key
-    if (const auto* const value = item_dict->FindString(kPublicKey)) {
-      confirmation_token.public_key = cbr::PublicKey(*value);
+    if (const auto* const public_key = dict->FindString(kPublicKey)) {
+      confirmation_token.public_key = cbr::PublicKey(*public_key);
       if (!confirmation_token.public_key.has_value()) {
         BLOG(0, "Invalid confirmation token public key");
         continue;
@@ -88,8 +88,8 @@ ConfirmationTokenList ConfirmationTokensFromValue(
     }
 
     // Signature
-    if (const auto* const value = item_dict->FindString(kSignature)) {
-      confirmation_token.signature = *value;
+    if (const auto* const signature_base64 = dict->FindString(kSignature)) {
+      confirmation_token.signature_base64 = *signature_base64;
     } else {
       BLOG(0, "Missing confirmation token signature");
       continue;

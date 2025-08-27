@@ -14,12 +14,25 @@ import {
   allSupportedExtensions,
   supportedENSExtensions,
   supportedSNSExtensions,
-  supportedUDExtensions
+  supportedUDExtensions,
 } from '../../constants/domain-extensions'
+
+interface GetFVMAddressArg {
+  coin: BraveWallet.CoinType | undefined
+  isMainNet: boolean
+  addresses: string[]
+}
+
+type GetFVMAddressResult = Record<string, string>
+
+type GetZCashTransactionTypeResult = {
+  txType: BraveWallet.ZCashTxType
+  error: BraveWallet.ZCashAddressError
+}
 
 export const addressEndpoints = ({
   mutation,
-  query
+  query,
 }: WalletApiEndpointBuilderParams) => {
   return {
     enableEnsOffchainLookup: mutation<boolean, void>({
@@ -27,20 +40,20 @@ export const addressEndpoints = ({
         try {
           const { data: api } = baseQuery(undefined)
           api.jsonRpcService.setEnsOffchainLookupResolveMethod(
-            BraveWallet.ResolveMethod.kEnabled
+            BraveWallet.ResolveMethod.kEnabled,
           )
           return {
-            data: true
+            data: true,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'Failed to enable Ens Off-chain Lookup',
-            error
+            error,
           )
         }
       },
-      invalidatesTags: ['NameServiceAddress', 'EnsOffchainLookupEnabled']
+      invalidatesTags: ['NameServiceAddress', 'EnsOffchainLookupEnabled'],
     }),
 
     getIsBase58EncodedSolPubkey: query<boolean, string>({
@@ -51,16 +64,16 @@ export const addressEndpoints = ({
             await api.braveWalletService.isBase58EncodedSolanaPubkey(pubKeyArg)
 
           return {
-            data: result
+            data: result,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             `Failed to check Base58 encoding for pubkey: ${pubKeyArg}`,
-            error
+            error,
           )
         }
-      }
+      },
     }),
 
     getEthAddressChecksum: query<string, string>({
@@ -71,30 +84,80 @@ export const addressEndpoints = ({
             await api.keyringService.getChecksumEthAddress(addressArg)
 
           return {
-            data: checksumAddress
+            data: checksumAddress,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             `Failed to check Base58 encoding for pubkey: ${addressArg}`,
-            error
+            error,
           )
         }
+      },
+    }),
+
+    getZCashTransactionType: query<
+      GetZCashTransactionTypeResult,
+      {
+        chainId: string
+        accountId: BraveWallet.AccountId
+        useShieldedPool: boolean
+        address: string
       }
+    >({
+      queryFn: async (arg, { endpoint }, _extra, baseQuery) => {
+        try {
+          const { data: api } = baseQuery(undefined)
+          const { txType, error } =
+            await api.zcashWalletService.getTransactionType(
+              arg.chainId,
+              arg.accountId,
+              arg.useShieldedPool,
+              arg.address,
+            )
+          return {
+            data: {
+              txType: txType,
+              error: error,
+            },
+          }
+        } catch (error) {
+          return handleEndpointError(
+            endpoint,
+            `Failed to validate Zcash address: ${arg.address}`,
+            error,
+          )
+        }
+      },
     }),
 
     getAddressFromNameServiceUrl: query<
       { address: string; requireOffchainConsent: boolean },
-      { url: string; tokenId: string | null }
+      {
+        /**
+         * Name service URLs are case-insensitive, but this arg should always be
+         * lowercase to prevent refetching of resolutions for casing changes
+         */
+        url: string
+        /**
+         * Only used by Unstoppable Domains
+         */
+        tokenId: string | null
+      }
     >({
       queryFn: async (arg, { endpoint }, _extra, baseQuery) => {
         try {
           const { data: api, cache } = baseQuery(undefined)
 
+          // https://github.com/brave/brave-browser/issues/34796
+          // name service URLs are case-insensitive, but backend currently
+          // fails to resolve addresses for URLS containing capital letters
+          const lowercaseURL = arg.url.toLowerCase()
+
           // Ens
-          if (endsWithAny(supportedENSExtensions, arg.url)) {
+          if (endsWithAny(supportedENSExtensions, lowercaseURL)) {
             const { address, errorMessage, requireOffchainConsent } =
-              await api.jsonRpcService.ensGetEthAddr(arg.url)
+              await api.jsonRpcService.ensGetEthAddr(lowercaseURL)
 
             if (errorMessage) {
               throw new Error(errorMessage)
@@ -103,15 +166,15 @@ export const addressEndpoints = ({
             return {
               data: {
                 address,
-                requireOffchainConsent
-              }
+                requireOffchainConsent,
+              },
             }
           }
 
           // Sns
-          if (endsWithAny(supportedSNSExtensions, arg.url)) {
+          if (endsWithAny(supportedSNSExtensions, lowercaseURL)) {
             const { address, errorMessage } =
-              await api.jsonRpcService.snsGetSolAddr(arg.url)
+              await api.jsonRpcService.snsGetSolAddr(lowercaseURL)
 
             if (errorMessage) {
               throw new Error(errorMessage)
@@ -120,22 +183,22 @@ export const addressEndpoints = ({
             return {
               data: {
                 address,
-                requireOffchainConsent: false
-              }
+                requireOffchainConsent: false,
+              },
             }
           }
 
           // Unstoppable-Domains
-          if (endsWithAny(supportedUDExtensions, arg.url)) {
+          if (endsWithAny(supportedUDExtensions, lowercaseURL)) {
             const token = arg.tokenId
-              ? (await cache.getUserTokensRegistry()).entities[arg.tokenId] ||
-                null
+              ? (await cache.getUserTokensRegistry()).entities[arg.tokenId]
+                || null
               : null
 
             const { address, errorMessage } =
               await api.jsonRpcService.unstoppableDomainsGetWalletAddr(
-                arg.url,
-                token
+                lowercaseURL,
+                token,
               )
 
             if (errorMessage) {
@@ -145,8 +208,8 @@ export const addressEndpoints = ({
             return {
               data: {
                 address,
-                requireOffchainConsent: false
-              }
+                requireOffchainConsent: false,
+              },
             }
           }
 
@@ -154,8 +217,8 @@ export const addressEndpoints = ({
             `${
               arg.url
             } does not end in a valid extension (${allSupportedExtensions.join(
-              ', '
-            )})`
+              ', ',
+            )})`,
           )
         } catch (error) {
           return handleEndpointError(
@@ -164,7 +227,7 @@ export const addressEndpoints = ({
               arg.url //
             },
               tokenId: ${arg.tokenId}`,
-            error
+            error,
           )
         }
       },
@@ -173,9 +236,59 @@ export const addressEndpoints = ({
           ? 'UNKNOWN_ERROR'
           : {
               type: 'NameServiceAddress',
-              id: [arg.url, arg.tokenId].filter((arg) => arg !== null).join('-')
-            }
-      ]
-    })
+              id: [arg.url.toLowerCase(), arg.tokenId]
+                .filter((arg) => arg !== null)
+                .join('-'),
+            },
+      ],
+    }),
+
+    getFVMAddress: query<GetFVMAddressResult, GetFVMAddressArg>({
+      queryFn: async (arg, { endpoint }, extraOptions, baseQuery) => {
+        if (arg.coin !== BraveWallet.CoinType.FIL) {
+          // invalid coin type
+          return { data: {} }
+        }
+        try {
+          const { braveWalletService } = baseQuery(undefined).data
+          const convertResult = (
+            await braveWalletService.convertFEVMToFVMAddress(
+              arg.isMainNet,
+              arg.addresses,
+            )
+          ).result
+          return {
+            data: convertResult,
+          }
+        } catch (error) {
+          return handleEndpointError(endpoint, 'Unable to getFVMAddress', error)
+        }
+      },
+    }),
+
+    generateReceiveAddress: mutation<string, BraveWallet.AccountId>({
+      queryFn: async (accountId, { endpoint }, extraOptions, baseQuery) => {
+        try {
+          const { braveWalletService } = baseQuery(undefined).data
+          const { address, errorMessage } =
+            await braveWalletService.generateReceiveAddress(accountId)
+
+          if (!address || errorMessage) {
+            throw new Error(errorMessage ?? 'Unknown error')
+          }
+
+          return {
+            data: address,
+          }
+        } catch (error) {
+          return handleEndpointError(
+            endpoint,
+            'Unable generate receive address for account: '
+              + accountId.uniqueKey,
+            error,
+          )
+        }
+      },
+    }),
   }
 }

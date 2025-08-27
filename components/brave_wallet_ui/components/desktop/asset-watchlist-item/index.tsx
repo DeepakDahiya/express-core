@@ -7,19 +7,17 @@ import { useLocation } from 'react-router-dom'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 
 // Types
-import {
-  BraveWallet,
-  WalletRoutes
-} from '../../../constants/types'
+import { BraveWallet, WalletRoutes } from '../../../constants/types'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
 import Amount from '../../../utils/amount'
 import { useGetNetworkQuery } from '../../../common/slices/api.slice'
+import { reduceInt } from '../../../utils/string-utils'
 
 // Components
 import {
-  withPlaceholderIcon //
+  withPlaceholderIcon, //
 } from '../../shared/create-placeholder-icon/index'
 import { NftIcon } from '../../shared/nft-icon/nft-icon'
 
@@ -33,17 +31,12 @@ import {
   Icon,
   RightSide,
   NameAndSymbol,
-  AssetSymbol
+  AssetSymbol,
 } from './style'
-import {
-  HorizontalSpace
-} from '../../shared/style'
+import { HorizontalSpace } from '../../shared/style'
 
 export interface Props {
-  onSelectAsset: (
-    selected: boolean,
-    token: BraveWallet.BlockchainToken
-  ) => void
+  onSelectAsset: (token: BraveWallet.BlockchainToken) => void
   onRemoveAsset: (token: BraveWallet.BlockchainToken) => void
   isRemovable: boolean
   isSelected: boolean
@@ -56,13 +49,8 @@ const NftIconWithPlaceholder = withPlaceholderIcon(NftIcon, ICON_CONFIG)
 
 const AssetWatchlistItem = React.forwardRef<HTMLDivElement, Props>(
   (props: Props, forwardedRef) => {
-    const {
-      onSelectAsset,
-      onRemoveAsset,
-      isRemovable,
-      token,
-      isSelected
-    } = props
+    const { onSelectAsset, onRemoveAsset, isRemovable, token, isSelected } =
+      props
 
     // routing
     const { hash } = useLocation()
@@ -71,62 +59,56 @@ const AssetWatchlistItem = React.forwardRef<HTMLDivElement, Props>(
     const { data: tokensNetwork } = useGetNetworkQuery(token ?? skipToken)
 
     // callbacks
-    const onCheck = React.useCallback(() => {
-      onSelectAsset(!isSelected, token)
-    }, [onSelectAsset, token, isSelected])
-
     const onClickAsset = React.useCallback(() => {
-      onSelectAsset(!isSelected, token)
-    }, [onSelectAsset, token, isSelected])
+      onSelectAsset(token)
+    }, [onSelectAsset, token])
 
     const onClickRemoveAsset = React.useCallback(() => {
       onRemoveAsset(token)
     }, [token, onRemoveAsset])
 
-    const networkDescription = React.useMemo(() => {
-      return getLocale('braveWalletPortfolioAssetNetworkDescription')
-        .replace('$1', token.symbol)
-        .replace('$2', tokensNetwork?.chainName ?? '')
-    }, [tokensNetwork, token])
+    // computed
+    const isVisible = isSelected
+      ? !token.visible // pending visibility change
+      : token.visible
 
     return (
       <StyledWrapper ref={forwardedRef}>
-        <NameAndIcon onClick={onClickAsset}>
+        <NameAndIcon>
           {token.isNft ? (
-            <NftIconWithPlaceholder asset={token} network={tokensNetwork} />
+            <NftIconWithPlaceholder asset={token} />
           ) : (
-            <AssetIconWithPlaceholder asset={token} network={tokensNetwork} />
+            <AssetIconWithPlaceholder asset={token} />
           )}
           <NameAndSymbol>
             <AssetName>
-              {token.name} {
-                token.isErc721 && token.tokenId
-                  ? '#' + new Amount(token.tokenId).toNumber()
-                  : ''
-              }
+              {token.name || token.symbol}{' '}
+              {token.isErc721 && token.tokenId
+                ? '#' + reduceInt(new Amount(token.tokenId).format())
+                : ''}
             </AssetName>
-            <AssetSymbol>{networkDescription}</AssetSymbol>
+            <AssetSymbol>
+              {getLocale('braveWalletPortfolioAssetNetworkDescription')
+                .replace('$1', token.symbol)
+                .replace('$2', tokensNetwork?.chainName ?? '')}
+            </AssetSymbol>
           </NameAndSymbol>
         </NameAndIcon>
         <RightSide>
-          {
-            isRemovable &&
-            hash !== WalletRoutes.AvailableAssetsHash &&
+          {isRemovable && hash !== WalletRoutes.AvailableAssetsHash && (
             <>
               <Button onClick={onClickRemoveAsset}>
                 <Icon name='trash' />
               </Button>
               <HorizontalSpace space='8px' />
             </>
-          }
-          <Button
-            onClick={onCheck}
-          >
+          )}
+          <Button onClick={onClickAsset}>
             <Icon
               name={
                 hash === WalletRoutes.AvailableAssetsHash
                   ? 'plus-add'
-                  : isSelected
+                  : isVisible
                     ? 'eye-on'
                     : 'eye-off'
               }
@@ -135,6 +117,6 @@ const AssetWatchlistItem = React.forwardRef<HTMLDivElement, Props>(
         </RightSide>
       </StyledWrapper>
     )
-  }
+  },
 )
 export default AssetWatchlistItem

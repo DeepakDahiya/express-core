@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "base/check.h"
-#include "base/strings/strcat.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/payload/confirmation_payload_json_writer.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/reward/url_request_builders/create_reward_confirmation_url_request_builder_util.h"
@@ -34,14 +33,14 @@ CreateRewardConfirmationUrlRequestBuilder::
 }
 
 mojom::UrlRequestInfoPtr CreateRewardConfirmationUrlRequestBuilder::Build() {
-  mojom::UrlRequestInfoPtr url_request = mojom::UrlRequestInfo::New();
-  url_request->url = BuildUrl();
-  url_request->headers = BuildHeaders();
-  url_request->content = BuildBody();
-  url_request->content_type = "application/json";
-  url_request->method = mojom::UrlRequestMethodType::kPost;
+  mojom::UrlRequestInfoPtr mojom_url_request = mojom::UrlRequestInfo::New();
+  mojom_url_request->url = BuildUrl();
+  mojom_url_request->headers = BuildHeaders();
+  mojom_url_request->content = BuildBody();
+  mojom_url_request->content_type = "application/json";
+  mojom_url_request->method = mojom::UrlRequestMethodType::kPost;
 
-  return url_request;
+  return mojom_url_request;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,14 +48,15 @@ mojom::UrlRequestInfoPtr CreateRewardConfirmationUrlRequestBuilder::Build() {
 GURL CreateRewardConfirmationUrlRequestBuilder::BuildUrl() const {
   CHECK(confirmation_.reward);
 
-  const std::string url_host = confirmation_.ad_type == AdType::kSearchResultAd
-                                   ? GetAnonymousSearchUrlHost()
-                                   : GetAnonymousUrlHost();
+  const std::string url_host =
+      confirmation_.ad_type == mojom::AdType::kSearchResultAd
+          ? GetAnonymousSearchUrlHost()
+          : GetAnonymousUrlHost();
 
   const std::string spec =
-      base::StrCat({url_host, BuildCreateRewardConfirmationUrlPath(
-                                  confirmation_.transaction_id,
-                                  confirmation_.reward->credential_base64url)});
+      url_host + BuildCreateRewardConfirmationUrlPath(
+                     confirmation_.transaction_id,
+                     confirmation_.reward->credential_base64url);
 
   return GURL(spec);
 }

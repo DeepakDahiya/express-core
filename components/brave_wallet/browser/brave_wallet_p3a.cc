@@ -5,17 +5,25 @@
 
 #include "brave/components/brave_wallet/browser/brave_wallet_p3a.h"
 
+#include <algorithm>
+#include <optional>
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/ranges/algorithm.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/keyring_service.h"
 #include "brave/components/brave_wallet/browser/pref_names.h"
+#include "brave/components/brave_wallet/browser/tx_service.h"
+#include "brave/components/brave_wallet/common/common_utils.h"
 #include "brave/components/p3a_utils/bucket.h"
 #include "brave/components/p3a_utils/feature_usage.h"
 #include "components/prefs/pref_service.h"
@@ -23,42 +31,10 @@
 
 namespace brave_wallet {
 
-const char kKeyringCreatedHistogramName[] = "Brave.Wallet.KeyringCreated";
-const char kOnboardingConversionHistogramName[] =
-    "Brave.Wallet.OnboardingConversion.3";
-const char kNewUserBalanceHistogramName[] = "Brave.Wallet.NewUserBalance";
-const char kEthProviderHistogramName[] = "Brave.Wallet.EthProvider.4";
-const char kSolProviderHistogramName[] = "Brave.Wallet.SolProvider.2";
-const char kEthTransactionSentHistogramName[] =
-    "Brave.Wallet.EthTransactionSent";
-const char kSolTransactionSentHistogramName[] =
-    "Brave.Wallet.SolTransactionSent";
-const char kFilTransactionSentHistogramName[] =
-    "Brave.Wallet.FilTransactionSent";
-const char kEthActiveAccountHistogramName[] = "Brave.Wallet.ActiveEthAccounts";
-const char kSolActiveAccountHistogramName[] = "Brave.Wallet.ActiveSolAccounts";
-const char kFilActiveAccountHistogramName[] = "Brave.Wallet.ActiveFilAccounts";
-const char kBraveWalletDailyHistogramName[] = "Brave.Wallet.UsageDaily";
-const char kBraveWalletWeeklyHistogramName[] = "Brave.Wallet.UsageWeekly";
-const char kBraveWalletMonthlyHistogramName[] = "Brave.Wallet.UsageMonthly";
-const char kBraveWalletNewUserReturningHistogramName[] =
-    "Brave.Wallet.NewUserReturning";
-const char kBraveWalletLastUsageTimeHistogramName[] =
-    "Brave.Wallet.LastUsageTime";
-const char kBraveWalletNFTCountHistogramName[] = "Brave.Wallet.NFTCount";
-const char kBraveWalletNFTNewUserHistogramName[] = "Brave.Wallet.NFTNewUser";
-const char kBraveWalletNFTDiscoveryEnabledHistogramName[] =
-    "Brave.Wallet.NFTDiscoveryEnabled";
-
 namespace {
 
 const int kRefreshP3AFrequencyHours = 24;
 const int kActiveAccountBuckets[] = {0, 1, 2, 3, 7};
-const char* kTimePrefsToMigrateToLocalState[] = {kBraveWalletLastUnlockTime,
-                                                 kBraveWalletP3AFirstUnlockTime,
-                                                 kBraveWalletP3ALastUnlockTime};
-const char* kTimePrefsToRemove[] = {kBraveWalletP3AFirstReportTime,
-                                    kBraveWalletP3ALastReportTime};
 const int kNFTCountBuckets[] = {0, 4, 20};
 constexpr base::TimeDelta kOnboardingRecordDelay = base::Seconds(120);
 
@@ -73,16 +49,16 @@ void RecordKeyringCreated(bool created) {
 
 BraveWalletP3A::BraveWalletP3A(BraveWalletService* wallet_service,
                                KeyringService* keyring_service,
+                               TxService* tx_service,
                                PrefService* profile_prefs,
                                PrefService* local_state)
     : wallet_service_(wallet_service),
       keyring_service_(keyring_service),
+      tx_service_(tx_service),
       profile_prefs_(profile_prefs),
       local_state_(local_state) {
   DCHECK(profile_prefs);
   DCHECK(local_state);
-
-  MigrateUsageProfilePrefsToLocalState();
 
   RecordInitialBraveWalletP3AState();
   AddObservers();
@@ -114,15 +90,11 @@ BraveWalletP3A::~BraveWalletP3A() = default;
 void BraveWalletP3A::AddObservers() {
   keyring_service_->AddObserver(
       keyring_service_observer_receiver_.BindNewPipeAndPassRemote());
+  tx_service_->AddObserver(
+      tx_service_observer_receiver_.BindNewPipeAndPassRemote());
   update_timer_.Start(FROM_HERE, base::Hours(kRefreshP3AFrequencyHours), this,
                       &BraveWalletP3A::OnUpdateTimerFired);
   OnUpdateTimerFired();  // Also call on startup
-}
-
-mojo::PendingRemote<mojom::BraveWalletP3A> BraveWalletP3A::MakeRemote() {
-  mojo::PendingRemote<mojom::BraveWalletP3A> remote;
-  receivers_.Add(this, remote.InitWithNewPipeAndPassReceiver());
-  return remote;
 }
 
 void BraveWalletP3A::Bind(
@@ -162,10 +134,6 @@ void BraveWalletP3A::ReportJSProvider(mojom::JSProviderType provider_type,
                                       bool allow_provider_overwrite) {
   CHECK(coin_type == mojom::CoinType::ETH || coin_type == mojom::CoinType::SOL);
 
-  const auto keyring_id =
-      keyring_service_->GetKeyringIdForCoinNonFIL(coin_type);
-  CHECK(keyring_id.has_value());
-
   const char* histogram_name;
   switch (coin_type) {
     case mojom::CoinType::ETH:
@@ -175,11 +143,11 @@ void BraveWalletP3A::ReportJSProvider(mojom::JSProviderType provider_type,
       histogram_name = kSolProviderHistogramName;
       break;
     default:
-      NOTREACHED_NORETURN();
+      return;
   }
 
   JSProviderAnswer answer = JSProviderAnswer::kNoWallet;
-  bool is_wallet_setup = base::ranges::any_of(
+  bool is_wallet_setup = std::ranges::any_of(
       keyring_service_->GetAllAccountInfos(), [coin_type](auto& account) {
         return account->account_id->coin == coin_type;
       });
@@ -208,21 +176,19 @@ void BraveWalletP3A::ReportJSProvider(mojom::JSProviderType provider_type,
                      : JSProviderAnswer::kNativeNotOverridden;
       }
       break;
-    default:
-      NOTREACHED_NORETURN();
   }
 
   base::UmaHistogramEnumeration(histogram_name, answer);
 }
 
-absl::optional<mojom::OnboardingAction>
+std::optional<mojom::OnboardingAction>
 BraveWalletP3A::GetLastOnboardingAction() {
   if (local_state_->HasPrefPath(kBraveWalletP3AOnboardingLastStep)) {
     int pref_value =
         local_state_->GetInteger(kBraveWalletP3AOnboardingLastStep);
     return static_cast<mojom::OnboardingAction>(pref_value);
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void BraveWalletP3A::ReportOnboardingAction(mojom::OnboardingAction action) {
@@ -233,7 +199,7 @@ void BraveWalletP3A::ReportOnboardingAction(mojom::OnboardingAction action) {
     onboarding_report_timer_.Stop();
     return;
   }
-  absl::optional<mojom::OnboardingAction> last_step = GetLastOnboardingAction();
+  std::optional<mojom::OnboardingAction> last_step = GetLastOnboardingAction();
   if (!last_step.has_value() || *last_step < action) {
     // Only record steps that are ahead of the previous step so we
     // don't record back navigation.
@@ -257,7 +223,7 @@ void BraveWalletP3A::ReportOnboardingAction(mojom::OnboardingAction action) {
 }
 
 void BraveWalletP3A::RecordOnboardingHistogram() {
-  absl::optional<mojom::OnboardingAction> last_step = GetLastOnboardingAction();
+  std::optional<mojom::OnboardingAction> last_step = GetLastOnboardingAction();
   if (!last_step.has_value()) {
     return;
   }
@@ -279,13 +245,17 @@ void BraveWalletP3A::ReportTransactionSent(mojom::CoinType coin,
       histogram_name = kFilTransactionSentHistogramName;
       break;
     case mojom::CoinType::BTC:
-      // TODO(apaymyshev): https://github.com/brave/brave-browser/issues/28464
-      return;
-    default:
+      histogram_name = kBtcTransactionSentHistogramName;
+      break;
+    case mojom::CoinType::ZEC:
+      histogram_name = kZecTransactionSentHistogramName;
+      break;
+    case mojom::CoinType::ADA:
+      // TODO(apaymyshev): Cardano P3A
       return;
   }
 
-  DCHECK(histogram_name);
+  CHECK(histogram_name);
 
   ScopedDictPrefUpdate last_sent_time_update(
       profile_prefs_, kBraveWalletLastTransactionSentTimeDict);
@@ -328,13 +298,17 @@ void BraveWalletP3A::RecordActiveWalletCount(int count,
       histogram_name = kFilActiveAccountHistogramName;
       break;
     case mojom::CoinType::BTC:
-      // TODO(apaymyshev): https://github.com/brave/brave-browser/issues/28464
-      return;
-    default:
+      histogram_name = kBtcActiveAccountHistogramName;
+      break;
+    case mojom::CoinType::ZEC:
+      histogram_name = kZecActiveAccountHistogramName;
+      break;
+    case mojom::CoinType::ADA:
+      // TODO(apaymyshev): Cardano P3A
       return;
   }
 
-  DCHECK(histogram_name);
+  CHECK(histogram_name);
 
   const base::Value::Dict& active_wallet_dict =
       profile_prefs_->GetDict(kBraveWalletP3AActiveWalletDict);
@@ -383,38 +357,11 @@ void BraveWalletP3A::ReportNftDiscoverySetting() {
   }
 }
 
-// TODO(djandries): remove pref migration around November 2023
-void BraveWalletP3A::MigrateUsageProfilePrefsToLocalState() {
-  for (const char* pref_name : kTimePrefsToMigrateToLocalState) {
-    if (local_state_->GetTime(pref_name).is_null()) {
-      base::Time profile_time = profile_prefs_->GetTime(pref_name);
-      if (!profile_time.is_null()) {
-        local_state_->SetTime(pref_name, profile_time);
-        profile_prefs_->ClearPref(pref_name);
-      }
-    }
-  }
-  for (const char* pref_name : kTimePrefsToRemove) {
-    local_state_->ClearPref(pref_name);
-    profile_prefs_->ClearPref(pref_name);
-  }
-  if (!local_state_->GetBoolean(kBraveWalletP3AUsedSecondDay)) {
-    bool profile_used_second_day =
-        profile_prefs_->GetBoolean(kBraveWalletP3AUsedSecondDay);
-    if (profile_used_second_day) {
-      local_state_->SetBoolean(kBraveWalletP3AUsedSecondDay, true);
-      profile_prefs_->ClearPref(kBraveWalletP3AUsedSecondDay);
-    }
-  }
-  local_state_->ClearPref(kBraveWalletP3AWeeklyStorage);
-  profile_prefs_->ClearPref(kBraveWalletP3AWeeklyStorage);
-}
-
 void BraveWalletP3A::OnUpdateTimerFired() {
   ReportUsage(false);
-  ReportTransactionSent(mojom::CoinType::ETH, false);
-  ReportTransactionSent(mojom::CoinType::FIL, false);
-  ReportTransactionSent(mojom::CoinType::SOL, false);
+  for (const auto& coin : GetEnabledCoins()) {
+    ReportTransactionSent(coin, false);
+  }
 }
 
 void BraveWalletP3A::WriteUsageStatsToHistogram() {
@@ -431,6 +378,77 @@ void BraveWalletP3A::RecordInitialBraveWalletP3AState() {
 // KeyringServiceObserver
 void BraveWalletP3A::WalletCreated() {
   RecordKeyringCreated(keyring_service_->IsWalletCreatedSync());
+}
+
+void BraveWalletP3A::OnTransactionStatusChanged(
+    mojom::TransactionInfoPtr tx_info) {
+  if (tx_info->tx_status != mojom::TransactionStatus::Approved) {
+    return;
+  }
+
+  auto tx_coin = GetCoinTypeFromTxDataUnion(*tx_info->tx_data_union);
+  auto tx_type = tx_info->tx_type;
+  auto count_test_networks = base::CommandLine::ForCurrentProcess()->HasSwitch(
+      brave_wallet::mojom::kP3ACountTestNetworksSwitch);
+  auto chain_id = tx_info->chain_id;
+
+  if (tx_coin == mojom::CoinType::ETH) {
+    if (tx_type != mojom::TransactionType::ETHSend &&
+        tx_type != mojom::TransactionType::ERC20Transfer) {
+      return;
+    }
+    if (!count_test_networks &&
+        (chain_id == mojom::kSepoliaChainId ||
+         chain_id == mojom::kLocalhostChainId ||
+         chain_id == mojom::kFilecoinEthereumTestnetChainId)) {
+      return;
+    }
+  } else if (tx_coin == mojom::CoinType::FIL) {
+    if (tx_type != mojom::TransactionType::Other) {
+      return;
+    }
+    if (!count_test_networks && (chain_id == mojom::kFilecoinTestnet ||
+                                 chain_id == mojom::kLocalhostChainId)) {
+      return;
+    }
+  } else if (tx_coin == mojom::CoinType::SOL) {
+    if (tx_type != mojom::TransactionType::SolanaSystemTransfer &&
+        tx_type != mojom::TransactionType::SolanaSPLTokenTransfer &&
+        tx_type !=
+            mojom::TransactionType::
+                SolanaSPLTokenTransferWithAssociatedTokenAccountCreation) {
+      return;
+    }
+    if (!count_test_networks && (chain_id == mojom::kSolanaTestnet ||
+                                 chain_id == mojom::kSolanaDevnet ||
+                                 chain_id == mojom::kLocalhostChainId)) {
+      return;
+    }
+  } else if (tx_coin == mojom::CoinType::BTC) {
+    if (tx_type != mojom::TransactionType::Other) {
+      return;
+    }
+    if (!count_test_networks && chain_id == mojom::kBitcoinTestnet) {
+      return;
+    }
+  } else if (tx_coin == mojom::CoinType::ZEC) {
+    if (tx_type != mojom::TransactionType::Other) {
+      return;
+    }
+    if (!count_test_networks && chain_id == mojom::kZCashTestnet) {
+      return;
+    }
+  } else if (tx_coin == mojom::CoinType::ADA) {
+    if (tx_type != mojom::TransactionType::Other) {
+      return;
+    }
+    if (!count_test_networks && chain_id == mojom::kCardanoTestnet) {
+      return;
+    }
+  } else {
+    NOTREACHED() << tx_coin;
+  }
+  ReportTransactionSent(tx_coin, true);
 }
 
 }  // namespace brave_wallet

@@ -4,10 +4,7 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 // types
-import {
-  BraveWallet,
-  SerializableTransactionInfo,
-} from '../constants/types'
+import { BraveWallet, SerializableTransactionInfo } from '../constants/types'
 import { SwapExchangeProxy } from '../common/constants/registry'
 
 // utils
@@ -18,21 +15,23 @@ import {
   getMockedTransactionInfo,
   mockEthAccountInfo,
 } from '../common/constants/mocks'
-import { mockWalletState } from '../stories/mock-data/mock-wallet-state'
 import {
   findTransactionToken,
   getTransactionGasLimit,
   getTransactionTokenSymbol,
   isTransactionGasLimitMissing,
   transactionHasSameAddressError,
-  isSendingToKnownTokenContractAddress
+  isSendingToKnownTokenContractAddress,
 } from './tx-utils'
-import { mockERC20Token } from '../stories/mock-data/mock-asset-options'
+import {
+  mockERC20Token,
+  mockErc20TokensList,
+} from '../stories/mock-data/mock-asset-options'
 
 const tokenList = [
-  ...mockWalletState.fullTokenList,
+  ...mockErc20TokensList,
   { ...mockERC20Token, contractAddress: '0xdeadbeef' },
-  mockERC20Token
+  mockERC20Token,
 ]
 
 describe('Transaction Parsing utils', () => {
@@ -42,17 +41,20 @@ describe('Transaction Parsing utils', () => {
       [
         'ERC20Approve',
         BraveWallet.TransactionType.ERC20Approve,
-        'approval target'
-      ]
+        'approval target',
+      ],
     ])('%s', (_, txType, toLabel) => {
       it(`should be truthy when sender and ${toLabel} are same`, () => {
         const mockTransaction: SerializableTransactionInfo = {
           ...getMockedTransactionInfo(),
           txType,
-          txArgs: [mockEthAccountInfo.address, 'foo']
+          txArgs: [mockEthAccountInfo.address, 'foo'],
         }
 
-        const sameAddressError = transactionHasSameAddressError(mockTransaction)
+        const sameAddressError = transactionHasSameAddressError(
+          mockTransaction,
+          mockEthAccountInfo,
+        )
 
         expect(sameAddressError).toBeTruthy()
       })
@@ -61,10 +63,13 @@ describe('Transaction Parsing utils', () => {
         const mockTransaction: SerializableTransactionInfo = {
           ...getMockedTransactionInfo(),
           txType,
-          txArgs: ['0xbadcafe', 'foo']
+          txArgs: ['0xbadcafe', 'foo'],
         }
 
-        const sameAddressError = transactionHasSameAddressError(mockTransaction)
+        const sameAddressError = transactionHasSameAddressError(
+          mockTransaction,
+          mockEthAccountInfo,
+        )
 
         expect(sameAddressError).toBeFalsy()
       })
@@ -74,17 +79,20 @@ describe('Transaction Parsing utils', () => {
       ['ERC721TransferFrom', BraveWallet.TransactionType.ERC721TransferFrom],
       [
         'ERC721SafeTransferFrom',
-        BraveWallet.TransactionType.ERC721SafeTransferFrom
-      ]
+        BraveWallet.TransactionType.ERC721SafeTransferFrom,
+      ],
     ])('%s', (_, txType) => {
       it('should be undefined when sender and recipient are same', () => {
         const mockTransaction: SerializableTransactionInfo = {
           ...getMockedTransactionInfo(),
           txType,
-          txArgs: ['mockOwner', mockEthAccountInfo.address, 'mockTokenID']
+          txArgs: ['mockOwner', mockEthAccountInfo.address, 'mockTokenID'],
         }
 
-        const sameAddressError = transactionHasSameAddressError(mockTransaction)
+        const sameAddressError = transactionHasSameAddressError(
+          mockTransaction,
+          mockEthAccountInfo,
+        )
 
         expect(sameAddressError).toBeFalsy()
       })
@@ -93,10 +101,13 @@ describe('Transaction Parsing utils', () => {
         const mockTransaction: SerializableTransactionInfo = {
           ...getMockedTransactionInfo(),
           txType,
-          txArgs: ['0xdeadbeef', '0xdeadbeef', 'mockTokenID']
+          txArgs: ['0xdeadbeef', '0xdeadbeef', 'mockTokenID'],
         }
 
-        const sameAddressError = transactionHasSameAddressError(mockTransaction)
+        const sameAddressError = transactionHasSameAddressError(
+          mockTransaction,
+          mockEthAccountInfo,
+        )
 
         expect(sameAddressError).toBeTruthy()
       })
@@ -105,10 +116,13 @@ describe('Transaction Parsing utils', () => {
         const mockTransaction: SerializableTransactionInfo = {
           ...getMockedTransactionInfo(),
           txType,
-          txArgs: ['mockOwner', 'mockToAddress', 'mockTokenID']
+          txArgs: ['mockOwner', 'mockToAddress', 'mockTokenID'],
         }
 
-        const sameAddressError = transactionHasSameAddressError(mockTransaction)
+        const sameAddressError = transactionHasSameAddressError(
+          mockTransaction,
+          mockEthAccountInfo,
+        )
 
         expect(sameAddressError).toBeFalsy()
       })
@@ -119,7 +133,7 @@ describe('Transaction Parsing utils', () => {
       // in case of cancel transactions
       ['ETHSend', BraveWallet.TransactionType.ETHSend],
       ['Other', BraveWallet.TransactionType.Other],
-      ['0x Swap', BraveWallet.TransactionType.Other]
+      ['0x Swap', BraveWallet.TransactionType.Other],
     ])('%s', (name, txType) => {
       it('should always be falsey', () => {
         const mockTransactionInfo = getMockedTransactionInfo()
@@ -131,17 +145,24 @@ describe('Transaction Parsing utils', () => {
             filTxData: undefined,
             solanaTxData: undefined,
             btcTxData: undefined,
+            zecTxData: undefined,
             ethTxData1559: {
               ...mockTransactionInfo.txDataUnion.ethTxData1559,
               baseData: {
                 ...mockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                to: name === '0x Swap' ? SwapExchangeProxy : mockEthAccountInfo.address
-              }
-            }
-          }
+                to:
+                  name === '0x Swap'
+                    ? SwapExchangeProxy
+                    : mockEthAccountInfo.address,
+              },
+            },
+          },
         }
 
-        const sameAddressError = transactionHasSameAddressError(mockTransaction)
+        const sameAddressError = transactionHasSameAddressError(
+          mockTransaction,
+          mockEthAccountInfo,
+        )
 
         expect(sameAddressError).toBeFalsy()
       })
@@ -153,7 +174,7 @@ describe('Transaction Parsing utils', () => {
       ['ERC20Approve', BraveWallet.TransactionType.ERC20Approve],
       ['ETHSend', BraveWallet.TransactionType.ETHSend],
       ['Other', BraveWallet.TransactionType.Other],
-      ['0x Swap', BraveWallet.TransactionType.Other]
+      ['0x Swap', BraveWallet.TransactionType.Other],
     ])('%s', (name, txType) => {
       it('should always be falsey', () => {
         const mockTransactionInfo = getMockedTransactionInfo()
@@ -169,19 +190,20 @@ describe('Transaction Parsing utils', () => {
             filTxData: undefined,
             solanaTxData: undefined,
             btcTxData: undefined,
+            zecTxData: undefined,
             ethTxData1559: {
               ...mockTransactionInfo.txDataUnion.ethTxData1559,
               baseData: {
                 ...mockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                to: name === '0x Swap' ? SwapExchangeProxy : '0xdeadbeef'
-              }
-            }
-          }
+                to: name === '0x Swap' ? SwapExchangeProxy : '0xdeadbeef',
+              },
+            },
+          },
         }
 
         const contractAddressError = isSendingToKnownTokenContractAddress(
           mockTransaction,
-          tokenList
+          tokenList,
         )
 
         expect(contractAddressError).toBeFalsy()
@@ -193,8 +215,8 @@ describe('Transaction Parsing utils', () => {
       ['ERC721TransferFrom', BraveWallet.TransactionType.ERC721TransferFrom],
       [
         'ERC721SafeTransferFrom',
-        BraveWallet.TransactionType.ERC721SafeTransferFrom
-      ]
+        BraveWallet.TransactionType.ERC721SafeTransferFrom,
+      ],
     ])('%s', (_, txType) => {
       it('should be truthy when recipient is a known contract address', () => {
         const mockTransaction: SerializableTransactionInfo = {
@@ -203,12 +225,12 @@ describe('Transaction Parsing utils', () => {
             txType === BraveWallet.TransactionType.ERC20Transfer
               ? ['0xdeadbeef', 'mockAmount']
               : ['mockOwner', '0xdeadbeef', 'mockTokenID'],
-          txType
+          txType,
         }
 
         const contractAddressError = isSendingToKnownTokenContractAddress(
           mockTransaction,
-          tokenList
+          tokenList,
         )
 
         expect(contractAddressError).toBeTruthy()
@@ -223,16 +245,16 @@ describe('Transaction Parsing utils', () => {
               txType === BraveWallet.TransactionType.ERC20Transfer
                 ? ['0xbadcafe', 'mockAmount']
                 : ['mockOwner', '0xbadcafe', 'mockTokenID'],
-            txType
+            txType,
           }
 
           const contractAddressError = isSendingToKnownTokenContractAddress(
             mockTransaction,
-            tokenList
+            tokenList,
           )
 
           expect(contractAddressError).toBeFalsy()
-        }
+        },
       )
     })
   })
@@ -244,8 +266,8 @@ describe('Transaction Parsing utils', () => {
       ['ERC721TransferFrom', BraveWallet.TransactionType.ERC721TransferFrom],
       [
         'ERC721SafeTransferFrom',
-        BraveWallet.TransactionType.ERC721SafeTransferFrom
-      ]
+        BraveWallet.TransactionType.ERC721SafeTransferFrom,
+      ],
     ])('%s', (_, txType) => {
       it('should be empty', () => {
         const mockTransactionInfo = getMockedTransactionInfo()
@@ -257,15 +279,16 @@ describe('Transaction Parsing utils', () => {
             filTxData: undefined,
             solanaTxData: undefined,
             btcTxData: undefined,
+            zecTxData: undefined,
             ethTxData1559: {
               ...mockTransactionInfo.txDataUnion.ethTxData1559,
               baseData: {
                 ...mockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                to: 'test'
-              }
-            }
+                to: 'test',
+              },
+            },
           },
-          txArgs: ['mockRecipient', '0xde0b6b3a7640000']
+          txArgs: ['mockRecipient', '0xde0b6b3a7640000'],
         }
 
         const token = findTransactionToken(mockTransaction, tokenList)
@@ -274,7 +297,7 @@ describe('Transaction Parsing utils', () => {
           tx: mockTransaction,
           sellToken: undefined,
           token,
-          txNetwork: { symbol: 'ETH' }
+          txNetwork: { symbol: 'ETH' },
         })
 
         expect(txSymbol).toEqual('')
@@ -290,15 +313,16 @@ describe('Transaction Parsing utils', () => {
             filTxData: undefined,
             solanaTxData: undefined,
             btcTxData: undefined,
+            zecTxData: undefined,
             ethTxData1559: {
               ...mockTransactionInfo.txDataUnion.ethTxData1559,
               baseData: {
                 ...mockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                to: 'mockContractAddress'
-              }
-            }
+                to: 'mockContractAddress',
+              },
+            },
           },
-          txArgs: ['mockRecipient', '0xde0b6b3a7640000']
+          txArgs: ['mockRecipient', '0xde0b6b3a7640000'],
         }
 
         const token = findTransactionToken(mockTransaction, tokenList)
@@ -307,7 +331,7 @@ describe('Transaction Parsing utils', () => {
           tx: mockTransaction,
           sellToken: undefined,
           token,
-          txNetwork: { symbol: 'ETH' }
+          txNetwork: { symbol: 'ETH' },
         })
 
         expect(txSymbol).toEqual('DOG')
@@ -322,10 +346,10 @@ describe('Transaction Parsing utils', () => {
       ['ERC721TransferFrom', BraveWallet.TransactionType.ERC721TransferFrom],
       [
         'ERC721SafeTransferFrom',
-        BraveWallet.TransactionType.ERC721SafeTransferFrom
+        BraveWallet.TransactionType.ERC721SafeTransferFrom,
       ],
       ['ETHSend', BraveWallet.TransactionType.ETHSend],
-      ['Other', BraveWallet.TransactionType.Other]
+      ['Other', BraveWallet.TransactionType.Other],
     ])('%s', (_, txType) => {
       it(
         'should return missingGasLimitError ' + 'if gas limit is zero or empty',
@@ -333,7 +357,7 @@ describe('Transaction Parsing utils', () => {
           const baseMockTransactionInfo = {
             ...getMockedTransactionInfo(),
             txType,
-            txArgs: ['mockRecipient', 'mockAmount']
+            txArgs: ['mockRecipient', 'mockAmount'],
           }
 
           const mockTx1: SerializableTransactionInfo = {
@@ -343,14 +367,15 @@ describe('Transaction Parsing utils', () => {
               filTxData: undefined,
               solanaTxData: undefined,
               btcTxData: undefined,
+              zecTxData: undefined,
               ethTxData1559: {
                 ...baseMockTransactionInfo.txDataUnion.ethTxData1559,
                 baseData: {
                   ...baseMockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                  gasLimit: ''
-                }
-              }
-            }
+                  gasLimit: '',
+                },
+              },
+            },
           }
 
           expect(getTransactionGasLimit(mockTx1)).toEqual('')
@@ -363,18 +388,19 @@ describe('Transaction Parsing utils', () => {
               filTxData: undefined,
               solanaTxData: undefined,
               btcTxData: undefined,
+              zecTxData: undefined,
               ethTxData1559: {
                 ...baseMockTransactionInfo.txDataUnion.ethTxData1559,
                 baseData: {
                   ...baseMockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                  gasLimit: '0x0'
-                }
-              }
-            }
+                  gasLimit: '0x0',
+                },
+              },
+            },
           }
 
           expect(getTransactionGasLimit(mockTx2)).toEqual(
-            mockTx2.txDataUnion.ethTxData1559?.baseData.gasLimit
+            mockTx2.txDataUnion.ethTxData1559?.baseData.gasLimit,
           )
           expect(isTransactionGasLimitMissing(mockTx2)).toBeTruthy()
 
@@ -385,22 +411,23 @@ describe('Transaction Parsing utils', () => {
               filTxData: undefined,
               solanaTxData: undefined,
               btcTxData: undefined,
+              zecTxData: undefined,
               ethTxData1559: {
                 ...baseMockTransactionInfo.txDataUnion.ethTxData1559,
                 baseData: {
                   ...baseMockTransactionInfo.txDataUnion.ethTxData1559.baseData,
-                  gasLimit: '0x1'
-                }
-              }
-            }
+                  gasLimit: '0x1',
+                },
+              },
+            },
           }
 
           expect(getTransactionGasLimit(mockTx3)).toEqual(
-            mockTx3.txDataUnion.ethTxData1559?.baseData.gasLimit
+            mockTx3.txDataUnion.ethTxData1559?.baseData.gasLimit,
           )
           expect(Amount.normalize(getTransactionGasLimit(mockTx3))).toEqual('1')
           expect(isTransactionGasLimitMissing(mockTx3)).toBeFalsy()
-        }
+        },
       )
     })
   })

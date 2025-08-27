@@ -5,10 +5,13 @@
 
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request.h"
 
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
+#include "base/location.h"
 #include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/ads_client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/subdivision_feature.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request_builder.h"
@@ -18,8 +21,8 @@
 #include "brave/components/brave_ads/core/internal/common/url/url_response_string_util.h"
 #include "brave/components/brave_ads/core/internal/flags/debug/debug_flag_util.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client.h"
 #include "net/http/http_status_code.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
@@ -50,7 +53,7 @@ void SubdivisionUrlRequest::PeriodicallyFetch() {
 ///////////////////////////////////////////////////////////////////////////////
 
 void SubdivisionUrlRequest::Fetch() {
-  if (is_fetching_ || retry_timer_.IsRunning()) {
+  if (is_fetching_ || timer_.IsRunning()) {
     return;
   }
 
@@ -59,32 +62,32 @@ void SubdivisionUrlRequest::Fetch() {
   is_fetching_ = true;
 
   GetSubdivisionUrlRequestBuilder url_request_builder;
-  mojom::UrlRequestInfoPtr url_request = url_request_builder.Build();
-  BLOG(6, UrlRequestToString(url_request));
-  BLOG(7, UrlRequestHeadersToString(url_request));
+  mojom::UrlRequestInfoPtr mojom_url_request = url_request_builder.Build();
+  BLOG(6, UrlRequestToString(mojom_url_request));
+  BLOG(7, UrlRequestHeadersToString(mojom_url_request));
 
-  AdsClientHelper::GetInstance()->UrlRequest(
-      std::move(url_request),
+  GetAdsClient().UrlRequest(
+      std::move(mojom_url_request),
       base::BindOnce(&SubdivisionUrlRequest::FetchCallback,
                      weak_factory_.GetWeakPtr()));
 }
 
 void SubdivisionUrlRequest::FetchCallback(
-    const mojom::UrlResponseInfo& url_response) {
-  BLOG(6, UrlResponseToString(url_response));
-  BLOG(7, UrlResponseHeadersToString(url_response));
+    const mojom::UrlResponseInfo& mojom_url_response) {
+  BLOG(6, UrlResponseToString(mojom_url_response));
+  BLOG(7, UrlResponseHeadersToString(mojom_url_response));
 
   is_fetching_ = false;
 
-  if (url_response.status_code != net::HTTP_OK) {
+  if (mojom_url_response.status_code != net::HTTP_OK) {
     return FailedToFetchSubdivision();
   }
 
   BLOG(1, "Parsing subdivision");
-  const absl::optional<std::string> subdivision =
-      json::reader::ParseSubdivision(url_response.body);
+  std::optional<std::string> subdivision =
+      json::reader::ParseSubdivision(mojom_url_response.body);
   if (!subdivision) {
-    BLOG(1, "Failed to parse subdivision");
+    BLOG(0, "Failed to parse subdivision");
     return FailedToFetchSubdivision();
   }
 
@@ -92,6 +95,8 @@ void SubdivisionUrlRequest::FetchCallback(
 }
 
 void SubdivisionUrlRequest::FetchAfterDelay() {
+  CHECK(!timer_.IsRunning());
+
   const base::Time fetch_at = timer_.StartWithPrivacy(
       FROM_HERE,
       ShouldDebug() ? kDebugFetchAfter : kFetchSubdivisionAfter.Get(),
@@ -105,9 +110,9 @@ void SubdivisionUrlRequest::FetchAfterDelay() {
 
 void SubdivisionUrlRequest::SuccessfullyFetchedSubdivision(
     const std::string& subdivision) {
-  StopRetrying();
-
   BLOG(1, "Successfully fetched subdivision");
+
+  StopRetrying();
 
   NotifyDidFetchSubdivision(subdivision);
 
@@ -115,7 +120,7 @@ void SubdivisionUrlRequest::SuccessfullyFetchedSubdivision(
 }
 
 void SubdivisionUrlRequest::FailedToFetchSubdivision() {
-  BLOG(1, "Failed to fetch subdivision");
+  BLOG(0, "Failed to fetch subdivision");
 
   NotifyFailedToFetchSubdivision();
 
@@ -123,9 +128,16 @@ void SubdivisionUrlRequest::FailedToFetchSubdivision() {
 }
 
 void SubdivisionUrlRequest::Retry() {
-  CHECK(!timer_.IsRunning());
+  if (timer_.IsRunning()) {
+    // The function `WallClockTimer::PowerSuspendObserver::OnResume` restarts
+    // the timer to fire at the desired run time after system power is resumed.
+    // It's important to note that URL requests might not succeed upon power
+    // restoration, triggering a retry. To avoid initiating a second timer, we
+    // refrain from starting another one.
+    return;
+  }
 
-  const base::Time retry_at = retry_timer_.StartWithPrivacy(
+  const base::Time retry_at = timer_.StartWithPrivacy(
       FROM_HERE, kRetryAfter,
       base::BindOnce(&SubdivisionUrlRequest::RetryCallback,
                      weak_factory_.GetWeakPtr()));
@@ -144,11 +156,11 @@ void SubdivisionUrlRequest::RetryCallback() {
 }
 
 void SubdivisionUrlRequest::StopRetrying() {
-  retry_timer_.Stop();
+  timer_.Stop();
 }
 
 void SubdivisionUrlRequest::NotifyWillFetchSubdivision(
-    const base::Time fetch_at) const {
+    base::Time fetch_at) const {
   if (delegate_) {
     delegate_->OnWillFetchSubdivision(fetch_at);
   }
@@ -168,7 +180,7 @@ void SubdivisionUrlRequest::NotifyFailedToFetchSubdivision() const {
 }
 
 void SubdivisionUrlRequest::NotifyWillRetryFetchingSubdivision(
-    const base::Time retry_at) const {
+    base::Time retry_at) const {
   if (delegate_) {
     delegate_->OnWillRetryFetchingSubdivision(retry_at);
   }

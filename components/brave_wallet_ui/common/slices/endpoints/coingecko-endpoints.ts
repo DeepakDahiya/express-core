@@ -2,20 +2,18 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
-import {
-  BraveWallet
-} from '../../../constants/types'
+import { BraveWallet } from '../../../constants/types'
 import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
 // Utils
 import {
   isValidEVMAddress,
-  isValidSolanaAddress
+  isValidSolanaAddress,
 } from '../../../utils/address-utils'
 
 export const coingeckoEndpoints = ({
   mutation,
-  query
+  query,
 }: WalletApiEndpointBuilderParams) => {
   return {
     getCoingeckoId: query<
@@ -26,43 +24,42 @@ export const coingeckoEndpoints = ({
         { chainId, contractAddress },
         api,
         extraOptions,
-        baseQuery
+        baseQuery,
       ) => {
-
         try {
           // Ignore invalid EVM and Solana addresses.
           //
           // EVM => 0x + 40 hex characters
           // Solana => 32-44 base58 characters
           if (
-            !isValidEVMAddress(contractAddress) &&
-            !isValidSolanaAddress(contractAddress)
+            !isValidEVMAddress(contractAddress)
+            && !isValidSolanaAddress(contractAddress)
           ) {
             return {
-              data: null
+              data: null,
             }
           }
 
           const { blockchainRegistry } = baseQuery(undefined).data
           const { coingeckoId } = await blockchainRegistry.getCoingeckoId(
             chainId,
-            contractAddress
+            contractAddress,
           )
 
           return {
-            data: coingeckoId
+            data: coingeckoId,
           }
         } catch (err) {
           console.error(err)
           return {
-            error: 'Unable to query coingeckoId'
+            error: 'Unable to query coingeckoId',
           }
         }
       },
       providesTags: (res, err, { chainId, contractAddress }) =>
         err
           ? ['CoingeckoId', 'UNKNOWN_ERROR']
-          : [{ type: 'CoingeckoId', id: `${chainId}-${contractAddress}` }]
-    })
+          : [{ type: 'CoingeckoId', id: `${chainId}-${contractAddress}` }],
+    }),
   }
 }

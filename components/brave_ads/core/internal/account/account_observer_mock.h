@@ -9,6 +9,7 @@
 #include <string>
 
 #include "brave/components/brave_ads/core/internal/account/account_observer.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace brave_ads {
@@ -20,24 +21,17 @@ class AccountObserverMock : public AccountObserver {
   AccountObserverMock(const AccountObserverMock&) = delete;
   AccountObserverMock& operator=(const AccountObserverMock&) = delete;
 
-  AccountObserverMock(AccountObserverMock&&) noexcept = delete;
-  AccountObserverMock& operator=(AccountObserverMock&&) noexcept = delete;
-
   ~AccountObserverMock() override;
 
-  MOCK_METHOD(void, OnDidInitializeWallet, (const WalletInfo& wallet));
+  MOCK_METHOD(void, OnDidInitializeWallet, (const WalletInfo&));
 
   MOCK_METHOD(void, OnFailedToInitializeWallet, ());
 
-  MOCK_METHOD(void, OnDidProcessDeposit, (const TransactionInfo& transaction));
+  MOCK_METHOD(void, OnDidProcessDeposit, (const TransactionInfo&));
 
   MOCK_METHOD(void,
               OnFailedToProcessDeposit,
-              (const std::string& creative_instance_id,
-               const AdType& ad_type,
-               const ConfirmationType& confirmation_type));
-
-  MOCK_METHOD(void, OnStatementOfAccountsDidChange, ());
+              (const std::string&, mojom::AdType, mojom::ConfirmationType));
 };
 
 }  // namespace brave_ads

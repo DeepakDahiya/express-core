@@ -7,22 +7,16 @@
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_CREATIVES_NEW_TAB_PAGE_ADS_CREATIVE_NEW_TAB_PAGE_ADS_DATABASE_TABLE_H_
 
 #include <string>
-#include <vector>
 
 #include "base/check_op.h"
-#include "base/functional/callback_forward.h"
-#include "brave/components/brave_ads/core/internal/account/deposits/deposits_database_table.h"
+#include "base/functional/callback.h"
 #include "brave/components/brave_ads/core/internal/creatives/campaigns_database_table.h"
 #include "brave/components/brave_ads/core/internal/creatives/creative_ads_database_table.h"
-#include "brave/components/brave_ads/core/internal/creatives/dayparts_database_table.h"
-#include "brave/components/brave_ads/core/internal/creatives/geo_targets_database_table.h"
 #include "brave/components/brave_ads/core/internal/creatives/new_tab_page_ads/creative_new_tab_page_ad_info.h"
-#include "brave/components/brave_ads/core/internal/creatives/new_tab_page_ads/creative_new_tab_page_ad_wallpapers_database_table.h"
-#include "brave/components/brave_ads/core/internal/creatives/segments_database_table.h"
 #include "brave/components/brave_ads/core/internal/database/database_table_interface.h"
 #include "brave/components/brave_ads/core/internal/segments/segment_alias.h"
-#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
-#include "brave/components/brave_ads/core/public/client/ads_client_callback.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
+#include "brave/components/brave_ads/core/public/ads_callback.h"
 
 namespace brave_ads::database::table {
 
@@ -33,8 +27,8 @@ using GetCreativeNewTabPageAdCallback =
 
 using GetCreativeNewTabPageAdsCallback =
     base::OnceCallback<void(bool success,
-                            const std::vector<std::string>& segments,
-                            const CreativeNewTabPageAdList& creative_ads)>;
+                            const SegmentList& segments,
+                            CreativeNewTabPageAdList creative_ads)>;
 
 class CreativeNewTabPageAds final : public TableInterface {
  public:
@@ -43,15 +37,10 @@ class CreativeNewTabPageAds final : public TableInterface {
   CreativeNewTabPageAds(const CreativeNewTabPageAds&) = delete;
   CreativeNewTabPageAds& operator=(const CreativeNewTabPageAds&) = delete;
 
-  CreativeNewTabPageAds(CreativeNewTabPageAds&&) noexcept = delete;
-  CreativeNewTabPageAds& operator=(CreativeNewTabPageAds&&) noexcept = delete;
-
   ~CreativeNewTabPageAds() override;
 
   void Save(const CreativeNewTabPageAdList& creative_ads,
             ResultCallback callback);
-
-  void Delete(ResultCallback callback) const;
 
   void GetForCreativeInstanceId(const std::string& creative_instance_id,
                                 GetCreativeNewTabPageAdCallback callback) const;
@@ -59,9 +48,9 @@ class CreativeNewTabPageAds final : public TableInterface {
   void GetForSegments(const SegmentList& segments,
                       GetCreativeNewTabPageAdsCallback callback) const;
 
-  void GetAll(GetCreativeNewTabPageAdsCallback callback) const;
+  void GetForActiveCampaigns(GetCreativeNewTabPageAdsCallback callback) const;
 
-  void SetBatchSize(const int batch_size) {
+  void SetBatchSize(int batch_size) {
     CHECK_GT(batch_size, 0);
 
     batch_size_ = batch_size;
@@ -69,27 +58,25 @@ class CreativeNewTabPageAds final : public TableInterface {
 
   std::string GetTableName() const override;
 
-  void Create(mojom::DBTransactionInfo* transaction) override;
-  void Migrate(mojom::DBTransactionInfo* transaction, int to_version) override;
+  void Create(const mojom::DBTransactionInfoPtr& mojom_db_transaction) override;
+  void Migrate(const mojom::DBTransactionInfoPtr& mojom_db_transaction,
+               int to_version) override;
 
  private:
-  void InsertOrUpdate(mojom::DBTransactionInfo* transaction,
-                      const CreativeNewTabPageAdList& creative_ads);
+  void MigrateToV48(const mojom::DBTransactionInfoPtr& mojom_db_transaction);
+  void MigrateToV49(const mojom::DBTransactionInfoPtr& mojom_db_transaction);
 
-  std::string BuildInsertOrUpdateSql(
-      mojom::DBCommandInfo* command,
+  void Insert(const mojom::DBTransactionInfoPtr& mojom_db_transaction,
+              const CreativeNewTabPageAdList& creative_ads);
+
+  std::string BuildInsertSql(
+      const mojom::DBActionInfoPtr& mojom_db_action,
       const CreativeNewTabPageAdList& creative_ads) const;
 
   int batch_size_;
 
   Campaigns campaigns_database_table_;
   CreativeAds creative_ads_database_table_;
-  CreativeNewTabPageAdWallpapers
-      creative_new_tab_page_ad_wallpapers_database_table_;
-  Dayparts dayparts_database_table_;
-  Deposits deposits_database_table_;
-  GeoTargets geo_targets_database_table_;
-  Segments segments_database_table_;
 };
 
 }  // namespace brave_ads::database::table

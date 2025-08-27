@@ -7,7 +7,10 @@
 #define BRAVE_COMPONENTS_MISC_METRICS_GENERAL_BROWSER_USAGE_H_
 
 #include <memory>
+#include <optional>
+#include <string>
 
+#include "base/memory/raw_ptr.h"
 #include "base/timer/wall_clock_timer.h"
 
 class PrefRegistrySimple;
@@ -16,12 +19,21 @@ class ISOWeeklyStorage;
 
 namespace misc_metrics {
 
-extern const char kWeeklyUseHistogramName[];
-extern const char kProfileCountHistogramName[];
+inline constexpr char kWeeklyUseHistogramName[] = "Brave.Core.WeeklyUsage";
+inline constexpr char kProfileCountHistogramName[] = "Brave.Core.ProfileCount";
+
+inline constexpr char kDayZeroVariantHistogramName[] = "Brave.DayZero.Variant";
+
+// TODO(djandries): remove this metric when Nebula experiment is over
+inline constexpr char kWeeklyUseNebulaHistogramName[] =
+    "Brave.Core.WeeklyUsage.Nebula";
 
 class GeneralBrowserUsage {
  public:
-  explicit GeneralBrowserUsage(PrefService* local_state);
+  GeneralBrowserUsage(PrefService* local_state,
+                      std::optional<std::string> day_zero_experiment_variant,
+                      bool is_first_run,
+                      base::Time first_run_time);
   ~GeneralBrowserUsage();
 
   GeneralBrowserUsage(const GeneralBrowserUsage&) = delete;
@@ -33,11 +45,14 @@ class GeneralBrowserUsage {
 
  private:
   void ReportWeeklyUse();
+  void ReportInstallTime();
 
   void SetUpUpdateTimer();
 
   void Update();
 
+  raw_ptr<PrefService> local_state_;
+  base::Time first_run_time_;
   std::unique_ptr<ISOWeeklyStorage> usage_storage_;
 
   base::WallClockTimer report_timer_;

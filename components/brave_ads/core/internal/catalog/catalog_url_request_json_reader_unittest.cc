@@ -5,7 +5,6 @@
 
 #include "brave/components/brave_ads/core/internal/catalog/catalog_url_request_json_reader.h"
 
-#include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/catalog_campaign_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/catalog_daypart_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/catalog_geo_target_info.h"
@@ -15,16 +14,14 @@
 #include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/catalog_segment_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/catalog_type_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/inline_content_ad/catalog_creative_inline_content_ad_info.h"
-#include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/new_tab_page_ad/catalog_creative_new_tab_page_ad_info.h"
-#include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/new_tab_page_ad/catalog_new_tab_page_ad_wallpaper_focal_point_info.h"
-#include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/new_tab_page_ad/catalog_new_tab_page_ad_wallpaper_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/notification_ad/catalog_creative_notification_ad_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/campaign/creative_set/creative/promoted_content_ad/catalog_creative_promoted_content_ad_info.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_info.h"
-#include "brave/components/brave_ads/core/internal/catalog/catalog_unittest_constants.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_file_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_time_util.h"
+#include "brave/components/brave_ads/core/internal/catalog/catalog_test_constants.h"
+#include "brave/components/brave_ads/core/internal/common/test/file_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_constants.h"
+#include "brave/components/brave_ads/core/internal/common/test/time_test_util.h"
 #include "url/gurl.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
@@ -32,13 +29,6 @@
 namespace brave_ads {
 
 namespace {
-
-constexpr char kInvalidCatalog[] = "INVALID_JSON";
-constexpr char kEmptyCatalog[] = "empty_catalog.json";
-constexpr char kCatalogWithSingleCampaign[] =
-    "catalog_with_single_campaign.json";
-constexpr char kCatalogWithMultipleCampaigns[] =
-    "catalog_with_multiple_campaigns.json";
 
 CatalogCampaignInfo BuildCatalogCampaign1() {
   // Segments
@@ -86,42 +76,6 @@ CatalogCampaignInfo BuildCatalogCampaign1() {
   catalog_creative_notification_ad.payload.target_url =
       GURL("https://brave.com/1/notification_ad");
   catalog_creative_notification_ads.push_back(catalog_creative_notification_ad);
-
-  // Creative New Tab Page Ads
-  CatalogCreativeNewTabPageAdList catalog_creative_new_tab_page_ads;
-
-  CatalogCreativeNewTabPageAdInfo catalog_creative_new_tab_page_ad;
-  catalog_creative_new_tab_page_ad.instance_id =
-      "7ff400b9-7f8a-46a8-89f1-cb386612edcf";
-  CatalogTypeInfo catalog_type_new_tab_page_ad;
-  catalog_type_new_tab_page_ad.code = "new_tab_page_all_v1";
-  catalog_type_new_tab_page_ad.name = "new_tab_page";
-  catalog_type_new_tab_page_ad.platform = "all";
-  catalog_type_new_tab_page_ad.version = 1;
-  catalog_creative_new_tab_page_ad.type = catalog_type_new_tab_page_ad;
-  catalog_creative_new_tab_page_ad.payload.company_name = "New Tab Page 1";
-  catalog_creative_new_tab_page_ad.payload.image_url =
-      GURL("https://brave.com/1/test.jpg");
-  catalog_creative_new_tab_page_ad.payload.alt =
-      "Test New Tab Page Ad Campaign 1";
-  catalog_creative_new_tab_page_ad.payload.target_url =
-      GURL("https://brave.com/1/new_tab_page_ad");
-  CatalogNewTabPageAdWallpaperInfo wallpaper_1;
-  wallpaper_1.image_url = GURL("https://brave.com/1/test2.jpg");
-  CatalogNewTabPageAdWallpaperFocalPointInfo focal_point_1;
-  focal_point_1.x = 1200;
-  focal_point_1.y = 1400;
-  wallpaper_1.focal_point = focal_point_1;
-  catalog_creative_new_tab_page_ad.payload.wallpapers.push_back(wallpaper_1);
-  CatalogNewTabPageAdWallpaperInfo wallpaper_2;
-  wallpaper_2.image_url = GURL("https://brave.com/1/test3.jpg");
-  CatalogNewTabPageAdWallpaperFocalPointInfo focal_point_2;
-  focal_point_2.x = 1200;
-  focal_point_2.y = 1400;
-  wallpaper_2.focal_point = focal_point_2;
-  catalog_creative_new_tab_page_ad.payload.wallpapers.push_back(wallpaper_2);
-
-  catalog_creative_new_tab_page_ads.push_back(catalog_creative_new_tab_page_ad);
 
   // Creative Promoted Content Ads
   CatalogCreativePromotedContentAdList catalog_creative_promoted_content_ads;
@@ -176,7 +130,7 @@ CatalogCampaignInfo BuildCatalogCampaign1() {
   catalog_conversion.url_pattern = "https://www.brave.com/1/*";
   catalog_conversion.observation_window = base::Days(30);
   catalog_conversion.expire_at =
-      DistantFuture() + catalog_conversion.observation_window;
+      test::DistantFuture() + catalog_conversion.observation_window;
   catalog_conversions.push_back(catalog_conversion);
 
   // Creative Sets
@@ -196,8 +150,6 @@ CatalogCampaignInfo BuildCatalogCampaign1() {
       catalog_creative_notification_ads;
   catalog_creative_set.creative_inline_content_ads =
       catalog_creative_inline_content_ads;
-  catalog_creative_set.creative_new_tab_page_ads =
-      catalog_creative_new_tab_page_ads;
   catalog_creative_set.creative_promoted_content_ads =
       catalog_creative_promoted_content_ads;
   catalog_creative_set.conversions = catalog_conversions;
@@ -232,8 +184,8 @@ CatalogCampaignInfo BuildCatalogCampaign1() {
   catalog_campaign.id = "27a624a1-9c80-494a-bf1b-af327b563f85";
   catalog_campaign.priority = 1;
   catalog_campaign.pass_through_rate = 1.0;
-  catalog_campaign.start_at = DistantPastAsISO8601();
-  catalog_campaign.end_at = DistantFutureAsISO8601();
+  catalog_campaign.start_at = test::DistantPast();
+  catalog_campaign.end_at = test::DistantFuture();
   catalog_campaign.daily_cap = 10;
   catalog_campaign.advertiser_id = "a437c7f3-9a48-4fe8-b37b-99321bea93fe";
   catalog_campaign.creative_sets = catalog_creative_sets;
@@ -284,42 +236,6 @@ CatalogCampaignInfo BuildCatalogCampaign2() {
   catalog_creative_notification_ad.payload.target_url =
       GURL("https://brave.com/2/notification_ad");
   catalog_creative_notification_ads.push_back(catalog_creative_notification_ad);
-
-  // Creative New Tab Page Ads
-  CatalogCreativeNewTabPageAdList catalog_creative_new_tab_page_ads;
-
-  CatalogCreativeNewTabPageAdInfo catalog_creative_new_tab_page_ad;
-  catalog_creative_new_tab_page_ad.instance_id =
-      "3dfe54d0-80b7-48d7-9bcc-3c77a912f583";
-  CatalogTypeInfo catalog_type_new_tab_page_ad;
-  catalog_type_new_tab_page_ad.code = "new_tab_page_all_v1";
-  catalog_type_new_tab_page_ad.name = "new_tab_page";
-  catalog_type_new_tab_page_ad.platform = "all";
-  catalog_type_new_tab_page_ad.version = 1;
-  catalog_creative_new_tab_page_ad.type = catalog_type_new_tab_page_ad;
-  catalog_creative_new_tab_page_ad.payload.company_name = "New Tab Page 2";
-  catalog_creative_new_tab_page_ad.payload.image_url =
-      GURL("https://brave.com/2/test.jpg");
-  catalog_creative_new_tab_page_ad.payload.alt =
-      "Test New Tab Page Ad Campaign 2";
-  catalog_creative_new_tab_page_ad.payload.target_url =
-      GURL("https://brave.com/2/new_tab_page_ad");
-  CatalogNewTabPageAdWallpaperInfo wallpaper_1;
-  wallpaper_1.image_url = GURL("https://brave.com/2/test2.jpg");
-  CatalogNewTabPageAdWallpaperFocalPointInfo focal_point_1;
-  focal_point_1.x = 1'000;
-  focal_point_1.y = 1'200;
-  wallpaper_1.focal_point = focal_point_1;
-  catalog_creative_new_tab_page_ad.payload.wallpapers.push_back(wallpaper_1);
-  CatalogNewTabPageAdWallpaperInfo wallpaper_2;
-  wallpaper_2.image_url = GURL("https://brave.com/2/test3.jpg");
-  CatalogNewTabPageAdWallpaperFocalPointInfo focal_point_2;
-  focal_point_2.x = 500;
-  focal_point_2.y = 600;
-  wallpaper_2.focal_point = focal_point_2;
-  catalog_creative_new_tab_page_ad.payload.wallpapers.push_back(wallpaper_2);
-
-  catalog_creative_new_tab_page_ads.push_back(catalog_creative_new_tab_page_ad);
 
   // Creative Promoted Content Ads
   CatalogCreativePromotedContentAdList catalog_creative_promoted_content_ads;
@@ -374,7 +290,7 @@ CatalogCampaignInfo BuildCatalogCampaign2() {
   catalog_conversion.url_pattern = "https://www.brave.com/2/*";
   catalog_conversion.observation_window = base::Days(7);
   catalog_conversion.expire_at =
-      DistantFuture() + catalog_conversion.observation_window;
+      test::DistantFuture() + catalog_conversion.observation_window;
   catalog_conversions.push_back(catalog_conversion);
 
   // Creative Sets
@@ -391,8 +307,6 @@ CatalogCampaignInfo BuildCatalogCampaign2() {
   catalog_creative_set.oses = catalog_oses;
   catalog_creative_set.creative_notification_ads =
       catalog_creative_notification_ads;
-  catalog_creative_set.creative_new_tab_page_ads =
-      catalog_creative_new_tab_page_ads;
   catalog_creative_set.creative_promoted_content_ads =
       catalog_creative_promoted_content_ads;
   catalog_creative_set.creative_inline_content_ads =
@@ -420,8 +334,8 @@ CatalogCampaignInfo BuildCatalogCampaign2() {
   catalog_campaign.id = "856fc4bc-a21b-4582-bab7-a20d412359aa";
   catalog_campaign.priority = 2;
   catalog_campaign.pass_through_rate = 0.5;
-  catalog_campaign.start_at = DistantPastAsISO8601();
-  catalog_campaign.end_at = DistantFutureAsISO8601();
+  catalog_campaign.start_at = test::DistantPast();
+  catalog_campaign.end_at = test::DistantFuture();
   catalog_campaign.daily_cap = 25;
   catalog_campaign.advertiser_id = "7523854c-5f28-4153-9da8-d9da6804ed58";
   catalog_campaign.creative_sets = catalog_creative_sets;
@@ -433,58 +347,123 @@ CatalogCampaignInfo BuildCatalogCampaign2() {
 
 }  // namespace
 
-class BraveAdsCatalogUrlRequestJsonReaderTest : public UnitTestBase {};
+class BraveAdsCatalogUrlRequestJsonReaderTest : public test::TestBase {};
+
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest, DoNotReadCatalogWithMissingId) {
+  // Act & Assert
+  EXPECT_FALSE(json::reader::ReadCatalog(
+      R"JSON({
+        "version": 9,
+        "ping": 7200000,
+        "campaigns": []
+      })JSON"));
+}
+
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest, DoNotReadCatalogWithEmptyId) {
+  // Act & Assert
+  EXPECT_FALSE(json::reader::ReadCatalog(
+      R"JSON({
+        "catalogId": "",
+        "version": 9,
+        "ping": 7200000,
+        "campaigns": []
+      })JSON"));
+}
+
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest,
+       DoNotReadCatalogWithMissingVersion) {
+  // Act & Assert
+  EXPECT_FALSE(json::reader::ReadCatalog(
+      R"JSON({
+        "catalogId": "29e5c8bc0ba319069980bb390d8e8f9b58c05a20",
+        "ping": 7200000,
+        "campaigns": []
+      })JSON"));
+}
+
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest,
+       DoNotReadCatalogWithMismatchingVersion) {
+  // Act & Assert
+  EXPECT_FALSE(json::reader::ReadCatalog(
+      R"JSON({
+        "catalogId": "29e5c8bc0ba319069980bb390d8e8f9b58c05a20",
+        "version": 0,
+        "ping": 7200000,
+        "campaigns": []
+      })JSON"));
+}
+
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest,
+       DoNotReadCatalogWithMissingCampaigns) {
+  // Act & Assert
+  EXPECT_FALSE(json::reader::ReadCatalog(
+      R"JSON({
+        "catalogId": "29e5c8bc0ba319069980bb390d8e8f9b58c05a20",
+        "ping": 7200000
+      })JSON"));
+}
 
 TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest,
        ParseCatalogWithSingleCampaign) {
   // Arrange
-  const absl::optional<std::string> json =
-      ReadFileFromTestPathAndParseTagsToString(kCatalogWithSingleCampaign);
-  ASSERT_TRUE(json);
+  std::optional<std::string> contents =
+      test::MaybeReadFileToStringAndReplaceTags(
+          test::kCatalogWithSingleCampaignJsonFilename);
+  ASSERT_TRUE(contents);
 
-  // Act & Assert
-  CatalogInfo expected_catalog;
-  expected_catalog.id = kCatalogId;
-  expected_catalog.version = 9;
-  expected_catalog.ping = base::Milliseconds(7'200'000);
-  expected_catalog.campaigns.push_back(BuildCatalogCampaign1());
-  EXPECT_EQ(expected_catalog, json::reader::ReadCatalog(*json));
+  // Act
+  std::optional<CatalogInfo> catalog = json::reader::ReadCatalog(*contents);
+  ASSERT_TRUE(catalog);
+
+  // Assert
+  EXPECT_THAT(*catalog, ::testing::FieldsAre(
+                            test::kCatalogId, /*version*/ 9,
+                            /*ping*/ base::Milliseconds(7'200'000),
+                            CatalogCampaignList{BuildCatalogCampaign1()}));
 }
 
 TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest,
        ParseCatalogWithMultipleCampaigns) {
   // Arrange
-  const absl::optional<std::string> json =
-      ReadFileFromTestPathAndParseTagsToString(kCatalogWithMultipleCampaigns);
-  ASSERT_TRUE(json);
+  std::optional<std::string> contents =
+      test::MaybeReadFileToStringAndReplaceTags(
+          test::kCatalogWithMultipleCampaignsJsonFilename);
+  ASSERT_TRUE(contents);
 
-  // Act & Assert
-  CatalogInfo expected_catalog;
-  expected_catalog.id = kCatalogId;
-  expected_catalog.version = 9;
-  expected_catalog.ping = base::Milliseconds(7'200'000);
-  expected_catalog.campaigns.push_back(BuildCatalogCampaign1());
-  expected_catalog.campaigns.push_back(BuildCatalogCampaign2());
-  EXPECT_EQ(expected_catalog, json::reader::ReadCatalog(*json));
+  // Act
+  std::optional<CatalogInfo> catalog = json::reader::ReadCatalog(*contents);
+  ASSERT_TRUE(catalog);
+
+  // Assert
+  EXPECT_THAT(*catalog, ::testing::FieldsAre(
+                            test::kCatalogId, /*version*/ 9,
+                            /*ping*/ base::Milliseconds(7'200'000),
+                            CatalogCampaignList{BuildCatalogCampaign1(),
+                                                BuildCatalogCampaign2()}));
 }
 
-TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest, ParseEmptyCatalog) {
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest,
+       ParseCatalogWithEmptyCampaigns) {
   // Arrange
-  const absl::optional<std::string> json =
-      ReadFileFromTestPathAndParseTagsToString(kEmptyCatalog);
-  ASSERT_TRUE(json);
+  std::optional<std::string> contents =
+      test::MaybeReadFileToStringAndReplaceTags(
+          test::kCatalogWithNoCampaignsJsonFilename);
+  ASSERT_TRUE(contents);
 
-  // Act & Assert
-  CatalogInfo expected_catalog;
-  expected_catalog.id = kCatalogId;
-  expected_catalog.version = 9;
-  expected_catalog.ping = base::Milliseconds(7'200'000);
-  EXPECT_EQ(expected_catalog, json::reader::ReadCatalog(*json));
+  // Act
+  std::optional<CatalogInfo> catalog = json::reader::ReadCatalog(*contents);
+  ASSERT_TRUE(catalog);
+
+  // Assert
+  EXPECT_THAT(*catalog,
+              ::testing::FieldsAre(test::kCatalogId, /*version*/ 9,
+                                   /*ping*/ base::Milliseconds(7'200'000),
+                                   /*campaigns*/ ::testing::IsEmpty()));
 }
 
-TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest, InvalidCatalog) {
+TEST_F(BraveAdsCatalogUrlRequestJsonReaderTest, DoNotReadMalformedCatalog) {
   // Act & Assert
-  EXPECT_FALSE(json::reader::ReadCatalog(kInvalidCatalog));
+  EXPECT_FALSE(json::reader::ReadCatalog(test::kMalformedJson));
 }
 
 }  // namespace brave_ads

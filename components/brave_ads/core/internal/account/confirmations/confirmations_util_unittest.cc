@@ -5,78 +5,59 @@
 
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 
+#include <optional>
+
+#include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/non_reward/non_reward_confirmation_test_util.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue_database_table.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/queue/queue_item/confirmation_queue_item_test_util.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/reward/reward_confirmation_test_util.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/reward/reward_confirmation_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_mock.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/account/transactions/transaction_info.h"
-#include "brave/components/brave_ads/core/internal/account/transactions/transactions_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/deprecated/confirmations/confirmation_state_manager.h"
-#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_tokens_test_util.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsConfirmationsUtilTest : public UnitTestBase {
+class BraveAdsConfirmationsUtilTest : public test::TestBase {
  protected:
-  TokenGeneratorMock token_generator_mock_;
+  database::table::ConfirmationQueue confirmation_queue_database_table_;
 };
 
-TEST_F(BraveAdsConfirmationsUtilTest, IsInvalidToken) {
+TEST_F(BraveAdsConfirmationsUtilTest, IsRewardConfirmationValid) {
+  // Arrange
+  test::MockTokenGenerator(/*count=*/1);
+  test::RefillConfirmationTokens(/*count=*/1);
+
+  std::optional<ConfirmationInfo> confirmation =
+      test::BuildRewardConfirmation(/*should_generate_random_uuids=*/false);
+  ASSERT_TRUE(confirmation);
+
+  // Act & Assert
+  EXPECT_TRUE(IsValid(*confirmation));
+}
+
+TEST_F(BraveAdsConfirmationsUtilTest, IsNonRewardConfirmationValid) {
+  // Arrange
+  test::DisableBraveRewards();
+
+  std::optional<ConfirmationInfo> confirmation =
+      test::BuildNonRewardConfirmation(/*should_generate_random_uuids=*/false);
+  ASSERT_TRUE(confirmation);
+
+  // Act & Assert
+  EXPECT_TRUE(IsValid(*confirmation));
+}
+
+TEST_F(BraveAdsConfirmationsUtilTest, IsConfirmationNotValid) {
   // Arrange
   const ConfirmationInfo confirmation;
 
   // Act & Assert
   EXPECT_FALSE(IsValid(confirmation));
-}
-
-TEST_F(BraveAdsConfirmationsUtilTest, ResetTokens) {
-  // Arrange
-  MockTokenGenerator(token_generator_mock_, /*count=*/1);
-
-  SetConfirmationTokensForTesting(/*count=*/2);
-
-  SetPaymentTokensForTesting(/*count=*/1);
-
-  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
-      /*value=*/0.01, ConfirmationType::kViewed,
-      /*should_use_random_uuids=*/true);
-  const absl::optional<ConfirmationInfo> confirmation =
-      BuildRewardConfirmation(&token_generator_mock_, transaction,
-                              /*user_data=*/{});
-  ASSERT_TRUE(confirmation);
-  ConfirmationStateManager::GetInstance().AddConfirmation(*confirmation);
-
-  // Act
-  ResetTokens();
-
-  // Assert
-  const ConfirmationList& confirmations =
-      ConfirmationStateManager::GetInstance().GetConfirmations();
-  EXPECT_TRUE(confirmations.empty());
-
-  EXPECT_TRUE(ConfirmationTokensIsEmpty());
-
-  EXPECT_TRUE(PaymentTokensIsEmpty());
-}
-
-TEST_F(BraveAdsConfirmationsUtilTest, ResetIfNoTokens) {
-  // Act
-  ResetTokens();
-
-  // Assert
-  const ConfirmationList& confirmations =
-      ConfirmationStateManager::GetInstance().GetConfirmations();
-  EXPECT_TRUE(confirmations.empty());
-
-  EXPECT_TRUE(ConfirmationTokensIsEmpty());
-
-  EXPECT_TRUE(PaymentTokensIsEmpty());
 }
 
 }  // namespace brave_ads

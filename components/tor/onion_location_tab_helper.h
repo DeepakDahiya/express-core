@@ -6,32 +6,42 @@
 #ifndef BRAVE_COMPONENTS_TOR_ONION_LOCATION_TAB_HELPER_H_
 #define BRAVE_COMPONENTS_TOR_ONION_LOCATION_TAB_HELPER_H_
 
+#include "content/public/browser/web_contents.h"
+#include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
+#include "url/gurl.h"
 
 namespace tor {
 
 class OnionLocationTabHelper
-    : public content::WebContentsUserData<OnionLocationTabHelper> {
+    : public content::WebContentsUserData<OnionLocationTabHelper>,
+      public content::WebContentsObserver {
  public:
+  OnionLocationTabHelper(const OnionLocationTabHelper&) = delete;
+  OnionLocationTabHelper& operator=(const OnionLocationTabHelper&) = delete;
   ~OnionLocationTabHelper() override;
-
-  static void SetOnionLocation(content::WebContents* web_contents,
-                               const GURL& onion_location);
 
   bool should_show_icon() const { return !onion_location_.is_empty(); }
 
-  GURL onion_location() const { return onion_location_; }
-
-  WEB_CONTENTS_USER_DATA_KEY_DECL();
+  const GURL& onion_location() const { return onion_location_; }
 
  private:
-  explicit OnionLocationTabHelper(content::WebContents* web_contents);
   friend class content::WebContentsUserData<OnionLocationTabHelper>;
+  friend class OnionLocationNavigationThrottle;
 
+  explicit OnionLocationTabHelper(content::WebContents* web_contents);
+
+  static void SetOnionLocationByThrottle(content::WebContents* web_contents,
+                                         const GURL& onion_location);
+
+  // content::WebContentsObserver:
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
+
+  GURL throttle_reported_onion_location_;
   GURL onion_location_;
 
-  OnionLocationTabHelper(const OnionLocationTabHelper&) = delete;
-  OnionLocationTabHelper& operator=(const OnionLocationTabHelper&) = delete;
+  WEB_CONTENTS_USER_DATA_KEY_DECL();
 };
 
 }  // namespace tor

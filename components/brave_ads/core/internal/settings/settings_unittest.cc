@@ -6,17 +6,17 @@
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
 
 #include "base/test/scoped_feature_list.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_pref_util.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/profile_pref_value_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
+#include "brave/components/brave_ads/core/public/ad_units/notification_ad/notification_ad_feature.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
-#include "brave/components/brave_ads/core/public/units/notification_ad/notification_ad_feature.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsSettingsTest : public UnitTestBase {};
+class BraveAdsSettingsTest : public test::TestBase {};
 
 TEST_F(BraveAdsSettingsTest, UserHasJoinedBraveRewards) {
   // Act & Assert
@@ -25,10 +25,23 @@ TEST_F(BraveAdsSettingsTest, UserHasJoinedBraveRewards) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotJoinedBraveRewards) {
   // Arrange
-  DisableBraveRewardsForTesting();
+  test::DisableBraveRewards();
 
   // Act & Assert
   EXPECT_FALSE(UserHasJoinedBraveRewards());
+}
+
+TEST_F(BraveAdsSettingsTest, UserHasJoinedBraveRewardsAndConnectedWallet) {
+  // Act & Assert
+  EXPECT_TRUE(UserHasJoinedBraveRewardsAndConnectedWallet());
+}
+
+TEST_F(BraveAdsSettingsTest, UserHasJoinedBraveRewardsAndNotConnectedWallet) {
+  // Arrange
+  test::DisconnectExternalBraveRewardsWallet();
+
+  // Act & Assert
+  EXPECT_FALSE(UserHasJoinedBraveRewardsAndConnectedWallet());
 }
 
 TEST_F(BraveAdsSettingsTest, UserHasOptedInToBraveNewsAds) {
@@ -38,7 +51,7 @@ TEST_F(BraveAdsSettingsTest, UserHasOptedInToBraveNewsAds) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToBraveNews) {
   // Arrange
-  OptOutOfBraveNewsAdsForTesting();
+  test::OptOutOfBraveNewsAds();
 
   // Act & Assert
   EXPECT_FALSE(UserHasOptedInToBraveNewsAds());
@@ -51,7 +64,7 @@ TEST_F(BraveAdsSettingsTest, UserHasOptedInToNewTabPageAds) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToNewTabPageAds) {
   // Arrange
-  OptOutOfNewTabPageAdsForTesting();
+  test::OptOutOfNewTabPageAds();
 
   // Act & Assert
   EXPECT_FALSE(UserHasOptedInToNewTabPageAds());
@@ -64,7 +77,7 @@ TEST_F(BraveAdsSettingsTest, UserHasOptedInToNotificationAds) {
 
 TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToNotificationAds) {
   // Arrange
-  OptOutOfNotificationAdsForTesting();
+  test::OptOutOfNotificationAds();
 
   // Act & Assert
   EXPECT_FALSE(UserHasOptedInToNotificationAds());
@@ -76,7 +89,7 @@ TEST_F(BraveAdsSettingsTest, MaximumNotificationAdsPerHour) {
   scoped_feature_list.InitAndEnableFeatureWithParameters(
       kNotificationAdFeature, {{"default_ads_per_hour", "2"}});
 
-  SetInt64PrefValue(prefs::kMaximumNotificationAdsPerHour, 3);
+  test::SetProfileInt64PrefValue(prefs::kMaximumNotificationAdsPerHour, 3);
 
   // Act & Assert
   EXPECT_EQ(3, GetMaximumNotificationAdsPerHour());
@@ -90,6 +103,19 @@ TEST_F(BraveAdsSettingsTest, DefaultMaximumNotificationAdsPerHour) {
 
   // Act & Assert
   EXPECT_EQ(2, GetMaximumNotificationAdsPerHour());
+}
+
+TEST_F(BraveAdsSettingsTest, UserHasOptedInToSearchResultAds) {
+  // Act & Assert
+  EXPECT_TRUE(UserHasOptedInToSearchResultAds());
+}
+
+TEST_F(BraveAdsSettingsTest, UserHasNotOptedInToSearchResultAds) {
+  // Arrange
+  test::OptOutOfSearchResultAds();
+
+  // Act & Assert
+  EXPECT_FALSE(UserHasOptedInToSearchResultAds());
 }
 
 }  // namespace brave_ads

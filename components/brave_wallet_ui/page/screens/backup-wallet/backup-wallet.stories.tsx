@@ -12,18 +12,17 @@ import { mockedMnemonic } from '../../../stories/mock-data/user-accounts'
 import { WalletPageStory } from '../../../stories/wrappers/wallet-page-story-wrapper'
 import { BackupWalletRoutes } from './backup-wallet.routes'
 
-export const _BackupWallet = () => {
-  return (
-    <WalletPageStory
-      pageStateOverride={{ mnemonic: mockedMnemonic }}
-    >
-      <BackupWalletRoutes />
-    </WalletPageStory>
-  )
+export const _BackupWallet = {
+  render: () => {
+    return (
+      <WalletPageStory pageStateOverride={{ mnemonic: mockedMnemonic }}>
+        <BackupWalletRoutes />
+      </WalletPageStory>
+    )
+  },
 }
 
-_BackupWallet.story = {
-  name: 'BackupWallet'
+export default {
+  title: 'Wallet/Desktop/Screens/Backup Wallet',
+  component: BackupWalletRoutes,
 }
-
-export default _BackupWallet

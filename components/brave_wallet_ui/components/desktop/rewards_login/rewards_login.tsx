@@ -8,55 +8,50 @@ import Button from '@brave/leo/react/button'
 
 // Types
 import {
-  RewardsExternalWallet
-} from '../../../common/async/brave_rewards_api_proxy'
+  ExternalWalletProvider, //
+} from '../../../../brave_rewards/resources/shared/lib/external_wallet'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
+import { getRewardsProviderName } from '../../../utils/rewards_utils'
 import {
-  getRewardsProviderName
-} from '../../../utils/rewards_utils'
+  reconnectURL, //
+} from '../../../../brave_rewards/resources/shared/lib/rewards_urls'
 
 // Styled Components
 import {
   LoginWrapper,
   InfoIcon,
   InfoText,
-  ButtonWrapper
+  ButtonWrapper,
 } from './rewards_login.style'
 import { Row } from '../../shared/style'
 
 interface Props {
-  externalRewardsInfo: RewardsExternalWallet | null | undefined
+  provider: ExternalWalletProvider | undefined
 }
 
-export const RewardsLogin = (props: Props) => {
-  const { externalRewardsInfo } = props
-
+export const RewardsLogin = ({ provider }: Props) => {
   // Computed
-  const provider = externalRewardsInfo?.provider ?? ''
-  const providerReconnectUrl = externalRewardsInfo?.links.reconnect
   const providerName = getRewardsProviderName(provider)
-  const loginDescription =
-    getLocale('braveWalletBraveRewardsLoggedOutDescription')
-      .replace('$1', providerName)
+  const loginDescription = getLocale(
+    'braveWalletBraveRewardsLoggedOutDescription',
+  ).replace('$1', providerName)
 
   // Methods
   const onClickLogin = () => {
-    if (!providerReconnectUrl) {
-      return
-    }
     chrome.tabs.create(
       {
-        url: providerReconnectUrl
-      }, () => {
+        url: reconnectURL,
+      },
+      () => {
         if (chrome.runtime.lastError) {
           console.error(
-            'tabs.create failed: '
-            + chrome.runtime.lastError.message
+            'tabs.create failed: ' + chrome.runtime.lastError.message,
           )
         }
-      })
+      },
+    )
   }
 
   return (

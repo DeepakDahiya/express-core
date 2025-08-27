@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_perf_predictor/browser/perf_predictor_tab_helper.h"
 
+#include "base/logging.h"
 #include "brave/components/brave_perf_predictor/browser/named_third_party_registry_factory.h"
 #include "brave/components/brave_perf_predictor/common/pref_names.h"
 #include "build/build_config.h"
@@ -53,7 +54,7 @@ void PerfPredictorTabHelper::RegisterProfilePrefs(
 // static
 void PerfPredictorTabHelper::DispatchBlockedEvent(
     const std::string& subresource,
-    int frame_tree_node_id) {
+    content::FrameTreeNodeId frame_tree_node_id) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::WebContents* web_contents =

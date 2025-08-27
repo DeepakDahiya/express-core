@@ -5,9 +5,12 @@
 
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_tx_meta.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
+#include "base/check_op.h"
+#include "base/strings/string_number_conversions.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_transaction.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 
@@ -16,16 +19,17 @@ namespace {
 mojom::BtcTxDataPtr ToBtcTxData(BitcoinTransaction& tx) {
   std::vector<mojom::BtcTxInputPtr> mojom_inputs;
   for (auto& input : tx.inputs()) {
-    mojom_inputs.push_back(
-        mojom::BtcTxInput::New(input.utxo_address, input.utxo_value));
+    mojom_inputs.push_back(mojom::BtcTxInput::New(
+        input.utxo_address, base::HexEncode(input.utxo_outpoint.txid),
+        input.utxo_outpoint.index, input.utxo_value));
   }
   std::vector<mojom::BtcTxOutputPtr> mojom_outputs;
   for (auto& output : tx.outputs()) {
     mojom_outputs.push_back(
         mojom::BtcTxOutput::New(output.address, output.amount));
   }
-  return mojom::BtcTxData::New(tx.to(), tx.amount(), tx.EffectiveFeeAmount(),
-                               std::move(mojom_inputs),
+  return mojom::BtcTxData::New(tx.to(), tx.amount(), tx.sending_max_amount(),
+                               tx.EffectiveFeeAmount(), std::move(mojom_inputs),
                                std::move(mojom_outputs));
 }
 }  // namespace
@@ -52,7 +56,7 @@ base::Value::Dict BitcoinTxMeta::ToValue() const {
 
 mojom::TransactionInfoPtr BitcoinTxMeta::ToTransactionInfo() const {
   return mojom::TransactionInfo::New(
-      id_, absl::nullopt, from_.Clone(), tx_hash_,
+      id_, from_.Clone(), tx_hash_,
       mojom::TxDataUnion::NewBtcTxData(ToBtcTxData(*tx_)), status_,
       mojom::TransactionType::Other, std::vector<std::string>() /* tx_params */,
       std::vector<std::string>() /* tx_args */,
@@ -60,7 +64,11 @@ mojom::TransactionInfoPtr BitcoinTxMeta::ToTransactionInfo() const {
       base::Milliseconds(submitted_time_.InMillisecondsSinceUnixEpoch()),
       base::Milliseconds(confirmed_time_.InMillisecondsSinceUnixEpoch()),
       origin_.has_value() ? MakeOriginInfo(*origin_) : nullptr, chain_id_,
-      tx_->to());
+      tx_->to(), false, nullptr);
+}
+
+mojom::CoinType BitcoinTxMeta::GetCoinType() const {
+  return mojom::CoinType::BTC;
 }
 
 }  // namespace brave_wallet

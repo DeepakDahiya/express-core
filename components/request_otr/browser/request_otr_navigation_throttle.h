@@ -6,21 +6,15 @@
 #ifndef BRAVE_COMPONENTS_REQUEST_OTR_BROWSER_REQUEST_OTR_NAVIGATION_THROTTLE_H_
 #define BRAVE_COMPONENTS_REQUEST_OTR_BROWSER_REQUEST_OTR_NAVIGATION_THROTTLE_H_
 
-#include <memory>
 #include <string>
-#include <vector>
 
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
+#include "brave/components/brave_shields/content/browser/brave_shields_util.h"
 #include "content/public/browser/navigation_throttle.h"
-#include "url/gurl.h"
 
 class PrefService;
-
-namespace content {
-class NavigationHandle;
-}  // namespace content
+class GURL;
 
 namespace ephemeral_storage {
 class EphemeralStorageService;
@@ -33,7 +27,7 @@ class RequestOTRService;
 class RequestOTRNavigationThrottle : public content::NavigationThrottle {
  public:
   explicit RequestOTRNavigationThrottle(
-      content::NavigationHandle* navigation_handle,
+      content::NavigationThrottleRegistry& registry,
       RequestOTRService* request_otr_service,
       ephemeral_storage::EphemeralStorageService* ephemeral_storage_service,
       PrefService* pref_service,
@@ -44,8 +38,8 @@ class RequestOTRNavigationThrottle : public content::NavigationThrottle {
   RequestOTRNavigationThrottle& operator=(const RequestOTRNavigationThrottle&) =
       delete;
 
-  static std::unique_ptr<RequestOTRNavigationThrottle> MaybeCreateThrottleFor(
-      content::NavigationHandle* navigation_handle,
+  static void MaybeCreateAndAdd(
+      content::NavigationThrottleRegistry& registry,
       RequestOTRService* request_otr_service,
       ephemeral_storage::EphemeralStorageService* ephemeral_storage_service,
       PrefService* pref_service,
@@ -62,6 +56,8 @@ class RequestOTRNavigationThrottle : public content::NavigationThrottle {
  private:
   content::NavigationThrottle::ThrottleCheckResult MaybeShowInterstitial();
   void Enable1PESAndResume();
+  void On1PESState(bool is_1pes_enabled);
+  void RestartNavigation(const GURL& url);
 
   raw_ptr<RequestOTRService> request_otr_service_ = nullptr;  // not owned
   raw_ptr<ephemeral_storage::EphemeralStorageService>

@@ -7,80 +7,71 @@
 
 #include <memory>
 
+#include "base/test/mock_callback.h"
 #include "base/test/scoped_feature_list.h"
-#include "brave/components/brave_ads/core/internal/common/resources/language_components_unittest_constants.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
+#include "brave/components/brave_ads/core/internal/common/resources/language_components_test_constants.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/segments/segment_alias.h"
 #include "brave/components/brave_ads/core/internal/serving/targeting/user_model/interest/interest_user_model_info.h"
 #include "brave/components/brave_ads/core/internal/targeting/contextual/text_classification/text_classification_feature.h"
-#include "brave/components/brave_ads/core/internal/targeting/contextual/text_embedding/text_embedding_feature.h"
-#include "brave/components/brave_ads/core/internal/targeting/targeting_unittest_helper.h"
+#include "brave/components/brave_ads/core/internal/targeting/targeting_test_helper.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsInterestSegmentsTest : public UnitTestBase {
+class BraveAdsInterestSegmentsTest : public test::TestBase {
  protected:
   void SetUp() override {
-    UnitTestBase::SetUp();
+    test::TestBase::SetUp();
 
-    targeting_ = std::make_unique<TargetingHelperForTesting>();
+    targeting_helper_ =
+        std::make_unique<test::TargetingHelper>(task_environment_);
 
-    LoadResource();
-
-    NotifyDidInitializeAds();
+    NotifyResourceComponentDidChange(test::kLanguageComponentManifestVersion,
+                                     test::kLanguageComponentId);
   }
 
-  void LoadResource() {
-    NotifyDidUpdateResourceComponent(kLanguageComponentManifestVersion,
-                                     kLanguageComponentId);
-    task_environment_.RunUntilIdle();
-  }
-
-  std::unique_ptr<TargetingHelperForTesting> targeting_;
+  std::unique_ptr<test::TargetingHelper> targeting_helper_;
 };
 
 TEST_F(BraveAdsInterestSegmentsTest, BuildInterestSegments) {
   // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatureStates(
-      {{kTextClassificationFeature, true}, {kTextEmbeddingFeature, true}});
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kTextClassificationFeature);
 
-  targeting_->MockInterest();
+  targeting_helper_->MockInterest();
 
   // Act & Assert
-  const SegmentList expected_interest_segments =
-      TargetingHelperForTesting::InterestExpectation().segments;
-  EXPECT_EQ(expected_interest_segments, BuildInterestSegments());
+  base::MockCallback<BuildSegmentsCallback> callback;
+  EXPECT_CALL(callback,
+              Run(test::TargetingHelper::InterestExpectation().segments));
+  BuildInterestSegments(callback.Get());
 }
 
 TEST_F(BraveAdsInterestSegmentsTest, BuildInterestSegmentsIfNoTargeting) {
   // Arrange
-  base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatureStates(
-      {{kTextClassificationFeature, true}, {kTextEmbeddingFeature, true}});
+  const base::test::ScopedFeatureList scoped_feature_list(
+      kTextClassificationFeature);
 
-  // Act
-  const SegmentList segments = BuildInterestSegments();
-
-  // Assert
-  EXPECT_TRUE(segments.empty());
+  // Act & Assert
+  base::MockCallback<BuildSegmentsCallback> callback;
+  EXPECT_CALL(callback, Run(/*segments=*/::testing::IsEmpty()));
+  BuildInterestSegments(callback.Get());
 }
 
 TEST_F(BraveAdsInterestSegmentsTest,
        DoNotBuildInterestSegmentsIfFeatureIsDisabled) {
   // Arrange
   base::test::ScopedFeatureList scoped_feature_list;
-  scoped_feature_list.InitWithFeatureStates(
-      {{kTextClassificationFeature, false}, {kTextEmbeddingFeature, false}});
+  scoped_feature_list.InitAndDisableFeature(kTextClassificationFeature);
 
-  targeting_->MockInterest();
+  targeting_helper_->MockInterest();
 
-  // Act
-  const SegmentList segments = BuildInterestSegments();
-
-  // Assert
-  EXPECT_TRUE(segments.empty());
+  // Act & Assert
+  base::MockCallback<BuildSegmentsCallback> callback;
+  EXPECT_CALL(callback, Run(/*segments=*/::testing::IsEmpty()));
+  BuildInterestSegments(callback.Get());
 }
 
 }  // namespace brave_ads

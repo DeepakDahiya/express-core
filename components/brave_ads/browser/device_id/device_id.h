@@ -8,7 +8,7 @@
 
 #include <string>
 
-#include "base/functional/callback_forward.h"
+#include "base/functional/callback.h"
 
 namespace brave_ads {
 
@@ -21,22 +21,19 @@ class DeviceId {
   DeviceId(const DeviceId&) = delete;
   DeviceId& operator=(const DeviceId&) = delete;
 
-  DeviceId(DeviceId&&) noexcept = delete;
-  DeviceId& operator=(DeviceId&&) noexcept = delete;
-
   virtual ~DeviceId();
 
-  // Calls |callback| with a unique device identifier as argument. The device
+  // Calls `callback` with a unique device identifier as argument. The device
   // identifier has the following characteristics:
   // 1. It is shared across users of a device.
   // 2. It is resilient to device reboots.
-  // 3. It can be reset in *some* way by the user. In Particular, it can *not*
-  //    be based only on a MAC address of a physical device. The specific
+  // 3. It can be reset in *some* way by the user. In Particular, it *cannot* be
+  //    based only on a MAC address of a physical device. The specific
   //    implementation varies across platforms, some of them requiring a round
   //    trip to the IO or FILE thread. "callback" will always be called on the
   //    UI thread though (sometimes directly if the implementation allows
   //    running on the UI thread). The returned value is
-  //    HMAC_SHA256(|raw_device_id|), so that the actual device identifier value
+  //    HMAC_SHA256(`raw_device_id`), so that the actual device identifier value
   //    is not exposed directly to the caller.
   //
   // NOTE: This device id must never leave the device.

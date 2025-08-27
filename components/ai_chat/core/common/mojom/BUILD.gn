@@ -5,10 +5,21 @@
 
 import("//mojo/public/tools/bindings/mojom.gni")
 
-mojom("mojom") {
+mojom_component("mojom") {
+  output_prefix = "ai_chat_mojom"
+  macro_prefix = "AI_CHAT_MOJOM"
+
+  generate_java = true
+  generate_legacy_js_bindings = true
+  webui_module_path = "/"
+
   sources = [
     "ai_chat.mojom",
+    "customization_settings.mojom",
     "page_content_extractor.mojom",
+    "settings_helper.mojom",
+    "tab_tracker.mojom",
+    "untrusted_frame.mojom",
   ]
 
   deps = [

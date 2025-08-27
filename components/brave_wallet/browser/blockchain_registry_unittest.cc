@@ -3,18 +3,25 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/brave_wallet/browser/blockchain_registry.h"
+
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "brave/components/brave_wallet/browser/blockchain_list_parser.h"
-#include "brave/components/brave_wallet/browser/blockchain_registry.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/brave_wallet/browser/json_rpc_requests_helper.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#define FPL(x) FILE_PATH_LITERAL(x)
 
 using testing::ElementsAreArray;
 
@@ -24,62 +31,78 @@ namespace {
 
 const char token_list_json[] = R"(
   {
-   "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d": {
-     "name": "Crypto Kitties",
-     "logo": "CryptoKitties-Kitty-13733.svg",
-     "erc20": false,
-     "erc721": true,
-     "symbol": "CK",
-     "decimals": 0
-   },
-   "0x0D8775F648430679A709E98d2b0Cb6250d2887EF": {
-     "name": "Basic Attention Token",
-     "logo": "bat.svg",
-     "erc20": true,
-     "symbol": "BAT",
-     "decimals": 18
-   },
-   "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984": {
-     "name": "Uniswap",
-     "logo": "uni.svg",
-     "erc20": true,
-     "symbol": "UNI",
-     "decimals": 18,
-     "chainId": "0x5"
-   },
-   "0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef": {
-    "name": "ENS Registrar",
-    "logo": "ens.svg"
-   }
-  })";
-
-const char solana_token_list_json[] = R"(
-  {
-    "So11111111111111111111111111111111111111112": {
-      "name": "Wrapped SOL",
-      "logo": "So11111111111111111111111111111111111111112.png",
-      "erc20": false,
-      "symbol": "SOL",
-      "decimals": 9,
-      "chainId": "0x65",
-      "coingeckoId": "solana"
+    "0x1": {
+      "0x06012c8cf97BEaD5deAe237070F9587f8E7A266d": {
+        "name": "Crypto Kitties",
+        "logo": "CryptoKitties-Kitty-13733.svg",
+        "erc20": false,
+        "erc721": true,
+        "symbol": "CK",
+        "decimals": 0
+      },
+     "0x0D8775F648430679A709E98d2b0Cb6250d2887EF": {
+        "name": "Basic Attention Token",
+        "logo": "bat.svg",
+        "erc20": true,
+        "symbol": "BAT",
+        "decimals": 18
+      },
+      "0x6090A6e47849629b7245Dfa1Ca21D94cd15878Ef": {
+        "name": "ENS Registrar",
+        "logo": "ens.svg"
+      }
     },
-    "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
-      "name": "USD Coin",
-      "logo": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.png",
-      "erc20": false,
-      "symbol": "USDC",
-      "decimals": 6,
-      "chainId": "0x65",
-      "coingeckoId": "usd-coin"
+    "0xaa36a7": {
+      "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984": {
+        "name": "Uniswap",
+        "logo": "uni.svg",
+        "erc20": true,
+        "symbol": "UNI",
+        "decimals": 18
+      }
     },
-    "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ": {
-      "name": "Tesla Inc.",
-      "logo": "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ.png",
-      "erc20": false,
-      "symbol": "TSLA",
-      "decimals": 8,
-      "chainId": "0x65"
+    "0x89": {
+      "0xc2132D05D31c914a87C6611C10748AEb04B58e8F": {
+          "name": "Tether USD - PoS",
+          "logo": "usdt.png",
+          "erc20": true,
+          "symbol": "USDT",
+          "decimals": 6,
+          "coingeckoId": "tether"
+      }
+    },
+    "0x65": {
+      "So11111111111111111111111111111111111111112": {
+        "name": "Wrapped SOL",
+        "logo": "So11111111111111111111111111111111111111112.png",
+        "erc20": false,
+        "symbol": "SOL",
+        "decimals": 9,
+        "coingeckoId": "solana"
+      },
+      "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v": {
+        "name": "USD Coin",
+        "logo": "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v.png",
+        "erc20": false,
+        "symbol": "USDC",
+        "decimals": 6,
+        "coingeckoId": "usd-coin"
+      },
+      "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ": {
+        "name": "Tesla Inc.",
+        "logo": "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ.png",
+        "erc20": false,
+        "symbol": "TSLA",
+        "decimals": 8
+      },
+      "2kMpEJCZL8vEDZe7YPLMCS9Y3WKSAMedXBn7xHPvsWvi": {
+        "name": "SolarMoon",
+        "logo": "2kMpEJCZL8vEDZe7YPLMCS9Y3WKSAMedXBn7xHPvsWvi.png",
+        "erc20": false,
+        "symbol": "MOON",
+        "decimals": 5,
+        "token2022": true
+      }
     }
   })";
 
@@ -206,6 +229,8 @@ mojom::BlockchainTokenPtr wrapped_sol = mojom::BlockchainToken::New(
     false,
     false,
     false,
+    mojom::SPLTokenProgram::kToken,
+    false,
     false,
     "SOL",
     9,
@@ -213,7 +238,8 @@ mojom::BlockchainTokenPtr wrapped_sol = mojom::BlockchainToken::New(
     "",
     "solana",
     "0x65",
-    mojom::CoinType::SOL);
+    mojom::CoinType::SOL,
+    false);
 mojom::BlockchainTokenPtr usdc = mojom::BlockchainToken::New(
     "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
     "USD Coin",
@@ -222,6 +248,8 @@ mojom::BlockchainTokenPtr usdc = mojom::BlockchainToken::New(
     false,
     false,
     false,
+    mojom::SPLTokenProgram::kToken,
+    false,
     false,
     "USDC",
     6,
@@ -229,7 +257,8 @@ mojom::BlockchainTokenPtr usdc = mojom::BlockchainToken::New(
     "",
     "usd-coin",
     "0x65",
-    mojom::CoinType::SOL);
+    mojom::CoinType::SOL,
+    false);
 mojom::BlockchainTokenPtr tsla = mojom::BlockchainToken::New(
     "2inRoG4DuMRRzZxAt913CCdNZCu2eGsDD9kZTrsj2DAZ",
     "Tesla Inc.",
@@ -238,6 +267,8 @@ mojom::BlockchainTokenPtr tsla = mojom::BlockchainToken::New(
     false,
     false,
     false,
+    mojom::SPLTokenProgram::kToken,
+    false,
     false,
     "TSLA",
     8,
@@ -245,7 +276,28 @@ mojom::BlockchainTokenPtr tsla = mojom::BlockchainToken::New(
     "",
     "",
     "0x65",
-    mojom::CoinType::SOL);
+    mojom::CoinType::SOL,
+    false);
+
+mojom::BlockchainTokenPtr moon = mojom::BlockchainToken::New(
+    "2kMpEJCZL8vEDZe7YPLMCS9Y3WKSAMedXBn7xHPvsWvi",
+    "SolarMoon",
+    "2kMpEJCZL8vEDZe7YPLMCS9Y3WKSAMedXBn7xHPvsWvi.png",
+    false,
+    false,
+    false,
+    false,
+    mojom::SPLTokenProgram::kToken2022,
+    false,
+    false,
+    "MOON",
+    5,
+    true,
+    "",
+    "",
+    "0x65",
+    mojom::CoinType::SOL,
+    false);
 
 const char chain_list_json[] = R"(
   [
@@ -443,10 +495,7 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
   TokenListMap token_list_map;
-  ASSERT_TRUE(
-      ParseTokenList(token_list_json, &token_list_map, mojom::CoinType::ETH));
-  ASSERT_TRUE(ParseTokenList(solana_token_list_json, &token_list_map,
-                             mojom::CoinType::SOL));
+  ASSERT_TRUE(ParseTokenList(token_list_json, &token_list_map));
   registry->UpdateTokenList(std::move(token_list_map));
 
   // Loop twice to make sure getting the same list twice works
@@ -468,6 +517,8 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
               EXPECT_TRUE(token_list[0]->is_erc721);
               EXPECT_EQ(token_list[0]->symbol, "CK");
               EXPECT_EQ(token_list[0]->decimals, 0);
+              EXPECT_EQ(token_list[0]->spl_token_program,
+                        mojom::SPLTokenProgram::kUnsupported);
 
               EXPECT_EQ(token_list[1]->name, "Basic Attention Token");
               EXPECT_EQ(token_list[1]->contract_address,
@@ -476,6 +527,8 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
               EXPECT_FALSE(token_list[1]->is_erc721);
               EXPECT_EQ(token_list[1]->symbol, "BAT");
               EXPECT_EQ(token_list[1]->decimals, 18);
+              EXPECT_EQ(token_list[1]->spl_token_program,
+                        mojom::SPLTokenProgram::kUnsupported);
               run_loop.Quit();
             }));
     run_loop.Run();
@@ -484,7 +537,7 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
   // Can get other chain tokens
   base::RunLoop run_loop2;
   registry->GetAllTokens(
-      mojom::kGoerliChainId, mojom::CoinType::ETH,
+      mojom::kSepoliaChainId, mojom::CoinType::ETH,
       base::BindLambdaForTesting(
           [&](std::vector<mojom::BlockchainTokenPtr> token_list) {
             ASSERT_EQ(token_list.size(), 1UL);
@@ -495,6 +548,8 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
             EXPECT_FALSE(token_list[0]->is_erc721);
             EXPECT_EQ(token_list[0]->symbol, "UNI");
             EXPECT_EQ(token_list[0]->decimals, 18);
+            EXPECT_EQ(token_list[0]->spl_token_program,
+                      mojom::SPLTokenProgram::kUnsupported);
             run_loop2.Quit();
           }));
   run_loop2.Run();
@@ -502,7 +557,7 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
   // chainId which has no tokens
   base::RunLoop run_loop3;
   registry->GetAllTokens(
-      mojom::kSepoliaChainId, mojom::CoinType::ETH,
+      "0x5", mojom::CoinType::ETH,
       base::BindLambdaForTesting(
           [&](std::vector<mojom::BlockchainTokenPtr> token_list) {
             // ENS Registrar should not be parsed because it doesn't have
@@ -518,10 +573,11 @@ TEST(BlockchainRegistryUnitTest, GetAllTokens) {
       mojom::kSolanaMainnet, mojom::CoinType::SOL,
       base::BindLambdaForTesting(
           [&](std::vector<mojom::BlockchainTokenPtr> token_list) {
-            ASSERT_EQ(token_list.size(), 3UL);
+            ASSERT_EQ(token_list.size(), 4UL);
             EXPECT_EQ(token_list[0], tsla);
-            EXPECT_EQ(token_list[1], usdc);
-            EXPECT_EQ(token_list[2], wrapped_sol);
+            EXPECT_EQ(token_list[1], moon);
+            EXPECT_EQ(token_list[2], usdc);
+            EXPECT_EQ(token_list[3], wrapped_sol);
             run_loop4.Quit();
           }));
   run_loop4.Run();
@@ -531,10 +587,7 @@ TEST(BlockchainRegistryUnitTest, GetTokenByAddress) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
   TokenListMap token_list_map;
-  ASSERT_TRUE(
-      ParseTokenList(token_list_json, &token_list_map, mojom::CoinType::ETH));
-  ASSERT_TRUE(ParseTokenList(solana_token_list_json, &token_list_map,
-                             mojom::CoinType::SOL));
+  ASSERT_TRUE(ParseTokenList(token_list_json, &token_list_map));
   registry->UpdateTokenList(std::move(token_list_map));
   base::RunLoop run_loop;
   registry->GetTokenByAddress(
@@ -549,7 +602,7 @@ TEST(BlockchainRegistryUnitTest, GetTokenByAddress) {
   // Can get other chain tokens
   base::RunLoop run_loop2;
   registry->GetTokenByAddress(
-      mojom::kGoerliChainId, mojom::CoinType::ETH,
+      mojom::kSepoliaChainId, mojom::CoinType::ETH,
       "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984",
       base::BindLambdaForTesting([&](mojom::BlockchainTokenPtr token) {
         EXPECT_EQ(token->symbol, "UNI");
@@ -571,7 +624,7 @@ TEST(BlockchainRegistryUnitTest, GetTokenByAddress) {
   // chainId which has no tokens
   base::RunLoop run_loop4;
   registry->GetTokenByAddress(
-      mojom::kGoerliChainId, mojom::CoinType::ETH,
+      mojom::kSepoliaChainId, mojom::CoinType::ETH,
       "0xCCC775F648430679A709E98d2b0Cb6250d2887EF",
       base::BindLambdaForTesting([&](mojom::BlockchainTokenPtr token) {
         EXPECT_FALSE(token);
@@ -595,10 +648,7 @@ TEST(BlockchainRegistryUnitTest, GetTokenBySymbol) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
   TokenListMap token_list_map;
-  ASSERT_TRUE(
-      ParseTokenList(token_list_json, &token_list_map, mojom::CoinType::ETH));
-  ASSERT_TRUE(ParseTokenList(solana_token_list_json, &token_list_map,
-                             mojom::CoinType::SOL));
+  ASSERT_TRUE(ParseTokenList(token_list_json, &token_list_map));
   registry->UpdateTokenList(std::move(token_list_map));
   base::RunLoop run_loop;
   registry->GetTokenBySymbol(
@@ -613,7 +663,7 @@ TEST(BlockchainRegistryUnitTest, GetTokenBySymbol) {
   // Can get other chain tokens
   base::RunLoop run_loop2;
   registry->GetTokenBySymbol(
-      mojom::kGoerliChainId, mojom::CoinType::ETH, "UNI",
+      mojom::kSepoliaChainId, mojom::CoinType::ETH, "UNI",
       base::BindLambdaForTesting([&](mojom::BlockchainTokenPtr token) {
         EXPECT_EQ(token->contract_address,
                   "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984");
@@ -634,7 +684,7 @@ TEST(BlockchainRegistryUnitTest, GetTokenBySymbol) {
   // chainId which has no tokens
   base::RunLoop run_loop4;
   registry->GetTokenBySymbol(
-      mojom::kGoerliChainId, mojom::CoinType::ETH, "BRB",
+      "0x5", mojom::CoinType::ETH, "BRB",
       base::BindLambdaForTesting([&](mojom::BlockchainTokenPtr token) {
         EXPECT_FALSE(token);
         run_loop4.Quit();
@@ -667,7 +717,7 @@ TEST(BlockchainRegistryUnitTest, GetBuyTokens) {
           }));
   run_loop->Run();
 
-  absl::optional<RampTokenListMaps> ramp_token_lists =
+  std::optional<RampTokenListMaps> ramp_token_lists =
       ParseRampTokenListMaps(ramp_token_lists_json);
   ASSERT_TRUE(ramp_token_lists);
   registry->UpdateOnRampTokenLists(std::move(*ramp_token_lists).first);
@@ -712,7 +762,7 @@ TEST(BlockchainRegistryUnitTest, GetProvidersBuyTokens) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
 
-  absl::optional<RampTokenListMaps> ramp_token_lists =
+  std::optional<RampTokenListMaps> ramp_token_lists =
       ParseRampTokenListMaps(ramp_token_lists_json);
   ASSERT_TRUE(ramp_token_lists);
   registry->UpdateOnRampTokenLists(std::move(*ramp_token_lists).first);
@@ -774,7 +824,7 @@ TEST(BlockchainRegistryUnitTest, GetSellTokens) {
           }));
   run_loop->Run();
 
-  absl::optional<RampTokenListMaps> ramp_token_lists =
+  std::optional<RampTokenListMaps> ramp_token_lists =
       ParseRampTokenListMaps(ramp_token_lists_json);
   ASSERT_TRUE(ramp_token_lists);
   registry->UpdateOffRampTokenLists(std::move(*ramp_token_lists).second);
@@ -827,7 +877,7 @@ TEST(BlockchainRegistryUnitTest, GetOnRampCurrencies) {
       }));
   run_loop->Run();
 
-  absl::optional<std::vector<mojom::OnRampCurrency>> on_ramp_currency_lists =
+  std::optional<std::vector<mojom::OnRampCurrency>> on_ramp_currency_lists =
       ParseOnRampCurrencyLists(on_ramp_currency_lists_json);
   ASSERT_TRUE(on_ramp_currency_lists);
   registry->UpdateOnRampCurrenciesLists(std::move(*on_ramp_currency_lists));
@@ -894,7 +944,7 @@ TEST(BlockchainRegistryUnitTest, GetPrepopulatedNetworksKnownOnesArePreferred) {
 TEST(BlockchainRegistryUnitTest, GetTopDapps) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
-  absl::optional<DappListMap> dapp_lists_map = ParseDappLists(dapp_lists_json);
+  std::optional<DappListMap> dapp_lists_map = ParseDappLists(dapp_lists_json);
   ASSERT_TRUE(dapp_lists_map);
   registry->UpdateDappList(std::move(*dapp_lists_map));
 
@@ -956,8 +1006,7 @@ TEST(BlockchainRegistryUnitTest, GetEthTokenListMap) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
   TokenListMap token_list_map;
-  ASSERT_TRUE(
-      ParseTokenList(token_list_json, &token_list_map, mojom::CoinType::ETH));
+  ASSERT_TRUE(ParseTokenList(token_list_json, &token_list_map));
   registry->UpdateTokenList(std::move(token_list_map));
 
   // Loop twice to make sure getting the same list twice works
@@ -972,7 +1021,7 @@ TEST(BlockchainRegistryUnitTest, GetEthTokenListMap) {
 TEST(BlockchainRegistryUnitTest, GetCoingeckoId) {
   base::test::TaskEnvironment task_environment;
   auto* registry = BlockchainRegistry::GetInstance();
-  absl::optional<CoingeckoIdsMap> coingecko_ids_map =
+  std::optional<CoingeckoIdsMap> coingecko_ids_map =
       ParseCoingeckoIdsMap(coingecko_ids_map_json);
   ASSERT_TRUE(coingecko_ids_map);
   registry->UpdateCoingeckoIdsMap(std::move(*coingecko_ids_map));
@@ -990,20 +1039,19 @@ TEST(BlockchainRegistryUnitTest, GetCoingeckoId) {
   // Result: ❌
   EXPECT_EQ(
       registry->GetCoingeckoId(mojom::kOptimismMainnetChainId, "0xdeadbeef"),
-      absl::nullopt);
+      std::nullopt);
 
   // Chain: ❌
   // Contract: ✅
   // Result: ❌
   EXPECT_EQ(registry->GetCoingeckoId(
                 "0xdeadbeef", "0x7f5c764cbc14f9669b88837ca1490cca17c31607"),
-            absl::nullopt);
+            std::nullopt);
 
   // Chain: ❌
   // Contract: ❌
   // Result: ❌
-  EXPECT_EQ(registry->GetCoingeckoId("0xdeadbeef", "0xcafebabe"),
-            absl::nullopt);
+  EXPECT_EQ(registry->GetCoingeckoId("0xdeadbeef", "0xcafebabe"), std::nullopt);
 
   // Chain: ✅ (wrong case)
   // Contract: ✅
@@ -1035,6 +1083,116 @@ TEST(BlockchainRegistryUnitTest, GetCoingeckoId) {
       registry->GetCoingeckoId(mojom::kSolanaMainnet,
                                "epjfwdd5aufqssqem2qn1xzybapc8g4weggkzwytdt1v"),
       "usd-coin");
+}
+
+TEST(BlockchainRegistryUnitTest, ParseLists) {
+  base::test::TaskEnvironment task_environment;
+  base::ScopedTempDir install_dir;
+  ASSERT_TRUE(install_dir.CreateUniqueTempDir());
+  const base::FilePath path = install_dir.GetPath();
+
+  ASSERT_TRUE(base::WriteFile(path.Append(FPL("coingecko-ids.json")),
+                              coingecko_ids_map_json));
+  ASSERT_TRUE(
+      base::WriteFile(path.Append(FPL("coingecko.json")), token_list_json));
+  ASSERT_TRUE(
+      base::WriteFile(path.Append(FPL("chainlist.json")), chain_list_json));
+  ASSERT_TRUE(
+      base::WriteFile(path.Append(FPL("dapp-lists.json")), dapp_lists_json));
+  ASSERT_TRUE(base::WriteFile(path.Append(FPL("ramp-tokens.json")),
+                              ramp_token_lists_json));
+  ASSERT_TRUE(base::WriteFile(path.Append(FPL("on-ramp-currency-lists.json")),
+                              on_ramp_currency_lists_json));
+  ASSERT_TRUE(base::WriteFile(
+      path.Append(FPL("ofac-sanctioned-digital-currency-addresses.json")),
+      R"({"addresses": ["0xb9ef770b6a5e12e45983c5d80545258aa38f3b78"]})"));
+
+  auto* registry = BlockchainRegistry::GetInstance();
+  auto run_loop = std::make_unique<base::RunLoop>();
+  registry->ParseLists(path,
+                       base::BindLambdaForTesting([&]() { run_loop->Quit(); }));
+  run_loop->Run();
+
+  // coingecko-ids.json
+  EXPECT_EQ(
+      registry->GetCoingeckoId(mojom::kOptimismMainnetChainId,
+                               "0x7f5c764cbc14f9669b88837ca1490cca17c31607"),
+      "usd-coin");
+
+  // coingecko.json
+  EXPECT_EQ(
+      registry
+          ->GetTokenByAddress(mojom::kMainnetChainId, mojom::CoinType::ETH,
+                              "0x0D8775F648430679A709E98d2b0Cb6250d2887EF")
+          ->symbol,
+      "BAT");
+
+  EXPECT_EQ(registry
+                ->GetTokenByAddress(
+                    mojom::kPolygonMainnetChainId, mojom::CoinType::ETH,
+                    "0xc2132D05D31c914a87C6611C10748AEb04B58e8F")
+                ->symbol,
+            "USDT");
+
+  EXPECT_EQ(
+      registry
+          ->GetTokenByAddress(mojom::kSolanaMainnet, mojom::CoinType::SOL,
+                              "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v")
+          ->symbol,
+      "USDC");
+
+  // chainlist.json
+  EXPECT_THAT(GetChainIds(registry->GetPrepopulatedNetworks()),
+              ElementsAreArray({"0x1", "0x89"}));
+
+  // dapp-lists.json
+  run_loop = std::make_unique<base::RunLoop>();
+
+  registry->GetTopDapps(
+      mojom::kMainnetChainId, mojom::CoinType::ETH,
+      base::BindLambdaForTesting([&](std::vector<mojom::DappPtr> dapp_list) {
+        ASSERT_EQ(dapp_list.size(), 1UL);
+        EXPECT_EQ(dapp_list[0]->name, "Uniswap V3");
+        run_loop->Quit();
+      }));
+  run_loop->Run();
+
+  // ramp-tokens.json
+  run_loop = std::make_unique<base::RunLoop>();
+  registry->GetBuyTokens(
+      mojom::OnRampProvider::kRamp, mojom::kMainnetChainId,
+      base::BindLambdaForTesting(
+          [&](std::vector<mojom::BlockchainTokenPtr> token_list) {
+            EXPECT_NE(token_list.size(), 0UL);
+            EXPECT_EQ(token_list[0]->name, "Ethereum");
+            run_loop->Quit();
+          }));
+  run_loop->Run();
+
+  run_loop = std::make_unique<base::RunLoop>();
+  registry->GetSellTokens(
+      mojom::OffRampProvider::kRamp, mojom::kMainnetChainId,
+      base::BindLambdaForTesting(
+          [&](std::vector<mojom::BlockchainTokenPtr> token_list) {
+            EXPECT_NE(token_list.size(), 0UL);
+            EXPECT_EQ(token_list[0]->name, "Ethereum");
+            run_loop->Quit();
+          }));
+  run_loop->Run();
+
+  // on-ramp-currency-lists.json
+  run_loop = std::make_unique<base::RunLoop>();
+  registry->GetOnRampCurrencies(base::BindLambdaForTesting(
+      [&](std::vector<mojom::OnRampCurrencyPtr> currency_list) {
+        EXPECT_NE(currency_list.size(), 0UL);
+        EXPECT_EQ(currency_list[0]->currency_code, "ARS");
+        run_loop->Quit();
+      }));
+  run_loop->Run();
+
+  // ofac-sanctioned-digital-currency-addresses.json
+  EXPECT_TRUE(
+      registry->IsOfacAddress("0xb9ef770b6a5e12e45983c5d80545258aa38f3b78"));
 }
 
 }  // namespace brave_wallet

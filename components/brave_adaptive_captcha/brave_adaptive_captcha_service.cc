@@ -8,12 +8,13 @@
 #include <algorithm>
 #include <utility>
 
-#include "base/strings/stringprintf.h"
+#include "base/check.h"
 #include "brave/components/brave_adaptive_captcha/pref_names.h"
 #include "brave/components/brave_adaptive_captcha/server_util.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 
 namespace {
 
@@ -22,8 +23,8 @@ std::string GetScheduledCaptchaUrl(const std::string& payment_id,
   DCHECK(!payment_id.empty());
   DCHECK(!captcha_id.empty());
 
-  const std::string path = base::StringPrintf(
-      "/v3/captcha/%s/%s", payment_id.c_str(), captcha_id.c_str());
+  const std::string path =
+      absl::StrFormat("/v3/captcha/%s/%s", payment_id, captcha_id);
   return brave_adaptive_captcha::ServerUtil::GetInstance()->GetServerUrl(path);
 }
 
@@ -136,20 +137,12 @@ void BraveAdaptiveCaptchaService::ShowScheduledCaptcha(
 }
 
 void BraveAdaptiveCaptchaService::SnoozeScheduledCaptcha() {
-  const int snooze_count =
-      prefs_->GetInteger(prefs::kScheduledCaptchaSnoozeCount);
-  if (snooze_count >= 1) {
-    return;
-  }
-
   prefs_->SetString(prefs::kScheduledCaptchaPaymentId, "");
   prefs_->SetString(prefs::kScheduledCaptchaId, "");
-  prefs_->SetInteger(prefs::kScheduledCaptchaSnoozeCount, snooze_count + 1);
 }
 
 void BraveAdaptiveCaptchaService::ClearScheduledCaptcha() {
   prefs_->SetInteger(prefs::kScheduledCaptchaFailedAttempts, 0);
-  prefs_->SetInteger(prefs::kScheduledCaptchaSnoozeCount, 0);
   prefs_->SetString(prefs::kScheduledCaptchaPaymentId, "");
   prefs_->SetString(prefs::kScheduledCaptchaId, "");
   prefs_->SetBoolean(prefs::kScheduledCaptchaPaused, false);

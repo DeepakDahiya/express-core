@@ -7,17 +7,19 @@
 #define BRAVE_COMPONENTS_SPEEDREADER_TTS_PLAYER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/singleton.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/types/pass_key.h"
 #include "base/values.h"
 #include "content/public/browser/tts_utterance.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace content {
 class WebContents;
@@ -55,19 +57,27 @@ class TtsPlayer {
   // Provides tts control fucntions for specified WebContents (provided by
   // TtsPlayer::GetControllerFor). Controller is a part of TtsPlayer and has
   // same lifetime.
-  class Controller : public content::WebContentsObserver,
-                     public content::UtteranceEventDelegate {
+  class Controller : public content::WebContentsObserver {
    public:
     bool IsPlaying() const;
     bool IsPlayingRequestedWebContents(
-        absl::optional<int> paragraph_index = absl::nullopt) const;
+        std::optional<int> paragraph_index = std::nullopt) const;
 
-    void Play(absl::optional<int> paragraph_index = absl::nullopt);
+    void Play(std::optional<int> paragraph_index = std::nullopt);
     void Pause();
     void Resume();
     void Stop();
     void Forward();
     void Rewind();
+
+    class Delegate;
+
+    void OnTtsEvent(base::PassKey<Delegate>,
+                    content::TtsUtterance* utterance,
+                    content::TtsEventType event_type,
+                    int char_index,
+                    int length,
+                    const std::string& error_message);
 
    private:
     explicit Controller(TtsPlayer* owner);
@@ -80,27 +90,22 @@ class TtsPlayer {
     void Resume(bool recreate_utterance);
 
     bool HasNextParagraph();
-    const std::string& GetParagraphToRead();
+    std::u16string GetParagraphToRead();
 
     // content::WebContentsObserver:
     void DidStartNavigation(content::NavigationHandle* handle) override;
     void WebContentsDestroyed() override;
 
-    // content::UtteranceEventDelegate:
-    void OnTtsEvent(content::TtsUtterance* utterance,
-                    content::TtsEventType event_type,
-                    int char_index,
-                    int length,
-                    const std::string& error_message) override;
-
     void OnContentReady(content::WebContents* web_contents,
-                        absl::optional<int> paragraph_index,
+                        std::optional<int> paragraph_index,
                         base::Value content);
 
     raw_ptr<TtsPlayer> owner_ = nullptr;
 
-    raw_ptr<content::WebContents> playing_web_contents_ = nullptr;
-    raw_ptr<content::WebContents> request_web_contents_ = nullptr;
+    raw_ptr<content::WebContents, DanglingUntriaged> playing_web_contents_ =
+        nullptr;
+    raw_ptr<content::WebContents, DanglingUntriaged> request_web_contents_ =
+        nullptr;
 
     int paragraph_index_ = -1;
     int reading_start_position_ = 0;
@@ -109,6 +114,9 @@ class TtsPlayer {
 
     double current_speed_ = 1.0;
     std::string current_voice_;
+
+    bool continue_next_paragraph_ = false;
+    base::WeakPtrFactory<Controller> weak_factory_{this};
   };
 
   ~TtsPlayer();

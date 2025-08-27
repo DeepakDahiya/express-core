@@ -6,9 +6,10 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REFILL_CONFIRMATION_TOKENS_REFILL_CONFIRMATION_TOKENS_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REFILL_CONFIRMATION_TOKENS_REFILL_CONFIRMATION_TOKENS_H_
 
+#include <cstddef>
+#include <optional>
 #include <string>
 #include <tuple>
-#include <vector>
 
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
@@ -23,18 +24,12 @@
 
 namespace brave_ads {
 
-class TokenGeneratorInterface;
-
 class RefillConfirmationTokens final {
  public:
-  explicit RefillConfirmationTokens(TokenGeneratorInterface* token_generator);
+  RefillConfirmationTokens();
 
   RefillConfirmationTokens(const RefillConfirmationTokens&) = delete;
   RefillConfirmationTokens& operator=(const RefillConfirmationTokens&) = delete;
-
-  RefillConfirmationTokens(RefillConfirmationTokens&&) noexcept = delete;
-  RefillConfirmationTokens& operator=(RefillConfirmationTokens&&) noexcept =
-      delete;
 
   ~RefillConfirmationTokens();
 
@@ -52,19 +47,23 @@ class RefillConfirmationTokens final {
 
   bool ShouldRequestSignedTokens() const;
   void RequestSignedTokens();
-  void RequestSignedTokensCallback(const mojom::UrlResponseInfo& url_response);
-  base::expected<void, std::tuple<std::string, /*should_retry=*/bool>>
+  void RequestSignedTokensCallback(
+      const mojom::UrlResponseInfo& mojom_url_response);
+  base::expected<void, std::tuple<std::string, /*should_retry*/ bool>>
   HandleRequestSignedTokensUrlResponse(
-      const mojom::UrlResponseInfo& url_response);
+      const mojom::UrlResponseInfo& mojom_url_response);
 
   void GetSignedTokens();
-  void GetSignedTokensCallback(const mojom::UrlResponseInfo& url_response);
-  base::expected<void, std::tuple<std::string, /*should_retry=*/bool>>
-  HandleGetSignedTokensUrlResponse(const mojom::UrlResponseInfo& url_response);
+  void GetSignedTokensCallback(
+      const mojom::UrlResponseInfo& mojom_url_response);
+  base::expected<void, std::tuple<std::string, /*should_retry*/ bool>>
+  HandleGetSignedTokensUrlResponse(
+      const mojom::UrlResponseInfo& mojom_url_response);
   void ParseAndRequireCaptcha(const base::Value::Dict& dict) const;
 
   void SuccessfullyRefilled();
-  void FailedToRefill(bool should_retry);
+  void FailedToRefillAndRetry();
+  void FailedToRefill();
 
   void Retry();
   void RetryCallback();
@@ -72,7 +71,7 @@ class RefillConfirmationTokens final {
 
   void Reset();
 
-  void NotifyWillRefillConfirmationTokens() const;
+  void NotifyWillRefillConfirmationTokens(size_t count) const;
   void NotifyCaptchaRequiredToRefillConfirmationTokens(
       const std::string& captcha_id) const;
   void NotifyDidRefillConfirmationTokens() const;
@@ -80,21 +79,18 @@ class RefillConfirmationTokens final {
   void NotifyWillRetryRefillingConfirmationTokens(base::Time retry_at) const;
   void NotifyDidRetryRefillingConfirmationTokens() const;
 
-  const raw_ptr<TokenGeneratorInterface> token_generator_ =
-      nullptr;  // NOT OWNED
-
-  raw_ptr<RefillConfirmationTokensDelegate> delegate_ = nullptr;
+  raw_ptr<RefillConfirmationTokensDelegate> delegate_ = nullptr;  // Not owned.
 
   WalletInfo wallet_;
 
-  absl::optional<std::string> nonce_;
+  std::optional<std::string> nonce_;
 
-  absl::optional<std::vector<cbr::Token>> tokens_;
-  absl::optional<std::vector<cbr::BlindedToken>> blinded_tokens_;
+  std::optional<cbr::TokenList> tokens_;
+  std::optional<cbr::BlindedTokenList> blinded_tokens_;
 
-  bool is_processing_ = false;
+  bool is_refilling_ = false;
 
-  BackoffTimer retry_timer_;
+  BackoffTimer timer_;
 
   base::WeakPtrFactory<RefillConfirmationTokens> weak_factory_{this};
 };

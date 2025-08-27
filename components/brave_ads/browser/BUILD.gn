@@ -7,12 +7,11 @@ import("//brave/build/config.gni")
 
 static_library("browser") {
   sources = [
-    "ads_service.cc",
-    "ads_service.h",
-    "ads_service_observer.h",
-    "analytics/p2a/p2a.cc",
-    "analytics/p2a/p2a.h",
-    "analytics/p2a/p2a_constants.h",
+    "ad_units/notification_ad/custom_notification_ad_constants.h",
+    "ad_units/notification_ad/custom_notification_ad_feature.cc",
+    "ad_units/notification_ad/custom_notification_ad_feature.h",
+    "analytics/p3a/notification_ad.cc",
+    "analytics/p3a/notification_ad.h",
     "component_updater/component_info.h",
     "component_updater/component_util.cc",
     "component_updater/component_util.h",
@@ -25,11 +24,6 @@ static_library("browser") {
     "component_updater/resource_info.h",
     "reminder/reminder_util.cc",
     "reminder/reminder_util.h",
-    "units/notification_ad/custom_notification_ad_constants.h",
-    "units/notification_ad/custom_notification_ad_feature.cc",
-    "units/notification_ad/custom_notification_ad_feature.h",
-    "user/user_interaction/ad_events/ad_event_cache_helper.cc",
-    "user/user_interaction/ad_events/ad_event_cache_helper.h",
   ]
 
   configs += [ "//build/config/compiler:wexit_time_destructors" ]
@@ -37,25 +31,28 @@ static_library("browser") {
   deps = [
     "//base",
     "//brave/components/brave_adaptive_captcha",
-    "//brave/components/brave_ads/core",
-    "//brave/components/brave_ads/resources",
     "//brave/components/brave_component_updater/browser",
     "//brave/components/l10n/common",
+    "//brave/components/ntp_background_images/common",
     "//brave/components/p3a_utils",
     "//brave/components/time_period_storage",
-    "//components/keyed_service/core",
+    "//components/content_settings/core/browser",
     "//components/pref_registry",
     "//components/prefs",
     "//components/sessions",
-    "//sql",
     "//third_party/blink/public/common",
+    "//ui/base/idle",
     "//url",
   ]
 
-  public_deps = [ "//brave/components/brave_ads/core/mojom" ]
-
-  # TODO(https://github.com/brave/brave-browser/issues/24163)
-  check_includes = false
+  public_deps = [
+    "application_state",
+    "//brave/components/brave_ads/core",
+    "//brave/components/brave_ads/core/mojom",
+    "//brave/components/services/bat_ads/public/interfaces",
+    "//components/keyed_service/core",
+    "//mojo/public/cpp/bindings",
+  ]
 
   sources += [
     "ads_service_impl.cc",
@@ -68,22 +65,18 @@ static_library("browser") {
 
   deps += [
     "//brave/app:brave_generated_resources_grit",
-    "//brave/browser/profiles:util",
     "//brave/common",
-    "//brave/components/brave_federated",
     "//brave/components/brave_news/common",
-    "//brave/components/brave_rewards/browser",
-    "//brave/components/brave_rewards/common",
-    "//chrome/browser/notifications",
-    "//chrome/browser/profiles:profile",
+    "//brave/components/brave_rewards/content",
+    "//brave/components/brave_rewards/core",
     "//components/history/core/browser",
+    "//components/variations",
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//net",
     "//services/network/public/cpp",
     "//services/network/public/mojom",
     "//ui/base",
-    "//ui/message_center/public/cpp",
   ]
 
   public_deps += [
@@ -92,15 +85,19 @@ static_library("browser") {
   ]
 }
 
-source_set("test_support") {
+source_set("unit_tests") {
   testonly = true
 
-  public_deps = [ ":browser" ]
+  sources = [ "analytics/p3a/notification_ad_unittest.cc" ]
 
-  deps = [ "//testing/gmock" ]
-
-  sources = [
-    "ads_service_mock.cc",
-    "ads_service_mock.h",
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//brave/components/brave_ads/browser",
+    "//brave/components/brave_ads/core",
+    "//components/prefs",
+    "//components/prefs:test_support",
+    "//content/test:test_support",
+    "//testing/gtest",
   ]
 }

@@ -3,16 +3,20 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/content_settings/core/browser/brave_content_settings_pref_provider.h"
+
 #include <memory>
+#include <optional>
 #include <string_view>
 #include <utility>
 
+#include "base/check.h"
 #include "base/json/values_util.h"
 #include "base/memory/raw_ptr.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/values.h"
-#include "brave/components/brave_shields/common/brave_shield_constants.h"
+#include "brave/components/brave_shields/core/common/brave_shield_constants.h"
 #include "brave/components/constants/pref_names.h"
-#include "brave/components/content_settings/core/browser/brave_content_settings_pref_provider.h"
 #include "brave/components/content_settings/core/browser/brave_content_settings_utils.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/content_settings/core/browser/content_settings_pref.h"
@@ -26,7 +30,6 @@
 #include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "url/gurl.h"
 
 namespace content_settings {
@@ -36,11 +39,11 @@ namespace {
 constexpr char kUserProfilePluginsPath[] =
     "profile.content_settings.exceptions.plugins";
 
-const char kExpirationPath[] = "expiration";
-const char kLastModifiedPath[] = "last_modified";
-const char kSessionModelPath[] = "model";
-const char kSettingPath[] = "setting";
-const char kPerResourcePath[] = "per_resource";
+constexpr char kExpirationPath[] = "expiration";
+constexpr char kLastModifiedPath[] = "last_modified";
+constexpr char kSessionModelPath[] = "model";
+constexpr char kSettingPath[] = "setting";
+constexpr char kPerResourcePath[] = "per_resource";
 
 using GURLSourcePair = std::pair<GURL, ContentSettingsType>;
 
@@ -63,7 +66,7 @@ base::Value::Dict* InitializeCommonSettingsAndGetPerResourceDictionary(
                         base::NumberToString(last_modified_time_in_ms));
   dict->SetByDottedPath(
       kSessionModelPath,
-      static_cast<int>(content_settings::SessionModel::Durable));
+      static_cast<int>(content_settings::mojom::SessionModel::DURABLE));
 
   return dict->EnsureDict(kPerResourcePath);
 }
@@ -106,8 +109,8 @@ void InitializeUnsupportedShieldSettingInDictionary(
 void CheckMigrationFromResourceIdentifierForDictionary(
     const base::Value::Dict& dict,
     std::string_view patterns_string,
-    const absl::optional<base::Time> expected_last_modified,
-    absl::optional<int> expected_setting_value) {
+    const std::optional<base::Time> expected_last_modified,
+    std::optional<int> expected_setting_value) {
   const base::Value::Dict* settings_dict = dict.FindDict(patterns_string);
   EXPECT_NE(settings_dict, nullptr);
 
@@ -115,7 +118,7 @@ void CheckMigrationFromResourceIdentifierForDictionary(
   EXPECT_EQ(base::ValueToTime(settings_dict->Find(kLastModifiedPath)),
             expected_last_modified);
   EXPECT_EQ(GetSessionModelFromDictionary(*settings_dict, kSessionModelPath),
-            content_settings::SessionModel::Durable);
+            content_settings::mojom::SessionModel::DURABLE);
   EXPECT_EQ(actual_value, expected_setting_value);
 }
 
@@ -500,7 +503,8 @@ TEST_F(BravePrefProviderTest, MigrateFPShieldsSettings) {
       ContentSettingToValue(CONTENT_SETTING_BLOCK), {});
   std::vector<Rule> rules;
   auto rule_iterator = provider.GetRuleIterator(
-      ContentSettingsType::BRAVE_FINGERPRINTING_V2, false);
+      ContentSettingsType::BRAVE_FINGERPRINTING_V2, false,
+      content_settings::PartitionKey::WipGetDefault());
   while (rule_iterator && rule_iterator->HasNext()) {
     auto rule = rule_iterator->Next();
     EXPECT_NE(
@@ -529,8 +533,8 @@ TEST_F(BravePrefProviderTest, TestShieldsSettingsMigrationFromResourceIDs) {
 
   // Manually write settings under the PLUGINS type using the no longer existing
   // ResourceIdentifier names, and then perform the migration.
-  absl::optional<ScopedDictPrefUpdate> plugins(absl::in_place, pref_service,
-                                               kUserProfilePluginsPath);
+  std::optional<ScopedDictPrefUpdate> plugins(std::in_place, pref_service,
+                                              kUserProfilePluginsPath);
 
   base::Time expected_last_modified = base::Time::Now();
 
@@ -561,7 +565,7 @@ TEST_F(BravePrefProviderTest, TestShieldsSettingsMigrationFromResourceIDs) {
 
   // Destroying `plugins` at this point, as otherwise it will be holding a
   // dangling pointer, after `MigrateShieldsSettingsFromResourceIds()`.
-  plugins = absl::nullopt;
+  plugins = std::nullopt;
 
   provider.MigrateShieldsSettingsFromResourceIds();
 
@@ -598,8 +602,8 @@ TEST_F(BravePrefProviderTest, TestShieldsSettingsMigrationFromUnknownSettings) {
 
   // Manually write invalid settings under the PLUGINS type using the no longer
   // existing ResourceIdentifier names, to attempt the migration.
-  absl::optional<ScopedDictPrefUpdate> plugins(absl::in_place, pref_service,
-                                               kUserProfilePluginsPath);
+  std::optional<ScopedDictPrefUpdate> plugins(std::in_place, pref_service,
+                                              kUserProfilePluginsPath);
 
   // Seed both global and per-site shield settings preferences using unsupported
   // names, so that we can test that Brave doesn't crash while attempting the
@@ -618,7 +622,7 @@ TEST_F(BravePrefProviderTest, TestShieldsSettingsMigrationFromUnknownSettings) {
 
   // Destroying `plugins` at this point, as otherwise it will be holding a
   // dangling pointer, after `MigrateShieldsSettingsFromResourceIds()`.
-  plugins = absl::nullopt;
+  plugins = std::nullopt;
 
   // Doing the migration below should NOT get a crash due to invalid settings.
   provider.MigrateShieldsSettingsFromResourceIds();

@@ -5,17 +5,17 @@
 
 #include "brave/components/brave_search/renderer/brave_search_service_worker_holder.h"
 
+#include <algorithm>
 #include <memory>
 #include <utility>
 #include <vector>
 
 #include "base/auto_reset.h"
-#include "base/ranges/algorithm.h"
+#include "base/check.h"
 #include "base/threading/thread_checker.h"
 #include "brave/components/brave_search/common/brave_search_utils.h"
 #include "brave/components/brave_search/renderer/brave_search_fallback_js_handler.h"
 #include "content/public/renderer/worker_thread.h"
-#include "third_party/abseil-cpp/absl/base/attributes.h"
 #include "url/gurl.h"
 
 namespace brave_search {
@@ -25,7 +25,7 @@ namespace {
 class JsHandlersForCurrentThread;
 
 // A thread local pointer for the js handlers available.
-ABSL_CONST_INIT thread_local JsHandlersForCurrentThread* current_js_handlers =
+constinit thread_local JsHandlersForCurrentThread* current_js_handlers =
     nullptr;
 
 // A scoping class to create a local thread storage for the JS handlers, storing
@@ -98,16 +98,15 @@ void JsHandlersForCurrentThread::AddJsHandler(
 void JsHandlersForCurrentThread::RemoveContext(
     const v8::Local<v8::Context>& v8_context) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  js_handlers_.erase(
-      base::ranges::remove_if(
-          js_handlers_,
-          [&v8_context](
-              const std::unique_ptr<BraveSearchFallbackJSHandler>& js_handler) {
-            v8::HandleScope handle_scope(js_handler->GetIsolate());
-            v8::Context::Scope context_scope(js_handler->Context());
-            return js_handler->Context() == v8_context;
-          }),
-      js_handlers_.end());
+  auto to_remove = std::ranges::remove_if(
+      js_handlers_,
+      [&v8_context](
+          const std::unique_ptr<BraveSearchFallbackJSHandler>& js_handler) {
+        v8::HandleScope handle_scope(v8::Isolate::GetCurrent());
+        v8::Context::Scope context_scope(js_handler->Context());
+        return js_handler->Context() == v8_context;
+      });
+  js_handlers_.erase(to_remove.begin(), to_remove.end());
 }
 
 void JsHandlersForCurrentThread::WillStopCurrentWorkerThread() {

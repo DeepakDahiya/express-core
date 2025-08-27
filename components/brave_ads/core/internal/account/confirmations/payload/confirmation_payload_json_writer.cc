@@ -5,14 +5,12 @@
 
 #include "brave/components/brave_ads/core/internal/account/confirmations/payload/confirmation_payload_json_writer.h"
 
-#include <utility>
-
 #include "base/check.h"
 #include "base/json/json_writer.h"
 #include "base/values.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/payload/reward_confirmation_payload_util.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "brave/components/brave_ads/core/public/account/confirmations/confirmation_type.h"
 
 namespace brave_ads::json::writer {
 
@@ -27,17 +25,17 @@ constexpr char kTypeKey[] = "type";
 std::string WriteConfirmationPayload(const ConfirmationInfo& confirmation) {
   auto dict =
       base::Value::Dict()
-          .Set(kTransactionIdKey, confirmation.transaction_id)
           .Set(kCreativeInstanceIdKey, confirmation.creative_instance_id)
-          .Set(kTypeKey, confirmation.type.ToString());
+          .Set(kTypeKey, ToString(confirmation.type));
 
   if (confirmation.reward) {
-    base::Value::Dict reward_dict =
-        BuildRewardConfirmationPayload(*confirmation.reward);
-    dict.Merge(std::move(reward_dict));
+    dict.Set(kTransactionIdKey, confirmation.transaction_id);
+
+    dict.Merge(BuildRewardConfirmationPayload(*confirmation.reward));
   }
 
   dict.Merge(confirmation.user_data.dynamic.Clone());
+
   dict.Merge(confirmation.user_data.fixed.Clone());
 
   std::string json;

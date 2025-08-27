@@ -6,8 +6,11 @@
 #include "brave/components/speedreader/tts_player.h"
 
 #include <algorithm>
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
+#include "base/strings/utf_string_conversions.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/tts_controller.h"
 #include "content/public/browser/tts_utterance.h"
@@ -18,6 +21,32 @@ constexpr const char kParagraphsKey[] = "paragraphs";
 }
 
 namespace speedreader {
+
+class TtsPlayer::Controller::Delegate : public content::UtteranceEventDelegate {
+ public:
+  explicit Delegate(base::WeakPtr<TtsPlayer::Controller> handler)
+      : handler_(handler) {}
+  ~Delegate() override = default;
+
+  using PassKey = base::PassKey<Delegate>;
+
+  // content::UtteranceEventDelegate:
+  void OnTtsEvent(content::TtsUtterance* utterance,
+                  content::TtsEventType event_type,
+                  int char_index,
+                  int length,
+                  const std::string& error_message) override {
+    if (!handler_) {
+      return;
+    }
+
+    handler_->OnTtsEvent(PassKey(), utterance, event_type, char_index, length,
+                         error_message);
+  }
+
+ private:
+  base::WeakPtr<TtsPlayer::Controller> handler_;
+};
 
 TtsPlayer::TtsPlayer() = default;
 
@@ -82,14 +111,14 @@ bool TtsPlayer::Controller::IsPlaying() const {
 }
 
 bool TtsPlayer::Controller::IsPlayingRequestedWebContents(
-    absl::optional<int> paragraph_index) const {
+    std::optional<int> paragraph_index) const {
   if (paragraph_index.has_value() && paragraph_index != paragraph_index_) {
     return false;
   }
   return playing_web_contents_ == request_web_contents_;
 }
 
-void TtsPlayer::Controller::Play(absl::optional<int> paragraph_index) {
+void TtsPlayer::Controller::Play(std::optional<int> paragraph_index) {
   DCHECK(request_web_contents_);
   if (IsPlayingRequestedWebContents()) {
     Observe(playing_web_contents_);
@@ -182,9 +211,12 @@ void TtsPlayer::Controller::Resume(bool recreate_utterance) {
     reading_start_position_ += reading_position_;
     reading_position_ = 0;
 
-    utterance->SetText(GetParagraphToRead().substr(reading_start_position_));
+    utterance->SetText(base::UTF16ToUTF8(
+        GetParagraphToRead().substr(reading_start_position_)));
     utterance->SetShouldClearQueue(true);
-    utterance->SetEventDelegate(this);
+    utterance->SetEventDelegate(
+        std::make_unique<TtsPlayer::Controller::Delegate>(
+            weak_factory_.GetWeakPtr()));
     utterance->SetVoiceName(current_voice_);
     const auto& params = utterance->GetContinuousParameters();
     utterance->SetContinuousParameters(current_speed_, params.pitch,
@@ -204,19 +236,19 @@ bool TtsPlayer::Controller::HasNextParagraph() {
   return paragraph_index_ + 1 < static_cast<int>(content->size());
 }
 
-const std::string& TtsPlayer::Controller::GetParagraphToRead() {
+std::u16string TtsPlayer::Controller::GetParagraphToRead() {
   if (!reading_content_.is_dict()) {
-    return base::EmptyString();
+    return {};
   }
   const auto* content = reading_content_.GetDict().FindList(kParagraphsKey);
   if (!content) {
-    return base::EmptyString();
+    return {};
   }
   if (0 <= paragraph_index_ &&
       paragraph_index_ < static_cast<int>(content->size())) {
-    return (*content)[paragraph_index_].GetString();
+    return base::UTF8ToUTF16((*content)[paragraph_index_].GetString());
   }
-  return base::EmptyString();
+  return {};
 }
 
 void TtsPlayer::Controller::DidStartNavigation(
@@ -231,7 +263,8 @@ void TtsPlayer::Controller::WebContentsDestroyed() {
   Stop();
 }
 
-void TtsPlayer::Controller::OnTtsEvent(content::TtsUtterance* utterance,
+void TtsPlayer::Controller::OnTtsEvent(base::PassKey<Delegate>,
+                                       content::TtsUtterance* utterance,
                                        content::TtsEventType event_type,
                                        int char_index,
                                        int length,
@@ -240,16 +273,18 @@ void TtsPlayer::Controller::OnTtsEvent(content::TtsUtterance* utterance,
     case content::TtsEventType::TTS_EVENT_WORD:
       reading_position_ = char_index;
       for (auto& o : owner_->observers_) {
-        o.OnReadingProgress(playing_web_contents_, paragraph_index_, char_index,
-                            length);
+        o.OnReadingProgress(playing_web_contents_, paragraph_index_,
+                            reading_start_position_ + char_index, length);
       }
       break;
     case content::TtsEventType::TTS_EVENT_ERROR:
     case content::TtsEventType::TTS_EVENT_INTERRUPTED:
     case content::TtsEventType::TTS_EVENT_CANCELLED:
     case content::TtsEventType::TTS_EVENT_PAUSE:
-      for (auto& o : owner_->observers_) {
-        o.OnReadingStop(playing_web_contents_);
+      if (!continue_next_paragraph_) {
+        for (auto& o : owner_->observers_) {
+          o.OnReadingStop(playing_web_contents_);
+        }
       }
       break;
     case content::TtsEventType::TTS_EVENT_END:
@@ -258,9 +293,11 @@ void TtsPlayer::Controller::OnTtsEvent(content::TtsUtterance* utterance,
 
       if (HasNextParagraph()) {
         ++paragraph_index_;
+        continue_next_paragraph_ = true;
         Resume(true);
       } else {
         paragraph_index_ = -1;
+        continue_next_paragraph_ = false;
         for (auto& o : owner_->observers_) {
           o.OnReadingProgress(playing_web_contents_, paragraph_index_,
                               char_index, length);
@@ -270,9 +307,12 @@ void TtsPlayer::Controller::OnTtsEvent(content::TtsUtterance* utterance,
       break;
     case content::TtsEventType::TTS_EVENT_RESUME:
     case content::TtsEventType::TTS_EVENT_START:
-      for (auto& o : owner_->observers_) {
-        o.OnReadingStart(playing_web_contents_);
+      if (!continue_next_paragraph_) {
+        for (auto& o : owner_->observers_) {
+          o.OnReadingStart(playing_web_contents_);
+        }
       }
+      continue_next_paragraph_ = false;
       break;
     case content::TTS_EVENT_SENTENCE:
     case content::TTS_EVENT_MARKER:
@@ -281,7 +321,7 @@ void TtsPlayer::Controller::OnTtsEvent(content::TtsUtterance* utterance,
 }
 
 void TtsPlayer::Controller::OnContentReady(content::WebContents* web_contents,
-                                           absl::optional<int> paragraph_index,
+                                           std::optional<int> paragraph_index,
                                            base::Value content) {
   if (!content.is_dict() || web_contents != request_web_contents_) {
     return;

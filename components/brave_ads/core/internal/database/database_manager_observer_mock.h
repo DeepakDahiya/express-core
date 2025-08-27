@@ -19,32 +19,15 @@ class DatabaseManagerObserverMock : public DatabaseManagerObserver {
   DatabaseManagerObserverMock& operator=(const DatabaseManagerObserverMock&) =
       delete;
 
-  DatabaseManagerObserverMock(DatabaseManagerObserverMock&&) noexcept = delete;
-  DatabaseManagerObserverMock& operator=(
-      DatabaseManagerObserverMock&&) noexcept = delete;
-
   ~DatabaseManagerObserverMock() override;
 
   MOCK_METHOD(void, OnWillCreateOrOpenDatabase, ());
-
   MOCK_METHOD(void, OnDidCreateDatabase, ());
-
   MOCK_METHOD(void, OnDidOpenDatabase, ());
-
   MOCK_METHOD(void, OnFailedToCreateOrOpenDatabase, ());
-
-  MOCK_METHOD(void,
-              OnWillMigrateDatabase,
-              (const int from_version, const int to_version));
-
-  MOCK_METHOD(void,
-              OnDidMigrateDatabase,
-              (const int from_version, const int to_version));
-
-  MOCK_METHOD(void,
-              OnFailedToMigrateDatabase,
-              (const int from_version, const int to_version));
-
+  MOCK_METHOD(void, OnWillMigrateDatabase, (int, int));
+  MOCK_METHOD(void, OnDidMigrateDatabase, (int, int));
+  MOCK_METHOD(void, OnFailedToMigrateDatabase, (int, int));
   MOCK_METHOD(void, OnDatabaseIsReady, ());
 };
 

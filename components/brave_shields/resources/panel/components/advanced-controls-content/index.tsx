@@ -4,14 +4,15 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 import * as React from 'react'
 
+import Toggle from '@brave/leo/react/toggle'
+import { getLocale } from '$web-common/locale'
+import { loadTimeData } from '$web-common/loadTimeData'
+import Select from '$web-components/select'
+
 import * as S from './style'
-import Toggle from '../../../../../web-components/toggle'
-import Select from '../../../../../web-components/select'
-import { getLocale } from '../../../../../common/locale'
 import getPanelBrowserAPI, { AdBlockMode, CookieBlockMode, FingerprintMode, HttpsUpgradeMode } from '../../api/panel_browser_api'
 import DataContext from '../../state/context'
 import { ViewType } from '../../state/component_types'
-import { loadTimeData } from '../../../../../common/loadTimeData'
 
 const adBlockModeOptions = [
   { value: AdBlockMode.AGGRESSIVE, text: getLocale('braveShieldsTrackersAndAdsBlockedAgg') },
@@ -21,20 +22,20 @@ const adBlockModeOptions = [
 
 const cookieBlockModeOptions = [
   { value: CookieBlockMode.BLOCKED, text: getLocale('braveShieldsCookiesBlockAll') },
-  { value: CookieBlockMode.CROSS_SITE_BLOCKED, text: getLocale('braveShieldsCrossCookiesBlocked') },
+  { value: CookieBlockMode.CROSS_SITE_BLOCKED, text: getLocale('braveShieldsThirdPartyCookiesBlocked') },
   { value: CookieBlockMode.ALLOW, text: getLocale('braveShieldsCookiesAllowedAll') }
 ]
 
 const fingerprintModeOptions = [
-  { value: FingerprintMode.STRICT, text: getLocale('braveShieldsFingerprintingBlockedAgg') },
-  { value: FingerprintMode.STANDARD, text: getLocale('braveShieldsFingerprintingBlockedStd') },
-  { value: FingerprintMode.ALLOW, text: getLocale('braveShieldsFingerprintingAllowAll') }
+  { value: FingerprintMode.STRICT_MODE, text: getLocale('braveShieldsFingerprintingBlockedAgg') },
+  { value: FingerprintMode.STANDARD_MODE, text: getLocale('braveShieldsFingerprintingBlockedStd') },
+  { value: FingerprintMode.ALLOW_MODE, text: getLocale('braveShieldsFingerprintingAllowAll') }
 ]
 
 const httpsUpgradeModeOptions = [
-  { value: HttpsUpgradeMode.STRICT, text: getLocale('braveShieldsHttpsUpgradeModeStrict') },
-  { value: HttpsUpgradeMode.STANDARD, text: getLocale('braveShieldsHttpsUpgradeModeStandard') },
-  { value: HttpsUpgradeMode.DISABLED, text: getLocale('braveShieldsHttpsUpgradeModeDisabled') }
+  { value: HttpsUpgradeMode.STRICT_MODE, text: getLocale('braveShieldsHttpsUpgradeModeStrict') },
+  { value: HttpsUpgradeMode.STANDARD_MODE, text: getLocale('braveShieldsHttpsUpgradeModeStandard') },
+  { value: HttpsUpgradeMode.DISABLED_MODE, text: getLocale('braveShieldsHttpsUpgradeModeDisabled') }
 ]
 
 function GlobalSettings () {
@@ -77,8 +78,13 @@ function AdvancedControlsContent () {
     if (getSiteSettings) getSiteSettings()
   }
 
-  const handleFingerprintModeChange = (value: string) => {
+  const handleFingerprintModeSelectionChange = (value: string) => {
     getPanelBrowserAPI().dataHandler.setFingerprintMode(parseInt(value))
+    if (getSiteSettings) getSiteSettings()
+  }
+
+  const handleFingerprintModeToggleChange = (detail: { checked: boolean }) => {
+    getPanelBrowserAPI().dataHandler.setFingerprintMode(detail.checked ? FingerprintMode.STANDARD_MODE : FingerprintMode.ALLOW_MODE)
     if (getSiteSettings) getSiteSettings()
   }
 
@@ -92,27 +98,24 @@ function AdvancedControlsContent () {
     if (getSiteSettings) getSiteSettings()
   }
 
-  const handleIsNoScriptEnabledChange = (isEnabled: boolean) => {
-    getPanelBrowserAPI().dataHandler.setIsNoScriptsEnabled(isEnabled)
+  const handleIsNoScriptEnabledChange = (detail: { checked: boolean }) => {
+    getPanelBrowserAPI().dataHandler.setIsNoScriptsEnabled(detail.checked)
     if (getSiteSettings) getSiteSettings()
   }
 
-  const handleHTTPSEverywhereEnabledChange = (isEnabled: boolean) => {
-    getPanelBrowserAPI().dataHandler.setHTTPSEverywhereEnabled(isEnabled)
-    if (getSiteSettings) getSiteSettings()
-  }
-
-  const handleForgetFirstPartyStorageEnabledChange = (isEnabled: boolean) => {
+  const handleForgetFirstPartyStorageEnabledChange = (detail: { checked: boolean }) => {
     getPanelBrowserAPI().dataHandler.setForgetFirstPartyStorageEnabled(
-      isEnabled
+      detail.checked
     )
     if (getSiteSettings) getSiteSettings()
   }
 
   const adsListCount = siteBlockInfo?.adsList.length ?? 0
-  const httpRedirectsListCount = siteBlockInfo?.httpRedirectsList.length ?? 0
   const jsListCount = siteBlockInfo?.blockedJsList.length ?? 0
+  const invokedWebcompatListCount = siteBlockInfo?.invokedWebcompatList.length ?? 0
   const isHttpsByDefaultEnabled = loadTimeData.getBoolean('isHttpsByDefaultEnabled')
+  const showStrictFingerprintingMode = loadTimeData.getBoolean('showStrictFingerprintingMode')
+  const isWebcompatExceptionsServiceEnabled = loadTimeData.getBoolean('isWebcompatExceptionsServiceEnabled')
   const isTorProfile = loadTimeData.getBoolean('isTorProfile')
   const isForgetFirstPartyStorageEnabled = loadTimeData.getBoolean(
     'isForgetFirstPartyStorageEnabled'
@@ -150,26 +153,6 @@ function AdvancedControlsContent () {
             <span>{adsListCount > 99 ? '99+' : adsListCount}</span>
           </S.CountButton>
         </S.ControlGroup>
-        {!isHttpsByDefaultEnabled && <S.ControlGroup>
-          <label>
-            <span>{getLocale('braveShieldsConnectionsUpgraded')}</span>
-            <Toggle
-              onChange={handleHTTPSEverywhereEnabledChange}
-              isOn={siteSettings?.isHttpsEverywhereEnabled}
-              size='sm'
-              accessibleLabel='Enable HTTPS'
-              disabled={siteBlockInfo?.isBraveShieldsManaged}
-            />
-          </label>
-          <S.CountButton
-            title={httpRedirectsListCount.toString()}
-            aria-label={getLocale('braveShieldsConnectionsUpgraded')}
-            onClick={() => setViewType?.(ViewType.HttpsList)}
-            disabled={httpRedirectsListCount <= 0}
-          >
-            {httpRedirectsListCount > 99 ? '99+' : httpRedirectsListCount}
-          </S.CountButton>
-        </S.ControlGroup>}
         {(isHttpsByDefaultEnabled && !isTorProfile) && <S.ControlGroup>
           <div className="col-2">
             <Select
@@ -189,10 +172,10 @@ function AdvancedControlsContent () {
           <label>
             <span>{getLocale('braveShieldsScriptsBlocked')}</span>
             <Toggle
+              aria-label={getLocale('braveShieldsScriptsBlockedEnable')}
               onChange={handleIsNoScriptEnabledChange}
-              isOn={siteSettings?.isNoscriptEnabled}
-              size='sm'
-              accessibleLabel={getLocale('braveShieldsScriptsBlockedEnable')}
+              checked={siteSettings?.isNoscriptEnabled}
+              size='small'
               disabled={siteBlockInfo?.isBraveShieldsManaged}
             />
           </label>
@@ -207,10 +190,10 @@ function AdvancedControlsContent () {
         </S.ControlGroup>
         <S.ControlGroup>
           <div className="col-2">
-            <Select
+            {showStrictFingerprintingMode ? <Select
               value={siteSettings?.fingerprintMode}
               ariaLabel={getLocale('braveShieldsFingerprintingBlocked')}
-              onChange={handleFingerprintModeChange}
+              onChange={handleFingerprintModeSelectionChange}
               disabled={siteBlockInfo?.isBraveShieldsManaged}
             >
             {fingerprintModeOptions.map(entry => {
@@ -218,8 +201,27 @@ function AdvancedControlsContent () {
                   <option key={entry.value} value={entry.value}>{entry.text}</option>
                 )
               })}
-            </Select>
-          </div>
+            </Select> :
+            <label>
+            <span>{getLocale('braveShieldsFingerprintingBlockedStd')}</span>
+            <Toggle
+              aria-label={getLocale('braveShieldsFingerprintingBlockedStd')}
+              onChange={handleFingerprintModeToggleChange}
+              checked={siteSettings?.fingerprintMode !== FingerprintMode.ALLOW_MODE}
+              size='small'
+              disabled={siteBlockInfo?.isBraveShieldsManaged}
+            />
+            </label>}
+            </div>
+            <S.CountButton
+              title={invokedWebcompatListCount.toString()}
+              hidden={!isWebcompatExceptionsServiceEnabled}
+              aria-label={getLocale('braveShieldsFingerprintingBlockedStd')}
+              onClick={() => setViewType?.(ViewType.FingerprintList)}
+              disabled={invokedWebcompatListCount <= 0 || siteSettings?.fingerprintMode === FingerprintMode.ALLOW_MODE}
+            >
+              &gt;
+            </S.CountButton>
         </S.ControlGroup>
         <S.ControlGroup>
           <div className="col-2">
@@ -241,10 +243,10 @@ function AdvancedControlsContent () {
           <label>
             <span>{getLocale('braveShieldsForgetFirstPartyStorage')}</span>
             <Toggle
+              aria-label={getLocale('braveShieldsFingerprintingBlockedStd')}
               onChange={handleForgetFirstPartyStorageEnabledChange}
-              isOn={siteSettings?.isForgetFirstPartyStorageEnabled}
-              size='sm'
-              accessibleLabel={getLocale('braveShieldsForgetFirstPartyStorage')}
+              checked={siteSettings?.isForgetFirstPartyStorageEnabled}
+              size='small'
               disabled={siteBlockInfo?.isBraveShieldsManaged}
             />
           </label>

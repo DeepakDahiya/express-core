@@ -7,23 +7,24 @@ import * as React from 'react'
 import Alert from '@brave/leo/react/alert'
 import Button from '@brave/leo/react/button'
 import { getLocale } from '$web-common/locale'
-import getPageHandlerInstance from '../../api/page_handler'
 import styles from './alerts.module.scss'
+import { useActiveChat } from '../../state/active_chat_context'
 
-function ErrorConversationEnd () {
+function ErrorConversationEnd() {
+  const { createNewConversation } = useActiveChat()
+
   return (
     <div className={styles.alert}>
       <Alert
-        mode='full'
         type='error'
       >
-        {getLocale('errorConversationEnd')}
+        {getLocale(S.CHAT_UI_CONVERSATION_END_ERROR)}
         <Button
           slot='actions'
           kind='plain-faint'
-          onClick={() => { getPageHandlerInstance().pageHandler.clearConversationHistory() }}
+          onClick={createNewConversation}
         >
-            {getLocale('menuNewChat')}
+          {getLocale(S.CHAT_UI_MENU_NEW_CHAT)}
         </Button>
       </Alert>
     </div>

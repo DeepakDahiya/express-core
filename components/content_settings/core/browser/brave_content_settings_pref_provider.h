@@ -15,16 +15,22 @@
 #include "base/memory/weak_ptr.h"
 #include "base/thread_annotations.h"
 #include "components/content_settings/core/browser/content_settings_observer.h"
-#include "components/content_settings/core/browser/content_settings_origin_identifier_value_map.h"
+#include "components/content_settings/core/browser/content_settings_origin_value_map.h"
 #include "components/content_settings/core/browser/content_settings_pref_provider.h"
 #include "components/prefs/pref_change_registrar.h"
 
 namespace content_settings {
 
 // With this subclass, shields configuration is persisted across sessions.
-class BravePrefProvider : public PrefProvider,
-                          public Observer {
+class BravePrefProvider : public PrefProvider, public Observer {
  public:
+  enum class CookieType {
+    kRegularCookie,
+    kShieldsDownCookie,
+    kCustomShieldsCookie,
+    kGoogleSignInCookie,
+  };
+
   BravePrefProvider(PrefService* prefs,
                     bool off_the_record,
                     bool store_last_modified,
@@ -48,8 +54,18 @@ class BravePrefProvider : public PrefProvider,
   std::unique_ptr<RuleIterator> GetRuleIterator(
       ContentSettingsType content_type,
       bool incognito,
-      const PartitionKey& partition_key =
-          PartitionKey::WipGetDefault()) const override;
+      const PartitionKey& partition_key) const override;
+  std::unique_ptr<Rule> GetRule(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType content_type,
+      bool off_the_record,
+      const PartitionKey& partition_key) const override;
+
+  CookieType GetCookieType(const ContentSettingsPattern& primary_pattern,
+                           const ContentSettingsPattern& secondary_pattern,
+                           const ContentSetting& value,
+                           bool incognito) const;
 
   // calls superclass directly
   bool SetWebsiteSettingForTest(const ContentSettingsPattern& primary_pattern,
@@ -79,7 +95,7 @@ class BravePrefProvider : public PrefProvider,
       const std::string& patterns_string,
       const base::Time& expiration,
       const base::Time& last_modified,
-      SessionModel session_model,
+      content_settings::mojom::SessionModel session_model,
       int setting);
   void MigrateShieldsSettingsV1ToV2();
   void MigrateShieldsSettingsV1ToV2ForOneType(ContentSettingsType content_type);
@@ -89,7 +105,7 @@ class BravePrefProvider : public PrefProvider,
   void MigrateFingerprintingSetingsToOriginScoped();
   void UpdateCookieRules(ContentSettingsType content_type, bool incognito);
   void OnCookieSettingsChanged(ContentSettingsType content_type);
-  void NotifyChanges(const std::vector<std::unique_ptr<OwnedRule>>& rules,
+  void NotifyChanges(const std::vector<std::unique_ptr<Rule>>& rules,
                      bool incognito);
   bool SetWebsiteSettingInternal(
       const ContentSettingsPattern& primary_pattern,
@@ -105,10 +121,10 @@ class BravePrefProvider : public PrefProvider,
                                ContentSettingsType content_type) override;
   void OnCookiePrefsChanged(const std::string& pref);
 
-  std::map<bool /* is_incognito */, OriginIdentifierValueMap> cookie_rules_;
-  std::map<bool /* is_incognito */, std::vector<std::unique_ptr<OwnedRule>>>
+  std::map<bool /* is_incognito */, OriginValueMap> cookie_rules_;
+  std::map<bool /* is_incognito */, std::vector<std::unique_ptr<Rule>>>
       brave_cookie_rules_;
-  std::map<bool /* is_incognito */, std::vector<std::unique_ptr<OwnedRule>>>
+  std::map<bool /* is_incognito */, std::vector<std::unique_ptr<Rule>>>
       brave_shield_down_rules_;
 
   bool initialized_;

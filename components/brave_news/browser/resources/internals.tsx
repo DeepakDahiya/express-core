@@ -4,35 +4,37 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { render } from 'react-dom'
+import { createRoot } from 'react-dom/client'
 
+import Button from '@brave/leo/react/button'
 import { setIconBasePath } from '@brave/leo/react/icon'
 import styled from 'styled-components'
-import FeedPage from './FeedPage'
-import SignalsPage from './SignalsPage'
-import InspectContext from './context'
+import { downloadExport, getExportData } from './export'
+import Variables from './Variables'
+import usePromise from '$web-common/usePromise'
 
 setIconBasePath('//resources/brave-icons')
 
-const Grid = styled.div`
+const Grid = styled(Variables)`
   display: grid;
-  grid-template-columns: 300px auto;
+  grid-template-columns: 300px auto 300px;
   padding: 16px;
   gap: 8px;
-
-  backdrop-filter: blur(64px);
-  background: rgba(255, 255, 255, 0.7);
 
   min-height: 100vh;
 `
 
 function App() {
-  return <Grid>
-    <SignalsPage />
-    <FeedPage />
+  const { result: exportData } = usePromise(getExportData, [])
+  return <Grid data-theme="dark">
+    <Button onClick={downloadExport}>
+      Export
+    </Button>
+    <pre>
+      {exportData ?? '...'}
+    </pre>
   </Grid>
 }
 
-render(<InspectContext>
-  <App />
-</InspectContext>, document.getElementById('root'))
+createRoot(document.getElementById('root')!)
+  .render(<App />)

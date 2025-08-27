@@ -1,10 +1,11 @@
-/* Copyright 2022 The Brave Authors. All rights reserved.
+/* Copyright (c) 2022 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "brave/components/p3a_utils/feature_usage.h"
 
+#include "base/check.h"
 #include "base/metrics/histogram_functions.h"
 #include "brave/components/p3a_utils/bucket.h"
 #include "brave/components/time_period_storage/monthly_storage.h"
@@ -59,14 +60,15 @@ void RecordFeatureUsage(PrefService* prefs,
                         const char* last_use_time_pref_name,
                         const base::Time& last_new_use_time) {
   DCHECK(prefs);
-  DCHECK(first_use_time_pref_name);
   DCHECK(last_use_time_pref_name);
   DCHECK(!last_new_use_time.is_null());
 
   base::Time new_time_midnight = last_new_use_time.LocalMidnight();
   prefs->SetTime(last_use_time_pref_name, new_time_midnight);
-  if (prefs->GetTime(first_use_time_pref_name).is_null()) {
-    prefs->SetTime(first_use_time_pref_name, new_time_midnight);
+  if (first_use_time_pref_name) {
+    if (prefs->GetTime(first_use_time_pref_name).is_null()) {
+      prefs->SetTime(first_use_time_pref_name, new_time_midnight);
+    }
   }
 }
 
@@ -203,7 +205,8 @@ void RecordFeatureDaysInWeekUsed(PrefService* prefs,
 
 void RecordFeatureLastUsageTimeMetric(PrefService* prefs,
                                       const char* last_use_time_pref_name,
-                                      const char* histogram_name) {
+                                      const char* histogram_name,
+                                      bool single_month_only) {
   DCHECK(prefs);
   DCHECK(last_use_time_pref_name);
   DCHECK(histogram_name);
@@ -218,9 +221,19 @@ void RecordFeatureLastUsageTimeMetric(PrefService* prefs,
   if (duration_weeks < 4) {
     answer = duration_weeks + 1;
   } else {
-    int duration_months = duration_days / 30;
-    answer = duration_months < 2 ? 5 : 6;
+    if (single_month_only) {
+      if (duration_days <= 30) {
+        answer = 4;
+      } else {
+        // Do not record if past 30 days.
+        return;
+      }
+    } else {
+      int duration_months = duration_days / 30;
+      answer = duration_months < 2 ? 5 : 6;
+    }
   }
+
   base::UmaHistogramExactLinear(histogram_name, answer, 7);
 }
 

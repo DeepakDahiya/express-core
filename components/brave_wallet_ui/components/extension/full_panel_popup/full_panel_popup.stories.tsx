@@ -7,16 +7,17 @@ import * as React from 'react'
 
 import { FullPanelPopup } from './full_panel_popup'
 
-export const _FullPanelPopup = () => {
-  return (
-    <FullPanelPopup onClose={() => alert('closed')}>
-      CONTENT HERE
-    </FullPanelPopup>
-  )
+export const _FullPanelPopup = {
+  render: () => {
+    return (
+      <FullPanelPopup onClose={() => alert('closed')}>
+        CONTENT HERE
+      </FullPanelPopup>
+    )
+  },
 }
 
-_FullPanelPopup.story = {
-  name: 'Full Panel Popup'
+export default {
+  title: 'Wallet/Panel/Components',
+  component: _FullPanelPopup,
 }
-
-export default _FullPanelPopup

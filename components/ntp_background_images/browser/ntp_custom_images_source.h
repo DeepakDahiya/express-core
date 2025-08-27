@@ -6,7 +6,6 @@
 #ifndef BRAVE_COMPONENTS_NTP_BACKGROUND_IMAGES_BROWSER_NTP_CUSTOM_IMAGES_SOURCE_H_
 #define BRAVE_COMPONENTS_NTP_BACKGROUND_IMAGES_BROWSER_NTP_CUSTOM_IMAGES_SOURCE_H_
 
-#include <memory>
 #include <string>
 
 #include "base/memory/raw_ptr.h"
@@ -24,7 +23,8 @@ class BraveNTPCustomBackgroundService;
 // This serves background image data.
 class NTPCustomImagesSource : public content::URLDataSource {
  public:
-  explicit NTPCustomImagesSource(BraveNTPCustomBackgroundService* service);
+  explicit NTPCustomImagesSource(
+      BraveNTPCustomBackgroundService* custom_background_service);
   ~NTPCustomImagesSource() override;
 
   NTPCustomImagesSource(const NTPCustomImagesSource&) = delete;
@@ -43,8 +43,10 @@ class NTPCustomImagesSource : public content::URLDataSource {
                     GotDataCallback callback);
   void OnGotImageFile(GotDataCallback callback, const std::string& input);
 
-  raw_ptr<BraveNTPCustomBackgroundService> service_ = nullptr;  // not owned
-  base::WeakPtrFactory<NTPCustomImagesSource> weak_factory_;
+  raw_ptr<BraveNTPCustomBackgroundService, DanglingUntriaged>
+      custom_background_service_ = nullptr;  // Not owned.
+
+  base::WeakPtrFactory<NTPCustomImagesSource> weak_factory_{this};
 };
 
 }  // namespace ntp_background_images

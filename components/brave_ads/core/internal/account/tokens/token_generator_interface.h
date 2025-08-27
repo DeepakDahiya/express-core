@@ -6,19 +6,19 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_TOKENS_TOKEN_GENERATOR_INTERFACE_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_TOKENS_TOKEN_GENERATOR_INTERFACE_H_
 
-#include <vector>
+#include <cstddef>
+
+#include "brave/components/brave_ads/core/internal/common/challenge_bypass_ristretto/token.h"
 
 namespace brave_ads {
-
-namespace cbr {
-class Token;
-}  // namespace cbr
 
 class TokenGeneratorInterface {
  public:
   virtual ~TokenGeneratorInterface() = default;
 
-  virtual std::vector<cbr::Token> Generate(size_t count) const = 0;
+  // Generates a list of cryptographic tokens that can be redeemed for purposes
+  // such as privacy-preserving ad interactions.
+  virtual cbr::TokenList Generate(size_t count) const = 0;
 };
 
 }  // namespace brave_ads

@@ -7,48 +7,45 @@ import * as React from 'react'
 
 // Queries
 import {
-  useGetExternalRewardsWalletQuery
+  useGetRewardsInfoQuery, //
 } from '../../../common/slices/api.slice'
+import { emptyRewardsInfo } from '../../../common/async/base-query-cache'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
-import {
-  getRewardsProviderName
-} from '../../../utils/rewards_utils'
 
 // Styled Components
 import {
   StyledWrapper,
   PopupButton,
   PopupButtonText,
-  ButtonIcon
+  ButtonIcon,
 } from './wellet-menus.style'
 
 const onClickRewardsSettings = () => {
   chrome.tabs.create(
     {
-      url: 'brave://rewards'
-    }, () => {
+      url: 'brave://rewards',
+    },
+    () => {
       if (chrome.runtime.lastError) {
-        console.error(
-          'tabs.create failed: '
-          + chrome.runtime.lastError.message
-        )
+        console.error('tabs.create failed: ' + chrome.runtime.lastError.message)
       }
-    })
+    },
+  )
 }
 
 export const RewardsMenu = () => {
-
   // Queries
-  const { data: externalRewardsInfo } = useGetExternalRewardsWalletQuery()
+  const {
+    data: { accountLink: providerAccountUrl, providerName } = emptyRewardsInfo,
+  } = useGetRewardsInfoQuery()
 
   // Computed
-  const provider = externalRewardsInfo?.provider ?? ''
-  const providerAccountUrl = externalRewardsInfo?.links.account
-  const providerButtonText =
-    getLocale('braveWalletViewOn')
-      .replace('$1', getRewardsProviderName(provider))
+  const providerButtonText = getLocale('braveWalletViewOn').replace(
+    '$1',
+    providerName,
+  )
 
   // Methods
   const onClickOnProviderAccount = () => {
@@ -57,24 +54,23 @@ export const RewardsMenu = () => {
     }
     chrome.tabs.create(
       {
-        url: providerAccountUrl
-      }, () => {
+        url: providerAccountUrl,
+      },
+      () => {
         if (chrome.runtime.lastError) {
           console.error(
-            'tabs.create failed: '
-            + chrome.runtime.lastError.message
+            'tabs.create failed: ' + chrome.runtime.lastError.message,
           )
         }
-      })
+      },
+    )
   }
 
   return (
     <StyledWrapper yPosition={26}>
       <PopupButton onClick={onClickOnProviderAccount}>
         <ButtonIcon name='launch' />
-        <PopupButtonText>
-          {providerButtonText}
-        </PopupButtonText>
+        <PopupButtonText>{providerButtonText}</PopupButtonText>
       </PopupButton>
       <PopupButton onClick={onClickRewardsSettings}>
         <ButtonIcon name='product-bat-outline' />

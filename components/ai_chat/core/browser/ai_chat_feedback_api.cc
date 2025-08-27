@@ -5,19 +5,23 @@
 
 #include "brave/components/ai_chat/core/browser/ai_chat_feedback_api.h"
 
+#include <string_view>
 #include <utility>
 
+#include "base/containers/checked_iterators.h"
 #include "base/containers/flat_map.h"
 #include "base/json/json_writer.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
+#include "base/time/time.h"
 #include "base/values.h"
 #include "brave/brave_domains/service_domains.h"
 #include "brave/components/brave_stats/browser/brave_stats_updater_util.h"
 #include "brave/components/l10n/common/locale_util.h"
+#include "mojo/public/cpp/bindings/struct_ptr.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
-#include "services/network/public/cpp/simple_url_loader.h"
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
@@ -76,8 +80,10 @@ AIChatFeedbackAPI::~AIChatFeedbackAPI() = default;
 
 void AIChatFeedbackAPI::SendRating(
     bool is_liked,
-    const base::span<const mojom::ConversationTurn>& history,
+    bool is_premium,
+    const base::span<const mojom::ConversationTurnPtr>& history,
     const std::string& model_name,
+    const std::string& selected_language,
     api_request_helper::APIRequestHelper::ResultCallback on_complete_callback) {
   base::Value::Dict payload;
 
@@ -86,10 +92,10 @@ void AIChatFeedbackAPI::SendRating(
   for (auto& turn : history) {
     base::Value::Dict turn_dict;
     turn_dict.Set("id", id);
-    turn_dict.Set("type", turn.character_type == mojom::CharacterType::HUMAN
+    turn_dict.Set("type", turn->character_type == mojom::CharacterType::HUMAN
                               ? "human"
                               : "assistant");
-    turn_dict.Set("content", turn.text);
+    turn_dict.Set("content", turn->text);
     ++id;
 
     chat.Append(std::move(turn_dict));
@@ -101,9 +107,11 @@ void AIChatFeedbackAPI::SendRating(
   payload.Set("locale",
               base::StrCat({brave_l10n::GetDefaultISOLanguageCodeString(), "_",
                             brave_l10n::GetDefaultISOCountryCodeString()}));
+  payload.Set("selected_language", selected_language);
   payload.Set("rating", static_cast<int>(is_liked));
   payload.Set("channel", channel_name_);
   payload.Set("platform", brave_stats::GetPlatformIdentifier());
+  payload.Set("is_premium", is_premium);
 
   base::flat_map<std::string, std::string> headers;
   headers.emplace("Accept", "application/json");
@@ -119,6 +127,8 @@ void AIChatFeedbackAPI::SendFeedback(
     const std::string& category,
     const std::string& feedback,
     const std::string& rating_id,
+    const std::optional<std::string>& hostname,
+    const std::string& selected_language,
     api_request_helper::APIRequestHelper::ResultCallback on_complete_callback) {
   base::Value::Dict dict;
 
@@ -126,6 +136,14 @@ void AIChatFeedbackAPI::SendFeedback(
   dict.Set("category", category);
   dict.Set("feedback", feedback);
   dict.Set("rating_id", rating_id);
+  dict.Set("locale",
+           base::StrCat({brave_l10n::GetDefaultISOLanguageCodeString(), "_",
+                         brave_l10n::GetDefaultISOCountryCodeString()}));
+  dict.Set("selected_language", selected_language);
+
+  if (hostname.has_value()) {
+    dict.Set("domain", hostname.value());
+  }
 
   GURL api_url = GetEndpointBaseUrl().Resolve(kFeedbackFormPath);
 

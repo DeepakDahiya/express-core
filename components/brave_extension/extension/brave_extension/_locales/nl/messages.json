@@ -1,7 +1,7 @@
 {
   "appName": {
     "message": "De Brave extensie",
-    "description": "The name of the the extension."
+    "description": "The name of the extension."
   },
   "shields": {
     "message": "Schilden",
@@ -216,7 +216,7 @@
     "description": "Message for removing an extension from Brave"
   },
   "addToChrome": {
-    "message": "Toev. aan Chrome",
+    "message": "Toevoegen aan Chrome",
     "description": "Message for adding an extension to Chrome"
   },
   "removeFromChrome": {

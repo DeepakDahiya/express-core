@@ -6,29 +6,29 @@
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_block_tracker.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
-#include "base/containers/contains.h"
 #include "base/functional/bind.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_rpc.h"
 
 namespace brave_wallet {
 
-BitcoinBlockTracker::BitcoinBlockTracker(bitcoin_rpc::BitcoinRpc* bitcoin_rpc)
+BitcoinBlockTracker::BitcoinBlockTracker(bitcoin_rpc::BitcoinRpc& bitcoin_rpc)
     : bitcoin_rpc_(bitcoin_rpc) {}
 
 BitcoinBlockTracker::~BitcoinBlockTracker() = default;
 
 void BitcoinBlockTracker::Start(const std::string& chain_id,
                                 base::TimeDelta interval) {
-  if (!base::Contains(timers_, chain_id)) {
-    timers_[chain_id] = std::make_unique<base::RepeatingTimer>();
+  auto& timer = timers_[chain_id];
+  if (!timer) {
+    timer = std::make_unique<base::RepeatingTimer>();
   }
 
-  timers_[chain_id]->Start(
-      FROM_HERE, interval,
-      base::BindRepeating(&BitcoinBlockTracker::GetBlockHeight,
-                          weak_ptr_factory_.GetWeakPtr(), chain_id));
+  timer->Start(FROM_HERE, interval,
+               base::BindRepeating(&BitcoinBlockTracker::GetBlockHeight,
+                                   weak_ptr_factory_.GetWeakPtr(), chain_id));
 }
 
 void BitcoinBlockTracker::GetBlockHeight(const std::string& chain_id) {
@@ -37,12 +37,13 @@ void BitcoinBlockTracker::GetBlockHeight(const std::string& chain_id) {
                                weak_ptr_factory_.GetWeakPtr(), chain_id));
 }
 
-absl::optional<uint32_t> BitcoinBlockTracker::GetLatestHeight(
+std::optional<uint32_t> BitcoinBlockTracker::GetLatestHeight(
     const std::string& chain_id) const {
-  if (!base::Contains(latest_height_map_, chain_id)) {
-    return absl::nullopt;
+  auto it = latest_height_map_.find(chain_id);
+  if (it == latest_height_map_.end()) {
+    return std::nullopt;
   }
-  return latest_height_map_.at(chain_id);
+  return it->second;
 }
 
 void BitcoinBlockTracker::OnGetBlockHeight(

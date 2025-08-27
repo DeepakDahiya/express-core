@@ -9,12 +9,11 @@
 #include <utility>
 
 #include "base/no_destructor.h"
-#include "base/strings/utf_string_conversions.h"
 #include "content/public/renderer/render_frame.h"
 #include "gin/arguments.h"
 #include "gin/function_template.h"
-#include "third_party/blink/public/common/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/common/thread_safe_browser_interface_broker_proxy.h"
+#include "third_party/blink/public/platform/browser_interface_broker_proxy.h"
 #include "third_party/blink/public/web/blink.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_script_source.h"
@@ -25,8 +24,8 @@ BraveSearchFallbackJSHandler::BraveSearchFallbackJSHandler(
     v8::Local<v8::Context> v8_context,
     blink::ThreadSafeBrowserInterfaceBrokerProxy* broker)
     : broker_(broker),
-      context_(v8_context->GetIsolate(), v8_context),
-      isolate_(v8_context->GetIsolate()) {}
+      context_(v8::Isolate::GetCurrent(), v8_context),
+      isolate_(v8::Isolate::GetCurrent()) {}
 
 BraveSearchFallbackJSHandler::~BraveSearchFallbackJSHandler() = default;
 
@@ -101,7 +100,8 @@ v8::Local<v8::Promise> BraveSearchFallbackJSHandler::FetchBackupResults(
     const std::string& country,
     const std::string& geo,
     bool filter_explicit_results,
-    int page_index) {
+    int page_index,
+    const std::string& cookie_header_value) {
   if (!EnsureConnected())
     return v8::Local<v8::Promise>();
 
@@ -113,6 +113,9 @@ v8::Local<v8::Promise> BraveSearchFallbackJSHandler::FetchBackupResults(
     promise_resolver->Reset(isolate_, resolver.ToLocalChecked());
     brave_search_fallback_->FetchBackupResults(
         query_string, lang, country, geo, filter_explicit_results, page_index,
+        cookie_header_value.empty()
+            ? std::nullopt
+            : std::make_optional<std::string>(cookie_header_value),
         base::BindOnce(&BraveSearchFallbackJSHandler::OnFetchBackupResults,
                        base::Unretained(this), std::move(promise_resolver)));
 

@@ -5,7 +5,7 @@
 
 import styled from 'styled-components'
 
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Button from '@brave/leo/react/button'
 
 export const FullScreenPanelPopupWrapper = styled.div<{
@@ -21,7 +21,7 @@ export const FullScreenPanelPopupWrapper = styled.div<{
     p.kind === 'danger' ? leo.color.systemfeedback.errorBackground : 'unset'};
   color: ${(p) =>
     p.kind === 'danger' ? leo.color.systemfeedback.errorBackground : 'unset'};
-  box-shadow: ${leo.effect.elevation['06']};
+  box-shadow: ${leo.effect.elevation['05']};
 `
 
 export const IconButton = styled(Button)`

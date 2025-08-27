@@ -5,10 +5,13 @@
 
 #include "brave/components/brave_wallet/browser/account_resolver_delegate_impl.h"
 
+#include "base/check.h"
+#include "base/strings/string_util.h"
+
 namespace brave_wallet {
 
 AccountResolverDelegateImpl::AccountResolverDelegateImpl(
-    KeyringService* keyring_service)
+    KeyringService& keyring_service)
     : keyring_service_(keyring_service) {}
 
 mojom::AccountIdPtr AccountResolverDelegateImpl::ResolveAccountId(
@@ -42,6 +45,17 @@ bool AccountResolverDelegateImpl::ValidateAccountId(
     }
   }
   return false;
+}
+
+std::optional<std::string> AccountResolverDelegateImpl::ResolveAddress(
+    const mojom::AccountIdPtr& account_id) {
+  const auto& accounts = keyring_service_->GetAllAccountInfos();
+  for (auto& account : accounts) {
+    if (account->account_id == account_id) {
+      return account->address;
+    }
+  }
+  return std::nullopt;
 }
 
 }  // namespace brave_wallet

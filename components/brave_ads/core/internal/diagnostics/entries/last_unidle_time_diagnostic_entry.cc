@@ -16,7 +16,7 @@ constexpr char kNever[] = "Never";
 
 }  // namespace
 LastUnIdleTimeDiagnosticEntry::LastUnIdleTimeDiagnosticEntry(
-    const base::Time last_unidle_at) {
+    base::Time last_unidle_at) {
   last_unidle_at_ = last_unidle_at;
 }
 
@@ -29,11 +29,11 @@ std::string LastUnIdleTimeDiagnosticEntry::GetName() const {
 }
 
 std::string LastUnIdleTimeDiagnosticEntry::GetValue() const {
-  if (last_unidle_at_.is_null()) {
+  if (!last_unidle_at_) {
     return kNever;
   }
 
-  return LongFriendlyDateAndTime(last_unidle_at_,
+  return LongFriendlyDateAndTime(*last_unidle_at_,
                                  /*use_sentence_style=*/false);
 }
 

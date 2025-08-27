@@ -5,24 +5,16 @@
 
 #include "brave/components/p3a/features.h"
 
-namespace p3a {
-namespace features {
+namespace p3a::features {
 
-BASE_FEATURE(kConstellation,
-             "BraveP3AConstellation",
-             base::FEATURE_DISABLED_BY_DEFAULT);
+// Verify Constellation randomness server secure enclave certificate.
 BASE_FEATURE(kConstellationEnclaveAttestation,
              "BraveP3AConstellationEnclaveAttestation",
              base::FEATURE_DISABLED_BY_DEFAULT);
-
-bool IsConstellationEnabled() {
-  return base::FeatureList::IsEnabled(features::kConstellation);
-}
 
 bool IsConstellationEnclaveAttestationEnabled() {
   return base::FeatureList::IsEnabled(
       features::kConstellationEnclaveAttestation);
 }
 
-}  // namespace features
-}  // namespace p3a
+}  // namespace p3a::features

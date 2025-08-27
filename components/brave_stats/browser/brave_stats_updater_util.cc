@@ -3,26 +3,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/components/brave_stats/browser/brave_stats_updater_util.h"
+
 #include <ctime>
 #include <memory>
 #include <string_view>
 
-#include "brave/components/brave_stats/browser/brave_stats_updater_util.h"
-
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/environment.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
-#include "base/strings/stringprintf.h"
 #include "brave/components/brave_stats/browser/buildflags.h"
+#include "brave/components/constants/pref_names.h"
 #include "build/build_config.h"
+#include "components/prefs/pref_service.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 
 namespace brave_stats {
 
 std::string GetDateAsYMD(const base::Time& time) {
   base::Time::Exploded exploded;
   time.LocalExplode(&exploded);
-  return base::StringPrintf("%d-%02d-%02d", exploded.year, exploded.month,
-                            exploded.day_of_month);
+  return absl::StrFormat("%d-%02d-%02d", exploded.year, exploded.month,
+                         exploded.day_of_month);
 }
 
 std::string GetPlatformIdentifier() {
@@ -56,6 +60,22 @@ std::string GetPlatformIdentifier() {
 #endif
 }
 
+std::string GetGeneralPlatformIdentifier() {
+#if BUILDFLAG(IS_WIN)
+  return "windows";
+#elif BUILDFLAG(IS_MAC)
+  return "macos";
+#elif BUILDFLAG(IS_LINUX)
+  return "linux";
+#elif BUILDFLAG(IS_IOS)
+  return "ios";
+#elif BUILDFLAG(IS_ANDROID)
+  return "android";
+#else
+  return std::string();
+#endif
+}
+
 int GetIsoWeekNumber(const base::Time& time) {
   char buffer[24];
   time_t rawtime = time.ToTimeT();
@@ -82,7 +102,7 @@ base::Time GetLastMondayTime(const base::Time& time) {
   return last_monday;
 }
 
-base::Time GetYMDAsDate(const std::string_view ymd) {
+base::Time GetYMDAsDate(std::string_view ymd) {
   const auto pieces = base::SplitStringPiece(ymd, "-", base::TRIM_WHITESPACE,
                                              base::SPLIT_WANT_NONEMPTY);
   DCHECK_EQ(pieces.size(), 3ull);
@@ -105,12 +125,9 @@ base::Time GetYMDAsDate(const std::string_view ymd) {
 }
 
 std::string GetAPIKey() {
-  std::string api_key = BUILDFLAG(BRAVE_STATS_API_KEY);
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
-  if (env->HasVar("BRAVE_STATS_API_KEY"))
-    env->GetVar("BRAVE_STATS_API_KEY", &api_key);
-
-  return api_key;
+  auto env = base::Environment::Create();
+  return env->GetVar("BRAVE_STATS_API_KEY")
+      .value_or(BUILDFLAG(BRAVE_STATS_API_KEY));
 }
 
 // This is a helper method for dealing with timestamps set by other services in

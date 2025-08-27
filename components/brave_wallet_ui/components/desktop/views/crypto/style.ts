@@ -4,12 +4,22 @@
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 import styled from 'styled-components'
 
-export const StyledWrapper = styled.div`
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: flex-start;
-  width: 100%;
-  position: relative;
-  height: 100%;
+// Shared Styles
+import { Row } from '../../../shared/style'
+import {
+  layoutSmallWidth, //
+} from '../../wallet-page-wrapper/wallet-page-wrapper.style'
+
+export const SegmentedControlsWrapperWeb3 = styled(Row)`
+  padding: 24px 24px 14px 24px;
+  @media screen and (max-width: ${layoutSmallWidth}px) {
+    padding: 16px 16px 6px 16px;
+  }
+`
+
+export const SegmentedControlsWrapperMarket = styled(Row)`
+  padding: 4px 24px 24px 24px;
+  @media screen and (max-width: ${layoutSmallWidth}px) {
+    padding: 0px 0px 16px 0px;
+  }
 `

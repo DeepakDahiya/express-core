@@ -1,10 +1,16 @@
+// Copyright (c) 2022 The Brave Authors. All rights reserved.
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this file,
+// You can obtain one at https://mozilla.org/MPL/2.0/.
+
+use base64::prelude::*;
 use chrono::{NaiveDateTime, Utc};
 use hmac::Hmac;
 use http::uri;
 use serde::{Deserialize, Serialize};
 use serde_json::json;
 use sha2::Sha512;
-use tracing::instrument;
+use tracing::{instrument, Level};
 
 use crate::errors::{InternalError, SkusError};
 use crate::models::*;
@@ -113,7 +119,7 @@ where
                                 "{}",
                                 tlv2_cred.valid_to.format("%a, %d %b %Y %H:%M:%S GMT")
                             )),
-                            base64::encode(&serde_json::to_vec(&redemption)?),
+                            BASE64_STANDARD.encode(&serde_json::to_vec(&redemption)?),
                         )
                     }
                     CredentialType::SingleUse => {
@@ -145,7 +151,7 @@ where
                             "t": cred.unblinded_cred.t,
                             "signature": signature,
                         });
-                        let presentation = base64::encode(&redemption.to_string());
+                        let presentation = BASE64_STANDARD.encode(&redemption.to_string());
 
                         self.client.spend_single_use_item_cred(&item.id, i).await?;
 
@@ -172,7 +178,7 @@ where
                                 "{}",
                                 cred.expires_at.format("%a, %d %b %Y %H:%M:%S GMT")
                             )),
-                            base64::encode(&serde_json::to_vec(&presentation)?),
+                            BASE64_STANDARD.encode(&serde_json::to_vec(&presentation)?),
                         )
                     }
                 };
@@ -183,7 +189,7 @@ where
                     CredentialType::SingleUse => ("single-use", 1),
                 };
 
-                let payload = urlencoding::encode(&base64::encode(&serde_json::to_vec(
+                let payload = urlencoding::encode(&BASE64_STANDARD.encode(&serde_json::to_vec(
                     &VerifyCredentialRequest {
                         credential_type: item.credential_type,
                         version,
@@ -212,7 +218,7 @@ where
         Ok(None)
     }
 
-    #[instrument]
+    #[instrument(err(level = Level::WARN), ret)]
     pub async fn prepare_credentials_presentation(
         &self,
         domain: &str,

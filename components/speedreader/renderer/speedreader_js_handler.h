@@ -16,22 +16,24 @@ class SpeedreaderRenderFrameObserver;
 
 class SpeedreaderJSHandler final : public gin::Wrappable<SpeedreaderJSHandler> {
  public:
-  static gin::WrapperInfo kWrapperInfo;
+  static constexpr gin::WrapperInfo kWrapperInfo = {{gin::kEmbedderNativeGin},
+                                                    gin::SpeedreaderBindings};
 
+  explicit SpeedreaderJSHandler(
+      base::WeakPtr<SpeedreaderRenderFrameObserver> owner);
+  ~SpeedreaderJSHandler() final;
   SpeedreaderJSHandler(const SpeedreaderJSHandler&) = delete;
   SpeedreaderJSHandler& operator=(const SpeedreaderJSHandler&) = delete;
 
   static void Install(base::WeakPtr<SpeedreaderRenderFrameObserver> owner,
-                      int32_t isolated_world_id);
+                      v8::Local<v8::Context> context);
 
  private:
-  explicit SpeedreaderJSHandler(
-      base::WeakPtr<SpeedreaderRenderFrameObserver> owner);
-  ~SpeedreaderJSHandler() final;
 
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) final;
+  const gin::WrapperInfo* wrapper_info() const override;
 
   // A function to be called from JS
   void ShowOriginalPage(v8::Isolate* isolate);

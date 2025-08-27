@@ -16,7 +16,10 @@
 #include <vector>
 
 #include "base/base64.h"
+#include "base/check.h"
+#include "base/compiler_specific.h"
 #include "base/functional/bind.h"
+#include "base/logging.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "brave/components/p3a/nitro_utils/cose.h"
@@ -29,7 +32,6 @@
 #include "services/network/public/cpp/resource_request.h"
 #include "services/network/public/cpp/simple_url_loader.h"
 #include "services/network/public/mojom/url_response_head.mojom.h"
-#include "services/network/url_loader_factory.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 #include "third_party/boringssl/src/pki/parsed_certificate.h"
 
@@ -50,9 +52,9 @@ constexpr size_t kUserDataMinLength =
 // https://aws-nitro-enclaves.amazonaws.com/AWS_NitroEnclaves_Root-G1.zip
 // Fingerprint `openssl x509 -fingerprint -sha256 -in root.pem -noout`
 constexpr net::SHA256HashValue kAWSRootCertFP{
-    .data = {0x64, 0x1A, 0x03, 0x21, 0xA3, 0xE2, 0x44, 0xEF, 0xE4, 0x56, 0x46,
-             0x31, 0x95, 0xD6, 0x06, 0x31, 0x7E, 0xD7, 0xCD, 0xCC, 0x3C, 0x17,
-             0x56, 0xE0, 0x98, 0x93, 0xF3, 0xC6, 0x8F, 0x79, 0xBB, 0x5B}};
+    0x64, 0x1A, 0x03, 0x21, 0xA3, 0xE2, 0x44, 0xEF, 0xE4, 0x56, 0x46,
+    0x31, 0x95, 0xD6, 0x06, 0x31, 0x7E, 0xD7, 0xCD, 0xCC, 0x3C, 0x17,
+    0x56, 0xE0, 0x98, 0x93, 0xF3, 0xC6, 0x8F, 0x79, 0xBB, 0x5B};
 
 // Old-style user_data is a pair of prefix:<binary digest> values
 // separated by semicolons. The first value is the TLS cert fingerprint.
@@ -118,13 +120,15 @@ bool VerifyUserDataKey(scoped_refptr<net::X509Certificate> server_cert,
   // The hashes in the  old and new user_data schemes have incommensurate
   // lengths, so use the total length to distinguish between them.
   if (user_data_bytes.size() == kUserDataOldLength) {
-    if (memcmp(user_data_bytes.data(), kHashPrefix, kHashPrefixLength) != 0) {
+    if (UNSAFE_TODO(memcmp(user_data_bytes.data(), kHashPrefix,
+                           kHashPrefixLength)) != 0) {
       LOG(ERROR)
           << "Nitro verification: user data is missing sha256 hash prefix";
       return false;
     }
-    if (memcmp(server_cert_fp.data, user_data_bytes.data() + kHashPrefixLength,
-               kSHA256HashLength) == 0) {
+    if (UNSAFE_TODO(memcmp(server_cert_fp.data(),
+                           user_data_bytes.data() + kHashPrefixLength,
+                           kSHA256HashLength)) == 0) {
       return true;
     }
   } else {
@@ -140,16 +144,16 @@ bool VerifyUserDataKey(scoped_refptr<net::X509Certificate> server_cert,
       LOG(ERROR) << "Nitro verification: user data not a sha2-256 multihash";
       return false;
     }
-    if (memcmp(server_cert_fp.data,
-               user_data_bytes.data() + kMultihashPrefixLength,
-               kSHA256HashLength) == 0) {
+    if (UNSAFE_TODO(memcmp(server_cert_fp.data(),
+                           user_data_bytes.data() + kMultihashPrefixLength,
+                           kSHA256HashLength)) == 0) {
       return true;
     }
   }
   LOG(ERROR)
       << "Nitro verification: server cert fp does not match user data fp, "
       << "user data = " << base::HexEncode(user_data_bytes)
-      << ", server cert fp = " << base::HexEncode(server_cert_fp.data);
+      << ", server cert fp = " << base::HexEncode(server_cert_fp);
   return false;
 }
 

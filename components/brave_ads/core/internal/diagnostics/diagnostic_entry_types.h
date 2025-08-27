@@ -14,7 +14,9 @@ enum class DiagnosticEntryType {
   kOptedInToBraveNewsAds,
   kOptedInToNewTabPageAds,
   kOptedInToNotificationAds,
-  kLocale,
+  kOptedInToSearchResultAds,
+  kLanguage,
+  kCountry,
   kCatalogId,
   kCatalogLastUpdated,
   kLastUnIdleTime

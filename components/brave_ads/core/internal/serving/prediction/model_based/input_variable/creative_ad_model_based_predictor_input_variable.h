@@ -8,38 +8,41 @@
 
 #include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/creative_ad_model_based_predictor_input_variable_info.h"
 #include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/creative_ad_model_based_predictor_input_variable_util.h"
-#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/input_variable/creative_ad_model_based_predictor_segment_input_variable_info.h"
-#include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_info.h"
+#include "brave/components/brave_ads/core/internal/serving/prediction/model_based/weight/creative_ad_model_based_predictor_weights_info.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/ad_events/ad_event_info.h"
 
 namespace brave_ads {
 
 struct UserModelInfo;
 
 template <typename T>
-CreativeAdPredictorInputVariableInfo ComputeCreativeAdPredictorInputVariable(
+CreativeAdModelBasedPredictorInputVariableInfo
+ComputeCreativeAdModelBasedPredictorInputVariable(
     const T& creative_ad,
     const UserModelInfo& user_model,
-    const AdEventList& ad_events) {
-  CreativeAdPredictorInputVariableInfo input_variable;
+    const AdEventList& ad_events,
+    const CreativeAdModelBasedPredictorWeightsInfo& weights) {
+  CreativeAdModelBasedPredictorInputVariableInfo input_variable;
 
   input_variable.intent_segment =
-      ComputeCreativeAdPredictorIntentSegmentInputVariable(user_model,
-                                                           creative_ad.segment);
+      ComputeCreativeAdModelBasedPredictorIntentSegmentInputVariable(
+          user_model, creative_ad.segment, weights.intent_segment);
 
   input_variable.latent_interest_segment =
-      ComputeCreativeAdPredictorLatentInterestSegmentInputVariable(
-          user_model, creative_ad.segment);
+      ComputeCreativeAdModelBasedPredictorLatentInterestSegmentInputVariable(
+          user_model, creative_ad.segment, weights.latent_interest_segment);
 
   input_variable.interest_segment =
-      ComputeCreativeAdPredictorInterestSegmentInputVariable(
-          user_model, creative_ad.segment);
+      ComputeCreativeAdModelBasedPredictorInterestSegmentInputVariable(
+          user_model, creative_ad.segment, weights.interest_segment);
+
+  input_variable.untargeted_segment =
+      ComputeCreativeAdModelBasedPredictorUntargetedSegmentInputVariable(
+          creative_ad.segment, weights.untargeted_segment);
 
   input_variable.last_seen_ad =
-      ComputeCreativeAdPredictorLastSeenAdInputVariable(creative_ad, ad_events);
-
-  input_variable.last_seen_advertiser =
-      ComputeCreativeAdPredictorLastSeenAdvertiserInputVariable(creative_ad,
-                                                                ad_events);
+      ComputeCreativeAdModelBasedPredictorLastSeenAdInputVariable(
+          creative_ad, ad_events, weights.last_seen_ad);
 
   return input_variable;
 }

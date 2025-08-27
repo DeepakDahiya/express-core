@@ -10,8 +10,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace brave_search_conversion {
-namespace p3a {
+namespace brave_search_conversion::p3a {
 
 struct ConversionTypeInfo {
   ConversionType type;
@@ -19,10 +18,6 @@ struct ConversionTypeInfo {
 };
 
 const ConversionTypeInfo type_infos[] = {
-    {
-        .type = ConversionType::kBannerTypeA,
-        .histogram_name = kSearchPromoBannerAHistogramName,
-    },
     {
         .type = ConversionType::kBannerTypeB,
         .histogram_name = kSearchPromoBannerBHistogramName,
@@ -36,8 +31,12 @@ const ConversionTypeInfo type_infos[] = {
         .histogram_name = kSearchPromoBannerDHistogramName,
     },
     {
-        .type = ConversionType::kButton,
-        .histogram_name = kSearchPromoButtonHistogramName,
+        .type = ConversionType::kDDGBannerTypeC,
+        .histogram_name = kSearchPromoDDGBannerCHistogramName,
+    },
+    {
+        .type = ConversionType::kDDGBannerTypeD,
+        .histogram_name = kSearchPromoDDGBannerDHistogramName,
     },
     {
         .type = ConversionType::kNTP,
@@ -145,5 +144,4 @@ TEST_F(BraveSearchConversionP3ATest, TestQueriesBeforeChurn) {
                                       1);
 }
 
-}  // namespace p3a
-}  // namespace brave_search_conversion
+}  // namespace brave_search_conversion::p3a

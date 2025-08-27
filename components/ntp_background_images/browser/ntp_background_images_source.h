@@ -6,13 +6,13 @@
 #ifndef BRAVE_COMPONENTS_NTP_BACKGROUND_IMAGES_BROWSER_NTP_BACKGROUND_IMAGES_SOURCE_H_
 #define BRAVE_COMPONENTS_NTP_BACKGROUND_IMAGES_BROWSER_NTP_BACKGROUND_IMAGES_SOURCE_H_
 
+#include <optional>
 #include <string>
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/url_data_source.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace base {
 class FilePath;
@@ -25,7 +25,8 @@ class NTPBackgroundImagesService;
 // This serves background image data.
 class NTPBackgroundImagesSource : public content::URLDataSource {
  public:
-  explicit NTPBackgroundImagesSource(NTPBackgroundImagesService* service);
+  explicit NTPBackgroundImagesSource(
+      NTPBackgroundImagesService* background_images_service);
 
   ~NTPBackgroundImagesSource() override;
 
@@ -48,11 +49,13 @@ class NTPBackgroundImagesSource : public content::URLDataSource {
   void GetImageFile(const base::FilePath& image_file_path,
                     GotDataCallback callback);
   void OnGotImageFile(GotDataCallback callback,
-                      absl::optional<std::string> input);
+                      std::optional<std::string> input);
   int GetWallpaperIndexFromPath(const std::string& path) const;
 
-  raw_ptr<NTPBackgroundImagesService> service_ = nullptr;  // not owned
-  base::WeakPtrFactory<NTPBackgroundImagesSource> weak_factory_;
+  raw_ptr<NTPBackgroundImagesService> background_images_service_ =
+      nullptr;  // Not owned.
+
+  base::WeakPtrFactory<NTPBackgroundImagesSource> weak_factory_{this};
 };
 
 }  // namespace ntp_background_images

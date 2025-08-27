@@ -4,6 +4,8 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "components/permissions/permissions_client.h"
+
+#include "base/compiler_specific.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
@@ -27,22 +29,32 @@ TEST_F(PermissionsClientUnitTest, BraveCanBypassEmbeddingOriginCheck) {
       {GURL("https://test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8"),
        GURL("https://"
             "test.com__BrG44HdsEhzapvs8bEqzvkq4egwevS3fRE6ze2ENo6S8:123"),
-       ContentSettingsType::BRAVE_SOLANA}};
+       ContentSettingsType::BRAVE_SOLANA},
+      {GURL("https://"
+            "test.com__"
+            "addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psduyk6n"
+            "4n2qrud2xlv9fgj53n6ds3t8cs4fvzs05yzmz"),
+       GURL("https://"
+            "test.com__"
+            "addr1q8gg2r3vf9zggn48g7m8vx62rwf6warcs4k7ej8mdzmqmesj30jz7psduyk6n"
+            "4n2qrud2xlv9fgj53n6ds3t8cs4fvzs05yzmz:123"),
+       ContentSettingsType::BRAVE_CARDANO}};
 
   for (size_t i = 0; i < sizeof(cases) / sizeof(cases[0]); ++i) {
     GURL embedding_origin("https://test.com");
     EXPECT_TRUE(client->BraveCanBypassEmbeddingOriginCheck(
-        cases[i].requesting_origin, embedding_origin, cases[i].type))
+        UNSAFE_TODO(cases[i]).requesting_origin, embedding_origin,
+        UNSAFE_TODO(cases[i]).type))
         << "case: " << i;
 
     GURL embedding_origin_with_port("https://test.com:123");
     EXPECT_TRUE(client->BraveCanBypassEmbeddingOriginCheck(
-        cases[i].requesting_origin_with_port, embedding_origin_with_port,
-        cases[i].type))
+        UNSAFE_TODO(cases[i]).requesting_origin_with_port,
+        embedding_origin_with_port, UNSAFE_TODO(cases[i]).type))
         << "case: " << i;
 
     EXPECT_FALSE(client->BraveCanBypassEmbeddingOriginCheck(
-        cases[i].requesting_origin, embedding_origin,
+        UNSAFE_TODO(cases[i]).requesting_origin, embedding_origin,
         ContentSettingsType::GEOLOCATION))
         << "case: " << i;
   }

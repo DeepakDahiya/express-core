@@ -8,30 +8,30 @@
 
 #include <list>
 #include <map>
-#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
 
+#include "base/memory/raw_ref.h"
 #include "base/memory/weak_ptr.h"
 #include "base/types/expected.h"
 #include "brave/components/api_request_helper/api_request_helper.h"
-#include "brave/components/brave_wallet/browser/bitcoin_rpc_responses.h"
-#include "components/prefs/pref_service.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_rpc_responses.h"
+
+namespace brave_wallet {
+class NetworkManager;
+}
 
 namespace brave_wallet::bitcoin_rpc {
 
 using UnspentOutputs = std::vector<UnspentOutput>;
 
-struct QueuedRequestData;
+struct EndpointQueue;
 
-// TODO(apaymyshev): test this class
-// TODO(apaymyshev): consider this being a separate keyed service
 class BitcoinRpc {
  public:
-  explicit BitcoinRpc(
-      PrefService* prefs,
-      scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
+  BitcoinRpc(NetworkManager& network_manager,
+             scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory);
   ~BitcoinRpc();
 
   using APIRequestHelper = api_request_helper::APIRequestHelper;
@@ -49,6 +49,7 @@ class BitcoinRpc {
   using GetFeeEstimatesCallback =
       RpcResponseCallback<std::map<uint32_t, double>>;
   using GetTransactionCallback = RpcResponseCallback<Transaction>;
+  using GetTransactionRawCallback = RpcResponseCallback<std::vector<uint8_t>>;
   using GetAddressStatsCallback = RpcResponseCallback<AddressStats>;
   using GetUtxoListCallback = RpcResponseCallback<UnspentOutputs>;
   using PostTransactionCallback = RpcResponseCallback<std::string>;
@@ -60,6 +61,9 @@ class BitcoinRpc {
   void GetTransaction(const std::string& chain_id,
                       const std::string& txid,
                       GetTransactionCallback callback);
+  void GetTransactionRaw(const std::string& chain_id,
+                         const std::string& txid,
+                         GetTransactionRawCallback callback);
   void GetAddressStats(const std::string& chain_id,
                        const std::string& address,
                        GetAddressStatsCallback callback);
@@ -79,9 +83,10 @@ class BitcoinRpc {
                        RequestIntermediateCallback callback,
                        APIRequestHelper::ResponseConversionCallback
                            conversion_callback = base::NullCallback());
-  void OnRequestInternalDone(RequestIntermediateCallback callback,
+  void OnRequestInternalDone(const GURL& endpoint_host,
+                             RequestIntermediateCallback callback,
                              APIRequestResult api_request_result);
-  void MaybeStartQueuedRequest();
+  void MaybeStartQueuedRequest(const GURL& endpoint_host);
 
   void OnGetChainHeight(GetChainHeightCallback callback,
                         APIRequestResult api_request_result);
@@ -89,6 +94,8 @@ class BitcoinRpc {
                          APIRequestResult api_request_result);
   void OnGetTransaction(GetTransactionCallback callback,
                         APIRequestResult api_request_result);
+  void OnGetTransactionRaw(GetTransactionRawCallback callback,
+                           APIRequestResult api_request_result);
   void OnGetAddressStats(GetAddressStatsCallback callback,
                          APIRequestResult api_request_result);
   void OnGetUtxoList(GetUtxoListCallback callback,
@@ -98,11 +105,13 @@ class BitcoinRpc {
   void OnPostTransaction(PostTransactionCallback callback,
                          APIRequestResult api_request_result);
 
-  const raw_ptr<PrefService> prefs_;
+  GURL GetNetworkURL(const std::string& chain_id);
+
+  const raw_ref<NetworkManager> network_manager_;
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
-  uint32_t active_requests_ = 0;
-  base::circular_deque<QueuedRequestData> requests_queue_;
-  std::unique_ptr<APIRequestHelper> api_request_helper_;
+  // Uses hostname as key. Tracks request throttling(if required) per host.
+  std::map<std::string, EndpointQueue> endpoints_;
+  APIRequestHelper api_request_helper_;
   base::WeakPtrFactory<BitcoinRpc> weak_ptr_factory_{this};
 };
 

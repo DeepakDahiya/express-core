@@ -6,10 +6,10 @@ import * as React from 'react'
 import styled, { css } from 'styled-components'
 
 import getPanelBrowserAPI from '../../api/panel_browser_api'
+import { color } from '@brave/leo/tokens/css/variables'
 
-interface Props {
+interface Props extends React.PropsWithChildren {
   isExpanded: boolean
-  children?: React.ReactChildren | React.ReactElement
 }
 
 interface ScrollBoxProps {
@@ -31,11 +31,11 @@ const ScrollBox = styled.div<ScrollBoxProps>`
   }
 
   &::-webkit-scrollbar-track {
-    background: ${p => p.theme.color.subtleBackground};
+    background: ${color.neutral[10]};
   }
 
   &::-webkit-scrollbar-thumb {
-    background: ${p => p.theme.color.subtle};
+    background: ${color.neutral[20]};
   }
 `
 
@@ -64,6 +64,10 @@ function Scroller (props: Props) {
 
   const updatePanelRect = async () => {
     const { vec } = await getPanelBrowserAPI().panelHandler.getPosition()
+    if (!vec) {
+      return
+    }
+
     const windowInnerHeight = await getWindowInnerHeight()
 
     // We read width/height from window object because

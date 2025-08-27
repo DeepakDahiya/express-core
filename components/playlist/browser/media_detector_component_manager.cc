@@ -5,6 +5,9 @@
 
 #include "brave/components/playlist/browser/media_detector_component_manager.h"
 
+#include <utility>
+
+#include "base/check.h"
 #include "base/containers/flat_set.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
@@ -25,24 +28,33 @@ using ScriptName = base::FilePath::StringType;
 using ScriptToSchemefulSiteMap = base::flat_map<ScriptName, net::SchemefulSite>;
 using ScriptToResourceIdMap = base::flat_map<ScriptName, int>;
 
+const base::FilePath::StringType& GetMediaSourceAPISuppressorScriptName() {
+  static const base::NoDestructor kMediaSourceApiSuppressor(
+      ScriptName(FILE_PATH_LITERAL("media_source_api_suppressor.js")));
+  return *kMediaSourceApiSuppressor;
+}
+
 const base::FilePath::StringType& GetBaseScriptName() {
-  static const base::NoDestructor base_script(
+  static const base::NoDestructor kBaseScript(
       ScriptName(FILE_PATH_LITERAL("index.js")));
-  return *base_script;
+  return *kBaseScript;
 }
 
 const ScriptToSchemefulSiteMap& GetScriptNameToSchemefulSiteMap() {
-  static const base::NoDestructor script_name_to_schemeful_sites(
+  static const base::NoDestructor kScriptNameToSchemefulSites(
       ScriptToSchemefulSiteMap{
           {FILE_PATH_LITERAL("youtube.com.js"),
            net::SchemefulSite(GURL("https://youtube.com"))}});
 
-  return *script_name_to_schemeful_sites;
+  return *kScriptNameToSchemefulSites;
 }
 
 base::flat_map<ScriptName, std::string> GetLocalScriptMap() {
   const auto& rb = ui::ResourceBundle::GetSharedInstance();
   return {
+      {GetMediaSourceAPISuppressorScriptName(),
+       std::string(rb.LoadDataResourceString(
+           IDR_PLAYLIST_MEDIA_SOURCE_API_SUPPRESSOR_JS))},
       {GetBaseScriptName(),
        std::string(rb.LoadDataResourceString(IDR_PLAYLIST_MEDIA_DETECTOR_JS))},
       {FILE_PATH_LITERAL("youtube.com.js"),
@@ -58,7 +70,7 @@ std::string ReadScript(const base::FilePath& path) {
 }
 
 base::flat_map<ScriptName, std::string> ReadScriptsFromComponent(
-    base::flat_set<base::FilePath> files) {
+    const base::flat_set<base::FilePath>& files) {
   base::flat_map<ScriptName, std::string> script_map;
   for (const auto& path : files) {
     if (auto script = ReadScript(path); !script.empty()) {
@@ -74,11 +86,9 @@ base::flat_map<ScriptName, std::string> ReadScriptsFromComponent(
 MediaDetectorComponentManager::MediaDetectorComponentManager(
     component_updater::ComponentUpdateService* component_update_service)
     : component_update_service_(component_update_service) {
-  // TODO(sko) These lists should be dynamically updated from the playlist.
-  // Even after we finish the job, we should leave these call so that we can
-  // use local resources until the component is updated.
-  SetUseLocalListToHideMediaSrcAPI();
-  SetUseLocalListToUseFakeUA();
+  // TODO(sko) We have breaking changes and not using scripts from component
+  // updater. But we should use script from the component at some point.
+  SetUseLocalScript();
 }
 
 MediaDetectorComponentManager::~MediaDetectorComponentManager() = default;
@@ -91,9 +101,19 @@ void MediaDetectorComponentManager::RemoveObserver(Observer* observer) {
   observer_list_.RemoveObserver(observer);
 }
 
+void MediaDetectorComponentManager::MaybeInitScripts() {
+  if (base_script_.empty()) {
+    // In case we have yet to fetch the script, use local script instead. At the
+    // same time, fetch the script from component.
+    RegisterIfNeeded();
+    OnGetScripts(GetLocalScriptMap());
+  }
+}
+
 void MediaDetectorComponentManager::RegisterIfNeeded() {
-  if (register_requested_)
+  if (register_requested_) {
     return;
+  }
 
   register_requested_ = true;
   RegisterMediaDetectorComponent(
@@ -105,14 +125,15 @@ void MediaDetectorComponentManager::RegisterIfNeeded() {
 void MediaDetectorComponentManager::OnComponentReady(
     const base::FilePath& install_path) {
   base::flat_set<base::FilePath> files(
-      {install_path.Append(GetBaseScriptName())});
+      {install_path.Append(GetMediaSourceAPISuppressorScriptName()),
+       install_path.Append(GetBaseScriptName())});
   for (const auto& [file, _] : GetScriptNameToSchemefulSiteMap()) {
     files.insert(install_path.Append(file));
   }
 
   base::ThreadPool::PostTaskAndReplyWithResult(
       FROM_HERE, base::MayBlock(),
-      base::BindOnce(&ReadScriptsFromComponent, files),
+      base::BindOnce(&ReadScriptsFromComponent, std::move(files)),
       base::BindOnce(&MediaDetectorComponentManager::OnGetScripts,
                      weak_factory_.GetWeakPtr()));
 }
@@ -124,7 +145,11 @@ void MediaDetectorComponentManager::OnGetScripts(
     return;
   }
 
-  DCHECK(script_map.count(GetBaseScriptName()));
+  CHECK(script_map.contains(GetMediaSourceAPISuppressorScriptName()));
+  media_source_api_suppressor_ =
+      script_map.at(GetMediaSourceAPISuppressorScriptName());
+
+  CHECK(script_map.contains(GetBaseScriptName()));
   base_script_ = script_map.at(GetBaseScriptName());
 
   // This could have been filled when we've used media detector script before
@@ -133,43 +158,38 @@ void MediaDetectorComponentManager::OnGetScripts(
 
   const auto& schemeful_site_map = GetScriptNameToSchemefulSiteMap();
   for (const auto& [script_name, script] : script_map) {
-    if (schemeful_site_map.count(script_name)) {
+    if (schemeful_site_map.contains(script_name)) {
       site_specific_detectors_[schemeful_site_map.at(script_name)] = script;
     }
   }
 
-  for (auto& observer : observer_list_)
+  for (auto& observer : observer_list_) {
     observer.OnScriptReady(base_script_);
+  }
 }
 
-void MediaDetectorComponentManager::SetUseLocalScriptForTesting() {
+void MediaDetectorComponentManager::SetUseLocalScript() {
   register_requested_ = true;
 
   OnGetScripts(GetLocalScriptMap());
 }
 
-bool MediaDetectorComponentManager::ShouldHideMediaSrcAPI(
-    const GURL& url) const {
-  net::SchemefulSite schemeful_site(url);
-  return base::ranges::any_of(sites_to_hide_media_src_api_,
-                              [&schemeful_site](const auto& site_to_hide) {
-                                return site_to_hide == schemeful_site;
-                              });
+const std::string&
+MediaDetectorComponentManager::GetMediaSourceAPISuppressorScript() {
+  MaybeInitScripts();
+  CHECK(!media_source_api_suppressor_.empty());
+  return media_source_api_suppressor_;
 }
 
 std::string MediaDetectorComponentManager::GetMediaDetectorScript(
     const GURL& url) {
-  if (base_script_.empty()) {
-    // In case we have yet to fetch the script, use local script instead. At the
-    // same time, fetch the script from component.
-    RegisterIfNeeded();
-    OnGetScripts(GetLocalScriptMap());
-  }
+  MaybeInitScripts();
 
+  net::SchemefulSite site(url);
   std::string detector_script = base_script_;
   DCHECK(!detector_script.empty());
 
-  if (net::SchemefulSite site(url); site_specific_detectors_.count(site)) {
+  if (site_specific_detectors_.count(site)) {
     constexpr std::string_view kPlaceholder =
         "const siteSpecificDetector = null";
     auto pos = detector_script.find(kPlaceholder);
@@ -193,40 +213,6 @@ std::string MediaDetectorComponentManager::GetMediaDetectorScript(
   }
 
   return detector_script;
-}
-
-void MediaDetectorComponentManager::SetUseLocalListToHideMediaSrcAPI() {
-  sites_to_hide_media_src_api_ = {
-      {net::SchemefulSite(GURL("https://youtube.com"))},
-      {net::SchemefulSite(GURL("https://vimeo.com"))},
-      {net::SchemefulSite(GURL("https://ted.com"))},
-      {net::SchemefulSite(GURL("https://bitchute.com"))},
-      {net::SchemefulSite(GURL("https://marthastewart.com"))},
-      {net::SchemefulSite(GURL("https://bbcgoodfood.com"))},
-      {net::SchemefulSite(GURL("https://rumble.com/"))},
-      {net::SchemefulSite(GURL("https://brighteon.com"))},
-  };
-}
-
-bool MediaDetectorComponentManager::ShouldUseFakeUA(const GURL& url) const {
-  net::SchemefulSite schemeful_site(url);
-  return base::ranges::any_of(
-      sites_to_use_fake_ua_,
-      [&schemeful_site](const auto& site_to_use_fake_ua) {
-        return site_to_use_fake_ua == schemeful_site;
-      });
-}
-
-void MediaDetectorComponentManager::SetUseLocalListToUseFakeUA() {
-  sites_to_use_fake_ua_ = {
-      {net::SchemefulSite(GURL("https://ted.com"))},
-      {net::SchemefulSite(GURL("https://marthastewart.com"))},
-      {net::SchemefulSite(GURL("https://bbcgoodfood.com"))},
-      {net::SchemefulSite(GURL("https://rumble.com/"))},
-      {net::SchemefulSite(
-          GURL("https://brighteon.com"))},  // This site partially supported,
-                                            // Audio only.
-  };
 }
 
 }  // namespace playlist

@@ -5,16 +5,23 @@
 
 #include "brave/components/brave_wallet/browser/permission_utils.h"
 
+#include <optional>
 #include <string_view>
 
+#include "base/check.h"
 #include "base/no_destructor.h"
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
+#include "components/permissions/request_type.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
+#include "third_party/blink/public/common/permissions/permission_utils.h"
 #include "third_party/re2/src/re2/re2.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+
+// TODO(https://github.com/brave/brave-browser/issues/47669) this file should be
+// in content/browser subfolder of a layered brave_wallet component.
 
 namespace {
 
@@ -24,24 +31,28 @@ constexpr char kEthAddrPattern[] = "addr=(0x[[:xdigit:]]{40})";
 // This is generic pattern for all coins, we put maximum length bump 128 is to
 // prevent ReDoS attack.
 constexpr char kAddrPattern[] = "addr=([[:alnum:]]{1,128})";
+// This is a pattern for the mojom::AccountId's unique_key format.
+constexpr char kCardanoAddrPattern[] = "addr=(([0-9]+_?)+)";
 
 // Given an origin and an account address, append the account address to the
 // end of the host piece of the origin, then return it as the new origin.
-bool AddAccountToHost(const url::Origin& old_origin,
-                      const std::string& account,
-                      url::Origin* new_origin) {
-  if (old_origin.opaque() || account.empty() || !new_origin) {
-    return false;
+std::optional<url::Origin> AddAccountToHost(const url::Origin& old_origin,
+                                            std::string_view account) {
+  if (old_origin.opaque() || account.empty()) {
+    return std::nullopt;
   }
 
   GURL::Replacements replacements;
   std::string new_host = base::StrCat({old_origin.host(), account});
   replacements.SetHostStr(new_host);
 
-  *new_origin =
+  auto new_origin =
       url::Origin::Create(old_origin.GetURL().ReplaceComponents(replacements));
 
-  return !new_origin->host().empty();
+  if (new_origin.host().empty()) {
+    return std::nullopt;
+  }
+  return new_origin;
 }
 
 // Given the overwritten origin, such as https://test.com{addr=123&addr=456},
@@ -50,6 +61,7 @@ void ExtractAddresses(permissions::RequestType type,
                       const url::Origin& origin,
                       std::queue<std::string>* address_queue) {
   static base::NoDestructor<re2::RE2> kEthAddrRegex(kEthAddrPattern);
+  static base::NoDestructor<re2::RE2> kCardanoAddrRegex(kCardanoAddrPattern);
   static base::NoDestructor<re2::RE2> kAddrRegex(kAddrPattern);
   DCHECK(!origin.opaque() && address_queue);
 
@@ -59,6 +71,8 @@ void ExtractAddresses(permissions::RequestType type,
   re2::RE2* regex;
   if (type == permissions::RequestType::kBraveEthereum) {
     regex = kEthAddrRegex.get();
+  } else if (type == permissions::RequestType::kBraveCardano) {
+    regex = kCardanoAddrRegex.get();
   } else {
     regex = kAddrRegex.get();
   }
@@ -76,7 +90,8 @@ bool ParseRequestingOriginInternal(permissions::RequestType type,
                                    std::string* account,
                                    std::queue<std::string>* address_queue) {
   if (origin.opaque() || (type != permissions::RequestType::kBraveEthereum &&
-                          type != permissions::RequestType::kBraveSolana)) {
+                          type != permissions::RequestType::kBraveSolana &&
+                          type != permissions::RequestType::kBraveCardano)) {
     return false;
   }
 
@@ -90,6 +105,10 @@ bool ParseRequestingOriginInternal(permissions::RequestType type,
     pattern = sub_req_format ? "(.*)(0x[[:xdigit:]]{40})(:[0-9]+)*"
                              : "(.*){addr=0x[[:xdigit:]]{40}(&"
                                "addr=0x[[:xdigit:]]{40})*}(:[0-9]+)*";
+  } else if (type == permissions::RequestType::kBraveCardano) {
+    // AccountId->unique_key is used as account identifier for cardano.
+    pattern = sub_req_format ? "(.*)__([0-9_]+)(:[0-9]+)*"
+                             : "(.*){addr=[0-9_]+(&addr=[0-9_]+)*}(:[0-9]+)*";
   } else {
     pattern = sub_req_format ? "(.*)__([[:alnum:]]{1,128})(:[0-9]+)*"
                              : "(.*){addr=[[:alnum:]]{1,128}(&"
@@ -122,12 +141,11 @@ bool ParseRequestingOriginInternal(permissions::RequestType type,
 
 namespace brave_wallet {
 
-bool GetConcatOriginFromWalletAddresses(
+std::optional<url::Origin> GetConcatOriginFromWalletAddresses(
     const url::Origin& old_origin,
-    const std::vector<std::string>& addresses,
-    url::Origin* new_origin) {
+    const std::vector<std::string>& addresses) {
   if (old_origin.opaque() || addresses.empty()) {
-    return false;
+    return std::nullopt;
   }
 
   std::string addresses_suffix = "{";
@@ -139,7 +157,7 @@ bool GetConcatOriginFromWalletAddresses(
   }
   addresses_suffix += "}";
 
-  return AddAccountToHost(old_origin, addresses_suffix, new_origin);
+  return AddAccountToHost(old_origin, addresses_suffix);
 }
 
 bool ParseRequestingOriginFromSubRequest(permissions::RequestType type,
@@ -163,23 +181,23 @@ bool ParseRequestingOrigin(permissions::RequestType type,
                                        address_queue);
 }
 
-bool GetSubRequestOrigin(permissions::RequestType type,
-                         const url::Origin& old_origin,
-                         const std::string& account,
-                         url::Origin* new_origin) {
+std::optional<url::Origin> GetSubRequestOrigin(permissions::RequestType type,
+                                               const url::Origin& old_origin,
+                                               std::string_view account) {
   if (type != permissions::RequestType::kBraveEthereum &&
-      type != permissions::RequestType::kBraveSolana) {
-    return false;
+      type != permissions::RequestType::kBraveSolana &&
+      type != permissions::RequestType::kBraveCardano) {
+    return std::nullopt;
   }
-  std::string account_with_separater;
+  std::string account_with_separator;
   if (type == permissions::RequestType::kBraveEthereum) {
-    account_with_separater = account;
+    account_with_separator = account;
   } else {
-    account_with_separater =
+    account_with_separator =
         account.empty() ? account : base::StrCat({"__", account});
   }
 
-  return AddAccountToHost(old_origin, account_with_separater, new_origin);
+  return AddAccountToHost(old_origin, account_with_separator);
 }
 
 GURL GetConnectWithSiteWebUIURL(const GURL& webui_base_url,
@@ -189,15 +207,15 @@ GURL GetConnectWithSiteWebUIURL(const GURL& webui_base_url,
 
   std::vector<std::string> query_parts;
   for (const auto& account : accounts) {
-    query_parts.push_back(base::StringPrintf("addr=%s", account.c_str()));
+    query_parts.push_back(absl::StrFormat("addr=%s", account));
   }
 
   mojom::OriginInfoPtr origin_info = MakeOriginInfo(origin);
 
   query_parts.push_back(
-      base::StringPrintf("origin-spec=%s", origin_info->origin_spec.c_str()));
-  query_parts.push_back(base::StringPrintf(
-      "etld-plus-one=%s", origin_info->e_tld_plus_one.c_str()));
+      absl::StrFormat("origin-spec=%s", origin_info->origin_spec));
+  query_parts.push_back(
+      absl::StrFormat("etld-plus-one=%s", origin_info->e_tld_plus_one));
 
   std::string query_str = base::JoinString(query_parts, "&");
   GURL::Replacements replacements;
@@ -206,27 +224,31 @@ GURL GetConnectWithSiteWebUIURL(const GURL& webui_base_url,
   return webui_base_url.ReplaceComponents(replacements);
 }
 
-absl::optional<blink::PermissionType> CoinTypeToPermissionType(
+std::optional<blink::PermissionType> CoinTypeToPermissionType(
     mojom::CoinType coin_type) {
   switch (coin_type) {
     case mojom::CoinType::ETH:
       return blink::PermissionType::BRAVE_ETHEREUM;
     case mojom::CoinType::SOL:
       return blink::PermissionType::BRAVE_SOLANA;
+    case mojom::CoinType::ADA:
+      return blink::PermissionType::BRAVE_CARDANO;
     default:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 
-absl::optional<permissions::RequestType> CoinTypeToPermissionRequestType(
+std::optional<permissions::RequestType> CoinTypeToPermissionRequestType(
     mojom::CoinType coin_type) {
   switch (coin_type) {
     case mojom::CoinType::ETH:
       return permissions::RequestType::kBraveEthereum;
     case mojom::CoinType::SOL:
       return permissions::RequestType::kBraveSolana;
+    case mojom::CoinType::ADA:
+      return permissions::RequestType::kBraveCardano;
     default:
-      return absl::nullopt;
+      return std::nullopt;
   }
 }
 

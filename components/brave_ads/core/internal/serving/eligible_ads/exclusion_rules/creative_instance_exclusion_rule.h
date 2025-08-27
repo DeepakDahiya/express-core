@@ -9,7 +9,7 @@
 #include <string>
 
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/exclusion_rules/exclusion_rule_interface.h"
-#include "brave/components/brave_ads/core/internal/user/user_interaction/ad_events/ad_event_info.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/ad_events/ad_event_info.h"
 
 namespace brave_ads {
 
@@ -24,17 +24,11 @@ class CreativeInstanceExclusionRule final
   CreativeInstanceExclusionRule& operator=(
       const CreativeInstanceExclusionRule&) = delete;
 
-  CreativeInstanceExclusionRule(CreativeInstanceExclusionRule&&) noexcept =
-      delete;
-  CreativeInstanceExclusionRule& operator=(
-      CreativeInstanceExclusionRule&&) noexcept = delete;
-
   ~CreativeInstanceExclusionRule() override;
 
-  std::string GetUuid(const CreativeAdInfo& creative_ad) const override;
-
-  base::expected<void, std::string> ShouldInclude(
-      const CreativeAdInfo& creative_ad) const override;
+  // ExclusionRuleInterface:
+  std::string GetCacheKey(const CreativeAdInfo& creative_ad) const override;
+  bool ShouldInclude(const CreativeAdInfo& creative_ad) const override;
 
  private:
   AdEventList ad_events_;

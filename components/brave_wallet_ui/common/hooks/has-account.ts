@@ -12,7 +12,7 @@ import { BraveWallet } from '../../constants/types'
 import { useGetSelectedChainQuery } from '../slices/api.slice'
 import { useAccountsQuery } from '../slices/api.slice.extra'
 
-export function useHasAccount () {
+export function useHasAccount() {
   // redux
   const { accounts } = useAccountsQuery()
 
@@ -22,7 +22,7 @@ export function useHasAccount () {
   // memos
   const hasSolAccount = React.useMemo((): boolean => {
     return accounts.some(
-      (account) => account.accountId.coin === BraveWallet.CoinType.SOL
+      (account) => account.accountId.coin === BraveWallet.CoinType.SOL,
     )
   }, [accounts])
   const hasFilAccount = React.useMemo((): boolean => {
@@ -32,8 +32,8 @@ export function useHasAccount () {
         : BraveWallet.KeyringId.kFilecoinTestnet
     return accounts.some(
       (account) =>
-        account.accountId.coin === BraveWallet.CoinType.FIL &&
-        account.accountId.keyringId === keyringForCurrentNetwork
+        account.accountId.coin === BraveWallet.CoinType.FIL
+        && account.accountId.keyringId === keyringForCurrentNetwork,
     )
   }, [accounts, selectedNetwork])
 
@@ -44,16 +44,19 @@ export function useHasAccount () {
     }
 
     switch (selectedNetwork?.coin) {
-      case BraveWallet.CoinType.SOL: return !hasSolAccount
-      case BraveWallet.CoinType.FIL: return !hasFilAccount
-      default: return false
+      case BraveWallet.CoinType.SOL:
+        return !hasSolAccount
+      case BraveWallet.CoinType.FIL:
+        return !hasFilAccount
+      default:
+        return false
     }
-  }, [hasSolAccount, hasFilAccount, selectedNetwork])
+  }, [accounts.length, selectedNetwork?.coin, hasSolAccount, hasFilAccount])
 
   return {
     hasSolAccount,
     hasFilAccount,
-    needsAccount
+    needsAccount,
   }
 }
 

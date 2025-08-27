@@ -7,17 +7,12 @@
 #define BRAVE_COMPONENTS_L10N_COMMON_PREFS_H_
 
 class PrefRegistrySimple;
+class PrefService;
 
 namespace brave_l10n {
 
-namespace prefs {
-
-// The country code used to register component resources.
-extern const char kCountryCode[];
-
-}  // namespace prefs
-
-void RegisterL10nLocalStatePrefs(PrefRegistrySimple* registry);
+void RegisterLocalStatePrefsForMigration(PrefRegistrySimple* registry);
+void MigrateObsoleteLocalStatePrefs(PrefService* local_state);
 
 }  // namespace brave_l10n
 

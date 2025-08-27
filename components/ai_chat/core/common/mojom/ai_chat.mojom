@@ -5,28 +5,36 @@
 
 module ai_chat.mojom;
 
+import "brave/components/ai_chat/core/common/mojom/untrusted_frame.mojom";
+import "brave/components/ai_chat/core/common/mojom/tab_tracker.mojom";
+import "mojo/public/mojom/base/time.mojom";
+import "mojo/public/mojom/base/values.mojom";
 import "url/mojom/url.mojom";
+
+// Share some tool names between the browser and the UI so that
+// custom user actions and UI representations can be created.
+const string kUserChoiceToolName = "user_choice_tool";
+
+// File upload limits
+// https://docs.aws.amazon.com/bedrock/latest/APIReference/API_runtime_Message.html#API_runtime_Message_Contents
+const uint32 MAX_IMAGES = 20;
+const uint32 MAX_DOCUMENTS = 5;
+const uint32 MAX_DOCUMENT_SIZE_BYTES = 4718592; // 4.5MB
 
 enum CharacterType {
   HUMAN,
   ASSISTANT
 };
 
-enum ConversationTurnVisibility {
-  VISIBLE,
-  HIDDEN // does not get added to chat history, used as a flag internally
-};
-
 enum APIError {
   None,
+  InternalError,
   ConnectionIssue,
   RateLimitReached,
-  ContextLimitReached
-};
-
-enum ModelEngineType {
-  LLAMA_REMOTE,
-  CLAUDE_REMOTE,
+  ContextLimitReached,
+  InvalidEndpointURL,
+  InvalidAPIKey,
+  ServiceOverloaded
 };
 
 // When adding or modifying category names, associated UI strings must also
@@ -45,9 +53,19 @@ enum ModelAccess {
 };
 
 enum PremiumStatus {
+  Unknown,
   Inactive,
   Active,
   ActiveDisconnected,
+};
+
+struct PremiumInfo {
+  // How many credentials in the current batch are remaining
+  uint32 remaining_credential_count;
+
+  // When their next batch of credentials is active. If null, there is no
+  // next batch.
+  mojo_base.mojom.Time? next_active_at;
 };
 
 enum SuggestionGenerationStatus {
@@ -57,23 +75,260 @@ enum SuggestionGenerationStatus {
   HasGenerated,
 };
 
-struct SiteInfo {
-  // Title is present if the site has associated page content
-  string? title;
-  // the content so long that it's being truncated
-  bool is_content_truncated;
-  // Indicates if the URL scheme is of a type that allows for content association.
-  bool is_content_association_possible;
+// Type of content that is extracted
+enum ContentType {
+  PageContent,
+  VideoTranscript,
+};
+
+// Represents the content that is associated with a conversation.
+struct AssociatedContent {
+  string uuid;
+
+  ContentType content_type;
+  string title;
+
+  // This is the ID of the content currently loaded in the tab.
+  // It is not persisted.
+  int32 content_id;
+
+  url.mojom.Url url;
+
+  // Percentage of the text content that has been utilized by remote LLM (0-100)
+  int32 content_used_percentage;
+
+  // If set, the conversation turn that this content is associated with.
+  // If |nullopt| this indicates that the user has staged the content but it
+  // hasn't been submitted yet (i.e. its in the input box).
+  string? conversation_turn_uuid;
+};
+
+struct Conversation {
+  string uuid;
+  // Set by the LLM or the user
+  string title;
+
+  // Time is used for ordering purposes.
+  // This is not persisted - this is inferred from the
+  // last updated time from the most recent
+  // conversation entry.
+  mojo_base.mojom.Time updated_time;
+
+  // If there are entries and the conversation should be selectable.
+  // This is not persisted - this is inferred from the entries.
+  bool has_content;
+
+  // Model key, if different than default
+  string? model_key;
+  // Indicates the total number of tokens for the conversation.
+  // This info is determined by the server side and applies to the whole conversation.
+  uint64 total_tokens;
+  // Indicates the number of tokens that were trimmed from the conversation.
+  // This info is determined by the server side and applies to the whole conversation.
+  // Things that can be trimmed include associated content(s) and server side things like search results.
+  uint64 trimmed_tokens;
+  // Indicates whether the conversation is temporary which would be in-memory
+  // only and not persisted in database.
+  bool temporary = false;
+
+  array<AssociatedContent> associated_content;
+};
+
+struct ContentArchive {
+  string content_uuid;
+  string content;
+
+  // The turn this Content was sent with.
+  string conversation_turn_uuid;
+};
+
+struct ConversationArchive {
+  array<ConversationTurn> entries;
+  array<ContentArchive> associated_content;
+};
+
+// Which action the user was taking for the entry. This can be used
+// to provide better prompts (via the server) and for metrics.
+// Keep all items even if they're unused (they can be renamed as such) and only
+// add new items to the end, as this is serialized to the database as an int.
+enum ActionType {
+  UNSPECIFIED,
+  RESPONSE,
+  SUMMARIZE_PAGE,
+  SUMMARIZE_VIDEO,
+  SUMMARIZE_SELECTED_TEXT,
+  QUERY,
+  EXPLAIN,
+  CREATE_TAGLINE,
+  CREATE_SOCIAL_MEDIA_COMMENT_SHORT,
+  CREATE_SOCIAL_MEDIA_COMMENT_LONG,
+  // Rewrite
+  PARAPHRASE,
+  IMPROVE,
+  // Change tone
+  ACADEMICIZE,
+  PROFESSIONALIZE,
+  PERSUASIVE_TONE,
+  CASUALIZE,
+  FUNNY_TONE,
+  // Change length
+  SHORTEN,
+  EXPAND,
+  CONVERSATION_STARTER,
+  SUGGESTION,
+};
+
+struct SearchQueriesEvent {
+  array<string> search_queries;
+};
+
+struct SearchStatusEvent {
+  bool is_searching = true;
+};
+
+struct WebSource {
+  string title;
+  url.mojom.Url url;
+  url.mojom.Url favicon_url;
+};
+
+struct WebSourcesEvent {
+  array<WebSource> sources;
+};
+
+struct CompletionEvent {
+  // TODO(petemill): Use ContentBlock or even array<ContentBlock>
+  // and rely less on multiple events.
+  string completion;
+};
+
+struct SelectedLanguageEvent {
+  string selected_language;
+};
+
+struct ContentReceiptEvent {
+  uint64 total_tokens;
+  uint64 trimmed_tokens;
+};
+
+struct ConversationTitleEvent {
+  string title;
+};
+
+enum UploadedFileType {
+  kImage = 0,
+  kScreenshot,
+  kPdf,
+};
+
+struct UploadedFile {
+  string filename;
+  uint32 filesize;
+  array<uint8> data;
+  UploadedFileType type;
+};
+
+struct ImageContentBlock {
+  // Only base64 encoded data uri is supported
+  url.mojom.Url image_url;
+};
+
+struct TextContentBlock {
+  string text;
+};
+
+union ContentBlock {
+  ImageContentBlock image_content_block;
+  TextContentBlock text_content_block;
+};
+
+struct ToolUseEvent {
+  // Name of the tool, used to identify which
+  // tool to run in order to produce the output
+  // from the given arguments.
+  string tool_name;
+
+  // ID of the tool use request
+  string id;
+
+  // Arguments for the Tool. The LLM may hallucinate and generate
+  // incorrect arguments or even invalid JSON, so this should be
+  // interpreted defensively. This can also be provided in chunks,
+  // not being complete until the request is completed.
+  string arguments_json;
+
+  // Output from the Tool. When null, the Tool
+  // has not yet run or completed.
+  array<ContentBlock>? output;
+};
+
+// Events that occur during a conversation turn (only assistant for now)
+union ConversationEntryEvent {
+  CompletionEvent completion_event;
+  SearchQueriesEvent search_queries_event;
+  SearchStatusEvent search_status_event;
+  WebSourcesEvent sources_event;
+  ToolUseEvent tool_use_event;
+
+  // These events don't normally get added to the conversation entry
+  // but are used in engine responses.
+  SelectedLanguageEvent selected_language_event;
+  ContentReceiptEvent content_receipt_event;
+  ConversationTitleEvent conversation_title_event;
 };
 
 // Represents a single turn in a conversation.
-// The character type defines which party initiated the turn in the conversation
+// The character type defines which party initiated the turn in the
+// conversation.
 // The text attribute contains the actual content of the turn, which can be a
 // message, statement, or question, among others.
+// The selected_text attribute contains what user selects in the page when
+// calling from the context menu.
 struct ConversationTurn {
+  // Populated if owned by a conversation
+  string? uuid;
+
   CharacterType character_type;
-  ConversationTurnVisibility visibility;
+  ActionType action_type;
+
+  // The text that is displayed to the user. This might be different than
+  // the text sent to the AI engine to represent this turn, which might be more
+  // verbose.
   string text;
+
+  // Optional actual prompt used instead of |text| for the entry
+  string? prompt;
+
+  string? selected_text;
+  // Ordered list of events that occurred during this turn
+  // TODO(petemill): ConversationTurn's |text| and |selected_text| might move
+  // to be an event - as the events become richer, the order around text could
+  // be important.
+  array<ConversationEntryEvent>? events;
+
+  mojo_base.mojom.Time created_time;
+
+  // Edits to this turn, sorted by time of creation, with the most recent edit
+  // at the end of the array. When this appears, the value of |text| field is
+  // the original text of the turn, the last entry of this array should be used
+  // instead of the original turn text when submitting the turn to the AI
+  // engine or displaying the most recent text to users.
+  array<ConversationTurn>? edits;
+
+  // User uploaded files, currently including image and screenshot
+  array<UploadedFile>? uploaded_files;
+
+  // Whether the turn was generated from Brave Search SERP.
+  bool from_brave_search_SERP = false;
+
+  // Null in BYOM conversations.
+  // In assistant turns, it indicates which model generated this turn.
+  // In human turns, it indicates which model to be used for regenerating
+  // answers.
+  // TODO(petemill): It should always store which model was used so that
+  // if the user changed the conversation model mid-conversation then we
+  // can see which answers were generated by which model.
+  string? model_key;
 };
 
 // Represents an AI engine model choice, usually for the user to choose for a
@@ -82,88 +337,360 @@ struct ConversationTurn {
 // We use a key in case there are minor changes to model name for a purpose and
 // we want to respect the user's intent (e.g. claude increases version or llama2
 // default model changes parameter size).
-struct Model {
-  // unique key across all models
-  string key;
+struct LeoModelOptions {
   // exact name to provide to API
   string name;
-  // display name, for users
-  string display_name;
   // maker, for users
   string display_maker;
-  // how to run this model
-  ModelEngineType engine_type;
   // user-facing category
   ModelCategory category;
   // Which access level grants permission to use the model
   ModelAccess access;
   // max limit to truncate page contents (measured in chars, not tokens)
-  uint32 max_page_content_length;
+  uint32 max_associated_content_length;
   // max limit for overall conversation (measured in chars, not tokens)
   uint32 long_conversation_warning_character_limit;
 };
 
-// Browser-side handler for requests from WebUI page.
-interface PageHandler {
-  SetClientPage(pending_remote<ChatUIPage> page);
-  // Get all the possible models for the conversation
+struct CustomModelOptions {
+  string model_request_name;
+  // number of tokens supported by the given model
+  uint32 context_size;
+  // max limit to truncate page contents (measured in chars, not tokens)
+  uint32 max_associated_content_length;
+  // max limit for overall conversation (measured in chars, not tokens)
+  uint32 long_conversation_warning_character_limit;
+  // a user-specified prompt to be used with the model
+  string? model_system_prompt;
+  // the endpoint could be a local network address or a remote server
+  url.mojom.Url endpoint;
+  string api_key;
+};
+
+union ModelOptions {
+  LeoModelOptions leo_model_options;
+  CustomModelOptions custom_model_options;
+};
+
+struct Model {
+  ModelOptions options;
+  // unique key across all models
+  string key;
+  // display name, for users
+  string display_name;
+  // whether accept image as input
+  bool vision_support;
+  // Model supports tool use
+  bool supports_tools = false;
+};
+
+struct ModelWithSubtitle {
+  Model model;
+  string subtitle;
+};
+
+struct ActionDetails {
+  string label;
+  ActionType type;
+};
+
+union ActionEntry {
+  string subheading;
+  ActionDetails details;
+};
+
+struct ActionGroup {
+  string category;
+  array<ActionEntry> entries;
+};
+
+// This does not cover more specific data that the Service owns, such as the
+// conversation list, but does cover status of preferences and notices.
+struct ServiceState {
+  bool has_accepted_agreement;
+  bool is_storage_pref_enabled;
+  bool is_storage_notice_dismissed;
+  bool can_show_premium_prompt;
+};
+
+interface Service {
+  // Profile-level acknowledgements
+  MarkAgreementAccepted();
+  EnableStoragePref();
+  DismissStorageNotice();
+  DismissPremiumPrompt();
+
+  // Get metadata for conversations
+  GetConversations() => (array<Conversation> conversations);
+
+  // Get metadata for all quick actions
+  GetActionMenuList() => (array<ActionGroup> action_list);
+
+  // Current status of subscription
+  GetPremiumStatus() => (PremiumStatus status, PremiumInfo? info);
+
+  DeleteConversation(string id);
+  RenameConversation(string id, string new_name);
+
+  // Determines whether a conversation exists - we need this so we can determine
+  // whether a URL is bogus (i.e. made up) or if it corresponds to a
+  // not-visible-in-sidebar conversation.
+  ConversationExists(string conversation_uuid) => (bool exists);
+
+  // Bind ability to send events to the UI and receive current state
+  BindObserver(pending_remote<ServiceObserver> ui) => (ServiceState state);
+
+  // Bind specified Conversation for 2-way communication
+  BindConversation(
+      string conversation_uuid,
+      pending_receiver<ConversationHandler> conversation,
+      pending_remote<ConversationUI> conversation_ui);
+
+  // Bind metrics interface
+  BindMetrics(pending_receiver<Metrics> metrics);
+};
+
+interface ServiceObserver {
+  OnConversationListChanged(array<Conversation> conversations);
+  OnStateChanged(ServiceState state);
+};
+
+// Browser-side handler for general AI Chat UI functions, implemented
+// per-platform
+interface AIChatUIHandler {
+  // Open various external links or dialogs depending on the platform
+  OpenAIChatSettings();
+
+  // From a sidebar or popup conversation, open the conversation in the
+  // full-page UI.
+  // TODO(petemill): WebUI Compile-timesupport for build flags
+  // so that we can use [EnableIfNot=is_android] here.
+  OpenConversationFullPage(string conversation_uuid);
+
+  // Open the AIChat Agent profile
+  OpenAIChatAgentProfile();
+
+  OpenURL(url.mojom.Url url);
+  OpenStorageSupportUrl();
+
+  OpenModelSupportUrl();
+  GoPremium();
+  RefreshPremiumSession();
+  ManagePremium();
+  HandleVoiceRecognition(string conversation_uuid);
+  ShowSoftKeyboard();
+  // use_media_capture is used on Android only currently. It could
+  // be used on desktop as well in the future when a camera support is added.
+  UploadFile(bool use_media_capture)
+      => (array<UploadedFile>? uploaded_files);
+
+  // Get a plural string for the given key and count.
+  GetPluralString(string key, int32 count) => (string plural_string);
+
+  // This might be a no-op if the UI isn't closeable
+  CloseUI();
+
+  // Provide a reference of the UI to the UI handler and get some
+  // initial constant state
+  SetChatUI(pending_remote<ChatUI> chat_ui) => (bool is_standalone);
+
+  // Bind 2-way communication to the conversation related to the open page in
+  // the current browser window. No binding will occur if this isn't a
+  // tab-related UI, e.g. sidebar or popup.
+  BindRelatedConversation(
+      pending_receiver<ConversationHandler> conversation,
+      pending_remote<ConversationUI> conversation_ui);
+
+  // Associates an open tab with a conversation.
+  AssociateTab(TabData tab, string conversation_uuid);
+
+  // Disassociates attached content from a conversation.
+  DisassociateContent(AssociatedContent content, string conversation_uuid);
+
+  // Make a completely new conversation, which may
+  // be bound to the associated conversation, if this UI has a target
+  NewConversation(pending_receiver<ConversationHandler> conversation,
+      pending_remote<ConversationUI> conversation_ui);
+};
+
+// UI-side handler for messages from the browser WebUI
+interface ChatUI {
+  // Notifies that the default conversation for the
+  // panel has changed. e.g. Tab navigation with AIChat open in sidebar.
+  // Content ID is the content ID of the tab associated with the conversation,
+  // if any.
+  OnNewDefaultConversation(int32? content_id);
+  OnChildFrameBound(pending_receiver<ParentUIFrame> receiver);
+  // Notifies that files are selected between AIChatUIHandler::UploadFile() is
+  // called and return of uploaded files after processed.
+  OnUploadFilesSelected();
+};
+
+struct ConversationState {
+  string conversation_uuid;
+  bool is_request_in_progress;
+  array<Model> all_models;
+  string current_model_key;
+  array<string> suggested_questions;
+  SuggestionGenerationStatus suggestion_status;
+  array<AssociatedContent> associated_content;
+  APIError error;
+  // Indicates whether the conversation is temporary which would be in-memory
+  // only and not persisted in database.
+  bool temporary = false;
+  // TODO(petemill): include conversation history, once
+  // `OnConversationHistoryUpdate` is more intelligent (see TOOD in definition).
+};
+
+// State required to show the conversations entries UI block
+struct ConversationEntriesState {
+  // Whether an answer generation is in progress
+  bool is_generating;
+  // Whether the current model is a built-in Leo model
+  bool is_leo_model;
+  array<Model> all_models;
+  string current_model_key;
+  // How much of the content has been used by the AI engine, percentage,or null
+  // if no content is associated.
+  uint32? content_used_percentage;
+  // Percentage of the visual content that has been utilized by remote LLM
+  // (0-100)
+  // This tracks image/screenshot truncation due to MAX_IMAGES limits
+  uint32? visual_content_used_percentage;
+  // Whether the UI should represent that the user cannot submit new messages
+  // or edits to the conversation.
+  bool can_submit_user_entries;
+  // Indicates the total number of tokens for the conversation
+  uint64 total_tokens;
+  // Indicates the number of tokens that were trimmed from the conversation
+  uint64 trimmed_tokens;
+};
+
+// Browser-side handler for a Conversation
+interface ConversationHandler {
+  GetState() => (ConversationState conversation_state);
+
+  GetConversationUuid() => (string conversation_uuid);
+
+  // Get all the possible models for any conversation
+  // TODO(petemill): Move the models part to Service
   GetModels() => (array<Model> models, string current_model_key);
-  // Command to change the model for the Conversation to |model_name|.
+
+  // Command to change the model for the Conversation to |model_name|
   ChangeModel(string model_key);
+
+  GetIsRequestInProgress() => (bool is_request_in_progress);
+
+  // Get all visible history entries, including in-progress responses
   GetConversationHistory() => (array<ConversationTurn> conversation_history);
 
-  // List of all suggested questions for the active tab in the page's Browser
-  // window.
-  GetSuggestedQuestions() => (
-      array<string> questions, SuggestionGenerationStatus suggestion_status);
   // The browser should generate some questions and fire an event when they
   // are ready.
   GenerateQuestions();
 
-  SubmitHumanConversationEntry(string input);
+  SubmitHumanConversationEntry(
+      string input, array<UploadedFile>? uploaded_files);
+  SubmitHumanConversationEntryWithAction(string input, ActionType action_type);
   SubmitSummarizationRequest();
-  MarkAgreementAccepted();
-  // Get associated page information. If there is none then |site_info| will be
-  // |null|. If the reason for that is it's still being fetched, then
-  // |is_fetching| will be |true|.
-  GetSiteInfo() => (SiteInfo site_info);
-  GetFaviconImageData() => (array<uint8>? favicon_image_data);
-  OpenBraveLeoSettings();
-  OpenURL(url.mojom.Url url);
-  SetShouldSendPageContents(bool should_send);
-  GetShouldSendPageContents() => (bool should_send);
-  ClearConversationHistory();
-  RetryAPIRequest();
+
+  // Submit one of the generated suggested questions for response from
+  // the assistant.
+  SubmitSuggestion(string suggestion);
+
+  // Get associated page information. If there is none then |associated_content|
+  // will be empty.
+  GetAssociatedContentInfo() => (
+      array<AssociatedContent> associated_content);
+
   GetAPIResponseError() => (APIError error);
-  GetCanShowPremiumPrompt() => (bool can_show);
-  DismissPremiumPrompt();
+  RetryAPIRequest();
+
+  // Reset the current error state and returns the
+  // most recent message from the conversation to the caller.
+  ClearErrorAndGetFailedMessage() => (ConversationTurn turn);
+
+  // Stops a generation and if the last entry was a human entry returns it
+  // to the caller.
+  StopGenerationAndMaybeGetHumanEntry() => (ConversationTurn? human_entry);
 
   // Send a user-rating for a chat
   // message. |turn_id| is the index of the message in the
-  // current conversation.
-  RateMessage(bool is_liked, uint32 turn_id) => (string? rating_id);
-  SendFeedback(string category,
+  // specified conversation.
+  RateMessage(bool is_liked, string turn_uuid)
+      => (string? rating_id);
+  SendFeedback(
+      string category,
       string feedback,
-          string rating_id) => (bool is_success);
-  GetPremiumStatus() => (PremiumStatus result);
+      string rating_id, bool send_hostname) => (bool is_success);
+
+  GetScreenshots() => (array<UploadedFile>? screenshots);
+
+  // Make it a temporary conversation, only available at the start of the
+  // conversation. It would be a no-op if the conversation is not empty.
+  SetTemporary(bool temporary);
 };
 
-interface ChatUIPage {
-  OnConversationHistoryUpdate();
-  OnAPIRequestInProgress(bool in_progress);
+// Browser-side handler for a Conversation's UI responsible for displaying
+// untrusted content (e.g. content generated by the AI engine).
+interface UntrustedConversationHandler {
+  BindUntrustedConversationUI(
+      pending_remote<UntrustedConversationUI> untrusted_ui)
+          => (ConversationEntriesState conversation_entries_state);
+
+  // Get all visible history entries, including in-progress responses
+  GetConversationHistory() => (array<ConversationTurn> conversation_history);
+
+  ModifyConversation(string entry_uuid, string new_text);
+
+  // Allows a client to provide an answer to a tool use request
+  // as a result of a user action.
+  RespondToToolUseRequest(string tool_id, array<ContentBlock> output_json);
+
+  // Regenerate answer using specified model.
+  RegenerateAnswer(string turn_uuid, string model_key);
+};
+
+// Untrusted-UI-side handler for a Conversation, responsible for displaying
+// content generated by the AI engine.
+interface UntrustedConversationUI {
+  OnConversationHistoryUpdate(ConversationTurn? entry);
+  OnToolUseEventOutput(string entry_uuid, ToolUseEvent tool_use);
+  OnEntriesUIStateChanged(ConversationEntriesState state);
+
+  // Called when the associated content is changed - called when the untrusted
+  // conversation frame is attached and when the content is changed.
+  AssociatedContentChanged(array<AssociatedContent> associated_content);
+};
+
+interface ConversationUI {
+  OnConversationHistoryUpdate(ConversationTurn? entry);
+  OnAPIRequestInProgress(bool is_request_in_progress);
   OnAPIResponseError(APIError error);
   // Usually the model is changed from the UI client, but occassionally
   // it could be changed from the browser.
-  OnModelChanged(string model_key);
+  // When the browser changes the model, it will also provide a new list
+  // of models.
+  OnModelDataChanged(string conversation_model_key, array<Model> all_models);
   // Provides the full list of questions for the active tab in the page's
   // Browser window.
   OnSuggestedQuestionsChanged(
       array<string> questions, SuggestionGenerationStatus status);
-  // Associated page information has changed. If there is none then |site_info|
-  // will be |null|. If the reason for that is it's still being fetched, then
-  // |is_fetching| will be |true|.
-  OnSiteInfoChanged(SiteInfo info);
-  OnFaviconImageDataChanged(array<uint8> favicon_image_data);
-  // This reports if there are any pending entries to be sent to the remote LLM.
-  OnConversationEntryPending();
+  // Associated page information has changed. If there is none then |associated_content|
+  // will be |null|.
+  OnAssociatedContentInfoChanged(array<AssociatedContent> associated_content);
+  OnConversationDeleted();
+};
+
+interface Metrics {
+  // Notify metrics service that a full page prompt is being sent
+  OnSendingPromptWithFullPage();
+
+  // Notify metrics service if a quick action is being used
+  OnQuickActionStatusChange(bool is_enabled);
+};
+
+[EnableIf=is_android]
+interface IAPSubscription {
+  GetPurchaseTokenOrderId() => (string token, string order_id);
+  SetLinkStatus(int32 status);
 };

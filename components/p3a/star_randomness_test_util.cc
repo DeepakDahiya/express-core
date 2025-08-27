@@ -6,6 +6,7 @@
 #include "brave/components/p3a/star_randomness_test_util.h"
 
 #include <algorithm>
+#include <optional>
 #include <string_view>
 #include <utility>
 #include <vector>
@@ -13,6 +14,9 @@
 #include "base/base64.h"
 #include "base/i18n/time_formatting.h"
 #include "base/json/json_writer.h"
+#include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_split.h"
 #include "base/test/values_test_util.h"
 #include "brave/components/p3a/constellation/rs/cxx/src/lib.rs.h"
 #include "net/http/http_request_headers.h"
@@ -20,6 +24,23 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace p3a {
+
+MetricLogType ValidateURLAndGetMetricLogType(const GURL& url,
+                                             const char* expected_host) {
+  std::string url_prefix = base::StrCat({expected_host, "/instances/"});
+
+  EXPECT_TRUE(url.spec().starts_with(url_prefix));
+
+  std::vector<std::string> path_segments = base::SplitString(
+      url.path(), "/", base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+  EXPECT_EQ(path_segments.size(), 4U);
+
+  std::optional<MetricLogType> log_type =
+      StringToMetricLogType(path_segments[2]);
+  EXPECT_TRUE(log_type.has_value());
+
+  return *log_type;
+}
 
 std::string HandleRandomnessRequest(const network::ResourceRequest& request,
                                     uint8_t expected_epoch) {
@@ -36,7 +57,8 @@ std::string HandleRandomnessRequest(const network::ResourceRequest& request,
   rust::Vec<constellation::VecU8> req_points_rust;
   const base::Value::List* points_list = req_parsed_val.FindList("points");
 
-  EXPECT_EQ(points_list->size(), 8U);
+  EXPECT_GE(points_list->size(), 5U);
+  EXPECT_LE(points_list->size(), 9U);
 
   std::transform(
       points_list->begin(), points_list->end(),
@@ -51,7 +73,8 @@ std::string HandleRandomnessRequest(const network::ResourceRequest& request,
   auto rand_result =
       constellation::generate_local_randomness(req_points_rust, expected_epoch);
 
-  EXPECT_EQ(rand_result.points.size(), 8U);
+  EXPECT_GE(rand_result.points.size(), 5U);
+  EXPECT_LE(rand_result.points.size(), 9U);
 
   base::Value::List resp_points_list;
   for (const constellation::VecU8& resp_point_rust : rand_result.points) {
@@ -67,6 +90,17 @@ std::string HandleRandomnessRequest(const network::ResourceRequest& request,
   std::string resp_json;
   base::JSONWriter::Write(resp_value, &resp_json);
   return resp_json;
+}
+
+std::string HandleInfoRequest(const network::ResourceRequest& request,
+                              MetricLogType log_type,
+                              uint8_t current_epoch,
+                              const char* next_epoch_time) {
+  EXPECT_EQ(request.method, net::HttpRequestHeaders::kGetMethod);
+
+  return base::StrCat(
+      {"{\"currentEpoch\":", base::NumberToString(current_epoch),
+       ", \"nextEpochTime\": \"", next_epoch_time, "\"}"});
 }
 
 }  // namespace p3a

@@ -5,11 +5,15 @@
 
 #include "brave/components/brave_wallet/browser/siwe_message_parser.h"
 
+#include <algorithm>
+#include <optional>
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/strings/strcat.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "brave/components/brave_wallet/common/eth_address.h"
@@ -88,23 +92,23 @@ bool IsPChar(char c) {
   return false;
 }
 
-absl::optional<std::pair<std::string::size_type, std::string_view>>
-ExtractValue(std::string_view input,
-             std::string_view field,
-             bool expect_lf = true) {
+std::optional<std::pair<std::string::size_type, std::string_view>> ExtractValue(
+    std::string_view input,
+    std::string_view field,
+    bool expect_lf = true) {
   auto field_end = field.length();
   if (field_end == input.length()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   auto field_pos = input.rfind(field);
   if (field_pos == std::string::npos || field_pos != 0) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   std::string::size_type n;
   if (expect_lf) {
     n = input.find('\n', field_end);
     if (n == field_end || n == std::string::npos) {
-      return absl::nullopt;
+      return std::nullopt;
     }
   } else {
     n = input.length();
@@ -113,21 +117,21 @@ ExtractValue(std::string_view input,
   return std::make_pair(n, input.substr(field_end, n - field_end));
 }
 
-absl::optional<std::pair<std::string::size_type, std::string_view>>
+std::optional<std::pair<std::string::size_type, std::string_view>>
 ExtractOptionalValue(std::string_view input,
                      std::string_view field,
                      bool is_resources = false) {
   auto effective_field = base::StrCat({"\n", field});
   auto field_end = effective_field.length();
   if (field_end == input.length()) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   auto field_pos = input.rfind(effective_field);
   if (field_pos == std::string::npos) {
     return std::make_pair(std::string::npos, input);
   }
   if (field_pos != 0) {
-    return absl::nullopt;
+    return std::nullopt;
   }
   std::string::size_type n;
   if (is_resources) {
@@ -139,7 +143,7 @@ ExtractOptionalValue(std::string_view input,
       return std::make_pair(input.length(), input.substr(field_end));
     }
     if (n == field_end) {
-      return absl::nullopt;
+      return std::nullopt;
     }
   }
 
@@ -205,7 +209,7 @@ mojom::SIWEMessagePtr SIWEMessageParser::Parse(const std::string& message) {
       }
     }
     if (result->request_id &&
-        !base::ranges::all_of(*result->request_id, &IsPChar)) {
+        !std::ranges::all_of(*result->request_id, &IsPChar)) {
       return {};
     }
     if (!message_view.empty()) {
@@ -263,7 +267,7 @@ bool SIWEMessageParser::ParseAddress(std::string_view& msg_view,
 }
 
 bool SIWEMessageParser::ParseStatement(std::string_view& msg_view,
-                                       absl::optional<std::string>& statement) {
+                                       std::optional<std::string>& statement) {
   if (msg_view.size() < 2 || msg_view[0] != '\n') {
     return false;
   }
@@ -349,7 +353,7 @@ bool SIWEMessageParser::ParseNonce(std::string_view& msg_view,
   }
   nonce = value->second;
   if (nonce.size() < kMinNonceLength ||
-      !base::ranges::all_of(nonce, &base::IsAsciiAlphaNumeric<char>)) {
+      !std::ranges::all_of(nonce, &base::IsAsciiAlphaNumeric<char>)) {
     return false;
   }
 
@@ -380,7 +384,7 @@ bool SIWEMessageParser::ParseIssuedAt(std::string_view& msg_view,
 bool SIWEMessageParser::ParseOptionalStringField(
     std::string_view& msg_view,
     const std::string& name,
-    absl::optional<std::string>& value_out) {
+    std::optional<std::string>& value_out) {
   auto value = ExtractOptionalValue(msg_view, name);
   if (!value) {
     return false;
@@ -396,7 +400,7 @@ bool SIWEMessageParser::ParseOptionalStringField(
 
 bool SIWEMessageParser::ParseOptionalResources(
     std::string_view& msg_view,
-    absl::optional<std::vector<GURL>>& resources) {
+    std::optional<std::vector<GURL>>& resources) {
   if (!msg_view.empty() && msg_view.back() == '\n') {
     return false;
   }
@@ -412,7 +416,7 @@ bool SIWEMessageParser::ParseOptionalResources(
   StringTokenizer tokenizer(urls_str, "\n");
   std::vector<GURL> urls;
   while (tokenizer.GetNext()) {
-    if (!base::StartsWith(tokenizer.token(), kResourcesSeperator)) {
+    if (!tokenizer.token().starts_with(kResourcesSeperator)) {
       return false;
     }
     auto url_str = tokenizer.token().substr(strlen(kResourcesSeperator));

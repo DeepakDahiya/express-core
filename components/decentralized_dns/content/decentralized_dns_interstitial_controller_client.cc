@@ -5,6 +5,7 @@
 
 #include "brave/components/decentralized_dns/content/decentralized_dns_interstitial_controller_client.h"
 
+#include "base/check.h"
 #include "base/notreached.h"
 #include "brave/components/decentralized_dns/core/constants.h"
 #include "brave/components/decentralized_dns/core/pref_names.h"
@@ -64,12 +65,11 @@ void DecentralizedDnsInterstitialControllerClient::SetResolveMethodAndReload(
     pref_name = kSnsResolveMethod;
   } else {
     NOTREACHED();
-    return;
   }
 
   local_state_->SetInteger(pref_name, static_cast<int>(type));
-  web_contents_->GetController().Reload(content::ReloadType::BYPASSING_CACHE,
-                                        true);
+  web_contents()->GetController().Reload(content::ReloadType::BYPASSING_CACHE,
+                                         true);
 }
 
 }  // namespace decentralized_dns

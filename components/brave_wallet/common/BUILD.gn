@@ -14,15 +14,11 @@ import("//tools/json_schema_compiler/json_schema_api.gni")
 preprocess_folder = "preprocessed"
 preprocess_mojo_manifest = "preprocessed_mojo_manifest.json"
 
-if (is_official_build) {
-  assert(brave_zero_ex_api_key != "")
-}
-
 buildflag_header("buildflags") {
   header = "buildflags.h"
   flags = [
     "BRAVE_INFURA_PROJECT_ID=\"$brave_infura_project_id\"",
-    "BRAVE_ZERO_EX_API_KEY=\"$brave_zero_ex_api_key\"",
+    "ENABLE_ORCHARD=$enable_orchard",
   ]
 }
 
@@ -30,12 +26,18 @@ static_library("common") {
   include_dirs = [ "//brave/third_party/ethash/src/include" ]
 
   sources = [
+    "bech32.cc",
+    "bech32.h",
     "bitcoin_utils.cc",
     "bitcoin_utils.h",
     "brave_wallet_response_helpers.cc",
     "brave_wallet_response_helpers.h",
     "brave_wallet_types.cc",
     "brave_wallet_types.h",
+    "btc_like_serializer_stream.cc",
+    "btc_like_serializer_stream.h",
+    "cardano_address.cc",
+    "cardano_address.h",
     "common_utils.cc",
     "common_utils.h",
     "encoding_utils.cc",
@@ -48,6 +50,8 @@ static_library("common") {
     "eth_request_helper.h",
     "eth_sign_typed_data_helper.cc",
     "eth_sign_typed_data_helper.h",
+    "f4_jumble.cc",
+    "f4_jumble.h",
     "features.cc",
     "features.h",
     "fil_address.cc",
@@ -56,15 +60,12 @@ static_library("common") {
     "hash_utils.h",
     "hex_utils.cc",
     "hex_utils.h",
-    "mem_utils.cc",
-    "mem_utils.h",
     "solana_address.cc",
     "solana_address.h",
     "solana_utils.cc",
     "solana_utils.h",
     "string_utils.cc",
     "string_utils.h",
-    "switches.cc",
     "switches.h",
     "value_conversion_utils.cc",
     "value_conversion_utils.h",
@@ -72,12 +73,13 @@ static_library("common") {
     "zcash_utils.h",
   ]
   deps = [
+    ":buildflags",
     ":common_constants",
     ":generated_eth_requests",
     ":generated_json_rpc_requests",
-    ":mojom",
-    ":mojom__generator",
     ":pref_names",
+    ":rust_lib",
+    "//brave/net/base:utils",
     "//brave/third_party/argon2",
     "//brave/third_party/bitcoin-core",
     "//brave/third_party/ethash",
@@ -87,13 +89,15 @@ static_library("common") {
     "//url",
   ]
 
-  public_deps = [ "//base" ]
+  public_deps = [
+    ":mojom",
+    "//base",
+  ]
 }
 
 source_set("common_constants") {
   sources = [
     "brave_wallet_constants.h",
-    "web3_provider_constants.cc",
     "web3_provider_constants.h",
   ]
   deps = [ ":mojom" ]
@@ -116,7 +120,7 @@ generated_types("generated_eth_requests") {
   deps = [ "//base" ]
   visibility = [
     ":common",
-    "test:brave_wallet_unit_tests",
+    ":unit_tests",
   ]
 }
 
@@ -130,7 +134,10 @@ preprocess_if_expr("preprocess_mojo") {
 
 mojom("mojom") {
   generate_java = true
-  sources = [ "brave_wallet.mojom" ]
+  sources = [
+    "brave_wallet.mojom",
+    "meld_integration.mojom",
+  ]
   public_deps = [
     "//mojo/public/mojom/base",
     "//url/mojom:url_mojom_gurl",
@@ -141,16 +148,21 @@ mojom("mojom") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "bech32_unittest.cc",
     "bitcoin_utils_unittest.cc",
     "brave_wallet_types_unittest.cc",
+    "btc_like_serializer_stream_unittest.cc",
+    "cardano_address_unittest.cc",
     "common_utils_unittest.cc",
     "encoding_utils_unittest.cc",
     "eth_abi_utils_unittest.cc",
+    "eth_address_unittest.cc",
     "eth_request_helper_unittest.cc",
     "eth_sign_typed_data_helper_unittest.cc",
+    "f4_jumble_unittest.cc",
+    "fil_address_unittest.cc",
     "hash_utils_unittest.cc",
     "hex_utils_unittest.cc",
-    "mem_utils_unittest.cc",
     "solana_address_unittest.cc",
     "solana_utils_unittest.cc",
     "string_utils_unittest.cc",
@@ -162,8 +174,10 @@ source_set("unit_tests") {
     ":common",
     ":common_constants",
     ":mojom",
+    ":pref_names",
     ":test_support",
     "//base/test:test_support",
+    "//components/prefs:test_support",
     "//testing/gtest",
     "//url",
   ]
@@ -183,3 +197,25 @@ source_set("test_support") {
 
   public_deps = [ ":mojom" ]
 }  # source_set("test_support")
+
+rust_static_library("rust_lib") {
+  visibility = [
+    "//brave/browser/brave_wallet:unit_tests",
+    "//brave/components/brave_wallet/browser:hd_keyring",
+    "//brave/components/brave_wallet/browser:transaction",
+    "//brave/components/brave_wallet/browser:unit_tests",
+    "//brave/components/brave_wallet/browser/zcash/rust:*",
+    "//brave/components/brave_wallet/common",
+  ]
+  crate_name = "brave_wallet"
+  crate_root = "lib.rs"
+  allow_unsafe = true
+  sources = [ "lib.rs" ]
+  cxx_bindings = [ "lib.rs" ]
+
+  deps = [
+    "//brave/third_party/rust/bech32/v0_9:lib",
+    "//brave/third_party/rust/bls_signatures/v0_15:lib",
+    "//brave/third_party/rust/curve25519_dalek/v4:lib",
+  ]
+}

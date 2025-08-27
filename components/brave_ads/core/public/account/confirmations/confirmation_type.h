@@ -6,48 +6,17 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_PUBLIC_ACCOUNT_CONFIRMATIONS_CONFIRMATION_TYPE_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_PUBLIC_ACCOUNT_CONFIRMATIONS_CONFIRMATION_TYPE_H_
 
-#include <ostream>
-#include <string>
+#include <string_view>
+
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 
 namespace brave_ads {
 
-class ConfirmationType final {
- public:
-  enum Value {
-    // When adding new confirmation types they must be added with highest
-    // priority at the top so that ads history can be filtered
-    kUndefined,
-    kClicked,
-    kDismissed,
-    kViewed,
-    kServed,
-    kTransferred,
-    kFlagged,
-    kSaved,
-    kUpvoted,
-    kDownvoted,
-    kConversion
-  };
+// Returns a `mojom::ConfirmationType` value based on the string input.
+mojom::ConfirmationType ToMojomConfirmationType(std::string_view value);
 
-  ConfirmationType();
-
-  // Allow implicit conversion of the enum value to this wrapper
-  constexpr ConfirmationType(const Value& value)  // NOLINT (runtime/explicit)
-      : value_(value) {}
-
-  explicit ConfirmationType(const std::string& value);
-
-  Value value() const;
-  std::string ToString() const;
-
- private:
-  Value value_ = kUndefined;
-};
-
-bool operator==(const ConfirmationType&, const ConfirmationType&);
-bool operator!=(const ConfirmationType&, const ConfirmationType&);
-
-std::ostream& operator<<(std::ostream& os, const ConfirmationType& type);
+// Returns a string constant for a given `mojom::ConfirmationType` value.
+const char* ToString(mojom::ConfirmationType mojom_confirmation_type);
 
 }  // namespace brave_ads
 

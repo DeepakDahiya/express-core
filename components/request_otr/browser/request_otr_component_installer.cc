@@ -11,7 +11,6 @@
 #include "base/command_line.h"
 #include "base/containers/flat_set.h"
 #include "base/json/json_reader.h"
-#include "base/logging.h"
 #include "base/task/thread_pool.h"
 #include "base/types/expected.h"
 #include "brave/components/brave_component_updater/browser/dat_file_util.h"
@@ -22,9 +21,6 @@ using brave_component_updater::LocalDataFilesObserver;
 using brave_component_updater::LocalDataFilesService;
 
 namespace request_otr {
-
-const char kRequestOTRConfigFile[] = "request-otr.json";
-const char kRequestOTRConfigFileVersion[] = "1";
 
 RequestOTRComponentInstallerPolicy::RequestOTRComponentInstallerPolicy(
     LocalDataFilesService* local_data_files_service)

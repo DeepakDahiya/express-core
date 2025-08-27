@@ -1,8 +1,10 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+/* Copyright (c) 2025 The Brave Authors. All rights reserved.
+ * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as BraveNewTabPage from 'gen/brave/components/brave_new_tab_ui/brave_new_tab_page.mojom.m.js'
+import * as NTPBackgroundMedia from 'gen/brave/components/ntp_background_images/browser/mojom/ntp_background_images.mojom.m.js'
 
 // Provide access to all the generated types
 export * from 'gen/brave/components/brave_new_tab_ui/brave_new_tab_page.mojom.m.js'
@@ -33,6 +35,8 @@ export const randomColorBackground = (color: string): NewTab.BackgroundWallpaper
 interface API {
   pageCallbackRouter: BraveNewTabPage.PageCallbackRouter
   pageHandler: BraveNewTabPage.PageHandlerRemote
+  newTabMetrics: BraveNewTabPage.NewTabMetricsRemote
+  sponsoredRichMediaAdEventHandler: NTPBackgroundMedia.SponsoredRichMediaAdEventHandlerRemote
   addBackgroundUpdatedListener: (listener: BackgroundUpdated) => void
   addCustomImageBackgroundsUpdatedListener: (listener: CustomImageBackgroundsUpdated) => void
   addSearchPromotionDisabledListener: (listener: () => void) => void
@@ -46,12 +50,16 @@ let ntpBrowserAPIInstance: API
 class NTPBrowserAPI implements API {
   pageCallbackRouter = new BraveNewTabPage.PageCallbackRouter()
   pageHandler = new BraveNewTabPage.PageHandlerRemote()
+  newTabMetrics = new BraveNewTabPage.NewTabMetricsRemote()
+  sponsoredRichMediaAdEventHandler = new NTPBackgroundMedia.SponsoredRichMediaAdEventHandlerRemote()
 
   constructor () {
     const factory = BraveNewTabPage.PageHandlerFactory.getRemote()
     factory.createPageHandler(
       this.pageCallbackRouter.$.bindNewPipeAndPassRemote(),
-      this.pageHandler.$.bindNewPipeAndPassReceiver()
+      this.pageHandler.$.bindNewPipeAndPassReceiver(),
+      this.newTabMetrics.$.bindNewPipeAndPassReceiver(),
+      this.sponsoredRichMediaAdEventHandler.$.bindNewPipeAndPassReceiver()
     )
   }
 

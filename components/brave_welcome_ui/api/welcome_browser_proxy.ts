@@ -5,7 +5,11 @@
 
 import { sendWithPromise } from 'chrome://resources/js/cr.js'
 import { DefaultBrowserBrowserProxyImpl } from './default_browser_browser_proxy'
-import { ImportDataBrowserProxyImpl, BrowserProfile as _BrowserProfile } from './import_data_browser_proxy'
+import {
+  ImportDataBrowserProxyImpl,
+  ImportDataStatus,
+  BrowserProfile as _BrowserProfile,
+} from './import_data_browser_proxy'
 
 export enum P3APhase {
   Welcome = 0,
@@ -33,10 +37,16 @@ export interface WelcomeBrowserProxy {
   setP3AEnabled: (enabled: boolean) => void
   setMetricsReportingEnabled: (enabled: boolean) => void
   openSettingsPage: () => void
+  enableWebDiscovery: () => void
   getDefaultBrowser: () => Promise<string>
+  getWelcomeCompleteURL: () => Promise<string>
 }
 
-export { DefaultBrowserBrowserProxyImpl, ImportDataBrowserProxyImpl }
+export {
+  DefaultBrowserBrowserProxyImpl,
+  ImportDataBrowserProxyImpl,
+  ImportDataStatus,
+}
 
 export class WelcomeBrowserProxyImpl implements WelcomeBrowserProxy {
   recordP3A (phase: P3APhase) {
@@ -55,8 +65,16 @@ export class WelcomeBrowserProxyImpl implements WelcomeBrowserProxy {
     chrome.send('openSettingsPage')
   }
 
+  enableWebDiscovery () {
+    chrome.send('enableWebDiscovery')
+  }
+
   getDefaultBrowser (): Promise<string> {
     return sendWithPromise('getDefaultBrowser')
+  }
+
+  getWelcomeCompleteURL (): Promise<string> {
+    return sendWithPromise('getWelcomeCompleteURL')
   }
 
   static getInstance (): WelcomeBrowserProxy {

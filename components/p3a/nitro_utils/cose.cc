@@ -5,11 +5,14 @@
 
 #include "brave/components/p3a/nitro_utils/cose.h"
 
+#include <optional>
 #include <set>
 #include <string_view>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/compiler_specific.h"
 #include "base/logging.h"
-#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "components/cbor/reader.h"
 #include "components/cbor/writer.h"
@@ -40,8 +43,9 @@ bool ConvertCoseSignatureToDER(const std::vector<uint8_t>& input,
   if (!r_comp) {
     return false;
   }
-  BIGNUM* s_comp = BN_bin2bn(input.data() + kSignatureComponentSize,
-                             kSignatureComponentSize, nullptr);
+  BIGNUM* s_comp =
+      BN_bin2bn(UNSAFE_TODO(input.data() + kSignatureComponentSize),
+                kSignatureComponentSize, nullptr);
   if (!s_comp) {
     BN_free(r_comp);
     return false;
@@ -76,8 +80,8 @@ bool ConvertCoseSignatureToDER(const std::vector<uint8_t>& input,
   }
 
   const uint8_t* sig_cbb_data = CBB_data(&sig_cbb);
-  *output =
-      std::vector<uint8_t>(sig_cbb_data, sig_cbb_data + CBB_len(&sig_cbb));
+  *output = std::vector<uint8_t>(sig_cbb_data,
+                                 UNSAFE_TODO(sig_cbb_data + CBB_len(&sig_cbb)));
 
   CBB_cleanup(&sig_cbb);
   ECDSA_SIG_free(ecdsa_sig);
@@ -94,7 +98,7 @@ bool CoseSign1::DecodeFromBytes(const std::vector<uint8_t>& data) {
   cbor::Reader::Config cbor_config;
   cbor_config.allow_and_canonicalize_out_of_order_keys = true;
 
-  absl::optional<cbor::Value> decoded_val =
+  std::optional<cbor::Value> decoded_val =
       cbor::Reader::Read(data, cbor_config);
   if (cbor_config.error_code_out != nullptr &&
       *cbor_config.error_code_out !=
@@ -120,7 +124,7 @@ bool CoseSign1::DecodeFromBytes(const std::vector<uint8_t>& data) {
     return false;
   }
 
-  absl::optional<cbor::Value> protected_decoded_val =
+  std::optional<cbor::Value> protected_decoded_val =
       cbor::Reader::Read(protected_encoded_.GetBytestring(), cbor_config);
   if (cbor_config.error_code_out != nullptr &&
       *cbor_config.error_code_out !=
@@ -166,7 +170,7 @@ bool CoseSign1::DecodeFromBytes(const std::vector<uint8_t>& data) {
     return false;
   }
 
-  absl::optional<cbor::Value> payload_dec_val =
+  std::optional<cbor::Value> payload_dec_val =
       cbor::Reader::Read(payload_encoded_.GetBytestring(), cbor_config);
   if (!payload_dec_val.has_value() ||
       (cbor_config.error_code_out != nullptr &&
@@ -215,7 +219,7 @@ bool CoseSign1::Verify(const bssl::ParsedCertificateList& cert_chain) {
   sig_data_vec.push_back(payload_encoded_.Clone());
   cbor::Value sig_data(sig_data_vec);
 
-  absl::optional<std::vector<uint8_t>> encoded_sig_data =
+  std::optional<std::vector<uint8_t>> encoded_sig_data =
       cbor::Writer::Write(sig_data);
   CHECK(encoded_sig_data.has_value());
 
@@ -272,6 +276,10 @@ bool CoseSign1::IsPublicKeyAcceptable(EVP_PKEY* public_key,
 
 bssl::SignatureVerifyCache* CoseSign1::GetVerifyCache() {
   return nullptr;
+}
+
+bool CoseSign1::AcceptPreCertificates() {
+  return true;
 }
 
 }  // namespace nitro_utils

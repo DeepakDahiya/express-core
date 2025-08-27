@@ -3,17 +3,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "brave/components/skus/browser/skus_service_impl.h"
-
 #include <string>
 
-#include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
-#include "base/run_loop.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
+#include "base/test/values_test_util.h"
 #include "brave/components/skus/browser/pref_names.h"
+#include "brave/components/skus/browser/skus_service_impl.h"
 #include "brave/components/skus/browser/skus_utils.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
@@ -23,7 +22,7 @@
 
 namespace {
 
-const char kTestVpnOrders[] = R"(
+constexpr char kTestVpnOrders[] = R"(
           {
               "credentials":
               {
@@ -203,26 +202,24 @@ const char kTestVpnOrders[] = R"(
   )";
 
 std::string GenerateTestingCreds(const std::string& domain) {
-  auto value = base::JSONReader::Read(kTestVpnOrders);
+  auto value = base::test::ParseJsonDict(kTestVpnOrders);
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      value.value(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
 
   auto now = base::Time::Now();
   base::Time::Exploded exploded;
   now.LocalExplode(&exploded);
   base::ReplaceSubstringsAfterOffset(&json, 0, "{year}",
-                                     std::to_string(exploded.year + 1));
+                                     base::NumberToString(exploded.year + 1));
   base::ReplaceSubstringsAfterOffset(&json, 0, "{domain}", domain);
   return json;
 }
 
 base::Value GetExpectedCreds(const std::string& json,
                              const std::string& order_id) {
-  auto value = base::JSONReader::Read(json);
-  EXPECT_TRUE(value);
-  const auto* order_value =
-      value->GetDict().FindByDottedPath("orders." + order_id);
+  auto value = base::test::ParseJsonDict(json);
+  const auto* order_value = value.FindByDottedPath("orders." + order_id);
   EXPECT_TRUE(order_value);
   return order_value->Clone();
 }
@@ -247,16 +244,17 @@ class SkusServiceTestUnitTest : public testing::Test {
   }
 
   std::string GetCredentialsSummary(const std::string& domain) {
-    std::string result;
+    skus::mojom::SkusResultPtr result;
     bool callback_called = false;
     skus_service_->CredentialSummary(
-        domain, base::BindLambdaForTesting([&](const std::string& summary) {
+        domain,
+        base::BindLambdaForTesting([&](skus::mojom::SkusResultPtr summary) {
           callback_called = true;
-          result = summary;
+          result = std::move(summary);
         }));
-    base::RunLoop().RunUntilIdle();
+    task_environment_.RunUntilIdle();
     EXPECT_TRUE(callback_called);
-    return result;
+    return result->message;
   }
 
   void Interceptor(const network::ResourceRequest& request) {
@@ -265,8 +263,9 @@ class SkusServiceTestUnitTest : public testing::Test {
   }
   PrefService* prefs() { return &prefs_; }
 
- private:
   base::test::TaskEnvironment task_environment_;
+
+ private:
   std::unique_ptr<skus::SkusServiceImpl> skus_service_;
   TestingPrefServiceSimple prefs_;
   network::TestURLLoaderFactory url_loader_factory_;
@@ -283,8 +282,8 @@ TEST_F(SkusServiceTestUnitTest, CredentialSummarySuccess) {
   prefs()->SetDict(skus::prefs::kSkusState, std::move(state));
   auto credentials = GetCredentialsSummary(domain);
   EXPECT_FALSE(credentials.empty());
-  auto credentials_json = base::JSONReader::Read(credentials);
-  auto* order = credentials_json->GetDict().Find("order");
+  auto credentials_json = base::test::ParseJsonDict(credentials);
+  auto* order = credentials_json.Find("order");
   EXPECT_TRUE(order);
   EXPECT_EQ(*order, GetExpectedCreds(testing_payload,
                                      "ed5a53c1-9555-4b9c-81df-485521ab8161"));
@@ -295,14 +294,14 @@ TEST_F(SkusServiceTestUnitTest, CredentialSummaryFailed) {
   auto env = skus::GetDefaultEnvironment();
   auto domain = skus::GetDomain("vpn", env);
   auto testing_payload = GenerateTestingCreds(domain);
-  auto payload_value = base::JSONReader::Read(testing_payload);
-  auto* orders = payload_value->GetDict().FindDict("orders");
+  auto payload_value = base::test::ParseJsonDict(testing_payload);
+  auto* orders = payload_value.FindDict("orders");
   EXPECT_TRUE(orders);
   // Remove unexpired creds
   orders->Remove("ed5a53c1-9555-4b9c-81df-485521ab8161");
   std::string json;
   base::JSONWriter::WriteWithOptions(
-      payload_value.value(), base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
+      payload_value, base::JSONWriter::OPTIONS_PRETTY_PRINT, &json);
   // Save prefs with expired prefs only
   state.Set("skus:" + env, json);
 

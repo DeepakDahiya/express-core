@@ -4,21 +4,22 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "brave/components/ntp_background_images/browser/view_counter_model.h"
+
 #include "base/test/scoped_feature_list.h"
-#include "base/time/time.h"
 #include "brave/components/ntp_background_images/browser/features.h"
-#include "brave/components/ntp_background_images/browser/view_counter_service.h"
-#include "brave/components/ntp_background_images/common/pref_names.h"
+#include "brave/components/ntp_background_images/common/view_counter_pref_registry.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/browser_task_environment.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace ntp_background_images {
+
 namespace {
+
 const size_t kTestImageCount = 3;
 const std::vector<size_t> kTestCampaignsTotalImageCount = {3, 2, 3};
-}  // namespace
 
-namespace ntp_background_images {
+}  // namespace
 
 class ViewCounterModelTest : public testing::Test {
  public:
@@ -27,13 +28,13 @@ class ViewCounterModelTest : public testing::Test {
   ~ViewCounterModelTest() override = default;
 
   void SetUp() override {
-    auto* registry = prefs()->registry();
-    ViewCounterService::RegisterProfilePrefs(registry);
+    auto* const pref_registry = prefs()->registry();
+    RegisterProfilePrefs(pref_registry);
 
     base::FieldTrialParams parameters;
     std::vector<base::test::FeatureRefAndParams> enabled_features;
-    parameters[features::kInitialCountToBrandedWallpaper.name] = "1";
-    parameters[features::kCountToBrandedWallpaper.name] = "3";
+    parameters[features::kInitialCountToBrandedWallpaper.name] = "2";
+    parameters[features::kCountToBrandedWallpaper.name] = "4";
     enabled_features.emplace_back(features::kBraveNTPBrandedWallpaper,
                                   parameters);
     feature_list_.InitWithFeaturesAndParameters(enabled_features, {});
@@ -63,29 +64,25 @@ TEST_F(ViewCounterModelTest, NTPSponsoredImagesTest) {
   EXPECT_FALSE(model.always_show_branded_wallpaper_);
 
   // Loading initial count times.
-  for (int i = 0; i < features::kInitialCountToBrandedWallpaper.Get(); ++i) {
-    EXPECT_FALSE(model.ShouldShowBrandedWallpaper());
+  for (int i = 0; i < features::kInitialCountToBrandedWallpaper.Get() - 1;
+       ++i) {
+    EXPECT_FALSE(model.ShouldShowSponsoredImages());
     model.RegisterPageView();
   }
 
-  for (int i = 0; i < 30; i++) {
+  for (size_t i = 0; i < 30; i++) {
     // Random image should be displayed now after loading initial count.
-    EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+    EXPECT_TRUE(model.ShouldShowSponsoredImages());
 
-    const std::tuple</*campaign index*/ size_t, /*image index*/ size_t>
-        current_index = model.GetCurrentBrandedImageIndex();
-    const size_t campaign_index = std::get<0>(current_index);
-    const size_t image_index = std::get<1>(current_index);
-
-    EXPECT_TRUE(campaign_index >= 0 &&
-                campaign_index < kTestCampaignsTotalImageCount.size());
-    EXPECT_TRUE(image_index >= 0 &&
-                image_index < kTestCampaignsTotalImageCount.at(campaign_index));
+    const auto [campaign_index, image_index] =
+        model.GetCurrentBrandedImageIndex();
+    EXPECT_TRUE(campaign_index < kTestCampaignsTotalImageCount.size());
+    EXPECT_TRUE(image_index < kTestCampaignsTotalImageCount.at(campaign_index));
     model.RegisterPageView();
 
     // Loading regular-count times.
-    for (int j = 0; j < features::kCountToBrandedWallpaper.Get(); ++j) {
-      EXPECT_FALSE(model.ShouldShowBrandedWallpaper());
+    for (int j = 0; j < features::kCountToBrandedWallpaper.Get() - 1; ++j) {
+      EXPECT_FALSE(model.ShouldShowSponsoredImages());
       model.RegisterPageView();
     }
   }
@@ -108,22 +105,22 @@ TEST_F(ViewCounterModelTest, NTPSponsoredImagesCountToBrandedWallpaperTest) {
   EXPECT_FALSE(model.always_show_branded_wallpaper_);
 
   // Count is 1 so we should not show branded wallpaper.
-  EXPECT_FALSE(model.ShouldShowBrandedWallpaper());
+  EXPECT_FALSE(model.ShouldShowSponsoredImages());
   model.RegisterPageView();
 
   // Count is 0 so we should show branded wallpaper.
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
   model.RegisterPageView();
 
   // Loading regular-count times from kCountToBrandedWallpaper to 0 and do not
   // show branded wallpaper.
-  for (int i = 0; i < features::kCountToBrandedWallpaper.Get(); ++i) {
-    EXPECT_FALSE(model.ShouldShowBrandedWallpaper());
+  for (int i = 0; i < features::kCountToBrandedWallpaper.Get() - 1; ++i) {
+    EXPECT_FALSE(model.ShouldShowSponsoredImages());
     model.RegisterPageView();
   }
 
   // Count is 0 so we should show branded wallpaper.
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
   model.RegisterPageView();
 }
 
@@ -132,17 +129,17 @@ TEST_F(ViewCounterModelTest, NTPSponsoredImagesCountResetTest) {
   model.SetCampaignsTotalBrandedImageCount(kTestCampaignsTotalImageCount);
 
   // Verify param value for initial count was used
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 1);
+  EXPECT_EQ(1, model.count_to_branded_wallpaper_);
   model.RegisterPageView();
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
   model.RegisterPageView();
-  EXPECT_FALSE(model.ShouldShowBrandedWallpaper());
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 3);
+  EXPECT_FALSE(model.ShouldShowSponsoredImages());
+  EXPECT_EQ(3, model.count_to_branded_wallpaper_);
 
   // We expect to be reset to initial count when source data updates (which
   // calls Reset).
   model.Reset();
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 1);
+  EXPECT_EQ(1, model.count_to_branded_wallpaper_);
 }
 
 TEST_F(ViewCounterModelTest, NTPSponsoredImagesCountResetMinTest) {
@@ -150,16 +147,16 @@ TEST_F(ViewCounterModelTest, NTPSponsoredImagesCountResetMinTest) {
   model.SetCampaignsTotalBrandedImageCount(kTestCampaignsTotalImageCount);
 
   // Verify param value for initial count was used
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 1);
+  EXPECT_EQ(1, model.count_to_branded_wallpaper_);
   model.RegisterPageView();
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 0);
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
+  EXPECT_EQ(0, model.count_to_branded_wallpaper_);
 
   // We expect to be reset to initial count only if count_to_branded_wallpaper_
   // is higher than initial count.
   model.Reset();
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 0);
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
+  EXPECT_EQ(0, model.count_to_branded_wallpaper_);
 }
 
 TEST_F(ViewCounterModelTest, NTPSponsoredImagesCountResetTimerTest) {
@@ -167,14 +164,14 @@ TEST_F(ViewCounterModelTest, NTPSponsoredImagesCountResetTimerTest) {
   model.SetCampaignsTotalBrandedImageCount(kTestCampaignsTotalImageCount);
 
   // Verify param value for initial count was used
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 1);
+  EXPECT_EQ(1, model.count_to_branded_wallpaper_);
   model.RegisterPageView();
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
   model.RegisterPageView();
-  EXPECT_FALSE(model.ShouldShowBrandedWallpaper());
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 3);
-  task_environment_.FastForwardBy(base::Days(1));
-  EXPECT_EQ(model.count_to_branded_wallpaper_, 1);
+  EXPECT_FALSE(model.ShouldShowSponsoredImages());
+  EXPECT_EQ(3, model.count_to_branded_wallpaper_);
+  task_environment_.FastForwardBy(features::kResetCounterAfter.Get());
+  EXPECT_EQ(1, model.count_to_branded_wallpaper_);
 }
 
 TEST_F(ViewCounterModelTest, NTPBackgroundImagesTest) {
@@ -184,7 +181,8 @@ TEST_F(ViewCounterModelTest, NTPBackgroundImagesTest) {
   model.set_total_image_count(kTestImageCount);
 
   // Loading initial count times.
-  for (int i = 0; i < features::kInitialCountToBrandedWallpaper.Get(); ++i) {
+  for (int i = 0; i < features::kInitialCountToBrandedWallpaper.Get() - 1;
+       ++i) {
     EXPECT_EQ(i, model.current_wallpaper_image_index());
     model.RegisterPageView();
   }
@@ -193,10 +191,9 @@ TEST_F(ViewCounterModelTest, NTPBackgroundImagesTest) {
   model.RegisterPageView();
 
   // Loading regular-count times.
-  int expected_wallpaper_index;
-  for (int i = 0; i < features::kCountToBrandedWallpaper.Get(); ++i) {
-    expected_wallpaper_index =
-        (i + features::kInitialCountToBrandedWallpaper.Get()) %
+  for (int i = 0; i < features::kCountToBrandedWallpaper.Get() - 1; ++i) {
+    const int expected_wallpaper_index =
+        (i + (features::kInitialCountToBrandedWallpaper.Get() - 1)) %
         model.total_image_count_;
     EXPECT_EQ(expected_wallpaper_index, model.current_wallpaper_image_index());
     model.RegisterPageView();
@@ -204,13 +201,13 @@ TEST_F(ViewCounterModelTest, NTPBackgroundImagesTest) {
 
   // It's time for sponsored image.
   EXPECT_EQ(0, model.count_to_branded_wallpaper_);
-  const auto bg_index = model.current_wallpaper_image_index();
+  const int image_index = model.current_wallpaper_image_index();
   model.RegisterPageView();
 
   // Check bg image index is not changed if sponsored image is shown.
   // Only |count_to_branded_wallpapaer_| is reset.
   EXPECT_NE(0, model.count_to_branded_wallpaper_);
-  EXPECT_EQ(bg_index, model.current_wallpaper_image_index());
+  EXPECT_EQ(image_index, model.current_wallpaper_image_index());
 }
 
 // Test for background images only case (SI option is disabled)
@@ -220,7 +217,8 @@ TEST_F(ViewCounterModelTest, NTPBackgroundImagesWithSIDisabledTest) {
   model.set_total_image_count(kTestImageCount);
   model.SetCampaignsTotalBrandedImageCount(kTestCampaignsTotalImageCount);
 
-  // Check branded wallpaper index is not modified when only BI is used.
+  // Check branded wallpaper index is not modified when only background images
+  // are used.
   model.set_show_branded_wallpaper(false);
   const auto initial_branded_wallpaper_index =
       model.GetCurrentBrandedImageIndex();
@@ -276,7 +274,7 @@ TEST_F(ViewCounterModelTest, NTPSuperReferralTest) {
   // Loading any number of times and check branded wallpaper is visible always
   // with proper index from the start.
   for (int i = 0; i < 10; ++i) {
-    EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+    EXPECT_TRUE(model.ShouldShowSponsoredImages());
     const auto current_index = model.GetCurrentBrandedImageIndex();
     // Always first campaign is used in SR mode.
     EXPECT_EQ(0UL, std::get<0>(current_index));
@@ -295,11 +293,12 @@ TEST_F(ViewCounterModelTest, NTPFailedToLoadSponsoredImagesTest) {
   model.set_total_image_count(kTestImageCount);
 
   // Loading initial count model.
-  for (int i = 0; i < features::kInitialCountToBrandedWallpaper.Get(); ++i) {
+  for (int i = 0; i < features::kInitialCountToBrandedWallpaper.Get() - 1;
+       ++i) {
     EXPECT_EQ(i, model.current_wallpaper_image_index());
     model.RegisterPageView();
   }
-  EXPECT_TRUE(model.ShouldShowBrandedWallpaper());
+  EXPECT_TRUE(model.ShouldShowSponsoredImages());
   const int initial_wallpaper_image_index =
       model.current_wallpaper_image_index();
 
@@ -310,7 +309,7 @@ TEST_F(ViewCounterModelTest, NTPFailedToLoadSponsoredImagesTest) {
   // background image explicitely when background image is shown as ads was
   // frequency capped. Client(ViewCounterService) calls this increase method
   // when it's capped.
-  model.IncreaseBackgroundWallpaperImageIndex();
+  model.RotateBackgroundWallpaperImageIndex();
   model.RegisterPageView();
 
   // Check background index is increased properly.

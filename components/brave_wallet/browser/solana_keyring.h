@@ -7,47 +7,76 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_BROWSER_SOLANA_KEYRING_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "brave/components/brave_wallet/browser/hd_keyring.h"
+#include "base/containers/flat_map.h"
+#include "base/containers/span.h"
+#include "base/gtest_prod_util.h"
+#include "brave/components/brave_wallet/browser/internal/hd_key_ed25519.h"
+#include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 
 namespace brave_wallet {
 
-class SolanaKeyring : public HDKeyring {
+class SolanaKeyring {
  public:
-  SolanaKeyring() = default;
-  ~SolanaKeyring() override = default;
+  explicit SolanaKeyring(base::span<const uint8_t> seed);
+  ~SolanaKeyring();
   SolanaKeyring(const SolanaKeyring&) = delete;
   SolanaKeyring& operator=(const SolanaKeyring&) = delete;
 
-  void ConstructRootHDKey(const std::vector<uint8_t>& seed,
-                          const std::string& hd_path) override;
+  static std::unique_ptr<HDKeyEd25519> ConstructRootHDKey(
+      base::span<const uint8_t> seed);
 
-  std::string ImportAccount(const std::vector<uint8_t>& keypair) override;
+  std::optional<std::string> AddNewHDAccount(uint32_t index);
+  bool RemoveHDAccount(uint32_t index);
+
+  std::optional<std::string> ImportAccount(base::span<const uint8_t> keypair);
+  bool RemoveImportedAccount(const std::string& address);
+
+  std::optional<std::string> EncodePrivateKeyForExport(
+      const std::string& address);
 
   std::vector<uint8_t> SignMessage(const std::string& address,
-                                   const std::vector<uint8_t>& message);
+                                   base::span<const uint8_t> message);
 
-  static absl::optional<std::string> CreateProgramDerivedAddress(
+  static std::optional<std::string> CreateProgramDerivedAddress(
       const std::vector<std::vector<uint8_t>>& seeds,
       const std::string& program_id);
 
-  static absl::optional<std::string> FindProgramDerivedAddress(
+  static std::optional<std::string> FindProgramDerivedAddress(
       const std::vector<std::vector<uint8_t>>& seeds,
       const std::string& program_id,
       uint8_t* bump_seed = nullptr);
 
-  static absl::optional<std::string> GetAssociatedTokenAccount(
+  static std::optional<std::string> GetAssociatedTokenAccount(
       const std::string& spl_token_mint_address,
-      const std::string& wallet_address);
+      const std::string& wallet_address,
+      mojom::SPLTokenProgram spl_token_program);
 
-  static absl::optional<std::string> GetAssociatedMetadataAccount(
+  static std::optional<std::string> GetAssociatedMetadataAccount(
       const std::string& token_mint_address);
 
+  std::optional<std::string> GetDiscoveryAddress(size_t index) const;
+
+  std::vector<std::string> GetHDAccountsForTesting() const;
+  std::vector<std::string> GetImportedAccountsForTesting() const;
+
  private:
-  std::string GetAddressInternal(HDKeyBase* hd_key) const override;
-  std::unique_ptr<HDKeyBase> DeriveAccount(uint32_t index) const override;
+  FRIEND_TEST_ALL_PREFIXES(SolanaKeyringUnitTest, ConstructRootHDKey);
+
+  std::string GetAddressInternal(const HDKeyEd25519& hd_key) const;
+  std::unique_ptr<HDKeyEd25519> DeriveAccount(uint32_t index) const;
+  HDKeyEd25519* GetHDKeyFromAddress(const std::string& address);
+
+  std::unique_ptr<HDKeyEd25519> root_;
+  std::vector<std::unique_ptr<HDKeyEd25519>> accounts_;
+
+  // TODO(apaymyshev): make separate abstraction for imported keys as they are
+  // not HD keys.
+  // (address, key)
+  base::flat_map<std::string, std::unique_ptr<HDKeyEd25519>> imported_accounts_;
 };
 
 }  // namespace brave_wallet

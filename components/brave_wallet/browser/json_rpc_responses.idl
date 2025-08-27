@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Schema for json_rpc_responses.
 namespace json_rpc_responses {
   dictionary Error {
     long code;
@@ -17,7 +18,7 @@ namespace json_rpc_responses {
   };
 
   dictionary EthGetFeeHistoryResult {
-    DOMString[] baseFeePerGas;
+    any[] baseFeePerGas;
     DOMString[] gasUsedRatio;
     DOMString oldestBlock;
     any? reward;
@@ -47,5 +48,25 @@ namespace json_rpc_responses {
     DOMString transactionHash;
     DOMString transactionIndex;
     DOMString[] topics;
+  };
+
+  dictionary AnkrAssetBalance {
+    DOMString blockchain;
+    DOMString tokenName;
+    DOMString tokenSymbol;
+    DOMString tokenDecimals;
+    DOMString tokenType;
+    DOMString? contractAddress;
+    DOMString holderAddress;
+    DOMString balance;
+    DOMString balanceRawInteger;
+    DOMString balanceUsd;
+    DOMString tokenPrice;
+    DOMString thumbnail;
+  };
+
+  dictionary AnkrGetAccountBalancesResult {
+    DOMString totalBalanceUsd;
+    AnkrAssetBalance[] assets;
   };
 };

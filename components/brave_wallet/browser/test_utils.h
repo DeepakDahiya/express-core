@@ -10,8 +10,13 @@
 #include <string>
 #include <vector>
 
+#include "base/files/file_path.h"
+#include "base/files/scoped_temp_dir.h"
 #include "base/memory/scoped_refptr.h"
+#include "base/test/test_future.h"
 #include "brave/components/brave_wallet/browser/account_resolver_delegate.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service_delegate.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "components/value_store/test_value_store_factory.h"
 #include "components/value_store/value_store_frontend.h"
@@ -24,26 +29,33 @@ class ScopedTempDir;
 
 namespace brave_wallet {
 
-constexpr char kMnemonicDivideCruise[] =
+inline constexpr char kMnemonicDivideCruise[] =
     "divide cruise upon flag harsh carbon filter merit once advice bright "
     "drive";
-constexpr char kMnemonicDripCaution[] =
+inline constexpr char kMnemonicDripCaution[] =
     "drip caution abandon festival order clown oven regular absorb evidence "
     "crew where";
-constexpr char kMnemonicScarePiece[] =
+inline constexpr char kMnemonicScarePiece[] =
     "scare piece awesome elite long drift control cabbage glass dash coral "
     "angry";
 // Mnemonic referenced in various bips.
 // https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki#test-vectors
 // https://github.com/bitcoin/bips/blob/master/bip-0049.mediawiki#test-vectors
-constexpr char kMnemonicAbandonAbandon[] =
+inline constexpr char kMnemonicAbandonAbandon[] =
     "abandon abandon abandon abandon abandon abandon abandon abandon abandon "
     "abandon abandon about";
-constexpr char kTestWalletPassword[] = "brave";
+inline constexpr char kMnemonicGalleryEqual[] =
+    "gallery equal segment repair outdoor bronze limb dawn daring main burst "
+    "design palm demise develop exit cycle harbor motor runway turtle quote "
+    "blast tail";
+inline constexpr char kTestWalletPassword[] = "brave";
 
 class KeyringService;
 class TxStorageDelegate;
 class TxStorageDelegateImpl;
+
+base::FilePath BraveWalletComponentsTestDataFolder();
+base::FilePath BraveWalletTestDataFolder();
 
 class AccountResolverDelegateForTest : public AccountResolverDelegate {
  public:
@@ -57,6 +69,8 @@ class AccountResolverDelegateForTest : public AccountResolverDelegate {
       const std::string* from_account_id,
       const std::string* from_address) override;
   bool ValidateAccountId(const mojom::AccountIdPtr& account_id) override;
+  std::optional<std::string> ResolveAddress(
+      const mojom::AccountIdPtr& account_id) override;
 
  private:
   std::vector<mojom::AccountIdPtr> accounts_;
@@ -66,10 +80,20 @@ class AccountUtils {
  public:
   explicit AccountUtils(KeyringService* keyring_service);
 
+  void CreateWallet(const std::string& mnemonic, const std::string& password);
+
   mojom::AccountInfoPtr GetDerivedAccount(mojom::KeyringId keyring_id,
                                           uint32_t index);
   mojom::AccountInfoPtr CreateDerivedAccount(mojom::KeyringId keyring_id,
                                              const std::string& name);
+  mojom::AccountInfoPtr GetImportedAccount(mojom::KeyringId keyring_id,
+                                           uint32_t index);
+  mojom::AccountInfoPtr GetHardwareAccount(mojom::KeyringId keyring_id,
+                                           uint32_t index);
+  mojom::AccountInfoPtr CreateImportedAccount(mojom::KeyringId keyring_id,
+                                              const std::string& name);
+  mojom::AccountInfoPtr CreateHardwareAccount(mojom::KeyringId keyring_id,
+                                              const std::string& name);
   mojom::AccountInfoPtr EnsureAccount(mojom::KeyringId keyring_id,
                                       uint32_t index);
 
@@ -84,6 +108,10 @@ class AccountUtils {
   mojom::AccountInfoPtr EnsureFilTestAccount(uint32_t index);
   mojom::AccountInfoPtr EnsureBtcAccount(uint32_t index);
   mojom::AccountInfoPtr EnsureBtcTestAccount(uint32_t index);
+  mojom::AccountInfoPtr EnsureZecAccount(uint32_t index);
+  mojom::AccountInfoPtr EnsureZecTestAccount(uint32_t index);
+  mojom::AccountInfoPtr EnsureAdaAccount(uint32_t index);
+  mojom::AccountInfoPtr EnsureAdaTestAccount(uint32_t index);
 
   mojom::AccountInfoPtr CreateEthAccount(const std::string& name);
   mojom::AccountInfoPtr CreateSolAccount(const std::string& name);
@@ -91,21 +119,45 @@ class AccountUtils {
   mojom::AccountInfoPtr CreateFilTestAccount(const std::string& name);
   mojom::AccountInfoPtr CreateBtcAccount(const std::string& name);
   mojom::AccountInfoPtr CreateBtcTestAccount(const std::string& name);
+  mojom::AccountInfoPtr CreateZecAccount(const std::string& name);
+  mojom::AccountInfoPtr CreateZecTestAccount(const std::string& name);
+  mojom::AccountInfoPtr CreateAdaAccount(const std::string& name);
+  mojom::AccountInfoPtr CreateAdaTestAccount(const std::string& name);
 
   mojom::AccountInfoPtr CreateEthHWAccount();
+  mojom::AccountInfoPtr CreateBtcHWAccount();
 
   mojom::AccountIdPtr FindAccountIdByAddress(const std::string& address);
 
   std::vector<mojom::AccountInfoPtr> AllAccounts(mojom::KeyringId keyring_id);
+  std::vector<mojom::AccountInfoPtr> AllAccounts(
+      const std::vector<mojom::KeyringId>& keyring_ids);
   std::vector<mojom::AccountInfoPtr> AllEthAccounts();
   std::vector<mojom::AccountInfoPtr> AllSolAccounts();
   std::vector<mojom::AccountInfoPtr> AllFilAccounts();
   std::vector<mojom::AccountInfoPtr> AllFilTestAccounts();
   std::vector<mojom::AccountInfoPtr> AllBtcAccounts();
   std::vector<mojom::AccountInfoPtr> AllBtcTestAccounts();
+  std::vector<mojom::AccountInfoPtr> AllZecAccounts();
+  std::vector<mojom::AccountInfoPtr> AllZecTestAccounts();
+  std::vector<mojom::AccountInfoPtr> AllAdaAccounts();
+  std::vector<mojom::AccountInfoPtr> AllAdaTestAccounts();
 
  private:
   raw_ptr<KeyringService> keyring_service_;
+};
+
+class TestBraveWalletServiceDelegate : public BraveWalletServiceDelegate {
+ public:
+  TestBraveWalletServiceDelegate();
+
+  base::FilePath GetWalletBaseDirectory() override;
+  bool IsPrivateWindow() override;
+
+  static std::unique_ptr<BraveWalletServiceDelegate> Create();
+
+ private:
+  base::ScopedTempDir temp_dir_;
 };
 
 void WaitForTxStorageDelegateInitialized(TxStorageDelegate* delegate);
@@ -116,6 +168,23 @@ scoped_refptr<value_store::TestValueStoreFactory> GetTestValueStoreFactory(
 std::unique_ptr<TxStorageDelegateImpl> GetTxStorageDelegateForTest(
     PrefService* prefs,
     scoped_refptr<value_store::ValueStoreFactory> store_factory);
+
+// Helper class to mock BraveWalletService::AddSignMessageRequest and
+// BraveWalletService::NotifySignMessageRequestProcessed methods.
+class SignMessageRequestWaiter {
+ public:
+  explicit SignMessageRequestWaiter(BraveWalletService* brave_wallet_service);
+  ~SignMessageRequestWaiter();
+
+  void WaitAndProcess(bool approved);
+
+ private:
+  void OnSignMessageRequestAdded();
+
+  raw_ptr<BraveWalletService> brave_wallet_service_;
+  base::CallbackListSubscription subscription_;
+  base::test::TestFuture<int> future_;
+};
 
 }  // namespace brave_wallet
 

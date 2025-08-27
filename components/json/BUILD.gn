@@ -5,11 +5,29 @@
 
 import("//testing/test.gni")
 
-source_set("brave_json_unit_tests") {
-  testonly = true
-  sources = [ "//brave/components/json/json_parser_unittest.cc" ]
+component("json") {
+  sources = [
+    "json_export.h",
+    "json_helper.cc",
+    "json_helper.h",
+  ]
+
+  defines = [ "JSON_HELPER_IMPLEMENTATION" ]
+
   deps = [
-    "//brave/components/json/rs:rust_lib",
+    "rs:rust_lib",
+    "//base",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [ "json_parser_unittest.cc" ]
+
+  deps = [
+    "//base",
+    "//base/test:test_support",
+    "//brave/components/json",
     "//testing/gtest",
   ]
-}  # source_set("brave_wallet_unit_tests")
+}

@@ -13,7 +13,6 @@
 #include "base/memory/weak_ptr.h"
 #include "brave/components/brave_ads/core/internal/common/subdivision/url_request/subdivision_url_request_delegate.h"
 #include "brave/components/brave_ads/core/internal/common/timer/backoff_timer.h"
-#include "brave/components/brave_ads/core/internal/common/timer/timer.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 
 namespace brave_ads {
@@ -24,9 +23,6 @@ class SubdivisionUrlRequest final {
 
   SubdivisionUrlRequest(const SubdivisionUrlRequest&) = delete;
   SubdivisionUrlRequest& operator=(const SubdivisionUrlRequest&) = delete;
-
-  SubdivisionUrlRequest(SubdivisionUrlRequest&&) noexcept = delete;
-  SubdivisionUrlRequest& operator=(SubdivisionUrlRequest&&) noexcept = delete;
 
   ~SubdivisionUrlRequest();
 
@@ -39,7 +35,7 @@ class SubdivisionUrlRequest final {
 
  private:
   void Fetch();
-  void FetchCallback(const mojom::UrlResponseInfo& url_response);
+  void FetchCallback(const mojom::UrlResponseInfo& mojom_url_response);
   void FetchAfterDelay();
 
   void SuccessfullyFetchedSubdivision(const std::string& subdivision);
@@ -55,14 +51,13 @@ class SubdivisionUrlRequest final {
   void NotifyWillRetryFetchingSubdivision(base::Time retry_at) const;
   void NotifyDidRetryFetchingSubdivision() const;
 
-  raw_ptr<SubdivisionUrlRequestDelegate> delegate_ = nullptr;
+  raw_ptr<SubdivisionUrlRequestDelegate> delegate_ = nullptr;  // Not owned.
 
   bool is_periodically_fetching_ = false;
 
   bool is_fetching_ = false;
 
-  Timer timer_;
-  BackoffTimer retry_timer_;
+  BackoffTimer timer_;
 
   base::WeakPtrFactory<SubdivisionUrlRequest> weak_factory_{this};
 };

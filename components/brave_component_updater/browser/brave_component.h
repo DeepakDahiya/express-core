@@ -8,18 +8,31 @@
 
 #include <string>
 
+#include "base/component_export.h"
 #include "base/files/file_path.h"
 #include "base/functional/callback.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/task/sequenced_task_runner.h"
-#include "components/component_updater/component_updater_service.h"
+#include "components/update_client/update_client.h"
 
 class PrefService;
 
+namespace brave_ads {
+class ResourceComponentRegistrar;
+}
+
+namespace tor {
+class BraveTorPluggableTransportUpdater;
+class BraveTorClientUpdater;
+}  // namespace tor
+
 namespace brave_component_updater {
 
-class BraveComponent {
+class LocalDataFilesService;
+
+// DEPRECATED: Use ComponentInstallerPolicy instead.
+class COMPONENT_EXPORT(BRAVE_COMPONENT_UPDATER) BraveComponent {
  public:
   using ReadyCallback = base::RepeatingCallback<void(const base::FilePath&,
                                                 const std::string& manifest)>;
@@ -33,7 +46,7 @@ class BraveComponent {
                           base::OnceClosure registered_callback,
                           ReadyCallback ready_callback) = 0;
     virtual bool Unregister(const std::string& component_id) = 0;
-    virtual void OnDemandUpdate(const std::string& component_id) = 0;
+    virtual void EnsureInstalled(const std::string& component_id) = 0;
     // An observer should not be added more than once.
     // The caller retains the ownership of the observer object.
     virtual void AddObserver(ComponentObserver* observer) = 0;
@@ -48,7 +61,6 @@ class BraveComponent {
     virtual PrefService* local_state() = 0;
   };
 
-  explicit BraveComponent(Delegate* delegate);
   BraveComponent(const BraveComponent&) = delete;
   BraveComponent& operator=(const BraveComponent&) = delete;
   virtual ~BraveComponent();
@@ -74,6 +86,12 @@ class BraveComponent {
   Delegate* delegate();
 
  private:
+  friend class brave_ads::ResourceComponentRegistrar;
+  friend class tor::BraveTorPluggableTransportUpdater;
+  friend class tor::BraveTorClientUpdater;
+  friend class LocalDataFilesService;
+
+  explicit BraveComponent(Delegate* delegate);
   static void OnComponentRegistered(Delegate* delegate,
                                     const std::string& component_id);
   void OnComponentReadyInternal(const std::string& component_id,
@@ -83,7 +101,7 @@ class BraveComponent {
   std::string component_name_;
   std::string component_id_;
   std::string component_base64_public_key_;
-  raw_ptr<Delegate> delegate_ = nullptr;  // NOT OWNED
+  raw_ptr<Delegate, DanglingUntriaged> delegate_ = nullptr;  // NOT OWNED
   base::WeakPtrFactory<BraveComponent> weak_factory_;
 };
 

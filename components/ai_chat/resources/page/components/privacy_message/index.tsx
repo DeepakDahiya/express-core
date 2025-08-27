@@ -4,55 +4,63 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 import * as React from 'react'
-
-import { getLocale } from '$web-common/locale'
-import { Url } from 'gen/url/mojom/url.mojom.m.js'
 import Button from '@brave/leo/react/button'
 import Dialog from '@brave/leo/react/dialog'
-
+import { getLocale, formatLocale } from '$web-common/locale'
+import { Url } from 'gen/url/mojom/url.mojom.m.js'
+import { useAIChat } from '../../state/ai_chat_context'
 import styles from './style.module.scss'
-import getPageHandlerInstance from '../../api/page_handler'
-import formatMessage from '$web-common/formatMessage'
-import DataContext from '../../state/context'
 
-const WIKI_URL = "https://github.com/brave/brave-browser/wiki/Brave-Leo"
+const WIKI_URL = "https://support.brave.app/hc/en-us/articles/26727364100493-What-are-the-differences-between-Leo-s-AI-Models"
+const PRIVACY_URL = "https://brave.com/privacy/browser/#brave-leo"
 
 function PrivacyMessage () {
-  const context = React.useContext(DataContext)
+  const context = useAIChat()
+  const buttonRef = React.useRef<HTMLButtonElement>()
 
-  const handleWikiLinkClick = () => {
+  const handleLinkClick = (e: React.MouseEvent, url: string) => {
+    e.preventDefault()
     const mojomUrl = new Url()
-    mojomUrl.url = WIKI_URL
+    mojomUrl.url = url
 
-    getPageHandlerInstance().pageHandler.openURL(mojomUrl)
+    context.uiHandler?.openURL(mojomUrl)
   }
 
-  const aboutDescription = formatMessage(getLocale('aboutDescription'), {
-    tags: {
-      $1: (content) => (
-        <a onClick={handleWikiLinkClick} href={WIKI_URL} target='_blank'>
-          {content}
-        </a>
-      )
-    }
+  const createLinkWithClickHandler = (content: string, url: string) => (
+      <a onClick={(e) => handleLinkClick(e, url)} href={url} target='_blank'>
+        {content}
+      </a>
+  )
+
+  const aboutDescription = formatLocale(S.CHAT_UI_ABOUT_DESCRIPTION, {
+    $1: (content) => createLinkWithClickHandler(content, WIKI_URL)
   })
+
+  const aboutDescription3 = formatLocale(S.CHAT_UI_ABOUT_DESCRIPTION_3, {
+    $1: (content) => createLinkWithClickHandler(content, PRIVACY_URL)
+  })
+
+  React.useEffect(() => {
+    const button = buttonRef.current
+    if (button === undefined) return
+    setTimeout(() => button.focus())
+  }, [])
 
   return (
     <Dialog
       isOpen={true}
-      size="mobile"
       escapeCloses={false}
       backdropClickCloses={false}
       className={styles.dialog}
     >
-      <div slot="subtitle">{getLocale('privacyTitle')}</div>
+      <div slot="subtitle">{getLocale(S.CHAT_UI_PRIVACY_TITLE)}</div>
       <div className={styles.content}>
         <p>{aboutDescription}</p>
-        <p>{getLocale('aboutDescription_2')}</p>
-        <p>{getLocale('aboutDescription_3')}</p>
+        <p>{getLocale(S.CHAT_UI_ABOUT_DESCRIPTION_2)}</p>
+        <p>{aboutDescription3}</p>
       </div>
       <div slot="actions">
-        <Button onClick={context.handleAgreeClick}>{getLocale('acceptButtonLabel')}</Button>
+        <Button ref={buttonRef} onClick={context.handleAgreeClick}>{getLocale(S.CHAT_UI_ACCEPT_BUTTON_LABEL)}</Button>
       </div>
     </Dialog>
   )

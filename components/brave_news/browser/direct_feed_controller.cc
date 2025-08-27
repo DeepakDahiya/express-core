@@ -7,23 +7,19 @@
 
 #include <algorithm>
 #include <iterator>
-#include <memory>
 #include <string>
 #include <utility>
+#include <variant>
 #include <vector>
 
 #include "base/barrier_callback.h"
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/uuid.h"
+#include "base/logging.h"
 #include "brave/components/brave_news/browser/direct_feed_fetcher.h"
 #include "brave/components/brave_news/browser/html_parsing.h"
-#include "brave/components/brave_news/browser/publishers_parsing.h"
 #include "brave/components/brave_news/common/brave_news.mojom.h"
-#include "brave/components/brave_news/common/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/prefs/scoped_user_pref_update.h"
-#include "third_party/abseil-cpp/absl/types/variant.h"
 #include "url/gurl.h"
 
 namespace brave_news {
@@ -43,62 +39,11 @@ DirectFeedController::FindFeedRequest::operator=(
 DirectFeedController::FindFeedRequest::~FindFeedRequest() = default;
 
 DirectFeedController::DirectFeedController(
-    PrefService* prefs,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory)
-    : prefs_(prefs), fetcher_(url_loader_factory) {}
+    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
+    base::WeakPtr<DirectFeedFetcher::Delegate> direct_feed_fetcher_delegate)
+    : fetcher_(url_loader_factory, direct_feed_fetcher_delegate) {}
 
 DirectFeedController::~DirectFeedController() = default;
-
-bool DirectFeedController::AddDirectFeedPref(
-    const GURL& feed_url,
-    const std::string& title,
-    const absl::optional<std::string>& id) {
-  // Check if feed url already exists
-  const auto& existing_feeds = prefs_->GetDict(prefs::kBraveNewsDirectFeeds);
-  for (const auto&& [key, value] : existing_feeds) {
-    // Non dict values will be flagged as an issue elsewhere.
-    if (!value.is_dict()) {
-      continue;
-    }
-
-    const auto* existing_url =
-        value.GetDict().FindString(prefs::kBraveNewsDirectFeedsKeySource);
-    if (GURL(*existing_url) == feed_url.spec()) {
-      // It's a duplicate.
-      return false;
-    }
-  }
-
-  // Feed is valid, we can add the url now
-  // UUID for each entry as feed url might change via redirects etc
-  auto entry_id =
-      id.value_or(base::Uuid::GenerateRandomV4().AsLowercaseString());
-  std::string entry_title = title.empty() ? feed_url.spec() : title;
-
-  // We use a dictionary pref, but that's to reserve space for more
-  // future customization on a feed. For now we just store a bool, and
-  // remove the entire entry if a user unsubscribes from a user feed.
-  ScopedDictPrefUpdate update(prefs_, prefs::kBraveNewsDirectFeeds);
-  base::Value::Dict value;
-  value.Set(prefs::kBraveNewsDirectFeedsKeySource, feed_url.spec());
-  value.Set(prefs::kBraveNewsDirectFeedsKeyTitle, entry_title);
-  update->SetByDottedPath(entry_id, std::move(value));
-
-  return true;
-}
-
-void DirectFeedController::RemoveDirectFeedPref(
-    const std::string& publisher_id) {
-  ScopedDictPrefUpdate update(prefs_, prefs::kBraveNewsDirectFeeds);
-  update->Remove(publisher_id);
-}
-
-std::vector<mojom::PublisherPtr> DirectFeedController::ParseDirectFeedsPref() {
-  std::vector<mojom::PublisherPtr> result;
-  const auto& pref = prefs_->GetDict(prefs::kBraveNewsDirectFeeds);
-  ParseDirectPublisherList(pref, &result);
-  return result;
-}
 
 void DirectFeedController::FindFeeds(
     const GURL& possible_feed_or_site_url,
@@ -138,7 +83,7 @@ void DirectFeedController::FindFeedsImpl(
 void DirectFeedController::OnFindFeedsImplDownloadedFeed(
     const GURL& feed_url,
     DirectFeedResponse response) {
-  if (auto* feed = absl::get_if<DirectFeedResult>(&response.result)) {
+  if (auto* feed = std::get_if<DirectFeedResult>(&response.result)) {
     std::vector<mojom::FeedSearchResultItemPtr> results;
 
     auto feed_result = mojom::FeedSearchResultItem::New();
@@ -152,7 +97,7 @@ void DirectFeedController::OnFindFeedsImplDownloadedFeed(
   if (!response.mime_type.empty() &&
       response.mime_type.find("html") != std::string::npos) {
     auto& body_content =
-        absl::get<DirectFeedError>(response.result).body_content;
+        std::get<DirectFeedError>(response.result).body_content;
     VLOG(1) << "Had html type";
     // Get feed links from doc
     auto feed_urls = GetFeedURLsFromHTMLDocument(response.charset, body_content,
@@ -162,7 +107,7 @@ void DirectFeedController::OnFindFeedsImplDownloadedFeed(
            std::vector<DirectFeedResponse> responses) {
           std::vector<mojom::FeedSearchResultItemPtr> results;
           for (const auto& response : responses) {
-            if (auto* feed = absl::get_if<DirectFeedResult>(&response.result)) {
+            if (auto* feed = std::get_if<DirectFeedResult>(&response.result)) {
               if (feed->title.empty()) {
                 continue;
               }
@@ -185,6 +130,9 @@ void DirectFeedController::OnFindFeedsImplDownloadedFeed(
     }
     return;
   }
+
+  // If we didn't get a valid response, call back with no results.
+  OnFindFeedsImplResponse(feed_url, {});
 }
 
 void DirectFeedController::OnFindFeedsImplResponse(
@@ -198,8 +146,8 @@ void DirectFeedController::OnFindFeedsImplResponse(
       // We need to do deep-copy
       for (auto& request : ongoing_requests_[feed_url]) {
         std::vector<mojom::FeedSearchResultItemPtr> clone;
-        base::ranges::transform(results, std::back_inserter(clone),
-                                &mojom::FeedSearchResultItemPtr::Clone);
+        std::ranges::transform(results, std::back_inserter(clone),
+                               &mojom::FeedSearchResultItemPtr::Clone);
         std::move(request.callback).Run(std::move(clone));
       }
     }
@@ -240,7 +188,7 @@ void DirectFeedController::VerifyFeedUrl(const GURL& feed_url,
             // Handle response
             std::string title = "";
             bool success = false;
-            if (auto* feed = absl::get_if<DirectFeedResult>(&response.result)) {
+            if (auto* feed = std::get_if<DirectFeedResult>(&response.result)) {
               title = feed->title.c_str();
               success = true;
             }

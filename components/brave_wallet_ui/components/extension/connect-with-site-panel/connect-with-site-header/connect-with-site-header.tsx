@@ -14,6 +14,9 @@ import { getLocale } from '../../../../../common/locale'
 // Components
 import { CreateSiteOrigin } from '../../../shared/create-site-origin/index'
 import { Tooltip } from '../../../shared/tooltip/index'
+import {
+  VerifiedLabel, //
+} from '../../../shared/verified_label/verified_label'
 
 // Styled Components
 import {
@@ -29,13 +32,17 @@ import {
   BackIcon,
   GradientLine,
   LinkIconCircle,
-  LinkIcon
+  LinkIcon,
+  VerifiedIcon,
 } from './connect-with-site-header.style'
 import { AccountCircle } from '../select-account-item/select-account-item.style'
 import { HorizontalSpace, Column, Row } from '../../../shared/style'
 
 // Hooks
 import { useAddressOrb } from '../../../../common/hooks/use-orb'
+import {
+  useIsDAppVerified, //
+} from '../../../../common/hooks/use_is_dapp_verified'
 
 interface Props {
   originInfo: BraveWallet.OriginInfo
@@ -48,6 +55,9 @@ interface Props {
 export const ConnectWithSiteHeader = (props: Props) => {
   const { originInfo, address, isReadyToConnect, isScrolled, onBack } = props
 
+  // Hooks
+  const { isDAppVerified } = useIsDAppVerified(originInfo)
+
   // Memos
   const orb = useAddressOrb(address)
 
@@ -56,28 +66,31 @@ export const ConnectWithSiteHeader = (props: Props) => {
       <TitleWrapper
         isScrolled={isScrolled}
         isReadyToConnect={isReadyToConnect}
-        padding="12px 16px"
-        justifyContent="space-between"
+        padding='12px 16px'
+        justifyContent='space-between'
       >
         {isReadyToConnect ? (
           <BackButton onClick={onBack}>
-            <BackIcon name="arrow-left" />
+            <BackIcon name='arrow-left' />
           </BackButton>
         ) : (
-          <HorizontalSpace space="24px" />
+          <HorizontalSpace space='24px' />
         )}
         <Title>{getLocale('braveWalletConnectWallet')}</Title>
-        <HorizontalSpace space="24px" />
+        <HorizontalSpace space='24px' />
       </TitleWrapper>
 
       <StyledWrapper isScrolled={isScrolled}>
         <Column
           padding={`${isReadyToConnect ? '30px' : '24px'} 16px 24px 16px`}
           fullWidth={true}
-          alignItems="flex-start"
+          alignItems='flex-start'
         >
           {isReadyToConnect && (
-            <Row justifyContent="center" marginBottom={18}>
+            <Row
+              justifyContent='center'
+              marginBottom={18}
+            >
               <Tooltip
                 isAddress={true}
                 minWidth={120}
@@ -88,27 +101,33 @@ export const ConnectWithSiteHeader = (props: Props) => {
               </Tooltip>
               <GradientLine>
                 <LinkIconCircle>
-                  <LinkIcon name="link-normal" />
+                  <LinkIcon name='link-normal' />
                 </LinkIconCircle>
               </GradientLine>
-              <Tooltip
-                text={originInfo.eTldPlusOne}
-              >
+              <Tooltip text={originInfo.eTldPlusOne}>
                 <FavIcon
-                  src={`chrome://favicon/size/64@1x/${originInfo.originSpec}`}
+                  src={`chrome://favicon2?size=64&pageUrl=${encodeURIComponent(
+                    originInfo.originSpec,
+                  )}`}
                   isReadyToConnect={isReadyToConnect}
                 />
+                {isDAppVerified && <VerifiedIcon />}
               </Tooltip>
             </Row>
           )}
 
           {!isReadyToConnect && (
-            <Row justifyContent="flex-start" marginBottom={16}>
+            <Row
+              justifyContent='flex-start'
+              marginBottom={16}
+            >
               <FavIcon
-                src={`chrome://favicon/size/64@1x/${originInfo.originSpec}`}
+                src={`chrome://favicon2?size=64&pageUrl=${encodeURIComponent(
+                  originInfo.originSpec,
+                )}`}
                 isReadyToConnect={isReadyToConnect}
               />
-              <Column alignItems="flex-start">
+              <Column alignItems='flex-start'>
                 <SiteName>{originInfo.eTldPlusOne}</SiteName>
                 <SiteURL>
                   <CreateSiteOrigin
@@ -116,12 +135,16 @@ export const ConnectWithSiteHeader = (props: Props) => {
                     eTldPlusOne={originInfo.eTldPlusOne}
                   />
                 </SiteURL>
+                {isDAppVerified && <VerifiedLabel />}
               </Column>
             </Row>
           )}
 
-          <MessageBox padding="8px 16px" justifyContent="flex-start">
-            <InfoIcon name="info-filled" />
+          <MessageBox
+            padding='8px 16px'
+            justifyContent='flex-start'
+          >
+            <InfoIcon name='info-filled' />
             {getLocale('braveWalletConnectTrustWarning')}
           </MessageBox>
         </Column>

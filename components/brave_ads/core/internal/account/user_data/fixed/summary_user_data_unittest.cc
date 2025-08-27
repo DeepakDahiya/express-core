@@ -6,39 +6,44 @@
 #include "brave/components/brave_ads/core/internal/account/user_data/fixed/summary_user_data.h"
 
 #include "base/test/values_test_util.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_info.h"
+#include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_tokens_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsSummaryUserDataTest : public UnitTestBase {};
+class BraveAdsSummaryUserDataTest : public test::TestBase {};
 
-TEST_F(BraveAdsSummaryUserDataTest, BuildSummaryUserDataForRewardsUser) {
+TEST_F(BraveAdsSummaryUserDataTest, BuildSummaryUserData) {
   // Arrange
   PaymentTokenList payment_tokens;
 
-  const PaymentTokenInfo payment_token_1 = BuildPaymentTokenForTesting(
-      ConfirmationType::kViewed, AdType::kNotificationAd);
+  const PaymentTokenInfo payment_token_1 =
+      test::BuildPaymentToken(mojom::ConfirmationType::kViewedImpression,
+                              mojom::AdType::kNotificationAd);
   payment_tokens.push_back(payment_token_1);
 
-  const PaymentTokenInfo payment_token_2 = BuildPaymentTokenForTesting(
-      ConfirmationType::kViewed, AdType::kNotificationAd);
+  const PaymentTokenInfo payment_token_2 =
+      test::BuildPaymentToken(mojom::ConfirmationType::kViewedImpression,
+                              mojom::AdType::kNotificationAd);
   payment_tokens.push_back(payment_token_2);
 
-  const PaymentTokenInfo payment_token_3 = BuildPaymentTokenForTesting(
-      ConfirmationType::kClicked, AdType::kNotificationAd);
+  const PaymentTokenInfo payment_token_3 = test::BuildPaymentToken(
+      mojom::ConfirmationType::kClicked, mojom::AdType::kNotificationAd);
   payment_tokens.push_back(payment_token_3);
 
-  const PaymentTokenInfo payment_token_4 = BuildPaymentTokenForTesting(
-      ConfirmationType::kViewed, AdType::kInlineContentAd);
+  const PaymentTokenInfo payment_token_4 =
+      test::BuildPaymentToken(mojom::ConfirmationType::kViewedImpression,
+                              mojom::AdType::kInlineContentAd);
   payment_tokens.push_back(payment_token_4);
 
   // Act & Assert
   EXPECT_EQ(base::test::ParseJsonDict(
-                R"(
+                R"JSON(
                     {
                       "totals": [
                         {
@@ -52,32 +57,29 @@ TEST_F(BraveAdsSummaryUserDataTest, BuildSummaryUserDataForRewardsUser) {
                         }
                       ]
                     }
-                )"),
+                )JSON"),
             BuildSummaryUserData(payment_tokens));
 }
 
-TEST_F(BraveAdsSummaryUserDataTest, BuildSummaryUserDataForNonRewardsUser) {
+TEST_F(BraveAdsSummaryUserDataTest,
+       DoNotBuildSummaryUserDataForNonRewardsUser) {
   // Arrange
-  DisableBraveRewardsForTesting();
+  test::DisableBraveRewards();
 
-  const PaymentTokenList payment_tokens =
-      BuildPaymentTokensForTesting(/*count=*/3);
+  const PaymentTokenList payment_tokens = test::BuildPaymentTokens(/*count=*/3);
 
   // Act & Assert
-  EXPECT_TRUE(BuildSummaryUserData(payment_tokens).empty());
+  EXPECT_THAT(BuildSummaryUserData(payment_tokens), ::testing::IsEmpty());
 }
 
 TEST_F(BraveAdsSummaryUserDataTest, BuildSummaryUserDataIfNoPaymentTokens) {
-  // Arrange
-  const PaymentTokenList payment_tokens;
-
   // Act & Assert
   EXPECT_EQ(base::test::ParseJsonDict(
-                R"(
+                R"JSON(
                     {
                       "totals": []
-                    })"),
-            BuildSummaryUserData(payment_tokens));
+                    })JSON"),
+            BuildSummaryUserData(/*payment_tokens=*/{}));
 }
 
 }  // namespace brave_ads

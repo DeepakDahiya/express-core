@@ -3,7 +3,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 import styled from 'styled-components'
 import { Row, WalletButton } from '../../../shared/style'
@@ -74,6 +74,7 @@ export const SiteURL = styled.span`
   text-align: left;
   color: ${leo.color.text.secondary};
   word-break: break-word;
+  margin-bottom: 6px;
 `
 
 export const FavIcon = styled.img<{ isReadyToConnect: boolean }>`
@@ -142,4 +143,14 @@ export const LinkIconCircle = styled.div`
 export const LinkIcon = styled(Icon)`
   --leo-icon-size: 16px;
   color: ${leo.color.white};
+`
+
+export const VerifiedIcon = styled(Icon).attrs({
+  name: 'verification-filled',
+})`
+  --leo-icon-size: 20px;
+  color: ${leo.color.purple[60]};
+  position: absolute;
+  bottom: -4px;
+  right: -2px;
 `

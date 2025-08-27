@@ -5,38 +5,77 @@
 
 .menuSectionTitle {
   background-color: var(--leo-color-page-background);
-  padding: var(--leo-menu-item-padding) calc(var(--leo-menu-item-margin) + var(--leo-menu-item-padding));
+  padding: var(--leo-spacing-l) var(--leo-spacing-xl);
   color: var(--leo-color-text-tertiary);
-  font: var(--leo-font-small-regular);
-
+  font: var(--leo-font-components-label);
 }
 
-.menuSubtitle {
-  --leo-icon-size: 16px;
-  margin: 14px calc(var(--leo-menu-item-margin) + var(--leo-menu-item-padding));
-  margin-bottom: 2px;
+.menuSectionCustomModel {
+  padding: var(--leo-spacing-l) var(--leo-spacing-xl);
   color: var(--leo-color-text-tertiary);
-  font: var(--leo-font-small-regular);
-  display: flex;
-  flex-direction: row;
-  justify-content: start;
-  align-items: center;
-  gap: 6px;
+  font: var(--leo-font-components-label);
 }
+
+.buttonMenu {
+  line-height: 0;
+  leo-menu-item {
+    padding: var(--leo-spacing-m);
+    min-width: 260px;
+    max-width: 280px;
+    margin-bottom: 0;
+    gap: var(--leo-spacing-m);
+  }
+  leo-menu-item:last-of-type{
+    margin-bottom: var(--leo-spacing-s);
+  }
+}
+
 
 .menuSeparator {
   padding: 0;
   height: 1px;
   background-color: var(--leo-color-divider-subtle);
+  margin-top: var(--leo-spacing-s);
 }
 
 .menuItemWithIcon {
   --leo-icon-size: 20px;
   --leo-icon-color: var(--leo-color-icon-default);
+
   display: flex;
   flex-direction: row;
   align-items: center;
   gap: 12px;
+
+  & > leo-icon {
+    margin-left: 12px;
+    margin-right: 6px;
+  }
+}
+
+.modelIcon {
+  --leo-icon-size: 18px;
+  --leo-icon-color: var(--leo-color-icon-default);
+
+  border-radius: var(--leo-radius-m);
+  border: 1px solid var(--leo-color-divider-subtle);
+
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  flex-shrink: 0;
+
+  width: 32px;
+  height: 32px;
+
+  &[data-key="chat-automatic"] {
+    --leo-icon-color: white;
+
+    background: var(--leo-gradient-icons-active);
+    border: none;
+  }
 }
 
 .menuItemMainItem {
@@ -45,20 +84,22 @@
 }
 
 .menuText {
-  flex-grow: 2;
+  flex-grow:1;
+  font: var(--leo-font-default-regular);
 }
 
-.menuIconSpace {
-  width: calc(var(--leo-icon-size) + 8px);
+leo-toggle{
+  margin-right:var(--leo-spacing-m);
 }
 
 .modelSubtitle {
   font: var(--leo-font-small-regular);
+  color: var(--leo-color-text-tertiary);
   padding: 0;
   margin: 0;
 }
 
-.modelFreemiumLabel {
+.modelLabel {
   align-self: flex-start;
 }
 

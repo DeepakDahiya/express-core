@@ -6,15 +6,17 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_CREATIVES_CONVERSIONS_CREATIVE_SET_CONVERSION_BUILDER_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_CREATIVES_CONVERSIONS_CREATIVE_SET_CONVERSION_BUILDER_H_
 
+#include <optional>
+
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
 struct CreativeSetConversionInfo;
 
-absl::optional<CreativeSetConversionInfo> BuildCreativeSetConversion(
-    const mojom::SearchResultAdInfoPtr& ad_mojom);
+std::optional<CreativeSetConversionInfo>
+FromMojomMaybeBuildCreativeSetConversion(
+    const mojom::CreativeSearchResultAdInfoPtr& mojom_creative_ad);
 
 }  // namespace brave_ads
 

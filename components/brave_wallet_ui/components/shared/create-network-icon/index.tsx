@@ -7,7 +7,7 @@ import * as React from 'react'
 
 // Types
 import {
-  externalWalletProviderFromString
+  externalWalletProviderFromString, //
 } from '../../../../brave_rewards/resources/shared/lib/external_wallet'
 
 // Constants
@@ -18,15 +18,15 @@ import {
   stripERC20TokenImageURL,
   isRemoteImageURL,
   isValidIconExtension,
-  isComponentInStorybook
+  isComponentInStorybook,
 } from '../../../utils/string-utils'
 import {
   getRewardsProviderIcon,
-  getIsRewardsNetwork
+  getIsRewardsNetwork,
 } from '../../../utils/rewards_utils'
 
 // Styled components
-import { IconWrapper, Placeholder, NetworkIcon } from './style'
+import { IconWrapper, Placeholder, NetworkIcon, IconSize } from './style'
 
 // Options
 import { getNetworkLogo } from '../../../options/asset-options'
@@ -42,7 +42,7 @@ type SimpleNetwork = Pick<
 interface Props {
   network?: SimpleNetwork | null
   marginRight?: number
-  size?: 'huge' | 'big' | 'small' | 'tiny' | 'extra-small'
+  size?: IconSize
 }
 
 const isStorybook = isComponentInStorybook()
@@ -51,22 +51,24 @@ export const CreateNetworkIcon = ({ network, marginRight, size }: Props) => {
   // exit early if no network
   if (!network) {
     return (
-      <NetworkPlaceholderIcon marginRight={marginRight} network={network} />
+      <NetworkPlaceholderIcon
+        marginRight={marginRight}
+        network={network}
+        size={size}
+      />
     )
   }
 
   // Computed
   const isRewardsNetwork = getIsRewardsNetwork(network)
 
-  const externalProvider =
-    isRewardsNetwork
-      ? externalWalletProviderFromString(network.chainId)
-      : null
+  const externalProvider = isRewardsNetwork
+    ? externalWalletProviderFromString(network.chainId)
+    : null
 
-  const networkLogo =
-    isRewardsNetwork
-      ? getRewardsProviderIcon(externalProvider)
-      : getNetworkLogo(network.chainId, network.symbol)
+  const networkLogo = isRewardsNetwork
+    ? getRewardsProviderIcon(externalProvider)
+    : getNetworkLogo(network.chainId, network.symbol)
 
   const isTestnet = SupportedTestNetworks.includes(network.chainId)
 
@@ -90,7 +92,7 @@ export const CreateNetworkIcon = ({ network, marginRight, size }: Props) => {
 
   // complex compute + render
   const networkIcon = network.iconUrls[0]
-  const isSandboxUrl = networkIcon?.startsWith('chrome://erc-token-images/')
+  const isSandboxUrl = networkIcon?.startsWith('chrome://image/')
   const networkImageURL = isSandboxUrl
     ? stripERC20TokenImageURL(networkIcon)
     : networkIcon
@@ -99,14 +101,18 @@ export const CreateNetworkIcon = ({ network, marginRight, size }: Props) => {
 
   // needs placeholder
   if (
-    !networkImageURL ||
-    !isStorybook ||
-    (isRemoteURL || isSandboxUrl
+    !networkImageURL
+    || !isStorybook
+    || (isRemoteURL || isSandboxUrl
       ? !isValidIconExtension(new URL(networkIcon).pathname)
       : true)
   ) {
     return (
-      <NetworkPlaceholderIcon marginRight={marginRight} network={network} />
+      <NetworkPlaceholderIcon
+        marginRight={marginRight}
+        network={network}
+        size={size}
+      />
     )
   }
 
@@ -118,7 +124,11 @@ export const CreateNetworkIcon = ({ network, marginRight, size }: Props) => {
     >
       <NetworkIcon
         size={size}
-        icon={isRemoteURL ? `chrome://image?${networkImageURL}` : networkIcon}
+        icon={
+          isRemoteURL
+            ? `chrome://image?url=${encodeURIComponent(networkImageURL)}&staticEncode=true`
+            : networkIcon
+        }
       />
     </IconWrapper>
   )
@@ -128,18 +138,27 @@ export default CreateNetworkIcon
 
 function NetworkPlaceholderIcon({
   marginRight,
-  network
+  network,
+  size,
 }: {
   marginRight: number | undefined
   network?: SimpleNetwork | null
+  size?: IconSize
 }) {
   // custom hooks
   const orb = useNetworkOrb(network)
 
   // render
   return (
-    <IconWrapper marginRight={marginRight ?? 0} isTestnet={false}>
-      <Placeholder orb={orb} />
+    <IconWrapper
+      marginRight={marginRight ?? 0}
+      isTestnet={false}
+      size={size}
+    >
+      <Placeholder
+        size={size}
+        orb={orb}
+      />
     </IconWrapper>
   )
 }

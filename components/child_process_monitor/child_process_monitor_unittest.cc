@@ -99,16 +99,26 @@ TEST_F(ChildProcessMonitorTest, ChildExit) {
   std::unique_ptr<ChildProcessMonitor> monitor =
       std::make_unique<ChildProcessMonitor>();
 
-  base::RunLoop run_loop;
   base::Process process = SpawnChild("FastSleepyChildProcess");
+
+  // Set up monitor before the child process has a chance to exit
+  base::RunLoop run_loop;
   monitor->Start(process.Duplicate(),
                  base::BindLambdaForTesting([&](base::ProcessId pid) {
                    EXPECT_TRUE(callback_runner_->RunsTasksInCurrentSequence());
                    EXPECT_EQ(pid, process.Pid());
                    run_loop.Quit();
                  }));
-  WaitForChildTermination(process.Handle());
+
+  // Wait for the callback with a reasonable timeout to prevent test hanging
+  base::RunLoop timeout_loop;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, timeout_loop.QuitClosure(), TestTimeouts::action_timeout());
+
+  // Race the callback against the timeout
   run_loop.Run();
+
+  WaitForChildTermination(process.Handle());
 }
 
 MULTIPROCESS_TEST_MAIN(SleepyCrashChildProcess) {
@@ -124,18 +134,13 @@ MULTIPROCESS_TEST_MAIN(SleepyCrashChildProcess) {
   return 1;
 }
 
-// Some tests are failing for Windows x86 CI,
-// See https://github.com/brave/brave-browser/issues/22767
-#if BUILDFLAG(IS_WIN) && defined(ARCH_CPU_X86)
-#define MAYBE_ChildCrash DISABLED_ChildCrash
-#else
-#define MAYBE_ChildCrash ChildCrash
-#endif
-TEST_F(ChildProcessMonitorTest, MAYBE_ChildCrash) {
+TEST_F(ChildProcessMonitorTest, ChildCrash) {
   std::unique_ptr<ChildProcessMonitor> monitor =
       std::make_unique<ChildProcessMonitor>();
 
   base::Process process = SpawnChild("SleepyCrashChildProcess");
+
+  // Set up monitor immediately after spawning to avoid race condition
   base::RunLoop run_loop;
   monitor->Start(process.Duplicate(),
                  base::BindLambdaForTesting([&](base::ProcessId pid) {
@@ -143,8 +148,16 @@ TEST_F(ChildProcessMonitorTest, MAYBE_ChildCrash) {
                    EXPECT_EQ(pid, process.Pid());
                    run_loop.Quit();
                  }));
-  WaitForChildTermination(process.Handle());
+
+  // Wait for the callback with a reasonable timeout to prevent test hanging
+  base::RunLoop timeout_loop;
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE, timeout_loop.QuitClosure(), TestTimeouts::action_timeout());
+
+  // Race the callback against the timeout
   run_loop.Run();
+
+  WaitForChildTermination(process.Handle());
 }
 
 }  // namespace brave

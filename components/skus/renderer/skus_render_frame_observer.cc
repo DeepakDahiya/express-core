@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "brave/components/skus/common/features.h"
 #include "brave/components/skus/renderer/skus_utils.h"
@@ -16,6 +17,12 @@
 #include "third_party/blink/public/web/web_local_frame.h"
 
 namespace skus {
+
+// static
+SkusRenderFrameObserver* SkusRenderFrameObserver::Create(
+    content::RenderFrame* render_frame) {
+  return new SkusRenderFrameObserver(render_frame);
+}
 
 SkusRenderFrameObserver::SkusRenderFrameObserver(
     content::RenderFrame* render_frame)

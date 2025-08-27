@@ -3,22 +3,14 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import type {
-  BraveRewardsProxyInstance,
-  RewardsExternalWallet
-} from '../brave_rewards_api_proxy'
-
-export type BraveRewardsProxyOverrides = Partial<{
-  rewardsEnabled: boolean
-  balance: number
-  externalWallet: RewardsExternalWallet | null
-}>
+import { BraveRewardsProxyOverrides } from '../../../constants/testing_types'
+import type { BraveRewardsProxyInstance } from '../brave_rewards_api_proxy'
 
 export class MockBraveRewardsProxy {
   overrides: BraveRewardsProxyOverrides = {
     rewardsEnabled: true,
     balance: 100.5,
-    externalWallet: null
+    externalWallet: null,
   }
 
   applyOverrides = (overrides?: BraveRewardsProxyOverrides) => {
@@ -48,11 +40,18 @@ export type MockBraveRewardsProxyInstance = InstanceType<
 
 let braveRewardsProxyInstance: MockBraveRewardsProxyInstance
 
-export const getMockedBraveRewardsProxy = () => {
+export const getBraveRewardsProxy = () => {
   if (!braveRewardsProxyInstance) {
     braveRewardsProxyInstance = new MockBraveRewardsProxy()
   }
 
-  return braveRewardsProxyInstance as unknown as BraveRewardsProxyInstance &
-    MockBraveRewardsProxy
+  return braveRewardsProxyInstance as unknown as BraveRewardsProxyInstance
+    & MockBraveRewardsProxy
+}
+
+export function resetRewardsProxy(
+  overrides?: BraveRewardsProxyOverrides | undefined,
+) {
+  braveRewardsProxyInstance = new MockBraveRewardsProxy()
+  braveRewardsProxyInstance.applyOverrides(overrides)
 }

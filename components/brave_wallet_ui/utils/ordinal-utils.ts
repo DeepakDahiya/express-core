@@ -19,7 +19,7 @@ export const ORDINALS = {
   9: getLocale('braveWalletOrdinalTenth'),
   10: getLocale('braveWalletOrdinalEleventh'),
   11: getLocale('braveWalletOrdinalTwelfth'),
-  12: getLocale('braveWalletOridinalThirteenth'),
+  12: getLocale('braveWalletOrdinalThirteenth'),
   13: getLocale('braveWalletOrdinalFourteenth'),
   14: getLocale('braveWalletOrdinalFifteenth'),
   15: getLocale('braveWalletOrdinalSixteenth'),
@@ -30,14 +30,14 @@ export const ORDINALS = {
   20: getLocale('braveWalletOrdinalTwentyFirst'),
   21: getLocale('braveWalletOrdinalTwentySecond'),
   22: getLocale('braveWalletOrdinalTwentyThird'),
-  23: getLocale('braveWalletOrdinalTwentyFourth')
+  23: getLocale('braveWalletOrdinalTwentyFourth'),
 }
 
 const suffixes = new Map([
   ['one', getLocale('braveWalletOrdinalSuffixOne')],
   ['two', getLocale('braveWalletOrdinalSuffixTwo')],
   ['few', getLocale('braveWalletOrdinalSuffixFew')],
-  ['other', getLocale('braveWalletOrdinalSuffixOther')]
+  ['other', getLocale('braveWalletOrdinalSuffixOther')],
 ])
 
 export const formatOrdinals = (n: number) => {
@@ -47,9 +47,10 @@ export const formatOrdinals = (n: number) => {
   return `${n}${suffix}`
 }
 
-export const getWordIndicesToVerfy = (_wordsLength: number): number[] => {
+export const getWordIndicesToVerify = (_wordsLength: number): number[] => {
   if (_wordsLength < 3) {
-    return [-3, -2, -1] // phrase is not long enough (must be longer than 3 words)
+    // phrase is not long enough (must be longer than 3 words)
+    return [-3, -2, -1]
   }
 
   // limit randomness to first 24 words

@@ -12,6 +12,7 @@
 
 #include "base/gtest_prod_util.h"
 #include "base/memory/weak_ptr.h"
+#include "brave/components/brave_sync/brave_sync_p3a.h"
 #include "brave/components/brave_sync/brave_sync_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/engine/sync_protocol_error.h"
@@ -34,7 +35,7 @@ class BraveSyncServiceImpl : public SyncServiceImpl {
 
   // SyncServiceImpl implementation
   bool IsSetupInProgress() const override;
-  void StopAndClear() override;
+  void StopAndClear(ResetEngineReason reset_engine_reason) override;
 
   // SyncEngineHost override.
   void OnEngineInitialized(bool success,
@@ -42,8 +43,7 @@ class BraveSyncServiceImpl : public SyncServiceImpl {
   void OnSyncCycleCompleted(const SyncCycleSnapshot& snapshot) override;
 
   // SyncPrefObserver implementation.
-  void OnPreferredDataTypesPrefChange(
-      bool payments_integration_enabled_changed) override;
+  void OnSelectedTypesChanged() override;
 
   std::string GetOrCreateSyncCode();
   bool SetSyncCode(const std::string& sync_code);
@@ -58,16 +58,23 @@ class BraveSyncServiceImpl : public SyncServiceImpl {
   void SuspendDeviceObserverForOwnReset();
   void ResumeDeviceObserver();
 
-  void Initialize() override;
+  void Initialize(DataTypeController::TypeVector controllers) override;
 
-  const brave_sync::Prefs& prefs() { return brave_sync_prefs_; }
+  const brave_sync::Prefs& prefs() const { return brave_sync_prefs_; }
+  brave_sync::Prefs& prefs() { return brave_sync_prefs_; }
 
   void PermanentlyDeleteAccount(
       base::OnceCallback<void(const SyncProtocolError&)> callback);
 
   void SetJoinChainResultCallback(base::OnceCallback<void(bool)> callback);
 
+  // Calls `StopAndClear` with a specific listed reason, as the overriden
+  // function cannot be called from outside this class' scope.
+  void StopAndClearWithShutdownReason();
+  void StopAndClearWithResetLocalDataReason();
+
  private:
+  friend class BraveSyncServiceImplGACookiesTest;
   friend class BraveSyncServiceImplTest;
   FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest,
                            ForcedSetDecryptionPassphrase);
@@ -77,6 +84,8 @@ class BraveSyncServiceImpl : public SyncServiceImpl {
   FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest, JoinActiveOrNewChain);
   FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest, JoinDeletedChain);
   FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest, HistoryPreconditions);
+  FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest,
+                           P3aForHistoryThroughDelegate);
 
   BraveSyncAuthManager* GetBraveSyncAuthManager();
   SyncServiceCrypto* GetCryptoForTests();
@@ -92,18 +101,38 @@ class BraveSyncServiceImpl : public SyncServiceImpl {
       base::OnceCallback<void(const SyncProtocolError&)> callback,
       const SyncProtocolError&);
 
-  void ResetEngine(ShutdownReason shutdown_reason,
-                   ResetEngineReason reset_reason) override;
+  std::unique_ptr<SyncEngine> ResetEngine(
+      ResetEngineReason reset_reason) override;
 
   void LocalDeviceAppeared();
 
+  struct SyncedObjectsCountContext {
+    size_t types_requested = 0;
+    size_t types_responed = 0;
+    size_t total_objects_count = 0;
+    void Reset(size_t types_requested);
+  };
+  SyncedObjectsCountContext synced_objects_context_;
+
   void UpdateP3AObjectsNumber();
-  void OnGotEntityCounts(
-      const std::vector<syncer::TypeEntitiesCount>& entity_counts);
+  void OnGetTypeEntitiesCount(const TypeEntitiesCount& count);
+
+  // IdentityManager::Observer implementation.
+  // Override with an empty implementation.
+  // We need this to avoid device cache guid regeneration once any Google
+  // Account cookie gets deleted, for example when user signs out from GMail
+  void OnAccountsCookieDeletedByUserAction() override;
+  void OnAccountsInCookieUpdated(
+      const signin::AccountsInCookieJarInfo& accounts_in_cookie_jar_info,
+      const GoogleServiceAuthError& error) override;
+  void OnPrimaryAccountChanged(
+      const signin::PrimaryAccountChangeEvent& event_details) override;
 
   brave_sync::Prefs brave_sync_prefs_;
 
   PrefChangeRegistrar brave_sync_prefs_change_registrar_;
+
+  brave_sync::p3a::SyncCodeMonitor sync_code_monitor_;
 
   // This is set to true between |PermanentlyDeleteAccount| succeeded call and
   // new sync chain setup or browser exit. This is used to avoid show the
@@ -120,6 +149,11 @@ class BraveSyncServiceImpl : public SyncServiceImpl {
   bool initiated_self_device_info_deleted_ = false;
 
   int completed_cycles_count_ = 0;
+
+  // This flag is set to true during BraveSyncServiceImpl::Initialize call. The
+  // reason is that upstream SyncServiceImpl::Initialize() can invoke
+  // StopAndClear, but we don't want to invoke AddLeaveChainDetail in that case
+  bool is_initializing_ = false;
 
   std::unique_ptr<SyncServiceImplDelegate> sync_service_impl_delegate_;
   base::OnceCallback<void(bool)> join_chain_result_callback_;

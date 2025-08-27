@@ -17,6 +17,9 @@
 
 namespace p3a {
 
+constexpr char kTestExpressMetric[] = "Brave.Test.ExpressMetric";
+constexpr char kTestUnknownMetric[] = "Brave.Test.UnknownMetric";
+
 class P3AMetricLogStoreTest : public testing::Test,
                               public MetricLogStore::Delegate {
  public:
@@ -26,14 +29,19 @@ class P3AMetricLogStoreTest : public testing::Test,
   std::string SerializeLog(std::string_view histogram_name,
                            uint64_t value,
                            MetricLogType log_type,
-                           bool is_constellation,
                            const std::string& upload_type) override {
     return std::string(histogram_name) + "_" + base::NumberToString(value) +
-           "_" + base::NumberToString(is_constellation) + "_" + upload_type;
+           "_" + upload_type;
   }
 
-  bool IsActualMetric(const std::string& histogram_name) const override {
-    return p3a::kCollectedTypicalHistograms.contains(histogram_name);
+  std::optional<MetricLogType> GetLogTypeForHistogram(
+      std::string_view histogram_name) const override {
+    if (histogram_name == kTestExpressMetric) {
+      return MetricLogType::kExpress;
+    }
+    return p3a::kCollectedTypicalHistograms.contains(histogram_name)
+               ? std::make_optional(MetricLogType::kTypical)
+               : std::nullopt;
   }
 
   bool IsEphemeralMetric(const std::string& histogram_name) const override {
@@ -47,16 +55,16 @@ class P3AMetricLogStoreTest : public testing::Test,
   }
 
   void SetUpLogStore() {
-    log_store = std::make_unique<MetricLogStore>(*this, local_state, false,
+    log_store = std::make_unique<MetricLogStore>(*this, local_state,
                                                  MetricLogType::kTypical);
   }
 
   void UpdateSomeValues(size_t message_count) {
-    auto* histogram_it = p3a::kCollectedTypicalHistograms.begin();
+    auto histogram_it = p3a::kCollectedTypicalHistograms.begin();
     for (size_t i = 1; i <= message_count &&
                        histogram_it != p3a::kCollectedTypicalHistograms.end();
          i++) {
-      log_store->UpdateValue(std::string(*histogram_it), 2);
+      log_store->UpdateValue(std::string(histogram_it->first), 2);
       histogram_it++;
     }
   }
@@ -96,6 +104,7 @@ TEST_F(P3AMetricLogStoreTest, GetAllLogsAfterReload) {
 
   SetUpLogStore();
   log_store->LoadPersistedUnsentLogs();
+  log_store->RemoveObsoleteLogs();
 
   ConsumeMessages(15);
 }
@@ -109,10 +118,14 @@ TEST_F(P3AMetricLogStoreTest, GetAllLogsAfterTimeReset) {
 }
 
 TEST_F(P3AMetricLogStoreTest, ShouldNotLoadUnknownMetric) {
-  log_store->UpdateValue("Brave.UnknownMetric", 3);
+  log_store->UpdateValue(kTestUnknownMetric, 3);
+  log_store->UpdateValue(kTestExpressMetric, 4);
+
+  ASSERT_TRUE(log_store->has_unsent_logs());
 
   SetUpLogStore();
   log_store->LoadPersistedUnsentLogs();
+  log_store->RemoveObsoleteLogs();
 
   ASSERT_FALSE(log_store->has_unsent_logs());
 }

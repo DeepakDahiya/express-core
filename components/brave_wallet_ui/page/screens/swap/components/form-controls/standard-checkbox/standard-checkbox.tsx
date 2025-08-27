@@ -10,7 +10,7 @@ import {
   HiddenCheckBox,
   Label,
   StyledCheckbox,
-  StyledIcon
+  StyledIcon,
 } from './standard-checkbox.style'
 import { Row } from '../../shared-swap.styles'
 
@@ -47,7 +47,12 @@ export const StandardCheckbox = (props: Props) => {
         isBold={isBold}
       >
         <StyledCheckbox isChecked={isChecked}>
-          {isChecked && <StyledIcon size={16} name='check-normal' />}
+          {isChecked && (
+            <StyledIcon
+              size={16}
+              name='check-normal'
+            />
+          )}
         </StyledCheckbox>
         {label}
       </Label>

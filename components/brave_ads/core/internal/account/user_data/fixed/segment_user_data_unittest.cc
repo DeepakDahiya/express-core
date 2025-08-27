@@ -7,50 +7,68 @@
 
 #include "base/test/values_test_util.h"
 #include "brave/components/brave_ads/core/internal/account/transactions/transaction_info.h"
-#include "brave/components/brave_ads/core/internal/account/transactions/transactions_unittest_util.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/account/transactions/transactions_test_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
+#include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsSegmentUserDataTest : public UnitTestBase {};
+class BraveAdsSegmentUserDataTest : public test::TestBase {};
 
-TEST_F(BraveAdsSegmentUserDataTest, BuildSegmentUserDataForRewardsUser) {
+TEST_F(BraveAdsSegmentUserDataTest, BuildSegmentUserData) {
   // Arrange
-  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
-      /*value=*/0.01, ConfirmationType::kViewed,
-      /*should_use_random_uuids=*/false);
+  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+      /*value=*/0.01, mojom::AdType::kNotificationAd,
+      mojom::ConfirmationType::kViewedImpression,
+      /*should_generate_random_uuids=*/false);
 
   // Act & Assert
   EXPECT_EQ(base::test::ParseJsonDict(
-                R"(
+                R"JSON(
                     {
                       "segment": "untargeted"
-                    })"),
+                    })JSON"),
             BuildSegmentUserData(transaction));
+}
+
+TEST_F(BraveAdsSegmentUserDataTest, DoNotBuildSearchResultAdSegmentUserData) {
+  // Arrange
+  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+      /*value=*/0.01, mojom::AdType::kSearchResultAd,
+      mojom::ConfirmationType::kViewedImpression,
+      /*should_generate_random_uuids=*/false);
+
+  // Act & Assert
+  EXPECT_THAT(BuildSegmentUserData(transaction), ::testing::IsEmpty());
 }
 
 TEST_F(BraveAdsSegmentUserDataTest,
        DoNotBuildSegmentUserDataForNonRewardsUser) {
   // Arrange
-  DisableBraveRewardsForTesting();
+  test::DisableBraveRewards();
 
-  const TransactionInfo transaction = BuildUnreconciledTransactionForTesting(
-      /*value=*/0.01, ConfirmationType::kViewed,
-      /*should_use_random_uuids=*/false);
+  const TransactionInfo transaction = test::BuildUnreconciledTransaction(
+      /*value=*/0.01, mojom::AdType::kNotificationAd,
+      mojom::ConfirmationType::kViewedImpression,
+      /*should_generate_random_uuids=*/false);
 
   // Act & Assert
-  EXPECT_TRUE(BuildSegmentUserData(transaction).empty());
+  EXPECT_THAT(BuildSegmentUserData(transaction), ::testing::IsEmpty());
 }
 
-TEST_F(BraveAdsSegmentUserDataTest, DoNotBuildSegmentUserDataIfNoTargeting) {
+TEST_F(BraveAdsSegmentUserDataTest, DoNotBuildSegmentUserDataIfNoSegment) {
   // Arrange
-  const TransactionInfo transaction;
+  TransactionInfo transaction = test::BuildUnreconciledTransaction(
+      /*value=*/0.01, mojom::AdType::kNotificationAd,
+      mojom::ConfirmationType::kViewedImpression,
+      /*should_generate_random_uuids=*/false);
+  transaction.segment = "";
 
   // Act & Assert
-  EXPECT_TRUE(BuildSegmentUserData(transaction).empty());
+  EXPECT_THAT(BuildSegmentUserData(transaction), ::testing::IsEmpty());
 }
 
 }  // namespace brave_ads

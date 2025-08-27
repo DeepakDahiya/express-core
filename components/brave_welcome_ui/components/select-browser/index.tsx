@@ -6,11 +6,12 @@
 import * as React from 'react'
 
 import * as S from './style'
-import Button from '$web-components/button'
+import Button from '@brave/leo/react/button'
 import classnames from '$web-common/classnames'
 import DataContext from '../../state/context'
 import { ViewType } from '../../state/component_types'
 import { getUniqueBrowserTypes } from '../../state/utils'
+import { useViewTypeTransition } from '../../state/hooks'
 import { WelcomeBrowserProxyImpl, ImportDataBrowserProxyImpl, defaultImportTypes, P3APhase } from '../../api/welcome_browser_proxy'
 import { getLocale } from '$web-common/locale'
 
@@ -29,7 +30,7 @@ import YandexSVG from '../svg/browser-icons/yandex'
 import MicrosoftIE from '../svg/browser-icons/ie'
 
 interface BrowserItemButtonProps {
-  browserName: string
+  browserName: keyof typeof browserIcons
   onChange?: (browserName: string) => void
   isActive: boolean
 }
@@ -80,35 +81,48 @@ function BrowserItemButton (props: BrowserItemButtonProps) {
 }
 
 function SelectBrowser () {
-  const { browserProfiles, currentSelectedBrowser, setCurrentSelectedBrowser, setViewType, incrementCount, scenes } = React.useContext(DataContext)
+  const {
+    browserProfiles,
+    currentSelectedBrowserProfiles,
+    viewType,
+    currentSelectedBrowser,
+    setCurrentSelectedBrowser,
+    setViewType,
+    incrementCount,
+    scenes
+  } = React.useContext(DataContext)
   const browserTypes = getUniqueBrowserTypes(browserProfiles ?? [])
   const handleSelectionChange = (browserName: string) => {
     setCurrentSelectedBrowser?.(browserName)
   }
 
-  // TODO(tali): we're duping this call in SelectProfile component.
-  // Perhaps compute this at root component
-  const filteredProfiles = browserProfiles?.filter(
-    profile => profile.browserType === currentSelectedBrowser)
+  const { forward, skip } = useViewTypeTransition(viewType)
 
   const handleImport = () => {
-    if (!currentSelectedBrowser || !filteredProfiles) return
-    let phase = P3APhase.Consent;
-    if (filteredProfiles.length > 1) {
-      // If there are multiple profiles, we handle it in a different view
+    if (!currentSelectedBrowser || !currentSelectedBrowserProfiles) return
+
+    if (forward === ViewType.ImportSelectProfile) {
       setViewType(ViewType.ImportSelectProfile)
-      phase = P3APhase.Import
-    } else {
-      ImportDataBrowserProxyImpl.getInstance().importData(filteredProfiles[0].index, defaultImportTypes)
-      incrementCount()
+      WelcomeBrowserProxyImpl.getInstance().recordP3A(P3APhase.Import)
+      return
     }
 
-    WelcomeBrowserProxyImpl.getInstance().recordP3A(phase)
+    if (forward === ViewType.ImportInProgress) {
+      ImportDataBrowserProxyImpl.getInstance().importData(
+        currentSelectedBrowserProfiles[0].index,
+        defaultImportTypes
+      )
+      incrementCount()
+      WelcomeBrowserProxyImpl.getInstance().recordP3A(P3APhase.Consent)
+      return
+    }
+
+    console.error(`Invalid forward view: ${forward}`)
   }
 
   const handleSkip = () => {
     scenes?.s2.play() // play the final animation on skip
-    setViewType(ViewType.HelpImprove)
+    setViewType(skip!)
     WelcomeBrowserProxyImpl.getInstance().recordP3A(P3APhase.Consent)
   }
 
@@ -119,7 +133,8 @@ function SelectBrowser () {
     })
   }, [])
 
-  const hasSelectedBrowser = filteredProfiles && filteredProfiles.length > 0
+  const hasSelectedBrowser =
+    currentSelectedBrowserProfiles && currentSelectedBrowserProfiles.length > 0
 
   return (
     <S.MainBox>
@@ -131,7 +146,7 @@ function SelectBrowser () {
       </div>
       <S.BrowserListBox>
         <div className="browser-list">
-          {browserTypes.map((entry, id) => {
+          {browserTypes.map((entry: keyof typeof browserIcons, id) => {
             return (
               <BrowserItemButton
                 key={id}
@@ -145,17 +160,17 @@ function SelectBrowser () {
       </S.BrowserListBox>
       <S.ActionBox>
         <Button
-          isTertiary={true}
+          kind="plain-faint"
           onClick={handleSkip}
-          scale="jumbo"
+          size="large"
         >
           {getLocale('braveWelcomeSkipButtonLabel')}
         </Button>
           <Button
-            isPrimary={true}
+            kind="filled"
             isDisabled={!hasSelectedBrowser}
             onClick={handleImport}
-            scale="jumbo"
+            size="large"
           >
             {getLocale('braveWelcomeImportButtonLabel')}
           </Button>

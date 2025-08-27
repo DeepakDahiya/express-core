@@ -8,6 +8,8 @@
 
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_info.h"
 
+#include <cstddef>
+
 namespace brave_ads {
 
 class PaymentTokens final {
@@ -16,9 +18,6 @@ class PaymentTokens final {
 
   PaymentTokens(const PaymentTokens&) = delete;
   PaymentTokens& operator=(const PaymentTokens&) = delete;
-
-  PaymentTokens(PaymentTokens&&) noexcept = delete;
-  PaymentTokens& operator=(PaymentTokens&&) noexcept = delete;
 
   ~PaymentTokens();
 

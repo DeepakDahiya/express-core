@@ -6,39 +6,36 @@
 #include "brave/components/brave_ads/core/internal/account/user_data/dynamic/system_timestamp_user_data.h"
 
 #include "base/test/values_test_util.h"
-#include "base/time/time.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_base.h"
-#include "brave/components/brave_ads/core/internal/common/unittest/unittest_time_util.h"
-#include "brave/components/brave_ads/core/internal/settings/settings_unittest_util.h"
+#include "brave/components/brave_ads/core/internal/common/test/test_base.h"
+#include "brave/components/brave_ads/core/internal/common/test/time_test_util.h"
+#include "brave/components/brave_ads/core/internal/settings/settings_test_util.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
 
 namespace brave_ads {
 
-class BraveAdsSystemTimestampUserDataTest : public UnitTestBase {};
+class BraveAdsSystemTimestampUserDataTest : public test::TestBase {};
 
-TEST_F(BraveAdsSystemTimestampUserDataTest,
-       BuildSystemTimestampUserDataForRewardsUser) {
+TEST_F(BraveAdsSystemTimestampUserDataTest, BuildSystemTimestampUserData) {
   // Arrange
-  AdvanceClockTo(
-      TimeFromString("November 18 2020 12:34:56.789", /*is_local=*/false));
+  AdvanceClockTo(test::TimeFromUTCString("November 18 2020 12:34:56.789"));
 
   // Act & Assert
   EXPECT_EQ(base::test::ParseJsonDict(
-                R"(
+                R"JSON(
                     {
                       "systemTimestamp": "2020-11-18T12:00:00.000Z"
-                    })"),
+                    })JSON"),
             BuildSystemTimestampUserData());
 }
 
 TEST_F(BraveAdsSystemTimestampUserDataTest,
-       BuildSystemTimestampUserDataForNonRewardsUser) {
+       DoNotBuildSystemTimestampUserDataForNonRewardsUser) {
   // Arrange
-  DisableBraveRewardsForTesting();
+  test::DisableBraveRewards();
 
   // Act & Assert
-  EXPECT_TRUE(BuildSystemTimestampUserData().empty());
+  EXPECT_THAT(BuildSystemTimestampUserData(), ::testing::IsEmpty());
 }
 
 }  // namespace brave_ads

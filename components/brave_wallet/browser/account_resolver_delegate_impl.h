@@ -15,15 +15,17 @@ namespace brave_wallet {
 
 class AccountResolverDelegateImpl : public AccountResolverDelegate {
  public:
-  explicit AccountResolverDelegateImpl(KeyringService* keyring_service);
+  explicit AccountResolverDelegateImpl(KeyringService& keyring_service);
 
   mojom::AccountIdPtr ResolveAccountId(
       const std::string* from_account_id,
       const std::string* from_address) override;
   bool ValidateAccountId(const mojom::AccountIdPtr& account_id) override;
+  std::optional<std::string> ResolveAddress(
+      const mojom::AccountIdPtr& account_id) override;
 
  private:
-  raw_ptr<KeyringService> keyring_service_ = nullptr;
+  raw_ref<KeyringService> keyring_service_;
 };
 
 }  // namespace brave_wallet

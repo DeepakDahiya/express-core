@@ -5,6 +5,7 @@
 
 #include "brave/components/brave_wallet/browser/eth_tx_meta.h"
 
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -30,7 +31,7 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo) {
       *EthTransaction::FromTxData(mojom::TxData::New(
           "0x09", "0x4a817c800", "0x5208",
           "0x3535353535353535353535353535353535353535", "0x0de0b6b3a7640000",
-          std::vector<uint8_t>(), false, absl::nullopt)));
+          std::vector<uint8_t>(), false, std::nullopt)));
   EthTxMeta meta(eth_account_id, std::move(tx));
   base::Time::Exploded x{1981, 3, 0, 1, 2};
   base::Time confirmed_time = meta.confirmed_time();
@@ -40,7 +41,6 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo) {
 
   mojom::TransactionInfoPtr ti = meta.ToTransactionInfo();
   EXPECT_EQ(ti->id, meta.id());
-  EXPECT_EQ(ti->from_address, from_address);
   EXPECT_EQ(ti->from_account_id, meta.from());
   EXPECT_EQ(ti->tx_hash, meta.tx_hash());
   EXPECT_EQ(ti->tx_status, meta.status());
@@ -76,7 +76,7 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo) {
           mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                              "0x3535353535353535353535353535353535353535",
                              "0x0de0b6b3a7640000", std::vector<uint8_t>(),
-                             false, absl::nullopt),
+                             false, std::nullopt),
           0x3));
   auto* access_list = tx1->access_list();
   Eip2930Transaction::AccessListItem item_a;
@@ -88,7 +88,6 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo) {
   EthTxMeta meta1(eth_account_id, std::move(tx1));
   mojom::TransactionInfoPtr ti1 = meta1.ToTransactionInfo();
   EXPECT_EQ(ti1->id, meta1.id());
-  EXPECT_EQ(ti1->from_address, from_address);
   EXPECT_EQ(ti1->from_account_id, meta1.from());
   EXPECT_EQ(ti1->tx_hash, meta1.tx_hash());
   EXPECT_EQ(ti1->tx_status, meta1.status());
@@ -121,7 +120,7 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo) {
               mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                                  "0x3535353535353535353535353535353535353535",
                                  "0x0de0b6b3a7640000", std::vector<uint8_t>(),
-                                 false, absl::nullopt),
+                                 false, std::nullopt),
               "0x3", "0x1E", "0x32",
               mojom::GasEstimation1559::New(
                   "0x3b9aca00" /* Hex of 1 * 1e9 */,
@@ -134,7 +133,6 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo) {
   EthTxMeta meta2(eth_account_id, std::move(tx2));
   mojom::TransactionInfoPtr ti2 = meta2.ToTransactionInfo();
   EXPECT_EQ(ti2->id, meta2.id());
-  EXPECT_EQ(ti2->from_address, from_address);
   EXPECT_EQ(ti2->from_account_id, meta2.from());
   EXPECT_EQ(ti2->tx_hash, meta2.tx_hash());
   EXPECT_EQ(ti2->tx_status, meta2.status());
@@ -205,7 +203,7 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo_FinalRecipientTest) {
                 mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                                    "0x3535353535353535353535353535353535353535",
                                    "0x0de0b6b3a7640000", data, false,
-                                   absl::nullopt),
+                                   std::nullopt),
                 mojom::kFilecoinEthereumMainnetChainId, "0x1E", "0x32",
                 mojom::GasEstimation1559::New(
                     "0x3b9aca00" /* Hex of 1 * 1e9 */,
@@ -235,8 +233,8 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo_FinalRecipientTest) {
                 mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                                    "0x3535353535353535353535353535353535353535",
                                    "0x0de0b6b3a7640000", encoded_data, false,
-                                   absl::nullopt),
-                mojom::kGoerliChainId, "0x1E", "0x32",
+                                   std::nullopt),
+                mojom::kSepoliaChainId, "0x1E", "0x32",
                 mojom::GasEstimation1559::New(
                     "0x3b9aca00" /* Hex of 1 * 1e9 */,
                     "0xaf16b1600" /* Hex of 47 * 1e9 */,
@@ -266,8 +264,8 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo_FinalRecipientTest) {
                 mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                                    "0x3535353535353535353535353535353535353535",
                                    "0x0de0b6b3a7640000", encoded_data, false,
-                                   absl::nullopt),
-                mojom::kGoerliChainId, "0x1E", "0x32",
+                                   std::nullopt),
+                mojom::kSepoliaChainId, "0x1E", "0x32",
                 mojom::GasEstimation1559::New(
                     "0x3b9aca00" /* Hex of 1 * 1e9 */,
                     "0xaf16b1600" /* Hex of 47 * 1e9 */,
@@ -297,8 +295,8 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo_FinalRecipientTest) {
                 mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                                    "0x3535353535353535353535353535353535353535",
                                    "0x0de0b6b3a7640000", encoded_data, false,
-                                   absl::nullopt),
-                mojom::kGoerliChainId, "0x1E", "0x32",
+                                   std::nullopt),
+                mojom::kSepoliaChainId, "0x1E", "0x32",
                 mojom::GasEstimation1559::New(
                     "0x3b9aca00" /* Hex of 1 * 1e9 */,
                     "0xaf16b1600" /* Hex of 47 * 1e9 */,
@@ -321,8 +319,8 @@ TEST(EthTxMetaUnitTest, ToTransactionInfo_FinalRecipientTest) {
                 mojom::TxData::New("0x09", "0x4a817c800", "0x5208",
                                    "0x3535353535353535353535353535353535353535",
                                    "0x0de0b6b3a7640000", std::vector<uint8_t>(),
-                                   false, absl::nullopt),
-                mojom::kGoerliChainId, "0x1E", "0x32",
+                                   false, std::nullopt),
+                mojom::kSepoliaChainId, "0x1E", "0x32",
                 mojom::GasEstimation1559::New(
                     "0x3b9aca00" /* Hex of 1 * 1e9 */,
                     "0xaf16b1600" /* Hex of 47 * 1e9 */,

@@ -5,7 +5,10 @@
 
 #include "brave/components/brave_wallet/browser/eth_data_builder.h"
 
-#include "base/ranges/algorithm.h"
+#include <algorithm>
+#include <array>
+#include <optional>
+
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/brave_wallet/common/eth_abi_utils.h"
 #include "brave/components/brave_wallet/common/fil_address.h"
@@ -185,8 +188,8 @@ TEST(EthCallDataBuilderTest, SupportsInterface) {
 namespace unstoppable_domains {
 
 TEST(EthCallDataBuilderTest, GetMany) {
-  std::vector<std::string> keys = {"crypto.ETH.address"};
-  auto data = GetMany(keys, "brave.crypto");
+  auto data = GetMany("brave.crypto",
+                      std::to_array<std::string_view>({"crypto.ETH.address"}));
   EXPECT_TRUE(data);
   EXPECT_EQ(data,
             "0x1bd8cc1a"
@@ -203,9 +206,10 @@ TEST(EthCallDataBuilderTest, GetMany) {
             // Encoding of "crypto.ETH.address"
             "63727970746f2e4554482e616464726573730000000000000000000000000000");
 
-  keys = {"dweb.ipfs.hash", "ipfs.html.value", "browser.redirect_url",
-          "ipfs.redirect_domain.value"};
-  data = GetMany(keys, "brave.crypto");
+  data = GetMany("brave.crypto",
+                 std::to_array<std::string_view>(
+                     {"dweb.ipfs.hash", "ipfs.html.value",
+                      "browser.redirect_url", "ipfs.redirect_domain.value"}));
   EXPECT_TRUE(data);
   EXPECT_EQ(data,
             "0x1bd8cc1a"
@@ -244,24 +248,24 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_ETH) {
                               mojom::kMainnetChainId);
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.ETH.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
   {
     auto call = GetWalletAddr("test.crypto", mojom::CoinType::ETH, "USDT",
-                              mojom::kBinanceSmartChainMainnetChainId);
+                              mojom::kBnbSmartChainMainnetChainId);
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
@@ -270,9 +274,9 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_ETH) {
         ElementsAreArray({"crypto.USDT.version.BEP20.address",
                           "crypto.USDT.address", "crypto.ETH.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
 
   {
@@ -280,17 +284,17 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_ETH) {
         GetWalletAddr("test.crypto", mojom::CoinType::ETH, "QWEQWE", "0x12345");
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.QWEQWE.address",
                                                "crypto.ETH.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
 }
 
@@ -300,32 +304,32 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_SOL) {
                               mojom::kSolanaMainnet);
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.SOL.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
   {
     auto call = GetWalletAddr("test.crypto", mojom::CoinType::SOL, "SOL",
                               mojom::kSolanaTestnet);
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.SOL.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
 
   {
@@ -333,8 +337,8 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_SOL) {
         GetWalletAddr("test.crypto", mojom::CoinType::SOL, "QWEQWE", "0x12345");
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
@@ -342,9 +346,9 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_SOL) {
                 ElementsAreArray({"crypto.QWEQWE.version.SOLANA.address",
                                   "crypto.SOL.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
 }
 
@@ -354,32 +358,32 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_FIL) {
                               mojom::kFilecoinMainnet);
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.FIL.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
   {
     auto call = GetWalletAddr("test.crypto", mojom::CoinType::FIL, "FIL",
                               mojom::kFilecoinTestnet);
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.FIL.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
 
   {
@@ -387,16 +391,16 @@ TEST(EthCallDataBuilderTest, GetWalletAddr_FIL) {
         GetWalletAddr("test.crypto", mojom::CoinType::FIL, "QWEQWE", "0x12345");
 
     auto [selector, args] =
-        eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
-    EXPECT_TRUE(base::ranges::equal(selector, kGetManySelector));
+        *eth_abi::ExtractFunctionSelectorAndArgsFromCall(call);
+    EXPECT_TRUE(std::ranges::equal(selector, kGetManySelector));
 
     auto keys_array = eth_abi::ExtractStringArrayFromTuple(args, 0);
     ASSERT_TRUE(keys_array);
     EXPECT_THAT(*keys_array, ElementsAreArray({"crypto.FIL.address"}));
 
-    auto name_hash = eth_abi::ExtractFixedBytesFromTuple(args, 32, 1);
+    auto name_hash = eth_abi::ExtractFixedBytesFromTuple<32>(args, 1);
     ASSERT_TRUE(name_hash);
-    EXPECT_TRUE(base::ranges::equal(*name_hash, Namehash("test.crypto")));
+    EXPECT_TRUE(std::ranges::equal(*name_hash, Namehash("test.crypto")));
   }
 }
 
@@ -438,22 +442,6 @@ TEST(EthCallDataBuilderTest, Resolver) {
   EXPECT_EQ(Resolver("brantly.eth"),
             "0x0178b8bf"
             // Name hash of brantly.eth.
-            "43fcd34d8589090581e1d2bdcf5dc17feb05b2006401fb1c3fdded335a465b51");
-}
-
-TEST(EthCallDataBuilderTest, ContentHash) {
-  std::string data;
-  EXPECT_TRUE(ContentHash("brantly.eth", &data));
-  EXPECT_EQ(data,
-            "0xbc1c58d1"
-            "43fcd34d8589090581e1d2bdcf5dc17feb05b2006401fb1c3fdded335a465b51");
-}
-
-TEST(EthCallDataBuilderTest, Addr) {
-  std::string data;
-  EXPECT_TRUE(Addr("brantly.eth", &data));
-  EXPECT_EQ(data,
-            "0x3b3b57de"
             "43fcd34d8589090581e1d2bdcf5dc17feb05b2006401fb1c3fdded335a465b51");
 }
 
@@ -535,7 +523,7 @@ TEST(EthCallDataBuilderTest, TokensBalance) {
       TokensBalance("0x08A8fDBddc160A7d5b957256b903dCAb1aE512C5", {"invalid"}));
 
   // Single token contract address supplied
-  absl::optional<std::string> data;
+  std::optional<std::string> data;
   data = TokensBalance("0xB4B2802129071b2B9eBb8cBB01EA1E4D14B34961",
                        {"0x0D8775F648430679A709E98d2b0Cb6250d2887EF"});
   ASSERT_TRUE(data);

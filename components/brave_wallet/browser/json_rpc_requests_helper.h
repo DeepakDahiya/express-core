@@ -9,9 +9,11 @@
 #include <string>
 #include <string_view>
 #include <utility>
+#include <vector>
 
 #include "base/containers/flat_map.h"
 #include "base/values.h"
+#include "url/gurl.h"
 
 // Helper functions for building out JSON RPC requests across all blockchains.
 namespace brave_wallet {
@@ -43,7 +45,12 @@ void AddKeyIfNotEmpty(base::Value::Dict* dict,
                       std::string_view val);
 
 base::flat_map<std::string, std::string> MakeCommonJsonRpcHeaders(
-    const std::string& json_payload);
+    const std::string& json_payload,
+    const GURL& network_url);
+
+std::string EncodeAnkrGetAccountBalancesParams(
+    const std::string& address,
+    const std::vector<std::string>& blockchains);
 
 }  // namespace brave_wallet
 

@@ -20,20 +20,12 @@ class RedeemConfirmationDelegateMock : public RedeemConfirmationDelegate {
   RedeemConfirmationDelegateMock& operator=(
       const RedeemConfirmationDelegateMock&) = delete;
 
-  RedeemConfirmationDelegateMock(RedeemConfirmationDelegateMock&&) noexcept =
-      delete;
-  RedeemConfirmationDelegateMock& operator=(
-      RedeemConfirmationDelegateMock&&) noexcept = delete;
-
   ~RedeemConfirmationDelegateMock() override;
 
-  MOCK_METHOD(void,
-              OnDidRedeemConfirmation,
-              (const ConfirmationInfo& confirmation));
-
+  MOCK_METHOD(void, OnDidRedeemConfirmation, (const ConfirmationInfo&));
   MOCK_METHOD(void,
               OnFailedToRedeemConfirmation,
-              (const ConfirmationInfo& confirmation, bool should_retry));
+              (const ConfirmationInfo&, bool));
 };
 
 }  // namespace brave_ads

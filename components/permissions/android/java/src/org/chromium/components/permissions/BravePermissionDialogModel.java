@@ -26,22 +26,23 @@ import android.widget.TextView;
 
 import androidx.browser.customtabs.CustomTabsIntent;
 
-import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.IntentUtils;
+import org.chromium.build.annotations.NullMarked;
 import org.chromium.ui.LayoutInflaterUtils;
 import org.chromium.ui.UiUtils;
 import org.chromium.ui.base.ViewUtils;
 import org.chromium.ui.modaldialog.ModalDialogProperties;
 import org.chromium.ui.modelutil.PropertyModel;
-import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.ChromeClickableSpan;
 import org.chromium.ui.text.SpanApplier;
 import org.chromium.ui.util.ColorUtils;
 
 /* Adds additional items to Permission Dialog. */
+@NullMarked
 class BravePermissionDialogModel {
     // Link for Widevine
     private static final String URL_WIDEVINE_LEARN_MORE =
-            "https://support.brave.com/hc/en-us/articles/17428756610061";
+            "https://support.brave.app/hc/en-us/articles/17428756610061";
 
     public static PropertyModel getModel(
             ModalDialogProperties.Controller controller,
@@ -76,15 +77,21 @@ class BravePermissionDialogModel {
 
         String messageText = delegate.getMessageText();
         // Override Allow button text
-        String primaryButtonText = context.getResources().getString(
-                R.string.widevine_permission_request_primary_button_text);
+        String primaryButtonText =
+                context.getResources()
+                        .getString(R.string.widevine_permission_request_primary_button_text);
         assert !TextUtils.isEmpty(messageText) && !TextUtils.isEmpty(primaryButtonText);
-        SpannableString learnMoreLink = SpanApplier.applySpans(
-                context.getResources().getString(R.string.widevine_permission_request_link),
-                new SpanApplier.SpanInfo("<LINK>", "</LINK>",
-                        new NoUnderlineClickableSpan(context, R.color.brave_link, result -> {
-                            openUrlInCustomTab(context, URL_WIDEVINE_LEARN_MORE);
-                        })));
+        SpannableString learnMoreLink =
+                SpanApplier.applySpans(
+                        context.getResources().getString(R.string.widevine_permission_request_link),
+                        new SpanApplier.SpanInfo(
+                                "<LINK>",
+                                "</LINK>",
+                                new ChromeClickableSpan(
+                                        context.getColor(R.color.brave_link),
+                                        result -> {
+                                            openUrlInCustomTab(context, URL_WIDEVINE_LEARN_MORE);
+                                        })));
 
         TextView messageTextView = customView.findViewById(R.id.message);
         messageTextView.setText(messageText);
@@ -101,17 +108,20 @@ class BravePermissionDialogModel {
         PropertyModel model =
                 new PropertyModel.Builder(ModalDialogProperties.ALL_KEYS)
                         .with(ModalDialogProperties.CONTROLLER, controller)
-                        .with(ModalDialogProperties.TITLE,
-                                context.getResources().getString(
-                                        R.string.widevine_permission_request_title))
+                        .with(
+                                ModalDialogProperties.TITLE,
+                                context.getResources()
+                                        .getString(R.string.widevine_permission_request_title))
                         .with(ModalDialogProperties.CUSTOM_VIEW, customView)
                         .with(ModalDialogProperties.POSITIVE_BUTTON_TEXT, primaryButtonText)
-                        .with(ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
-                                delegate.getSecondaryButtonText())
+                        .with(
+                                ModalDialogProperties.NEGATIVE_BUTTON_TEXT,
+                                delegate.getNegativeButtonText())
                         .with(ModalDialogProperties.CONTENT_DESCRIPTION, messageText)
                         .with(ModalDialogProperties.FILTER_TOUCH_FOR_SECURITY, true)
                         .with(ModalDialogProperties.TOUCH_FILTERED_CALLBACK, touchFilteredCallback)
-                        .with(ModalDialogProperties.BUTTON_TAP_PROTECTION_PERIOD_MS,
+                        .with(
+                                ModalDialogProperties.BUTTON_TAP_PROTECTION_PERIOD_MS,
                                 UiUtils.PROMPT_INPUT_PROTECTION_SHORT_DELAY_MS)
                         .build();
 
@@ -121,6 +131,11 @@ class BravePermissionDialogModel {
     /* Adds a permission lifetime options to a dialog view if lifetime options are available. */
     private static void addLifetimeOptions(View customView, PermissionDialogDelegate delegate) {
         Context context = delegate.getWindow().getContext().get();
+
+        if (context == null) {
+            throw new NullPointerException("Unexpected null context");
+        }
+
         BravePermissionDialogDelegate braveDelegate =
                 (BravePermissionDialogDelegate) (Object) delegate;
 
@@ -134,8 +149,7 @@ class BravePermissionDialogModel {
         // Create a text label before the lifetime selector.
         TextView lifetimeOptionsText = new TextView(context);
         lifetimeOptionsText.setText(braveDelegate.getLifetimeOptionsText());
-        ApiCompatibilityUtils.setTextAppearance(
-                lifetimeOptionsText, R.style.TextAppearance_TextMedium_Primary);
+        lifetimeOptionsText.setTextAppearance(R.style.TextAppearance_TextMedium_Primary);
 
         LinearLayout.LayoutParams lifetimeOptionsTextLayoutParams =
                 new LinearLayout.LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);

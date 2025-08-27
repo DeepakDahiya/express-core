@@ -13,10 +13,17 @@ enum PageContentType {
   VideoTranscriptVTT
 };
 
+// Configuration for YouTube InnerTube API
+struct YoutubeInnerTubeConfig {
+  string api_key;
+  string video_id;
+};
+
 // Items either have content or a url to retrieve content
 union PageContentData {
   string content;
   url.mojom.Url content_url;
+  YoutubeInnerTubeConfig youtube_inner_tube_config;
 };
 
 struct PageContent {
@@ -28,4 +35,13 @@ struct PageContent {
 // RenderFrame.
 interface PageContentExtractor {
   ExtractPageContent() => (PageContent? page_content);
+
+  // Get summarizer-key meta tag from Brave Search SERP if it exists.
+  // This should only be called when the last commited URL is Brave Search SERP.
+  GetSearchSummarizerKey() => (string? key);
+
+  // Get the nonce in the href URL and the nonce attribute value in the
+  // continue-with-leo HTML anchor element (open Leo button). These two
+  // nonces value must be the same, otherwise nullopt will be returned.
+  GetOpenAIChatButtonNonce() => (string? nonce);
 };

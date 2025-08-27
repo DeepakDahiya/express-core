@@ -9,20 +9,32 @@
 #include <utility>
 
 #include "base/auto_reset.h"
+#include "base/check.h"
 #include "base/containers/contains.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "brave/components/permissions/permission_lifetime_pref_names.h"
 #include "components/content_settings/core/browser/content_settings_registry.h"
 #include "components/content_settings/core/browser/content_settings_utils.h"
 #include "components/content_settings/core/browser/website_settings_info.h"
 #include "components/content_settings/core/browser/website_settings_registry.h"
+#include "components/permissions/permission_request.h"
+#include "components/permissions/permission_util.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 
 using content_settings::WebsiteSettingsInfo;
 using content_settings::WebsiteSettingsRegistry;
 
 namespace permissions {
+
+namespace {
+
+constexpr char kLifetime24HoursHistogramName[] =
+    "Brave.PermissionLifetime.24Hours";
+constexpr char kLifetime7DaysHistogramName[] = "Brave.PermissionLifetime.7Days";
+
+}  // namespace
 
 // static
 void PermissionLifetimeManager::RegisterProfilePrefs(
@@ -73,12 +85,10 @@ void PermissionLifetimeManager::PermissionDecided(
     const PermissionRequest& permission_request,
     const GURL& requesting_origin,
     const GURL& embedding_origin,
-    ContentSetting content_setting,
-    bool is_one_time) {
+    PermissionDecision decision) {
   if (!permission_request.SupportsLifetime() ||
-      (content_setting != ContentSetting::CONTENT_SETTING_ALLOW &&
-       content_setting != ContentSetting::CONTENT_SETTING_BLOCK) ||
-      is_one_time) {
+      (decision != PermissionDecision::kAllow &&
+       decision != PermissionDecision::kDeny)) {
     // Only interested in ALLOW/BLOCK and non one-time (Chromium
     // geolocation-specific) decisions.
     return;
@@ -90,8 +100,26 @@ void PermissionLifetimeManager::PermissionDecided(
     return;
   }
 
+  if (decision == PermissionDecision::kAllow) {
+    const char* histogram_name = nullptr;
+    if (*lifetime == base::Hours(24)) {
+      histogram_name = kLifetime24HoursHistogramName;
+    } else if (*lifetime == base::Days(7)) {
+      histogram_name = kLifetime7DaysHistogramName;
+    }
+    if (histogram_name) {
+      base::UmaHistogramExactLinear(histogram_name, 1, 2);
+    }
+  }
+
   const ContentSettingsType content_type =
       permission_request.GetContentSettingsType();
+  if (content_type == ContentSettingsType::DEFAULT) {
+    return;
+  }
+
+  ContentSetting content_setting =
+      PermissionUtil::PermissionDecisionToContentSetting(decision);
 
   DVLOG(1) << "PermissionLifetimeManager::PermissionDecided"
            << "\ntype: "
@@ -99,7 +127,8 @@ void PermissionLifetimeManager::PermissionDecided(
            << "\nrequesting_origin: " << requesting_origin
            << "\nembedding_origin: " << embedding_origin
            << "\ncontent_setting: "
-           << content_settings::ContentSettingToString(content_setting)
+           << content_settings::ContentSettingToString(
+                  PermissionUtil::PermissionDecisionToContentSetting(decision))
            << "\nlifetime: " << permission_request.GetLifetime()->InSeconds()
            << " seconds";
 

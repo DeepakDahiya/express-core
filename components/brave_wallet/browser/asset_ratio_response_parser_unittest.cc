@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "base/strings/string_util.h"
 #include "base/test/values_test_util.h"
 #include "brave/components/brave_wallet/browser/asset_ratio_response_parser.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
@@ -62,8 +61,8 @@ TEST(AssetRatioResponseParserUnitTest, ParseAssetPrice) {
     })");
 
   std::vector<brave_wallet::mojom::AssetPricePtr> prices;
-  ASSERT_TRUE(ParseAssetPrice(ParseJson(json), {"bat", "link"}, {"btc", "usd"},
-                              &prices));
+  ASSERT_TRUE(ParseAssetPrice(ParseJson(json), {"bat", "link", "eth"},
+                              {"btc", "usd"}, &prices));
   ASSERT_EQ(prices.size(), 4UL);
   EXPECT_EQ(prices[0]->from_asset, "bat");
   EXPECT_EQ(prices[0]->to_asset, "btc");
@@ -85,11 +84,18 @@ TEST(AssetRatioResponseParserUnitTest, ParseAssetPrice) {
   EXPECT_EQ(prices[3]->price, "83.77");
   EXPECT_EQ(prices[3]->asset_timeframe_change, "1.7646208048244043");
 
-  // Unexpected json for inputs
-  EXPECT_FALSE(ParseAssetPrice(ParseJson(json), {"A1", "A2", "A3"},
-                               {"B1", "B2", "B3"}, &prices));
-  EXPECT_FALSE(ParseAssetPrice(ParseJson(json), {"A1"}, {"B1", "B2"}, &prices));
-  EXPECT_FALSE(ParseAssetPrice(ParseJson(json), {"A1", "A2"}, {"B1"}, &prices));
+  // Missing from_asset in payload
+  prices.clear();
+  EXPECT_TRUE(ParseAssetPrice(ParseJson(json), {"A1", "A2", "A3"},
+                              {"B1", "B2", "B3"}, &prices));
+  EXPECT_EQ(prices.size(), 0UL);
+  prices.clear();
+  EXPECT_TRUE(ParseAssetPrice(ParseJson(json), {"A1"}, {"B1", "B2"}, &prices));
+  EXPECT_EQ(prices.size(), 0UL);
+  prices.clear();
+  EXPECT_TRUE(ParseAssetPrice(ParseJson(json), {"A1", "A2"}, {"B1"}, &prices));
+  EXPECT_EQ(prices.size(), 0UL);
+  prices.clear();
 
   // Invalid json input
   EXPECT_FALSE(
@@ -141,149 +147,6 @@ TEST(AssetRatioResponseParserUnitTest, ParseAssetPriceHistory) {
   EXPECT_FALSE(ParseAssetPriceHistory(ParseJson(json), &values));
 
   EXPECT_FALSE(ParseAssetPriceHistory(base::Value(), &values));
-}
-
-TEST(AssetRatioResponseParserUnitTest, ParseGetTokenInfo) {
-  // ERC20
-  std::string json(R"(
-    {
-      "status": "1",
-      "message": "OK",
-      "result": [{
-        "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "tokenName": "Tether USD",
-        "symbol": "USDT",
-        "divisor": "6",
-        "tokenType": "ERC20",
-        "totalSupply": "39828710009874796",
-        "blueCheckmark": "true",
-        "description": "Tether gives you the joint benefits of open...",
-        "website": "https://tether.to/",
-        "email": "support@tether.to",
-        "blog": "https://tether.to/category/announcements/",
-        "reddit": "",
-        "slack": "",
-        "facebook": "",
-        "twitter": "https://twitter.com/Tether_to",
-        "bitcointalk": "",
-        "github": "",
-        "telegram": "",
-        "wechat": "",
-        "linkedin": "",
-        "discord": "",
-        "whitepaper": "https://path/to/TetherWhitePaper.pdf",
-        "tokenPriceUSD": "1.000000000000000000"
-      }]
-    }
-  )");
-
-  mojom::BlockchainTokenPtr expected_token = mojom::BlockchainToken::New(
-      "0xdAC17F958D2ee523a2206206994597C13D831ec7", "Tether USD", "", true,
-      false, false, false, false, "USDT", 6, true, "", "", "0x1",
-      mojom::CoinType::ETH);
-  auto parsed_token =
-      ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH);
-  ASSERT_TRUE(parsed_token);
-  EXPECT_EQ(parsed_token, expected_token);
-
-  // ERC721
-  json = (R"(
-    {
-      "status": "1",
-      "message": "OK",
-      "result": [{
-        "contractAddress": "0x0e3a2a1f2146d86a604adc220b4967a898d7fe07",
-        "tokenName": "Gods Unchained Cards",
-        "symbol": "CARD",
-        "divisor": "0",
-        "tokenType": "ERC721"
-      }]
-    }
-  )");
-  expected_token = mojom::BlockchainToken::New(
-      "0x0E3A2A1f2146d86A604adc220b4967A898D7Fe07", "Gods Unchained Cards", "",
-      false, true, false, true, false, "CARD", 0, true, "", "", "0x1",
-      mojom::CoinType::ETH);
-  parsed_token = ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH);
-  ASSERT_TRUE(parsed_token);
-  EXPECT_EQ(parsed_token, expected_token);
-
-  const std::string valid_json = (R"(
-    {
-      "status": "1",
-      "message": "OK",
-      "result": [{
-        "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "tokenName": "Tether USD",
-        "symbol": "USDT",
-        "divisor": "6",
-        "tokenType": "ERC20"
-      }]
-    }
-  )");
-  ASSERT_TRUE(
-      ParseTokenInfo(ParseJson(valid_json), "0x1", mojom::CoinType::ETH));
-
-  // Invalid contract address.
-  json = valid_json;
-  base::ReplaceFirstSubstringAfterOffset(
-      &json, 0, "0xdac17f958d2ee523a2206206994597c13d831ec7", "0xdac17f9");
-  EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH))
-      << "Invalid contract address should fail";
-  base::ReplaceFirstSubstringAfterOffset(&json, 0, "0xdac17f9", "");
-  EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH))
-      << "Empty contract address should fail";
-
-  // Invalid decimals.
-  json = (R"(
-    {
-      "status": "1",
-      "message": "OK",
-      "result": [{
-        "contractAddress": "0xdac17f958d2ee523a2206206994597c13d831ec7",
-        "tokenName": "Tether USD",
-        "symbol": "USDT",
-        "divisor": "NOT A NUMBER",
-        "tokenType": "ERC20"
-      }]
-    }
-  )");
-  EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH))
-      << "Invalid decimals should fail";
-  base::ReplaceFirstSubstringAfterOffset(&json, 0, "NOT A NUMBER", "");
-  EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH))
-      << "Empty decimals should fail";
-
-  // Invalid token type.
-  json = valid_json;
-  base::ReplaceFirstSubstringAfterOffset(&json, 0, "ERC20", "ERC");
-  EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH))
-      << "Invalid token type should fail";
-
-  // Missing required fields.
-  const std::vector<std::string> required_fields = {
-      "contractAddress", "tokenName", "symbol", "divisor", "tokenType"};
-  for (const auto& field : required_fields) {
-    json = valid_json;
-    base::ReplaceFirstSubstringAfterOffset(&json, 0, field, "test");
-    EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH))
-        << "Missing " << field << " should fail";
-  }
-
-  // Empty values of required fields.
-  const std::vector<std::string> values = {"Tether USD", "USDT", "ERC20"};
-  for (const auto& value : values) {
-    json = valid_json;
-    base::ReplaceFirstSubstringAfterOffset(&json, 0, value, "");
-    EXPECT_FALSE(ParseTokenInfo(ParseJson(json), "0x1", mojom::CoinType::ETH));
-  }
-
-  // Invalid JSON
-  EXPECT_FALSE(
-      ParseTokenInfo(ParseJson("[\"json\"]"), "0x1", mojom::CoinType::ETH));
-  EXPECT_FALSE(
-      ParseTokenInfo(ParseJson("{\"result\": \"no payload property\"}"), "0x1",
-                     mojom::CoinType::ETH));
 }
 
 TEST(AssetRatioResponseParserUnitTest, ParseCoinMarkets) {

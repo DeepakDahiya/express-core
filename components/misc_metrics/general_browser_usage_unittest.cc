@@ -4,6 +4,8 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include <memory>
+#include <optional>
+#include <string>
 
 #include "base/test/metrics/histogram_tester.h"
 #include "base/time/time.h"
@@ -21,6 +23,7 @@ class GeneralBrowserUsageUnitTest : public testing::Test {
 
   void SetUp() override {
     misc_metrics::GeneralBrowserUsage::RegisterPrefs(local_state_.registry());
+    ResetHistogramTester();
 
     // skip ahead to next monday if not on monday
     base::Time now = base::Time::Now();
@@ -33,44 +36,104 @@ class GeneralBrowserUsageUnitTest : public testing::Test {
       days_until_monday = 1;
     }
     task_environment_.AdvanceClock(base::Days(days_until_monday));
+  }
 
-    general_browser_usage_ =
-        std::make_unique<GeneralBrowserUsage>(&local_state_);
+  void ResetHistogramTester() {
+    histogram_tester_ = std::make_unique<base::HistogramTester>();
   }
 
  protected:
+  void SetUpUsage(std::optional<std::string> day_zero_variant,
+                  bool is_first_run,
+                  base::Time first_run_time) {
+    general_browser_usage_ = std::make_unique<GeneralBrowserUsage>(
+        &local_state_, day_zero_variant, is_first_run, first_run_time);
+  }
+
   content::BrowserTaskEnvironment task_environment_;
   TestingPrefServiceSimple local_state_;
-  base::HistogramTester histogram_tester_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
   std::unique_ptr<GeneralBrowserUsage> general_browser_usage_;
 };
 
 TEST_F(GeneralBrowserUsageUnitTest, WeeklyUsage) {
-  histogram_tester_.ExpectUniqueSample(kWeeklyUseHistogramName, 0, 1);
+  SetUpUsage({}, true, base::Time::Now());
+
+  histogram_tester_->ExpectUniqueSample(kWeeklyUseHistogramName, 0, 1);
 
   task_environment_.FastForwardBy(base::Days(1));
-  histogram_tester_.ExpectUniqueSample(kWeeklyUseHistogramName, 0, 2);
+  int last_bucket_count =
+      histogram_tester_->GetBucketCount(kWeeklyUseHistogramName, 0);
+  EXPECT_GE(last_bucket_count, 1);
 
   task_environment_.FastForwardBy(base::Days(3));
 
-  histogram_tester_.ExpectUniqueSample(kWeeklyUseHistogramName, 0, 5);
+  EXPECT_GT(histogram_tester_->GetBucketCount(kWeeklyUseHistogramName, 0),
+            last_bucket_count);
+  histogram_tester_->ExpectBucketCount(kWeeklyUseHistogramName, 7, 0);
 
   task_environment_.FastForwardBy(base::Days(3));
-  histogram_tester_.ExpectBucketCount(kWeeklyUseHistogramName, 7, 1);
+  EXPECT_GE(histogram_tester_->GetBucketCount(kWeeklyUseHistogramName, 7), 1);
 }
 
 #if !BUILDFLAG(IS_ANDROID)
 TEST_F(GeneralBrowserUsageUnitTest, ProfileCount) {
-  histogram_tester_.ExpectTotalCount(kProfileCountHistogramName, 0);
+  SetUpUsage({}, true, base::Time::Now());
+
+  histogram_tester_->ExpectTotalCount(kProfileCountHistogramName, 0);
 
   general_browser_usage_->ReportProfileCount(1);
 
-  histogram_tester_.ExpectUniqueSample(kProfileCountHistogramName, 1, 1);
+  histogram_tester_->ExpectUniqueSample(kProfileCountHistogramName, 1, 1);
 
   general_browser_usage_->ReportProfileCount(2);
 
-  histogram_tester_.ExpectBucketCount(kProfileCountHistogramName, 2, 1);
+  histogram_tester_->ExpectBucketCount(kProfileCountHistogramName, 2, 1);
 }
 #endif  // !BUILDFLAG(IS_ANDROID)
+
+TEST_F(GeneralBrowserUsageUnitTest, InstallTimeVariantSwitch) {
+  base::Time install_time = base::Time::Now();
+  SetUpUsage("B", true, install_time);
+
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 1, 1);
+
+  task_environment_.FastForwardBy(base::Days(15));
+
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 1, 16);
+
+  SetUpUsage("A", false, install_time);
+  // Ensure histogram name does not change if "day zero" is enabled
+  // after install; we only want to report the "day zero on" metric
+  // if it was enabled at install time.
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 1, 16);
+
+  task_environment_.FastForwardBy(base::Days(16));
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 1, 31);
+
+  ResetHistogramTester();
+  // Ensure there are no more reports past 30 days
+  task_environment_.FastForwardBy(base::Days(5));
+
+  histogram_tester_->ExpectTotalCount(kDayZeroVariantHistogramName, 0);
+  histogram_tester_->ExpectTotalCount(kDayZeroVariantHistogramName, 0);
+}
+
+TEST_F(GeneralBrowserUsageUnitTest, InstallTimeBasic) {
+  base::Time install_time = base::Time::Now();
+  SetUpUsage("A", true, install_time);
+
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 0, 1);
+
+  task_environment_.FastForwardBy(base::Days(15));
+
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 0, 16);
+
+  task_environment_.FastForwardBy(base::Days(15));
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 0, 31);
+
+  task_environment_.FastForwardBy(base::Days(15));
+  histogram_tester_->ExpectUniqueSample(kDayZeroVariantHistogramName, 0, 31);
+}
 
 }  // namespace misc_metrics

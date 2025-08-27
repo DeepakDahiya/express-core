@@ -5,48 +5,34 @@
 
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_confirmation/reward/redeem_reward_confirmation_util.h"
 
+#include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_info.h"
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_util.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/time/time_formatting_util.h"
+#include "brave/components/brave_ads/core/internal/prefs/pref_util.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
 
 namespace brave_ads {
 
-namespace {
-
-base::expected<void, std::string> ShouldAddPaymentToken(
-    const PaymentTokenInfo& payment_token) {
+bool MaybeAddPaymentToken(const PaymentTokenInfo& payment_token) {
   if (PaymentTokenExists(payment_token)) {
-    return base::unexpected("Payment token is a duplicate");
-  }
-
-  return base::ok();
-}
-
-}  // namespace
-
-base::expected<void, std::string> MaybeAddPaymentToken(
-    const PaymentTokenInfo& payment_token) {
-  auto result = ShouldAddPaymentToken(payment_token);
-  if (!result.has_value()) {
-    return result;
+    BLOG(1, "Payment token is a duplicate");
+    return false;
   }
 
   AddPaymentTokens({payment_token});
 
-  return base::ok();
+  return true;
 }
 
 void LogPaymentTokenStatus() {
-  const base::Time next_token_redemption_at =
-      AdsClientHelper::GetInstance()->GetTimePref(
-          prefs::kNextTokenRedemptionAt);
+  const base::Time next_payment_token_redemption_at =
+      GetProfileTimePref(prefs::kNextPaymentTokenRedemptionAt);
 
   BLOG(1, "You have " << PaymentTokenCount()
                       << " payment tokens which will be redeemed "
-                      << FriendlyDateAndTime(next_token_redemption_at));
+                      << FriendlyDateAndTime(next_payment_token_redemption_at));
 }
 
 }  // namespace brave_ads

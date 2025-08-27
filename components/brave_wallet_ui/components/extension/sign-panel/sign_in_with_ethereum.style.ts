@@ -4,14 +4,11 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import styled from 'styled-components'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
 
 // Shared Styles
-import {
-  Text,
-  WalletButton
-} from '../../shared/style'
+import { Text, WalletButton } from '../../shared/style'
 
 export const StyledWrapper = styled.div`
   display: flex;
@@ -103,7 +100,7 @@ export const IconButton = styled(WalletButton)`
 `
 
 export const CloseIcon = styled(Icon).attrs({
-  name: 'close'
+  name: 'close',
 })`
   --leo-icon-size: 24px;
   color: ${leo.color.icon.default};
@@ -118,7 +115,8 @@ export const ErrorBox = styled.div`
   padding: 16px 25px;
   background-color: ${leo.color.systemfeedback.errorBackground};
   border-radius: 12px;
-  margin-bottom: 32px;
+  margin-bottom: 16px;
+  overflow-wrap: anywhere;
 `
 
 export const ErrorDescriptionText = styled(Text)`
@@ -129,7 +127,7 @@ export const ErrorDescriptionText = styled(Text)`
 `
 
 export const WarningIcon = styled(Icon).attrs({
-  name: 'warning-circle-filled'
+  name: 'warning-circle-filled',
 })`
   --leo-icon-size: 32px;
   margin-bottom: 8px;
@@ -150,7 +148,7 @@ export const LaunchButton = styled(IconButton)`
 `
 
 export const LaunchIcon = styled(Icon).attrs({
-  name: 'launch'
+  name: 'launch',
 })`
   --leo-icon-size: 18px;
   color: ${leo.color.icon.interactive};

@@ -5,22 +5,18 @@
 
 #include "brave/components/brave_ads/core/public/targeting/geographical/subdivision/supported_subdivisions.h"
 
-#include <utility>
-
 #include "base/no_destructor.h"
 
 namespace brave_ads {
 
 namespace {
 
-base::Value::List ToValueList(const SupportedSubdivisions& subdivisions) {
+base::Value::List ToValue(const SubdivisionMap& subdivisions) {
   base::Value::List list;
 
   for (const auto& [subdivision, name] : subdivisions) {
-    auto dict =
-        base::Value::Dict().Set("subdivision", subdivision).Set("name", name);
-
-    list.Append(std::move(dict));
+    list.Append(
+        base::Value::Dict().Set("subdivision", subdivision).Set("name", name));
   }
 
   return list;
@@ -66,10 +62,15 @@ const SupportedSubdivisionMap& GetSupportedSubdivisions() {
              {"CA-BC", "British Columbia"},
              {"CA-MB", "Manitoba"},
              {"CA-NB", "New Brunswick"},
+             {"CA-NL", "Newfoundland and Labrador"},
              {"CA-NS", "Nova Scotia"},
+             {"CA-NT", "Northwest Territories"},
+             {"CA-NU", "Nunavut"},
              {"CA-ON", "Ontario"},
+             {"CA-PE", "Prince Edward Island"},
              {"CA-QC", "Quebec"},
-             {"CA-SK", "Saskatchewan"}}}});
+             {"CA-SK", "Saskatchewan"},
+             {"CA-YT", "Yukon"}}}});
 
   return *kSupportedSubdivisions;
 }
@@ -85,7 +86,7 @@ base::Value::List GetSupportedSubdivisionsAsValueList(
 
   const auto& [_, subdivisions] = *iter;
 
-  return ToValueList(subdivisions);
+  return ToValue(subdivisions);
 }
 
 }  // namespace brave_ads

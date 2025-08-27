@@ -3,12 +3,12 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import { renderHook } from '@testing-library/react-hooks'
+import { renderHook, waitFor } from '@testing-library/react'
 
 // utils
 import {
   createMockStore,
-  renderHookOptionsWithMockStore
+  renderHookOptionsWithMockStore,
 } from '../../../utils/test-utils'
 
 // hooks
@@ -17,7 +17,7 @@ import { useGetCombinedTokensListQuery } from '../api.slice.extra'
 // mocks
 import {
   mockAccountAssetOptions,
-  mockErc20TokensList
+  mockErc20TokensList,
 } from '../../../stories/mock-data/mock-asset-options'
 
 describe('useCombinedTokensList', () => {
@@ -26,13 +26,13 @@ describe('useCombinedTokensList', () => {
       {},
       {
         blockchainTokens: mockErc20TokensList,
-        userAssets: mockAccountAssetOptions
-      }
+        userAssets: mockAccountAssetOptions,
+      },
     )
     const renderOptions = renderHookOptionsWithMockStore(store)
-    const { result, ...hook } = renderHook(
+    const { result } = renderHook(
       () => useGetCombinedTokensListQuery(),
-      renderOptions
+      renderOptions,
     )
 
     // initial state
@@ -41,10 +41,12 @@ describe('useCombinedTokensList', () => {
     expect(result.current.isLoading).toBe(true)
 
     // loading
-    await hook.waitFor(() => result.all.length > 3)
+    await waitFor(() =>
+      expect(result.current.data && !result.current.isLoading).toBeTruthy(),
+    )
 
     // done loading
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.data).toHaveLength(17)
+    expect(result.current.data).toHaveLength(19)
   })
 })

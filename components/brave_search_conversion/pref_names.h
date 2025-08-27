@@ -8,37 +8,56 @@
 
 class PrefService;
 
-namespace brave_search_conversion {
-namespace prefs {
+namespace brave_search_conversion::prefs {
 
-constexpr char kDismissed[] = "brave.brave_search_conversion.dismissed";
-constexpr char kMaybeLaterClickedTime[] =
+inline constexpr char kDismissed[] = "brave.brave_search_conversion.dismissed";
+inline constexpr char kMaybeLaterClickedTime[] =
     "brave.brave_search_conversion.maybe_later_clicked_time";
 
-constexpr char kP3AActionStatuses[] =
+// Index ranges from 0 to 1 and it's matched DDGTypeC to DDGTypeD.
+// It's the type index for now.
+inline constexpr char kDDGBannerTypeIndex[] =
+    "brave.brave_search_conversion.ddg_banner_type_index";
+
+// It's the time that current index type is shown first.
+// We rotate 4 types when specific time is passed.
+inline constexpr char kLatestDDGBannerTypeFirstShownTime[] =
+    "brave.brave_search_conversion.latest_ddg_banner_type_first_shown_time";
+
+inline constexpr char kShowNTPSearchBox[] =
+    "brave.brave_search.show-ntp-search";
+
+inline constexpr char kLastUsedNTPSearchEngine[] =
+    "brave.brave_search.last-used-ntp-search-engine";
+
+// Determines whether the search box on the NTP prompts the user to enable
+// search suggestions.
+inline constexpr char kPromptEnableSuggestions[] =
+    "brave.brave_search.ntp-search_prompt_enable_suggestions";
+
+inline constexpr char kP3AActionStatuses[] =
     "brave.brave_search_conversion.action_statuses";
 
-constexpr char kP3ADefaultEngineConverted[] =
+inline constexpr char kP3ADefaultEngineConverted[] =
     "brave.brave_search_conversion.default_changed";
-const char kP3AQueryCountBeforeChurn[] =
+inline constexpr char kP3AQueryCountBeforeChurn[] =
     "brave.brave_search_conversion.query_count";
-const char kP3AAlreadyChurned[] =
+inline constexpr char kP3AAlreadyChurned[] =
     "brave.brave_search_conversion.already_churned";
 
-constexpr char kP3ABannerShown[] =
+inline constexpr char kP3ABannerShown[] =
     "brave.brave_search_conversion.banner_shown";  // DEPRECATED
-constexpr char kP3ABannerTriggered[] =
+inline constexpr char kP3ABannerTriggered[] =
     "brave.brave_search_conversion.banner_triggered";  // DEPRECATED
-constexpr char kP3AButtonShown[] =
+inline constexpr char kP3AButtonShown[] =
     "brave.brave_search_conversion.button_shown";  // DEPRECATED
-constexpr char kP3ANTPShown[] =
+inline constexpr char kP3ANTPShown[] =
     "brave.brave_search_conversion.ntp_shown";  // DEPRECATED
-constexpr char kP3AButtonTriggered[] =
+inline constexpr char kP3AButtonTriggered[] =
     "brave.brave_search_conversion.button_triggered";  // DEPRECATED
-constexpr char kP3ANTPTriggered[] =
+inline constexpr char kP3ANTPTriggered[] =
     "brave.brave_search_conversion.ntp_triggered";  // DEPRECATED
 
-}  // namespace prefs
-}  // namespace brave_search_conversion
+}  // namespace brave_search_conversion::prefs
 
 #endif  // BRAVE_COMPONENTS_BRAVE_SEARCH_CONVERSION_PREF_NAMES_H_

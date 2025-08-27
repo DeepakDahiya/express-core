@@ -3,10 +3,15 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at https://mozilla.org/MPL/2.0/.
 
+/* eslint-disable max-len */
+
 import { FC } from 'react'
 import styled, { css, CSSProperties } from 'styled-components'
 import { Link } from 'react-router-dom'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
+import Icon from '@brave/leo/react/icon'
+import Button from '@brave/leo/react/button'
+import ProgressRing from '@brave/leo/react/progressRing'
 
 // types
 import { BraveWallet, StringWithAutocomplete } from '../../constants/types'
@@ -43,7 +48,7 @@ export { Text } from '../../page/screens/send/shared.styles'
 // Spacers
 export const VerticalSpacer = styled.div<{ space: number | string }>`
   display: flex;
-  height: ${p => typeof p.space === 'number' ? `${p.space}px` : p.space};
+  height: ${(p) => (typeof p.space === 'number' ? `${p.space}px` : p.space)};
 `
 
 // Text
@@ -63,6 +68,14 @@ export const LinkText = styled.a`
   text-decoration: none;
 `
 
+export const MutedLinkText = styled(LinkText)`
+  font-family: 'Inter', 'Poppins';
+  font-size: 12px;
+  font-weight: 400;
+  color: ${leo.color.text.tertiary};
+  line-height: 20px;
+`
+
 export const ErrorText = styled.span`
   font-family: Poppins;
   font-size: 12px;
@@ -71,49 +84,92 @@ export const ErrorText = styled.span`
   margin-bottom: 10px;
 `
 
-type FlexProps = Partial<Pick<CSSProperties,
-  | 'flex'
-  | 'alignItems'
-  | 'justifyContent'
-  | 'gap'
->>
+type FlexProps = Partial<
+  Pick<
+    CSSProperties,
+    'flex' | 'alignItems' | 'justifyContent' | 'gap' | 'alignSelf' | 'flexWrap'
+  >
+>
 
 // Mixins
 export const walletButtonFocusMixin = css`
   &:focus-visible {
     outline-style: solid;
-    outline-color: ${p => p.theme.palette.blurple300};
+    outline-color: ${(p) => p.theme.palette.blurple300};
     outline-width: 2px;
   }
 `
 
+/**
+ * Also forces the scroll indicator to be visible on MacOS when present,
+ * even when the element is not hovered
+ */
+export const styledScrollbarMixin = css`
+  ::-webkit-scrollbar {
+    appearance: none;
+    -webkit-appearance: none;
+  }
+
+  ::-webkit-scrollbar:vertical {
+    width: 7px;
+  }
+
+  ::-webkit-scrollbar:horizontal {
+    height: 7px;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.5);
+    box-shadow: 0 0 1px rgba(255, 255, 255, 0.5);
+  }
+
+  ::-webkit-scrollbar-track {
+    background-color: none;
+    border-radius: 8px;
+  }
+`
+
 export const backgroundColorMixin = css<{
-  color?: ThemeColor
+  color?: keyof IThemeProps['color']
 }>`
-  background-color: ${(p) => p?.color
-    ? p.theme.color?.[p.color] || p.theme.palette?.[p.color] || p.color
-    : p.theme.palette.white};
+  background-color: ${(p) =>
+    p?.color
+      ? p.theme.color?.[p.color] || p.theme.palette?.[p.color] || p.color
+      : p.theme.palette.white};
 `
 
 // Containers
 export const Row = styled.div<
   FlexProps & {
     maxWidth?: CSSProperties['maxWidth']
+    minWidth?: CSSProperties['minWidth']
+    minHeight?: CSSProperties['minHeight']
+    height?: '100%' | 'unset'
     margin?: number | string
     padding?: number | string
-    width?: '100%' | 'unset'
+    width?: CSSProperties['width']
     marginBottom?: number | string
+    // https://styled-components.com/docs/api#transient-props
+    $wrap?: boolean
+    gap?: string
   }
 >`
+  cursor: ${(p) => (p.onClick ? 'pointer' : 'unset')};
   font-family: 'Poppins';
   display: flex;
   flex-direction: row;
+  flex-wrap: ${(p) => (p.$wrap ? 'wrap' : 'unset')};
   flex: ${(p) => p.flex ?? 'unset'};
   align-items: ${(p) => p.alignItems ?? 'center'};
+  align-self: ${(p) => p.alignSelf ?? 'unset'};
   justify-content: ${(p) => p.justifyContent ?? 'center'};
   gap: ${(p) => p.gap ?? 'unset'};
   width: ${(p) => p.width ?? '100%'};
+  min-width: ${(p) => p.minWidth ?? 'unset'};
   max-width: ${(p) => p.maxWidth ?? 'unset'};
+  height: ${(p) => p.height ?? 'unset'};
+  min-height: ${(p) => p.minHeight ?? 'unset'};
   margin: ${(p) => p.margin ?? 'unset'};
   ${(p) =>
     p?.marginBottom || p?.marginBottom === 0
@@ -126,6 +182,8 @@ export const Row = styled.div<
   position: relative;
   ${makePaddingMixin(0)}
   box-sizing: border-box;
+  gap: ${(p) => p.gap ?? 'unset'};
+  flex-wrap: ${(p) => p.flexWrap ?? 'unset'};
 `
 
 export const Column = styled.div<
@@ -146,6 +204,7 @@ export const Column = styled.div<
   display: flex;
   flex-direction: column;
   align-items: ${(p) => p.alignItems ?? 'center'};
+  align-self: ${(p) => p.alignSelf ?? 'unset'};
   justify-content: ${(p) => p.justifyContent ?? 'center'};
   gap: ${(p) => p.gap ?? 'unset'};
   margin: ${(p) => p.margin ?? 0};
@@ -154,7 +213,7 @@ export const Column = styled.div<
   box-sizing: border-box;
 `
 
-export const ScrollableColumn = styled(Column) <{
+export const ScrollableColumn = styled(Column)<{
   scrollDisabled?: boolean
   maxHeight?: string
   marginBottom?: string
@@ -162,7 +221,7 @@ export const ScrollableColumn = styled(Column) <{
   justify-content: flex-start;
   align-items: flex-start;
   max-height: ${(p) => p.maxHeight || '100%'};
-  overflow-y: ${(p) => p.scrollDisabled ? 'unset' : 'auto'};
+  overflow-y: ${(p) => (p.scrollDisabled ? 'unset' : 'auto')};
   margin-bottom: ${(p) => p.marginBottom || 'unset'};
   width: 100%;
 `
@@ -171,25 +230,33 @@ export const Flex = styled.div`
   flex: 1;
 `
 
-export const StatusBubble = styled.div<{ status: BraveWallet.TransactionStatus }>`
+export const StatusBubble = styled.div<{
+  status: BraveWallet.TransactionStatus
+}>`
   display: flex;
   align-items: center;
   justify-content: center;
   width: 10px;
   height: 10px;
   border-radius: 100%;
-  opacity: ${(p) => p.status === BraveWallet.TransactionStatus.Submitted ||
-    p.status === BraveWallet.TransactionStatus.Approved ||
-    p.status === BraveWallet.TransactionStatus.Unapproved ||
-    p.status === BraveWallet.TransactionStatus.Signed
-    ? 0.4
-    : 1
-  };
-  background-color: ${(p) => p.status === BraveWallet.TransactionStatus.Confirmed || p.status === BraveWallet.TransactionStatus.Approved
-    ? p.theme.color.successBorder
-    : p.status === BraveWallet.TransactionStatus.Rejected || p.status === BraveWallet.TransactionStatus.Error || p.status === BraveWallet.TransactionStatus.Dropped ? p.theme.color.errorBorder
-      : p.status === BraveWallet.TransactionStatus.Unapproved ? p.theme.color.interactive08 : p.theme.color.warningIcon
-  };
+  opacity: ${(p) =>
+    p.status === BraveWallet.TransactionStatus.Submitted
+    || p.status === BraveWallet.TransactionStatus.Approved
+    || p.status === BraveWallet.TransactionStatus.Unapproved
+    || p.status === BraveWallet.TransactionStatus.Signed
+      ? 0.4
+      : 1};
+  background-color: ${(p) =>
+    p.status === BraveWallet.TransactionStatus.Confirmed
+    || p.status === BraveWallet.TransactionStatus.Approved
+      ? p.theme.color.successBorder
+      : p.status === BraveWallet.TransactionStatus.Rejected
+          || p.status === BraveWallet.TransactionStatus.Error
+          || p.status === BraveWallet.TransactionStatus.Dropped
+        ? p.theme.color.errorBorder
+        : p.status === BraveWallet.TransactionStatus.Unapproved
+          ? p.theme.color.interactive08
+          : p.theme.color.warningIcon};
   margin-right: 6px;
 `
 
@@ -239,20 +306,20 @@ export const ToggleVisibilityButton = styled.button<{
   width: 18px;
   height: 18px;
   background-color: ${(p) => p.theme.color.text02};
-  -webkit-mask-image: url(${(p) => p.isVisible ? EyeOnIcon : EyeOffIcon});
-  mask-image: url(${(p) => p.isVisible ? EyeOnIcon : EyeOffIcon});
+  -webkit-mask-image: url(${(p) => (p.isVisible ? EyeOnIcon : EyeOffIcon)});
+  mask-image: url(${(p) => (p.isVisible ? EyeOnIcon : EyeOffIcon)});
   mask-size: contain;
   mask-position: center;
   mask-repeat: no-repeat;
   &:focus-visible {
     outline: auto;
     outline-style: solid;
-    outline-color: ${p => p.theme.palette.blurple300};
+    outline-color: ${(p) => p.theme.palette.blurple300};
     outline-width: 2px;
   }
 `
 
-export const CopyButton = styled(WalletButton) <{
+export const CopyButton = styled(WalletButton)<{
   iconColor?: keyof IThemeProps['color']
 }>`
   cursor: pointer;
@@ -312,19 +379,18 @@ export interface AssetIconProps {
   icon?: string
 }
 
-export const AssetIconFactory = styled.img.attrs<AssetIconProps>(props => ({
+export const AssetIconFactory = styled.img.attrs<AssetIconProps>((props) => ({
   src: stripERC20TokenImageURL(props.icon)
     ? props.icon
-
-    // Display theme background (using a transparent image) if no icon to
-    // render.
-    : transparent40x40Image,
+    : // Display theme background (using a transparent image) if no icon to
+      // render.
+      transparent40x40Image,
 
   // Defer loading the image until it reaches a calculated distance from the
   // viewport, as defined by the browser.
   //
   // Ref: https://web.dev/browser-level-image-lazy-loading
-  loading: 'lazy'
+  loading: 'lazy',
 }))
 
 // Construct styled-component using JS object instead of string, for editor
@@ -333,15 +399,15 @@ export const AssetIconFactory = styled.img.attrs<AssetIconProps>(props => ({
 // Ref: https://styled-components.com/docs/advanced#style-objects
 export const SmallAssetIcon = AssetIconFactory<AssetIconProps>({
   width: '24px',
-  height: 'auto'
+  height: 'auto',
 })
 export const MediumAssetIcon = AssetIconFactory<AssetIconProps>({
   width: '40px',
-  height: 'auto'
+  height: 'auto',
 })
 export const LargeAssetIcon = AssetIconFactory<AssetIconProps>({
   width: '60px',
-  height: 'auto'
+  height: 'auto',
 })
 
 export const GreenCheckmark = styled.div`
@@ -359,16 +425,14 @@ export const WarningTriangleFilledIcon = styled.div<{
   color?: keyof IThemeProps['color']
 }>`
   mask-size: 100%;
-  background-color: ${(p) => p?.color
-    ? p.theme.color[p.color]
-    : leo.color.systemfeedback.warningIcon
-  };
+  background-color: ${(p) =>
+    p?.color ? p.theme.color[p.color] : leo.color.systemfeedback.warningIcon};
   -webkit-mask-image: url(${WarningTriangleFilled});
   mask-repeat: no-repeat;
   mask-image: url(${WarningTriangleFilled});
   @media (prefers-color-scheme: dark) {
     color: ${(p) => p.theme.palette.blurple300};
-  };
+  }
 `
 
 export const WarningCircleFilledIcon = styled.div<{
@@ -378,10 +442,8 @@ export const WarningCircleFilledIcon = styled.div<{
   mask-size: contain;
   mask-position: center;
   mask-repeat: no-repeat;
-  background-color: ${(p) => p?.color
-    ? p.theme.color[p.color]
-    : leo.color.systemfeedback.errorIcon
-  };
+  background-color: ${(p) =>
+    p?.color ? p.theme.color[p.color] : leo.color.systemfeedback.errorIcon};
   -webkit-mask-image: url(${WarningCircleFilled});
   mask-image: url(${WarningCircleFilled});
 `
@@ -410,12 +472,12 @@ export const ErrorXIcon = styled.div`
   display: inline-block;
 `
 
-export const LoadingIcon = styled(LoaderIcon as FC<{}>) <{
+export const LoadingIcon = styled(LoaderIcon as FC<{}>)<{
   size: string
   color: keyof IThemeProps['color']
   opacity: number
 }>`
-  color: ${p => p.theme.color[p.color]};
+  color: ${(p) => p.theme.color[p.color]};
   height: ${(p) => p.size};
   width: ${(p) => p.size};
   opacity: ${(p) => p.opacity};
@@ -445,6 +507,12 @@ export const SwitchAccountIcon = styled.div`
   margin-right: 6px;
 `
 
+export const LaunchIcon = styled(Icon).attrs({ name: 'launch' })`
+  --leo-icon-size: 14px;
+  --leo-icon-color: ${leo.color.icon.interactive};
+  margin-bottom: 1px;
+`
+
 // Asset Icon containers
 export const IconsWrapper = styled.div<{
   marginRight?: string
@@ -455,25 +523,6 @@ export const IconsWrapper = styled.div<{
   flex-direction: row;
   position: relative;
   margin-right: ${(p) => p.marginRight || '6px'};
-`
-
-export const CircleIconWrapper = styled.div<{
-  padding?: number | string
-}>`
-  position: relative;
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-direction: row;
-  position: relative;
-  ${makePaddingMixin('12px')}
-  box-shadow: 0px 0px 1px rgba(66, 69, 82, 0.08), 0px 0.5px 1.5px rgba(66, 69, 82, 0.1);
-
-  background-color: ${p => p.theme.color.background01};
-  @media (prefers-color-scheme: dark) {
-    background-color: ${p => p.theme.color.background02};
-  }
 `
 
 export const NetworkIconWrapper = styled.div`
@@ -490,7 +539,9 @@ export const NetworkIconWrapper = styled.div`
 `
 
 // Graphics
-export const WalletWelcomeGraphic = styled.div<{ scale?: CSSProperties['scale'] }>`
+export const WalletWelcomeGraphic = styled.div<{
+  scale?: CSSProperties['scale']
+}>`
   width: 350px;
   height: 264px;
   background: url(${BraveWalletWithCoins});
@@ -521,10 +572,11 @@ export const InputLabelText = styled.label`
   width: 100%;
 `
 
-export const VerticalDivider = styled.div`
+export const VerticalDivider = styled.div<{ margin?: string }>`
   height: 1px;
   width: 100%;
   background-color: ${leo.color.divider.subtle};
+  margin: ${(p) => p.margin || 0};
 `
 
 export const BraveRewardsIndicator = styled.div`
@@ -539,4 +591,22 @@ export const BraveRewardsIndicator = styled.div`
   padding: 2px 6px;
   border: 1px solid ${leo.color.divider.subtle};
   border-radius: 4px;
+`
+
+export const LeoSquaredButton = styled(Button)`
+  --leo-button-radius: 12px;
+`
+
+export const DefaultPageWrapper = styled.div`
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  width: 100%;
+  height: 100%;
+  position: relative;
+`
+
+export const LoadingRing = styled(ProgressRing)<{ size?: string }>`
+  --leo-progressring-size: ${(p) => p?.size || '40px'};
 `

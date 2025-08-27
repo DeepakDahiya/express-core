@@ -14,70 +14,77 @@ interface OrbOptions {
   scale: number
 }
 
-const applyDefaults = (options: Partial<OrbOptions> | undefined): OrbOptions => {
-  return { size: options?.size || 8, scale: options?.scale || 16 }
+const applyDefaults = (
+  options: Partial<OrbOptions> | undefined,
+): OrbOptions => {
+  return { size: options?.size || 4, scale: options?.scale || 25 }
 }
+
+const serializer = new XMLSerializer()
 
 export const useAccountOrb = (
   accountInfo:
     | Pick<BraveWallet.AccountInfo, 'accountId' | 'address'>
     | undefined,
-  options?: Partial<OrbOptions>
+  options?: Partial<OrbOptions>,
 ) => {
   return React.useMemo(() => {
     if (!accountInfo) {
       return ''
     }
 
-    // Using hash of uniqueKey so similar unique keys don't produce similar colors.
+    // Using hash of uniqueKey so similar unique keys don't produce similar
+    // colors.
     const seed =
-      accountInfo.address?.toLowerCase() ||
-      crypto
+      accountInfo.address?.toLowerCase()
+      || crypto
         .createHash('sha256')
         .update(accountInfo.accountId.uniqueKey)
         .digest('hex')
 
-    return (
+    const svgString = serializer.serializeToString(
       EthereumBlockies.create({
+        ...applyDefaults(options),
         seed,
-        ...applyDefaults(options)
-      }) as HTMLCanvasElement
-    ).toDataURL()
-  }, [accountInfo?.address, accountInfo?.accountId.uniqueKey, options?.size, options?.scale])
+      }),
+    )
+    const encodedSvg = btoa(svgString)
+    return 'data:image/svg+xml;base64,' + encodedSvg
+  }, [accountInfo, options])
 }
 
 export const useAddressOrb = (
   address: string | undefined,
-  options?: Partial<OrbOptions>
+  options?: Partial<OrbOptions>,
 ) => {
   return React.useMemo(() => {
     if (!address) {
       return ''
     }
 
-    return (
+    const svgString = serializer.serializeToString(
       EthereumBlockies.create({
+        ...applyDefaults(options),
         seed: address.toLowerCase(),
-        ...applyDefaults(options)
-      }) as HTMLCanvasElement
-    ).toDataURL()
-  }, [address, options?.size, options?.scale])
+      }),
+    )
+    const encodedSvg = btoa(svgString)
+    return 'data:image/svg+xml;base64,' + encodedSvg
+  }, [address, options])
 }
 
 export const useNetworkOrb = (
   networkInfo: Pick<BraveWallet.NetworkInfo, 'chainName'> | undefined | null,
-  options?: Partial<OrbOptions>
+  options?: Partial<OrbOptions>,
 ) => {
   return React.useMemo(() => {
     if (!networkInfo) {
       return ''
     }
 
-    return (
-      EthereumBlockies.create({
-        seed: networkInfo.chainName,
-        ...applyDefaults(options)
-      }) as HTMLCanvasElement
-    ).toDataURL()
-  }, [networkInfo, options?.size, options?.scale])
+    return EthereumBlockies.background({
+      ...applyDefaults(options),
+      seed: networkInfo.chainName,
+    })
+  }, [networkInfo, options])
 }

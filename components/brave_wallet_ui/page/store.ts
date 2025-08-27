@@ -6,7 +6,6 @@
 import { configureStore } from '@reduxjs/toolkit'
 
 // async handlers
-import walletPageAsyncHandler from './async/wallet_page_async_handler'
 import walletAsyncHandler from '../common/async/handlers'
 
 // api
@@ -17,19 +16,17 @@ import { walletApi } from '../common/slices/api.slice'
 import walletReducer from '../common/slices/wallet.slice'
 import accountsTabReducer from './reducers/accounts-tab-reducer'
 import pageReducer from './reducers/page_reducer'
-import uiReducer from '../common/slices/ui.slice'
+import { uiReducer, defaultUIState } from '../common/slices/ui.slice'
 
 // utils
-import { setApiProxyFetcher } from '../common/async/base-query-cache'
 import {
-  makeBraveWalletAutoPinServiceObserver,
-  makeBraveWalletPinServiceObserver,
   makeBraveWalletServiceObserver,
   makeBraveWalletServiceTokenObserver,
   makeJsonRpcServiceObserver,
   makeKeyringServiceObserver,
-  makeTxServiceObserver
+  makeTxServiceObserver,
 } from '../common/wallet_api_proxy_observers'
+import { loadTimeData } from '../../common/loadTimeData'
 
 export const store = configureStore({
   reducer: {
@@ -37,15 +34,18 @@ export const store = configureStore({
     wallet: walletReducer,
     accountsTab: accountsTabReducer,
     ui: uiReducer,
-    [walletApi.reducerPath]: walletApi.reducer
+    [walletApi.reducerPath]: walletApi.reducer,
   },
-  middleware: (getDefaultMiddleware) => getDefaultMiddleware({
-    serializableCheck: false
-  }).concat(
-    walletAsyncHandler,
-    walletPageAsyncHandler,
-    walletApi.middleware
-  )
+  preloadedState: {
+    ui: {
+      ...defaultUIState,
+      isAndroid: loadTimeData.getBoolean('isAndroid') || false,
+    },
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware({
+      serializableCheck: false,
+    }).concat(walletAsyncHandler, walletApi.middleware),
 })
 
 export type WalletPageRootStore = typeof store
@@ -56,11 +56,9 @@ proxy.addJsonRpcServiceObserver(makeJsonRpcServiceObserver(store))
 proxy.addKeyringServiceObserver(makeKeyringServiceObserver(store))
 proxy.addTxServiceObserver(makeTxServiceObserver(store))
 proxy.addBraveWalletServiceObserver(makeBraveWalletServiceObserver(store))
-proxy.addBraveWalletServiceTokenObserver(makeBraveWalletServiceTokenObserver(store))
-proxy.addBraveWalletPinServiceObserver(makeBraveWalletPinServiceObserver(store))
-proxy.addBraveWalletAutoPinServiceObserver(makeBraveWalletAutoPinServiceObserver(store))
-
-setApiProxyFetcher(getWalletPageApiProxy)
+proxy.addBraveWalletServiceTokenObserver(
+  makeBraveWalletServiceTokenObserver(store),
+)
 
 export const walletPageApiProxy = proxy
 

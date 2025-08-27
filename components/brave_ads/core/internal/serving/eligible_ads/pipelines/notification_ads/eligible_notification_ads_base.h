@@ -9,7 +9,7 @@
 #include "base/memory/raw_ref.h"
 #include "brave/components/brave_ads/core/internal/creatives/notification_ads/creative_notification_ad_info.h"
 #include "brave/components/brave_ads/core/internal/serving/eligible_ads/eligible_ads_callback.h"
-#include "brave/components/brave_ads/core/public/units/ad_info.h"
+#include "brave/components/brave_ads/core/public/ad_units/ad_info.h"
 
 namespace brave_ads {
 
@@ -22,10 +22,6 @@ class EligibleNotificationAdsBase {
   EligibleNotificationAdsBase(const EligibleNotificationAdsBase&) = delete;
   EligibleNotificationAdsBase& operator=(const EligibleNotificationAdsBase&) =
       delete;
-
-  EligibleNotificationAdsBase(EligibleNotificationAdsBase&&) noexcept = delete;
-  EligibleNotificationAdsBase& operator=(
-      EligibleNotificationAdsBase&&) noexcept = delete;
 
   virtual ~EligibleNotificationAdsBase();
 

@@ -6,8 +6,8 @@
 import * as React from 'react'
 
 import * as S from './style'
-import getToolbarAPI, { AppearanceSettings, TtsSettings, ToolbarColors, Theme, FontSize, FontFamily, PlaybackSpeed, ColumnWidth } from '../../api/browser'
-import { MainButtonType, MainButtonsList } from '../lists'
+import getToolbarAPI, { MainButtonType, AppearanceSettings, TtsSettings, ToolbarColors, Theme, FontSize, FontFamily, PlaybackSpeed, PlaybackState, ColumnWidth } from '../../api/browser'
+import { MainButtonsList } from '../lists'
 import ReaderModeControl from "../reader-mode-control"
 import AppearanceControl from "../appearance-control"
 import TtsControl from '../tts-control'
@@ -30,6 +30,12 @@ function Toolbar() {
     getToolbarAPI().eventsRouter.onAppearanceSettingsChanged.addListener((settings: AppearanceSettings) => {
       setAppearanceSettings(settings)
     })
+    getToolbarAPI().eventsRouter.setPlaybackState.addListener((state: PlaybackState) => {
+      if (state !== PlaybackState.kStopped) {
+        setActiveButton(MainButtonType.TextToSpeech)
+      }
+    })
+
     getToolbarAPI().eventsRouter.onBrowserThemeChanged.addListener((colors: ToolbarColors) => {
       const style = document.documentElement.style
       style.setProperty('--color-background', toColor(colors.background))
@@ -38,14 +44,38 @@ function Toolbar() {
       style.setProperty('--color-button-border', toColor(colors.buttonBorder))
       style.setProperty('--color-button-hover', toColor(colors.buttonHover))
       style.setProperty('--color-button-active', toColor(colors.buttonActive))
+      style.setProperty('--color-button-active-text', toColor(colors.buttonActiveText))
     })
   }, [])
 
-  getToolbarAPI().eventsRouter.onTuneBubbleClosed.addListener(() => {
-    if (activeButton === MainButtonType.Tune) {
-      setActiveButton(MainButtonType.None)
+  React.useEffect(() => {
+    getToolbarAPI().dataHandler.onToolbarStateChanged(activeButton)
+
+    const onKeydown = (event: KeyboardEvent) => {
+      event.stopPropagation()
+
+      if (event.code === 'Escape' && !event.altKey && !event.ctrlKey && !event.metaKey && !event.shiftKey) {
+        if (activeButton === MainButtonType.None) {
+          getToolbarAPI().dataHandler.viewOriginal()
+        } else {
+          setActiveButton(MainButtonType.None)
+        }
+      }
     }
-  })
+
+    const id = getToolbarAPI().eventsRouter.onTuneBubbleClosed.addListener(() => {
+      if (activeButton === MainButtonType.Tune) {
+        setActiveButton(MainButtonType.None)
+      }
+    })
+
+    document.body.addEventListener('keydown', onKeydown)
+    return () => {
+      document.body.removeEventListener('keydown', onKeydown)
+      getToolbarAPI().eventsRouter.removeListener(id)
+    }
+  }, [activeButton])
+
 
   if (!appearanceSettings || !ttsSettings) {
     return null
@@ -117,7 +147,7 @@ function Toolbar() {
         onClick={handleMainButtonClick.bind(this)}
       />
       {(activeButton === MainButtonType.None || activeButton === MainButtonType.Tune) &&
-       (<ReaderModeControl onClose={handleClose.bind(this)} />)
+        (<ReaderModeControl onClose={handleClose.bind(this)} />)
       }
       {activeButton === MainButtonType.Appearance && (
         <AppearanceControl

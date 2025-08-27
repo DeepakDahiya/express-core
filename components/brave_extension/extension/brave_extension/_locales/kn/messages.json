@@ -1,7 +1,7 @@
 {
   "appName": {
     "message": "Brave ವಿಸ್ತರಣೆ",
-    "description": "The name of the the extension."
+    "description": "The name of the extension."
   },
   "shields": {
     "message": "ಶೀಲ್ಡ್‌ಗಳು",
@@ -216,11 +216,11 @@
     "description": "Message for removing an extension from Brave"
   },
   "addToChrome": {
-    "message": "",
+    "message": "Add to Chrome",
     "description": "Message for adding an extension to Chrome"
   },
   "removeFromChrome": {
-    "message": "",
+    "message": "Remove from Chrome",
     "description": "Message for removing an extension from Chrome"
   }
 }

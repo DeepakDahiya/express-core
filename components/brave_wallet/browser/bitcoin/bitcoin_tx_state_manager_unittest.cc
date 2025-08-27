@@ -6,11 +6,13 @@
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_tx_state_manager.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 #include <vector>
 
 #include "base/files/scoped_temp_dir.h"
 #include "base/test/task_environment.h"
+#include "brave/components/brave_wallet/browser/bitcoin/bitcoin_serializer.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_transaction.h"
 #include "brave/components/brave_wallet/browser/bitcoin/bitcoin_tx_meta.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
@@ -37,7 +39,7 @@ class BitcoinTxStateManagerUnitTest : public testing::Test {
     account_resolver_delegate_ =
         std::make_unique<AccountResolverDelegateForTest>();
     bitcoin_tx_state_manager_ = std::make_unique<BitcoinTxStateManager>(
-        GetPrefs(), delegate_.get(), account_resolver_delegate_.get());
+        *delegate_, *account_resolver_delegate_);
   }
 
   PrefService* GetPrefs() { return &prefs_; }
@@ -52,21 +54,27 @@ class BitcoinTxStateManagerUnitTest : public testing::Test {
 };
 
 TEST_F(BitcoinTxStateManagerUnitTest, BitcoinTxMetaAndValue) {
-  auto btc_account_id = account_resolver_delegate_->RegisterAccount(
-      MakeBitcoinAccountId(mojom::CoinType::BTC, mojom::KeyringId::kBitcoin84,
-                           mojom::AccountKind::kDerived, 1));
+  auto btc_account_id =
+      account_resolver_delegate_->RegisterAccount(MakeIndexBasedAccountId(
+          mojom::CoinType::BTC, mojom::KeyringId::kBitcoin84,
+          mojom::AccountKind::kDerived, 1));
 
   std::unique_ptr<BitcoinTransaction> tx =
       std::make_unique<BitcoinTransaction>();
   tx->set_amount(200000);
   tx->set_to("tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm");
-  tx->inputs().emplace_back();
-  tx->inputs().back().utxo_address =
-      "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
-  tx->inputs().back().utxo_value = 200000;
-  tx->outputs().emplace_back();
-  tx->outputs().back().address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
-  tx->outputs().back().amount = 200000 - 1000;
+
+  BitcoinTransaction::TxInput input;
+  input.utxo_address = "tb1q56kslnp386v43wpp6wkpx072ryud5gu865efx8";
+  input.utxo_value = 200000;
+  tx->AddInput(std::move(input));
+
+  BitcoinTransaction::TxOutput output;
+  output.address = "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm";
+  output.script_pubkey = BitcoinSerializer::AddressToScriptPubkey(
+      "tb1qva8clyftt2fstawn5dy0nvrfmygpzulf3lwulm", true);
+  output.amount = 200000 - 1000;
+  tx->AddOutput(std::move(output));
 
   BitcoinTxMeta meta(btc_account_id, std::move(tx));
   meta.set_id(TxMeta::GenerateMetaID());
@@ -84,15 +92,6 @@ TEST_F(BitcoinTxStateManagerUnitTest, BitcoinTxMetaAndValue) {
       bitcoin_tx_state_manager_->ValueToBitcoinTxMeta(meta_value);
   ASSERT_TRUE(meta_from_value);
   EXPECT_EQ(*meta_from_value, meta);
-}
-
-TEST_F(BitcoinTxStateManagerUnitTest, GetTxPrefPathPrefix) {
-  EXPECT_EQ("bitcoin.mainnet", bitcoin_tx_state_manager_->GetTxPrefPathPrefix(
-                                   mojom::kBitcoinMainnet));
-  EXPECT_EQ("bitcoin.testnet", bitcoin_tx_state_manager_->GetTxPrefPathPrefix(
-                                   mojom::kBitcoinTestnet));
-  EXPECT_EQ("bitcoin",
-            bitcoin_tx_state_manager_->GetTxPrefPathPrefix(absl::nullopt));
 }
 
 }  // namespace brave_wallet

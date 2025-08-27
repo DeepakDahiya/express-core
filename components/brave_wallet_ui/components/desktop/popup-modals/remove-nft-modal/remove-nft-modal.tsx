@@ -17,12 +17,11 @@ import { PopupModal } from '../index'
 // styles
 import {
   ButtonRow,
-  CancelButton,
-  ConfirmButton,
   Description,
   Header,
   StyledWrapper,
 } from './remove-nft-modal.styles'
+import { LeoSquaredButton } from '../../../shared/style'
 
 interface Props {
   onConfirm: () => void
@@ -33,15 +32,27 @@ export const RemoveNftModal = ({ onConfirm, onCancel }: Props) => {
   const isPanel = useSafeUISelector(UISelectors.isPanel)
 
   return (
-    <PopupModal title='' width='456px' hideHeader={isPanel} onClose={onCancel}>
+    <PopupModal
+      title=''
+      width='456px'
+      hideHeader={isPanel}
+      onClose={onCancel}
+    >
       <StyledWrapper>
         <Header>{getLocale('braveWalletRemoveNftModalHeader')}</Header>
         <Description>
           {getLocale('braveWalletRemoveNftModalDescription')}
         </Description>
         <ButtonRow>
-          <CancelButton onClick={onCancel}>{getLocale('braveWalletRemoveNftModalCancel')}</CancelButton>
-          <ConfirmButton onClick={onConfirm}>{getLocale('braveWalletRemoveNftModalConfirm')}</ConfirmButton>
+          <LeoSquaredButton
+            onClick={onCancel}
+            kind='outline'
+          >
+            {getLocale('braveWalletRemoveNftModalCancel')}
+          </LeoSquaredButton>
+          <LeoSquaredButton onClick={onConfirm}>
+            {getLocale('braveWalletRemoveNftModalConfirm')}
+          </LeoSquaredButton>
         </ButtonRow>
       </StyledWrapper>
     </PopupModal>

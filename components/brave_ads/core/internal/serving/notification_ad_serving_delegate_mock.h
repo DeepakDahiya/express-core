@@ -20,19 +20,13 @@ class NotificationAdServingDelegateMock : public NotificationAdServingDelegate {
   NotificationAdServingDelegateMock& operator=(
       const NotificationAdServingDelegateMock&) = delete;
 
-  NotificationAdServingDelegateMock(
-      NotificationAdServingDelegateMock&&) noexcept = delete;
-  NotificationAdServingDelegateMock& operator=(
-      NotificationAdServingDelegateMock&&) noexcept = delete;
-
   ~NotificationAdServingDelegateMock() override;
 
   MOCK_METHOD(void,
               OnOpportunityAroseToServeNotificationAd,
-              (const SegmentList& segments));
+              (const SegmentList&));
 
-  MOCK_METHOD(void, OnDidServeNotificationAd, (const NotificationAdInfo& ad));
-
+  MOCK_METHOD(void, OnDidServeNotificationAd, (const NotificationAdInfo&));
   MOCK_METHOD(void, OnFailedToServeNotificationAd, ());
 };
 

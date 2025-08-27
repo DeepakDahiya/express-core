@@ -15,7 +15,7 @@ import { findAccountByAddress } from '../../../utils/account-utils'
 import { BraveWallet } from '../../../constants/types'
 import {
   formatSolInstructionParamValue,
-  TypedSolanaInstructionWithParams
+  TypedSolanaInstructionWithParams,
 } from '../../../utils/solana-instruction-utils'
 
 // components
@@ -25,19 +25,19 @@ import { CopyTooltip } from '../copy-tooltip/copy-tooltip'
 import {
   Divider,
   SectionRow,
-  TransactionTitle
+  TransactionTitle,
 } from '../../extension/confirm-transaction-panel/style'
 
 import {
   InstructionBox,
   InstructionParamBox,
   AddressText,
-  CodeSectionTitle
+  CodeSectionTitle,
 } from './solana-transaction-instruction.style'
 
 import {
   CodeSnippet,
-  CodeSnippetText
+  CodeSnippetText,
 } from '../../extension/transaction-box/style'
 
 // queries
@@ -54,8 +54,8 @@ export const SolanaTransactionInstruction: React.FC<Props> = ({
     programId,
     type,
     params,
-    accountMetas
-  }
+    accountMetas,
+  },
 }) => {
   const { data: accounts } = useGetAccountInfosRegistryQuery()
 
@@ -128,7 +128,7 @@ export const SolanaTransactionInstruction: React.FC<Props> = ({
               text={programId}
               tooltipText={programId}
               isAddress
-              position="left"
+              position='left'
             >
               {getSolanaProgramIdName(programId)} - {type}
             </CopyTooltip>
@@ -139,8 +139,7 @@ export const SolanaTransactionInstruction: React.FC<Props> = ({
           <>
             <Divider />
 
-            {accountParams.map((
-              { localizedName, name, value }, i) => {
+            {accountParams.map(({ localizedName, name, value }, i) => {
               // signers param
               if (name === BraveWallet.SIGNERS) {
                 if (!value) {
@@ -199,7 +198,10 @@ export const SolanaTransactionInstruction: React.FC<Props> = ({
                 <InstructionParamBox key={name}>
                   <var>{localizedName}</var>
                   {isAddressParam ? (
-                    <AddressParamValue accounts={accounts} pubkey={value} />
+                    <AddressParamValue
+                      accounts={accounts}
+                      pubkey={value}
+                    />
                   ) : (
                     <samp>{formattedValue}</samp>
                   )}
@@ -218,7 +220,7 @@ export default SolanaTransactionInstruction
 const AddressParamValue = ({
   accounts,
   pubkey,
-  lookupTableIndex
+  lookupTableIndex,
 }: {
   accounts: EntityState<BraveWallet.AccountInfo> | undefined
   pubkey: string
@@ -232,33 +234,28 @@ const AddressParamValue = ({
   // render
   return (
     <>
-      {lookupTableIndex !== undefined &&
+      {lookupTableIndex !== undefined && (
         <AddressText isBold={true}>
           {getLocale('braveWalletSolanaAddressLookupTableAccount')}
         </AddressText>
-      }
+      )}
       <CopyTooltip
         key={pubkey}
         text={pubkey}
-        tooltipText={
-          formattedValue === pubkey
-            ? undefined
-            : pubkey
-        }
+        tooltipText={formattedValue === pubkey ? undefined : pubkey}
         isAddress
         position='left'
       >
         <AddressText>{formattedValue}</AddressText>
       </CopyTooltip>
-      {
-        lookupTableIndex !== undefined &&
+      {lookupTableIndex !== undefined && (
         <>
           <AddressText isBold={true}>
             {getLocale('braveWalletSolanaAddressLookupTableIndex')}
           </AddressText>
           <AddressText>{lookupTableIndex}</AddressText>
         </>
-      }
+      )}
     </>
   )
 }

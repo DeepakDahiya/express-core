@@ -6,19 +6,16 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_CONFIRMATION_REDEEM_CONFIRMATION_DELEGATE_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_ACCOUNT_UTILITY_REDEEM_CONFIRMATION_REDEEM_CONFIRMATION_DELEGATE_H_
 
-#include "base/memory/weak_ptr.h"
-
 namespace brave_ads {
 
 struct ConfirmationInfo;
 
-class RedeemConfirmationDelegate
-    : public base::SupportsWeakPtr<RedeemConfirmationDelegate> {
+class RedeemConfirmationDelegate {
  public:
-  // Invoked to tell the delegate that the |confirmation| was redeemed.
+  // Invoked to tell the delegate that the `confirmation` was redeemed.
   virtual void OnDidRedeemConfirmation(const ConfirmationInfo& confirmation) {}
 
-  // Invoked to tell the delegate that |confirmation| redemption failed.
+  // Invoked to tell the delegate that `confirmation` redemption failed.
   virtual void OnFailedToRedeemConfirmation(
       const ConfirmationInfo& confirmation,
       bool should_retry) {}

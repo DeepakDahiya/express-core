@@ -4,12 +4,9 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import styled from 'styled-components'
-import * as leo from '@brave/leo/tokens/css'
+import * as leo from '@brave/leo/tokens/css/variables'
 import Icon from '@brave/leo/react/icon'
-import {
-  WalletButton,
-  Row
-} from '../../shared/style'
+import { WalletButton, Row } from '../../shared/style'
 
 export const Button = styled(WalletButton)`
   display: flex;
@@ -19,6 +16,8 @@ export const Button = styled(WalletButton)`
   outline: none;
   background: none;
   border: none;
+  padding: 0px;
+  margin: 0px;
 `
 
 export const ButtonIcon = styled(Icon)`
@@ -27,7 +26,7 @@ export const ButtonIcon = styled(Icon)`
 `
 
 export const LeftRightContainer = styled(Row)`
-  min-width: 25%;
+  min-width: 35%;
 `
 
 export const ClickAwayArea = styled.div`

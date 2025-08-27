@@ -11,7 +11,6 @@
 #include "base/memory/weak_ptr.h"
 #include "brave/components/brave_ads/core/internal/catalog/catalog_url_request_delegate.h"
 #include "brave/components/brave_ads/core/internal/common/timer/backoff_timer.h"
-#include "brave/components/brave_ads/core/internal/common/timer/timer.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom-forward.h"
 
 namespace brave_ads {
@@ -25,9 +24,6 @@ class CatalogUrlRequest final {
   CatalogUrlRequest(const CatalogUrlRequest&) = delete;
   CatalogUrlRequest& operator=(const CatalogUrlRequest&) = delete;
 
-  CatalogUrlRequest(CatalogUrlRequest&&) noexcept = delete;
-  CatalogUrlRequest& operator=(CatalogUrlRequest&&) noexcept = delete;
-
   ~CatalogUrlRequest();
 
   void SetDelegate(CatalogUrlRequestDelegate* delegate) {
@@ -39,11 +35,11 @@ class CatalogUrlRequest final {
 
  private:
   void Fetch();
-  void FetchCallback(const mojom::UrlResponseInfo& url_response);
+  void FetchCallback(const mojom::UrlResponseInfo& mojom_url_response);
   void FetchAfterDelay();
 
   void SuccessfullyFetchedCatalog(const CatalogInfo& catalog);
-  void FailedToFetchCatalog();
+  void FailedToFetchCatalog(bool should_retry);
 
   void Retry();
   void RetryCallback();
@@ -55,14 +51,13 @@ class CatalogUrlRequest final {
   void NotifyWillRetryFetchingCatalog(base::Time retry_at) const;
   void NotifyDidRetryFetchingCatalog() const;
 
-  raw_ptr<CatalogUrlRequestDelegate> delegate_ = nullptr;
+  raw_ptr<CatalogUrlRequestDelegate> delegate_ = nullptr;  // Not owned.
 
   bool is_periodically_fetching_ = false;
 
   bool is_fetching_ = false;
 
-  Timer timer_;
-  BackoffTimer retry_timer_;
+  BackoffTimer timer_;
 
   base::WeakPtrFactory<CatalogUrlRequest> weak_factory_{this};
 };

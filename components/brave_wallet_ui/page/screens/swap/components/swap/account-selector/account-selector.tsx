@@ -10,23 +10,18 @@ import { getLocale } from '../../../../../../../common/locale'
 
 // Hooks
 import {
-  useOnClickOutside
+  useOnClickOutside, //
 } from '../../../../../../common/hooks/useOnClickOutside'
 import {
-  useGetSelectedChainQuery
-} from '../../../../../../common/slices/api.slice'
-import {
-  useAccountsQuery //
+  useAccountsQuery, //
 } from '../../../../../../common/slices/api.slice.extra'
 
 // Types
-import {
-  BraveWallet
-} from '../../../../../../constants/types'
+import { BraveWallet } from '../../../../../../constants/types'
 
 // Components
 import {
-  AccountListButton
+  AccountListButton, //
 } from '../../buttons/account-list-button/account-list-button'
 
 // Styled Components
@@ -34,13 +29,14 @@ import {
   SelectButton,
   SelectorBox,
   SelectorWrapper,
-  StyledCaratDownIcon
+  StyledCaratDownIcon,
 } from './account-selector.style'
 import { Text, HorizontalSpacer } from '../../shared-swap.styles'
 
 interface Props {
   disabled?: boolean
   selectedAccount: BraveWallet.AccountInfo | undefined
+  selectedNetwork: BraveWallet.NetworkInfo | undefined
   showAccountSelector: boolean
   setShowAccountSelector: (value: boolean) => void
   onSelectAccount: (account: BraveWallet.AccountInfo) => void
@@ -51,12 +47,12 @@ export const AccountSelector = (props: Props) => {
     disabled,
     onSelectAccount,
     selectedAccount,
+    selectedNetwork,
     showAccountSelector,
-    setShowAccountSelector
+    setShowAccountSelector,
   } = props
 
   // queries
-  const { data: selectedNetwork } = useGetSelectedChainQuery()
   const { accounts } = useAccountsQuery()
 
   // Refs
@@ -64,8 +60,9 @@ export const AccountSelector = (props: Props) => {
 
   // Memos
   const networkAccounts = React.useMemo(() => {
-    return accounts.filter(account =>
-      account.accountId.coin === selectedNetwork?.coin)
+    return accounts.filter(
+      (account) => account.accountId.coin === selectedNetwork?.coin,
+    )
   }, [accounts, selectedNetwork])
 
   // Methods
@@ -78,14 +75,14 @@ export const AccountSelector = (props: Props) => {
       onSelectAccount(account)
       setShowAccountSelector(false)
     },
-    [onSelectAccount, setShowAccountSelector]
+    [onSelectAccount, setShowAccountSelector],
   )
 
   // Hooks
   useOnClickOutside(
     accountSelectorRef,
     () => setShowAccountSelector(false),
-    showAccountSelector
+    showAccountSelector,
   )
 
   return (
@@ -94,19 +91,23 @@ export const AccountSelector = (props: Props) => {
         onClick={onToggleShowAccountSelector}
         disabled={disabled}
       >
-        <Text textSize='12px' textColor='text02'>
-          {
-            selectedAccount
-              ? selectedAccount.name
-              : getLocale('braveSwapSelectAccount')
-          }
+        <Text
+          textSize='12px'
+          textColor='text02'
+        >
+          {selectedAccount
+            ? selectedAccount.name
+            : getLocale('braveSwapSelectAccount')}
         </Text>
         <HorizontalSpacer size={8} />
-        <StyledCaratDownIcon size={20} name='carat-down' />
+        <StyledCaratDownIcon
+          size={20}
+          name='carat-down'
+        />
       </SelectButton>
       {showAccountSelector && (
         <SelectorBox>
-          {networkAccounts.map(account => (
+          {networkAccounts.map((account) => (
             <AccountListButton
               account={account}
               onClick={onClickSelectAccount}

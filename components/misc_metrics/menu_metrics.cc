@@ -5,9 +5,11 @@
 
 #include "brave/components/misc_metrics/menu_metrics.h"
 
+#include <algorithm>
+
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
-#include "base/ranges/algorithm.h"
+#include "base/notreached.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "brave/components/misc_metrics/pref_names.h"
@@ -20,13 +22,13 @@ namespace misc_metrics {
 
 namespace {
 
-const char kTabWindowPrefKey[] = "tab_window";
-const char kBraveFeaturesPrefKey[] = "brave_features";
-const char kBrowserViewsPrefKey[] = "browser_views";
+constexpr char kTabWindowPrefKey[] = "tab_window";
+constexpr char kBraveFeaturesPrefKey[] = "brave_features";
+constexpr char kBrowserViewsPrefKey[] = "browser_views";
 
 constexpr base::TimeDelta kUpdateInterval = base::Days(1);
 
-const int kMenuOpenBuckets[] = {0, 5, 15, 29, 49};
+constexpr int kMenuOpenBuckets[] = {0, 5, 15, 29, 49};
 
 const char* GetMenuGroupPrefKey(MenuGroup group) {
   switch (group) {
@@ -41,11 +43,6 @@ const char* GetMenuGroupPrefKey(MenuGroup group) {
 }
 
 }  // namespace
-
-const char kFrequentMenuGroupHistogramName[] =
-    "Brave.Toolbar.FrequentMenuGroup";
-const char kMenuDismissRateHistogramName[] = "Brave.Toolbar.MenuDismissRate";
-const char kMenuOpensHistogramName[] = "Brave.Toolbar.MenuOpens";
 
 MenuMetrics::MenuMetrics(PrefService* local_state)
     : local_state_(local_state),
@@ -78,7 +75,7 @@ void MenuMetrics::RecordMenuGroupAction(MenuGroup group) {
     // No need to check for max element if we added to the last known max group.
     histogram_value = current_max_group_->second;
   } else {
-    const auto& result = base::ranges::max_element(
+    const auto& result = std::ranges::max_element(
         update_dict.cbegin(), update_dict.cend(),
         [](const auto& a, const auto& b) {
           return a.second.GetDouble() < b.second.GetDouble();

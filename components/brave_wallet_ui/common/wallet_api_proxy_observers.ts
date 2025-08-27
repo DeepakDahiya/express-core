@@ -3,57 +3,68 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import * as WalletActions from './actions/wallet_actions'
-import { Store } from './async/types'
+// types & constants
 import { BraveWallet } from '../constants/types'
-import { objectEquals } from '../utils/object-utils'
-import { makeSerializableTransaction } from '../utils/model-serialization-utils'
-import { walletApi } from './slices/api.slice'
-import { getCoinFromTxDataUnion } from '../utils/network-utils'
+import { Store } from './async/types'
 
-export function  makeBraveWalletServiceTokenObserver (store: Store) {
-  const braveWalletServiceTokenObserverReceiver = new BraveWallet.BraveWalletServiceTokenObserverReceiver({
-    onTokenAdded(token) {
-      store.dispatch(
-        walletApi.endpoints.invalidateUserTokensRegistry.initiate()
-      )
-      store.dispatch(WalletActions.getAllTokensList())
-      store.dispatch(
-        WalletActions.refreshNetworksAndTokens({ skipBalancesRefresh: false })
-      )
-    },
-    onTokenRemoved(token) {
-      store.dispatch(
-        walletApi.endpoints.invalidateUserTokensRegistry.initiate()
-      )
-      store.dispatch(WalletActions.getAllTokensList())
-      store.dispatch(
-        WalletActions.refreshNetworksAndTokens({ skipBalancesRefresh: true })
-      )
-    },
-  })
+// redux
+import * as WalletActions from './actions/wallet_actions'
+import { walletApi } from './slices/api.slice'
+
+// utils
+import { makeSerializableTransaction } from '../utils/model-serialization-utils'
+import { getCoinFromTxDataUnion } from '../utils/network-utils'
+import { getHasPendingRequests } from '../utils/api-utils'
+
+export function makeBraveWalletServiceTokenObserver(store: Store) {
+  const braveWalletServiceTokenObserverReceiver =
+    new BraveWallet.BraveWalletServiceTokenObserverReceiver({
+      onTokenAdded(token) {
+        store.dispatch(
+          walletApi.endpoints.invalidateUserTokensRegistry.initiate(),
+        )
+        store.dispatch(WalletActions.refreshNetworksAndTokens())
+        // re-parse transactions with new coins list
+        store.dispatch(
+          walletApi.endpoints.invalidateTransactionsCache.initiate(),
+        )
+      },
+      onTokenRemoved(token) {
+        store.dispatch(
+          walletApi.endpoints.invalidateUserTokensRegistry.initiate(),
+        )
+        store.dispatch(WalletActions.refreshNetworksAndTokens())
+        // re-parse transactions with new coins list
+        store.dispatch(
+          walletApi.endpoints.invalidateTransactionsCache.initiate(),
+        )
+      },
+    })
   return braveWalletServiceTokenObserverReceiver
 }
 
-export function makeJsonRpcServiceObserver (store: Store) {
-    const jsonRpcServiceObserverReceiver = new BraveWallet.JsonRpcServiceObserverReceiver({
+export function makeJsonRpcServiceObserver(store: Store) {
+  const jsonRpcServiceObserverReceiver =
+    new BraveWallet.JsonRpcServiceObserverReceiver({
       chainChangedEvent: function (chainId, coin, origin) {
         store.dispatch(walletApi.endpoints.invalidateSelectedChain.initiate())
       },
       onAddEthereumChainRequestCompleted: function (chainId, error) {
-        // TODO: Handle this event.
-      },
-      onIsEip1559Changed: function (chainId, isEip1559) {
+        // update add/switch chain requests query data
         store.dispatch(
-          walletApi.endpoints.isEip1559Changed.initiate({ chainId, isEip1559 })
+          walletApi.util.invalidateTags([
+            'PendingAddChainRequests',
+            'PendingSwitchChainRequests',
+          ]),
         )
-      }
+      },
     })
-    return jsonRpcServiceObserverReceiver
-  }
+  return jsonRpcServiceObserverReceiver
+}
 
-  export function  makeKeyringServiceObserver (store: Store) {
-    const keyringServiceObserverReceiver = new BraveWallet.KeyringServiceObserverReceiver({
+export function makeKeyringServiceObserver(store: Store) {
+  const keyringServiceObserverReceiver =
+    new BraveWallet.KeyringServiceObserverReceiver({
       walletCreated: function () {
         store.dispatch(WalletActions.walletCreated())
       },
@@ -83,34 +94,36 @@ export function makeJsonRpcServiceObserver (store: Store) {
       autoLockMinutesChanged: function () {
         store.dispatch(WalletActions.autoLockMinutesChanged())
       },
-      selectedWalletAccountChanged: function (account: BraveWallet.AccountInfo) {
+      selectedWalletAccountChanged: function (
+        account: BraveWallet.AccountInfo,
+      ) {
         store.dispatch(walletApi.endpoints.invalidateSelectedAccount.initiate())
       },
-      selectedDappAccountChanged:
-        function (
-          coin: BraveWallet.CoinType,
-          account: BraveWallet.AccountInfo | null
-        ) {
+      selectedDappAccountChanged: function (
+        coin: BraveWallet.CoinType,
+        account: BraveWallet.AccountInfo | null,
+      ) {
         // TODO: Handle this event.
-      }
+      },
     })
-    return keyringServiceObserverReceiver
-  }
+  return keyringServiceObserverReceiver
+}
 
-  export function  makeTxServiceObserver (store: Store) {
-    const txServiceManagerObserverReceiver = new BraveWallet.TxServiceObserverReceiver({
+export function makeTxServiceObserver(store: Store) {
+  const txServiceManagerObserverReceiver =
+    new BraveWallet.TxServiceObserverReceiver({
       onNewUnapprovedTx: function (txInfo) {
         store.dispatch(
           walletApi.endpoints.newUnapprovedTxAdded.initiate(
-            makeSerializableTransaction(txInfo)
-          )
+            makeSerializableTransaction(txInfo),
+          ),
         )
       },
       onUnapprovedTxUpdated: function (txInfo) {
         store.dispatch(
           walletApi.endpoints.unapprovedTxUpdated.initiate(
-            makeSerializableTransaction(txInfo)
-          )
+            makeSerializableTransaction(txInfo),
+          ),
         )
       },
       onTransactionStatusChanged: (txInfo) => {
@@ -120,8 +133,8 @@ export function makeJsonRpcServiceObserver (store: Store) {
             coinType: getCoinFromTxDataUnion(txInfo.txDataUnion),
             fromAccountId: txInfo.fromAccountId,
             id: txInfo.id,
-            txStatus: txInfo.txStatus
-          })
+            txStatus: txInfo.txStatus,
+          }),
         )
 
         // close then panel UI if there are no more pending transactions
@@ -130,88 +143,85 @@ export function makeJsonRpcServiceObserver (store: Store) {
             BraveWallet.TransactionStatus.Submitted,
             BraveWallet.TransactionStatus.Signed,
             BraveWallet.TransactionStatus.Rejected,
-            BraveWallet.TransactionStatus.Approved
+            BraveWallet.TransactionStatus.Approved,
           ].includes(txInfo.txStatus)
         ) {
           const state = store.getState()
           if (
-            state.panel && // run only in panel
-            state.ui.selectedPendingTransactionId === undefined &&
-            (state.panel?.selectedPanel === 'approveTransaction' ||
-              txInfo.txStatus === BraveWallet.TransactionStatus.Rejected)
+            state.panel // run only in panel
+            && state.ui.selectedPendingTransactionId === undefined
+            && (state.panel?.selectedPanel === 'approveTransaction'
+              || txInfo.txStatus === BraveWallet.TransactionStatus.Rejected)
           ) {
-            store.dispatch(walletApi.endpoints.closePanelUI.initiate())
+            getHasPendingRequests().then((hasPendingRequests) => {
+              if (!hasPendingRequests) {
+                store.dispatch(walletApi.endpoints.closePanelUI.initiate())
+              }
+            })
           }
         }
       },
-      onTxServiceReset: function () {
-      }
+      onTxServiceReset: function () {},
     })
-    return txServiceManagerObserverReceiver
-  }
+  return txServiceManagerObserverReceiver
+}
 
-  export function  makeBraveWalletServiceObserver (store: Store) {
-    const braveWalletServiceObserverReceiver = new BraveWallet.BraveWalletServiceObserverReceiver({
+export function makeBraveWalletServiceObserver(store: Store) {
+  let lastKnownActiveOrigin: BraveWallet.OriginInfo
+  const braveWalletServiceObserverReceiver =
+    new BraveWallet.BraveWalletServiceObserverReceiver({
       onActiveOriginChanged: function (originInfo) {
-        const state = store.getState().wallet
-
         // check that the origin has changed from the stored values
         // in any way before dispatching the update action
-        if (objectEquals(state.activeOrigin, originInfo)) {
+        if (
+          lastKnownActiveOrigin
+          && lastKnownActiveOrigin.eTldPlusOne === originInfo.eTldPlusOne
+          && lastKnownActiveOrigin.originSpec === originInfo.originSpec
+        ) {
           return
         }
-
-        store.dispatch(WalletActions.activeOriginChanged(originInfo))
+        lastKnownActiveOrigin = originInfo
+        store.dispatch(walletApi.util.invalidateTags(['ActiveOrigin']))
       },
       onDefaultEthereumWalletChanged: function (defaultWallet) {
-        store.dispatch(WalletActions.defaultEthereumWalletChanged({ defaultWallet }))
+        store.dispatch(
+          walletApi.util.invalidateTags([
+            'DefaultEthWallet',
+            'IsMetaMaskInstalled',
+          ]),
+        )
       },
       onDefaultSolanaWalletChanged: function (defaultWallet) {
-        store.dispatch(WalletActions.defaultSolanaWalletChanged({ defaultWallet }))
+        store.dispatch(walletApi.util.invalidateTags(['DefaultSolWallet']))
+      },
+      onDefaultCardanoWalletChanged: function (defaultWallet) {
+        store.dispatch(walletApi.util.invalidateTags(['DefaultAdaWallet']))
       },
       onDefaultBaseCurrencyChanged: function (currency) {
         store.dispatch(WalletActions.defaultBaseCurrencyChanged({ currency }))
       },
       onDefaultBaseCryptocurrencyChanged: function (cryptocurrency) {
-        store.dispatch(WalletActions.defaultBaseCryptocurrencyChanged({ cryptocurrency }))
+        store.dispatch(
+          WalletActions.defaultBaseCryptocurrencyChanged({ cryptocurrency }),
+        )
       },
       onNetworkListChanged: function () {
         // FIXME(onyb): Due to a bug, the OnNetworkListChanged event is fired
         // merely upon switching to a custom network.
         //
         // Skipping balances refresh for now, until the bug is fixed.
-        store.dispatch(WalletActions.refreshNetworksAndTokens({
-          skipBalancesRefresh: true
-        }))
+        store.dispatch(WalletActions.refreshNetworksAndTokens())
       },
-      onDiscoverAssetsStarted: function () { },
-      onDiscoverAssetsCompleted: function (discoveredAssets) {
-        store.dispatch(WalletActions.setAssetAutoDiscoveryCompleted(discoveredAssets))
+      onDiscoverAssetsStarted: function () {
+        store.dispatch(WalletActions.setAssetAutoDiscoveryCompleted(false))
       },
-      onResetWallet: function () {
-      }
-    })
-    return braveWalletServiceObserverReceiver
-  }
-
-  export function  makeBraveWalletPinServiceObserver (store: Store) {
-    const braveWalletServiceObserverReceiver = new BraveWallet.BraveWalletPinServiceObserverReceiver({
-      onTokenStatusChanged: function (_service, token, status) {
-        store.dispatch(walletApi.endpoints.updateNftsPinningStatus.initiate({ token, status }))
+      onDiscoverAssetsCompleted: function () {
+        store.dispatch(
+          walletApi.endpoints.invalidateUserTokensRegistry.initiate(),
+        )
+        store.dispatch(WalletActions.setAssetAutoDiscoveryCompleted(true))
       },
-      onLocalNodeStatusChanged: function (_status) {
-        store.dispatch(walletApi.util.invalidateTags(['LocalIPFSNodeStatus']))
-      }
+      onResetWallet: function () {},
     })
-    return braveWalletServiceObserverReceiver
-  }
-
-  export function  makeBraveWalletAutoPinServiceObserver (store: Store) {
-    const braveWalletAutoPinServiceObserverReceiver = new BraveWallet.WalletAutoPinServiceObserverReceiver({
-      onAutoPinStatusChanged: function (enabled) {
-        store.dispatch(walletApi.endpoints.setAutopinEnabled.initiate(enabled))
-      }
-    })
-    return braveWalletAutoPinServiceObserverReceiver
-  }
-
+  return braveWalletServiceObserverReceiver
+}

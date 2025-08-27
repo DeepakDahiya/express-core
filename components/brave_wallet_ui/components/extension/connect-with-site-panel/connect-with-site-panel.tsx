@@ -5,22 +5,18 @@
 
 import * as React from 'react'
 import { skipToken } from '@reduxjs/toolkit/query/react'
-import { useDispatch } from 'react-redux'
-
-// Actions
-import { PanelActions } from '../../../panel/actions'
 
 // Types
 import {
   WalletRoutes,
   BraveWallet,
-  DAppConnectedPermissionsOption
+  DAppConnectedPermissionsOption,
 } from '../../../constants/types'
 
 // Options
 import {
   DAppPermittedOptions,
-  DAppNotPermittedOptions
+  DAppNotPermittedOptions,
 } from '../../../options/dapp-connected-permissions'
 
 // Components
@@ -45,28 +41,30 @@ import {
   AddAcountIcon,
   IconCircle,
   WhiteSpace,
-  NavButton
+  NavButton,
+  DurationLabel,
 } from './connect-with-site-panel.style'
 import {
   ConnectPanelButton,
-  AccountNameText
+  AccountNameText,
 } from './select-account-item/select-account-item.style'
 import {
   Row,
   HorizontalSpace,
   VerticalSpace,
-  VerticalDivider
+  VerticalDivider,
 } from '../../shared/style'
 
 // Utils
 import { getLocale } from '../../../../common/locale'
 
 // Hooks
+import { useBalancesFetcher } from '../../../common/hooks/use-balances-fetcher'
 import {
-  useBalancesFetcher
-} from '../../../common/hooks/use-balances-fetcher'
-import {
-  useGetVisibleNetworksQuery
+  useCancelConnectToSiteMutation,
+  useConnectToSiteMutation,
+  useGetIsPrivateWindowQuery,
+  useGetVisibleNetworksQuery,
 } from '../../../common/slices/api.slice'
 
 const onClickAddAccount = () => {
@@ -74,11 +72,9 @@ const onClickAddAccount = () => {
     { url: `chrome://wallet${WalletRoutes.AddAccountModal}` },
     () => {
       if (chrome.runtime.lastError) {
-        console.error(
-          'tabs.create failed: ' + chrome.runtime.lastError.message
-        )
+        console.error('tabs.create failed: ' + chrome.runtime.lastError.message)
       }
-    }
+    },
   )
 }
 
@@ -90,14 +86,11 @@ interface Props {
 export const ConnectWithSite = (props: Props) => {
   const { originInfo, accountsToConnect } = props
 
-  // Redux
-  const dispatch = useDispatch()
-
   // State
   const [addressToConnect, setAddressToConnect] = React.useState<string>()
   const [selectedDuration, setSelectedDuration] =
     React.useState<BraveWallet.PermissionLifetimeOption>(
-      BraveWallet.PermissionLifetimeOption.kPageClosed
+      BraveWallet.PermissionLifetimeOption.kPageClosed,
     )
   const [isReadyToConnect, setIsReadyToConnect] = React.useState<boolean>(false)
   const [isScrolled, setIsScrolled] = React.useState<boolean>(false)
@@ -105,35 +98,44 @@ export const ConnectWithSite = (props: Props) => {
   // Refs
   let scrollRef = React.useRef<HTMLDivElement | null>(null)
 
+  // Queries
+  const { data: isPrivateWindow } = useGetIsPrivateWindowQuery()
+
+  // Mutations
+  const [connectToSite] = useConnectToSiteMutation()
+  const [cancelConnectToSite] = useCancelConnectToSiteMutation()
+
   // Methods
-  const onNext = React.useCallback(() => {
+  const onNext = React.useCallback(async () => {
     if (!isReadyToConnect) {
       setIsReadyToConnect(true)
       return
     }
     if (addressToConnect) {
-      dispatch(
-        PanelActions.connectToSite({
-          addressToConnect: addressToConnect,
-          duration: selectedDuration
-        })
-      )
+      await connectToSite({ addressToConnect, duration: selectedDuration })
     }
-  }, [isReadyToConnect, addressToConnect, selectedDuration])
+  }, [connectToSite, isReadyToConnect, addressToConnect, selectedDuration])
 
-  const onCancel = React.useCallback(() => {
-    dispatch(PanelActions.cancelConnectToSite())
-  }, [])
+  const onCancel = React.useCallback(async () => {
+    await cancelConnectToSite()
+  }, [cancelConnectToSite])
 
   const onSelectAccount = React.useCallback(
     (account: BraveWallet.AccountInfo) => () => {
-      if (addressToConnect === account.address) {
+      if (
+        addressToConnect === account.address
+        || addressToConnect === account.accountId.uniqueKey
+      ) {
         setAddressToConnect(undefined)
         return
       }
-      setAddressToConnect(account.address)
+      if (account.accountId.coin === BraveWallet.CoinType.ADA) {
+        setAddressToConnect(account.accountId.uniqueKey)
+      } else {
+        setAddressToConnect(account.address)
+      }
     },
-    [addressToConnect]
+    [addressToConnect],
   )
 
   const onScroll = () => {
@@ -150,20 +152,21 @@ export const ConnectWithSite = (props: Props) => {
 
   const { data: networkList = [] } = useGetVisibleNetworksQuery()
 
-  const {
-    data: tokenBalancesRegistry,
-  } = useBalancesFetcher(accountsToConnect && networkList
-    ? {
-        accounts: accountsToConnect,
-        networks: networkList
-      }
-    : skipToken
+  const { data: tokenBalancesRegistry } = useBalancesFetcher(
+    accountsToConnect && networkList
+      ? {
+          accounts: accountsToConnect,
+          networks: networkList,
+        }
+      : skipToken,
   )
 
   return (
     <StyledWrapper>
       <BackgroundContainer
-        backgroundImage={`chrome://favicon/size/64@1x/${originInfo.originSpec}`}
+        backgroundImage={`chrome://favicon2?size=64&pageUrl=${encodeURIComponent(
+          originInfo.originSpec,
+        )}`}
       />
 
       <ConnectWithSiteHeader
@@ -174,24 +177,36 @@ export const ConnectWithSite = (props: Props) => {
         originInfo={originInfo}
       />
 
-      <ScrollContainer ref={scrollRef} onScroll={onScroll}>
+      <ScrollContainer
+        ref={scrollRef}
+        onScroll={onScroll}
+      >
         {!isReadyToConnect && (
           <>
             <SelectAddressContainer>
-              <ConnectPanelButton border="bottom" onClick={onClickAddAccount}>
-                <Row padding="8px 0px" justifyContent="space-between">
-                  <Row justifyContent="flex-start">
+              <ConnectPanelButton
+                border='bottom'
+                onClick={onClickAddAccount}
+              >
+                <Row
+                  padding='8px 0px'
+                  justifyContent='space-between'
+                >
+                  <Row justifyContent='flex-start'>
                     <IconCircle>
-                      <AddAcountIcon name="plus-add" />
+                      <AddAcountIcon name='plus-add' />
                     </IconCircle>
                     <AddAccountText>
                       {getLocale('braveWalletAddAccount')}
                     </AddAccountText>
                   </Row>
-                  <AddAcountIcon name="arrow-right" />
+                  <AddAcountIcon name='arrow-right' />
                 </Row>
               </ConnectPanelButton>
-              <Row padding="8px 0px" justifyContent="flex-start">
+              <Row
+                padding='8px 0px'
+                justifyContent='flex-start'
+              >
                 <AccountNameText>
                   {getLocale('braveWalletConnectWithSite')}
                 </AccountNameText>
@@ -201,7 +216,10 @@ export const ConnectWithSite = (props: Props) => {
                   key={account.accountId.uniqueKey}
                   onSelectAccount={onSelectAccount(account)}
                   account={account}
-                  isSelected={addressToConnect === account.address}
+                  isSelected={
+                    addressToConnect === account.address
+                    || addressToConnect === account.accountId.uniqueKey
+                  }
                   tokenBalancesRegistry={tokenBalancesRegistry}
                 />
               ))}
@@ -214,24 +232,30 @@ export const ConnectWithSite = (props: Props) => {
           <PermissionsWrapper
             fullHeight={false}
             fullWidth={true}
-            padding="0px 16px 20px 16px"
+            padding='0px 16px 20px 16px'
           >
             <PermissionsContainer
               fullHeight={true}
               fullWidth={true}
-              justifyContent="flex-start"
-              alignItems="flex-start"
-              padding="8px 16px 16px 16px"
+              justifyContent='flex-start'
+              alignItems='flex-start'
+              padding='8px 16px 16px 16px'
             >
               <SectionLabel>
                 {getLocale('braveWalletPermissionDuration')}
               </SectionLabel>
-              <PermissionDurationDropdown
-                selectedDuration={selectedDuration}
-                setSelectedDuration={setSelectedDuration}
-              />
+              {isPrivateWindow ? (
+                <DurationLabel>
+                  {getLocale('braveWalletPermissionUntilClose')}
+                </DurationLabel>
+              ) : (
+                <PermissionDurationDropdown
+                  selectedDuration={selectedDuration}
+                  setSelectedDuration={setSelectedDuration}
+                />
+              )}
               <VerticalDivider />
-              <VerticalSpace space="8px" />
+              <VerticalSpace space='8px' />
               <SectionLabel>
                 {getLocale('braveWalletConnectPermittedLabel')}
               </SectionLabel>
@@ -246,14 +270,17 @@ export const ConnectWithSite = (props: Props) => {
                           ? 16
                           : 8
                     }
-                    justifyContent="flex-start"
+                    justifyContent='flex-start'
                   >
-                    <BulletContainer status="success">
-                      <BulletIcon status="success" name="check-normal" />
+                    <BulletContainer status='success'>
+                      <BulletIcon
+                        status='success'
+                        name='check-normal'
+                      />
                     </BulletContainer>
                     <SectionPoint>{getLocale(option.name)}</SectionPoint>
                   </Row>
-                )
+                ),
               )}
               <SectionLabel>
                 {getLocale('braveWalletConnectNotPermittedLabel')}
@@ -269,27 +296,37 @@ export const ConnectWithSite = (props: Props) => {
                           ? 16
                           : 8
                     }
-                    justifyContent="flex-start"
+                    justifyContent='flex-start'
                   >
-                    <BulletContainer status="error">
-                      <BulletIcon status="error" name="close" />
+                    <BulletContainer status='error'>
+                      <BulletIcon
+                        status='error'
+                        name='close'
+                      />
                     </BulletContainer>
                     <SectionPoint>{getLocale(option.name)}</SectionPoint>
                   </Row>
-                )
+                ),
               )}
             </PermissionsContainer>
           </PermissionsWrapper>
         )}
       </ScrollContainer>
-      <ButtonRow padding={16} isReadyToConnect={isReadyToConnect}>
-        <NavButton size="large" kind="outline" onClick={onCancel}>
+      <ButtonRow
+        padding={16}
+        isReadyToConnect={isReadyToConnect}
+      >
+        <NavButton
+          size='large'
+          kind='outline'
+          onClick={onCancel}
+        >
           {getLocale('braveWalletButtonCancel')}
         </NavButton>
-        <HorizontalSpace space="16px" />
+        <HorizontalSpace space='16px' />
         <NavButton
-          size="large"
-          kind="filled"
+          size='large'
+          kind='filled'
           isDisabled={!addressToConnect}
           onClick={onNext}
         >

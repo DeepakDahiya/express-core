@@ -20,13 +20,9 @@ class SubdivisionObserverMock : public SubdivisionObserver {
   SubdivisionObserverMock(const SubdivisionObserverMock&) = delete;
   SubdivisionObserverMock& operator=(const SubdivisionObserverMock&) = delete;
 
-  SubdivisionObserverMock(SubdivisionObserverMock&&) noexcept = delete;
-  SubdivisionObserverMock& operator=(SubdivisionObserverMock&&) noexcept =
-      delete;
-
   ~SubdivisionObserverMock() override;
 
-  MOCK_METHOD(void, OnDidUpdateSubdivision, (const std::string& subdivision));
+  MOCK_METHOD(void, OnDidUpdateSubdivision, (const std::string&));
 };
 
 }  // namespace brave_ads

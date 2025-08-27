@@ -8,6 +8,8 @@
 
 #include "brave/components/brave_ads/core/internal/account/tokens/confirmation_tokens/confirmation_token_info.h"
 
+#include <cstddef>
+
 namespace brave_ads {
 
 class ConfirmationTokens final {
@@ -17,25 +19,22 @@ class ConfirmationTokens final {
   ConfirmationTokens(const ConfirmationTokens&) = delete;
   ConfirmationTokens& operator=(const ConfirmationTokens&) = delete;
 
-  ConfirmationTokens(ConfirmationTokens&&) noexcept = delete;
-  ConfirmationTokens& operator=(ConfirmationTokens&&) noexcept = delete;
-
   ~ConfirmationTokens();
 
-  const ConfirmationTokenInfo& GetToken() const;
-  const ConfirmationTokenList& GetAllTokens() const;
+  const ConfirmationTokenInfo& Get() const;
+  const ConfirmationTokenList& GetAll() const;
 
-  void SetTokens(const ConfirmationTokenList& confirmation_tokens);
+  void Set(const ConfirmationTokenList& confirmation_tokens);
 
-  void AddTokens(const ConfirmationTokenList& confirmation_tokens);
+  void Add(const ConfirmationTokenList& confirmation_tokens);
 
-  bool RemoveToken(const ConfirmationTokenInfo& confirmation_token);
-  void RemoveTokens(const ConfirmationTokenList& confirmation_tokens);
-  void RemoveAllTokens();
+  bool Remove(const ConfirmationTokenInfo& confirmation_token);
+  void Remove(const ConfirmationTokenList& confirmation_tokens);
+  void RemoveAll();
 
-  bool TokenExists(const ConfirmationTokenInfo& confirmation_token) const;
+  bool Exists(const ConfirmationTokenInfo& confirmation_token) const;
 
-  int Count() const;
+  size_t Count() const;
 
   bool IsEmpty() const;
 

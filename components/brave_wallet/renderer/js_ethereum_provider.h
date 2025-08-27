@@ -7,6 +7,7 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_RENDERER_JS_ETHEREUM_PROVIDER_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
@@ -28,8 +29,11 @@ class JSEthereumProvider final : public gin::Wrappable<JSEthereumProvider>,
                                  public content::RenderFrameObserver,
                                  public mojom::EventsListener {
  public:
-  static gin::WrapperInfo kWrapperInfo;
+  static constexpr gin::WrapperInfo kWrapperInfo = {{gin::kEmbedderNativeGin},
+                                                    gin::kEthereumProvider};
 
+  explicit JSEthereumProvider(content::RenderFrame* render_frame);
+  ~JSEthereumProvider() override;
   JSEthereumProvider(const JSEthereumProvider&) = delete;
   JSEthereumProvider& operator=(const JSEthereumProvider&) = delete;
 
@@ -40,7 +44,7 @@ class JSEthereumProvider final : public gin::Wrappable<JSEthereumProvider>,
   // gin::WrappableBase
   gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
       v8::Isolate* isolate) override;
-  const char* GetTypeName() override;
+  const gin::WrapperInfo* wrapper_info() const override;
 
   // mojom::EventsListener
   void AccountsChangedEvent(const std::vector<std::string>& accounts) override;
@@ -49,12 +53,10 @@ class JSEthereumProvider final : public gin::Wrappable<JSEthereumProvider>,
                     base::Value result) override;
 
  private:
-  explicit JSEthereumProvider(content::RenderFrame* render_frame);
-  ~JSEthereumProvider() override;
-
   class MetaMask final : public gin::Wrappable<MetaMask> {
    public:
-    static gin::WrapperInfo kWrapperInfo;
+    static constexpr gin::WrapperInfo kWrapperInfo = {{gin::kEmbedderNativeGin},
+                                                      gin::kMetaMask};
 
     explicit MetaMask(content::RenderFrame*);
     ~MetaMask() override;
@@ -64,7 +66,7 @@ class JSEthereumProvider final : public gin::Wrappable<JSEthereumProvider>,
     // gin::WrappableBase
     gin::ObjectTemplateBuilder GetObjectTemplateBuilder(
         v8::Isolate* isolate) override;
-    const char* GetTypeName() override;
+    const gin::WrapperInfo* wrapper_info() const override;
     v8::Local<v8::Promise> IsUnlocked(v8::Isolate* isolate);
 
    private:
@@ -108,11 +110,7 @@ class JSEthereumProvider final : public gin::Wrappable<JSEthereumProvider>,
                             std::unique_ptr<v8::Global<v8::Function>> callback,
                             v8::Global<v8::Promise::Resolver> promise_resolver,
                             v8::Isolate* isolate,
-                            base::Value id,
-                            base::Value formed_response,
-                            const bool reject,
-                            const std::string& first_allowed_account,
-                            const bool update_bind_js_properties);
+                            mojom::EthereumProviderResponsePtr response);
 
   void SendResponse(base::Value id,
                     v8::Global<v8::Context> global_context,
@@ -135,7 +133,7 @@ class JSEthereumProvider final : public gin::Wrappable<JSEthereumProvider>,
   std::string chain_id_;
   std::string first_allowed_account_;
   std::string uuid_;
-  absl::optional<std::string> brave_wallet_image_;
+  std::optional<std::string> brave_wallet_image_;
   base::WeakPtrFactory<JSEthereumProvider> weak_ptr_factory_{this};
 };
 

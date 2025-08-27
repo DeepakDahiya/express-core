@@ -5,6 +5,7 @@
 
 #include "brave/components/decentralized_dns/content/ens_offchain_lookup_interstitial_controller_client.h"
 
+#include "base/check.h"
 #include "brave/components/decentralized_dns/core/constants.h"
 #include "brave/components/decentralized_dns/core/pref_names.h"
 #include "brave/components/decentralized_dns/core/utils.h"
@@ -55,8 +56,8 @@ void EnsOffchainLookupInterstitialControllerClient::SetResolveMethodAndReload(
     EnsOffchainResolveMethod type) {
   DCHECK(local_state_);
   SetEnsOffchainResolveMethod(local_state_, type);
-  web_contents_->GetController().Reload(content::ReloadType::BYPASSING_CACHE,
-                                        true);
+  web_contents()->GetController().Reload(content::ReloadType::BYPASSING_CACHE,
+                                         true);
 }
 
 }  // namespace decentralized_dns

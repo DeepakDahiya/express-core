@@ -8,11 +8,9 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "brave/components/tor/onion_location_tab_helper.h"
-#include "brave/components/tor/pref_names.h"
-#include "components/prefs/pref_service.h"
-#include "components/user_prefs/user_prefs.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/web_contents.h"
@@ -41,27 +39,21 @@ bool GetOnionLocation(const net::HttpResponseHeaders* headers,
 }  // namespace
 
 // static
-std::unique_ptr<OnionLocationNavigationThrottle>
-OnionLocationNavigationThrottle::MaybeCreateThrottleFor(
-    content::NavigationHandle* navigation_handle,
+void OnionLocationNavigationThrottle::MaybeCreateAndAdd(
+    content::NavigationThrottleRegistry& registry,
     bool is_tor_disabled,
-    std::unique_ptr<Delegate> delegate,
     bool is_tor_profile) {
-  if (is_tor_disabled || !navigation_handle->IsInMainFrame())
-    return nullptr;
-  return std::make_unique<OnionLocationNavigationThrottle>(
-      navigation_handle, std::move(delegate), is_tor_profile);
+  if (is_tor_disabled || !registry.GetNavigationHandle().IsInMainFrame()) {
+    return;
+  }
+  registry.AddThrottle(std::make_unique<OnionLocationNavigationThrottle>(
+      registry, is_tor_profile));
 }
 
 OnionLocationNavigationThrottle::OnionLocationNavigationThrottle(
-    content::NavigationHandle* navigation_handle,
-    std::unique_ptr<Delegate> delegate,
+    content::NavigationThrottleRegistry& registry,
     bool is_tor_profile)
-    : content::NavigationThrottle(navigation_handle),
-      is_tor_profile_(is_tor_profile),
-      pref_service_(user_prefs::UserPrefs::Get(
-          navigation_handle->GetWebContents()->GetBrowserContext())),
-      delegate_(std::move(delegate)) {}
+    : content::NavigationThrottle(registry), is_tor_profile_(is_tor_profile) {}
 
 OnionLocationNavigationThrottle::~OnionLocationNavigationThrottle() = default;
 
@@ -87,17 +79,10 @@ OnionLocationNavigationThrottle::WillProcessResponse() {
             navigation_handle()->GetWebContents())) {
       return content::NavigationThrottle::PROCEED;
     }
-    // If user prefers opening it automatically
-    if (pref_service_->GetBoolean(prefs::kAutoOnionRedirect)) {
-      delegate_->OpenInTorWindow(navigation_handle()->GetWebContents(), url,
-                                 false);
-      return content::NavigationThrottle::BLOCK_RESPONSE;
-    } else {
-      OnionLocationTabHelper::SetOnionLocation(
-          navigation_handle()->GetWebContents(), url);
-    }
+    OnionLocationTabHelper::SetOnionLocationByThrottle(
+        navigation_handle()->GetWebContents(), url);
   } else {
-    OnionLocationTabHelper::SetOnionLocation(
+    OnionLocationTabHelper::SetOnionLocationByThrottle(
         navigation_handle()->GetWebContents(), GURL());
   }
   return content::NavigationThrottle::PROCEED;
@@ -105,22 +90,18 @@ OnionLocationNavigationThrottle::WillProcessResponse() {
 
 content::NavigationThrottle::ThrottleCheckResult
 OnionLocationNavigationThrottle::WillStartRequest() {
+  // Clear onion location.
+  OnionLocationTabHelper::SetOnionLocationByThrottle(
+      navigation_handle()->GetWebContents(), GURL());
+
   // If a user enters .onion address in non-Tor window, we block the request and
   // offer "Open in Tor" button or automatically opening it in Tor window.
   if (!is_tor_profile_) {
-    GURL url = navigation_handle()->GetURL();
+    const GURL& url = navigation_handle()->GetURL();
     if (url.SchemeIsHTTPOrHTTPS() && net::IsOnion(url)) {
-      if (pref_service_->GetBoolean(prefs::kAutoOnionRedirect)) {
-        delegate_->OpenInTorWindow(navigation_handle()->GetWebContents(), url,
-                                   navigation_handle()->IsRendererInitiated());
-      } else {
-        OnionLocationTabHelper::SetOnionLocation(
-            navigation_handle()->GetWebContents(), url);
-      }
+      OnionLocationTabHelper::SetOnionLocationByThrottle(
+          navigation_handle()->GetWebContents(), url);
       return content::NavigationThrottle::BLOCK_REQUEST;
-    } else {
-      OnionLocationTabHelper::SetOnionLocation(
-          navigation_handle()->GetWebContents(), GURL());
     }
   }
   return content::NavigationThrottle::PROCEED;

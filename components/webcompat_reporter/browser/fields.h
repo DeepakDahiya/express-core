@@ -6,23 +6,36 @@
 #ifndef BRAVE_COMPONENTS_WEBCOMPAT_REPORTER_BROWSER_FIELDS_H_
 #define BRAVE_COMPONENTS_WEBCOMPAT_REPORTER_BROWSER_FIELDS_H_
 
-#include "brave/components/brave_shields/common/brave_shields_panel.mojom.h"
+#include "brave/components/brave_shields/core/common/shields_settings.mojom.h"
 
 namespace webcompat_reporter {
 
-extern const char kFPBlockSettingField[];
-extern const char kAdBlockSettingField[];
-extern const char kAdBlockListsField[];
-extern const char kShieldsEnabledField[];
-extern const char kLanguagesField[];
-extern const char kLanguageFarblingField[];
-extern const char kBraveVPNEnabledField[];
+inline constexpr char kFPBlockSettingField[] = "fpBlockSetting";
+inline constexpr char kAdBlockSettingField[] = "adBlockSetting";
+inline constexpr char kAdBlockListsField[] = "adBlockLists";
+inline constexpr char kAdBlockComponentsVersionField[] =
+    "adBlockComponentsInfo";
+inline constexpr char kShieldsEnabledField[] = "shieldsEnabled";
+inline constexpr char kLanguagesField[] = "languages";
+inline constexpr char kLanguageFarblingField[] = "languageFarblingEnabled";
+inline constexpr char kBraveVPNEnabledField[] = "braveVPNEnabled";
+inline constexpr char kChannelField[] = "channel";
+inline constexpr char kVersionField[] = "version";
+inline constexpr char kCookiePolicyField[] = "cookie_policy";
+inline constexpr char kBlockScriptsField[] = "block_scripts";
+inline constexpr char kWebcompatReportErrorsField[] = "webcompatReportErrors";
 
-extern const char kSiteURLField[];
-extern const char kDetailsField[];
-extern const char kContactField[];
-extern const char kDomainField[];
-extern const char kApiKeyField[];
+inline constexpr char kSiteURLField[] = "url";
+inline constexpr char kDomainField[] = "domain";
+inline constexpr char kCategoryField[] = "category";
+inline constexpr char kDetailsField[] = "additionalDetails";
+inline constexpr char kContactField[] = "contactInfo";
+inline constexpr char kApiKeyField[] = "api_key";
+inline constexpr char kContactInfoSaveFlagField[] = "contactInfoSaveFlag";
+inline constexpr char kComponents[] = "components";
+
+inline constexpr char kUISourceField[] = "ui_source";
+inline constexpr char kIsErrorPage[] = "isErrorPage";
 
 const char* GetAdBlockModeString(
     brave_shields::mojom::AdBlockMode ad_block_mode);

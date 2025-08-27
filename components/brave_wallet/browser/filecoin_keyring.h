@@ -7,41 +7,55 @@
 #define BRAVE_COMPONENTS_BRAVE_WALLET_BROWSER_FILECOIN_KEYRING_H_
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "brave/components/brave_wallet/browser/fil_transaction.h"
-#include "brave/components/brave_wallet/browser/hd_keyring.h"
-#include "brave/components/brave_wallet/browser/internal/hd_key.h"
+#include "brave/components/brave_wallet/browser/secp256k1_hd_keyring.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/brave_wallet/common/brave_wallet_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_wallet {
 
 class FilTransaction;
 
-class FilecoinKeyring : public HDKeyring {
+class FilecoinKeyring : public Secp256k1HDKeyring {
  public:
-  explicit FilecoinKeyring(const std::string& chain_id);
+  FilecoinKeyring(base::span<const uint8_t> seed, mojom::KeyringId keyring_id);
   ~FilecoinKeyring() override;
   FilecoinKeyring(const FilecoinKeyring&) = delete;
   FilecoinKeyring& operator=(const FilecoinKeyring&) = delete;
   static bool DecodeImportPayload(const std::string& payload_hex,
                                   std::vector<uint8_t>* private_key_out,
                                   mojom::FilecoinAddressProtocol* protocol_out);
-  std::string ImportFilecoinAccount(const std::vector<uint8_t>& private_key,
-                                    mojom::FilecoinAddressProtocol protocol);
-  void RestoreFilecoinAccount(const std::vector<uint8_t>& input_key,
-                              const std::string& address);
-  absl::optional<std::string> SignTransaction(const std::string& address,
-                                              const FilTransaction* tx);
-  std::string EncodePrivateKeyForExport(const std::string& address) override;
+  std::optional<std::string> ImportFilecoinAccount(
+      base::span<const uint8_t> private_key,
+      mojom::FilecoinAddressProtocol protocol);
+  bool RemoveImportedAccount(const std::string& address);
+
+  std::optional<std::string> SignTransaction(const std::string& address,
+                                             const FilTransaction& tx);
+
+  std::optional<std::string> GetDiscoveryAddress(size_t index) const;
+  std::optional<std::string> EncodePrivateKeyForExport(
+      const std::string& address);
+  std::vector<std::string> GetImportedAccountsForTesting() const;
+
+  mojom::KeyringId keyring_id() const { return keyring_id_; }
 
  private:
-  std::string GetAddressInternal(HDKeyBase* hd_key_base) const override;
-  std::unique_ptr<HDKeyBase> DeriveAccount(uint32_t index) const override;
+  std::optional<std::string> ImportBlsAccount(
+      base::span<const uint8_t> private_key);
+  std::string GetAddressInternal(const HDKey& hd_key) const override;
+  std::unique_ptr<HDKey> DeriveAccount(uint32_t index) const override;
+  mojom::KeyringId keyring_id_;
   std::string network_;
+
+  // TODO(apaymyshev): BLS keys are neither Secp256k1 keys nor HD keys. Should
+  // not belong there.
+  base::flat_map<std::string, std::unique_ptr<SecureVector>>
+      imported_bls_accounts_;
 };
 
 }  // namespace brave_wallet

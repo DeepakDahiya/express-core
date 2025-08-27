@@ -5,18 +5,22 @@
 
 #include "brave/components/brave_ads/core/internal/legacy_migration/confirmations/legacy_confirmation_migration.h"
 
+#include <optional>
 #include <string>
 #include <utility>
 
-#include "base/debug/dump_without_crashing.h"
 #include "base/functional/bind.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue_database_table.h"
+#include "brave/components/brave_ads/core/internal/account/confirmations/queue/queue_item/confirmation_queue_item_builder.h"
+#include "brave/components/brave_ads/core/internal/ads_client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/deprecated/confirmations/confirmation_state_manager.h"
-#include "brave/components/brave_ads/core/internal/deprecated/confirmations/confirmation_state_manager_constants.h"
+#include "brave/components/brave_ads/core/internal/legacy_migration/confirmations/legacy_confirmation_migration_confirmations_json_reader.h"
 #include "brave/components/brave_ads/core/internal/legacy_migration/confirmations/legacy_confirmation_migration_util.h"
+#include "brave/components/brave_ads/core/internal/prefs/pref_util.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client.h"
+#include "brave/components/brave_ads/core/public/ads_constants.h"
 #include "brave/components/brave_ads/core/public/prefs/pref_names.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
@@ -27,8 +31,9 @@ void FailedToMigrate(InitializeCallback callback) {
 }
 
 void SuccessfullyMigrated(InitializeCallback callback) {
-  AdsClientHelper::GetInstance()->SetBooleanPref(
-      prefs::kHasMigratedConfirmationState, true);
+  SetProfileBooleanPref("brave.brave_ads.state.has_migrated.confirmations.v8",
+                        true);
+  SetProfileBooleanPref(prefs::kHasMigratedConfirmationState, true);
   std::move(callback).Run(/*success=*/true);
 }
 
@@ -39,47 +44,86 @@ void MigrateConfirmationState(InitializeCallback callback) {
     return std::move(callback).Run(/*success=*/true);
   }
 
-  AdsClientHelper::GetInstance()->Load(
-      kConfirmationStateFilename,
+  GetAdsClient().Load(
+      kConfirmationsJsonFilename,
       base::BindOnce(
           [](InitializeCallback callback,
-             const absl::optional<std::string>& json) {
+             const std::optional<std::string>& json) {
             if (!json) {
-              // Confirmation state does not exist
+              // Confirmation state does not exist.
               return SuccessfullyMigrated(std::move(callback));
             }
+            std::string mutable_json = *json;
 
-            if (!ConfirmationStateManager::GetInstance().FromJson(*json)) {
-              // TODO(https://github.com/brave/brave-browser/issues/32066):
-              // Remove migration failure dumps.
-              base::debug::DumpWithoutCrashing();
+            if (!GetProfileBooleanPref(
+                    "brave.brave_ads.state.has_migrated.confirmations.v8") &&
+                !ConfirmationStateManager::GetInstance().FromJson(
+                    mutable_json)) {
+              // The confirmation state is corrupted, therefore, reset it to
+              // the default values for version 8.
+              BLOG(0,
+                   "Confirmation state is corrupted, resetting to default "
+                   "values");
+              mutable_json = "{}";
+            }
 
-              BLOG(0, "Failed to load confirmation state");
+            if (!ConfirmationStateManager::GetInstance().FromJson(
+                    mutable_json)) {
+              BLOG(0, "Failed to parse confirmation state");
               return FailedToMigrate(std::move(callback));
             }
 
             BLOG(1, "Migrating confirmation state");
 
-            const std::string migrated_json =
-                ConfirmationStateManager::GetInstance().ToJson();
-
-            AdsClientHelper::GetInstance()->Save(
-                kConfirmationStateFilename, migrated_json,
+            GetAdsClient().Save(
+                kConfirmationsJsonFilename, mutable_json,
                 base::BindOnce(
-                    [](InitializeCallback callback, const bool success) {
+                    [](const std::string& json, InitializeCallback callback,
+                       bool success) {
                       if (!success) {
-                        // TODO(https://github.com/brave/brave-browser/issues/32066):
-                        // Remove migration failure dumps.
-                        base::debug::DumpWithoutCrashing();
-
-                        BLOG(0, "Failed to save confirmation state");
+                        BLOG(0, "Failed to migrate confirmation state");
                         return FailedToMigrate(std::move(callback));
                       }
 
-                      BLOG(3, "Successfully migrated confirmation state");
-                      SuccessfullyMigrated(std::move(callback));
+                      std::optional<ConfirmationList> confirmations =
+                          json::reader::ReadConfirmations(json);
+                      if (!confirmations) {
+                        // Confirmation queue state does not exist.
+                        BLOG(3, "Successfully migrated confirmation state");
+                        return SuccessfullyMigrated(std::move(callback));
+                      }
+
+                      ConfirmationQueueItemList confirmation_queue_items;
+                      for (const auto& confirmation : *confirmations) {
+                        const ConfirmationQueueItemInfo
+                            confirmation_queue_item =
+                                BuildConfirmationQueueItem(
+                                    confirmation,
+                                    /*process_at=*/base::Time::Now());
+                        confirmation_queue_items.push_back(
+                            confirmation_queue_item);
+                      }
+
+                      database::table::ConfirmationQueue database_table;
+                      database_table.Save(
+                          confirmation_queue_items,
+                          base::BindOnce(
+                              [](InitializeCallback callback, bool success) {
+                                if (!success) {
+                                  BLOG(0,
+                                       "Failed to migrate confirmation state");
+
+                                  return FailedToMigrate(std::move(callback));
+                                }
+
+                                BLOG(3,
+                                     "Successfully migrated confirmation "
+                                     "state");
+                                SuccessfullyMigrated(std::move(callback));
+                              },
+                              std::move(callback)));
                     },
-                    std::move(callback)));
+                    mutable_json, std::move(callback)));
           },
           std::move(callback)));
 }

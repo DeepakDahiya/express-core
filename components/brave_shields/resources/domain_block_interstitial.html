@@ -7,6 +7,7 @@
   <title>$i18n{tabTitle}</title>
   <link rel="stylesheet" href="../../../../components/security_interstitials/core/common/resources/interstitial_core.css">
   <link rel="stylesheet" href="../../../../components/security_interstitials/core/common/resources/interstitial_common.css">
+  <link rel="stylesheet" href="../../security_interstitials/core/common/resources/interstitial_common.css">
   <link rel="stylesheet" href="domain_block_interstitial.css">
   <script src="%ROOT_GEN_DIR%/brave/components/brave_shields/resources/domain_block_interstitial/domain_block_interstitial.rollup.js"></script>
 </head>
@@ -20,7 +21,7 @@
         <pre id="domain">$i18nRaw{domain}</pre>
         <p>$i18nRaw{explanationParagraph}</p>
       </div>
-      <div id="dont-warn-again">
+      <div id="dont-warn-again" class="hidden">
         <input type="checkbox" id="dont-warn-again-checkbox">
         <label for="dont-warn-again-checkbox" id="dont-warn-again-label">$i18nRaw{dontWarnAgainText}</label>
       </div>

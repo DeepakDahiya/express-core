@@ -12,7 +12,7 @@
 #include <vector>
 
 #include "base/memory/scoped_refptr.h"
-#include "base/notreached.h"
+#include "base/notimplemented.h"
 #include "base/observer_list.h"
 #include "base/strings/strcat.h"
 #include "base/test/scoped_feature_list.h"
@@ -26,7 +26,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "ui/gfx/range/range.h"
 
 namespace {
@@ -71,7 +70,7 @@ class FakeCommanderDelegate : public commander::CommanderFrontendDelegate {
     NOTIMPLEMENTED();
   }
 
-  void UpdateText(bool force = false) override { NOTIMPLEMENTED(); }
+  void UpdateText(const std::u16string& text) override { NOTIMPLEMENTED(); }
 
  private:
   base::ObserverList<Observer> observers_;
@@ -114,7 +113,7 @@ class CommanderProviderTest : public testing::Test {
 };
 
 TEST_F(CommanderProviderTest, EmptyTextDoesNotTriggerProvider) {
-  delegate()->Notify({commander::CommandItemModel(u"First", {}, u"Ctrl+F")});
+  delegate()->Notify({commander::CommandItemModel(u"First", {}, u"Ctrl+F", 1)});
 
   provider()->Start(CreateInput(u""), false);
   EXPECT_EQ(0u, provider()->matches().size());
@@ -151,8 +150,9 @@ TEST_F(CommanderProviderTest, ItemsAreConvertedToMatches) {
       CreateInput(base::StrCat({commander::kCommandPrefix, u" Hello World"})),
       false);
 
-  delegate()->Notify({commander::CommandItemModel(u"First", {}, u"Ctrl+F"),
-                      commander::CommandItemModel(u"Second", {}, u"Ctrl+S")});
+  delegate()->Notify(
+      {commander::CommandItemModel(u"First", {}, u"Ctrl+F", 1),
+       commander::CommandItemModel(u"Second", {}, u"Ctrl+S", 1)});
 
   EXPECT_EQ(2u, provider()->matches().size());
 
@@ -185,8 +185,9 @@ TEST_F(CommanderProviderTest, RemovingPrefixClearsMatches) {
       CreateInput(base::StrCat({commander::kCommandPrefix, u" Hello World"})),
       false);
 
-  delegate()->Notify({commander::CommandItemModel(u"First", {}, u"Ctrl+F"),
-                      commander::CommandItemModel(u"Second", {}, u"Ctrl+S")});
+  delegate()->Notify(
+      {commander::CommandItemModel(u"First", {}, u"Ctrl+F", 1),
+       commander::CommandItemModel(u"Second", {}, u"Ctrl+S", 1)});
   EXPECT_EQ(2u, provider()->matches().size());
 
   provider()->Start(CreateInput(u"no prefix!"), false);
@@ -196,7 +197,7 @@ TEST_F(CommanderProviderTest, RemovingPrefixClearsMatches) {
 TEST_F(CommanderProviderTest, NoMatchRangeAllDimStyle) {
   provider()->Start(CreateInput(u":> Hello World"), false);
 
-  delegate()->Notify({commander::CommandItemModel(u"Foo", {}, u"")},
+  delegate()->Notify({commander::CommandItemModel(u"Foo", {}, u"", 1)},
                      u"What thing?");
 
   EXPECT_EQ(1u, provider()->matches().size());
@@ -209,8 +210,9 @@ TEST_F(CommanderProviderTest, NoMatchRangeAllDimStyle) {
 TEST_F(CommanderProviderTest, ZeroCharMatchIsIgnored) {
   provider()->Start(CreateInput(u":> Hello World"), false);
 
-  delegate()->Notify({commander::CommandItemModel(u"Foo", {gfx::Range()}, u"")},
-                     u"What thing?");
+  delegate()->Notify(
+      {commander::CommandItemModel(u"Foo", {gfx::Range()}, u"", 1)},
+      u"What thing?");
 
   EXPECT_EQ(1u, provider()->matches().size());
   const auto& c = provider()->matches()[0].description_class;
@@ -225,7 +227,7 @@ TEST_F(CommanderProviderTest, OneCharMatchIsHighlighted) {
       false);
 
   delegate()->Notify(
-      {commander::CommandItemModel(u"Foo", {gfx::Range(0, 1)}, u"")},
+      {commander::CommandItemModel(u"Foo", {gfx::Range(0, 1)}, u"", 1)},
       u"What thing?");
 
   EXPECT_EQ(1u, provider()->matches().size());
@@ -250,7 +252,7 @@ TEST_F(CommanderProviderTest, AdjacentMatchesDontSwitchBackAndForth) {
       false);
 
   delegate()->Notify({commander::CommandItemModel(
-                         u"Foo", {gfx::Range(0, 1), gfx::Range(1, 2)}, u"")},
+                         u"Foo", {gfx::Range(0, 1), gfx::Range(1, 2)}, u"", 1)},
                      u"What thing?");
 
   const auto& c = provider()->matches()[0].description_class;
@@ -276,7 +278,7 @@ TEST_F(CommanderProviderTest, FullLengthMatchIsApplied) {
       false);
 
   delegate()->Notify(
-      {commander::CommandItemModel(u"Foo", {gfx::Range(0, 3)}, u"")},
+      {commander::CommandItemModel(u"Foo", {gfx::Range(0, 3)}, u"", 1)},
       u"What thing?");
 
   const auto& c = provider()->matches()[0].description_class;
@@ -293,8 +295,8 @@ TEST_F(CommanderProviderTest, MatchesCanHaveGaps) {
       CreateInput(base::StrCat({commander::kCommandPrefix, u"FoBa"})), false);
 
   delegate()->Notify(
-      {commander::CommandItemModel(u"Foo Bar",
-                                   {gfx::Range(0, 2), gfx::Range(4, 6)}, u"")},
+      {commander::CommandItemModel(
+          u"Foo Bar", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1)},
       u"What thing?");
 
   const auto& c = provider()->matches()[0].description_class;
@@ -321,14 +323,72 @@ TEST_F(CommanderProviderTest, MatchesHaveCustomIcon) {
       CreateInput(base::StrCat({commander::kCommandPrefix, u"FoBa"})), false);
 
   delegate()->Notify(
-      {commander::CommandItemModel(u"Foo Bar",
-                                   {gfx::Range(0, 2), gfx::Range(4, 6)}, u""),
-       commander::CommandItemModel(u"Fizz Bazz",
-                                   {gfx::Range(0, 2), gfx::Range(4, 6)}, u"")},
+      {commander::CommandItemModel(
+           u"Foo Bar", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1),
+       commander::CommandItemModel(
+           u"Fizz Bazz", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1)},
       u"What thing?");
 
   EXPECT_EQ(2u, provider()->matches().size());
   for (const auto& result : provider()->matches()) {
     EXPECT_EQ(&kLeoCaratRightIcon, &result.GetVectorIcon(false, nullptr));
   }
+}
+
+TEST_F(CommanderProviderTest, ExplicitMatchesDoNotHaveGroup) {
+  provider()->Start(
+      CreateInput(base::StrCat({commander::kCommandPrefix, u"FoBa"})), false);
+
+  delegate()->Notify(
+      {commander::CommandItemModel(
+           u"Foo Bar", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1),
+       commander::CommandItemModel(
+           u"Fizz Bazz", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1)},
+      u"What thing?");
+
+  EXPECT_LT(0u, provider()->matches().size());
+  for (const auto& match : provider()->matches()) {
+    EXPECT_EQ(std::nullopt, match.suggestion_group_id);
+  }
+}
+
+TEST_F(CommanderProviderTest, MatchesInAmbientModeHaveGroup) {
+  provider()->Start(CreateInput(u"FoBa"), false);
+
+  delegate()->Notify(
+      {commander::CommandItemModel(
+           u"Foo Bar", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1),
+       commander::CommandItemModel(
+           u"Fizz Bazz", {gfx::Range(0, 2), gfx::Range(4, 6)}, u"", 1)},
+      u"What thing?");
+
+  EXPECT_LT(0u, provider()->matches().size());
+  for (const auto& match : provider()->matches()) {
+    EXPECT_EQ(omnibox::GroupId::GROUP_OTHER_NAVS, match.suggestion_group_id);
+  }
+}
+
+TEST_F(CommanderProviderTest, UnprefixedModeCullsBadMatches) {
+  provider()->Start(CreateInput(u"F"), false);
+
+  delegate()->Notify(
+      {commander::CommandItemModel(u"Foo", {gfx::Range(0, 3)}, u"", 1),
+       commander::CommandItemModel(u"Fizz", {gfx::Range(0, 3)}, u"", 0.5)},
+      u"What thing?");
+
+  EXPECT_EQ(1u, provider()->matches().size());
+  EXPECT_EQ(u"Foo", provider()->matches()[0].description);
+}
+
+TEST_F(CommanderProviderTest, PrefixedModeDoesNotCullBadMatches) {
+  provider()->Start(CreateInput(u":> F"), false);
+
+  delegate()->Notify(
+      {commander::CommandItemModel(u"Foo", {gfx::Range(0, 3)}, u"", 1),
+       commander::CommandItemModel(u"Fizz", {gfx::Range(0, 3)}, u"", 0.5)},
+      u"What thing?");
+
+  EXPECT_EQ(2u, provider()->matches().size());
+  EXPECT_EQ(u"Foo", provider()->matches()[0].description);
+  EXPECT_EQ(u"Fizz", provider()->matches()[1].description);
 }

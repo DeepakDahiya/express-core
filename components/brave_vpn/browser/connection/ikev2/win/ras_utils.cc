@@ -11,7 +11,10 @@
 #include <raserror.h>
 #include <stdio.h>
 
+#include <optional>
+
 #include "base/command_line.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/files/scoped_file.h"
@@ -19,11 +22,11 @@
 #include "base/path_service.h"
 #include "base/process/launch.h"
 #include "base/strings/strcat.h"
-#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/base/process/process_launcher.h"
 #include "brave/components/brave_vpn/browser/connection/brave_vpn_connection_info.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
+#include "url/gurl.h"
 
 namespace brave_vpn {
 
@@ -66,18 +69,18 @@ std::string GetSystemError(DWORD error) {
 }
 
 // https://docs.microsoft.com/en-us/windows/win32/api/ras/nf-ras-rassetcredentialsa
-absl::optional<std::string> SetCredentials(LPCTSTR phone_book_path,
-                                           LPCTSTR entry_name,
-                                           LPCTSTR username,
-                                           LPCTSTR password) {
+std::optional<std::string> SetCredentials(LPCTSTR phone_book_path,
+                                          LPCTSTR entry_name,
+                                          LPCTSTR username,
+                                          LPCTSTR password) {
   RASCREDENTIALS credentials;
 
-  ZeroMemory(&credentials, sizeof(RASCREDENTIALS));
+  UNSAFE_TODO(ZeroMemory(&credentials, sizeof(RASCREDENTIALS)));
   credentials.dwSize = sizeof(RASCREDENTIALS);
   credentials.dwMask = RASCM_UserName | RASCM_Password;
 
-  wcscpy_s(credentials.szUserName, UNLEN + 1, username);
-  wcscpy_s(credentials.szPassword, PWLEN + 1, password);
+  UNSAFE_TODO(wcscpy_s(credentials.szUserName, UNLEN + 1, username));
+  UNSAFE_TODO(wcscpy_s(credentials.szPassword, PWLEN + 1, password));
 
   DWORD dw_ret =
       RasSetCredentials(phone_book_path, entry_name, &credentials, FALSE);
@@ -86,13 +89,13 @@ absl::optional<std::string> SetCredentials(LPCTSTR phone_book_path,
         {"RasSetCredential() - ", ras::GetRasErrorMessage(dw_ret)});
   }
 
-  return absl::nullopt;
+  return std::nullopt;
 }
 
-absl::optional<std::wstring> TryToCreateEmptyPhoneBookFile() {
+std::optional<std::wstring> TryToCreateEmptyPhoneBookFile() {
   base::FilePath dir;
   if (!base::PathService::Get(base::DIR_ROAMING_APP_DATA, &dir)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   dir = dir.Append(L"Microsoft")
@@ -100,7 +103,7 @@ absl::optional<std::wstring> TryToCreateEmptyPhoneBookFile() {
             .Append(L"Connections")
             .Append(L"Pbk");
   if (!base::CreateDirectoryAndGetError(dir, nullptr)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   base::FilePath phone_book_path = dir.Append(L"rasphone.pbk");
@@ -108,7 +111,7 @@ absl::optional<std::wstring> TryToCreateEmptyPhoneBookFile() {
   if (file_stream) {
     return phone_book_path.value();
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 std::wstring TryGetPhonebookPath(int key, const std::wstring& entry_name) {
@@ -256,12 +259,12 @@ RasOperationResult DisconnectEntry(const std::wstring& entry_name) {
               << " : The following RAS connections are currently active:"
               << dw_connections;
       for (DWORD i = 0; i < dw_connections; i++) {
-        std::wstring name(lp_ras_conn[i].szEntryName);
-        std::wstring type(lp_ras_conn[i].szDeviceType);
+        std::wstring name(UNSAFE_TODO(lp_ras_conn[i]).szEntryName);
+        std::wstring type(UNSAFE_TODO(lp_ras_conn[i]).szDeviceType);
         VLOG(2) << __func__ << " : " << name << ", " << type;
         if (name.compare(entry_name) == 0 && type.compare(L"VPN") == 0) {
           VLOG(2) << __func__ << " : Disconnect... " << entry_name;
-          dw_ret = RasHangUp(lp_ras_conn[i].hrasconn);
+          dw_ret = RasHangUp(UNSAFE_TODO(lp_ras_conn[i]).hrasconn);
           if (dw_ret != ERROR_SUCCESS) {
             caller = "RasHangUp()";
           }
@@ -318,13 +321,13 @@ RasOperationResult ConnectEntry(const std::wstring& entry_name) {
     return GetRasErrorResult("HeapAlloc failed at ConnectEntry().");
   }
   lp_ras_dial_params->dwSize = sizeof(RASDIALPARAMS);
-  wcscpy_s(lp_ras_dial_params->szEntryName, RAS_MaxEntryName + 1,
-           entry_name.c_str());
-  wcscpy_s(lp_ras_dial_params->szDomain, DNLEN + 1, L"*");
+  UNSAFE_TODO(wcscpy_s(lp_ras_dial_params->szEntryName, RAS_MaxEntryName + 1,
+                       entry_name.c_str()));
+  UNSAFE_TODO(wcscpy_s(lp_ras_dial_params->szDomain, DNLEN + 1, L"*"));
   // https://docs.microsoft.com/en-us/windows/win32/api/ras/nf-ras-rasgetcredentialsw
   RASCREDENTIALS credentials;
 
-  ZeroMemory(&credentials, sizeof(RASCREDENTIALS));
+  UNSAFE_TODO(ZeroMemory(&credentials, sizeof(RASCREDENTIALS)));
   credentials.dwSize = sizeof(RASCREDENTIALS);
   credentials.dwMask = RASCM_UserName | RASCM_Password;
   DWORD dw_ret = RasGetCredentials(phone_book_path.c_str(), entry_name.c_str(),
@@ -332,8 +335,10 @@ RasOperationResult ConnectEntry(const std::wstring& entry_name) {
   if (dw_ret != ERROR_SUCCESS) {
     return GetRasErrorResult(GetRasErrorMessage(dw_ret), "RasGetCredentials()");
   }
-  wcscpy_s(lp_ras_dial_params->szUserName, UNLEN + 1, credentials.szUserName);
-  wcscpy_s(lp_ras_dial_params->szPassword, PWLEN + 1, credentials.szPassword);
+  UNSAFE_TODO(wcscpy_s(lp_ras_dial_params->szUserName, UNLEN + 1,
+                       credentials.szUserName));
+  UNSAFE_TODO(wcscpy_s(lp_ras_dial_params->szPassword, PWLEN + 1,
+                       credentials.szPassword));
 
   VLOG(2) << __func__ << " : Connecting to " << entry_name;
   HRASCONN h_ras_conn = NULL;
@@ -415,6 +420,50 @@ RasOperationResult SetConnectionParamsUsingPowerShell(
   return GetRasSuccessResult();
 }
 
+// `Set-VpnConnectionProxy` cmdlet:
+// https://learn.microsoft.com/en-us/powershell/module/vpnclient/set-vpnconnectionproxy?view=windowsserver2022-ps
+RasOperationResult SetConnectionProxyParamsUsingPowerShell(
+    const std::wstring& entry_name,
+    const std::wstring& pac_file_url) {
+  // Validate the entry name
+  DWORD nRet = RasValidateEntryName(NULL, entry_name.c_str());
+  switch (nRet) {
+    case ERROR_INVALID_NAME:
+      return GetRasErrorResult("`entry_name` is not a valid format");
+    case ERROR_CANNOT_FIND_PHONEBOOK_ENTRY:
+      return GetRasErrorResult("`entry_name` is not in phone book");
+    default:
+      // ERROR_SUCCESS
+      // ERROR_ALREADY_EXISTS
+      break;
+  }
+
+  // Validate the URL of the provided PAC file
+  VLOG(2) << __func__ << " validating `pac_file_url`: \"" << pac_file_url
+          << "\"";
+  GURL pac_file = GURL(base::WideToUTF8(pac_file_url));
+  if (!pac_file.is_valid()) {
+    return GetRasErrorResult("`pac_file_url` is not a valid URL");
+  }
+  if (!pac_file.SchemeIs(url::kHttpsScheme)) {
+    return GetRasErrorResult("`pac_file_url` is not using HTTPS");
+  }
+
+  base::CommandLine power_shell(base::FilePath(L"PowerShell"));
+  power_shell.AppendArg("Set-VpnConnectionProxy");
+  power_shell.AppendArg("-ConnectionName");
+  power_shell.AppendArg(base::WideToUTF8(entry_name));
+  power_shell.AppendArg("-AutoConfigurationScript");
+  power_shell.AppendArg(base::WideToUTF8(pac_file_url));
+  base::LaunchOptions options;
+  options.start_hidden = true;
+  auto result = brave::ProcessLauncher::ReadAppOutput(power_shell, options, 10);
+  if (!result.has_value()) {
+    return GetRasErrorResult(logging::SystemErrorCodeToString(GetLastError()));
+  }
+  return GetRasSuccessResult();
+}
+
 RasOperationResult SetConnectionParamsWin32(
     const std::wstring& entry_name,
     const std::wstring& phone_book_path) {
@@ -459,6 +508,7 @@ RasOperationResult CreateEntry(const BraveVPNConnectionInfo& info) {
   const auto hostname = base::UTF8ToWide(info.hostname());
   const auto username = base::UTF8ToWide(info.username());
   const auto password = base::UTF8ToWide(info.password());
+  const auto proxy = base::UTF8ToWide(info.proxy());
 
   // `RasSetEntryProperties` can have problems if fields are empty.
   // Specifically, it will crash if `hostname` is NULL. Entry name
@@ -485,23 +535,28 @@ RasOperationResult CreateEntry(const BraveVPNConnectionInfo& info) {
     return GetRasSuccessResult();
   }
 
+  // Cleanup previous entry.
+  // Ignore the result as it'll be updated if remove failed.
+  RemoveEntry(entry_name);
+
   VLOG(2) << __func__ << " Create Entry(" << entry_name << ") with "
           << hostname;
 
   RASENTRY entry;
-  ZeroMemory(&entry, sizeof(RASENTRY));
+  UNSAFE_TODO(ZeroMemory(&entry, sizeof(RASENTRY)));
   // For descriptions of each field (including valid values) see:
   // https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/aa377274(v=vs.85)
   entry.dwSize = sizeof(RASENTRY);
   entry.dwfOptions = RASEO_RemoteDefaultGateway | RASEO_RequireEAP |
                      RASEO_PreviewUserPw | RASEO_PreviewDomain |
                      RASEO_ShowDialingProgress;
-  wcscpy_s(entry.szLocalPhoneNumber, RAS_MaxPhoneNumber + 1, hostname.c_str());
+  UNSAFE_TODO(wcscpy_s(entry.szLocalPhoneNumber, RAS_MaxPhoneNumber + 1,
+                       hostname.c_str()));
   entry.dwfNetProtocols = RASNP_Ip | RASNP_Ipv6;
   entry.dwFramingProtocol = RASFP_Ppp;
-  wcscpy_s(entry.szDeviceType, RAS_MaxDeviceType + 1, RASDT_Vpn);
-  wcscpy_s(entry.szDeviceName, RAS_MaxDeviceName + 1,
-           TEXT("WAN Miniport (IKEv2)"));
+  UNSAFE_TODO(wcscpy_s(entry.szDeviceType, RAS_MaxDeviceType + 1, RASDT_Vpn));
+  UNSAFE_TODO(wcscpy_s(entry.szDeviceName, RAS_MaxDeviceName + 1,
+                       TEXT("WAN Miniport (IKEv2)")));
   entry.dwType = RASET_Vpn;
   entry.dwEncryptionType = ET_Optional;
   entry.dwVpnStrategy = VS_Ikev2Only;
@@ -535,6 +590,13 @@ RasOperationResult CreateEntry(const BraveVPNConnectionInfo& info) {
   if (!SetConnectionParamsUsingPowerShell(entry_name).success) {
     return SetConnectionParamsWin32(entry_name, phone_book_path);
   }
+
+  // Only provide proxy params if the host supports smart routing.
+  if (info.smart_routing_enabled()) {
+    // Can ignore proxy setting failure. VPN works w/o it.
+    SetConnectionProxyParamsUsingPowerShell(entry_name, proxy);
+  }
+
   return GetRasSuccessResult();
 }
 
@@ -542,7 +604,7 @@ CheckConnectionResult GetConnectionState(HRASCONN h_ras_conn) {
   DWORD dw_ret = 0;
 
   RASCONNSTATUS ras_conn_status;
-  ZeroMemory(&ras_conn_status, sizeof(RASCONNSTATUS));
+  UNSAFE_TODO(ZeroMemory(&ras_conn_status, sizeof(RASCONNSTATUS)));
   ras_conn_status.dwSize = sizeof(RASCONNSTATUS);
 
   // Checking connection status using RasGetConnectStatus
@@ -618,8 +680,8 @@ CheckConnectionResult CheckConnection(const std::wstring& entry_name) {
   // If successful, find connection with |entry_name|.
   CheckConnectionResult result = CheckConnectionResult::DISCONNECTED;
   for (DWORD i = 0; i < dw_connections; i++) {
-    if (entry_name.compare(lp_ras_conn[i].szEntryName) == 0) {
-      result = GetConnectionState(lp_ras_conn[i].hrasconn);
+    if (entry_name.compare(UNSAFE_TODO(lp_ras_conn[i]).szEntryName) == 0) {
+      result = GetConnectionState(UNSAFE_TODO(lp_ras_conn[i]).hrasconn);
       break;
     }
   }

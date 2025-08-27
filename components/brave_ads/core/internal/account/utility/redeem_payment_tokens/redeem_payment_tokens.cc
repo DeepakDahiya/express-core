@@ -7,19 +7,21 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/location.h"
 #include "base/time/time.h"
-#include "base/values.h"
 #include "brave/components/brave_ads/core/internal/account/tokens/payment_tokens/payment_token_util.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/redeem_payment_tokens_util.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/url_request_builders/redeem_payment_tokens_url_request_builder.h"
 #include "brave/components/brave_ads/core/internal/account/utility/redeem_payment_tokens/user_data/redeem_payment_tokens_user_data_builder.h"
-#include "brave/components/brave_ads/core/internal/client/ads_client_helper.h"
+#include "brave/components/brave_ads/core/internal/ads_client/ads_client_util.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/time/time_formatting_util.h"
 #include "brave/components/brave_ads/core/internal/common/url/url_request_string_util.h"
 #include "brave/components/brave_ads/core/internal/common/url/url_response_string_util.h"
 #include "brave/components/brave_ads/core/mojom/brave_ads.mojom.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client.h"
 #include "net/http/http_status_code.h"
 
 namespace brave_ads {
@@ -37,24 +39,30 @@ RedeemPaymentTokens::~RedeemPaymentTokens() {
 void RedeemPaymentTokens::MaybeRedeemAfterDelay(const WalletInfo& wallet) {
   CHECK(wallet.IsValid());
 
-  if (is_processing_ || timer_.IsRunning() || retry_timer_.IsRunning()) {
+  if (is_redeeming_ || timer_.IsRunning()) {
     return;
   }
 
   wallet_ = wallet;
 
+  RedeemAfterDelay();
+}
+
+///////////////////////////////////////////////////////////////////////////////
+
+void RedeemPaymentTokens::RedeemAfterDelay() {
+  CHECK(!timer_.IsRunning());
+
   const base::Time redeem_at = timer_.Start(
       FROM_HERE, CalculateDelayBeforeRedeemingTokens(),
-      base::BindOnce(&RedeemPaymentTokens::Redeem, base::Unretained(this)));
+      base::BindOnce(&RedeemPaymentTokens::Redeem, weak_factory_.GetWeakPtr()));
   SetNextTokenRedemptionAt(redeem_at);
 
   BLOG(1, "Redeem payment tokens " << FriendlyDateAndTime(redeem_at));
 }
 
-///////////////////////////////////////////////////////////////////////////////
-
 void RedeemPaymentTokens::Redeem() {
-  CHECK(!is_processing_);
+  CHECK(!is_redeeming_);
 
   BLOG(1, "Redeem payment tokens");
 
@@ -63,49 +71,58 @@ void RedeemPaymentTokens::Redeem() {
     return ScheduleNextRedemption();
   }
 
-  is_processing_ = true;
+  is_redeeming_ = true;
 
-  BuildRedeemPaymentTokensUserData(
-      GetAllPaymentTokens(),
-      base::BindOnce(
-          &RedeemPaymentTokens::BuildRedeemPaymentTokensUserDataCallback,
-          weak_factory_.GetWeakPtr()));
-}
-
-void RedeemPaymentTokens::BuildRedeemPaymentTokensUserDataCallback(
-    base::Value::Dict user_data) {
   const PaymentTokenList& payment_tokens = GetAllPaymentTokens();
 
   RedeemPaymentTokensUrlRequestBuilder url_request_builder(
-      wallet_, payment_tokens, std::move(user_data));
-  mojom::UrlRequestInfoPtr url_request = url_request_builder.Build();
-  BLOG(6, UrlRequestToString(url_request));
-  BLOG(7, UrlRequestHeadersToString(url_request));
+      wallet_, payment_tokens,
+      BuildRedeemPaymentTokensUserData(payment_tokens));
+  mojom::UrlRequestInfoPtr mojom_url_request = url_request_builder.Build();
+  BLOG(6, UrlRequestToString(mojom_url_request));
+  BLOG(7, UrlRequestHeadersToString(mojom_url_request));
 
-  AdsClientHelper::GetInstance()->UrlRequest(
-      std::move(url_request),
+  GetAdsClient().UrlRequest(
+      std::move(mojom_url_request),
       base::BindOnce(&RedeemPaymentTokens::RedeemCallback,
                      weak_factory_.GetWeakPtr(), payment_tokens));
 }
 
 void RedeemPaymentTokens::RedeemCallback(
     const PaymentTokenList& payment_tokens,
-    const mojom::UrlResponseInfo& url_response) {
-  BLOG(6, UrlResponseToString(url_response));
-  BLOG(7, UrlResponseHeadersToString(url_response));
+    const mojom::UrlResponseInfo& mojom_url_response) {
+  BLOG(6, UrlResponseToString(mojom_url_response));
+  BLOG(7, UrlResponseHeadersToString(mojom_url_response));
 
-  if (url_response.status_code != net::HTTP_OK) {
-    return FailedToRedeem(/*should_retry=*/true);
+  const auto result = HandleRedeemPaymentTokensUrlResponse(mojom_url_response);
+  if (!result.has_value()) {
+    const auto& [failure, should_retry] = result.error();
+
+    BLOG(0, failure);
+
+    return FailedToRedeem(should_retry);
   }
 
   SuccessfullyRedeemed(payment_tokens);
+}
+
+// static
+base::expected<void, std::tuple<std::string, bool>>
+RedeemPaymentTokens::HandleRedeemPaymentTokensUrlResponse(
+    const mojom::UrlResponseInfo& mojom_url_response) {
+  if (mojom_url_response.status_code != net::HTTP_OK) {
+    return base::unexpected(std::make_tuple("Failed to redeem payment tokens",
+                                            /*should_retry=*/true));
+  }
+
+  return base::ok();
 }
 
 void RedeemPaymentTokens::SuccessfullyRedeemed(
     const PaymentTokenList& payment_tokens) {
   BLOG(1, "Successfully redeemed payment tokens");
 
-  is_processing_ = false;
+  is_redeeming_ = false;
 
   StopRetrying();
 
@@ -116,8 +133,12 @@ void RedeemPaymentTokens::SuccessfullyRedeemed(
   ScheduleNextRedemption();
 }
 
-void RedeemPaymentTokens::FailedToRedeem(const bool should_retry) {
-  BLOG(1, "Failed to redeem payment tokens");
+void RedeemPaymentTokens::FailedToRedeem(bool should_retry) {
+  is_redeeming_ = false;
+
+  if (!should_retry) {
+    StopRetrying();
+  }
 
   NotifyFailedToRedeemPaymentTokens();
 
@@ -136,7 +157,16 @@ void RedeemPaymentTokens::ScheduleNextRedemption() {
 }
 
 void RedeemPaymentTokens::Retry() {
-  const base::Time retry_at = retry_timer_.StartWithPrivacy(
+  if (timer_.IsRunning()) {
+    // The function `WallClockTimer::PowerSuspendObserver::OnResume` restarts
+    // the timer to fire at the desired run time after system power is resumed.
+    // It's important to note that URL requests might not succeed upon power
+    // restoration, triggering a retry. To avoid initiating a second timer, we
+    // refrain from starting another one.
+    return;
+  }
+
+  const base::Time retry_at = timer_.StartWithPrivacy(
       FROM_HERE, kRetryAfter,
       base::BindOnce(&RedeemPaymentTokens::RetryCallback,
                      weak_factory_.GetWeakPtr()));
@@ -149,15 +179,13 @@ void RedeemPaymentTokens::Retry() {
 void RedeemPaymentTokens::RetryCallback() {
   BLOG(1, "Retry redeeming payment tokens");
 
-  is_processing_ = false;
-
   NotifyDidRetryRedeemingPaymentTokens();
 
   Redeem();
 }
 
 void RedeemPaymentTokens::StopRetrying() {
-  retry_timer_.Stop();
+  timer_.Stop();
 }
 
 void RedeemPaymentTokens::NotifyDidRedeemPaymentTokens(
@@ -174,14 +202,14 @@ void RedeemPaymentTokens::NotifyFailedToRedeemPaymentTokens() const {
 }
 
 void RedeemPaymentTokens::NotifyDidScheduleNextPaymentTokenRedemption(
-    const base::Time redeem_at) const {
+    base::Time redeem_at) const {
   if (delegate_) {
     delegate_->OnDidScheduleNextPaymentTokenRedemption(redeem_at);
   }
 }
 
 void RedeemPaymentTokens::NotifyWillRetryRedeemingPaymentTokens(
-    const base::Time retry_at) const {
+    base::Time retry_at) const {
   if (delegate_) {
     delegate_->OnWillRetryRedeemingPaymentTokens(retry_at);
   }

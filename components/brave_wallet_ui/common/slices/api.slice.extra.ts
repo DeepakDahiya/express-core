@@ -7,53 +7,54 @@ import * as React from 'react'
 import { skipToken } from '@reduxjs/toolkit/query/react'
 
 // constants
-import type {
-  BraveWallet,
-  SerializableTransactionInfo
-} from '../../constants/types'
+import { BraveWallet, SerializableTransactionInfo } from '../../constants/types'
 
 // hooks
 import {
   useGetAccountInfosRegistryQuery,
   useGetNetworkQuery,
   useGetSelectedAccountIdQuery,
+  useGetSelectedADAAccountIdQuery,
+  useGetSelectedSOLAccountIdQuery,
+  useGetSelectedETHAccountIdQuery,
   useGetTokensRegistryQuery,
   useGetTransactionsQuery,
   useGetUserTokensRegistryQuery,
+  useGenerateReceiveAddressMutation,
+  useGetTopDappsQuery,
+  useGetNetworksRegistryQuery,
 } from './api.slice'
 
 // entities
-import {
-  accountInfoEntityAdaptor,
-  accountInfoEntityAdaptorInitialState,
-  selectAllAccountInfosFromQuery
-} from './entities/account-info.entity'
+import { selectAllAccountInfosFromQuery } from './entities/account-info.entity'
 
 // utils
 import {
   selectAllUserAssetsFromQueryResult,
   selectAllBlockchainTokensFromQueryResult,
-  selectCombinedTokensList
+  selectCombinedTokensList,
+  selectCombinedTokensRegistry,
 } from '../slices/entities/blockchain-token.entity'
 import {
   findAccountByAccountId,
-  findAccountByAddress
+  findAccountByAddress,
 } from '../../utils/account-utils'
 import { getCoinFromTxDataUnion } from '../../utils/network-utils'
 import { selectPendingTransactions } from './entities/transaction.entity'
+import { getEntitiesListFromEntityState } from '../../utils/entities.utils'
 
 export const useAccountsQuery = () => {
   return useGetAccountInfosRegistryQuery(undefined, {
     selectFromResult: (res) => ({
       isLoading: res.isLoading,
-      accounts: selectAllAccountInfosFromQuery(res)
-    })
+      accounts: selectAllAccountInfosFromQuery(res),
+    }),
   })
 }
 
 export const useAccountQuery = (
   accountId: BraveWallet.AccountId | undefined | typeof skipToken,
-  opts?: { skip?: boolean }
+  opts?: { skip?: boolean },
 ) => {
   const skip = accountId === undefined || accountId === skipToken || opts?.skip
   return useGetAccountInfosRegistryQuery(skip ? skipToken : undefined, {
@@ -64,60 +65,94 @@ export const useAccountQuery = (
       account:
         res.data && !skip
           ? findAccountByAccountId(accountId, res.data)
-          : undefined
-    })
+          : undefined,
+    }),
   })
 }
 
 export const useAccountFromAddressQuery = (
-  address: string | undefined | typeof skipToken
+  uniqueKeyOrAddress: string | undefined | typeof skipToken,
 ) => {
-  const skip = address === undefined || address === skipToken
+  const skip =
+    uniqueKeyOrAddress === undefined || uniqueKeyOrAddress === skipToken
   return useGetAccountInfosRegistryQuery(skip ? skipToken : undefined, {
     skip: skip,
     selectFromResult: (res) => ({
       isLoading: res.isLoading,
       error: res.error,
       account:
-        res.data && !skip ? findAccountByAddress(address, res.data) : undefined
-    })
+        res.data && !skip
+          ? findAccountByAccountId({ uniqueKey: uniqueKeyOrAddress }, res.data)
+            || findAccountByAddress(uniqueKeyOrAddress, res.data)
+          : undefined,
+    }),
   })
 }
 
 export const useSelectedAccountQuery = () => {
-  const {
-    data: accountInfosRegistry = accountInfoEntityAdaptorInitialState,
-    isFetching: isLoadingAccounts
-  } = useGetAccountInfosRegistryQuery(undefined)
-
   const { data: selectedAccountId, isFetching: isLoadingSelectedAccountId } =
-  useGetSelectedAccountIdQuery(isLoadingAccounts ? skipToken : undefined)
+    useGetSelectedAccountIdQuery()
 
-  const selectedAccount = selectedAccountId
-    ? accountInfosRegistry.entities[
-        accountInfoEntityAdaptor.selectIdByAccountId(selectedAccountId)
-      ]
-    : undefined
+  const { account: selectedAccount, isLoading: isLoadingAccount } =
+    useAccountQuery(selectedAccountId ?? skipToken)
 
   return {
-    isLoading: isLoadingAccounts || isLoadingSelectedAccountId,
-    data: selectedAccount
+    isLoading: isLoadingSelectedAccountId || isLoadingAccount,
+    data: selectedAccount,
   }
 }
 
-export const useGetCombinedTokensListQuery = (
-  arg?: undefined,
-  opts?: { skip?: boolean }
+export const useSelectedADAAccountQuery = () => {
+  const { data: selectedAccountId, isFetching: isLoadingSelectedADAAccountId } =
+    useGetSelectedADAAccountIdQuery()
+
+  const { account: selectedAccount, isLoading: isLoadingAccount } =
+    useAccountQuery(selectedAccountId ?? skipToken)
+
+  return {
+    isLoading: isLoadingSelectedADAAccountId || isLoadingAccount,
+    data: selectedAccount,
+  }
+}
+
+export const useSelectedSOLAccountQuery = () => {
+  const { data: selectedAccountId, isFetching: isLoadingSelectedSOLAccountId } =
+    useGetSelectedSOLAccountIdQuery()
+
+  const { account: selectedAccount, isLoading: isLoadingAccount } =
+    useAccountQuery(selectedAccountId ?? skipToken)
+
+  return {
+    isLoading: isLoadingSelectedSOLAccountId || isLoadingAccount,
+    data: selectedAccount,
+  }
+}
+
+export const useSelectedETHAccountQuery = () => {
+  const { data: selectedAccountId, isFetching: isLoadingSelectedETHAccountId } =
+    useGetSelectedETHAccountIdQuery()
+
+  const { account: selectedAccount, isLoading: isLoadingAccount } =
+    useAccountQuery(selectedAccountId ?? skipToken)
+
+  return {
+    isLoading: isLoadingSelectedETHAccountId || isLoadingAccount,
+    data: selectedAccount,
+  }
+}
+
+export const useGetCombinedTokensRegistryQuery = (
+  arg?: undefined | typeof skipToken,
+  opts?: { skip?: boolean },
 ) => {
   const { isLoadingUserTokens, userTokens } = useGetUserTokensRegistryQuery(
-    undefined,
+    arg || opts?.skip ? skipToken : undefined,
     {
       selectFromResult: (res) => ({
         isLoadingUserTokens: res.isLoading,
-        userTokens: selectAllUserAssetsFromQueryResult(res)
+        userTokens: res.data,
       }),
-      skip: opts?.skip
-    }
+    },
   )
 
   const { isLoadingKnownTokens, knownTokens } = useGetTokensRegistryQuery(
@@ -125,49 +160,75 @@ export const useGetCombinedTokensListQuery = (
     {
       selectFromResult: (res) => ({
         isLoadingKnownTokens: res.isLoading,
-        knownTokens: selectAllBlockchainTokensFromQueryResult(res)
+        knownTokens: res.data,
       }),
-      skip: opts?.skip
-    }
+      skip: opts?.skip,
+    },
   )
 
   const combinedQuery = React.useMemo(() => {
-    if (isLoadingUserTokens || isLoadingKnownTokens) {
+    if (
+      isLoadingUserTokens
+      || isLoadingKnownTokens
+      || !knownTokens
+      || !userTokens
+    ) {
       return {
         isLoading: true,
-        data: [] as BraveWallet.BlockchainToken[]
+        data: undefined,
       }
     }
-    const combinedList = selectCombinedTokensList(knownTokens, userTokens)
+    const combinedRegistry = selectCombinedTokensRegistry(
+      knownTokens,
+      userTokens,
+    )
     return {
       isLoading: isLoadingUserTokens || isLoadingKnownTokens,
-      data: combinedList
+      data: combinedRegistry,
     }
   }, [isLoadingKnownTokens, isLoadingUserTokens, userTokens, knownTokens])
 
   return combinedQuery
 }
 
-export const useTransactionQuery = (
-  txID: string | typeof skipToken,
-  opts?: { skip?: boolean }
+export const useGetCombinedTokensListQuery = (
+  arg?: undefined | typeof skipToken,
 ) => {
-  return useGetTransactionsQuery(
-    txID === skipToken
-      ? skipToken
-      : {
-          accountId: null,
-          chainId: null,
-          coinType: null
-        },
+  const { isLoadingUserTokens, userTokens } = useGetUserTokensRegistryQuery(
+    arg || undefined,
     {
-      skip: txID === skipToken || opts?.skip,
       selectFromResult: (res) => ({
-        isLoading: res.isLoading,
-        transaction: res.data?.find((tx) => tx.id === txID)
-      })
-    }
+        isLoadingUserTokens: res.isLoading,
+        userTokens: selectAllUserAssetsFromQueryResult(res),
+      }),
+    },
   )
+
+  const { isLoadingKnownTokens, knownTokens } = useGetTokensRegistryQuery(
+    arg || undefined,
+    {
+      selectFromResult: (res) => ({
+        isLoadingKnownTokens: res.isLoading,
+        knownTokens: selectAllBlockchainTokensFromQueryResult(res),
+      }),
+    },
+  )
+
+  const combinedQuery = React.useMemo(() => {
+    if (isLoadingUserTokens || isLoadingKnownTokens) {
+      return {
+        isLoading: true,
+        data: [] as BraveWallet.BlockchainToken[],
+      }
+    }
+    const combinedList = selectCombinedTokensList(knownTokens, userTokens)
+    return {
+      isLoading: isLoadingUserTokens || isLoadingKnownTokens,
+      data: combinedList,
+    }
+  }, [isLoadingKnownTokens, isLoadingUserTokens, userTokens, knownTokens])
+
+  return combinedQuery
 }
 
 export const useTransactionsNetworkQuery = <
@@ -177,27 +238,27 @@ export const useTransactionsNetworkQuery = <
         'chainId' | 'txDataUnion'
       >
     | undefined
-    | typeof skipToken
+    | typeof skipToken,
 >(
-  transaction: T
+  transaction: T,
 ) => {
   // queries
   return useGetNetworkQuery(
     transaction === skipToken
       ? skipToken
       : transaction
-      ? {
-          chainId: transaction.chainId,
-          coin: getCoinFromTxDataUnion(transaction.txDataUnion)
-        }
-      : skipToken
+        ? {
+            chainId: transaction.chainId,
+            coin: getCoinFromTxDataUnion(transaction.txDataUnion),
+          }
+        : skipToken,
   )
 }
 
 const emptyPendingTxs: SerializableTransactionInfo[] = []
 
 export const usePendingTransactionsQuery = (
-  arg: Parameters<typeof useGetTransactionsQuery>[0]
+  arg: Parameters<typeof useGetTransactionsQuery>[0],
 ) => {
   return useGetTransactionsQuery(arg, {
     selectFromResult: (res) => ({
@@ -205,7 +266,120 @@ export const usePendingTransactionsQuery = (
       transactions: res.data || emptyPendingTxs,
       pendingTransactions: res.data
         ? selectPendingTransactions(res.data)
-        : emptyPendingTxs
-    })
+        : emptyPendingTxs,
+    }),
   })
+}
+
+export const useReceiveAddressQuery = (
+  accountId: BraveWallet.AccountId | undefined,
+) => {
+  // state
+  const [receiveAddress, setReceiveAddress] = React.useState<string>(
+    accountId?.address || '',
+  )
+  const [isFetchingAddress, setIsFetchingAddress] =
+    React.useState<boolean>(false)
+
+  // mutations
+  const [generateReceiveAddress] = useGenerateReceiveAddressMutation()
+
+  // effects
+  React.useEffect(() => {
+    // skip fetching/polling if not needed
+    if (accountId?.address) {
+      setReceiveAddress(accountId.address)
+      setIsFetchingAddress(false)
+      return
+    }
+
+    let ignore = false
+
+    const fetchAddress = async () => {
+      if (accountId) {
+        setIsFetchingAddress(true)
+        const address = await generateReceiveAddress(accountId).unwrap()
+        if (!ignore) {
+          setReceiveAddress(address)
+          setIsFetchingAddress(false)
+        }
+      }
+    }
+
+    fetchAddress()
+
+    // poll for new address every BTC block (10 minutes)
+    const intervalId = setInterval(fetchAddress, 1000 * 60 * 10)
+
+    // cleanup
+    return () => {
+      ignore = true
+      clearInterval(intervalId)
+    }
+  }, [accountId, generateReceiveAddress])
+
+  return {
+    receiveAddress,
+    isFetchingAddress,
+  }
+}
+
+export const useGetIsRegistryTokenQuery = (
+  arg:
+    | {
+        chainId: string
+        address: string
+      }
+    | typeof skipToken,
+) => {
+  return useGetTokensRegistryQuery(undefined, {
+    selectFromResult: (res) => {
+      if (arg === skipToken) {
+        return {
+          isLoading: res.isLoading,
+        }
+      }
+
+      const assetId = res.data?.idsByChainId[arg.chainId].find((id) =>
+        id.toString().includes(arg?.address.toLowerCase()),
+      )
+      const asset = assetId ? res.data?.entities[assetId] : undefined
+
+      return {
+        isLoading: res.isLoading,
+        isVerified: res.isLoading ? undefined : Boolean(asset),
+      }
+    },
+  })
+}
+
+export const useGetDappRadarNetworks = () => {
+  const { data: networksRegistry, isLoading: isLoadingNetworks } =
+    useGetNetworksRegistryQuery()
+  const { data: dapps, isLoading: isLoadingDapps } = useGetTopDappsQuery(
+    networksRegistry?.visibleIds ? undefined : skipToken,
+  )
+
+  // memos
+  const dappNetworks = React.useMemo(() => {
+    if (!networksRegistry || !dapps) {
+      return []
+    }
+
+    const dappNetworkIds = Array.from(
+      new Set(dapps.map((dapp) => dapp.chains).flat()),
+    )
+
+    const dappNetworks = getEntitiesListFromEntityState(
+      networksRegistry,
+      dappNetworkIds,
+    )
+
+    return dappNetworks
+  }, [networksRegistry, dapps])
+
+  return {
+    isLoading: isLoadingNetworks || isLoadingDapps,
+    dappNetworks,
+  }
 }

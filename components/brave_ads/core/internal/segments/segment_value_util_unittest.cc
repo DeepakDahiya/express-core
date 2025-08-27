@@ -6,6 +6,7 @@
 #include "brave/components/brave_ads/core/internal/segments/segment_value_util.h"
 
 #include "base/test/values_test_util.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // npm run test -- brave_unit_tests --filter=BraveAds*
@@ -15,51 +16,50 @@ namespace brave_ads {
 namespace {
 
 constexpr char kSegmentsAsJson[] =
-    R"(
+    R"JSON(
         [
           "technology & computing",
           "personal finance-banking",
           "food & drink-restaurants"
-        ])";
+        ])JSON";
 
 }  // namespace
 
 TEST(BraveAdsSegmentValueUtilTest, SegmentsToValue) {
-  // Act & Assert
-  EXPECT_EQ(
-      base::test::ParseJsonList(kSegmentsAsJson),
+  // Act
+  const base::Value::List list =
       SegmentsToValue({"technology & computing", "personal finance-banking",
-                       "food & drink-restaurants"}));
+                       "food & drink-restaurants"});
+
+  // Assert
+  EXPECT_EQ(base::test::ParseJsonList(kSegmentsAsJson), list);
 }
 
-TEST(BraveAdsSegmentValueUtilTest, NoSegmentsToValue) {
+TEST(BraveAdsSegmentValueUtilTest, EmptySegmentsToValue) {
   // Act
   const base::Value::List list = SegmentsToValue({});
 
   // Assert
-  EXPECT_TRUE(list.empty());
+  EXPECT_THAT(list, ::testing::IsEmpty());
 }
 
 TEST(BraveAdsSegmentValueUtilTest, SegmentsFromValue) {
   // Arrange
   const base::Value::List list = base::test::ParseJsonList(kSegmentsAsJson);
 
-  // Act & Assert
-  const SegmentList expected_segments = {"technology & computing",
-                                         "personal finance-banking",
-                                         "food & drink-restaurants"};
-  EXPECT_EQ(expected_segments, SegmentsFromValue(list));
-}
-
-TEST(BraveAdsSegmentValueUtilTest, NoSegmentsFromValue) {
-  // Arrange
-  const base::Value::List list = base::test::ParseJsonList("[]");
-
   // Act
   const SegmentList segments = SegmentsFromValue(list);
 
   // Assert
-  EXPECT_TRUE(segments.empty());
+  const SegmentList expected_segments = {"technology & computing",
+                                         "personal finance-banking",
+                                         "food & drink-restaurants"};
+  EXPECT_EQ(expected_segments, segments);
+}
+
+TEST(BraveAdsSegmentValueUtilTest, EmptySegmentsFromValue) {
+  // Act & Assert
+  EXPECT_THAT(SegmentsFromValue({}), ::testing::IsEmpty());
 }
 
 }  // namespace brave_ads

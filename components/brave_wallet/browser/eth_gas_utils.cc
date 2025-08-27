@@ -6,37 +6,36 @@
 #include "brave/components/brave_wallet/browser/eth_gas_utils.h"
 
 #include <algorithm>
+#include <array>
 #include <cmath>
+#include <optional>
 
 #include "base/check.h"
-#include "base/logging.h"
 #include "brave/components/brave_wallet/common/hex_utils.h"
 
-namespace brave_wallet {
-
-namespace eth {
+namespace brave_wallet::eth {
 
 // Scale the base fee by 33% to get a suggested value. This is done to account
-// for sufficient fluctionations in the base fee, so that the transaction will
+// for sufficient fluctuations in the base fee, so that the transaction will
 // not get stuck.
 //
 // A higher scaling factor increases the likelihood of confirmation within the
 // next few blocks, but also makes the transaction appear more expensive to
 // the user.
 //
-// Note that base fee is not part of the RLP. Any excees base fee is refunded,
+// Note that base fee is not part of the RLP. Any excess base fee is refunded,
 // so the user will not be charged more than the base fee of the block that
 // includes the transaction.
-absl::optional<uint256_t> ScaleBaseFeePerGas(const std::string& value) {
+std::optional<uint256_t> ScaleBaseFeePerGas(const std::string& value) {
   uint256_t value_uint256;
   if (!HexValueToUint256(value, &value_uint256)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // We use "double" math and this is unlikely to get hit, so return
-  // absl::nullopt if the value is too big.
+  // std::nullopt if the value is too big.
   if (value_uint256 > kMaxSafeIntegerUint64) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   // Compiler crashes without these 2 casts :(
@@ -57,9 +56,9 @@ absl::optional<uint256_t> ScaleBaseFeePerGas(const std::string& value) {
 //   base_fee_per_gas (last element) * 33%
 // - avg_priority_fee will be the 0.4 * length's element of the sorted
 //   reward array.
-// - The same applies to low_prirority_fee, but if it was equal to avg
+// - The same applies to low_priority_fee, but if it was equal to avg
 //   then we walk it back to the next smallest element if possible.
-// - The same applies to high_prirority_fee, but if it was equal to avg
+// - The same applies to high_priority_fee, but if it was equal to avg
 //   then we walk it forward to the next biggest element if possible.
 bool GetSuggested1559Fees(const std::vector<std::string>& base_fee_per_gas,
                           const std::vector<double>& gas_used_ratio,
@@ -99,35 +98,33 @@ bool GetSuggested1559Fees(const std::vector<std::string>& base_fee_per_gas,
     return true;
   }
 
-  std::vector<uint256_t> priority_fee_uints[3];
-  uint256_t* priority_fees[3] = {low_priority_fee, avg_priority_fee,
-                                 high_priority_fee};
+  std::array<std::vector<uint256_t>, 3> priority_fee_uints;
+  std::array<uint256_t*, 3> priority_fees = {low_priority_fee, avg_priority_fee,
+                                             high_priority_fee};
   for (size_t i = 0; i < 3; i++) {
     uint256_t& current_priority_fee = *(priority_fees[i]);
     std::vector<uint256_t>& current_priority_fee_uints = priority_fee_uints[i];
     bool invalid_data = false;
     // Convert the string priority fees to uints
-    std::transform(reward.begin(), reward.end(),
-                   std::back_inserter(current_priority_fee_uints),
-                   [&](const std::vector<std::string>& v) -> uint256_t {
-                     uint256_t val = fallback_priority_fee;
-                     if (v.size() != 3) {
-                       invalid_data = true;
-                     } else if (!HexValueToUint256(v[i], &val)) {
-                       invalid_data = true;
-                     }
-                     return val;
-                   });
+    for (auto& v : reward) {
+      uint256_t val = fallback_priority_fee;
+      if (v.size() != 3) {
+        invalid_data = true;
+      } else if (!HexValueToUint256(v[i], &val)) {
+        invalid_data = true;
+      }
+      current_priority_fee_uints.push_back(val);
+    }
 
     // We allow no reward info but we don't allow invalid reward info
     if (invalid_data) {
       return false;
     }
 
-    // Sort the priroirty fee uints
+    // Sort the priority fee uints
     std::sort(current_priority_fee_uints.begin(),
               current_priority_fee_uints.end());
-    // Calculate the avg priorty fee first to be the 40th percentile of the avg
+    // Calculate the avg priority fee first to be the 40th percentile of the avg
     // percentiles.  We use this same method as the initial value for low
     // and high too.
     size_t percentile_index = current_priority_fee_uints.size() * 0.4;
@@ -154,6 +151,4 @@ bool GetSuggested1559Fees(const std::vector<std::string>& base_fee_per_gas,
   return true;
 }
 
-}  // namespace eth
-
-}  // namespace brave_wallet
+}  // namespace brave_wallet::eth

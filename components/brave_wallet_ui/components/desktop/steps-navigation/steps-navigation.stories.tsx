@@ -8,33 +8,39 @@ import { MemoryRouter as Router, Route } from 'react-router'
 
 import { StepsNavigation } from './steps-navigation'
 
-export const Nav = () => {
-  return <Router>
-    <Route path={'/:currentStep'}>
-      {({ match }) => (
-        <StepsNavigation
-          steps={['1', '2', '3']}
-          currentStep={match?.params.currentStep || '1'}
-          goBack={() => alert('go back')}
-        />
-      )}
-    </Route>
-  </Router>
+export const _StepsNavigation = {
+  render: () => (
+    <Router>
+      <Route path={'/:currentStep'}>
+        {({ match }) => (
+          <StepsNavigation
+            steps={['1', '2', '3']}
+            currentStep={match?.params.currentStep || '1'}
+            goBack={() => alert('go back')}
+          />
+        )}
+      </Route>
+    </Router>
+  ),
 }
 
-export const NavWithSkip = () => {
-  return <Router>
-    <Route path={'/:currentStep'}>
-      {({ match }) => (
-        <StepsNavigation
-          steps={['1', '2', '3']}
-          currentStep={match?.params.currentStep || '1'}
-          goBack={() => alert('go back')}
-          onSkip={() => alert('skip')}
-        />
-      )}
-    </Route>
-  </Router>
+export const _StepsNavigationWithSkip = {
+  render: () => (
+    <Router>
+      <Route path={'/:currentStep'}>
+        {({ match }) => (
+          <StepsNavigation
+            steps={['1', '2', '3']}
+            currentStep={match?.params.currentStep || '1'}
+            goBack={() => alert('go back')}
+            onSkip={() => alert('skip')}
+          />
+        )}
+      </Route>
+    </Router>
+  ),
 }
 
-export default Nav
+export default {
+  title: 'Wallet/Desktop/Components/Navigation',
+}

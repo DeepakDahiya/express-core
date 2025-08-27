@@ -6,17 +6,19 @@
 #ifndef BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_NOTIFICATION_AD_SERVING_H_
 #define BRAVE_COMPONENTS_BRAVE_ADS_CORE_INTERNAL_SERVING_NOTIFICATION_AD_SERVING_H_
 
+#include <cstdint>
 #include <memory>
 #include <string>
 
 #include "base/check_op.h"
 #include "base/memory/raw_ptr.h"
 #include "base/memory/weak_ptr.h"
-#include "base/types/expected.h"
 #include "brave/components/brave_ads/core/internal/common/timer/timer.h"
 #include "brave/components/brave_ads/core/internal/creatives/notification_ads/creative_notification_ad_info.h"
 #include "brave/components/brave_ads/core/internal/serving/notification_ad_serving_delegate.h"
-#include "brave/components/brave_ads/core/public/client/ads_client_notifier_observer.h"
+#include "brave/components/brave_ads/core/internal/serving/targeting/user_model/user_model_info.h"
+#include "brave/components/brave_ads/core/internal/user_engagement/ad_events/ad_event_info.h"
+#include "brave/components/brave_ads/core/public/ads_client/ads_client_notifier_observer.h"
 
 namespace base {
 class Time;
@@ -29,7 +31,6 @@ class AntiTargetingResource;
 class EligibleNotificationAdsBase;
 class SubdivisionTargeting;
 struct NotificationAdInfo;
-struct UserModelInfo;
 
 class NotificationAdServing final : public AdsClientNotifierObserver {
  public:
@@ -38,9 +39,6 @@ class NotificationAdServing final : public AdsClientNotifierObserver {
 
   NotificationAdServing(const NotificationAdServing&) = delete;
   NotificationAdServing& operator=(const NotificationAdServing&) = delete;
-
-  NotificationAdServing(NotificationAdServing&&) noexcept = delete;
-  NotificationAdServing& operator=(NotificationAdServing&&) noexcept = delete;
 
   ~NotificationAdServing() override;
 
@@ -56,14 +54,19 @@ class NotificationAdServing final : public AdsClientNotifierObserver {
   void MaybeServeAdAtNextRegularInterval();
 
  private:
-  base::expected<void, std::string> CanServeAd() const;
-
   bool IsSupported() const { return !!eligible_ads_; }
 
-  void GetEligibleAds();
-  void BuildUserModelCallback(const UserModelInfo& user_model);
-  void GetEligibleAdsForUserModelCallback(
-      const CreativeNotificationAdList& creative_ads);
+  bool CanServeAd(const AdEventList& ad_events) const;
+
+  void GetAdEvents();
+  void GetAdEventsCallback(bool success, const AdEventList& ad_events);
+
+  void GetUserModel();
+  void GetUserModelCallback(uint64_t trace_id, UserModelInfo user_model);
+
+  void GetEligibleAds(UserModelInfo user_model);
+  void GetEligibleAdsCallback(uint64_t trace_id,
+                              CreativeNotificationAdList creative_ads);
 
   void UpdateMaximumAdsPerHour();
 
@@ -82,7 +85,7 @@ class NotificationAdServing final : public AdsClientNotifierObserver {
   // AdsClientNotifierObserver:
   void OnNotifyPrefDidChange(const std::string& path) override;
 
-  raw_ptr<NotificationAdServingDelegate> delegate_ = nullptr;
+  raw_ptr<NotificationAdServingDelegate> delegate_ = nullptr;  // Not owned.
 
   bool is_serving_ = false;
 

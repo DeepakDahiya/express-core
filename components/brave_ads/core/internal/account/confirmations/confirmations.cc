@@ -5,36 +5,33 @@
 
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmations.h"
 
-#include "base/functional/bind.h"
+#include <optional>
+#include <utility>
+
+#include "base/check.h"
 #include "base/time/time.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/confirmation_info.h"
-#include "brave/components/brave_ads/core/internal/account/confirmations/confirmations_util.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/non_reward/non_reward_confirmation_util.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/queue/confirmation_queue.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/reward/reward_confirmation_util.h"
 #include "brave/components/brave_ads/core/internal/account/confirmations/user_data_builder/confirmation_user_data_builder.h"
-#include "brave/components/brave_ads/core/internal/account/tokens/token_generator_interface.h"
 #include "brave/components/brave_ads/core/internal/account/transactions/transaction_info.h"
-#include "brave/components/brave_ads/core/internal/account/user_data/user_data_info.h"
 #include "brave/components/brave_ads/core/internal/common/logging_util.h"
 #include "brave/components/brave_ads/core/internal/common/time/time_formatting_util.h"
 #include "brave/components/brave_ads/core/internal/settings/settings.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace brave_ads {
 
-Confirmations::Confirmations(TokenGeneratorInterface* token_generator)
-    : token_generator_(token_generator) {
-  CHECK(token_generator_);
-
-  queue_.SetDelegate(this);
+Confirmations::Confirmations() {
+  confirmation_queue_.SetDelegate(this);
 }
 
 Confirmations::~Confirmations() {
   delegate_ = nullptr;
 }
 
-void Confirmations::Confirm(const TransactionInfo& transaction) {
+void Confirmations::Confirm(const TransactionInfo& transaction,
+                            base::Value::Dict user_data) {
   CHECK(transaction.IsValid());
 
   BLOG(1, "Confirming " << transaction.confirmation_type << " for "
@@ -42,28 +39,15 @@ void Confirmations::Confirm(const TransactionInfo& transaction) {
                         << transaction.id << " and creative instance id "
                         << transaction.creative_instance_id);
 
-  BuildConfirmationUserData(
-      transaction, base::BindOnce(&Confirmations::ConfirmCallback,
-                                  weak_factory_.GetWeakPtr(), transaction));
-}
-
-///////////////////////////////////////////////////////////////////////////////
-
-void Confirmations::ConfirmCallback(const TransactionInfo& transaction,
-                                    const UserDataInfo& user_data) {
-  CHECK(transaction.IsValid());
-
-  const absl::optional<ConfirmationInfo> confirmation =
-      UserHasJoinedBraveRewards()
-          ? BuildRewardConfirmation(token_generator_, transaction, user_data)
-          : BuildNonRewardConfirmation(transaction, user_data);
+  std::optional<ConfirmationInfo> confirmation =
+      UserHasJoinedBraveRewardsAndConnectedWallet()
+          ? BuildRewardConfirmation(transaction, std::move(user_data))
+          : BuildNonRewardConfirmation(transaction, std::move(user_data));
   if (!confirmation) {
-    return BLOG(0, "Failed to create confirmation");
+    return BLOG(0, "Failed to build confirmation");
   }
 
-  CHECK(IsValid(*confirmation));
-
-  queue_.Add(*confirmation);
+  confirmation_queue_.Add(*confirmation);
 }
 
 void Confirmations::NotifyDidConfirm(
@@ -113,7 +97,7 @@ void Confirmations::OnDidProcessConfirmationQueue(
 
 void Confirmations::OnFailedToProcessConfirmationQueue(
     const ConfirmationInfo& confirmation) {
-  BLOG(1, "Failed to process "
+  BLOG(0, "Failed to process "
               << confirmation.type << " confirmation for "
               << confirmation.ad_type << " with transaction id "
               << confirmation.transaction_id << " and creative instance id "

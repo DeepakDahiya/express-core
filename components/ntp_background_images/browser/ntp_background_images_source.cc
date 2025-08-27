@@ -5,6 +5,7 @@
 
 #include "brave/components/ntp_background_images/browser/ntp_background_images_source.h"
 
+#include <optional>
 #include <utility>
 #include <vector>
 
@@ -12,7 +13,6 @@
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
-#include "base/strings/stringprintf.h"
 #include "base/task/thread_pool.h"
 #include "brave/components/ntp_background_images/browser/ntp_background_images_data.h"
 #include "brave/components/ntp_background_images/browser/ntp_background_images_service.h"
@@ -24,20 +24,19 @@ namespace ntp_background_images {
 
 namespace {
 
-absl::optional<std::string> ReadFileToString(const base::FilePath& path) {
+std::optional<std::string> ReadFileToString(const base::FilePath& path) {
   std::string contents;
-  if (!base::ReadFileToString(path, &contents))
-    return absl::optional<std::string>();
+  if (!base::ReadFileToString(path, &contents)) {
+    return std::nullopt;
+  }
   return contents;
 }
 
 }  // namespace
 
 NTPBackgroundImagesSource::NTPBackgroundImagesSource(
-    NTPBackgroundImagesService* service)
-    : service_(service),
-      weak_factory_(this) {
-}
+    NTPBackgroundImagesService* background_images_service)
+    : background_images_service_(background_images_service) {}
 
 NTPBackgroundImagesSource::~NTPBackgroundImagesSource() = default;
 
@@ -47,12 +46,13 @@ std::string NTPBackgroundImagesSource::GetSource() {
 
 void NTPBackgroundImagesSource::StartDataRequest(
     const GURL& url,
-    const content::WebContents::Getter& wc_getter,
+    const content::WebContents::Getter& /*wc_getter*/,
     GotDataCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  const NTPBackgroundImagesData* const images_data =
+      background_images_service_->GetBackgroundImagesData();
   const std::string path = URLDataSource::URLToRequestPath(url);
-  auto* images_data = service_->GetBackgroundImagesData();
   const int index = GetWallpaperIndexFromPath(path);
 
   if (!images_data || index == -1) {
@@ -63,7 +63,7 @@ void NTPBackgroundImagesSource::StartDataRequest(
   }
 
   base::FilePath image_file_path =
-      images_data->backgrounds[GetWallpaperIndexFromPath(path)].image_file;
+      images_data->backgrounds[GetWallpaperIndexFromPath(path)].file_path;
 
   GetImageFile(image_file_path, std::move(callback));
 }
@@ -80,45 +80,47 @@ void NTPBackgroundImagesSource::GetImageFile(
 
 void NTPBackgroundImagesSource::OnGotImageFile(
     GotDataCallback callback,
-    absl::optional<std::string> input) {
-  if (!input)
+    std::optional<std::string> input) {
+  if (!input) {
     return;
+  }
 
-  scoped_refptr<base::RefCountedMemory> bytes;
-  bytes = new base::RefCountedBytes(
-       reinterpret_cast<const unsigned char*>(input->c_str()), input->length());
-  std::move(callback).Run(std::move(bytes));
+  std::move(callback).Run(
+      new base::RefCountedBytes(base::as_byte_span(*input)));
 }
 
 std::string NTPBackgroundImagesSource::GetMimeType(const GURL& url) {
   const std::string path = URLDataSource::URLToRequestPath(url);
-  const auto file_path = base::FilePath::FromUTF8Unsafe(path);
+  const base::FilePath file_path = base::FilePath::FromUTF8Unsafe(path);
   if (file_path.MatchesExtension(FILE_PATH_LITERAL(".jpg"))) {
     return "image/jpeg";
-  } else if (file_path.MatchesExtension(FILE_PATH_LITERAL(".png"))) {
-    return "image/png";
-  } else if (file_path.MatchesExtension(FILE_PATH_LITERAL(".webp"))) {
-    return "image/webp";
-  } else if (file_path.MatchesExtension(FILE_PATH_LITERAL(".avif"))) {
-    return "image/avif";
-  } else {
-    NOTREACHED();
-    return "image/jpeg";
   }
+  if (file_path.MatchesExtension(FILE_PATH_LITERAL(".png"))) {
+    return "image/png";
+  }
+  if (file_path.MatchesExtension(FILE_PATH_LITERAL(".webp"))) {
+    return "image/webp";
+  }
+  if (file_path.MatchesExtension(FILE_PATH_LITERAL(".avif"))) {
+    return "image/avif";
+  }
+  return "";
 }
 
 int NTPBackgroundImagesSource::GetWallpaperIndexFromPath(
     const std::string& path) const {
-  auto* images_data = service_->GetBackgroundImagesData();
-  if (!images_data)
+  const NTPBackgroundImagesData* const images_data =
+      background_images_service_->GetBackgroundImagesData();
+  if (!images_data) {
     return -1;
+  }
 
-  const int wallpaper_count = images_data->backgrounds.size();
-  for (int i = 0; i < wallpaper_count; ++i) {
+  for (size_t i = 0; i < images_data->backgrounds.size(); ++i) {
     const std::string image_name =
-        images_data->backgrounds[i].image_file.BaseName().AsUTF8Unsafe();
-    if (path.compare(image_name) == 0)
-      return i;
+        images_data->backgrounds[i].file_path.BaseName().AsUTF8Unsafe();
+    if (path == image_name) {
+      return static_cast<int>(i);
+    }
   }
 
   return -1;

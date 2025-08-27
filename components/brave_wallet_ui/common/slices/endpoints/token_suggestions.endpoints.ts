@@ -7,13 +7,15 @@
 import { BraveWallet } from '../../../constants/types'
 
 // utils
-import { handleEndpointError } from '../../../utils/api-utils'
-import { isRemoteImageURL } from '../../../utils/string-utils'
+import {
+  getHasPendingRequests,
+  handleEndpointError,
+} from '../../../utils/api-utils'
 import { WalletApiEndpointBuilderParams } from '../api-base.slice'
 
 export const tokenSuggestionsEndpoints = ({
   mutation,
-  query
+  query,
 }: WalletApiEndpointBuilderParams) => {
   return {
     getPendingTokenSuggestionRequests: query<
@@ -25,24 +27,18 @@ export const tokenSuggestionsEndpoints = ({
           const { data: api } = baseQuery(undefined)
           const { requests } =
             await api.braveWalletService.getPendingAddSuggestTokenRequests()
-          for (const request of requests) {
-            const logo = request.token.logo
-            if (logo !== '' && !isRemoteImageURL(logo)) {
-              request.token.logo = `chrome://erc-token-images/${logo}`
-            }
-          }
           return {
-            data: requests
+            data: requests,
           }
         } catch (error) {
           return handleEndpointError(
             endpoint,
             'failed to fetch pending token suggestion requests',
-            error
+            error,
           )
         }
       },
-      providesTags: ['TokenSuggestionRequests']
+      providesTags: ['TokenSuggestionRequests'],
     }),
 
     approveOrDeclineTokenSuggestion: mutation<
@@ -58,15 +54,19 @@ export const tokenSuggestionsEndpoints = ({
         try {
           apiProxy.braveWalletService.notifyAddSuggestTokenRequestsProcessed(
             arg.approved,
-            [arg.contractAddress]
+            [arg.contractAddress],
           )
 
           if (arg.closePanel) {
-            apiProxy.panelHandler?.closeUI()
+            const hasPendingRequests = await getHasPendingRequests()
+
+            if (!hasPendingRequests) {
+              apiProxy.panelHandler?.closeUI()
+            }
           }
 
           return {
-            data: true
+            data: true,
           }
         } catch (error) {
           return handleEndpointError(
@@ -74,15 +74,21 @@ export const tokenSuggestionsEndpoints = ({
             `failed to ${
               arg.approved ? 'approve' : 'decline'
             } token suggestion (${arg.contractAddress})`,
-            error
+            error,
           )
         }
       },
-      invalidatesTags: [
-        'TokenSuggestionRequests',
-        'KnownBlockchainTokens',
-        'UserBlockchainTokens'
-      ]
-    })
+      invalidatesTags: (res, err, arg) =>
+        res && arg.approved
+          ? [
+              'TokenSuggestionRequests',
+              'KnownBlockchainTokens',
+              'UserBlockchainTokens',
+              'TokenBalances',
+              'TokenBalancesForChainId',
+              'AccountTokenCurrentBalance',
+            ]
+          : ['TokenSuggestionRequests'],
+    }),
   }
 }

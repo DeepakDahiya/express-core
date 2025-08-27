@@ -4,28 +4,27 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import * as React from 'react'
-import { getLocale } from '$web-common/locale'
 import Alert from '@brave/leo/react/alert'
 import Button from '@brave/leo/react/button'
-import DataContext from '../../state/context'
+import { getLocale } from '$web-common/locale'
+import { useAIChat } from '../../state/ai_chat_context'
 import styles from './alerts.module.scss'
 
 export default function WarningPremiumDisconnected() {
-  const context = React.useContext(DataContext)
+  const context = useAIChat()
 
   return (
     <div className={styles.alert}>
       <Alert
-        mode='full'
         type='warning'
       >
-        {getLocale('premiumRefreshWarningDescription')}
+        {getLocale(S.CHAT_UI_PREMIUM_REFRESH_WARNING_DESCRIPTION)}
         <Button
           slot='actions'
           kind='filled'
           onClick={context.userRefreshPremiumSession}
         >
-            {getLocale('premiumRefreshWarningAction')}
+            {getLocale(S.CHAT_UI_PREMIUM_REFRESH_WARNING_ACTION)}
         </Button>
       </Alert>
     </div>

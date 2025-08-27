@@ -7,10 +7,10 @@ import * as React from 'react'
 import { render } from 'react-dom'
 import { initLocale } from 'brave-ui'
 
-import { loadTimeData } from '../../../common/loadTimeData'
-import BraveCoreThemeProvider from '../../../common/BraveCoreThemeProvider'
-import shieldsDarkTheme from './theme/shields-dark'
-import shieldsLightTheme from './theme/shields-light'
+import { setIconBasePath } from '@brave/leo/react/icon'
+
+import { loadTimeData } from '$web-common/loadTimeData'
+import BraveCoreThemeProvider from '$web-common/BraveCoreThemeProvider'
 import { PanelWrapper } from './style'
 import getPanelBrowserAPI from './api/panel_browser_api'
 import Container from './container'
@@ -18,8 +18,9 @@ import { useSiteBlockInfoData, useSiteSettingsData } from './state/hooks'
 import DataContext from './state/context'
 import { ViewType } from './state/component_types'
 
+setIconBasePath('//resources/brave-icons')
+
 function App () {
-  const [initialThemeType, setInitialThemeType] = React.useState<chrome.braveTheme.ThemeType>()
   const { siteBlockInfo } = useSiteBlockInfoData()
   const { siteSettings, getSiteSettings } = useSiteSettingsData()
   const [viewType, setViewType] = React.useState<ViewType>(ViewType.Main)
@@ -33,8 +34,6 @@ function App () {
   }
 
   React.useEffect(() => {
-    chrome.braveTheme.getBraveThemeType(setInitialThemeType)
-
     const onVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         getPanelBrowserAPI().panelHandler.showUI()
@@ -50,25 +49,15 @@ function App () {
     }
   }, [])
 
-  return (
-    <>
-      {initialThemeType &&
-        <DataContext.Provider
-          value={store}
-        >
-          <BraveCoreThemeProvider
-            initialThemeType={initialThemeType}
-            dark={shieldsDarkTheme}
-            light={shieldsLightTheme}
-          >
-            <PanelWrapper>
-              <Container />
-            </PanelWrapper>
-          </BraveCoreThemeProvider>
-        </DataContext.Provider>
-      }
-    </>
-  )
+  return (<DataContext.Provider
+    value={store}
+  >
+    <BraveCoreThemeProvider>
+      <PanelWrapper>
+        <Container />
+      </PanelWrapper>
+    </BraveCoreThemeProvider>
+  </DataContext.Provider>)
 }
 
 function initialize () {

@@ -4,6 +4,9 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/components/child_process_monitor/child_process_monitor.h"
+
+#include "base/check.h"
+#include "base/logging.h"
 #include "base/process/process.h"
 #include "base/process/process_handle.h"
 #include "base/process/process_iterator.h"
@@ -21,7 +24,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/process/kill.h"
 #include "base/task/bind_post_task.h"
 #include "base/task/sequenced_task_runner.h"
@@ -76,16 +78,14 @@ void SetupPipeHack() {
   if (fcntl(pipehack[1], F_SETFL, flags) == -1)
     VLOG(0) << "set flags errno:" << errno;
 
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
+  struct sigaction action = {};
   action.sa_handler = SIGCHLDHandler;
   action.sa_flags = SA_RESTART;
   sigaction(SIGCHLD, &action, nullptr);
 }
 
 void TearDownPipeHack() {
-  struct sigaction action;
-  memset(&action, 0, sizeof(action));
+  struct sigaction action = {};
   action.sa_handler = SIG_DFL;
   action.sa_flags = SA_RESTART;
   sigaction(SIGCHLD, &action, nullptr);
@@ -142,9 +142,7 @@ ChildProcessMonitor::ChildProcessMonitor()
 #if BUILDFLAG(IS_POSIX)
   SetupPipeHack();
 #endif
-  if (!child_monitor_thread_->Start()) {
-    NOTREACHED();
-  }
+  CHECK(child_monitor_thread_->Start());
 }
 
 ChildProcessMonitor::~ChildProcessMonitor() {

@@ -6,10 +6,10 @@
 #ifndef BRAVE_COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_BRAVE_CONTENT_SETTINGS_UTILS_H_
 #define BRAVE_COMPONENTS_CONTENT_SETTINGS_CORE_BROWSER_BRAVE_CONTENT_SETTINGS_UTILS_H_
 
+#include <optional>
 #include <string>
 #include <vector>
 
-#include "base/time/time.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_constraints.h"
 #include "components/content_settings/core/common/content_settings_types.h"
@@ -24,12 +24,12 @@ bool IsShieldsContentSettingsType(const ContentSettingsType& content_type);
 
 bool IsShieldsContentSettingsTypeName(const std::string& content_type_name);
 
-absl::optional<ContentSettingsPattern> ConvertPatternToWildcardSchemeAndPort(
+std::optional<ContentSettingsPattern> ConvertPatternToWildcardSchemeAndPort(
     const ContentSettingsPattern& pattern);
 
 std::string GetShieldsSettingUserPrefsPath(const std::string& name);
 
-content_settings::SessionModel GetSessionModelFromDictionary(
+content_settings::mojom::SessionModel GetSessionModelFromDictionary(
     const base::Value::Dict& dict,
     const char* key);
 

@@ -4,37 +4,45 @@
 // You can obtain one at https://mozilla.org/MPL/2.0/.
 import { HeroArticle as Info } from 'gen/brave/components/brave_news/common/brave_news.mojom.m';
 import * as React from 'react';
-import styled from 'styled-components';
-import { useLazyUnpaddedImageUrl } from '../shared/useUnpaddedImageUrl';
-import { openArticle } from './Article';
 import ArticleMetaRow from './ArticleMetaRow';
-import Card, { Title } from './Card';
+import Card, { BraveNewsLink, LargeImage, Title, braveNewsCardClickHandler } from './Card';
+import styled from 'styled-components';
+import { spacing } from '@brave/leo/tokens/css/variables';
+import { useBraveNews } from '../shared/Context';
 
 interface Props {
   info: Info
+  feedDepth?: number
 }
 
-const HeroImage = styled.img`
-  width: 100%;
-  height: 269px;
+const Container = styled(Card)`
+  display: flex;
+  flex-direction: column;
+  gap: ${spacing.s};
 
-  object-fit: cover;
-  object-position: top;
-
-  border-radius: 6px;
+  & > ${LargeImage} {
+    margin-bottom: ${spacing.l};
+  }
 `
 
-export default function HeroArticle({ info }: Props) {
-  const { url, setElementRef } = useLazyUnpaddedImageUrl(info.data.image.paddedImageUrl?.url, {
-    useCache: true,
-    rootElement: document.body,
-    rootMargin: '0px 0px 200px 0px'
-  })
-  return <Card onClick={() => openArticle(info.data)} ref={setElementRef}>
-    <HeroImage src={url} />
+export default function HeroArticle({ info, feedDepth }: Props) {
+  const { reportVisit } = useBraveNews()
+  return <Container
+    onClick={e => {
+      braveNewsCardClickHandler(info.data.url.url)(e)
+      if (feedDepth !== undefined) {
+        reportVisit(feedDepth)
+      }
+    }}>
+    <LargeImage loading='lazy' src={`chrome://image?url=${encodeURIComponent(info.data.image.paddedImageUrl?.url ?? info.data.image.imageUrl?.url ?? '')}`} />
     <ArticleMetaRow article={info.data} />
     <Title>
-      <a href={info.data.url.url}>{info.data.title}</a>
+      <BraveNewsLink
+        href={info.data.url.url}
+        feedDepth={feedDepth}
+      >
+        {info.data.title}
+      </BraveNewsLink>
     </Title>
-  </Card>
+  </Container>
 }

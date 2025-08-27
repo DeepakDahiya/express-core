@@ -6,23 +6,20 @@
 #include "brave/components/brave_wallet/browser/fil_transaction.h"
 
 #include "base/base64.h"
-#include "base/json/json_reader.h"
-#include "base/json/json_writer.h"
+#include "base/containers/span.h"
+#include "base/containers/span_rust.h"
+#include "base/containers/to_vector.h"
+#include "base/strings/string_util.h"
+#include "base/test/values_test_util.h"
+#include "brave/components/brave_wallet/browser/internal/hd_key.h"
 #include "brave/components/brave_wallet/common/fil_address.h"
-#include "brave/components/filecoin/rs/src/lib.rs.h"
+#include "brave/components/brave_wallet/common/hash_utils.h"
+#include "brave/components/brave_wallet/common/lib.rs.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace brave_wallet {
 
 namespace {
-void CompareJSONs(const std::string& current_string,
-                  const std::string& expected_string) {
-  auto current_json = base::JSONReader::Read(current_string);
-  ASSERT_TRUE(current_json);
-  auto expected_string_json = base::JSONReader::Read(expected_string);
-  ASSERT_TRUE(expected_string_json);
-  EXPECT_EQ(*current_json, *expected_string_json);
-}
 std::string DecodePrivateKey(const std::string& private_key_base64) {
   std::string private_key_decoded;
   EXPECT_TRUE(base::Base64Decode(private_key_base64, &private_key_decoded));
@@ -193,8 +190,7 @@ TEST(FilTransactionUnitTest, GetMessageToSignSecp) {
                             "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q", "6"));
   auto message_to_sign = transaction->GetMessageToSignJson(from);
   ASSERT_TRUE(message_to_sign);
-  CompareJSONs(*message_to_sign,
-               R"({
+  EXPECT_EQ(base::test::ParseJson(*message_to_sign), base::test::ParseJson(R"({
                  "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
                  "GasFeeCap": "3",
                  "GasLimit": 1,
@@ -205,12 +201,11 @@ TEST(FilTransactionUnitTest, GetMessageToSignSecp) {
                  "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
                  "Value": "6",
                  "Version": 0
-               })");
+               })"));
   transaction->set_nonce(1);
   message_to_sign = transaction->GetMessageToSignJson(from);
   ASSERT_TRUE(message_to_sign);
-  CompareJSONs(*message_to_sign,
-               R"({
+  EXPECT_EQ(base::test::ParseJson(*message_to_sign), base::test::ParseJson(R"({
                  "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
                  "GasFeeCap": "3",
                  "GasLimit": 1,
@@ -221,29 +216,78 @@ TEST(FilTransactionUnitTest, GetMessageToSignSecp) {
                  "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
                  "Value": "6",
                  "Version": 0
-               })");
+               })"));
 
   std::string private_key_decoded =
       DecodePrivateKey("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=");
-  std::vector<uint8_t> private_key(private_key_decoded.begin(),
-                                   private_key_decoded.end());
-  auto signature = transaction->GetSignedTransaction(from, private_key);
-  ASSERT_TRUE(signature.has_value());
-  auto signature_value = base::JSONReader::Read(*signature);
-  EXPECT_TRUE(signature_value);
-  auto* message = signature_value->GetDict().Find("Message");
+  auto private_key = *base::as_byte_span(private_key_decoded)
+                          .to_fixed_extent<kSecp256k1PrivateKeySize>();
+  auto hd_key = HDKey::GenerateFromPrivateKey(private_key);
+  auto signed_transaction = transaction->GetSignedTransaction(
+      from,
+      hd_key->SignCompact(Blake2bHash<32>({*transaction->TransactionCid(from)}))
+          ->bytes());
+  ASSERT_TRUE(signed_transaction);
+  auto signature_value = base::test::ParseJsonDict(*signed_transaction);
+  auto* message = signature_value.Find("Message");
   auto* signature_data =
-      signature_value->GetDict().FindStringByDottedPath("Signature.Data");
+      signature_value.FindStringByDottedPath("Signature.Data");
   EXPECT_TRUE(message);
   EXPECT_TRUE(signature_data);
-  auto message_as_value = base::JSONReader::Read(*message_to_sign);
-  EXPECT_TRUE(message_as_value);
+  auto message_as_value = base::test::ParseJson(*message_to_sign);
   EXPECT_EQ(*signature_data,
             "SozNIZGNAvALCWtc38OUhO9wdFl82qESGhjnVVhI6CYNN0gP5qa+hZtyFh+"
             "j9K0wIVVU10ZJPgaV0yM6a+xwKgA=");
-  EXPECT_EQ(*message, *message_as_value);
-  auto signature_type =
-      signature_value->GetDict().FindIntByDottedPath("Signature.Type");
+  EXPECT_EQ(*message, message_as_value);
+  auto signature_type = signature_value.FindIntByDottedPath("Signature.Type");
+  ASSERT_TRUE(signature_type);
+  EXPECT_EQ(signature_type, 1);
+}
+
+TEST(FilTransactionUnitTest, GetMessageToSignSecpF1ToV4) {
+  auto from =
+      FilAddress::FromAddress("t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq");
+  auto transaction = FilTransaction::FromTxData(
+      false, mojom::FilTxData::New(
+                 "1", "2", "3", "1", "5",
+                 "t410frrqkhkktbxosf5cmboocdhsv42jtgw2rddjac2y", "6"));
+  auto message_to_sign = transaction->GetMessageToSignJson(from);
+  ASSERT_TRUE(message_to_sign);
+  EXPECT_EQ(base::test::ParseJson(*message_to_sign), base::test::ParseJson(R"({
+                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
+                 "GasFeeCap": "3",
+                 "GasLimit": 1,
+                 "GasPremium": "2",
+                 "Method": 3844450837,
+                 "Params": "",
+                 "Nonce": 1,
+                 "To": "t410frrqkhkktbxosf5cmboocdhsv42jtgw2rddjac2y",
+                 "Value": "6",
+                 "Version": 0
+               })"));
+
+  std::string private_key_decoded =
+      DecodePrivateKey("8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=");
+  auto private_key = *base::as_byte_span(private_key_decoded)
+                          .to_fixed_extent<kSecp256k1PrivateKeySize>();
+  auto hd_key = HDKey::GenerateFromPrivateKey(private_key);
+  auto signed_transaction = transaction->GetSignedTransaction(
+      from,
+      hd_key->SignCompact(Blake2bHash<32>({*transaction->TransactionCid(from)}))
+          ->bytes());
+  ASSERT_TRUE(signed_transaction);
+  auto signature_value = base::test::ParseJsonDict(*signed_transaction);
+  auto* message = signature_value.Find("Message");
+  auto* signature_data =
+      signature_value.FindStringByDottedPath("Signature.Data");
+  EXPECT_TRUE(message);
+  EXPECT_TRUE(signature_data);
+  auto message_as_value = base::test::ParseJson(*message_to_sign);
+  EXPECT_EQ(*signature_data,
+            "cJny5ecvdcWNblL8NcFrsrDy8b47UZ5uz7+Djvb4Nx5sRkb/"
+            "B5JaDpBgxuFRqd8Src/jyr3R4YQ/QvdeAjeTGAE=");
+  EXPECT_EQ(*message, message_as_value);
+  auto signature_type = signature_value.FindIntByDottedPath("Signature.Type");
   ASSERT_TRUE(signature_type);
   EXPECT_EQ(signature_type, 1);
 }
@@ -252,6 +296,7 @@ TEST(FilTransactionUnitTest, GetMessageToSignBLS) {
   const std::string from_account =
       "t3uylp7xgte6rpiqhpivxohtzs7okpnq44mnckimwf6mgi6yc4o6f3iyd426u6wzloiig3a4"
       "ocyug4ftz64xza";
+  auto from = FilAddress::FromAddress(from_account);
   const std::string to_account =
       "t3uylp7xgte6rpiqhpivxohtzs7okpnq44mnckimwf6mgi6yc4o6f3iyd426u6wzloiig3a4"
       "ocyug4ftz64xza";
@@ -277,32 +322,31 @@ TEST(FilTransactionUnitTest, GetMessageToSignBLS) {
                                          from_account);
   base::ReplaceFirstSubstringAfterOffset(&expected_message, 0, "{to_account}",
                                          to_account);
-  CompareJSONs(*message_to_sign, expected_message);
+  EXPECT_EQ(base::test::ParseJson(*message_to_sign),
+            base::test::ParseJson(expected_message));
   std::string private_key_decoded =
       DecodePrivateKey("7ug8i7Q6xddnBpvjbHe8zm+UekV+EVtOUxpNXr+PpCc=");
-
-  std::vector<uint8_t> private_key(private_key_decoded.begin(),
-                                   private_key_decoded.end());
-  auto signature = transaction->GetSignedTransaction(
-      FilAddress::FromAddress(from_account), private_key);
-  ASSERT_TRUE(signature.has_value());
-  auto signature_value = base::JSONReader::Read(*signature);
-  EXPECT_TRUE(signature_value);
-  auto* message = signature_value->GetDict().Find("Message");
+  auto private_key =
+      *base::as_byte_span(private_key_decoded).to_fixed_extent<32>();
+  auto signed_transaction = transaction->GetSignedTransaction(
+      from, base::ToVector(bls_sign_message(
+                base::SpanToRustSlice(private_key),
+                base::SpanToRustSlice(*transaction->TransactionCid(from)))));
+  ASSERT_TRUE(signed_transaction);
+  auto signature_value = base::test::ParseJsonDict(*signed_transaction);
+  auto* message = signature_value.Find("Message");
   auto* signature_data =
-      signature_value->GetDict().FindStringByDottedPath("Signature.Data");
+      signature_value.FindStringByDottedPath("Signature.Data");
   EXPECT_TRUE(message);
   EXPECT_TRUE(signature_data);
-  auto message_as_value = base::JSONReader::Read(*message_to_sign);
-  EXPECT_TRUE(message_as_value);
+  auto message_as_value = base::test::ParseJson(*message_to_sign);
   EXPECT_EQ(
       *signature_data,
       "lsMyTOOAaW9/FxIKupqypmUl1hXLOKrbcJdQs+bHMPNF6aaCu2MaIRQKjS/"
       "Hi6pMB84syUMuxRPC5JdpFvMl7gy5J2kvOEuDclSvc1ALQf2wOalPUOH022DNgLVATD36");
-  EXPECT_EQ(*message, *message_as_value);
+  EXPECT_EQ(*message, message_as_value);
 
-  auto signature_type =
-      signature_value->GetDict().FindIntByDottedPath("Signature.Type");
+  auto signature_type = signature_value.FindIntByDottedPath("Signature.Type");
   ASSERT_TRUE(signature_type);
   EXPECT_EQ(signature_type, 2);
 }
@@ -313,197 +357,6 @@ TEST(FilTransactionUnitTest, ToFilTxData) {
                             "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q", "6");
   auto transaction = FilTransaction::FromTxData(false, tx_data);
   EXPECT_EQ(transaction->ToFilTxData(), tx_data);
-}
-
-TEST(FilTransactionUnitTest, TransactionSign) {
-  std::string private_key_base64 =
-      "8VcW07ADswS4BV2cxi5rnIadVsyTDDhY1NfDH19T8Uo=";
-  auto private_key_decoded = DecodePrivateKey(private_key_base64);
-  std::vector<uint8_t> private_key_binary(private_key_decoded.begin(),
-                                          private_key_decoded.end());
-  auto private_key = rust::Slice<const uint8_t>(private_key_binary.data(),
-                                                private_key_binary.size());
-  EXPECT_EQ(std::string(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                                   private_key)),
-            "SozNIZGNAvALCWtc38OUhO9wdFl82qESGhjnVVhI6CYNN0gP5qa+hZtyFh+"
-            "j9K0wIVVU10ZJPgaV0yM6a+xwKgA=");
-
-  // No From
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No GasFeeCap
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No GasLimit
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No GasPremium
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No Method
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No Params
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No Nonce
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No To
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No Value
-
-  EXPECT_TRUE(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Version": 0
-               })",
-                                         private_key)
-                  .empty());
-  // No Version
-  EXPECT_EQ(std::string(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 0,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t1h4n7rphclbmwyjcp6jrdiwlfcuwbroxy3jvg33q",
-                 "Value": "6"
-               })",
-                                                   private_key)),
-            "SozNIZGNAvALCWtc38OUhO9wdFl82qESGhjnVVhI6CYNN0gP5qa+hZtyFh+"
-            "j9K0wIVVU10ZJPgaV0yM6a+xwKgA=");
-
-  // f1->f4
-  EXPECT_EQ(std::string(filecoin::transaction_sign(false, R"({
-                 "From": "t1h5tg3bhp5r56uzgjae2373znti6ygq4agkx4hzq",
-                 "GasFeeCap": "3",
-                 "GasLimit": 1,
-                 "GasPremium": "2",
-                 "Method": 3844450837,
-                 "Params": "",
-                 "Nonce": 1,
-                 "To": "t410frrqkhkktbxosf5cmboocdhsv42jtgw2rddjac2y",
-                 "Value": "6",
-                 "Version": 0
-               })",
-                                                   private_key)),
-            "cJny5ecvdcWNblL8NcFrsrDy8b47UZ5uz7+Djvb4Nx5sRkb/"
-            "B5JaDpBgxuFRqd8Src/jyr3R4YQ/QvdeAjeTGAE=");
-
-  // Broken json
-  EXPECT_TRUE(
-      filecoin::transaction_sign(false, R"({broken})", private_key).empty());
-  // Empty json
-  EXPECT_TRUE(filecoin::transaction_sign(false, "", private_key).empty());
 }
 
 }  // namespace brave_wallet

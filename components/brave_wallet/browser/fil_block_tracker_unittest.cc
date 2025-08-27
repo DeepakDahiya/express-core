@@ -9,10 +9,12 @@
 #include <string>
 
 #include "base/scoped_observation.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/test/bind.h"
 #include "base/test/task_environment.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_prefs.h"
 #include "brave/components/brave_wallet/browser/json_rpc_service.h"
+#include "brave/components/brave_wallet/browser/network_manager.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "services/data_decoder/public/cpp/test_support/in_process_data_decoder.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
@@ -54,15 +56,16 @@ class FilBlockTrackerUnitTest : public testing::Test {
 
   void SetUp() override {
     brave_wallet::RegisterProfilePrefs(prefs_.registry());
-    json_rpc_service_ =
-        std::make_unique<JsonRpcService>(shared_url_loader_factory_, &prefs_);
+    network_manager_ = std::make_unique<NetworkManager>(&prefs_);
+    json_rpc_service_ = std::make_unique<JsonRpcService>(
+        shared_url_loader_factory_, network_manager_.get(), &prefs_, nullptr);
     tracker_ = std::make_unique<FilBlockTracker>(json_rpc_service_.get());
   }
 
   std::string GetResponseString() const {
     return "{\"jsonrpc\":\"2.0\",\"id\":1,\"result\":{\"Blocks\":[],\"Cids\":[{"
            "\"/\":\"cid\"}],\"Height\":" +
-           std::to_string(response_height_) + "}}";
+           base::NumberToString(response_height_) + "}}";
   }
 
   void TestGetLatestHeight(const std::string& chain_id,
@@ -89,6 +92,7 @@ class FilBlockTrackerUnitTest : public testing::Test {
   sync_preferences::TestingPrefServiceSyncable prefs_;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
+  std::unique_ptr<NetworkManager> network_manager_;
   std::unique_ptr<JsonRpcService> json_rpc_service_;
   std::unique_ptr<FilBlockTracker> tracker_;
   data_decoder::test::InProcessDataDecoder in_process_data_decoder_;
