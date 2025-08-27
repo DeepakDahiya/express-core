@@ -7,17 +7,19 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/ui/brave_browser.h"
 #include "brave/browser/ui/color/brave_color_id.h"
 #include "brave/browser/ui/sidebar/sidebar_service_factory.h"
-#include "brave/components/l10n/common/localization_util.h"
-#include "brave/components/sidebar/sidebar_service.h"
+#include "brave/components/sidebar/browser/sidebar_service.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/dialog_button.mojom.h"
 #include "ui/color/color_provider.h"
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/controls/label.h"
@@ -51,7 +53,7 @@ views::Widget* SidebarEditItemBubbleDelegateView::Create(
   frame_view->SetDisplayVisibleArrow(true);
   delegate->set_adjust_if_offscreen(true);
   delegate->SizeToContents();
-  frame_view->SetCornerRadius(4);
+  frame_view->SetRoundedCorners(gfx::RoundedCornersF(4));
 
   return bubble;
 }
@@ -79,8 +81,7 @@ void SidebarEditItemBubbleDelegateView::AddChildViews() {
   views::Label::CustomFont header_font = {
       GetFont(16, gfx::Font::Weight::NORMAL)};
   auto* header = AddChildView(std::make_unique<views::Label>(
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_SIDEBAR_EDIT_ITEM_BUBBLE_HEADER),
+      l10n_util::GetStringUTF16(IDS_SIDEBAR_EDIT_ITEM_BUBBLE_HEADER),
       header_font));
   const ui::ColorProvider* color_provider =
       BrowserView::GetBrowserViewForBrowser(browser_)->GetColorProvider();
@@ -97,8 +98,7 @@ void SidebarEditItemBubbleDelegateView::AddChildViews() {
   views::Label::CustomFont title_font = {
       GetFont(13, gfx::Font::Weight::NORMAL)};
   auto* title = title_part->AddChildView(std::make_unique<views::Label>(
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_SIDEBAR_EDIT_ITEM_BUBBLE_TITLE),
+      l10n_util::GetStringUTF16(IDS_SIDEBAR_EDIT_ITEM_BUBBLE_TITLE),
       title_font));
   title->SetEnabledColor(
       color_provider->GetColor(kColorSidebarAddBubbleHeaderText));
@@ -109,7 +109,7 @@ void SidebarEditItemBubbleDelegateView::AddChildViews() {
   title_tf_->SetController(this);
   title_tf_->SetText(target_item_.title);
   title_tf_->SelectAll(true);
-  title_tf_->SetAccessibleName(brave_l10n::GetLocalizedResourceUTF16String(
+  title_tf_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_SIDEBAR_EDIT_ITEM_BUBBLE_AX_TITLE_EDITOR_LABEL));
 
   auto* url_part = AddChildView(std::make_unique<views::View>());
@@ -117,9 +117,7 @@ void SidebarEditItemBubbleDelegateView::AddChildViews() {
       views::BoxLayout::Orientation::kVertical, gfx::Insets(),
       /* between_child_spacing = */ 4));
   auto* url = url_part->AddChildView(std::make_unique<views::Label>(
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_SIDEBAR_EDIT_ITEM_BUBBLE_URL),
-      title_font));
+      l10n_util::GetStringUTF16(IDS_SIDEBAR_EDIT_ITEM_BUBBLE_URL), title_font));
   url->SetEnabledColor(
       color_provider->GetColor(kColorSidebarAddBubbleHeaderText));
   url->SetAutoColorReadabilityEnabled(false);
@@ -129,7 +127,7 @@ void SidebarEditItemBubbleDelegateView::AddChildViews() {
   url_tf_->SetController(this);
   url_tf_->SetText(base::UTF8ToUTF16(target_item_.url.spec()));
   url_tf_->SelectAll(true);
-  url_tf_->SetAccessibleName(brave_l10n::GetLocalizedResourceUTF16String(
+  url_tf_->SetAccessibleName(l10n_util::GetStringUTF16(
       IDS_SIDEBAR_EDIT_ITEM_BUBBLE_AX_URL_EDITOR_LABEL));
 
   UpdateOKButtonEnabledState();
@@ -151,7 +149,7 @@ void SidebarEditItemBubbleDelegateView::ContentsChanged(
 }
 
 void SidebarEditItemBubbleDelegateView::UpdateItem() {
-  std::u16string new_title = title_tf_->GetText();
+  auto new_title = title_tf_->GetText();
   if (new_title.empty())
     new_title = url_tf_->GetText();
 
@@ -174,9 +172,8 @@ void SidebarEditItemBubbleDelegateView::UpdateOKButtonEnabledState() {
   const bool ok_button_enabled =
       target_item_.url != new_url || target_item_.title != title_tf_->GetText();
 
-  SetButtonEnabled(ui::DialogButton::DIALOG_BUTTON_OK, ok_button_enabled);
+  SetButtonEnabled(ui::mojom::DialogButton::kOk, ok_button_enabled);
 }
 
-BEGIN_METADATA(SidebarEditItemBubbleDelegateView,
-               views::BubbleDialogDelegateView)
+BEGIN_METADATA(SidebarEditItemBubbleDelegateView)
 END_METADATA

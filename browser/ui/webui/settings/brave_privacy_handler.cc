@@ -5,12 +5,16 @@
 
 #include "brave/browser/ui/webui/settings/brave_privacy_handler.h"
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/values.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/components/ai_chat/core/browser/utils.h"
+#include "brave/components/ai_chat/core/common/features.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/de_amp/common/features.h"
-#include "brave/components/debounce/common/features.h"
+#include "brave/components/debounce/core/common/features.h"
 #include "brave/components/google_sign_in_permission/google_sign_in_permission_util.h"
 #include "brave/components/p3a/pref_names.h"
 #include "brave/components/request_otr/common/buildflags/buildflags.h"
@@ -30,6 +34,10 @@
 #include "brave/browser/gcm_driver/brave_gcm_channel_status.h"
 #endif
 
+#if BUILDFLAG(IS_WIN)
+#include "brave/components/windows_recall/windows_recall.h"
+#endif
+
 BravePrivacyHandler::BravePrivacyHandler() {
   local_state_change_registrar_.Init(g_browser_process->local_state());
   local_state_change_registrar_.Add(
@@ -40,6 +48,15 @@ BravePrivacyHandler::BravePrivacyHandler() {
       p3a::kP3AEnabled,
       base::BindRepeating(&BravePrivacyHandler::OnP3AEnabledChanged,
                           base::Unretained(this)));
+#if BUILDFLAG(IS_WIN)
+  if (windows_recall::IsWindowsRecallAvailable()) {
+    local_state_change_registrar_.Add(
+        windows_recall::prefs::kWindowsRecallDisabled,
+        base::BindRepeating(
+            &BravePrivacyHandler::OnWindowsRecallDisabledChanged,
+            base::Unretained(this)));
+  }
+#endif
 }
 
 BravePrivacyHandler::~BravePrivacyHandler() {
@@ -63,6 +80,20 @@ void BravePrivacyHandler::RegisterMessages() {
       "getStatsUsagePingEnabled",
       base::BindRepeating(&BravePrivacyHandler::GetStatsUsagePingEnabled,
                           base::Unretained(this)));
+#if BUILDFLAG(IS_WIN)
+  if (windows_recall::IsWindowsRecallAvailable()) {
+    web_ui()->RegisterMessageCallback(
+        "isWindowsRecallDisabled",
+        base::BindRepeating(&BravePrivacyHandler::GetLocalStateBooleanEnabled,
+                            base::Unretained(this),
+                            windows_recall::prefs::kWindowsRecallDisabled));
+    web_ui()->RegisterMessageCallback(
+        "setWindowsRecallDisabled",
+        base::BindRepeating(&BravePrivacyHandler::SetLocalStateBooleanEnabled,
+                            base::Unretained(this),
+                            windows_recall::prefs::kWindowsRecallDisabled));
+  }
+#endif
 }
 
 // static
@@ -96,6 +127,28 @@ void BravePrivacyHandler::AddLoadTimeData(content::WebUIDataSource* data_source,
       "isLocalhostAccessFeatureEnabled",
       base::FeatureList::IsEnabled(
           brave_shields::features::kBraveLocalhostAccessPermission));
+  data_source->AddBoolean(
+      "isOpenAIChatFromBraveSearchEnabled",
+      ai_chat::IsAIChatEnabled(profile->GetPrefs()) &&
+          ai_chat::features::IsOpenAIChatFromBraveSearchEnabled());
+  auto* local_state = g_browser_process->local_state();
+  data_source->AddBoolean(
+      "isStatsReportingEnabledManaged",
+      local_state->IsManagedPreference(kStatsReportingEnabled));
+  data_source->AddBoolean("isP3AEnabledManaged",
+                          local_state->IsManagedPreference(p3a::kP3AEnabled));
+
+#if BUILDFLAG(IS_WIN)
+  {
+    data_source->AddBoolean("isWindowsRecallAvailable",
+                            windows_recall::IsWindowsRecallAvailable());
+    data_source->AddBoolean("windowsRecallDisabledAtStartup",
+                            windows_recall::IsWindowsRecallDisabled(
+                                g_browser_process->local_state()));
+  }
+#else
+  data_source->AddBoolean("isWindowsRecallAvailable", false);
+#endif
 }
 
 void BravePrivacyHandler::SetLocalStateBooleanEnabled(
@@ -136,9 +189,11 @@ void BravePrivacyHandler::GetStatsUsagePingEnabled(
 void BravePrivacyHandler::OnStatsUsagePingEnabledChanged() {
   if (IsJavascriptAllowed()) {
     PrefService* local_state = g_browser_process->local_state();
-    bool enabled = local_state->GetBoolean(kStatsReportingEnabled);
+    bool user_enabled = local_state->GetBoolean(kStatsReportingEnabled);
+    bool is_managed = local_state->IsManagedPreference(kStatsReportingEnabled);
 
-    FireWebUIListener("stats-usage-ping-enabled-changed", base::Value(enabled));
+    FireWebUIListener("stats-usage-ping-enabled-changed", user_enabled,
+                      is_managed);
   }
 }
 
@@ -153,8 +208,21 @@ void BravePrivacyHandler::GetP3AEnabled(const base::Value::List& args) {
 void BravePrivacyHandler::OnP3AEnabledChanged() {
   if (IsJavascriptAllowed()) {
     PrefService* local_state = g_browser_process->local_state();
-    bool enabled = local_state->GetBoolean(p3a::kP3AEnabled);
+    bool user_enabled = local_state->GetBoolean(p3a::kP3AEnabled);
+    bool is_managed = local_state->IsManagedPreference(p3a::kP3AEnabled);
 
-    FireWebUIListener("p3a-enabled-changed", base::Value(enabled));
+    FireWebUIListener("p3a-enabled-changed", user_enabled, is_managed);
   }
 }
+
+#if BUILDFLAG(IS_WIN)
+void BravePrivacyHandler::OnWindowsRecallDisabledChanged() {
+  CHECK(windows_recall::IsWindowsRecallAvailable());
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+  FireWebUIListener("windows-recall-disabled-changed",
+                    base::Value(g_browser_process->local_state()->GetBoolean(
+                        windows_recall::prefs::kWindowsRecallDisabled)));
+}
+#endif

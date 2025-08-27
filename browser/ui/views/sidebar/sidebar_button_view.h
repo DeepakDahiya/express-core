@@ -11,11 +11,16 @@
 #include "ui/views/controls/button/image_button.h"
 
 class SidebarButtonView : public views::ImageButton {
+  METADATA_HEADER(SidebarButtonView, views::ImageButton)
  public:
-  METADATA_HEADER(SidebarButtonView);
-  static constexpr int kSidebarButtonSize = 36;
-  static constexpr int kIconSize = 16;
-  static constexpr int kMargin = 4;
+  // Value ought to follow TOOLBAR_BUTTON_HEIGHT in brave_layout_constants.cc
+  static constexpr int kSidebarButtonSize = 28;
+  // Value ought to follow kDefaultIconSize in toolbar_button.h
+  static constexpr int kDefaultIconSize = 20;
+  // External, meaning favicons for bookmarked pages
+  static constexpr int kExternalIconSize = 18;
+  // Vertical space between sidebar buttons
+  static constexpr int kMargin = 8;
 
   explicit SidebarButtonView(const std::u16string& accessible_name);
   ~SidebarButtonView() override;
@@ -24,8 +29,9 @@ class SidebarButtonView : public views::ImageButton {
   SidebarButtonView operator=(const SidebarButtonView&) = delete;
 
   // views::ImageButton overrides:
-  gfx::Size CalculatePreferredSize() const override;
-  std::u16string GetTooltipText(const gfx::Point& p) const override;
+  void OnThemeChanged() override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
 };
 
 #endif  // BRAVE_BROWSER_UI_VIEWS_SIDEBAR_SIDEBAR_BUTTON_VIEW_H_

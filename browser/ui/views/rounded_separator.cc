@@ -7,7 +7,6 @@
 
 #include <algorithm>
 
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
@@ -17,11 +16,16 @@
 #include "ui/color/color_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 
 // static
-const int RoundedSeparator::kThickness = 1;
-
-RoundedSeparator::RoundedSeparator() = default;
+RoundedSeparator::RoundedSeparator() {
+  // A valid role must be set in the AXNodeData prior to setting the name
+  // via AXNodeData::SetName.
+  GetViewAccessibility().SetRole(ax::mojom::Role::kSplitter);
+  GetViewAccessibility().SetName(
+      l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
+}
 
 RoundedSeparator::~RoundedSeparator() = default;
 
@@ -38,18 +42,12 @@ void RoundedSeparator::SetPreferredHeight(int height) {
 ////////////////////////////////////////////////////////////////////////////////
 // Separator, View overrides:
 
-gfx::Size RoundedSeparator::CalculatePreferredSize() const {
+gfx::Size RoundedSeparator::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   gfx::Size size(kThickness, preferred_height_);
   gfx::Insets insets = GetInsets();
   size.Enlarge(insets.width(), insets.height());
   return size;
-}
-
-void RoundedSeparator::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  // A valid role must be set in the AXNodeData prior to setting the name
-  // via AXNodeData::SetName.
-  node_data->role = ax::mojom::Role::kSplitter;
-  node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_SEPARATOR));
 }
 
 void RoundedSeparator::OnPaint(gfx::Canvas* canvas) {

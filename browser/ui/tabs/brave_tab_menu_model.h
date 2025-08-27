@@ -6,9 +6,19 @@
 #ifndef BRAVE_BROWSER_UI_TABS_BRAVE_TAB_MENU_MODEL_H_
 #define BRAVE_BROWSER_UI_TABS_BRAVE_TAB_MENU_MODEL_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/memory/raw_ptr.h"
+#include "brave/app/brave_command_ids.h"
+#include "brave/components/containers/buildflags/buildflags.h"
 #include "chrome/browser/ui/tabs/tab_menu_model.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "ui/menus/simple_menu_model.h"
+
+#if BUILDFLAG(ENABLE_CONTAINERS)
+#include "brave/browser/ui/containers/containers_menu_model.h"
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
 
 namespace content {
 class WebContents;
@@ -18,6 +28,8 @@ namespace sessions {
 class TabRestoreService;
 }  // namespace sessions
 
+class Browser;
+
 class BraveTabMenuModel : public TabMenuModel {
  public:
   enum BraveTabContextMenuCommand {
@@ -26,14 +38,30 @@ class BraveTabMenuModel : public TabMenuModel {
     CommandBookmarkAllTabs,
     CommandShowVerticalTabs,
     CommandToggleTabMuted,
+    CommandBringAllTabsToThisWindow,
+    CommandCloseDuplicateTabs,
+    CommandNewSplitView,
+    CommandTileTabs,
+    CommandBreakTile,
+    CommandSwapTabsInTile,
+    CommandOpenInContainer,
+    CommandRenameTab,
     CommandLast,
   };
 
-  BraveTabMenuModel(ui::SimpleMenuModel::Delegate* delegate,
-                    TabMenuModelDelegate* tab_menu_model_delegate,
-                    TabStripModel* tab_strip_model,
-                    int index,
-                    bool is_vertical_tab);
+  static_assert(CommandLast < IDC_OPEN_IN_CONTAINER_START,
+                "Container's menu commands must be after "
+                "BraveTabContextMenuCommand to avoid conflicts");
+
+  BraveTabMenuModel(
+      ui::SimpleMenuModel::Delegate* delegate,
+      TabMenuModelDelegate* tab_menu_model_delegate,
+      TabStripModel* tab_strip_model,
+#if BUILDFLAG(ENABLE_CONTAINERS)
+      containers::ContainersMenuModel::Delegate& containers_delegate,
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
+      int index,
+      bool is_vertical_tab);
   BraveTabMenuModel(const BraveTabMenuModel&) = delete;
   BraveTabMenuModel& operator=(const BraveTabMenuModel&) = delete;
   ~BraveTabMenuModel() override;
@@ -44,14 +72,37 @@ class BraveTabMenuModel : public TabMenuModel {
   std::u16string GetLabelAt(size_t index) const override;
 
  private:
-  void Build(int selected_tab_count);
+  void Build(Browser* browser,
+             TabStripModel* tab_strip_model,
+             int selected_index,
+             const std::vector<int>& indices);
+  void BuildItemsForSplitView(Browser* browser,
+                              TabStripModel* tab_strip_model,
+                              const std::vector<int>& indices);
   int GetRestoreTabCommandStringId() const;
+
+#if BUILDFLAG(ENABLE_CONTAINERS)
+  void BuildItemForContainers(
+      const PrefService& prefs,
+      TabStripModel* tab_strip_model,
+      containers::ContainersMenuModel::Delegate& containers_delegate,
+      const std::vector<int>& indices);
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
+
+  // Build menu items for tab customization, such as renaming the tab.
+  void BuildItemForCustomization(TabStripModel* tab_strip_model, int tab_index);
 
   raw_ptr<content::WebContents> web_contents_ = nullptr;
   raw_ptr<sessions::TabRestoreService> restore_service_ = nullptr;
   bool all_muted_;
 
   bool is_vertical_tab_ = false;
+
+#if BUILDFLAG(ENABLE_CONTAINERS)
+  raw_ref<containers::ContainersMenuModel::Delegate>
+      containers_menu_model_delegate_;
+  std::unique_ptr<containers::ContainersMenuModel> containers_submenu_;
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
 };
 
 #endif  // BRAVE_BROWSER_UI_TABS_BRAVE_TAB_MENU_MODEL_H_

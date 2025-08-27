@@ -8,8 +8,8 @@
 #include <map>
 #include <utility>
 
+#include "base/check.h"
 #include "base/time/time.h"
-#include "brave/browser/profiles/profile_util.h"
 #include "brave/browser/ui/brave_tooltips/bounds_util.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "build/build_config.h"
@@ -19,8 +19,6 @@
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/compositor/layer.h"
 #include "ui/display/screen.h"
-#include "ui/gfx/animation/linear_animation.h"
-#include "ui/gfx/animation/tween.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/geometry/insets.h"
@@ -30,6 +28,7 @@
 #include "ui/gfx/geometry/vector2d.h"
 #include "ui/gfx/skia_paint_util.h"
 #include "ui/native_theme/native_theme.h"
+#include "ui/views/accessibility/view_accessibility.h"
 #include "ui/views/border.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/widget.h"
@@ -39,6 +38,8 @@
 #endif
 
 namespace {
+
+constexpr gfx::Size kTooltipSize(434 + 15, 104 + 15);
 
 constexpr int kShadowElevation = 5;
 
@@ -61,26 +62,25 @@ constexpr int kCornerRadius = 7;
 
 namespace brave_tooltips {
 
-BraveTooltipPopup::BraveTooltipPopup(Profile* profile,
-                                     std::unique_ptr<BraveTooltip> tooltip)
-    : profile_(profile),
-      tooltip_(std::move(tooltip)),
-      animation_(std::make_unique<gfx::LinearAnimation>(this)) {
-  DCHECK(profile_);
-
+BraveTooltipPopup::BraveTooltipPopup(std::unique_ptr<BraveTooltip> tooltip)
+    : tooltip_(std::move(tooltip)) {
   CreatePopup();
 
-  NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
+  GetViewAccessibility().SetRole(ax::mojom::Role::kAlertDialog);
+  GetViewAccessibility().SetRoleDescription(l10n_util::GetStringUTF8(
+      IDS_BRAVE_TOOLTIPS_BRAVE_TOOLTIP_ACCESSIBLE_NAME));
 
   display::Screen* screen = display::Screen::GetScreen();
   if (screen) {
     screen->AddObserver(this);
   }
-
-  FadeIn();
 }
 
 BraveTooltipPopup::~BraveTooltipPopup() {
+  // To cleanup widget related stuffs.
+  // This will fire OnWidgetDestroyed() notification.
+  widget_.reset();
+
   display::Screen* screen = display::Screen::GetScreen();
   if (screen) {
     screen->RemoveObserver(this);
@@ -88,19 +88,21 @@ BraveTooltipPopup::~BraveTooltipPopup() {
 }
 
 void BraveTooltipPopup::Show() {
+  GetWidget()->ShowInactive();
+
   BraveTooltipDelegate* delegate = tooltip_->delegate();
   if (delegate) {
     delegate->OnTooltipShow(tooltip_->id());
   }
 }
 
-void BraveTooltipPopup::Close(const bool by_user) {
+void BraveTooltipPopup::Close() {
   BraveTooltipDelegate* delegate = tooltip_->delegate();
   if (delegate) {
-    delegate->OnTooltipClose(tooltip_->id(), by_user);
+    delegate->OnTooltipClose(tooltip_->id());
   }
 
-  FadeOut();
+  CloseWidget();
 }
 
 void BraveTooltipPopup::CloseWidget() {
@@ -115,7 +117,7 @@ void BraveTooltipPopup::OnOkButtonPressed() {
     delegate->OnTooltipOkButtonPressed(tooltip_->id());
   }
 
-  FadeOut();
+  Close();
 }
 
 void BraveTooltipPopup::OnCancelButtonPressed() {
@@ -130,7 +132,7 @@ void BraveTooltipPopup::OnCancelButtonPressed() {
     delegate->OnTooltipCancelButtonPressed(tooltip_->id());
   }
 
-  FadeOut();
+  Close();
 }
 
 void BraveTooltipPopup::set_normalized_display_coordinates(double x, double y) {
@@ -143,7 +145,8 @@ void BraveTooltipPopup::set_display_work_area_insets(int x, int y) {
   display_work_area_inset_y_ = y;
 }
 
-void BraveTooltipPopup::OnDisplayRemoved(const display::Display& old_display) {
+void BraveTooltipPopup::OnDisplaysRemoved(
+    const display::Displays& old_displays) {
   // Called when |old_display| has been removed
   RecomputeAlignment();
 }
@@ -152,12 +155,6 @@ void BraveTooltipPopup::OnDisplayMetricsChanged(const display::Display& display,
                                                 uint32_t changed_metrics) {
   // Called when the metrics of a display change
   RecomputeAlignment();
-}
-
-void BraveTooltipPopup::GetAccessibleNodeData(ui::AXNodeData* node_data) {
-  node_data->role = ax::mojom::Role::kAlertDialog;
-  node_data->SetName(l10n_util::GetStringUTF8(
-      IDS_BRAVE_TOOLTIPS_BRAVE_TOOLTIP_ACCESSIBLE_NAME));
 }
 
 void BraveTooltipPopup::OnDisplayChanged() {
@@ -232,52 +229,16 @@ void BraveTooltipPopup::OnWidgetBoundsChanged(views::Widget* widget,
   widget_origin_ = new_bounds.origin();
 }
 
-void BraveTooltipPopup::AnimationEnded(const gfx::Animation* animation) {
-  UpdateAnimation();
-
-  switch (animation_state_) {
-    case AnimationState::kIdle: {
-      break;
-    }
-
-    case AnimationState::kFadeIn: {
-      animation_state_ = AnimationState::kIdle;
-      break;
-    }
-
-    case AnimationState::kFadeOut: {
-      animation_state_ = AnimationState::kIdle;
-      CloseWidget();
-      break;
-    }
-  }
-}
-
-void BraveTooltipPopup::AnimationProgressed(const gfx::Animation* animation) {
-  UpdateAnimation();
-}
-
-void BraveTooltipPopup::AnimationCanceled(const gfx::Animation* animation) {
-  UpdateAnimation();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 
 void BraveTooltipPopup::CreatePopup() {
   SetLayoutManager(std::make_unique<views::BoxLayout>(
       views::BoxLayout::Orientation::kVertical, gfx::Insets()));
 
-  // Container
-  views::View* container_view = new views::View();
-  AddChildView(container_view);
-
   // Tooltip
   DCHECK(!tooltip_view_);
-  tooltip_view_ = container_view->AddChildView(
-      new BraveTooltipView(this, tooltip_->attributes()));
-
-  container_view->SetPosition(gfx::Point(0, 0));
-  container_view->SetSize(tooltip_view_->size());
+  tooltip_view_ =
+      AddChildView(new BraveTooltipView(this, tooltip_->attributes()));
 
   CreateWidgetView();
 }
@@ -317,12 +278,11 @@ gfx::Point BraveTooltipPopup::GetDefaultOriginForSize(const gfx::Size& size) {
 
 gfx::Rect BraveTooltipPopup::CalculateBounds(bool use_default_origin) {
   DCHECK(tooltip_view_);
-  gfx::Size size = tooltip_view_->size();
-  DCHECK(!size.IsEmpty());
 
-  const gfx::Point origin =
-      use_default_origin ? GetDefaultOriginForSize(size) : widget_origin_;
-  return gfx::Rect(origin, size);
+  const gfx::Point origin = use_default_origin
+                                ? GetDefaultOriginForSize(kTooltipSize)
+                                : widget_origin_;
+  return gfx::Rect(origin, kTooltipSize);
 }
 
 void BraveTooltipPopup::RecomputeAlignment() {
@@ -353,17 +313,18 @@ gfx::Insets BraveTooltipPopup::GetShadowMargin() const {
 void BraveTooltipPopup::CreateWidgetView() {
   // The widget instance is owned by its NativeWidget. For more details see
   // ui/views/widget/widget.h
-  views::Widget::InitParams params;
+  views::Widget::InitParams params(
+      views::Widget::InitParams::CLIENT_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = this;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.z_order = ui::ZOrderLevel::kFloatingWindow;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.shadow_type = views::Widget::InitParams::ShadowType::kNone;
   params.bounds = CalculateBounds(true);
 
-  views::Widget* widget = new views::Widget();
-  widget->set_focus_on_creation(false);
-  widget_observation_.Observe(widget);
+  widget_ = std::make_unique<views::Widget>();
+  widget_->set_focus_on_creation(false);
+  widget_observation_.Observe(widget_.get());
 
 #if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_LINUX)
   // We want to ensure that this toast always goes to the native desktop,
@@ -371,14 +332,11 @@ void BraveTooltipPopup::CreateWidgetView() {
   // there
   if (!params.parent) {
     DCHECK(!params.native_widget);
-    params.native_widget = new views::DesktopNativeWidgetAura(widget);
+    params.native_widget = new views::DesktopNativeWidgetAura(widget_.get());
   }
 #endif
 
-  widget->Init(std::move(params));
-
-  widget->SetOpacity(0.0);
-  widget->ShowInactive();
+  widget_->Init(std::move(params));
 }
 
 void BraveTooltipPopup::CloseWidgetView() {
@@ -394,56 +352,11 @@ void BraveTooltipPopup::CloseWidgetView() {
   GetWidget()->CloseNow();
 }
 
-void BraveTooltipPopup::FadeIn() {
-  animation_state_ = AnimationState::kFadeIn;
-
-  const base::TimeDelta fade_duration = base::Milliseconds(fade_duration_);
-  animation_->SetDuration(fade_duration);
-
-  StartAnimation();
-}
-
-void BraveTooltipPopup::FadeOut() {
-  animation_state_ = AnimationState::kFadeOut;
-
-  const base::TimeDelta fade_duration = base::Milliseconds(fade_duration_);
-  animation_->SetDuration(fade_duration);
-
-  StartAnimation();
-}
-
-void BraveTooltipPopup::StartAnimation() {
-  animation_->Start();
-
-  UpdateAnimation();
-
-  DCHECK(animation_->is_animating());
-}
-
-void BraveTooltipPopup::UpdateAnimation() {
-  DCHECK_NE(animation_state_, AnimationState::kIdle);
-
-  if (!IsWidgetValid()) {
-    return;
-  }
-
-  const double value = gfx::Tween::CalculateValue(
-      animation_state_ == AnimationState::kFadeOut ? gfx::Tween::EASE_IN
-                                                   : gfx::Tween::EASE_OUT,
-      animation_->GetCurrentValue());
-
-  if (animation_state_ == AnimationState::kFadeIn) {
-    GetWidget()->SetOpacity(gfx::Tween::FloatValueBetween(value, 0.0f, 1.0f));
-  } else if (animation_state_ == AnimationState::kFadeOut) {
-    GetWidget()->SetOpacity(gfx::Tween::FloatValueBetween(value, 1.0f, 0.0f));
-  }
-}
-
 bool BraveTooltipPopup::IsWidgetValid() const {
   return GetWidget() && !GetWidget()->IsClosed();
 }
 
-BEGIN_METADATA(BraveTooltipPopup, views::WidgetDelegateView)
+BEGIN_METADATA(BraveTooltipPopup)
 END_METADATA
 
 }  // namespace brave_tooltips

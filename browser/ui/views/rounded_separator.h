@@ -19,7 +19,7 @@ class RoundedSeparator : public views::View {
 
  public:
   // The separator's thickness in dip.
-  static const int kThickness;
+  static constexpr int kThickness = 1;
 
   RoundedSeparator();
   RoundedSeparator(const RoundedSeparator&) = delete;
@@ -31,8 +31,8 @@ class RoundedSeparator : public views::View {
   void SetPreferredHeight(int height);
 
   // Overridden from View:
-  gfx::Size CalculatePreferredSize() const override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void OnPaint(gfx::Canvas* canvas) override;
 
  private:

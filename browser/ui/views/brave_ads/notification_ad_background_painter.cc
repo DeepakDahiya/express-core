@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/views/brave_ads/notification_ad_background_painter.h"
 
+#include "base/check.h"
 #include "third_party/skia/include/core/SkPath.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect.h"
@@ -14,8 +15,8 @@
 namespace brave_ads {
 
 NotificationAdBackgroundPainter::NotificationAdBackgroundPainter(
-    const int top_radius,
-    const int bottom_radius,
+    int top_radius,
+    int bottom_radius,
     const SkColor color)
     : top_radius_(SkIntToScalar(top_radius)),
       bottom_radius_(SkIntToScalar(bottom_radius)),

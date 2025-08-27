@@ -3,23 +3,23 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include "brave/browser/ui/webui/brave_wallet/wallet_panel_ui.h"
+
 #include <string>
 #include <string_view>
 
 #include "base/memory/raw_ptr.h"
 #include "base/run_loop.h"
-#include "base/strings/string_util.h"
-#include "base/strings/stringprintf.h"
 #include "base/test/bind.h"
-#include "brave/browser/brave_wallet/json_rpc_service_factory.h"
-#include "brave/browser/brave_wallet/keyring_service_factory.h"
+#include "brave/browser/brave_wallet/asset_ratio_service_factory.h"
+#include "brave/browser/brave_wallet/brave_wallet_service_factory.h"
 #include "brave/browser/ui/webui/brave_settings_ui.h"
-#include "brave/browser/ui/webui/brave_wallet/wallet_panel_ui.h"
+#include "brave/components/brave_wallet/browser/asset_ratio_service.h"
+#include "brave/components/brave_wallet/browser/brave_wallet_service.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_utils.h"
 #include "brave/components/brave_wallet/browser/json_rpc_service.h"
 #include "brave/components/brave_wallet/browser/keyring_service.h"
 #include "brave/components/brave_wallet/browser/pref_names.h"
-#include "brave/components/brave_wallet/common/features.h"
 #include "brave/components/constants/webui_url_constants.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,9 +28,11 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "services/network/public/cpp/weak_wrapper_shared_url_loader_factory.h"
 #include "services/network/test/test_url_loader_factory.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
 
 using content::EvalJsResult;
 
@@ -39,14 +41,13 @@ namespace {
 constexpr char kSomeEndpoint[] = "https://some.endpoint.com/";
 
 std::string SelectInNetworkList(const std::string& selector) {
-  return base::StringPrintf(
-      "window.testing.walletNetworks60.querySelector(`%s`)", selector.c_str());
+  return absl::StrFormat("window.testing.walletNetworks60.querySelector(`%s`)",
+                         selector);
 }
 
 std::string SelectInAddNetworkDialog(const std::string& selector) {
-  return base::StringPrintf(
-      "window.testing.addWalletNetworkDialog.querySelector(`%s`)",
-      selector.c_str());
+  return absl::StrFormat(
+      "window.testing.addWalletNetworkDialog.querySelector(`%s`)", selector);
 }
 
 std::string DoubleClickOn(const std::string& element) {
@@ -76,25 +77,20 @@ std::string NeonEVMNetworkChainName() {
   return NeonEVMNetwork() + " .chainName";
 }
 
-std::string DAppSettingsButton() {
-  return R"([data-test-id='dapp-settings-button'])";
-}
-
 std::string NetworksButton() {
   return R"([data-test-id='select-network-button'])";
 }
 
 std::string QuerySelectorJS(const std::string& selector) {
-  return base::StringPrintf(R"(document.querySelector(`%s`))",
-                            selector.c_str());
+  return absl::StrFormat(R"(document.querySelector(`%s`))", selector);
 }
 
 std::string Select(const std::string& selector1, const std::string& selector2) {
-  return base::StringPrintf(R"(document.querySelector(`%s %s`))",
-                            selector1.c_str(), selector2.c_str());
+  return absl::StrFormat(R"(document.querySelector(`%s %s`))", selector1,
+                         selector2);
 }
 
-void NonBlockingDelay(const base::TimeDelta& delay) {
+void NonBlockingDelay(base::TimeDelta delay) {
   base::RunLoop run_loop(base::RunLoop::Type::kNestableTasksAllowed);
   base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE, run_loop.QuitWhenIdleClosure(), delay);
@@ -118,7 +114,7 @@ bool WaitAndClickElement(content::WebContents* web_contents,
       return false;
     }
     auto result = EvalJs(web_contents, selector + ".click()");
-    if (result.value.is_none() && result.error.empty()) {
+    if (result.is_ok() && result == base::Value()) {
       return true;
     }
   }
@@ -134,27 +130,27 @@ class WalletPanelUIBrowserTest : public InProcessBrowserTest {
   void SetUpOnMainThread() override {
     InProcessBrowserTest::SetUpOnMainThread();
 
-    // Disabling CSP on webui pages so EvalJS could be run in main world.
-    BraveSettingsUI::ShouldDisableCSPForTesting() = true;
     BraveSettingsUI::ShouldExposeElementsForTesting() = true;
-    WalletPanelUI::ShouldDisableCSPForTesting() = true;
-
-    auto* profile = browser()->profile();
 
     shared_url_loader_factory_ =
         base::MakeRefCounted<network::WeakWrapperSharedURLLoaderFactory>(
             &url_loader_factory_);
-    JsonRpcServiceFactory::GetServiceForContext(profile)
-        ->SetAPIRequestHelperForTesting(shared_url_loader_factory_);
 
-    KeyringServiceFactory::GetServiceForContext(profile)->CreateWallet(
-        "password_123", base::DoNothing());
+    brave_wallet_service()->json_rpc_service()->SetAPIRequestHelperForTesting(
+        shared_url_loader_factory_);
+
+    AssetRatioServiceFactory::GetServiceForContext(browser()->profile())
+        ->EnableDummyPricesForTesting();
+
+    brave_wallet_service()->keyring_service()->CreateWallet("password_123",
+                                                            base::DoNothing());
 
     SetEthChainIdInterceptor(
-        {GURL(kSomeEndpoint),
-         GetKnownChain(profile->GetPrefs(), mojom::kNeonEVMMainnetChainId,
-                       mojom::CoinType::ETH)
-             ->rpc_endpoints.front()},
+        {GURL(kSomeEndpoint), brave_wallet_service()
+                                  ->network_manager()
+                                  ->GetKnownChain(mojom::kNeonEVMMainnetChainId,
+                                                  mojom::CoinType::ETH)
+                                  ->rpc_endpoints.front()},
         mojom::kNeonEVMMainnetChainId);
 
     CreateWalletTab();
@@ -162,10 +158,11 @@ class WalletPanelUIBrowserTest : public InProcessBrowserTest {
 
   void CreateWalletTab() {
     ui_test_utils::NavigateToURLWithDisposition(
-        browser(), GURL(kBraveUIWalletPanelURL),
+        browser(),
+        GURL(std::string(kBraveUIWalletPanelURL) + "crypto/connections"),
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-    wallet_ = browser()->tab_strip_model()->GetActiveWebContents();
+    wallet_index_ = browser()->tab_strip_model()->active_index();
   }
 
   void CreateSettingsTab() {
@@ -173,10 +170,9 @@ class WalletPanelUIBrowserTest : public InProcessBrowserTest {
         browser(), GURL(std::string(kWalletSettingsURL) + "/networks"),
         WindowOpenDisposition::NEW_FOREGROUND_TAB,
         ui_test_utils::BROWSER_TEST_WAIT_FOR_LOAD_STOP);
-    settings_ = browser()->tab_strip_model()->GetActiveWebContents();
+    settings_index_ = browser()->tab_strip_model()->active_index();
     // Overriding native confirmation dialog so it always confirms.
-    EXPECT_TRUE(
-        EvalJs(settings_, "window.confirm = () => true").value.is_none());
+    EXPECT_TRUE(EvalJs(settings(), "window.confirm = () => true").is_ok());
   }
 
   void ActivateSettingsTab() {
@@ -190,21 +186,21 @@ class WalletPanelUIBrowserTest : public InProcessBrowserTest {
   }
 
   WalletPanelUI* GetWebUIController() {
-    return wallet_->GetWebUI()->GetController()->GetAs<WalletPanelUI>();
+    return wallet()->GetWebUI()->GetController()->GetAs<WalletPanelUI>();
   }
 
   void SetEthChainIdInterceptor(const std::vector<GURL>& network_urls,
                                 const std::string& chain_id) {
     url_loader_factory_.SetInterceptor(base::BindLambdaForTesting(
-        [=](const network::ResourceRequest& request) {
+        [=, this](const network::ResourceRequest& request) {
           std::string_view request_string(request.request_body->elements()
                                               ->at(0)
                                               .As<network::DataElementBytes>()
                                               .AsStringPiece());
           url_loader_factory_.ClearResponses();
           if (request_string.find("eth_chainId") != std::string::npos) {
-            const std::string response = base::StringPrintf(
-                R"({"jsonrpc":"2.0","id":1,"result":"%s"})", chain_id.c_str());
+            const std::string response = absl::StrFormat(
+                R"({"jsonrpc":"2.0","id":1,"result":"%s"})", chain_id);
             for (auto& url : network_urls) {
               url_loader_factory_.AddResponse(url.spec(), response);
             }
@@ -215,8 +211,8 @@ class WalletPanelUIBrowserTest : public InProcessBrowserTest {
   void WaitForNeonEVMNetworkUrl(const GURL& url) {
     auto* prefs = browser()->profile()->GetPrefs();
 
-    if (GetNetworkURL(prefs, mojom::kNeonEVMMainnetChainId,
-                      mojom::CoinType::ETH) == url) {
+    if (brave_wallet_service()->network_manager()->GetNetworkURL(
+            mojom::kNeonEVMMainnetChainId, mojom::CoinType::ETH) == url) {
       return;
     }
 
@@ -224,22 +220,30 @@ class WalletPanelUIBrowserTest : public InProcessBrowserTest {
     PrefChangeRegistrar pref_change_registrar;
     pref_change_registrar.Init(prefs);
     pref_change_registrar.Add(
-        kBraveWalletCustomNetworks,
-        base::BindLambdaForTesting([&run_loop, &prefs, &url] {
-          if (GetNetworkURL(prefs, mojom::kNeonEVMMainnetChainId,
-                            mojom::CoinType::ETH) == url) {
+        kBraveWalletCustomNetworks, base::BindLambdaForTesting([&] {
+          if (brave_wallet_service()->network_manager()->GetNetworkURL(
+                  mojom::kNeonEVMMainnetChainId, mojom::CoinType::ETH) == url) {
             run_loop.Quit();
           }
         }));
     run_loop.Run();
   }
 
-  content::WebContents* wallet() { return wallet_; }
-  content::WebContents* settings() { return settings_; }
+  content::WebContents* wallet() {
+    return browser()->tab_strip_model()->GetWebContentsAt(wallet_index_);
+  }
+  content::WebContents* settings() {
+    return browser()->tab_strip_model()->GetWebContentsAt(settings_index_);
+  }
+
+  BraveWalletService* brave_wallet_service() {
+    return BraveWalletServiceFactory::GetServiceForContext(
+        browser()->profile());
+  }
 
  private:
-  raw_ptr<content::WebContents> wallet_ = nullptr;
-  raw_ptr<content::WebContents> settings_ = nullptr;
+  int wallet_index_ = 0;
+  int settings_index_ = 0;
   network::TestURLLoaderFactory url_loader_factory_;
   scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 };
@@ -249,27 +253,15 @@ IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, InitialUIRendered) {
   ASSERT_TRUE(EvalJs(wallet(), wallet_panel_js).ExtractBool());
 }
 
-// This test is crashing on macos because renderer process DCHECKs trying
-// to display scroll bar. Disabled for macos until this is fixed.
-#if BUILDFLAG(IS_MAC)
-#define MAYBE_HideNetworkInSettings DISABLED_HideNetworkInSettings
-#else
-#define MAYBE_HideNetworkInSettings HideNetworkInSettings
-#endif
-IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, MAYBE_HideNetworkInSettings) {
+IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, HideNetworkInSettings) {
   ActivateWalletTab();
-  // Wait and click on DApp settings button.
-  ASSERT_TRUE(
-      WaitAndClickElement(wallet(), QuerySelectorJS(DAppSettingsButton())));
   // Wait and click on select network button.
   ASSERT_TRUE(WaitAndClickElement(wallet(), QuerySelectorJS(NetworksButton())));
 
   // Both Polygon and Neon EVM are listed.
   ASSERT_TRUE(WaitFor(wallet(), QuerySelectorJS(PolygonNetwork())));
-  ASSERT_TRUE(
-      EvalJs(wallet(), QuerySelectorJS(PolygonNetwork())).value.is_dict());
-  ASSERT_TRUE(
-      EvalJs(wallet(), QuerySelectorJS(NeonEVMNetwork())).value.is_dict());
+  ASSERT_TRUE(EvalJs(wallet(), QuerySelectorJS(PolygonNetwork())).is_dict());
+  ASSERT_TRUE(EvalJs(wallet(), QuerySelectorJS(NeonEVMNetwork())).is_dict());
 
   // Wait and click on hide button for Neon EVM network in settings.
   CreateSettingsTab();
@@ -279,27 +271,20 @@ IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, MAYBE_HideNetworkInSettings) {
 
   ActivateWalletTab();
   wallet()->GetController().Reload(content::ReloadType::NORMAL, true);
-  // Wait and click on DApp settings button.
-  ASSERT_TRUE(
-      WaitAndClickElement(wallet(), QuerySelectorJS(DAppSettingsButton())));
+  EXPECT_TRUE(WaitForLoadStop(wallet()));
   // Wait and click on select network button.
   ASSERT_TRUE(WaitAndClickElement(wallet(), QuerySelectorJS(NetworksButton())));
 
   // Polygon is listed but Neon EVM is not.
   ASSERT_TRUE(WaitFor(wallet(), QuerySelectorJS(PolygonNetwork())));
-  ASSERT_TRUE(
-      EvalJs(wallet(), QuerySelectorJS(PolygonNetwork())).value.is_dict());
-  ASSERT_TRUE(
-      EvalJs(wallet(), QuerySelectorJS(NeonEVMNetwork())).value.is_none());
+  ASSERT_TRUE(EvalJs(wallet(), QuerySelectorJS(PolygonNetwork())).is_dict());
+  ASSERT_TRUE(EvalJs(wallet(), QuerySelectorJS(NeonEVMNetwork())).is_ok());
 }
 
 IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, CustomNetworkInSettings) {
   CreateSettingsTab();
 
   ActivateWalletTab();
-  // Wait and click on DApp settings button.
-  ASSERT_TRUE(
-      WaitAndClickElement(wallet(), QuerySelectorJS(DAppSettingsButton())));
   // Wait and click on select network button.
   ASSERT_TRUE(WaitAndClickElement(wallet(), QuerySelectorJS(NetworksButton())));
 
@@ -345,10 +330,10 @@ IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, CustomNetworkInSettings) {
 
 IN_PROC_BROWSER_TEST_F(WalletPanelUIBrowserTest, SelectRpcEndpoint) {
   CreateSettingsTab();
-  auto* prefs = browser()->profile()->GetPrefs();
-
   auto known_neon_evm_rpc =
-      GetKnownChain(prefs, mojom::kNeonEVMMainnetChainId, mojom::CoinType::ETH)
+      brave_wallet_service()
+          ->network_manager()
+          ->GetKnownChain(mojom::kNeonEVMMainnetChainId, mojom::CoinType::ETH)
           ->rpc_endpoints.front();
   // Neon EVM rpc is from known info.
   WaitForNeonEVMNetworkUrl(known_neon_evm_rpc);

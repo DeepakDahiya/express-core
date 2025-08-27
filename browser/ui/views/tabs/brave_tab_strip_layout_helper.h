@@ -6,11 +6,11 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_TABS_BRAVE_TAB_STRIP_LAYOUT_HELPER_H_
 #define BRAVE_BROWSER_UI_VIEWS_TABS_BRAVE_TAB_STRIP_LAYOUT_HELPER_H_
 
+#include <optional>
+#include <utility>
 #include <vector>
 
-#include "brave/browser/ui/views/sidebar/sidebar_item_view.h"
-#include "components/tab_groups/tab_group_id.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
+#include "chrome/browser/ui/views/tabs/tab_strip_layout_types.h"
 
 namespace gfx {
 class Rect;
@@ -23,26 +23,20 @@ class TabStripController;
 class TabContainer;
 class TabSlotView;
 class TabStrip;
-struct TabLayoutConstants;
 
 namespace tabs {
 
-constexpr int kVerticalTabHeight = 36;
-constexpr int kVerticalTabMinWidth = kVerticalTabHeight;
-constexpr int kVerticalTabsSpacing = 4;
-constexpr int kMarginForVerticalTabContainers = kVerticalTabsSpacing;
+inline constexpr int kVerticalTabHeight = 32;
+inline constexpr int kVerticalTabMinWidth = kVerticalTabHeight;
+inline constexpr int kVerticalTabsSpacing = 4;
+inline constexpr int kMarginForVerticalTabContainers = kVerticalTabsSpacing;
 
 int GetTabCornerRadius(const Tab& tab);
 
-std::vector<gfx::Rect> CalculateVerticalTabBounds(
-    const TabLayoutConstants& layout_constants,
+std::pair<std::vector<gfx::Rect>, LayoutDomain> CalculateVerticalTabBounds(
     const std::vector<TabWidthConstraints>& tabs,
-    absl::optional<int> width,
+    std::optional<int> width,
     bool is_floating_mode);
-
-std::vector<gfx::Rect> CalculateBoundsForHorizontalDraggedViews(
-    const std::vector<TabSlotView*>& views,
-    TabStrip* tab_strip);
 
 std::vector<gfx::Rect> CalculateBoundsForVerticalDraggedViews(
     const std::vector<TabSlotView*>& views,
@@ -52,7 +46,7 @@ void UpdateInsertionIndexForVerticalTabs(
     const gfx::Rect& dragged_bounds,
     int first_dragged_tab_index,
     int num_dragged_tabs,
-    absl::optional<tab_groups::TabGroupId> dragged_group,
+    bool dragged_groups,
     int candidate_index,
     TabStripController* tab_strip_controller,
     TabContainer* tab_container,

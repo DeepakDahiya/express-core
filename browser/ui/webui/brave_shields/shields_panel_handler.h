@@ -6,27 +6,23 @@
 #ifndef BRAVE_BROWSER_UI_WEBUI_BRAVE_SHIELDS_SHIELDS_PANEL_HANDLER_H_
 #define BRAVE_BROWSER_UI_WEBUI_BRAVE_SHIELDS_SHIELDS_PANEL_HANDLER_H_
 
-#include "brave/components/brave_shields/common/brave_shields_panel.mojom.h"
+#include "brave/components/brave_shields/core/common/brave_shields_panel.mojom.h"
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 
-namespace ui {
-class MojoBubbleWebUIController;
-}  // namespace ui
+class TopChromeWebUIController;
 
 namespace content {
 class WebUI;
 }  // namespace content
 
 class Profile;
-class BraveBrowserWindow;
 
 class ShieldsPanelHandler : public brave_shields::mojom::PanelHandler {
  public:
   ShieldsPanelHandler(
       mojo::PendingReceiver<brave_shields::mojom::PanelHandler> receiver,
-      ui::MojoBubbleWebUIController* webui_controller,
-      BraveBrowserWindow* brave_browser_window,
+      TopChromeWebUIController* webui_controller,
       Profile* profile);
 
   ShieldsPanelHandler(const ShieldsPanelHandler&) = delete;
@@ -42,8 +38,7 @@ class ShieldsPanelHandler : public brave_shields::mojom::PanelHandler {
 
  private:
   mojo::Receiver<brave_shields::mojom::PanelHandler> receiver_;
-  raw_ptr<ui::MojoBubbleWebUIController> const webui_controller_;
-  raw_ptr<BraveBrowserWindow> brave_browser_window_ = nullptr;
+  raw_ptr<TopChromeWebUIController> const webui_controller_;
   raw_ptr<Profile> profile_ = nullptr;
 };
 

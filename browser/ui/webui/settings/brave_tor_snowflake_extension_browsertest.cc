@@ -13,6 +13,7 @@
 #include "components/policy/core/common/mock_configuration_policy_provider.h"
 #include "components/policy/policy_constants.h"
 #include "content/public/test/browser_test.h"
+#include "content/public/test/browser_test_utils.h"
 #include "extensions/browser/disable_reason.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/common/extension.h"
@@ -20,28 +21,27 @@
 
 namespace {
 
-constexpr const char kSnowflakeExtensionId[] =
-    "mafpmfcccpbjnhfhjnllmmalhifmlcie";
+constexpr char kSnowflakeExtensionId[] = "mafpmfcccpbjnhfhjnllmmalhifmlcie";
 
 bool ClickSnowflakeToggle(content::WebContents* web_contents) {
-  return EvalJs(
-             web_contents,
-             "window.testing.torSubpage.getElementById('torSnowflake').click()")
-      .value.is_none();
+  return EvalJs(web_contents,
+                "window.testing.torSubpage.getElementById('torSnowflake')."
+                "click()")
+      .is_ok();
 }
 
 bool IsSnowflakeToggled(content::WebContents* web_contents) {
   return EvalJs(
              web_contents,
              "window.testing.torSubpage.getElementById('torSnowflake').checked")
-      .value.GetBool();
+      .ExtractBool();
 }
 
 bool IsSnowflakeToggleEnabled(content::WebContents* web_contents) {
   return EvalJs(web_contents,
                 "!window.testing.torSubpage.getElementById('torSnowflake')."
                 "disabled")
-      .value.GetBool();
+      .ExtractBool();
 }
 
 }  // namespace
@@ -49,13 +49,10 @@ bool IsSnowflakeToggleEnabled(content::WebContents* web_contents) {
 class TorSnowflakeExtensionBrowserTest : public InProcessBrowserTest {
  public:
   TorSnowflakeExtensionBrowserTest() {
-    // Disabling CSP on webui pages so EvalJS could be run in main world.
-    BraveSettingsUI::ShouldDisableCSPForTesting() = true;
     BraveSettingsUI::ShouldExposeElementsForTesting() = true;
   }
 
   ~TorSnowflakeExtensionBrowserTest() override {
-    BraveSettingsUI::ShouldDisableCSPForTesting() = false;
     BraveSettingsUI::ShouldExposeElementsForTesting() = false;
   }
 
@@ -64,21 +61,18 @@ class TorSnowflakeExtensionBrowserTest : public InProcessBrowserTest {
         extensions::ExtensionBuilder("Snowflake")
             .SetID(kSnowflakeExtensionId)
             .Build());
-    extensions::ExtensionSystem::Get(browser()->profile())
-        ->extension_service()
-        ->AddExtension(extension.get());
+    extensions::ExtensionRegistrar::Get(browser()->profile())
+        ->AddExtension(extension);
   }
 
   void EnableSnowflake(bool enable) {
     if (enable) {
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service()
+      extensions::ExtensionRegistrar::Get(browser()->profile())
           ->EnableExtension(kSnowflakeExtensionId);
     } else {
-      extensions::ExtensionSystem::Get(browser()->profile())
-          ->extension_service()
+      extensions::ExtensionRegistrar::Get(browser()->profile())
           ->DisableExtension(kSnowflakeExtensionId,
-                             extensions::disable_reason::DISABLE_USER_ACTION);
+                             {extensions::disable_reason::DISABLE_USER_ACTION});
     }
   }
 

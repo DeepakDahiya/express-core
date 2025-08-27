@@ -3,13 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "brave/browser/ui/toolbar/brave_bookmark_sub_menu_model.h"
+
 #include <stddef.h>
 
 #include <memory>
 #include <string>
 #include <utility>
-
-#include "brave/browser/ui/toolbar/brave_bookmark_sub_menu_model.h"
 
 #include "base/memory/raw_ptr.h"
 #include "base/values.h"
@@ -19,6 +19,7 @@
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/test/base/scoped_testing_local_state.h"
 #include "chrome/test/base/test_browser_window.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
@@ -64,12 +65,9 @@ class BraveBookmarkSubMenuModelUnitTest : public testing::Test {
         std::make_unique<sync_preferences::TestingPrefServiceSyncable>();
     RegisterUserProfilePrefs(prefs->registry());
 
-    RegisterLocalState(test_local_state_.registry());
-    TestingBrowserProcess::GetGlobal()->SetLocalState(&test_local_state_);
     builder.SetPrefService(std::move(prefs));
     profile_ = builder.Build();
-    model_ = BookmarkModelFactory::GetForBrowserContext(profile_.get());
-    bookmarks::test::WaitForBookmarkModelToLoad(model_);
+    bookmarks::test::WaitForBookmarkModelToLoad(GetBookmarkModel());
   }
 
   ui::SimpleMenuModel::Delegate* delegate() { return &delegate_; }
@@ -85,17 +83,21 @@ class BraveBookmarkSubMenuModelUnitTest : public testing::Test {
   }
   void TearDown() override {
     browser_.reset();
-    TestingBrowserProcess::GetGlobal()->SetLocalState(nullptr);
+    profile_.reset();
+  }
+
+  BookmarkModel* GetBookmarkModel() {
+    return BookmarkModelFactory::GetForBrowserContext(profile_.get());
   }
 
  protected:
   content::BrowserTaskEnvironment task_environment_;
+  ScopedTestingLocalState scoped_testing_local_state_{
+      TestingBrowserProcess::GetGlobal()};
   TestSimpleMenuDelegate delegate_;
   std::unique_ptr<Browser> browser_;
   std::unique_ptr<TestBrowserWindow> test_window_;
   std::unique_ptr<TestingProfile> profile_;
-  raw_ptr<BookmarkModel> model_ = nullptr;
-  TestingPrefServiceSimple test_local_state_;
 };
 
 TEST_F(BraveBookmarkSubMenuModelUnitTest, Build) {

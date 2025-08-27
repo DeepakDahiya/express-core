@@ -28,5 +28,9 @@ gfx::Rect BraveOmniboxPopupViewViews::GetTargetBounds() const {
   return bounds;
 }
 
-BEGIN_METADATA(BraveOmniboxPopupViewViews, OmniboxPopupViewViews)
+int BraveOmniboxPopupViewViews::GetLocationBarViewWidth() const {
+  return location_bar_view()->width();
+}
+
+BEGIN_METADATA(BraveOmniboxPopupViewViews)
 END_METADATA

@@ -6,28 +6,22 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_BRAVE_ADS_NOTIFICATION_AD_BACKGROUND_PAINTER_H_
 #define BRAVE_BROWSER_UI_VIEWS_BRAVE_ADS_NOTIFICATION_AD_BACKGROUND_PAINTER_H_
 
-#include "ui/gfx/color_palette.h"
 #include "ui/views/painter.h"
 
 namespace brave_ads {
 
 // Background painter for notification ads with rounded corners. This draws the
 // rectangle with rounded corners
-class NotificationAdBackgroundPainter : public views::Painter {
+class NotificationAdBackgroundPainter final : public views::Painter {
  public:
-  NotificationAdBackgroundPainter(const int top_radius,
-                                  const int bottom_radius,
+  NotificationAdBackgroundPainter(int top_radius,
+                                  int bottom_radius,
                                   const SkColor color = SK_ColorWHITE);
 
   NotificationAdBackgroundPainter(const NotificationAdBackgroundPainter&) =
       delete;
   NotificationAdBackgroundPainter& operator=(
       const NotificationAdBackgroundPainter&) = delete;
-
-  NotificationAdBackgroundPainter(NotificationAdBackgroundPainter&&) noexcept =
-      delete;
-  NotificationAdBackgroundPainter& operator=(
-      NotificationAdBackgroundPainter&&) noexcept = delete;
 
   ~NotificationAdBackgroundPainter() override;
 

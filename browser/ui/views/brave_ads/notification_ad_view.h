@@ -18,29 +18,24 @@ class Point;
 namespace brave_ads {
 
 class NotificationAdView : public views::View {
+  METADATA_HEADER(NotificationAdView, views::View)
  public:
-  METADATA_HEADER(NotificationAdView);
 
   explicit NotificationAdView(const NotificationAd& notification_ad);
 
   NotificationAdView(const NotificationAdView&) = delete;
   NotificationAdView& operator=(const NotificationAdView&) = delete;
 
-  NotificationAdView(NotificationAdView&&) noexcept = delete;
-  NotificationAdView& operator=(NotificationAdView&&) noexcept = delete;
-
   ~NotificationAdView() override;
 
-  // Update notification contents to |notification_ad|
+  // Update notification contents to `notification_ad`
   virtual void UpdateContents(const NotificationAd& notification_ad);
 
   void OnCloseButtonPressed();
 
   // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override;
-  void OnThemeChanged() override;
 
  private:
   NotificationAd notification_ad_;
@@ -51,6 +46,7 @@ class NotificationAdView : public views::View {
 
   std::u16string accessible_name_;
   void MaybeNotifyAccessibilityEvent();
+  void UpdateAccessibleName();
 };
 
 }  // namespace brave_ads

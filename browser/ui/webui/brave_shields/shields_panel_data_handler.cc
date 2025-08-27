@@ -7,17 +7,20 @@
 
 #include <utility>
 
+#include "base/check.h"
+#include "brave/browser/brave_browser_process.h"
 #include "brave/browser/ui/webui/webcompat_reporter/webcompat_reporter_dialog.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
-#include "ui/webui/mojo_bubble_web_ui_controller.h"
+#include "chrome/browser/ui/webui/top_chrome/top_chrome_web_ui_controller.h"
 
-using brave_shields::BraveShieldsDataController;
+using brave_shields::BraveShieldsTabHelper;
 using brave_shields::mojom::SiteSettings;
 
 ShieldsPanelDataHandler::ShieldsPanelDataHandler(
     mojo::PendingReceiver<brave_shields::mojom::DataHandler>
         data_handler_receiver,
-    ui::MojoBubbleWebUIController* webui_controller,
+    TopChromeWebUIController* webui_controller,
     TabStripModel* tab_strip_model)
     : data_handler_receiver_(this, std::move(data_handler_receiver)),
       webui_controller_(webui_controller) {
@@ -25,12 +28,14 @@ ShieldsPanelDataHandler::ShieldsPanelDataHandler(
   tab_strip_model->AddObserver(this);
 
   auto* web_contents = tab_strip_model->GetActiveWebContents();
-  if (!web_contents)
+  if (!web_contents) {
     return;
+  }
   active_shields_data_controller_ =
-      BraveShieldsDataController::FromWebContents(web_contents);
-  if (!active_shields_data_controller_)
+      BraveShieldsTabHelper::FromWebContents(web_contents);
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   UpdateSiteBlockInfo();
   active_shields_data_controller_->AddObserver(this);
@@ -40,8 +45,9 @@ ShieldsPanelDataHandler::~ShieldsPanelDataHandler() {
   /* The lifecycle of this class is similar to ShieldsPanelUI and
    * ShieldsPanelUI's cache gets destryed after ~300ms of being idle.
    */
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   active_shields_data_controller_->RemoveObserver(this);
   active_shields_data_controller_ = nullptr;
@@ -60,8 +66,9 @@ void ShieldsPanelDataHandler::GetSiteBlockInfo(
 
 void ShieldsPanelDataHandler::GetSiteSettings(
     GetSiteSettingsCallback callback) {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   SiteSettings settings;
   settings.ad_block_mode = active_shields_data_controller_->GetAdBlockMode();
@@ -69,35 +76,38 @@ void ShieldsPanelDataHandler::GetSiteSettings(
       active_shields_data_controller_->GetFingerprintMode();
   settings.cookie_block_mode =
       active_shields_data_controller_->GetCookieBlockMode();
-  settings.is_https_everywhere_enabled =
-      active_shields_data_controller_->GetHTTPSEverywhereEnabled();
   settings.https_upgrade_mode =
       active_shields_data_controller_->GetHttpsUpgradeMode();
   settings.is_noscript_enabled =
       active_shields_data_controller_->GetNoScriptEnabled();
   settings.is_forget_first_party_storage_enabled =
       active_shields_data_controller_->GetForgetFirstPartyStorageEnabled();
+  settings.webcompat_settings =
+      active_shields_data_controller_->GetWebcompatSettings();
 
   std::move(callback).Run(settings.Clone());
 }
 
 void ShieldsPanelDataHandler::SetAdBlockMode(AdBlockMode mode) {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   active_shields_data_controller_->SetAdBlockMode(mode);
 }
 
 void ShieldsPanelDataHandler::SetFingerprintMode(FingerprintMode mode) {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   active_shields_data_controller_->SetFingerprintMode(mode);
 }
 
 void ShieldsPanelDataHandler::SetCookieBlockMode(CookieBlockMode mode) {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   active_shields_data_controller_->SetCookieBlockMode(mode);
 }
@@ -111,8 +121,9 @@ void ShieldsPanelDataHandler::SetHttpsUpgradeMode(HttpsUpgradeMode mode) {
 }
 
 void ShieldsPanelDataHandler::SetIsNoScriptsEnabled(bool is_enabled) {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   active_shields_data_controller_->SetIsNoScriptEnabled(is_enabled);
 }
@@ -135,16 +146,10 @@ void ShieldsPanelDataHandler::BlockAllowedScripts(
   active_shields_data_controller_->BlockAllowedScripts(origins);
 }
 
-void ShieldsPanelDataHandler::SetHTTPSEverywhereEnabled(bool is_enabled) {
-  if (!active_shields_data_controller_)
-    return;
-
-  active_shields_data_controller_->SetIsHTTPSEverywhereEnabled(is_enabled);
-}
-
 void ShieldsPanelDataHandler::SetBraveShieldsEnabled(bool is_enabled) {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   active_shields_data_controller_->SetBraveShieldsEnabled(is_enabled);
 }
@@ -159,17 +164,56 @@ void ShieldsPanelDataHandler::SetForgetFirstPartyStorageEnabled(
       is_enabled);
 }
 
-void ShieldsPanelDataHandler::OpenWebCompatWindow() {
-  if (!active_shields_data_controller_)
+void ShieldsPanelDataHandler::SetWebcompatEnabled(
+    ContentSettingsType webcompat_settings_type,
+    bool enable) {
+  if (!active_shields_data_controller_) {
     return;
+  }
+
+  active_shields_data_controller_->SetWebcompatEnabled(webcompat_settings_type,
+                                                       enable);
+}
+
+void ShieldsPanelDataHandler::OpenWebCompatWindow() {
+  if (!active_shields_data_controller_) {
+    return;
+  }
 
   webcompat_reporter::OpenReporterDialog(
-      active_shields_data_controller_->web_contents());
+      active_shields_data_controller_->web_contents(),
+      webcompat_reporter::UISource::kShieldsPanel);
+}
+
+void ShieldsPanelDataHandler::AreAnyBlockedElementsPresent(
+    AreAnyBlockedElementsPresentCallback callback) {
+  if (!active_shields_data_controller_) {
+    return;
+  }
+
+  std::move(callback).Run(
+      g_brave_browser_process->ad_block_service()->AreAnyBlockedElementsPresent(
+          active_shields_data_controller_->web_contents()->GetURL().host()));
+}
+
+void ShieldsPanelDataHandler::ResetBlockedElements() {
+  webui_controller_->embedder()->CloseUI();
+
+  if (!active_shields_data_controller_) {
+    return;
+  }
+
+  g_brave_browser_process->ad_block_service()->ResetCosmeticFilter(
+      active_shields_data_controller_->web_contents()->GetURL().host());
+
+  active_shields_data_controller_->web_contents()->GetController().Reload(
+      content::ReloadType::NORMAL, true);
 }
 
 void ShieldsPanelDataHandler::UpdateFavicon() {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   // TODO(nullhook): Don't update favicon if previous site is the current site
   site_block_info_.favicon_url =
@@ -182,8 +226,9 @@ void ShieldsPanelDataHandler::UpdateFavicon() {
 }
 
 void ShieldsPanelDataHandler::UpdateSiteBlockInfo() {
-  if (!active_shields_data_controller_)
+  if (!active_shields_data_controller_) {
     return;
+  }
 
   site_block_info_.host =
       active_shields_data_controller_->GetCurrentSiteURL().host();
@@ -203,6 +248,10 @@ void ShieldsPanelDataHandler::UpdateSiteBlockInfo() {
       active_shields_data_controller_->GetBraveShieldsEnabled();
   site_block_info_.is_brave_shields_managed =
       active_shields_data_controller_->IsBraveShieldsManaged();
+  const auto& invoked_webcompat_set =
+      active_shields_data_controller_->GetInvokedWebcompatFeatures();
+  site_block_info_.invoked_webcompat_list = std::vector<ContentSettingsType>(
+      invoked_webcompat_set.begin(), invoked_webcompat_set.end());
 
   // This method gets called from various callsites. Constantly updating favicon
   // url will replace the hashed version too. So, we update this once only
@@ -239,7 +288,7 @@ void ShieldsPanelDataHandler::OnTabStripModelChanged(
 
     if (selection.new_contents) {
       active_shields_data_controller_ =
-          BraveShieldsDataController::FromWebContents(selection.new_contents);
+          BraveShieldsTabHelper::FromWebContents(selection.new_contents);
       active_shields_data_controller_->AddObserver(this);
 
       // OnResourcesChanged doesnt get triggered instantly on active tab change

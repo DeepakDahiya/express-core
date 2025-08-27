@@ -5,12 +5,13 @@
 
 #include "brave/browser/ui/brave_pages.h"
 
+#include "base/check.h"
 #include "base/strings/strcat.h"
 #include "brave/browser/ui/webui/webcompat_reporter/webcompat_reporter_dialog.h"
+#include "brave/components/ai_chat/core/common/features.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/ipfs/buildflags/buildflags.h"
-#include "brave/components/sidebar/constants.h"
+#include "brave/components/sidebar/browser/constants.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/chrome_pages.h"
@@ -21,7 +22,7 @@
 namespace brave {
 
 void ShowBraveRewards(Browser* browser) {
-  ShowSingletonTabOverwritingNTP(browser, GURL(kBraveUIRewardsURL));
+  ShowSingletonTabOverwritingNTP(browser, GURL(kRewardsPageURL));
 }
 
 void ShowBraveAdblock(Browser* browser) {
@@ -46,6 +47,13 @@ void ShowBraveTalk(Browser* browser) {
   ShowSingletonTabOverwritingNTP(browser, GURL(sidebar::kBraveTalkURL));
 }
 
+void ShowFullpageChat(Browser* browser) {
+  if (!ai_chat::features::IsAIChatHistoryEnabled()) {
+    return;
+  }
+  ShowSingletonTabOverwritingNTP(browser, GURL(kAIChatUIURL));
+}
+
 void ShowWebcompatReporter(Browser* browser) {
   content::WebContents* web_contents =
       browser->tab_strip_model()->GetActiveWebContents();
@@ -53,7 +61,8 @@ void ShowWebcompatReporter(Browser* browser) {
     return;
   }
 
-  webcompat_reporter::OpenReporterDialog(web_contents);
+  webcompat_reporter::OpenReporterDialog(
+      web_contents, webcompat_reporter::UISource::kAppMenu);
 }
 
 void ShowBraveWallet(Browser* browser) {
@@ -67,13 +76,10 @@ void ShowBraveWalletOnboarding(Browser* browser) {
 void ShowBraveWalletAccountCreation(Browser* browser,
                                     brave_wallet::mojom::CoinType coin_type) {
   // Only solana is supported.
-  if (coin_type == brave_wallet::mojom::CoinType::SOL) {
-    ShowSingletonTabOverwritingNTP(
-        browser,
-        GURL(base::StrCat({kBraveUIWalletAccountCreationURL, "Solana"})));
-  } else {
-    NOTREACHED();
-  }
+  CHECK(coin_type == brave_wallet::mojom::CoinType::SOL);
+  ShowSingletonTabOverwritingNTP(
+      browser,
+      GURL(base::StrCat({kBraveUIWalletAccountCreationURL, "Solana"})));
 }
 
 void ShowExtensionSettings(Browser* browser) {
@@ -84,8 +90,8 @@ void ShowWalletSettings(Browser* browser) {
   ShowSingletonTabOverwritingNTP(browser, GURL(kWalletSettingsURL));
 }
 
-void ShowIPFS(Browser* browser) {
-  ShowSingletonTabOverwritingNTP(browser, GURL(kIPFSWebUIURL));
+void ShowAppsPage(Browser* browser) {
+  ShowSingletonTabOverwritingNTP(browser, GURL(chrome::kChromeUIAppsURL));
 }
 
 }  // namespace brave

@@ -1,10 +1,11 @@
 /* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "brave/browser/ui/views/crash_report_permission_ask_dialog_view.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/functional/bind.h"
@@ -12,7 +13,6 @@
 #include "brave/app/vector_icons/vector_icons.h"
 #include "brave/browser/ui/color/brave_color_id.h"
 #include "brave/components/constants/pref_names.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/metrics/metrics_reporting_state.h"
@@ -27,6 +27,7 @@
 #include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
+#include "ui/base/mojom/dialog_button.mojom.h"
 #include "ui/color/color_id.h"
 #include "ui/color/color_provider.h"
 #include "ui/views/background.h"
@@ -81,12 +82,12 @@ CrashReportPermissionAskDialogView::CrashReportPermissionAskDialogView(
     Browser* browser) {
   set_should_ignore_snapping(true);
 
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                 brave_l10n::GetLocalizedResourceUTF16String(
+  SetButtonLabel(ui::mojom::DialogButton::kOk,
+                 l10n_util::GetStringUTF16(
                      IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_OK_BUTTON_LABEL));
   SetButtonLabel(
-      ui::DIALOG_BUTTON_CANCEL,
-      brave_l10n::GetLocalizedResourceUTF16String(
+      ui::mojom::DialogButton::kCancel,
+      l10n_util::GetStringUTF16(
           IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_CANCEL_BUTTON_LABEL));
   SetAcceptCallback(
       base::BindOnce(&CrashReportPermissionAskDialogView::OnAcceptButtonClicked,
@@ -128,9 +129,8 @@ void CrashReportPermissionAskDialogView::CreateChildViews(
   header_image->SetImage(ui::ImageModel::FromVectorIcon(
       kBraveSadIcon, header_image_color, kIconSize));
 
-  const std::u16string header_browser_name =
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_HEADER_TEXT_BROWSER_NAME_PART);
+  const std::u16string header_browser_name = l10n_util::GetStringUTF16(
+      IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_HEADER_TEXT_BROWSER_NAME_PART);
   size_t offset;
   const std::u16string header_text = l10n_util::GetStringFUTF16(
       IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_HEADER_TEXT, header_browser_name,
@@ -162,7 +162,7 @@ void CrashReportPermissionAskDialogView::CreateChildViews(
       gfx::Insets::TLBR(0, kPadding + kChildSpacing, 0, 0), 5));
   constexpr int kContentsTextFontSize = 13;
   auto* contents_label = contents->AddChildView(std::make_unique<views::Label>(
-      brave_l10n::GetLocalizedResourceUTF16String(
+      l10n_util::GetStringUTF16(
           IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_CONTENT_TEXT),
       views::Label::CustomFont{
           GetFont(kContentsTextFontSize, gfx::Font::Weight::NORMAL)}));
@@ -170,10 +170,9 @@ void CrashReportPermissionAskDialogView::CreateChildViews(
   contents_label->SetMultiLine(true);
   constexpr int kContentsLabelMaxWidth = 350;
   contents_label->SetMaximumWidth(kContentsLabelMaxWidth);
-  dont_ask_again_checkbox_ =
-      contents->AddChildView(std::make_unique<views::Checkbox>(
-          brave_l10n::GetLocalizedResourceUTF16String(
-              IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_DONT_ASK_TEXT)));
+  dont_ask_again_checkbox_ = contents->AddChildView(
+      std::make_unique<views::Checkbox>(l10n_util::GetStringUTF16(
+          IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_DONT_ASK_TEXT)));
 
   // Construct footnote text area
   constexpr int kFootnoteVerticalPadding = 16;
@@ -185,11 +184,10 @@ void CrashReportPermissionAskDialogView::CreateChildViews(
   footnote_layout->set_main_axis_alignment(
       views::BoxLayout::MainAxisAlignment::kCenter);
   footnote->SetBackground(
-      views::CreateThemedSolidBackground(ui::kColorDialogBackground));
+      views::CreateSolidBackground(ui::kColorDialogBackground));
 
-  const std::u16string setting_text =
-      brave_l10n::GetLocalizedResourceUTF16String(
-          IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_FOOTNOTE_TEXT_SETTING_PART);
+  const std::u16string setting_text = l10n_util::GetStringUTF16(
+      IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_FOOTNOTE_TEXT_SETTING_PART);
   const std::u16string footnote_text = l10n_util::GetStringFUTF16(
       IDS_CRASH_REPORT_PERMISSION_ASK_DIALOG_FOOTNOTE_TEXT, setting_text,
       &offset);
@@ -219,8 +217,8 @@ void CrashReportPermissionAskDialogView::CreateChildViews(
         footnote_default_style);
 }
 
-ui::ModalType CrashReportPermissionAskDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+ui::mojom::ModalType CrashReportPermissionAskDialogView::GetModalType() const {
+  return ui::mojom::ModalType::kWindow;
 }
 
 bool CrashReportPermissionAskDialogView::ShouldShowCloseButton() const {
@@ -237,7 +235,8 @@ void CrashReportPermissionAskDialogView::OnWidgetInitialized() {
 
 void CrashReportPermissionAskDialogView::OnAcceptButtonClicked() {
   // Enable crash reporting.
-  ChangeMetricsReportingState(true);
+  ChangeMetricsReportingState(
+      true, ChangeMetricsReportingStateCalledFrom::kSessionCrashedDialog);
 }
 
 void CrashReportPermissionAskDialogView::OnWindowClosing() {

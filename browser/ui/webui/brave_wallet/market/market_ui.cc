@@ -7,17 +7,20 @@
 
 #include <string>
 
+#include "brave/browser/ui/webui/untrusted_sanitized_image_source.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "brave/components/market_display/resources/grit/market_display_generated_map.h"
-#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/brave_components_resources.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/resources/grit/webui_resources.h"
+#include "ui/webui/webui_util.h"
 
 namespace market {
 
@@ -27,19 +30,15 @@ UntrustedMarketUI::UntrustedMarketUI(content::WebUI* web_ui)
       web_ui->GetWebContents()->GetBrowserContext(), kUntrustedMarketURL);
 
   for (const auto& str : brave_wallet::kLocalizedStrings) {
-    std::u16string l10n_str =
-        brave_l10n::GetLocalizedResourceUTF16String(str.id);
+    std::u16string l10n_str = l10n_util::GetStringUTF16(str.id);
     untrusted_source->AddString(str.name, l10n_str);
   }
   untrusted_source->SetDefaultResource(IDR_BRAVE_WALLET_MARKET_DISPLAY_HTML);
-  untrusted_source->AddResourcePaths(
-      base::make_span(kMarketDisplayGenerated, kMarketDisplayGeneratedSize));
+  untrusted_source->AddResourcePaths(kMarketDisplayGenerated);
   untrusted_source->AddFrameAncestor(GURL(kBraveUIWalletPageURL));
   untrusted_source->AddFrameAncestor(GURL(kBraveUIWalletPanelURL));
-  webui::SetupWebUIDataSource(
-      untrusted_source,
-      base::make_span(kMarketDisplayGenerated, kMarketDisplayGeneratedSize),
-      IDR_BRAVE_WALLET_MARKET_DISPLAY_HTML);
+  webui::SetupWebUIDataSource(untrusted_source, kMarketDisplayGenerated,
+                              IDR_BRAVE_WALLET_MARKET_DISPLAY_HTML);
 
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
@@ -58,7 +57,7 @@ UntrustedMarketUI::UntrustedMarketUI(content::WebUI* web_ui)
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc,
       std::string("img-src 'self' https://assets.cgproxy.brave.com "
-                  "chrome-untrusted://resources;"));
+                  "chrome-untrusted://resources chrome-untrusted://image;"));
 
   untrusted_source->AddResourcePath("load_time_data_deprecated.js",
                                     IDR_WEBUI_JS_LOAD_TIME_DATA_DEPRECATED_JS);
@@ -70,6 +69,10 @@ UntrustedMarketUI::UntrustedMarketUI(content::WebUI* web_ui)
   untrusted_source->AddString("braveWalletNftBridgeUrl", kUntrustedNftURL);
   untrusted_source->AddString("braveWalletMarketUiBridgeUrl",
                               kUntrustedMarketURL);
+
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::URLDataSource::Add(
+      profile, std::make_unique<UntrustedSanitizedImageSource>(profile));
 }
 
 UntrustedMarketUI::~UntrustedMarketUI() = default;

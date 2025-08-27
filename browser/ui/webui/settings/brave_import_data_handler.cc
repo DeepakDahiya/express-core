@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/logging.h"
 #include "brave/browser/importer/brave_external_process_importer_host.h"
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/importer/profile_writer.h"
@@ -35,7 +37,7 @@ bool HasProperDiskAccessPermission(uint16_t imported_items) {
   const base::FilePath& library_dir = base::apple::GetUserLibraryPath();
   const base::FilePath safari_dir = library_dir.Append("Safari");
 
-  if (imported_items & importer::FAVORITES) {
+  if (imported_items & user_data_importer::FAVORITES) {
     const base::FilePath bookmarks_path = safari_dir.Append("Bookmarks.plist");
     if (!PathIsWritable(bookmarks_path)) {
       LOG(ERROR) << __func__ << " " << bookmarks_path << " is not accessible."
@@ -44,7 +46,7 @@ bool HasProperDiskAccessPermission(uint16_t imported_items) {
     }
   }
 
-  if (imported_items & importer::HISTORY) {
+  if (imported_items & user_data_importer::HISTORY) {
     const base::FilePath history_path = safari_dir.Append("History.plist");
     if (!PathIsWritable(history_path)) {
       LOG(ERROR) << __func__ << " " << history_path << " is not accessible."
@@ -66,10 +68,11 @@ BraveImportDataHandler::BraveImportDataHandler() = default;
 BraveImportDataHandler::~BraveImportDataHandler() = default;
 
 void BraveImportDataHandler::StartImport(
-    const importer::SourceProfile& source_profile,
+    const user_data_importer::SourceProfile& source_profile,
     uint16_t imported_items) {
-  if (!imported_items)
+  if (!imported_items) {
     return;
+  }
   Profile* profile = Profile::FromWebUI(web_ui());
 #if BUILDFLAG(IS_MAC)
   CheckDiskAccess(imported_items, source_profile.source_path,
@@ -83,12 +86,15 @@ void BraveImportDataHandler::StartImport(
 }
 
 void BraveImportDataHandler::StartImportImpl(
-    const importer::SourceProfile& source_profile,
+    const user_data_importer::SourceProfile& source_profile,
     uint16_t imported_items,
     Profile* profile) {
   // If another import is already ongoing, let it finish silently.
-  if (import_observers_.count(source_profile.source_path))
+  if (import_observers_.count(source_profile.source_path)) {
     import_observers_.erase(source_profile.source_path);
+  }
+
+  FireWebUIListener("import-data-status-changed", base::Value("inProgress"));
 
   // Using weak pointers because it destroys itself when finshed.
   auto* importer_host = new BraveExternalProcessImporterHost();
@@ -98,16 +104,21 @@ void BraveImportDataHandler::StartImportImpl(
           base::BindRepeating(&BraveImportDataHandler::NotifyImportProgress,
                               weak_factory_.GetWeakPtr()));
 
+  importer_host->set_parent_window(
+      web_ui()->GetWebContents()->GetTopLevelNativeWindow());
+  importer_host->set_parent_view(web_ui()->GetWebContents()->GetNativeView());
+
   importer_host->StartImportSettings(source_profile, profile, imported_items,
                                      new ProfileWriter(profile));
 }
 
 void BraveImportDataHandler::NotifyImportProgress(
-    const importer::SourceProfile& source_profile,
+    const user_data_importer::SourceProfile& source_profile,
     const base::Value::Dict& info) {
   const std::string* event = info.FindString("event");
-  if (!event)
+  if (!event) {
     return;
+  }
   if (*event == "ImportItemEnded") {
     import_did_succeed_ = true;
   } else if (*event == "ImportEnded") {
@@ -122,15 +133,23 @@ void BraveImportDataHandler::HandleImportData(const base::Value::List& args) {
 }
 
 void BraveImportDataHandler::OnImportEnded(
-    const importer::SourceProfile& source_profile) {
+    const user_data_importer::SourceProfile& source_profile) {
   import_observers_.erase(source_profile.source_path);
   FireWebUIListener("import-data-status-changed",
                     base::Value(import_did_succeed_ ? kImportStatusSucceeded
                                                     : kImportStatusFailed));
 }
 
-const importer::SourceProfile& BraveImportDataHandler::GetSourceProfileAt(
-    int browser_index) {
+void BraveImportDataHandler::OnJavascriptDisallowed() {
+  ImportDataHandler::OnJavascriptDisallowed();
+
+  // When the WebUI is unloading, we ignore all further updates from the host as
+  // ImportDataHandler does.
+  import_observers_.clear();
+}
+
+const user_data_importer::SourceProfile&
+BraveImportDataHandler::GetSourceProfileAt(int browser_index) {
   return importer_list_->GetSourceProfileAt(browser_index);
 }
 
@@ -138,13 +157,13 @@ const importer::SourceProfile& BraveImportDataHandler::GetSourceProfileAt(
 void BraveImportDataHandler::CheckDiskAccess(
     uint16_t imported_items,
     base::FilePath source_path,
-    importer::ImporterType importer_type,
+    user_data_importer::ImporterType importer_type,
     ContinueImportCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   guide_dialog_is_requested_ = false;
 
-  if (importer_type == importer::TYPE_SAFARI) {
+  if (importer_type == user_data_importer::TYPE_SAFARI) {
     // Start import if Brave has full disk access permission.
     // If not, show dialog that has infos about that permission.
     base::ThreadPool::PostTaskAndReplyWithResult(
@@ -167,8 +186,9 @@ void BraveImportDataHandler::OnGetDiskAccessPermission(
     // to guide full disk access information to users.
     // Guide dialog will be opened after import dialog is closed.
     FireWebUIListener("import-data-status-changed", base::Value("failed"));
-    if (import_observers_.count(source_path))
+    if (import_observers_.count(source_path)) {
       import_observers_[source_path]->ImportEnded();
+    }
     // Observing web_contents is started here to know the closing timing of
     // import dialog.
     Observe(web_ui()->GetWebContents());
@@ -183,8 +203,9 @@ void BraveImportDataHandler::OnGetDiskAccessPermission(
 void BraveImportDataHandler::DidStopLoading() {
   Observe(nullptr);
 
-  if (!guide_dialog_is_requested_)
+  if (!guide_dialog_is_requested_) {
     return;
+  }
 
   guide_dialog_is_requested_ = false;
 

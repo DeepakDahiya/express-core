@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/check.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/components/vector_icons/vector_icons.h"
 #include "components/grit/brave_components_strings.h"
@@ -72,16 +73,25 @@ BraveNewsFeedItemView::~BraveNewsFeedItemView() = default;
 void BraveNewsFeedItemView::Update() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  title_->SetText(
-      base::UTF8ToUTF16(tab_helper_->GetTitleForFeedUrl(feed_url_)));
+  auto title = tab_helper_->GetTitleForFeedUrl(feed_url_);
+
+  // The only scenario where the title will be empty is when the feed doesn't
+  // exist (most likely when if we tried to fetch the feed and it failed). In
+  // that case, we should remove this row.
+  if (title.empty() && this->parent()) {
+    this->parent()->RemoveChildView(this);
+    return;
+  }
+
+  title_->SetText(base::UTF8ToUTF16(title));
   auto is_subscribed = tab_helper_->IsSubscribed(feed_url_);
   subscribe_button_->SetText(l10n_util::GetStringUTF16(
       is_subscribed ? IDS_BRAVE_NEWS_BUBBLE_FEED_ITEM_UNSUBSCRIBE
                     : IDS_BRAVE_NEWS_BUBBLE_FEED_ITEM_SUBSCRIBE));
 
   subscribe_button_->SetLoading(loading_);
-  subscribe_button_->SetKind(is_subscribed ? views::MdTextButton::kSecondary
-                                           : views::MdTextButton::kPrimary);
+  subscribe_button_->SetStyle(is_subscribed ? ui::ButtonStyle::kDefault
+                                            : ui::ButtonStyle::kProminent);
   subscribe_button_->SetIcon(
       is_subscribed ? &kLeoHeartFilledIcon : &kLeoHeartOutlineIcon,
       kFollowButtonIconSize);
@@ -93,8 +103,12 @@ void BraveNewsFeedItemView::OnPressed() {
     return;
   }
 
-  tab_helper_->ToggleSubscription(feed_url_);
+  // Set true to |loading_| before asking to tab helper because
+  // we could get `OnAvailableFeedsChanged()` in this turn.
+  // Otherwise, |loading_| can have true even after
+  // OnAvailableFeedsChanged() is called by tab_helper.
   loading_ = true;
+  tab_helper_->ToggleSubscription(feed_url_);
   Update();
 }
 
@@ -104,5 +118,5 @@ void BraveNewsFeedItemView::OnAvailableFeedsChanged(
   Update();
 }
 
-BEGIN_METADATA(BraveNewsFeedItemView, views::View)
+BEGIN_METADATA(BraveNewsFeedItemView)
 END_METADATA

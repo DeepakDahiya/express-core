@@ -7,6 +7,7 @@
 #define BRAVE_BROWSER_UI_VIEWS_SIDEBAR_SIDEBAR_ITEMS_SCROLL_VIEW_H_
 
 #include <memory>
+#include <optional>
 #include <set>
 
 #include "base/memory/raw_ptr.h"
@@ -14,7 +15,6 @@
 #include "base/scoped_multi_source_observation.h"
 #include "base/scoped_observation.h"
 #include "brave/browser/ui/sidebar/sidebar_model.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/views/animation/bounds_animator.h"
 #include "ui/views/animation/bounds_animator_observer.h"
@@ -42,8 +42,8 @@ class SidebarItemsScrollView : public views::View,
                                public views::BoundsAnimatorObserver,
                                public views::DragController,
                                public sidebar::SidebarModel::Observer {
+  METADATA_HEADER(SidebarItemsScrollView, views::View)
  public:
-  METADATA_HEADER(SidebarItemsScrollView);
   explicit SidebarItemsScrollView(BraveBrowser* browser);
   ~SidebarItemsScrollView() override;
 
@@ -51,9 +51,10 @@ class SidebarItemsScrollView : public views::View,
   SidebarItemsScrollView operator=(const SidebarItemsScrollView&) = delete;
 
   // views::View overrides:
-  void Layout() override;
+  void Layout(PassKey) override;
   void OnMouseEvent(ui::MouseEvent* event) override;
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void OnThemeChanged() override;
   bool GetDropFormats(int* formats,
                       std::set<ui::ClipboardFormatType>* format_types) override;
@@ -85,8 +86,8 @@ class SidebarItemsScrollView : public views::View,
                    size_t from,
                    size_t to) override;
   void OnItemRemoved(size_t index) override;
-  void OnActiveIndexChanged(absl::optional<size_t> old_index,
-                            absl::optional<size_t> new_index) override;
+  void OnActiveIndexChanged(std::optional<size_t> old_index,
+                            std::optional<size_t> new_index) override;
   void OnItemUpdated(const sidebar::SidebarItem& item,
                      const sidebar::SidebarItemUpdate& update) override;
   void OnFaviconUpdatedForItem(const sidebar::SidebarItem& item,
@@ -95,7 +96,6 @@ class SidebarItemsScrollView : public views::View,
   bool IsItemReorderingInProgress() const;
   bool IsBubbleVisible() const;
   void Update();
-  void SetSidebarOnLeft(bool sidebar_on_left);
 
  private:
   friend class sidebar::SidebarBrowserTest;
@@ -130,13 +130,13 @@ class SidebarItemsScrollView : public views::View,
   bool IsInVisibleContentsViewBounds(const gfx::Point& position) const;
   void ClearDragIndicator();
 
-  absl::optional<size_t> lastly_added_item_index_;
+  std::optional<size_t> lastly_added_item_index_;
   raw_ptr<BraveBrowser> browser_ = nullptr;
   raw_ptr<views::ImageButton> up_arrow_ = nullptr;
   raw_ptr<views::ImageButton> down_arrow_ = nullptr;
   raw_ptr<SidebarItemsContentsView> contents_view_ = nullptr;
   std::unique_ptr<SidebarItemDragContext> drag_context_;
-  std::unique_ptr<views::BoundsAnimator> scroll_animator_for_new_item_;
+  std::unique_ptr<views::BoundsAnimator> scroll_animator_for_item_;
   std::unique_ptr<views::BoundsAnimator> scroll_animator_for_smooth_;
   base::ScopedObservation<sidebar::SidebarModel,
                           sidebar::SidebarModel::Observer>

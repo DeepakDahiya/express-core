@@ -6,6 +6,8 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_BRAVE_ADS_TEXT_NOTIFICATION_AD_VIEW_H_
 #define BRAVE_BROWSER_UI_VIEWS_BRAVE_ADS_TEXT_NOTIFICATION_AD_VIEW_H_
 
+#include <memory>
+
 #include "base/memory/raw_ptr.h"
 #include "brave/browser/ui/views/brave_ads/notification_ad_view.h"
 
@@ -20,15 +22,12 @@ class NotificationAd;
 class NotificationAdControlButtonsView;
 class NotificationAdHeaderView;
 
-class TextNotificationAdView : public NotificationAdView {
+class TextNotificationAdView final : public NotificationAdView {
  public:
   explicit TextNotificationAdView(const NotificationAd& notification_ad);
 
   TextNotificationAdView(const TextNotificationAdView&) = delete;
   TextNotificationAdView& operator=(const TextNotificationAdView&) = delete;
-
-  TextNotificationAdView(TextNotificationAdView&&) noexcept = delete;
-  TextNotificationAdView& operator=(TextNotificationAdView&&) noexcept = delete;
 
   ~TextNotificationAdView() override;
 
@@ -41,14 +40,16 @@ class TextNotificationAdView : public NotificationAdView {
 
   void CreateView(const NotificationAd& notification_ad);
 
-  NotificationAdHeaderView* CreateHeaderView(
+  std::unique_ptr<NotificationAdHeaderView> CreateHeaderView(
       const NotificationAd& notification_ad);
 
-  views::View* CreateBodyView(const NotificationAd& notification_ad);
-  views::Label* CreateBodyLabel(const NotificationAd& notification_ad);
+  std::unique_ptr<views::View> CreateBodyView(
+      const NotificationAd& notification_ad);
+  std::unique_ptr<views::Label> CreateBodyLabel(
+      const NotificationAd& notification_ad);
   void UpdateBodyLabel();
 
-  raw_ptr<views::Label> body_label_ = nullptr;  // NOT OWNED
+  raw_ptr<views::Label> body_label_ = nullptr;
 };
 
 }  // namespace brave_ads

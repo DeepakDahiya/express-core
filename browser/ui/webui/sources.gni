@@ -3,15 +3,22 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at http://mozilla.org/MPL/2.0/.
 
+import("//brave/components/brave_education/buildflags.gni")
 import("//brave/components/brave_vpn/common/buildflags/buildflags.gni")
+import("//brave/components/containers/buildflags/buildflags.gni")
 import("//brave/components/playlist/common/buildflags/buildflags.gni")
 
 # This is required for chromium_src overrides.
 brave_browser_ui_webui_configs_deps = [
   "//base",
+  "//brave/brave_domains",
   "//brave/browser/ui",
-  "//brave/components/brave_shields/browser",
+  "//brave/components/brave_account:features",
+  "//brave/components/brave_education:buildflags",
+  "//brave/components/brave_private_cdn",
+  "//brave/components/brave_shields/content/browser",
   "//brave/components/brave_vpn/common/buildflags",
+  "//brave/components/containers/buildflags",
   "//brave/components/playlist/common/buildflags",
 ]
 
@@ -23,4 +30,17 @@ if (enable_playlist_webui) {
 if (enable_brave_vpn) {
   brave_browser_ui_webui_configs_deps +=
       [ "//brave/components/brave_vpn/browser" ]
+}
+
+if (enable_brave_education) {
+  brave_browser_ui_webui_configs_deps +=
+      [ "//brave/browser/ui/webui/brave_education" ]
+}
+
+if (enable_containers) {
+  brave_browser_ui_webui_configs_deps += [
+    "//brave/components/containers/core/browser",
+    "//brave/components/containers/core/common",
+    "//brave/components/containers/core/mojom",
+  ]
 }

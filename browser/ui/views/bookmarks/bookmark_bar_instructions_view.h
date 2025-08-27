@@ -35,16 +35,16 @@ class BookmarkBarInstructionsView : public views::View,
 
  private:
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
-  void Layout() override;
-  const char* GetClassName() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
+  void Layout(PassKey) override;
   void OnThemeChanged() override;
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
   // views::ContextMenuController:
-  void ShowContextMenuForViewImpl(views::View* source,
-                                  const gfx::Point& point,
-                                  ui::MenuSourceType source_type) override;
+  void ShowContextMenuForViewImpl(
+      views::View* source,
+      const gfx::Point& point,
+      ui::mojom::MenuSourceType source_type) override;
 
   void UpdateColors();
   void LinkClicked();

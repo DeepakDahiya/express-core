@@ -77,9 +77,7 @@ int BraveBrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
     return BrowserNonClientFrameViewMac::GetTopInset(restored);
   }
 
-  // The tab region view maintains its own padding, but insert a small gap to
-  // give a bit more room for the frame resize handle.
-  return 2;
+  return 0;
 }
 
 bool BraveBrowserNonClientFrameViewMac::ShouldShowWindowTitleForVerticalTabs()
@@ -95,6 +93,15 @@ void BraveBrowserNonClientFrameViewMac::UpdateWindowTitleVisibility() {
   frame()->SetWindowTitleVisibility(ShouldShowWindowTitleForVerticalTabs());
 }
 
+void BraveBrowserNonClientFrameViewMac::UpdateWindowTitleColor() {
+  if (!browser_view()->browser()->is_type_normal()) {
+    return;
+  }
+
+  frame()->UpdateWindowTitleColor(
+      GetCaptionColor(BrowserFrameActiveState::kUseCurrent));
+}
+
 int BraveBrowserNonClientFrameViewMac::NonClientHitTest(
     const gfx::Point& point) {
   if (auto res = brave::NonClientHitTest(browser_view(), point);
@@ -103,6 +110,11 @@ int BraveBrowserNonClientFrameViewMac::NonClientHitTest(
   }
 
   return BrowserNonClientFrameViewMac::NonClientHitTest(point);
+}
+
+void BraveBrowserNonClientFrameViewMac::OnThemeChanged() {
+  BrowserNonClientFrameViewMac::OnThemeChanged();
+  UpdateWindowTitleColor();
 }
 
 void BraveBrowserNonClientFrameViewMac::UpdateWindowTitleAndControls() {

@@ -5,16 +5,21 @@
 
 #include "brave/browser/ui/omnibox/brave_omnibox_client_impl.h"
 
-#include "base/values.h"
+#include <string>
+
+#include "base/check.h"
+#include "base/check_is_test.h"
 #include "brave/browser/autocomplete/brave_autocomplete_scheme_classifier.h"
+#include "brave/browser/misc_metrics/profile_misc_metrics_service.h"
+#include "brave/browser/misc_metrics/profile_misc_metrics_service_factory.h"
 #include "brave/browser/search_engines/search_engine_tracker.h"
+#include "brave/components/ai_chat/core/browser/ai_chat_metrics.h"
+#include "brave/components/brave_rewards/core/pref_names.h"
 #include "brave/components/brave_search_conversion/p3a.h"
 #include "brave/components/brave_search_conversion/utils.h"
-#include "brave/components/constants/pref_names.h"
 #include "brave/components/omnibox/browser/brave_omnibox_prefs.h"
 #include "brave/components/omnibox/browser/promotion_utils.h"
 #include "brave/components/p3a_utils/bucket.h"
-#include "brave/components/time_period_storage/weekly_storage.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
@@ -30,6 +35,18 @@ using brave_search_conversion::ConversionType;
 using brave_search_conversion::GetConversionType;
 
 constexpr char kSearchCountPrefName[] = "brave.weekly_storage.search_count";
+constexpr char kSearchCountNonRewardsHistogramName[] =
+    "Brave.Omnibox.SearchCount.NonRewards";
+constexpr char kSearchCountRewardsHistogramName[] =
+    "Brave.Omnibox.SearchCount.Rewards";
+constexpr char kSearchCountRewardsWalletHistogramName[] =
+    "Brave.Omnibox.SearchCount.RewardsWallet";
+constexpr const char* kAllSearchCountHistogramNames[] = {
+    kSearchCountNonRewardsHistogramName,
+    kSearchCountRewardsHistogramName,
+    kSearchCountRewardsWalletHistogramName,
+};
+constexpr int kSearchCountBuckets[] = {0, 5, 10, 20, 50, 100, 500};
 
 bool IsSearchEvent(const AutocompleteMatch& match) {
   switch (match.type) {
@@ -47,12 +64,6 @@ bool IsSearchEvent(const AutocompleteMatch& match) {
   }
 }
 
-void RecordSearchEventP3A(uint64_t number_of_searches) {
-  p3a_utils::RecordToHistogramBucket("Brave.Omnibox.SearchCount.2",
-                                     {0, 5, 10, 20, 50, 100, 500},
-                                     number_of_searches);
-}
-
 }  // namespace
 
 BraveOmniboxClientImpl::BraveOmniboxClientImpl(LocationBar* location_bar,
@@ -62,12 +73,28 @@ BraveOmniboxClientImpl::BraveOmniboxClientImpl(LocationBar* location_bar,
       profile_(profile),
       search_engine_tracker_(
           SearchEngineTrackerFactory::GetForBrowserContext(profile)),
-      scheme_classifier_(profile) {
+      scheme_classifier_(profile),
+      search_storage_(profile_->GetPrefs(), kSearchCountPrefName) {
   // Record initial search count p3a value.
-  const auto& search_p3a = profile_->GetPrefs()->GetList(kSearchCountPrefName);
-  if (search_p3a.size() == 0) {
-    RecordSearchEventP3A(0);
+  RecordSearchEventP3A();
+
+  auto* profile_metrics =
+      misc_metrics::ProfileMiscMetricsServiceFactory::GetServiceForContext(
+          profile);
+  if (profile_metrics) {
+    ai_chat_metrics_ = profile_metrics->GetAIChatMetrics();
+    CHECK(ai_chat_metrics_);
   }
+
+  pref_change_registrar_.Init(profile_->GetPrefs());
+  pref_change_registrar_.Add(
+      brave_rewards::prefs::kEnabled,
+      base::BindRepeating(&BraveOmniboxClientImpl::RecordSearchEventP3A,
+                          base::Unretained(this)));
+  pref_change_registrar_.Add(
+      brave_rewards::prefs::kExternalWalletType,
+      base::BindRepeating(&BraveOmniboxClientImpl::RecordSearchEventP3A,
+                          base::Unretained(this)));
 }
 
 BraveOmniboxClientImpl::~BraveOmniboxClientImpl() = default;
@@ -80,10 +107,6 @@ void BraveOmniboxClientImpl::RegisterProfilePrefs(
 const AutocompleteSchemeClassifier&
 BraveOmniboxClientImpl::GetSchemeClassifier() const {
   return scheme_classifier_;
-}
-
-bool BraveOmniboxClientImpl::IsAutocompleteEnabled() const {
-  return profile_->GetPrefs()->GetBoolean(omnibox::kAutocompleteEnabled);
 }
 
 void BraveOmniboxClientImpl::OnURLOpenedFromOmnibox(OmniboxLog* log) {
@@ -108,20 +131,47 @@ void BraveOmniboxClientImpl::OnAutocompleteAccept(
     bool destination_url_entered_with_http_scheme,
     const std::u16string& text,
     const AutocompleteMatch& match,
-    const AutocompleteMatch& alternative_nav_match,
-    IDNA2008DeviationCharacter deviation_char_in_hostname) {
+    const AutocompleteMatch& alternative_nav_match) {
   if (IsSearchEvent(match)) {
     // TODO(iefremov): Optimize this.
-    WeeklyStorage storage(profile_->GetPrefs(), kSearchCountPrefName);
-    storage.AddDelta(1);
-    RecordSearchEventP3A(storage.GetWeeklySum());
+    search_storage_.AddDelta(1);
+    RecordSearchEventP3A();
     if (search_engine_tracker_ != nullptr) {
       search_engine_tracker_->RecordLocationBarQuery();
+    }
+    if (ai_chat_metrics_) {
+      ai_chat_metrics_->RecordOmniboxSearchQuery();
     }
   }
   ChromeOmniboxClient::OnAutocompleteAccept(
       destination_url, post_content, disposition, transition, match_type,
       match_selection_timestamp, destination_url_entered_without_scheme,
       destination_url_entered_with_http_scheme, text, match,
-      alternative_nav_match, deviation_char_in_hostname);
+      alternative_nav_match);
+}
+
+void BraveOmniboxClientImpl::RecordSearchEventP3A() {
+  const char* report_histogram_name = nullptr;
+  auto number_of_searches = search_storage_.GetWeeklySum();
+
+  if (profile_->GetPrefs()->GetBoolean(brave_rewards::prefs::kEnabled)) {
+    const std::string wallet_type = profile_->GetPrefs()->GetString(
+        brave_rewards::prefs::kExternalWalletType);
+    if (wallet_type.empty()) {
+      report_histogram_name = kSearchCountRewardsHistogramName;
+    } else {
+      report_histogram_name = kSearchCountRewardsWalletHistogramName;
+    }
+  } else {
+    report_histogram_name = kSearchCountNonRewardsHistogramName;
+  }
+
+  for (const auto* histogram_name : kAllSearchCountHistogramNames) {
+    if (report_histogram_name == histogram_name) {
+      p3a_utils::RecordToHistogramBucket(histogram_name, kSearchCountBuckets,
+                                         number_of_searches);
+    } else {
+      base::UmaHistogramExactLinear(histogram_name, INT_MAX - 1, 8);
+    }
+  }
 }

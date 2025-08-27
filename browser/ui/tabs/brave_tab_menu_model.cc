@@ -8,7 +8,12 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/check.h"
+#include "base/feature_list.h"
+#include "brave/browser/ui/browser_commands.h"
 #include "brave/browser/ui/tabs/brave_tab_strip_model.h"
+#include "brave/browser/ui/tabs/features.h"
+#include "brave/browser/ui/tabs/split_view_browser_data.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
@@ -16,23 +21,39 @@
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/grit/brave_components_strings.h"
 #include "components/sessions/core/tab_restore_service.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/menus/simple_menu_model.h"
+
+#if BUILDFLAG(ENABLE_CONTAINERS)
+#include "brave/components/containers/core/browser/prefs.h"
+#include "brave/components/containers/core/common/features.h"
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
 
 BraveTabMenuModel::BraveTabMenuModel(
     ui::SimpleMenuModel::Delegate* delegate,
     TabMenuModelDelegate* tab_menu_model_delegate,
     TabStripModel* tab_strip_model,
+#if BUILDFLAG(ENABLE_CONTAINERS)
+    containers::ContainersMenuModel::Delegate& containers_delegate,
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
     int index,
     bool is_vertical_tab)
     : TabMenuModel(delegate, tab_menu_model_delegate, tab_strip_model, index),
-      is_vertical_tab_(is_vertical_tab) {
+      is_vertical_tab_(is_vertical_tab)
+#if BUILDFLAG(ENABLE_CONTAINERS)
+      ,
+      containers_menu_model_delegate_(containers_delegate)
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
+{
   web_contents_ = tab_strip_model->GetWebContentsAt(index);
-  if (web_contents_) {
-    Browser* browser = chrome::FindBrowserWithTab(web_contents_);
-    restore_service_ =
-        TabRestoreServiceFactory::GetForProfile(browser->profile());
-  }
+  CHECK(web_contents_);
+  Browser* browser = chrome::FindBrowserWithTab(web_contents_);
+  CHECK(browser);
+
+  restore_service_ =
+      TabRestoreServiceFactory::GetForProfile(browser->profile());
 
   auto indices = static_cast<BraveTabStripModel*>(tab_strip_model)
                      ->GetTabIndicesForCommandAt(index);
@@ -40,7 +61,7 @@ BraveTabMenuModel::BraveTabMenuModel(
       indices.begin(), indices.end(), [&tab_strip_model](int index) {
         return tab_strip_model->GetWebContentsAt(index)->IsAudioMuted();
       });
-  Build(indices.size());
+  Build(browser, tab_strip_model, index, indices);
 }
 
 BraveTabMenuModel::~BraveTabMenuModel() = default;
@@ -48,17 +69,20 @@ BraveTabMenuModel::~BraveTabMenuModel() = default;
 int BraveTabMenuModel::GetRestoreTabCommandStringId() const {
   int id = IDS_RESTORE_TAB;
 
-  if (!web_contents_)
+  if (!web_contents_) {
     return id;
+  }
 
-  if (!restore_service_)
+  if (!restore_service_) {
     return id;
+  }
 
-  if (!restore_service_->IsLoaded() || restore_service_->entries().empty())
+  if (!restore_service_->IsLoaded() || restore_service_->entries().empty()) {
     return id;
+  }
 
   if (restore_service_->entries().front()->type ==
-      sessions::TabRestoreService::WINDOW) {
+      sessions::tab_restore::WINDOW) {
     id = IDS_RESTORE_WINDOW;
   }
 
@@ -82,7 +106,12 @@ std::u16string BraveTabMenuModel::GetLabelAt(size_t index) const {
   return TabMenuModel::GetLabelAt(index);
 }
 
-void BraveTabMenuModel::Build(int selected_tab_count) {
+void BraveTabMenuModel::Build(Browser* browser,
+                              TabStripModel* tab_strip_model,
+                              int selected_index,
+                              const std::vector<int>& indices) {
+  auto selected_tab_count = indices.size();
+
   AddSeparator(ui::NORMAL_SEPARATOR);
   auto mute_site_index =
       GetIndexOfCommandId(TabStripModel::CommandToggleSiteMuted);
@@ -96,8 +125,99 @@ void BraveTabMenuModel::Build(int selected_tab_count) {
 
   AddItemWithStringId(CommandRestoreTab, GetRestoreTabCommandStringId());
   AddItemWithStringId(CommandBookmarkAllTabs, IDS_TAB_CXMENU_BOOKMARK_ALL_TABS);
+  AddItemWithStringId(CommandBringAllTabsToThisWindow,
+                      IDS_TAB_CXMENU_BRING_ALL_TABS_TO_THIS_WINDOW);
 
   AddSeparator(ui::NORMAL_SEPARATOR);
   AddCheckItemWithStringId(CommandShowVerticalTabs,
                            IDS_TAB_CXMENU_SHOW_VERTICAL_TABS);
+
+  auto close_other_tabs_index =
+      GetIndexOfCommandId(TabStripModel::CommandCloseOtherTabs);
+  InsertItemWithStringIdAt(close_other_tabs_index.value_or(GetItemCount()),
+                           CommandCloseDuplicateTabs,
+                           IDS_TAB_CXMENU_CLOSE_DUPLICATE_TABS);
+
+  if (tabs::features::IsBraveSplitViewEnabled()) {
+    BuildItemsForSplitView(browser, tab_strip_model, indices);
+  }
+
+#if BUILDFLAG(ENABLE_CONTAINERS)
+  if (base::FeatureList::IsEnabled(containers::features::kContainers)) {
+    BuildItemForContainers(*browser->profile()->GetPrefs(), tab_strip_model,
+                           containers_menu_model_delegate_.get(), indices);
+  }
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
+
+  if (base::FeatureList::IsEnabled(tabs::features::kBraveRenamingTabs)) {
+    BuildItemForCustomization(tab_strip_model, selected_index);
+  }
+}
+
+void BraveTabMenuModel::BuildItemsForSplitView(
+    Browser* browser,
+    TabStripModel* tab_strip_model,
+    const std::vector<int>& indices) {
+  // The split view context menu items are added after the "reload" item.
+  auto index = *GetIndexOfCommandId(TabStripModel::CommandReload);
+
+  // In case only one tab is selected
+  //  * if the tab is tiled, show "Close Split View" and "Break into Tabs"
+  //  * else show "New Split View"
+  if (indices.size() == 1u) {
+    if (brave::IsTabsTiled(browser, indices)) {
+      InsertItemWithStringIdAt(++index, CommandBreakTile, IDS_IDC_BREAK_TILE);
+      InsertItemWithStringIdAt(++index, CommandSwapTabsInTile,
+                               IDS_IDC_SWAP_SPLIT_VIEW);
+      return;
+    }
+
+    InsertItemWithStringIdAt(++index, CommandNewSplitView,
+                             IDS_IDC_NEW_SPLIT_VIEW);
+    return;
+  }
+
+  if (brave::CanTileTabs(browser, indices)) {
+    InsertItemWithStringIdAt(++index, CommandTileTabs, IDS_IDC_TILE_TABS);
+    return;
+  }
+
+  if (brave::IsTabsTiled(browser, indices)) {
+    InsertItemWithStringIdAt(++index, CommandBreakTile, IDS_IDC_BREAK_TILE);
+  }
+
+  if (brave::IsTabsTiled(browser, {tab_strip_model->active_index()})) {
+    InsertItemWithStringIdAt(++index, CommandSwapTabsInTile,
+                             IDS_IDC_SWAP_SPLIT_VIEW);
+  }
+}
+
+#if BUILDFLAG(ENABLE_CONTAINERS)
+void BraveTabMenuModel::BuildItemForContainers(
+    const PrefService& prefs,
+    TabStripModel* tab_strip_model,
+    containers::ContainersMenuModel::Delegate& containers_delegate,
+    const std::vector<int>& indices) {
+  auto index =
+      *GetIndexOfCommandId(TabStripModel::CommandMoveTabsToNewWindow) + 1;
+
+  containers_submenu_ = std::make_unique<containers::ContainersMenuModel>(
+      containers_delegate, prefs);
+  InsertSubMenuWithStringIdAt(index, CommandOpenInContainer,
+                              IDS_CXMENU_OPEN_IN_CONTAINER,
+                              containers_submenu_.get());
+}
+#endif  // BUILDFLAG(ENABLE_CONTAINERS)
+
+void BraveTabMenuModel::BuildItemForCustomization(
+    TabStripModel* tab_strip_model,
+    int tab_index) {
+  if (tab_strip_model->IsTabPinned(tab_index)) {
+    // In case of pinned tabs, we don't show titles at all, so we don't need to
+    // show the rename option.
+    return;
+  }
+
+  const auto index = *GetIndexOfCommandId(TabStripModel::CommandReload) + 1;
+  InsertItemWithStringIdAt(index, CommandRenameTab, IDS_TAB_CXMENU_RENAME_TAB);
 }

@@ -10,7 +10,19 @@ namespace tabs::switches {
 
 // This switch disables vertical tab strip regardless of the pref. This could be
 // useful when vertical tab strip causes browser to crash on start up.
-constexpr char kDisableVerticalTabsSwitch[] = "disable-vertical-tabs";
+inline constexpr char kDisableVerticalTabsSwitch[] = "disable-vertical-tabs";
+
+// This switch should be followed by a number in milliseconds, which
+// specifies the delay before expanding the vertical tab strip when hovering
+// over it.
+inline constexpr char kVerticalTabExpandDelaySwitch[] =
+    "vertical-tab-expand-delay";
+
+// This switch should be followed by a number in milliseconds, which
+// specifies the delay before collapsing the vertical tab strip when the mouse
+// exits the tab strip in floating mode.
+inline constexpr char kVerticalTabCollapseDelaySwitch[] =
+    "vertical-tab-collapse-delay";
 
 }  // namespace tabs::switches
 

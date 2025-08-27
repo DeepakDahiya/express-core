@@ -6,11 +6,15 @@
 #include "brave/browser/ui/webui/settings/brave_tor_handler.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <utility>
 #include <vector>
 
 #include "base/base64.h"
+#include "base/byte_count.h"
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
 #include "base/json/json_writer.h"
@@ -41,14 +45,14 @@ namespace {
 
 // https://gitlab.torproject.org/tpo/anti-censorship/rdsys/-/blob/main/doc/moat.md
 
-constexpr const char kTorBridgesFetchUrl[] =
+constexpr char kTorBridgesFetchUrl[] =
     "https://bridges.torproject.org/moat/fetch";
-constexpr const char kTorBridgesCheckUrl[] =
+constexpr char kTorBridgesCheckUrl[] =
     "https://bridges.torproject.org/moat/check";
 
-constexpr const char kMoatVersion[] = "0.1.0";
+constexpr char kMoatVersion[] = "0.1.0";
 
-constexpr const char kMoatShimToken[] = "LVOippNS8UiKLH6kXf1D8pI1clLc";
+constexpr char kMoatShimToken[] = "LVOippNS8UiKLH6kXf1D8pI1clLc";
 
 constexpr net::NetworkTrafficAnnotationTag kTorBridgesMoatAnnotation =
     net::DefineNetworkTrafficAnnotation("brave_tor_bridges", R"(
@@ -65,7 +69,7 @@ constexpr net::NetworkTrafficAnnotationTag kTorBridgesMoatAnnotation =
       cookies_allowed: NO
     })");
 
-constexpr const size_t kMaxBodySize = 256 * 1024;
+constexpr base::ByteCount kMaxBodySize = base::KiB(256);
 
 base::Value FetchCaptchaData() {
   base::Value::Dict data;
@@ -157,7 +161,7 @@ class BridgeRequest {
     kWaitForBridges,
   };
 
-  void OnCaptchaResponse(std::unique_ptr<std::string> response_body) {
+  void OnCaptchaResponse(std::optional<std::string> response_body) {
     simple_url_loader_.reset();
 
     if (!response_body) {
@@ -202,21 +206,21 @@ class BridgeRequest {
 
   void OnCaptchaDecoded(const gfx::Image& image) {
     // Re-encode image as PNG and send.
-    auto encoded = base::MakeRefCounted<base::RefCountedBytes>();
-    if (!gfx::PNGCodec::EncodeBGRASkBitmap(image.AsBitmap(),
-                                           /*discard_transparency=*/false,
-                                           &encoded->data())) {
+    std::optional<std::vector<uint8_t>> encoded =
+        gfx::PNGCodec::EncodeBGRASkBitmap(image.AsBitmap(),
+                                          /*discard_transparency=*/false);
+    if (!encoded) {
       return std::move(captcha_callback_).Run(base::Value());
     }
 
     base::Value::Dict result;
     result.Set("captcha",
-               "data:image/png;base64," + base::Base64Encode(encoded->data()));
+               "data:image/png;base64," + base::Base64Encode(*encoded));
     std::move(captcha_callback_).Run(base::Value(std::move(result)));
     state_ = State::kProvideCaptcha;
   }
 
-  void OnBridgesResponse(std::unique_ptr<std::string> response_body) {
+  void OnBridgesResponse(std::optional<std::string> response_body) {
     simple_url_loader_.reset();
 
     if (!response_body) {
@@ -244,8 +248,7 @@ class BridgeRequest {
   std::unique_ptr<network::SimpleURLLoader> MakeMoatRequest(
       const GURL& url,
       const base::Value& data,
-      network::SimpleURLLoader::BodyAsStringCallbackDeprecated
-          response_callback) {
+      network::SimpleURLLoader::BodyAsStringCallback response_callback) {
     auto request = std::make_unique<network::ResourceRequest>();
     request->url = url;
     request->method = net::HttpRequestHeaders::kPostMethod;
@@ -263,7 +266,8 @@ class BridgeRequest {
       url_loader->AttachStringForUpload(data_content);
     }
     url_loader->DownloadToString(url_loader_factory_.get(),
-                                 std::move(response_callback), kMaxBodySize);
+                                 std::move(response_callback),
+                                 kMaxBodySize.InBytes());
 
     return url_loader;
   }
@@ -327,7 +331,7 @@ void BraveTorHandler::GetBridgesConfig(const base::Value::List& args) {
   CHECK_EQ(1u, args.size());
   const auto bridges_config = TorProfileServiceFactory::GetTorBridgesConfig();
 
-  ResolveJavascriptCallback(args[0], bridges_config.ToValue());
+  ResolveJavascriptCallback(args[0], bridges_config.ToValue(false));
 }
 
 void BraveTorHandler::SetBridgesConfig(const base::Value::List& args) {

@@ -7,7 +7,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include <optional>
+
 #include "base/check.h"
+#include "base/check_is_test.h"
+#include "base/check_op.h"
 #include "base/containers/contains.h"
 #include "base/containers/flat_map.h"
 #include "base/logging.h"
@@ -46,10 +50,11 @@ bool CanConvertToAcceleratorMapping(NSMenuItem* item) {
   }
 
   NSString* keyEquivalent = item.keyEquivalent;
-  return keyEquivalent != nil && [keyEquivalent length] > 0;
+  return keyEquivalent != nil && [keyEquivalent length] > 0 &&
+         [[keyEquivalent uppercaseString] length] > 0;
 }
 
-AcceleratorMapping ToAcceleratorMapping(NSMenuItem* item) {
+std::optional<AcceleratorMapping> ToAcceleratorMapping(NSMenuItem* item) {
   bool keyEquivalentLocalizationEnabled = NO;
   bool keyEquivalentMirroringEnabled = NO;
 
@@ -67,6 +72,16 @@ AcceleratorMapping ToAcceleratorMapping(NSMenuItem* item) {
       // https://developer.apple.com/documentation/appkit/nsmenuitem/3787554-allowsautomatickeyequivalentloca?language=objc
       item.allowsAutomaticKeyEquivalentLocalization = NO;
     }
+  }
+
+  if (!CanConvertToAcceleratorMapping(item)) {
+    if (@available(macos 12.0, *)) {
+      item.allowsAutomaticKeyEquivalentLocalization =
+          keyEquivalentLocalizationEnabled;
+      item.allowsAutomaticKeyEquivalentMirroring =
+          keyEquivalentMirroringEnabled;
+    }
+    return std::nullopt;
   }
 
   NSString* keyEquivalent = item.keyEquivalent;
@@ -128,9 +143,9 @@ AcceleratorMapping ToAcceleratorMapping(NSMenuItem* item) {
     item.allowsAutomaticKeyEquivalentMirroring = keyEquivalentMirroringEnabled;
   }
 
-  return {.keycode = ui::KeyboardCodeFromNSEvent(keyEvent),
-          .modifiers = modifiers,
-          .command_id = command_id};
+  return AcceleratorMapping{.keycode = ui::KeyboardCodeFromNSEvent(keyEvent),
+                            .modifiers = modifiers,
+                            .command_id = command_id};
 }
 
 AcceleratorMapping ToAcceleratorMapping(const KeyboardShortcutData& data) {
@@ -164,12 +179,14 @@ void AccumulateAcceleratorsRecursively(
     base::flat_map<int /*command_id*/, std::vector<AcceleratorMapping>>*
         accelerators,
     NSMenu* menu) {
-  CHECK(menu);
+  if (!menu) {
+    CHECK_IS_TEST() << "Could be null in unittest with browser view";
+    return;
+  }
 
   for (NSMenuItem* item in [menu itemArray]) {
-    if (CanConvertToAcceleratorMapping(item)) {
-      (*accelerators)[static_cast<int>(item.tag)].push_back(
-          ToAcceleratorMapping(item));
+    if (auto mapping = ToAcceleratorMapping(item)) {
+      (*accelerators)[static_cast<int>(item.tag)].push_back(*mapping);
     }
 
     if (NSMenu* submenu = [item submenu];
@@ -204,7 +221,7 @@ std::vector<AcceleratorMapping> GetGlobalAccelerators() {
   // e.g. IDC_CLOSE_TAB is missing because it's dynamically added.
   for (const auto& [command_id, accelerator] :
        *AcceleratorsCocoa::GetInstance()) {
-    if (base::Contains(accelerator_map, command_id) ||
+    if (accelerator_map.contains(command_id) ||
         !CanConvertToAcceleratorMapping(command_id)) {
       continue;
     }

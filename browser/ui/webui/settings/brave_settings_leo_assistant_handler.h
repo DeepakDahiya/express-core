@@ -7,11 +7,9 @@
 #define BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_SETTINGS_LEO_ASSISTANT_HANDLER_H_
 
 #include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
 #include "base/scoped_observation.h"
-#include "brave/components/sidebar/sidebar_service.h"
+#include "brave/components/sidebar/browser/sidebar_service.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
-#include "components/prefs/pref_change_registrar.h"
 
 class Profile;
 
@@ -38,6 +36,7 @@ class BraveLeoAssistantHandler : public settings::SettingsPageUIHandler,
 
   void NotifyChatUiChanged(const bool& isLeoVisible);
 
+  void HandleValidateModelEndpoint(const base::Value::List& args);
   void HandleToggleLeoIcon(const base::Value::List& args);
   void HandleGetLeoIconVisibility(const base::Value::List& args);
   void HandleResetLeoData(const base::Value::List& args);

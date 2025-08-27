@@ -5,21 +5,27 @@
 
 #include "brave/browser/ui/webui/settings/brave_settings_leo_assistant_handler.h"
 
+#include <algorithm>
 #include <vector>
 
 #include "base/containers/contains.h"
+#include "brave/browser/ai_chat/ai_chat_service_factory.h"
 #include "brave/browser/ui/sidebar/sidebar_service_factory.h"
-#include "brave/components/ai_chat/core/common/pref_names.h"
-#include "brave/components/sidebar/sidebar_item.h"
-#include "brave/components/sidebar/sidebar_service.h"
+#include "brave/components/ai_chat/core/browser/ai_chat_service.h"
+#include "brave/components/ai_chat/core/browser/model_validator.h"
+#include "brave/components/ai_chat/core/browser/utils.h"
+#include "brave/components/ai_chat/core/common/features.h"
+#include "brave/components/ai_chat/core/common/prefs.h"
+#include "brave/components/sidebar/browser/sidebar_item.h"
+#include "brave/components/sidebar/browser/sidebar_service.h"
 #include "chrome/browser/profiles/profile.h"
-#include "components/prefs/pref_service.h"
+#include "content/public/browser/web_contents.h"
 
 namespace {
 
 const std::vector<sidebar::SidebarItem>::const_iterator FindAiChatSidebarItem(
     const std::vector<sidebar::SidebarItem>& items) {
-  return base::ranges::find_if(items, [](const auto& item) {
+  return std::ranges::find_if(items, [](const auto& item) {
     return item.built_in_item_type ==
            sidebar::SidebarItem::BuiltInItemType::kChatUI;
   });
@@ -55,6 +61,7 @@ bool HideLeoAssistantIconIfNot(sidebar::SidebarService* sidebar_service) {
 namespace settings {
 
 BraveLeoAssistantHandler::BraveLeoAssistantHandler() = default;
+
 BraveLeoAssistantHandler::~BraveLeoAssistantHandler() = default;
 
 void BraveLeoAssistantHandler::RegisterMessages() {
@@ -72,6 +79,11 @@ void BraveLeoAssistantHandler::RegisterMessages() {
       "resetLeoData",
       base::BindRepeating(&BraveLeoAssistantHandler::HandleResetLeoData,
                           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "validateModelEndpoint",
+      base::BindRepeating(
+          &BraveLeoAssistantHandler::HandleValidateModelEndpoint,
+          base::Unretained(this)));
 }
 
 void BraveLeoAssistantHandler::OnJavascriptAllowed() {
@@ -117,6 +129,35 @@ void BraveLeoAssistantHandler::HandleToggleLeoIcon(
   }
 }
 
+void BraveLeoAssistantHandler::HandleValidateModelEndpoint(
+    const base::Value::List& args) {
+  AllowJavascript();
+
+  if (args.size() < 2 || !args[1].is_dict()) {
+    // Expect the appropriate number and type of arguments, or reject
+    RejectJavascriptCallback(args[0], base::Value("Invalid arguments"));
+    return;
+  }
+
+  const base::Value::Dict& dict = args[1].GetDict();
+  GURL endpoint(*dict.FindString("url"));
+
+  base::Value::Dict response;
+
+  const bool is_valid = ai_chat::ModelValidator::IsValidEndpoint(endpoint);
+
+  response.Set("isValid", is_valid);
+  response.Set("isValidAsPrivateEndpoint",
+               ai_chat::ModelValidator::IsValidEndpoint(
+                   endpoint, std::optional<bool>(true)));
+  response.Set("isValidDueToPrivateIPsFeature",
+               is_valid && ai_chat::features::IsAllowPrivateIPsEnabled() &&
+                   !ai_chat::ModelValidator::IsValidEndpoint(
+                       endpoint, std::optional<bool>(false)));
+
+  ResolveJavascriptCallback(args[0], response);
+}
+
 void BraveLeoAssistantHandler::HandleGetLeoIconVisibility(
     const base::Value::List& args) {
   auto* service = sidebar::SidebarServiceFactory::GetForProfile(profile_);
@@ -130,12 +171,22 @@ void BraveLeoAssistantHandler::HandleGetLeoIconVisibility(
 
 void BraveLeoAssistantHandler::HandleResetLeoData(
     const base::Value::List& args) {
-  auto* service = sidebar::SidebarServiceFactory::GetForProfile(profile_);
+  auto* sidebar_service =
+      sidebar::SidebarServiceFactory::GetForProfile(profile_);
 
-  ShowLeoAssistantIconVisibleIfNot(service);
-  profile_->GetPrefs()->ClearPref(ai_chat::prefs::kLastAcceptedDisclaimer);
-  profile_->GetPrefs()->SetBoolean(
-      ai_chat::prefs::kBraveChatAutoGenerateQuestions, false);
+  ShowLeoAssistantIconVisibleIfNot(sidebar_service);
+
+  ai_chat::AIChatService* service =
+      ai_chat::AIChatServiceFactory::GetForBrowserContext(profile_);
+  if (!service) {
+    return;
+  }
+  service->DeleteConversations();
+  if (profile_) {
+    ai_chat::SetUserOptedIn(profile_->GetPrefs(), false);
+    ai_chat::prefs::DeleteAllMemoriesFromPrefs(*profile_->GetPrefs());
+    ai_chat::prefs::ResetCustomizationsPref(*profile_->GetPrefs());
+  }
 
   AllowJavascript();
 }

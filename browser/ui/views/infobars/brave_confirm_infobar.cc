@@ -8,12 +8,15 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/chrome_layout_provider.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/ui_base_features.h"
 #include "ui/base/window_open_disposition.h"
+#include "ui/gfx/text_constants.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
@@ -36,7 +39,11 @@ BraveConfirmInfoBar::BraveConfirmInfoBar(
     std::unique_ptr<BraveConfirmInfoBarDelegate> delegate)
     : InfoBarView(std::move(delegate)) {
   auto* delegate_ptr = GetDelegate();
+  CHECK(delegate_ptr);
+
   label_ = AddChildView(CreateLabel(delegate_ptr->GetMessageText()));
+  label_->SetMultiLine(delegate_ptr->ShouldSupportMultiLine());
+  label_->SetMaxLines(delegate_ptr->GetMaxLines());
   label_->SetElideBehavior(delegate_ptr->GetMessageElideBehavior());
 
   const auto create_button =
@@ -57,7 +64,7 @@ BraveConfirmInfoBar::BraveConfirmInfoBar(
   if (buttons & ConfirmInfoBarDelegate::BUTTON_OK) {
     ok_button_ = create_button(ConfirmInfoBarDelegate::BUTTON_OK,
                                &BraveConfirmInfoBar::OkButtonPressed);
-    ok_button_->SetProminent(true);
+    ok_button_->SetStyle(ui::ButtonStyle::kProminent);
     ok_button_->SetImageModel(
         views::Button::STATE_NORMAL,
         delegate_ptr->GetButtonImage(ConfirmInfoBarDelegate::BUTTON_OK));
@@ -72,7 +79,7 @@ BraveConfirmInfoBar::BraveConfirmInfoBar(
                                    &BraveConfirmInfoBar::CancelButtonPressed);
     if (buttons == ConfirmInfoBarDelegate::BUTTON_CANCEL ||
         delegate_ptr->IsProminent(ConfirmInfoBarDelegate::BUTTON_CANCEL)) {
-      cancel_button_->SetProminent(true);
+      cancel_button_->SetStyle(ui::ButtonStyle::kProminent);
     }
     cancel_button_->SetImageModel(
         views::Button::STATE_NORMAL,
@@ -88,7 +95,7 @@ BraveConfirmInfoBar::BraveConfirmInfoBar(
                                   &BraveConfirmInfoBar::ExtraButtonPressed);
     if (buttons == ConfirmInfoBarDelegate::BUTTON_EXTRA ||
         delegate_ptr->IsProminent(ConfirmInfoBarDelegate::BUTTON_EXTRA)) {
-      extra_button_->SetProminent(true);
+      extra_button_->SetStyle(ui::ButtonStyle::kProminent);
     }
     extra_button_->SetImageModel(
         views::Button::STATE_NORMAL,
@@ -100,6 +107,9 @@ BraveConfirmInfoBar::BraveConfirmInfoBar(
   }
 
   link_ = AddChildView(CreateLink(delegate_ptr->GetLinkText()));
+  link_->SetMultiLine(delegate_ptr->ShouldSupportMultiLine());
+  link_->SetMaxLines(delegate_ptr->GetMaxLines());
+  link_->SetHorizontalAlignment(gfx::ALIGN_CENTER);
 
   if (delegate_ptr->HasCheckbox()) {
     checkbox_ = AddChildView(std::make_unique<views::Checkbox>(
@@ -119,13 +129,12 @@ views::MdTextButton* BraveConfirmInfoBar::GetButtonById(int id) {
       return cancel_button_;
     case ConfirmInfoBarDelegate::BUTTON_EXTRA:
       return extra_button_;
-    default:
-      NOTREACHED_NORETURN();
   }
+  NOTREACHED();
 }
 
-void BraveConfirmInfoBar::Layout() {
-  InfoBarView::Layout();
+void BraveConfirmInfoBar::Layout(PassKey) {
+  LayoutSuperclass<InfoBarView>(this);
 
   if (ok_button_) {
     ok_button_->SizeToPreferredSize();
@@ -141,9 +150,11 @@ void BraveConfirmInfoBar::Layout() {
 
   int x = GetStartX();
   Views views;
-  views.push_back(label_);
-  views.push_back(link_);
+  views.push_back(label_.get());
+  views.push_back(link_.get());
   AssignWidths(&views, std::max(0, GetEndX() - x - NonLabelWidth()));
+
+  MaybeLayoutMultiLineLabelAndLink();
 
   ChromeLayoutProvider* layout_provider = ChromeLayoutProvider::Get();
 
@@ -157,6 +168,9 @@ void BraveConfirmInfoBar::Layout() {
   auto order = GetDelegate()->GetButtonsOrder();
   for (const auto& id : order) {
     auto* current_button = GetButtonById(id);
+    if (!current_button) {
+      continue;
+    }
     current_button->SetPosition(gfx::Point(x, OffsetY(current_button)));
     x = current_button->bounds().right() +
         layout_provider->GetDistanceMetric(
@@ -171,6 +185,38 @@ void BraveConfirmInfoBar::Layout() {
   }
 
   link_->SetPosition(gfx::Point(GetEndX() - link_->width(), OffsetY(link_)));
+}
+
+void BraveConfirmInfoBar::MaybeLayoutMultiLineLabelAndLink() {
+  if (!GetDelegate()->ShouldSupportMultiLine()) {
+    return;
+  }
+
+  CHECK(label_);
+  CHECK(link_);
+
+  const int available_width = GetEndX() - GetStartX() - NonLabelWidth();
+  label_->SizeToFit(std::max(0, available_width - link_->width()));
+
+  // When label and link have different line counts, adjust their widths
+  // proportionally to their text lengths to maintain a balanced layout.
+  if (label_->GetRequiredLines() != link_->GetRequiredLines()) {
+    const size_t text_size = label_->GetText().size() + link_->GetText().size();
+    const int label_width =
+        available_width * label_->GetText().size() / text_size;
+    label_->SizeToFit(label_width);
+    link_->SizeToFit(available_width - label_width);
+  }
+
+  const int max_height = std::max(label_->height(), link_->height());
+  const int target_height = std::max(
+      max_height,
+      ChromeLayoutProvider::Get()->GetDistanceMetric(DISTANCE_INFOBAR_HEIGHT));
+
+  // Don't call SetTargetHeight() as it causes another nested layout pass inside
+  // the layout. Instead, just set the target height and update the computed
+  // height.
+  BraveSetTargetHeight(target_height);
 }
 
 void BraveConfirmInfoBar::CheckboxPressed() {
@@ -248,5 +294,5 @@ int BraveConfirmInfoBar::NonLabelWidth() const {
   return width + ((link_->GetText().empty() || !width) ? 0 : label_spacing);
 }
 
-BEGIN_METADATA(BraveConfirmInfoBar, InfoBarView)
+BEGIN_METADATA(BraveConfirmInfoBar)
 END_METADATA

@@ -18,24 +18,21 @@ namespace brave_ads {
 // PaddedImageButtons are ImageButtons whose image can be padded within the
 // button. This allows the creation of buttons whose clickable areas extend
 // beyond their image areas without the need to create and maintain
-// corresponding resource images with alpha padding
-class PaddedImageButton : public views::ImageButton {
+// corresponding resource images with alpha padding.
+class PaddedImageButton final : public views::ImageButton {
+  METADATA_HEADER(PaddedImageButton, views::ImageButton)
  public:
-  METADATA_HEADER(PaddedImageButton);
 
   explicit PaddedImageButton(PressedCallback callback);
 
   PaddedImageButton(const PaddedImageButton&) = delete;
   PaddedImageButton& operator=(const PaddedImageButton&) = delete;
 
-  PaddedImageButton(PaddedImageButton&&) noexcept = delete;
-  PaddedImageButton& operator=(PaddedImageButton&&) noexcept = delete;
-
   ~PaddedImageButton() override = default;
 
-  void AdjustBorderInsetToFitHeight(const int height);
+  void AdjustBorderInsetToFitHeight(int height);
 
-  // views::Button:
+  // views::ImageButton:
   void OnThemeChanged() override;
 };
 

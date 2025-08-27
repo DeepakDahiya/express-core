@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/check_op.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/components/tor/resources/grit/tor_internals_generated_map.h"
 #include "brave/components/tor/resources/grit/tor_resources.h"
@@ -38,8 +39,7 @@ void TorInternalsDOMHandler::RegisterMessages() {
 void TorInternalsDOMHandler::HandleGetTorGeneralInfo(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 0U);
-  if (!web_ui()->CanCallJavascript())
-    return;
+  AllowJavascript();
 
   base::Value::Dict info;
 
@@ -47,32 +47,36 @@ void TorInternalsDOMHandler::HandleGetTorGeneralInfo(
   info.Set("torPid", static_cast<int>(tor_launcher_factory_->GetTorPid()));
   info.Set("torProxyURI", tor_launcher_factory_->GetTorProxyURI());
   info.Set("isTorConnected", tor_launcher_factory_->IsTorConnected());
-  web_ui()->CallJavascriptFunctionUnsafe("tor_internals.onGetTorGeneralInfo",
-                                         info);
+  CallJavascriptFunction("tor_internals.onGetTorGeneralInfo", info);
 }
 
 void TorInternalsDOMHandler::HandleGetTorLog(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 0U);
-  if (!web_ui()->CanCallJavascript())
-    return;
+  AllowJavascript();
   tor_launcher_factory_->GetTorLog(base::BindOnce(
       &TorInternalsDOMHandler::OnGetTorLog, weak_ptr_factory_.GetWeakPtr()));
 }
 
 void TorInternalsDOMHandler::OnGetTorLog(bool success, const std::string& log) {
-  if (success)
-    web_ui()->CallJavascriptFunctionUnsafe("tor_internals.onGetTorLog",
-                                           base::Value(log));
+  if (success && IsJavascriptAllowed()) {
+    CallJavascriptFunction("tor_internals.onGetTorLog", base::Value(log));
+  }
 }
 
 void TorInternalsDOMHandler::OnTorCircuitEstablished(bool result) {
-  web_ui()->CallJavascriptFunctionUnsafe(
-      "tor_internals.onGetTorCircuitEstablished", base::Value(result));
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+  CallJavascriptFunction("tor_internals.onGetTorCircuitEstablished",
+                         base::Value(result));
 }
 
 void TorInternalsDOMHandler::OnTorControlEvent(const std::string& event) {
-  web_ui()->CallJavascriptFunctionUnsafe("tor_internals.onGetTorControlEvent",
-                                         base::Value(event));
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+  CallJavascriptFunction("tor_internals.onGetTorControlEvent",
+                         base::Value(event));
 }
 
 void TorInternalsDOMHandler::OnTorLogUpdated() {
@@ -82,14 +86,16 @@ void TorInternalsDOMHandler::OnTorLogUpdated() {
 
 void TorInternalsDOMHandler::OnTorInitializing(const std::string& percentage,
                                                const std::string& message) {
-  web_ui()->CallJavascriptFunctionUnsafe("tor_internals.onGetTorInitPercentage",
-                                         base::Value(percentage));
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+  CallJavascriptFunction("tor_internals.onGetTorInitPercentage",
+                         base::Value(percentage));
 }
 
 TorInternalsUI::TorInternalsUI(content::WebUI* web_ui, const std::string& name)
     : WebUIController(web_ui) {
   CreateAndAddWebUIDataSource(web_ui, name, kTorInternalsGenerated,
-                              kTorInternalsGeneratedSize,
                               IDR_TOR_INTERNALS_HTML);
   web_ui->AddMessageHandler(std::make_unique<TorInternalsDOMHandler>());
 }

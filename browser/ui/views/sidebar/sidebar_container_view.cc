@@ -7,9 +7,13 @@
 
 #include <algorithm>
 #include <limits>
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
+#include "base/logging.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "brave/browser/ui/brave_browser.h"
 #include "brave/browser/ui/color/brave_color_id.h"
@@ -21,19 +25,24 @@
 #include "brave/browser/ui/tabs/shared_pinned_tab_service.h"
 #include "brave/browser/ui/tabs/shared_pinned_tab_service_factory.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
-#include "brave/browser/ui/views/frame/brave_contents_layout_manager.h"
+#include "brave/browser/ui/views/frame/brave_browser_view_layout.h"
+#include "brave/browser/ui/views/frame/brave_contents_view_util.h"
 #include "brave/browser/ui/views/side_panel/brave_side_panel.h"
 #include "brave/browser/ui/views/side_panel/playlist/playlist_side_panel_coordinator.h"
 #include "brave/browser/ui/views/sidebar/sidebar_control_view.h"
+#include "brave/browser/ui/views/toolbar/brave_toolbar_view.h"
+#include "brave/browser/ui/views/toolbar/side_panel_button.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/sidebar/sidebar_item.h"
+#include "brave/components/sidebar/browser/sidebar_item.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_within_tab_helper.h"
+#include "chrome/browser/ui/tabs/public/tab_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
@@ -41,20 +50,22 @@
 #include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "components/grit/brave_components_strings.h"
+#include "components/input/native_web_keyboard_event.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/common/input/native_web_keyboard_event.h"
+#include "third_party/blink/public/common/input/web_mouse_event.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/compositor/layer.h"
 #include "ui/events/event_observer.h"
 #include "ui/events/types/event_type.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/webview/webview.h"
 #include "ui/views/event_monitor.h"
+#include "ui/views/view_class_properties.h"
 #include "ui/views/view_utils.h"
 #include "ui/views/widget/widget.h"
-#include "url/gurl.h"
 
 namespace {
 
@@ -108,7 +119,7 @@ class SidebarContainerView::BrowserWindowEventObserver
 };
 
 SidebarContainerView::SidebarContainerView(
-    BraveBrowser* browser,
+    Browser* browser,
     SidePanelCoordinator* side_panel_coordinator,
     std::unique_ptr<BraveSidePanel> side_panel)
     : views::AnimationDelegateViews(this),
@@ -128,21 +139,9 @@ SidebarContainerView::~SidebarContainerView() = default;
 void SidebarContainerView::Init() {
   initialized_ = true;
 
-  sidebar_model_ = browser_->sidebar_controller()->model();
+  sidebar_model_ = browser_->GetFeatures().sidebar_controller()->model();
   sidebar_model_observation_.Observe(sidebar_model_);
   browser_->tab_strip_model()->AddObserver(this);
-
-  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-  DCHECK(browser_view);
-
-  auto* side_panel_registry =
-      SidePanelCoordinator::GetGlobalSidePanelRegistry(browser_);
-  panel_registry_observations_.AddObservation(side_panel_registry);
-
-  for (const auto& entry : side_panel_registry->entries()) {
-    DVLOG(1) << "Observing panel entry in ctor: " << entry->name();
-    panel_entry_observations_.AddObservation(entry.get());
-  }
 
   show_side_panel_button_.Init(
       kShowSidePanelButton, browser_->profile()->GetPrefs(),
@@ -151,7 +150,8 @@ void SidebarContainerView::Init() {
 
   AddChildViews();
   UpdateToolbarButtonVisibility();
-  SetSidebarShowOption(GetSidebarService(browser_)->GetSidebarShowOption());
+  SetSidebarShowOption(
+      GetSidebarService(GetBraveBrowser())->GetSidebarShowOption());
 }
 
 void SidebarContainerView::SetSidebarOnLeft(bool sidebar_on_left) {
@@ -168,14 +168,59 @@ void SidebarContainerView::SetSidebarOnLeft(bool sidebar_on_left) {
 
   DCHECK(side_panel_);
   side_panel_->SetHorizontalAlignment(
-      sidebar_on_left ? BraveSidePanel::kHorizontalAlignLeft
-                      : BraveSidePanel::kHorizontalAlignRight);
-
-  GetEventDetectWidget()->SetSidebarOnLeft(sidebar_on_left_);
+      sidebar_on_left ? BraveSidePanel::HorizontalAlignment::kLeft
+                      : BraveSidePanel::HorizontalAlignment::kRight);
 }
 
 bool SidebarContainerView::IsSidebarVisible() const {
   return sidebar_control_view_ && sidebar_control_view_->GetVisible();
+}
+
+bool SidebarContainerView::PreHandleMouseEvent(
+    const blink::WebMouseEvent& event) {
+  if (IsSidebarVisible()) {
+    return false;
+  }
+
+  if (show_sidebar_option_ != ShowSidebarOption::kShowOnMouseOver ||
+      event.GetTypeAsUiEventType() != ui::EventType::kMouseMoved) {
+    return false;
+  }
+
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
+  gfx::RectF mouse_event_detect_bounds(
+      browser_view->GetContentsContainerForLayoutManager()
+          ->GetBoundsInScreen());
+  constexpr int kHotCorenerWidth = 7;
+  if (sidebar_on_left_) {
+    mouse_event_detect_bounds.set_width(kHotCorenerWidth);
+  } else {
+    mouse_event_detect_bounds.set_x(mouse_event_detect_bounds.right() -
+                                    kHotCorenerWidth);
+  }
+
+  if (mouse_event_detect_bounds.Contains(event.PositionInScreen())) {
+    ShowSidebarControlView();
+    return true;
+  }
+
+  return false;
+}
+
+void SidebarContainerView::WillShowSidePanel() {
+  // It's good timing to start observing any panel entries
+  // from global and contextual if not yet observed.
+  auto* tab_model = browser_->tab_strip_model();
+  auto* active_web_contents = tab_model->GetActiveWebContents();
+  if (!active_web_contents) {
+    return;
+  }
+  StartObservingContextualSidePanelEntry(active_web_contents);
+
+  auto* global_registry = side_panel_coordinator_->GetWindowRegistry();
+  for (const auto& entry : global_registry->entries()) {
+    AddSidePanelEntryObservation(entry.get());
+  }
 }
 
 bool SidebarContainerView::IsFullscreenForCurrentEntry() const {
@@ -187,8 +232,9 @@ bool SidebarContainerView::IsFullscreenForCurrentEntry() const {
 
   // TODO(sko) Do we have a more general way to get WebContents of the active
   // entry?
-  auto web_view = PlaylistSidePanelCoordinator::FromBrowser(browser_)
-                      ->side_panel_web_view();
+  auto* web_view = browser_->GetFeatures()
+                       .playlist_side_panel_coordinator()
+                       ->side_panel_web_view();
   if (!web_view) {
     return false;
   }
@@ -210,11 +256,6 @@ bool SidebarContainerView::IsFullscreenForCurrentEntry() const {
 
 void SidebarContainerView::SetSidebarShowOption(ShowSidebarOption show_option) {
   DVLOG(2) << __func__;
-
-  // Hide event detect widget when option is chaged from mouse over to others.
-  if (show_sidebar_option_ == ShowSidebarOption::kShowOnMouseOver) {
-    ShowOptionsEventDetectWidget(false);
-  }
 
   show_sidebar_option_ = show_option;
 
@@ -269,18 +310,22 @@ void SidebarContainerView::UpdateBackground() {
 }
 
 void SidebarContainerView::AddChildViews() {
-  sidebar_control_view_ =
-      AddChildView(std::make_unique<SidebarControlView>(this, browser_));
+  sidebar_control_view_ = AddChildView(
+      std::make_unique<SidebarControlView>(this, GetBraveBrowser()));
   sidebar_control_view_->SetPaintToLayer();
+
+  // To prevent showing layered-children while its bounds is invisible.
+  sidebar_control_view_->layer()->SetMasksToBounds(true);
 
   // Hide by default. Visibility will be controlled by show options callback
   // later.
   sidebar_control_view_->SetVisible(false);
 }
 
-void SidebarContainerView::Layout() {
+void SidebarContainerView::Layout(PassKey) {
   if (!initialized_) {
-    return View::Layout();
+    LayoutSuperclass<views::View>(this);
+    return;
   }
 
   // As control view uses its own layer, we should set its size exactly.
@@ -299,15 +344,19 @@ void SidebarContainerView::Layout() {
   sidebar_control_view_->SetBounds(control_view_x, 0, control_view_width,
                                    height());
   if (side_panel_->GetVisible()) {
-    side_panel_->SetBounds(side_panel_x, 0, width() - control_view_width,
-                           height());
+    gfx::Rect side_panel_bounds(side_panel_x, 0, width() - control_view_width,
+                                height());
+    side_panel_bounds.Inset(*side_panel_->GetProperty(views::kMarginsKey));
+
+    side_panel_->SetBoundsRect(side_panel_bounds);
   }
 }
 
-gfx::Size SidebarContainerView::CalculatePreferredSize() const {
+gfx::Size SidebarContainerView::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   if (!initialized_ || !sidebar_control_view_->GetVisible() ||
       IsFullscreenByTab()) {
-    return View::CalculatePreferredSize();
+    return View::CalculatePreferredSize(available_size);
   }
 
   if (IsFullscreenForCurrentEntry()) {
@@ -333,7 +382,8 @@ gfx::Size SidebarContainerView::CalculatePreferredSize() const {
   }
 
   if (side_panel_->GetVisible()) {
-    preferred_width += side_panel_->GetPreferredSize().width();
+    preferred_width += side_panel_->GetPreferredSize().width() +
+                       side_panel_->GetProperty(views::kMarginsKey)->width();
   }
 
   return {preferred_width, 0};
@@ -346,9 +396,12 @@ void SidebarContainerView::OnThemeChanged() {
 }
 
 bool SidebarContainerView::IsFullscreenByTab() const {
-  DCHECK(browser_->exclusive_access_manager() &&
-         browser_->exclusive_access_manager()->fullscreen_controller());
-  return browser_->exclusive_access_manager()
+  DCHECK(browser_->GetFeatures().exclusive_access_manager() &&
+         browser_->GetFeatures()
+             .exclusive_access_manager()
+             ->fullscreen_controller());
+  return browser_->GetFeatures()
+      .exclusive_access_manager()
       ->fullscreen_controller()
       ->IsWindowFullscreenForTabOrPending();
 }
@@ -401,7 +454,7 @@ void SidebarContainerView::AnimationProgressed(
 }
 
 void SidebarContainerView::AnimationEnded(const gfx::Animation* animation) {
-  side_panel_->set_fixed_contents_width(absl::nullopt);
+  side_panel_->set_fixed_contents_width(std::nullopt);
 
   PreferredSizeChanged();
 
@@ -413,7 +466,6 @@ void SidebarContainerView::AnimationEnded(const gfx::Animation* animation) {
     // Otherwise, only panel is hidden.
     const bool did_hide_all = animation_end_width_ == 0;
     if (did_hide_all) {
-      ShowOptionsEventDetectWidget(true);
       sidebar_control_view_->SetVisible(false);
     } else {
       sidebar_control_view_->SetVisible(true);
@@ -427,11 +479,11 @@ void SidebarContainerView::AnimationEnded(const gfx::Animation* animation) {
 }
 
 void SidebarContainerView::OnActiveIndexChanged(
-    absl::optional<size_t> old_index,
-    absl::optional<size_t> new_index) {
+    std::optional<size_t> old_index,
+    std::optional<size_t> new_index) {
   DVLOG(1) << "OnActiveIndexChanged: "
-           << (old_index ? std::to_string(*old_index) : "none") << " to "
-           << (new_index ? std::to_string(*new_index) : "none");
+           << (old_index ? base::NumberToString(*old_index) : "none") << " to "
+           << (new_index ? base::NumberToString(*new_index) : "none");
   if (new_index) {
     ShowSidebarAll();
   } else {
@@ -464,28 +516,6 @@ void SidebarContainerView::OnItemRemoved(size_t index) {
   UpdateToolbarButtonVisibility();
 }
 
-SidebarShowOptionsEventDetectWidget*
-SidebarContainerView::GetEventDetectWidget() {
-  if (!show_options_widget_) {
-    show_options_widget_ =
-        std::make_unique<SidebarShowOptionsEventDetectWidget>(
-            *static_cast<BraveBrowserView*>(
-                BrowserView::GetBrowserViewForBrowser(browser_)),
-            *this);
-    show_options_widget_->Hide();
-  }
-
-  return show_options_widget_.get();
-}
-
-void SidebarContainerView::ShowOptionsEventDetectWidget(bool show) {
-  if (show_sidebar_option_ != ShowSidebarOption::kShowOnMouseOver) {
-    return;
-  }
-
-  show ? GetEventDetectWidget()->Show() : GetEventDetectWidget()->Hide();
-}
-
 void SidebarContainerView::ShowSidebarControlView() {
   DVLOG(1) << __func__;
   ShowSidebar(false);
@@ -494,45 +524,45 @@ void SidebarContainerView::ShowSidebarControlView() {
 void SidebarContainerView::ShowSidebar(bool show_side_panel) {
   DVLOG(1) << __func__ << ": show panel: " << show_side_panel;
 
-  if (width_animation_.is_animating()) {
-    DVLOG(1) << __func__ << ": Finish previous show/hide animation.";
-    width_animation_.End();
+  // Don't need to show again if it's showing now.
+  if (width_animation_.is_animating() && width_animation_.IsShowing()) {
+    DVLOG(1) << __func__ << ": showing in-progress.";
+    return;
   }
 
-  width_animation_.Reset();
-  side_panel_->set_fixed_contents_width(absl::nullopt);
+  // Stop closing animation and will start showing from there.
+  // Unfortunately, this optimization doesn't have much effect
+  // because showing can start only after panel's contents is ready.
+  if (width_animation_.is_animating() && width_animation_.IsClosing()) {
+    DVLOG(1) << __func__ << ": stop hiding and start showing from there.";
+    width_animation_.Stop();
+  } else {
+    // Otherwise, reset animation to start from the beginning.
+    width_animation_.Reset();
+  }
 
   // Calculate the start & end width for animation. Both are used when
   // calculating preferred width during the show animation.
-  animation_start_width_ = 0;
-  animation_end_width_ = 0;
-
-  // Don't need event detect widget when sidebar gets visible.
-  ShowOptionsEventDetectWidget(false);
-
-  if (sidebar_control_view_->GetVisible()) {
-    animation_start_width_ = sidebar_control_view_->GetPreferredSize().width();
-  }
-
-  if (side_panel_->GetVisible()) {
-    animation_start_width_ += side_panel_->GetPreferredSize().width();
-  }
-
+  animation_start_width_ = width();
   animation_end_width_ = sidebar_control_view_->GetPreferredSize().width();
   if (show_side_panel) {
-    animation_end_width_ += side_panel_->GetPreferredSize().width();
+    // Note: as margins of |side_panel_| are part of |width()| we need to add
+    // them when calculating the ideal width of the contents.
+    animation_end_width_ +=
+        side_panel_->GetPreferredSize().width() +
+        side_panel_->GetProperty(views::kMarginsKey)->width();
   }
 
   DVLOG(1) << __func__ << ": show animation (start, end) width: ("
            << animation_start_width_ << ", " << animation_end_width_ << ")";
 
-  if (animation_start_width_ == animation_end_width_) {
-    DVLOG(1) << __func__ << ": don't need show animation.";
-    return;
-  }
-
   sidebar_control_view_->SetVisible(true);
   side_panel_->SetVisible(show_side_panel);
+
+  if (animation_start_width_ == animation_end_width_) {
+    DVLOG(1) << __func__ << ": already at the target width.";
+    return;
+  }
 
   // Don't do show animation for control view when show always options is used.
   // This animation can cause upstream browser test
@@ -552,16 +582,15 @@ void SidebarContainerView::ShowSidebar(bool show_side_panel) {
     DVLOG(1) << __func__ << ": show with animation";
     if (show_side_panel) {
       // To show side panel with animation, we need to know exact fianl end
-      // width and BraveContentsLayoutManager only knows it because side panel's
+      // width and `BraveBrowserViewLayout` only knows it because side panel's
       // preferred size could be different with current width by resizing window
       // size. If window size doesn't have sufficent width for sidebar's
-      // preferred width, BraveContentsLayoutManager allocates more smaller
-      // width to it.
+      // preferred width, `BraveBrowserViewLayout` allocates more smaller width
+      // to it.
       auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
       const int target_sidebar_width =
-          static_cast<BraveContentsLayoutManager*>(
-              browser_view->contents_container()->GetLayoutManager())
-              ->CalculateTargetSideBarWidth();
+          static_cast<BraveBrowserViewLayout*>(browser_view->GetLayoutManager())
+              ->GetIdealSideBarWidth();
       animation_end_width_ =
           std::min(animation_end_width_, target_sidebar_width);
       side_panel_->set_fixed_contents_width(
@@ -586,47 +615,38 @@ void SidebarContainerView::ShowSidebarAll() {
 void SidebarContainerView::HideSidebar(bool hide_sidebar_control) {
   DVLOG(1) << __func__ << ": hide control: " << hide_sidebar_control;
 
-  if (width_animation_.is_animating()) {
-    DVLOG(1) << __func__ << ": Finish previous show/hide animation.";
-    width_animation_.End();
+  // Don't need to close again if it's closing now.
+  if (width_animation_.is_animating() && width_animation_.IsClosing()) {
+    DVLOG(1) << __func__ << ": hiding in-progress.";
+    return;
   }
 
-  width_animation_.Reset(1.0);
-  side_panel_->set_fixed_contents_width(absl::nullopt);
+  // Stop showing animation and start closing immediately from there.
+  if (width_animation_.is_animating() && width_animation_.IsShowing()) {
+    DVLOG(1) << __func__ << ": stop showing and start hiding from there.";
+    width_animation_.Stop();
+  } else {
+    // Otherwise, reset animation to hide from the end.
+    width_animation_.Reset(1.0);
+  }
 
   // Calculate the start & end width for animation. Both are used when
   // calculating preferred width during the hide animation.
-  animation_start_width_ = 0;
+  animation_start_width_ = width();
   animation_end_width_ = 0;
-
-  if (sidebar_control_view_->GetVisible()) {
-    animation_start_width_ = sidebar_control_view_->width();
-  }
-
-  if (side_panel_->GetVisible()) {
-    animation_start_width_ += side_panel_->width();
-  }
-
   if (!hide_sidebar_control) {
     animation_end_width_ = sidebar_control_view_->GetPreferredSize().width();
   }
 
   if (animation_start_width_ == animation_end_width_) {
-    DVLOG(1) << __func__ << ": don't need hide animation.";
-
-    // At startup, make event detect widget visible even if children's
-    // visibility state is not changed.
-    if (animation_end_width_ == 0) {
-      ShowOptionsEventDetectWidget(true);
-    }
-
+    DVLOG(1) << __func__ << ": already at the target width.";
+    sidebar_control_view_->SetVisible(!hide_sidebar_control);
+    side_panel_->SetVisible(false);
     return;
   }
 
   DVLOG(1) << __func__ << ": hide animation (start, end) width: ("
            << animation_start_width_ << ", " << animation_end_width_ << ")";
-
-  GetFocusManager()->ClearFocus();
 
   if (ShouldUseAnimation()) {
     DVLOG(1) << __func__ << ": hide with animation";
@@ -640,9 +660,6 @@ void SidebarContainerView::HideSidebar(bool hide_sidebar_control) {
   }
 
   DVLOG(1) << __func__ << ": hide w/o animation";
-  if (animation_end_width_ == 0) {
-    ShowOptionsEventDetectWidget(true);
-  }
 
   sidebar_control_view_->SetVisible(!hide_sidebar_control);
   side_panel_->SetVisible(false);
@@ -687,11 +704,11 @@ void SidebarContainerView::UpdateToolbarButtonVisibility() {
   // This is similar to how chromium's side_panel_coordinator View
   // also has some control on the toolbar button.
   auto has_panel_item =
-      GetSidebarService(browser_)->GetDefaultPanelItem().has_value();
+      GetSidebarService(GetBraveBrowser())->GetDefaultPanelItem().has_value();
   auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser_);
-  if (browser_view->toolbar() &&
-      browser_view->toolbar()->GetSidePanelButton()) {
-    browser_view->toolbar()->GetSidePanelButton()->SetVisible(
+  auto* brave_toolbar = static_cast<BraveToolbarView*>(browser_view->toolbar());
+  if (brave_toolbar && brave_toolbar->side_panel_button()) {
+    brave_toolbar->side_panel_button()->SetVisible(
         has_panel_item && show_side_panel_button_.GetValue());
   }
 }
@@ -704,7 +721,7 @@ void SidebarContainerView::StartBrowserWindowEventMonitoring() {
   DVLOG(1) << __func__;
   browser_window_event_monitor_ = views::EventMonitor::CreateWindowMonitor(
       browser_window_event_observer_.get(), GetWidget()->GetNativeWindow(),
-      {ui::ET_MOUSE_MOVED});
+      {ui::EventType::kMouseMoved});
 }
 
 void SidebarContainerView::StopBrowserWindowEventMonitoring() {
@@ -716,8 +733,8 @@ void SidebarContainerView::OnEntryShown(SidePanelEntry* entry) {
   // Make sure item is selected. We need to observe the SidePanel system
   // as well as Sidebar as there are other ways than Sidebar for SidePanel
   // items to be shown and hidden, e.g. toolbar button.
-  DVLOG(1) << "Panel shown: " << entry->name();
-  auto* controller = browser_->sidebar_controller();
+  DVLOG(1) << "Panel shown: " << SidePanelEntryIdToString(entry->key().id());
+  auto* controller = browser_->GetFeatures().sidebar_controller();
 
   // Handling if |entry| is managed one.
   for (const auto& item : sidebar_model_->GetAllSidebarItems()) {
@@ -731,6 +748,14 @@ void SidebarContainerView::OnEntryShown(SidePanelEntry* entry) {
     }
   }
 
+  // Add item for this entry if it's hidden in sidebar but shown its panel.
+  if (auto item =
+          sidebar::AddItemForSidePanelIdIfNeeded(browser_, entry->key().id())) {
+    const auto sidebar_index = sidebar_model_->GetIndexOf(*item);
+    controller->ActivateItemAt(sidebar_index);
+    return;
+  }
+
   // Handling non-managed entry. It should be shown here instead of
   // asking to SidebarModel.
   // If side panel is shown by this kind of panel, showing should
@@ -739,9 +764,9 @@ void SidebarContainerView::OnEntryShown(SidePanelEntry* entry) {
 }
 
 void SidebarContainerView::OnEntryHidden(SidePanelEntry* entry) {
-  // Make sure item is deselected
-  DVLOG(1) << "Panel hidden: " << entry->name();
-  auto* controller = browser_->sidebar_controller();
+  DVLOG(1) << "Panel hidden: " << SidePanelEntryIdToString(entry->key().id());
+
+  auto* controller = browser_->GetFeatures().sidebar_controller();
 
   // Handling if |entry| is managed one.
   for (const auto& item : sidebar_model_->GetAllSidebarItems()) {
@@ -758,7 +783,7 @@ void SidebarContainerView::OnEntryHidden(SidePanelEntry* entry) {
       // item because same item should be activated.
       if (controller->IsActiveIndex(sidebar_index) &&
           side_panel_coordinator_->GetCurrentEntryId() != entry->key().id()) {
-        controller->ActivateItemAt(absl::nullopt);
+        controller->ActivateItemAt(std::nullopt);
         return;
       }
     }
@@ -772,82 +797,84 @@ void SidebarContainerView::OnEntryHidden(SidePanelEntry* entry) {
   }
 }
 
-void SidebarContainerView::OnEntryRegistered(SidePanelRegistry* registry,
-                                             SidePanelEntry* entry) {
-  // Observe when it's shown or hidden
-  DVLOG(1) << "Observing panel entry in registry observer: " << entry->name();
-  panel_entry_observations_.AddObservation(entry);
+void SidebarContainerView::OnTabWillBeRemoved(content::WebContents* contents,
+                                              int index) {
+  // At this time, we can stop observing as TabFeatures is available.
+  auto* tab = tabs::TabInterface::GetFromContents(contents);
+  if (!tab->GetTabFeatures()) {
+    return;
+  }
+
+  auto* registry = tab->GetTabFeatures()->side_panel_registry();
+  if (!registry) {
+    return;
+  }
+
+  for (const auto& entry : registry->entries()) {
+    RemoveSidePanelEntryObservation(entry.get());
+  }
 }
 
-void SidebarContainerView::OnEntryWillDeregister(SidePanelRegistry* registry,
-                                                 SidePanelEntry* entry) {
-  // Stop observing
-  DVLOG(1) << "Unobserving panel entry in registry observer: " << entry->name();
-  panel_entry_observations_.RemoveObservation(entry);
+void SidebarContainerView::UpdateActiveItemState() {
+  DVLOG(1) << "Update active item state";
+
+  auto* controller = browser_->GetFeatures().sidebar_controller();
+  std::optional<sidebar::SidebarItem::BuiltInItemType> current_type;
+  if (auto entry_id = side_panel_coordinator_->GetCurrentEntryId()) {
+    current_type = sidebar::BuiltInItemTypeFromSidePanelId(*entry_id);
+  }
+  controller->UpdateActiveItemState(current_type);
 }
 
 void SidebarContainerView::OnTabStripModelChanged(
     TabStripModel* tab_strip_model,
     const TabStripModelChange& change,
     const TabStripSelectionChange& selection) {
-  // Need to [de]register contextual registry when tab is replaced.
   if ((change.type() == TabStripModelChange::kReplaced)) {
+    // Pre-cr129's change
+    // https://chromium.googlesource.com/chromium/src/+/2fd6b53ce, we would
+    // handle shared pinned tab moving from one window to another here by
+    // starting to observe the new contents registry and stoping observing the
+    // old contents registry. But since the registry is no longer associated
+    // with the contents and is now associated with the tab instead we don't
+    // need to do the swap here. However, we may need to take some action here
+    // to fix https://github.com/brave/brave-browser/issues/40681.
+
+    // For AI Chat, if the contents got replaced then the AI Chat UI associated
+    // with that contetnts will no longer work, so just close it.
     auto* replace = change.GetReplace();
-    StartObservingContextualSidePanelRegistry(replace->new_contents);
-    StopObservingContextualSidePanelRegistry(replace->old_contents);
-    return;
-  }
-
-  if (change.type() == TabStripModelChange::kInserted) {
-    for (const auto& contents : change.GetInsert()->contents) {
-      StartObservingContextualSidePanelRegistry(contents.contents);
-    }
-    return;
-  }
-
-  if (change.type() == TabStripModelChange::kRemoved) {
-    for (const auto& contents : change.GetRemove()->contents) {
-      StopObservingContextualSidePanelRegistry(contents.contents);
+    // old_contents is already removed from the tab, so use the new_contents to
+    // get the registry.
+    auto* registry = SidePanelRegistry::GetDeprecated(replace->new_contents);
+    if (registry) {
+      if (auto* entry = registry->GetEntryForKey(
+              SidePanelEntry::Key(SidePanelEntryId::kChatUI))) {
+        if (side_panel_coordinator_->IsSidePanelEntryShowing(entry->key())) {
+          side_panel_coordinator_->Close();
+        } else {
+          entry->ClearCachedView();
+        }
+      }
     }
     return;
   }
 }
 
-void SidebarContainerView::StopObservingContextualSidePanelRegistry(
+void SidebarContainerView::StartObservingContextualSidePanelEntry(
     content::WebContents* contents) {
-  auto* registry = SidePanelRegistry::Get(contents);
+  auto* tab = tabs::TabInterface::GetFromContents(contents);
+  if (!tab->GetTabFeatures()) {
+    return;
+  }
+
+  auto* registry = tab->GetTabFeatures()->side_panel_registry();
   if (!registry) {
     return;
   }
 
-  panel_registry_observations_.RemoveObservation(registry);
-
+  // Adding observations for the side panel entries from tab not seen before.
   for (const auto& entry : registry->entries()) {
-    if (panel_entry_observations_.IsObservingSource(entry.get())) {
-      DVLOG(1) << "Removing panel entry observation from removed contextual "
-                  "registry : "
-               << entry->name();
-      panel_entry_observations_.RemoveObservation(entry.get());
-    }
-  }
-}
-
-void SidebarContainerView::StartObservingContextualSidePanelRegistry(
-    content::WebContents* contents) {
-  auto* registry = SidePanelRegistry::Get(contents);
-  if (!registry) {
-    return;
-  }
-
-  panel_registry_observations_.AddObservation(registry);
-
-  for (const auto& entry : registry->entries()) {
-    if (!panel_entry_observations_.IsObservingSource(entry.get())) {
-      DVLOG(1) << "Observing existing panel entry from newly added contextual "
-                  "registry : "
-               << entry->name();
-      panel_entry_observations_.AddObservation(entry.get());
-    }
+    AddSidePanelEntryObservation(entry.get());
   }
 
   SharedPinnedTabService* shared_pinned_tab_service =
@@ -869,5 +896,30 @@ void SidebarContainerView::StartObservingContextualSidePanelRegistry(
   }
 }
 
-BEGIN_METADATA(SidebarContainerView, views::View)
+BraveBrowser* SidebarContainerView::GetBraveBrowser() const {
+  return static_cast<BraveBrowser*>(browser_.get());
+}
+
+void SidebarContainerView::AddSidePanelEntryObservation(SidePanelEntry* entry) {
+  if (entry->IsBeingObservedBy(this)) {
+    return;
+  }
+
+  DVLOG(1) << "Start observation: "
+           << SidePanelEntryIdToString(entry->key().id());
+  entry->AddObserver(this);
+}
+
+void SidebarContainerView::RemoveSidePanelEntryObservation(
+    SidePanelEntry* entry) {
+  if (!entry->IsBeingObservedBy(this)) {
+    return;
+  }
+
+  DVLOG(1) << "Stop observation: "
+           << SidePanelEntryIdToString(entry->key().id());
+  entry->RemoveObserver(this);
+}
+
+BEGIN_METADATA(SidebarContainerView)
 END_METADATA

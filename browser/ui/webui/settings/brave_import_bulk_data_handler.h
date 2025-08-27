@@ -7,6 +7,7 @@
 #define BRAVE_BROWSER_UI_WEBUI_SETTINGS_BRAVE_IMPORT_BULK_DATA_HANDLER_H_
 
 #include <memory>
+#include <optional>
 
 #include "base/containers/flat_set.h"
 #include "base/functional/callback.h"
@@ -14,7 +15,6 @@
 #include "brave/browser/ui/webui/settings/brave_import_data_handler.h"
 #include "brave/browser/ui/webui/settings/brave_importer_observer.h"
 #include "build/build_config.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace settings {
 
@@ -34,25 +34,28 @@ class BraveImportBulkDataHandler : public BraveImportDataHandler {
  protected:
   void HandleImportDataBulk(const base::Value::List& args);
 
-  absl::optional<int> GetProfileIndex(
-      const importer::SourceProfile& source_profile);
+  std::optional<int> GetProfileIndex(
+      const user_data_importer::SourceProfile& source_profile);
 
   void PrepareProfile(const std::u16string& name,
                       ProfileReadyCallback callback);
 
-  void ProfileReadyForImport(const importer::SourceProfile& source_profile,
-                             uint16_t imported_items,
-                             Profile* profile);
+  void ProfileReadyForImport(
+      const user_data_importer::SourceProfile& source_profile,
+      uint16_t imported_items,
+      Profile* profile);
   // BraveImportDataHandler
-  void NotifyImportProgress(const importer::SourceProfile& source_profile,
-                            const base::Value::Dict& info) override;
-  void OnImportEnded(const importer::SourceProfile& source_profile) override;
+  void NotifyImportProgress(
+      const user_data_importer::SourceProfile& source_profile,
+      const base::Value::Dict& info) override;
+  void OnImportEnded(
+      const user_data_importer::SourceProfile& source_profile) override;
 
   // SettingsPageUIHandler
   void RegisterMessages() override;
 
   // ImportDataHandler overrides:
-  void StartImport(const importer::SourceProfile& source_profile,
+  void StartImport(const user_data_importer::SourceProfile& source_profile,
                    uint16_t imported_items) override;
 
  private:

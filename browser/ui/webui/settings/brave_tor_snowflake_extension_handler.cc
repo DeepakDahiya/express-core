@@ -8,22 +8,23 @@
 #include <memory>
 #include <string>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/memory/scoped_refptr.h"
 #include "brave/components/tor/pref_names.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_allowlist.h"
-#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/webstore_install_with_prompt.h"
 #include "chrome/browser/profiles/profile.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/web_contents.h"
+#include "extensions/browser/extension_registrar.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 
 namespace {
 // https://chrome.google.com/webstore/detail/snowflake/mafpmfcccpbjnhfhjnllmmalhifmlcie
-constexpr const char kSnowflakeExtensionId[] =
-    "mafpmfcccpbjnhfhjnllmmalhifmlcie";
+constexpr char kSnowflakeExtensionId[] = "mafpmfcccpbjnhfhjnllmmalhifmlcie";
 }  // namespace
 
 class SnowflakeWebstoreInstaller final
@@ -160,24 +161,23 @@ void BraveTorSnowflakeExtensionHandler::EnableSnowflakeExtension(
 
   auto* profile = Profile::FromBrowserContext(
       web_ui()->GetWebContents()->GetBrowserContext());
-  auto* extension_service =
-      extensions::ExtensionSystem::Get(profile)->extension_service();
 
   if (enable) {
     if (!installed) {
       installer_ = base::MakeRefCounted<SnowflakeWebstoreInstaller>(
-          kSnowflakeExtensionId, profile,
+          kSnowflakeExtensionId, profile, /*parent_window=*/gfx::NativeWindow(),
           base::BindOnce(
               &BraveTorSnowflakeExtensionHandler::OnSnowflakeExtensionInstalled,
               weak_factory_.GetWeakPtr(), args[0].Clone()));
       installer_->BeginInstall();
     } else {
-      extension_service->EnableExtension(kSnowflakeExtensionId);
+      extensions::ExtensionRegistrar::Get(profile)->EnableExtension(
+          kSnowflakeExtensionId);
       ResolveJavascriptCallback(args[0], base::Value(true));
     }
   } else {
     installer_.reset();
-    extension_service->UninstallExtension(
+    extensions::ExtensionRegistrar::Get(profile)->UninstallExtension(
         kSnowflakeExtensionId, extensions::UNINSTALL_REASON_INTERNAL_MANAGEMENT,
         nullptr);
     ResolveJavascriptCallback(args[0], base::Value(true));

@@ -1,42 +1,74 @@
-# Copyright (c) 2020 The Brave Authors. All rights reserved.
+# Copyright (c) 2025 The Brave Authors. All rights reserved.
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
-import("//brave/build/config.gni")
-import("//build/buildflag_header.gni")
+assert(is_win || is_mac || is_linux || is_chromeos || is_android)
 
-source_set("tabs") {
-  # Set due to //chrome/browser and //chrome/browser/ui circular dependencies.
-  check_includes = false
+# Note: Target names in this file should match those upstream where possible.
+
+source_set("tabs_public") {
+  sources = [ "public/brave_tab_features.h" ]
+
+  public_deps = [
+    "//brave/components/psst/buildflags",
+    "//chrome/browser/ui/tabs:tabs_public",
+  ]
 
   if (!is_android) {
+    sources += [ "public/constants.h" ]
+  }
+}
+
+if (!is_android) {
+  source_set("impl") {
+    visibility = [ "//chrome/browser" ]
+
+    sources = [ "brave_tab_features.cc" ]
+
+    deps = [
+      ":tabs_public",
+      "//brave/browser/ai_chat",
+      "//brave/browser/ui/side_panel",
+      "//brave/components/psst/browser/content",
+      "//chrome/browser/profiles",
+      "//chrome/browser/ui/tabs:impl",
+    ]
+  }
+
+  # This source set is counterpart to the upstream `tab_strip` source set.
+  source_set("tab_strip") {
     sources = [
-      "brave_tab_layout_constants.h",
-      "brave_tab_menu_model.cc",
-      "brave_tab_menu_model.h",
-      "brave_tab_prefs.cc",
-      "brave_tab_prefs.h",
       "brave_tab_strip_model.cc",
       "brave_tab_strip_model.h",
-      "brave_tab_style.h",
-      "brave_vertical_tab_color_mixer.cc",
-      "brave_vertical_tab_color_mixer.h",
-      "features.cc",
-      "features.h",
-      "shared_pinned_tab_service.cc",
-      "shared_pinned_tab_service.h",
-      "shared_pinned_tab_service_factory.cc",
-      "shared_pinned_tab_service_factory.h",
     ]
 
     deps = [
-      "//brave/common/",
-      "//chrome/app:generated_resources",
-      "//components/prefs",
-      "//components/sessions",
-      "//content/public/browser",
-      "//ui/color",
+      "//brave/browser/ui:brave_tab_features",
+      "//chrome/browser/ui/tabs:tab_strip",
     ]
+
+    public_deps = [ "//chrome/browser:browser_public_dependencies" ]
   }
+}
+
+source_set("split_view") {
+  sources = [
+    "split_view_browser_data.cc",
+    "split_view_browser_data.h",
+    "split_view_browser_data_observer.h",
+    "split_view_tab_strip_model_adapter.cc",
+    "split_view_tab_strip_model_adapter.h",
+  ]
+
+  deps = [
+    "//base",
+    "//brave/browser:browser_process",
+    "//brave/browser/misc_metrics",
+    "//brave/browser/ui:brave_tab_features",
+    "//brave/components/misc_metrics",
+    "//chrome/browser/ui/browser_window",
+    "//chrome/browser/ui/tabs:tab_model",
+    "//chrome/browser/ui/tabs:tab_strip",
+  ]
 }

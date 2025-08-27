@@ -7,6 +7,7 @@
 
 #include <memory>
 
+#include "base/check.h"
 #include "brave/browser/ui/views/frame/brave_non_client_hit_test_helper.h"
 #include "brave/browser/ui/views/frame/brave_window_frame_graphic.h"
 #include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
@@ -116,11 +117,8 @@ void BraveOpaqueBrowserFrameView::
 }
 
 void BraveOpaqueBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
-  // Don't draw client edge next to toolbar when it's in vertical tab stirp mode
-  DCHECK(browser_view());
-  auto* browser = browser_view()->browser();
-  DCHECK(browser);
-  if (tabs::utils::ShouldShowVerticalTabs(browser)) {
+  // Don't draw client edge next to toolbar when it's in vertical tab strip mode
+  if (ShouldShowVerticalTabs()) {
     return;
   }
 

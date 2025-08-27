@@ -9,15 +9,6 @@
 #include "brave/browser/ui/views/side_panel/brave_bookmarks_side_panel_view.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_registry.h"
-#include "chrome/grit/generated_resources.h"
-#include "components/omnibox/browser/vector_icons.h"
-#include "ui/base/l10n/l10n_util.h"
-#include "ui/base/models/image_model.h"
-#include "ui/views/vector_icons.h"
-
-BraveBookmarksSidePanelCoordinator::BraveBookmarksSidePanelCoordinator(
-    Browser* browser)
-    : BrowserUserData<BraveBookmarksSidePanelCoordinator>(*browser) {}
 
 BraveBookmarksSidePanelCoordinator::~BraveBookmarksSidePanelCoordinator() =
     default;
@@ -25,17 +16,15 @@ BraveBookmarksSidePanelCoordinator::~BraveBookmarksSidePanelCoordinator() =
 void BraveBookmarksSidePanelCoordinator::CreateAndRegisterEntry(
     SidePanelRegistry* global_registry) {
   global_registry->Register(std::make_unique<SidePanelEntry>(
-      SidePanelEntry::Id::kBookmarks,
-      l10n_util::GetStringUTF16(IDS_BOOKMARK_MANAGER_TITLE),
-      ui::ImageModel::FromVectorIcon(omnibox::kStarIcon, ui::kColorIcon),
+      SidePanelEntry::Key(SidePanelEntry::Id::kBookmarks),
       base::BindRepeating(
           &BraveBookmarksSidePanelCoordinator::CreateBookmarksPanelView,
-          base::Unretained(this))));
+          base::Unretained(this)),
+      /*default_content_width_callback=*/base::NullCallback()));
 }
 
 std::unique_ptr<views::View>
-BraveBookmarksSidePanelCoordinator::CreateBookmarksPanelView() {
-  return std::make_unique<BraveBookmarksSidePanelView>(&GetBrowser());
+BraveBookmarksSidePanelCoordinator::CreateBookmarksPanelView(
+    SidePanelEntryScope& scope) {
+  return std::make_unique<BraveBookmarksSidePanelView>(scope);
 }
-
-BROWSER_USER_DATA_KEY_IMPL(BraveBookmarksSidePanelCoordinator);

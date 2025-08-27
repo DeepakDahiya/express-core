@@ -6,21 +6,24 @@
 #include "brave/browser/ui/webui/brave_adblock_ui.h"
 
 #include <memory>
+#include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/scoped_observation.h"
 #include "base/values.h"
 #include "brave/browser/brave_browser_process.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/components/brave_adblock/resources/grit/brave_adblock_generated_map.h"
-#include "brave/components/brave_shields/browser/ad_block_custom_filters_provider.h"
-#include "brave/components/brave_shields/browser/ad_block_regional_service_manager.h"
-#include "brave/components/brave_shields/browser/ad_block_service.h"
-#include "brave/components/brave_shields/browser/ad_block_service_helper.h"
-#include "brave/components/brave_shields/browser/ad_block_subscription_service_manager.h"
-#include "brave/components/brave_shields/browser/ad_block_subscription_service_manager_observer.h"
+#include "brave/components/brave_shields/content/browser/ad_block_custom_filters_provider.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
+#include "brave/components/brave_shields/content/browser/ad_block_subscription_service_manager.h"
+#include "brave/components/brave_shields/content/browser/ad_block_subscription_service_manager_observer.h"
+#include "brave/components/brave_shields/core/browser/ad_block_component_service_manager.h"
 #include "brave/components/constants/webui_url_constants.h"
 #include "build/build_config.h"
+#include "chrome/browser/profiles/profile.h"
 #include "components/grit/brave_components_resources.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
@@ -138,13 +141,14 @@ void AdblockDOMHandler::OnServiceUpdateEvent() {
 
 void AdblockDOMHandler::HandleEnableFilterList(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 2U);
-  if (!args[0].is_string() || !args[1].is_bool())
+  if (!args[0].is_string() || !args[1].is_bool()) {
     return;
+  }
 
   std::string uuid = args[0].GetString();
   bool enabled = args[1].GetBool();
   g_brave_browser_process->ad_block_service()
-      ->regional_service_manager()
+      ->component_service_manager()
       ->EnableFilterList(uuid, enabled);
 }
 
@@ -162,7 +166,7 @@ void AdblockDOMHandler::HandleGetRegionalLists(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 0U);
   AllowJavascript();
   auto regional_lists = g_brave_browser_process->ad_block_service()
-                            ->regional_service_manager()
+                            ->component_service_manager()
                             ->GetRegionalLists();
   CallJavascriptFunction("brave_adblock.onGetRegionalLists", regional_lists);
 }
@@ -177,21 +181,24 @@ void AdblockDOMHandler::HandleGetListSubscriptions(
 void AdblockDOMHandler::HandleUpdateCustomFilters(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string custom_filters = args[0].GetString();
   g_brave_browser_process->ad_block_service()
       ->custom_filters_provider()
-      ->UpdateCustomFilters(custom_filters);
+      ->UpdateCustomFiltersFromSettings(
+          Profile::FromWebUI(web_ui())->GetPrefs(), custom_filters);
 }
 
 void AdblockDOMHandler::HandleSubmitNewSubscription(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
   AllowJavascript();
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -209,8 +216,9 @@ void AdblockDOMHandler::HandleSetSubscriptionEnabled(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 2U);
   AllowJavascript();
-  if (!args[0].is_string() || !args[1].is_bool())
+  if (!args[0].is_string() || !args[1].is_bool()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   bool enabled = args[1].GetBool();
@@ -228,8 +236,9 @@ void AdblockDOMHandler::HandleDeleteSubscription(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
   AllowJavascript();
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -248,8 +257,9 @@ void AdblockDOMHandler::HandleRefreshSubscription(
   // This handler does not call Javascript directly, but refreshing the
   // subscription will trigger the observer later, which will require it.
   AllowJavascript();
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -264,8 +274,9 @@ void AdblockDOMHandler::HandleRefreshSubscription(
 void AdblockDOMHandler::HandleViewSubscriptionSource(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -282,7 +293,8 @@ void AdblockDOMHandler::HandleViewSubscriptionSource(
       web_ui()->GetWebContents(),
       content::OpenURLParams(file_url, content::Referrer(),
                              WindowOpenDisposition::NEW_FOREGROUND_TAB,
-                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false));
+                             ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false),
+      /*navigation_handle_callback=*/{});
 #else
   auto* browser = chrome::FindBrowserWithTab(web_ui()->GetWebContents());
   ShowSingletonTabOverwritingNTP(browser, file_url);
@@ -318,10 +330,9 @@ void AdblockDOMHandler::RefreshSubscriptionsList() {
 
 }  // namespace
 
-BraveAdblockUI::BraveAdblockUI(content::WebUI* web_ui, const std::string& name)
+BraveAdblockUI::BraveAdblockUI(content::WebUI* web_ui)
     : WebUIController(web_ui) {
-  CreateAndAddWebUIDataSource(web_ui, name, kBraveAdblockGenerated,
-                              kBraveAdblockGeneratedSize,
+  CreateAndAddWebUIDataSource(web_ui, kAdblockHost, kBraveAdblockGenerated,
                               IDR_BRAVE_ADBLOCK_HTML);
   web_ui->AddMessageHandler(std::make_unique<AdblockDOMHandler>());
 }

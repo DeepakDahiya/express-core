@@ -6,6 +6,8 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_BRAVE_ADS_NOTIFICATION_AD_HEADER_VIEW_H_
 #define BRAVE_BROWSER_UI_VIEWS_BRAVE_ADS_NOTIFICATION_AD_HEADER_VIEW_H_
 
+#include <memory>
+
 #include "ui/base/metadata/metadata_header_macros.h"
 #include "ui/gfx/text_constants.h"
 #include "ui/views/view.h"
@@ -16,18 +18,13 @@ class Label;
 
 namespace brave_ads {
 
-class NotificationAdHeaderView : public views::View {
+class NotificationAdHeaderView final : public views::View {
+  METADATA_HEADER(NotificationAdHeaderView, views::View)
  public:
-  METADATA_HEADER(NotificationAdHeaderView);
-
-  explicit NotificationAdHeaderView(const int width);
+  NotificationAdHeaderView();
 
   NotificationAdHeaderView(const NotificationAdHeaderView&) = delete;
   NotificationAdHeaderView& operator=(const NotificationAdHeaderView&) = delete;
-
-  NotificationAdHeaderView(NotificationAdHeaderView&&) noexcept = delete;
-  NotificationAdHeaderView& operator=(NotificationAdHeaderView&&) noexcept =
-      delete;
 
   ~NotificationAdHeaderView() override;
 
@@ -37,14 +34,14 @@ class NotificationAdHeaderView : public views::View {
   void UpdateContent();
 
   // views::View:
-  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnThemeChanged() override;
 
  private:
-  void CreateView(const int width);
+  void CreateView();
 
-  views::Label* CreateTitleLabel();
+  std::unique_ptr<views::Label> CreateTitleLabel();
   void UpdateTitleLabel();
+  void UpdateAccessibleName();
 
   raw_ptr<views::Label> title_label_ = nullptr;
 };

@@ -7,8 +7,11 @@
 #define BRAVE_BROWSER_UI_VIEWS_SIDE_PANEL_BRAVE_SIDE_PANEL_COORDINATOR_H_
 
 #include <memory>
+#include <optional>
 
-#include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"  // IWYU pragma: export
+#include "chrome/browser/ui/views/side_panel/side_panel_coordinator.h"
+
+class BraveBrowserView;
 
 class BraveSidePanelCoordinator : public SidePanelCoordinator {
  public:
@@ -16,14 +19,35 @@ class BraveSidePanelCoordinator : public SidePanelCoordinator {
   ~BraveSidePanelCoordinator() override;
 
   // SidePanelCoodinator overrides:
-  void Show(absl::optional<SidePanelEntry::Id> entry_id = absl::nullopt,
-            absl::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger =
-                absl::nullopt) override;
+  void Show(SidePanelEntry::Key entry_key,
+            std::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger =
+                std::nullopt) override;
   void OnTabStripModelChanged(
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
   std::unique_ptr<views::View> CreateHeader() override;
+  void Toggle() override;
+  void Toggle(SidePanelEntryKey key,
+              SidePanelUtil::SidePanelOpenTrigger open_trigger) override;
+  void OnViewVisibilityChanged(views::View* observed_view,
+                               views::View* starting_view,
+                               bool visible) override;
+  void PopulateSidePanel(
+      bool supress_animations,
+      const UniqueKey& unique_key,
+      std::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger,
+      SidePanelEntry* entry,
+      std::optional<std::unique_ptr<views::View>> content_view) override;
+  void NotifyPinnedContainerOfActiveStateChange(SidePanelEntryKey key,
+                                                bool is_active) override;
+
+ private:
+  // Returns the last active entry or the default entry if no last active
+  // entry exists.
+  std::optional<SidePanelEntry::Key> GetLastActiveEntryKey() const;
+  void UpdateToolbarButtonHighlight(bool side_panel_visible);
+  BraveBrowserView* GetBraveBrowserView();
 };
 
 #endif  // BRAVE_BROWSER_UI_VIEWS_SIDE_PANEL_BRAVE_SIDE_PANEL_COORDINATOR_H_

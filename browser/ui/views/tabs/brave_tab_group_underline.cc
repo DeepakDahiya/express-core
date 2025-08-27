@@ -58,9 +58,8 @@ gfx::Insets BraveTabGroupUnderline::GetInsetsForUnderline(
 
   // For horizontal tabs, the underline should be inset slightly within the
   // visual edges of the tab.
-  int horizontal_inset = TabGroupUnderline::kStrokeThickness +
-                         brave_tabs::kHorizontalTabInset +
-                         brave_tabs::kHorizontalGroupUnderlineInset;
+  int horizontal_inset =
+      TabGroupUnderline::kStrokeThickness + brave_tabs::kHorizontalTabInset;
 
   return gfx::Insets::VH(0, horizontal_inset);
 }
@@ -70,17 +69,8 @@ gfx::Rect BraveTabGroupUnderline::CalculateTabGroupUnderlineBounds(
     const views::View* const leading_view,
     const views::View* const trailing_view) const {
   if (!ShouldShowVerticalTabs()) {
-    auto bounds = TabGroupUnderline::CalculateTabGroupUnderlineBounds(
+    return TabGroupUnderline::CalculateTabGroupUnderlineBounds(
         underline_view, leading_view, trailing_view);
-
-    if (tabs::features::HorizontalTabsUpdateEnabled()) {
-      // Upstream places the underline at the bottom tab border. Push the
-      // underline down to the bottom of the tab strip, so that it will appear
-      // below the tabs.
-      bounds.Offset(0, brave_tabs::kHorizontalTabStripVerticalSpacing);
-    }
-
-    return bounds;
   }
 
   // override bounds for vertical tabs mode.

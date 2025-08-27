@@ -7,6 +7,7 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "brave/browser/brave_wallet/brave_wallet_provider_delegate_impl_helper.h"
 
 AndroidWalletPageHandler::AndroidWalletPageHandler(
@@ -25,4 +26,12 @@ void AndroidWalletPageHandler::ShowApprovePanelUI() {
   }
 
   ::brave_wallet::ShowPanel(webui_controller_->web_ui()->GetWebContents());
+}
+
+void AndroidWalletPageHandler::ShowWalletBackupUI() {
+  ::brave_wallet::ShowWalletBackup();
+}
+
+void AndroidWalletPageHandler::UnlockWalletUI() {
+  ::brave_wallet::UnlockWallet();
 }

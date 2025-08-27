@@ -5,6 +5,8 @@
 
 #include "brave/browser/ui/views/brave_tab_search_bubble_host.h"
 
+#include "base/check.h"
+#include "base/dcheck_is_on.h"
 #include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
 #include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
@@ -17,14 +19,15 @@ void BraveTabSearchBubbleHost::SetBubbleArrow(
 
 bool BraveTabSearchBubbleHost::ShowTabSearchBubble(
     bool triggered_by_keyboard_shortcut,
-    int tab_index) {
+    tab_search::mojom::TabSearchSection section,
+    tab_search::mojom::TabOrganizationFeature organization_feature) {
   bool result = TabSearchBubbleHost::ShowTabSearchBubble(
-      triggered_by_keyboard_shortcut, tab_index);
+      triggered_by_keyboard_shortcut, section, organization_feature);
   if (!arrow_ || !result) {
     return result;
   }
 
-  auto* widget = webui_bubble_manager_.GetBubbleWidget();
+  auto* widget = webui_bubble_manager_->GetBubbleWidget();
   DCHECK(widget && widget->widget_delegate());
 
   auto* bubble_delegate = widget->widget_delegate()->AsBubbleDialogDelegate();
@@ -35,13 +38,15 @@ bool BraveTabSearchBubbleHost::ShowTabSearchBubble(
   anchor_widget = anchor_widget->GetTopLevelWidget();
   DCHECK(anchor_widget);
 
-#if DCHECK_IS_ON()
-  // This path is reachable only when it's vertical tabs.
   auto* browser_view = BrowserView::GetBrowserViewForNativeWindow(
       anchor_widget->GetNativeWindow());
+#if DCHECK_IS_ON()
   DCHECK(browser_view);
-  DCHECK(tabs::utils::ShouldShowVerticalTabs(browser_view->browser()));
 #endif
+
+  if (!tabs::utils::ShouldShowVerticalTabs(browser_view->browser())) {
+    return result;
+  }
 
   bubble_delegate->SetArrow(*arrow_);
 
@@ -49,7 +54,7 @@ bool BraveTabSearchBubbleHost::ShowTabSearchBubble(
     // In this case, anchor bubble onto the screen edge. we should also reparent
     // native widget, as vertical tab's widget could be hidden.
     gfx::Rect bounds = anchor_widget->GetWorkAreaBoundsInScreen();
-    int offset = GetLayoutConstant(TABSTRIP_REGION_VIEW_CONTROL_PADDING);
+    int offset = GetLayoutConstant(TAB_PRE_TITLE_PADDING);
     bubble_delegate->SetAnchorView(nullptr);
     bubble_delegate->set_parent_window(anchor_widget->GetNativeView());
     bubble_delegate->SetAnchorRect(

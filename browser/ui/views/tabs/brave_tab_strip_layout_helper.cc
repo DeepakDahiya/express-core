@@ -6,7 +6,11 @@
 #include "brave/browser/ui/views/tabs/brave_tab_strip_layout_helper.h"
 
 #include <limits>
+#include <optional>
+#include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "brave/browser/ui/tabs/brave_tab_layout_constants.h"
 #include "brave/browser/ui/tabs/features.h"
 #include "brave/browser/ui/views/tabs/brave_tab_group_header.h"
@@ -25,13 +29,17 @@ namespace tabs {
 namespace {
 
 void CalculatePinnedTabsBoundsInGrid(
-    const TabLayoutConstants& layout_constants,
     const std::vector<TabWidthConstraints>& tabs,
-    absl::optional<int> width,
+    std::optional<int> width,
     bool is_floating_mode,
     std::vector<gfx::Rect>* result) {
   DCHECK(tabs.size());
   DCHECK(result);
+
+  // This method only cares about pinned tab container's layout.
+  if (tabs[0].state().pinned() != TabPinned::kPinned) {
+    return;
+  }
 
   if (is_floating_mode) {
     // In floating mode, we should lay out pinned tabs vertically so that tabs
@@ -39,38 +47,61 @@ void CalculatePinnedTabsBoundsInGrid(
     return;
   }
 
-  auto* tab_style = TabStyle::Get();
-
+  // Passed |true| as |is_split| but it doesn't have any meaning becuase we
+  // always use same width.
+  const auto available_width =
+      width.value_or(TabStyle::Get()->GetStandardWidth(/*is_split*/ true));
   gfx::Rect rect(/* x= */ kMarginForVerticalTabContainers,
                  /* y= */ kMarginForVerticalTabContainers,
                  /* width= */ kVerticalTabMinWidth,
                  /* height= */ kVerticalTabHeight);
-  for (const auto& tab : tabs) {
-    if (tab.state().pinned() != TabPinned::kPinned) {
-      break;
-    }
-
-    result->push_back(rect);
-
+  const auto tab_count = tabs.size();
+  for (size_t i = 0; i < tab_count; i++) {
+    auto tab = tabs[i];
     if (tab.state().open() != TabOpen::kOpen) {
       continue;
     }
 
-    // Update rect for the next pinned tabs. If overflowed, break into new line
-    if (rect.right() + kVerticalTabMinWidth + kVerticalTabsSpacing <
-        width.value_or(tab_style->GetStandardWidth())) {
+    // Don't need to consider any conditions for first tab.
+    if (i == 0) {
+      result->push_back(rect);
+      continue;
+    }
+
+    // Check |tab| is left split tab.
+    const bool need_split_tabs_check =
+        (i != (tab_count - 1) && tab.state().split().has_value() &&
+         (tab.state().split() == tabs[i + 1].state().split()));
+    if (need_split_tabs_check) {
+      // If two split tabs can't be put in the same line, move it to next line.
+      // This sets left split tab. Right split tab will be handled like other
+      // non split tab.
+      if (rect.right() + (kVerticalTabMinWidth + kVerticalTabsSpacing) * 2 >=
+          available_width) {
+        // New line
+        rect.set_x(kMarginForVerticalTabContainers);
+        rect.set_y(rect.bottom() + kVerticalTabsSpacing);
+        result->push_back(rect);
+        continue;
+      }
+    }
+
+    // Update rect for the next pinned tabs. If overflowed, break into new line.
+    if (rect.right() + kVerticalTabMinWidth + kVerticalTabsSpacing +
+            kMarginForVerticalTabContainers <
+        available_width) {
       rect.set_x(rect.right() + kVerticalTabsSpacing);
     } else {
       // New line
       rect.set_x(kMarginForVerticalTabContainers);
-      rect.set_y(result->back().bottom() + kVerticalTabsSpacing);
+      rect.set_y(rect.bottom() + kVerticalTabsSpacing);
     }
+    result->push_back(rect);
   }
 }
 
-void CalculateVerticalLayout(const TabLayoutConstants& layout_constants,
-                             const std::vector<TabWidthConstraints>& tabs,
-                             absl::optional<int> width,
+void CalculateVerticalLayout(const std::vector<TabWidthConstraints>& tabs,
+                             std::optional<int> width,
                              std::vector<gfx::Rect>* result) {
   DCHECK(tabs.size());
   DCHECK(result);
@@ -119,38 +150,23 @@ int GetTabCornerRadius(const Tab& tab) {
   return brave_tabs::kTabBorderRadius;
 }
 
-std::vector<gfx::Rect> CalculateVerticalTabBounds(
-    const TabLayoutConstants& layout_constants,
+std::pair<std::vector<gfx::Rect>, LayoutDomain> CalculateVerticalTabBounds(
     const std::vector<TabWidthConstraints>& tabs,
-    absl::optional<int> width,
+    std::optional<int> width,
     bool is_floating_mode) {
+  // We can return LayoutDomain::kInactiveWidthEqualsActiveWidth always because
+  // vertical tab uses same width for active and inactive tabs.
   if (tabs.empty()) {
-    return std::vector<gfx::Rect>();
+    return {std::vector<gfx::Rect>(),
+            LayoutDomain::kInactiveWidthEqualsActiveWidth};
   }
 
   std::vector<gfx::Rect> bounds;
-  CalculatePinnedTabsBoundsInGrid(layout_constants, tabs, width,
-                                  is_floating_mode, &bounds);
-  CalculateVerticalLayout(layout_constants, tabs, width, &bounds);
+  CalculatePinnedTabsBoundsInGrid(tabs, width, is_floating_mode, &bounds);
+  CalculateVerticalLayout(tabs, width, &bounds);
 
   DCHECK_EQ(tabs.size(), bounds.size());
-  return bounds;
-}
-
-std::vector<gfx::Rect> CalculateBoundsForHorizontalDraggedViews(
-    const std::vector<TabSlotView*>& views,
-    TabStrip* tab_strip) {
-  // Chromium aligns the dragged tabs to the bottom of the tab strip, whereas we
-  // need to keep the tabs aligned to the top.
-  std::vector<gfx::Rect> bounds;
-  const int overlap = TabStyle::Get()->GetTabOverlap();
-  int x = 0;
-  for (const TabSlotView* view : views) {
-    const int width = view->width();
-    bounds.emplace_back(x, 0, width, view->height());
-    x += width - overlap;
-  }
-  return bounds;
+  return {bounds, LayoutDomain::kInactiveWidthEqualsActiveWidth};
 }
 
 std::vector<gfx::Rect> CalculateBoundsForVerticalDraggedViews(
@@ -165,7 +181,9 @@ std::vector<gfx::Rect> CalculateBoundsForVerticalDraggedViews(
   for (const TabSlotView* view : views) {
     auto width = tab_strip->GetDragContext()->GetTabDragAreaWidth();
     const int height = view->height();
-    if (view->GetTabSlotViewType() == TabSlotView::ViewType::kTab) {
+    const bool is_slot_tab =
+        view->GetTabSlotViewType() == TabSlotView::ViewType::kTab;
+    if (is_slot_tab) {
       if (!is_vertical_tabs_floating &&
           static_cast<const Tab*>(view)->data().pinned) {
         // In case it's a pinned tab, lay out them horizontally
@@ -182,7 +200,8 @@ std::vector<gfx::Rect> CalculateBoundsForVerticalDraggedViews(
       }
     }
     bounds.emplace_back(x, y, width, height);
-    // unpinned dragged tabs are laid out vertically
+
+    // unpinned dragged tabs are laid out vertically.
     y += height + kVerticalTabsSpacing;
   }
   return bounds;
@@ -192,7 +211,7 @@ void UpdateInsertionIndexForVerticalTabs(
     const gfx::Rect& dragged_bounds,
     int first_dragged_tab_index,
     int num_dragged_tabs,
-    absl::optional<tab_groups::TabGroupId> dragged_group,
+    bool dragged_group,
     int candidate_index,
     TabStripController* tab_strip_controller,
     TabContainer* tab_container,
@@ -200,9 +219,10 @@ void UpdateInsertionIndexForVerticalTabs(
     int& min_distance_index,
     TabStrip* tab_strip) {
   // We don't allow tab groups to be dragged over pinned tabs area.
-  if (dragged_group.has_value() && candidate_index != 0 &&
-      tab_strip_controller->IsTabPinned(candidate_index - 1))
+  if (dragged_group && candidate_index != 0 &&
+      tab_strip_controller->IsTabPinned(candidate_index - 1)) {
     return;
+  }
 
   const bool is_vertical_tabs_floating =
       static_cast<BraveTabStrip*>(tab_strip)->IsVerticalTabsFloating();

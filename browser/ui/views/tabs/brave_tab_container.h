@@ -7,16 +7,20 @@
 #define BRAVE_BROWSER_UI_VIEWS_TABS_BRAVE_TAB_CONTAINER_H_
 
 #include <memory>
+#include <optional>
+#include <vector>
 
-#include "chrome/browser/ui/views/tabs/tab_container_impl.h"
-
+#include "brave/browser/ui/tabs/split_view_browser_data.h"
+#include "brave/browser/ui/tabs/split_view_browser_data_observer.h"
 #include "chrome/browser/ui/tabs/tab_style.h"
-#include "chrome/browser/ui/views/tabs/tab_drag_context.h"
+#include "chrome/browser/ui/views/tabs/dragging/tab_drag_context.h"
+#include "chrome/browser/ui/views/tabs/tab_container_impl.h"
+#include "ui/gfx/canvas.h"
 
-class BraveTabContainer : public TabContainerImpl {
+class BraveTabContainer : public TabContainerImpl,
+                          public SplitViewBrowserDataObserver {
+  METADATA_HEADER(BraveTabContainer, TabContainerImpl)
  public:
-  METADATA_HEADER(BraveTabContainer);
-
   BraveTabContainer(TabContainerController& controller,
                     TabHoverCardController* hover_card_controller,
                     TabDragContextBase* drag_context,
@@ -32,12 +36,13 @@ class BraveTabContainer : public TabContainerImpl {
   base::OnceClosure LockLayout();
 
   // TabContainerImpl:
-  gfx::Size GetMinimumSize() const override;
-  gfx::Size CalculatePreferredSize() const override;
+  void AddedToWidget() override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
   void UpdateClosingModeOnRemovedTab(int model_index, bool was_active) override;
   gfx::Rect GetTargetBoundsForClosingTab(Tab* tab,
                                          int former_model_index) const override;
-  void EnterTabClosingMode(absl::optional<int> override_width,
+  void EnterTabClosingMode(std::optional<int> override_width,
                            CloseTabSource source) override;
   bool ShouldTabBeVisible(const Tab* tab) const override;
   void StartInsertTabAnimation(int model_index) override;
@@ -45,16 +50,28 @@ class BraveTabContainer : public TabContainerImpl {
   void OnTabCloseAnimationCompleted(Tab* tab) override;
   void CompleteAnimationAndLayout() override;
   void PaintChildren(const views::PaintInfo& paint_info) override;
+  void SetTabSlotVisibility() override;
+  void InvalidateIdealBounds() override;
+  void Layout(PassKey) override;
+  void OnSplitCreated(const std::vector<int>& indices) override;
+  void OnSplitRemoved(const std::vector<int>& indices) override;
+  void OnSplitContentsChanged(const std::vector<int>& indices) override;
 
   // BrowserRootView::DropTarget
-  BrowserRootView::DropIndex GetDropIndex(
+  std::optional<BrowserRootView::DropIndex> GetDropIndex(
       const ui::DropTargetEvent& event) override;
   void HandleDragUpdate(
-      const absl::optional<BrowserRootView::DropIndex>& index) override;
+      const std::optional<BrowserRootView::DropIndex>& index) override;
   void HandleDragExited() override;
 
+  // SplitViewBrowserDataObserver:
+  void OnTileTabs(const TabTile& tile) override;
+  void OnDidBreakTile(const TabTile& tile) override;
+  void OnSwapTabsInTile(const TabTile& tile) override;
+  void OnWillDeleteBrowserData() override;
+
  private:
-  class DropArrow : public views::WidgetObserver {
+  class DropArrow {
    public:
     enum class Position { Vertical, Horizontal };
 
@@ -64,7 +81,7 @@ class BraveTabContainer : public TabContainerImpl {
               views::Widget* context);
     DropArrow(const DropArrow&) = delete;
     DropArrow& operator=(const DropArrow&) = delete;
-    ~DropArrow() override;
+    virtual ~DropArrow();
 
     void set_index(const BrowserRootView::DropIndex& index) { index_ = index; }
     BrowserRootView::DropIndex index() const { return index_; }
@@ -73,9 +90,6 @@ class BraveTabContainer : public TabContainerImpl {
     bool beneath() const { return beneath_; }
 
     void SetWindowBounds(const gfx::Rect& bounds);
-
-    // views::WidgetObserver:
-    void OnWidgetDestroying(views::Widget* widget) override;
 
    private:
     // Index of the tab to drop on.
@@ -86,15 +100,18 @@ class BraveTabContainer : public TabContainerImpl {
     bool beneath_ = false;
 
     // Renders the drop indicator.
-    raw_ptr<views::Widget, DanglingUntriaged> arrow_window_ = nullptr;
-
+    std::unique_ptr<views::Widget> arrow_window_;
     raw_ptr<views::ImageView, DanglingUntriaged> arrow_view_ = nullptr;
-
-    base::ScopedObservation<views::Widget, views::WidgetObserver>
-        scoped_observation_{this};
   };
 
   void UpdateLayoutOrientation();
+
+  void PaintBoundingBoxForTiles(gfx::Canvas& canvas,
+                                const SplitViewBrowserData* split_view_data);
+  void PaintBoundingBoxForTile(gfx::Canvas& canvas, const TabTile& tile);
+  void PaintBoundingBoxForSplitTabs(gfx::Canvas& canvas);
+  void PaintBoundingBoxForSplitTab(gfx::Canvas& canvas,
+                                   const std::vector<int>& indices);
 
   static gfx::ImageSkia* GetDropArrowImage(
       BraveTabContainer::DropArrow::Position pos,
@@ -102,15 +119,19 @@ class BraveTabContainer : public TabContainerImpl {
 
   void OnUnlockLayout();
 
-  void SetDropArrow(const absl::optional<BrowserRootView::DropIndex>& index);
+  void SetDropArrow(const std::optional<BrowserRootView::DropIndex>& index);
   gfx::Rect GetDropBounds(int drop_index,
                           bool drop_before,
                           bool drop_in_group,
                           bool* is_beneath);
 
+  bool IsPinnedTabContainer() const;
+  void UpdateTabsBorderInTile(const TabTile& tile);
+  void UpdateTabsBorderInSplitTab(const std::vector<int>& indices);
+
   base::flat_set<Tab*> closing_tabs_;
 
-  raw_ptr<TabDragContext> drag_context_;
+  raw_ptr<TabDragContextBase> drag_context_;
 
   // A pointer storing the global tab style to be used.
   const raw_ptr<const TabStyle> tab_style_;
@@ -124,6 +145,12 @@ class BraveTabContainer : public TabContainerImpl {
   BooleanPrefMember vertical_tabs_collapsed_;
 
   bool layout_locked_ = false;
+
+  // Size we last laid out at.
+  gfx::Size last_layout_size_;
+
+  base::ScopedObservation<SplitViewBrowserData, SplitViewBrowserDataObserver>
+      split_view_data_observation_{this};
 };
 
 #endif  // BRAVE_BROWSER_UI_VIEWS_TABS_BRAVE_TAB_CONTAINER_H_

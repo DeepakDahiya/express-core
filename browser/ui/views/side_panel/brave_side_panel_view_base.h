@@ -14,6 +14,8 @@
 class BraveSidePanelViewBase : public views::View, public views::ViewObserver {
   METADATA_HEADER(BraveSidePanelViewBase, views::View)
  public:
+  static constexpr inline int kHeaderHeight = 60;
+
   BraveSidePanelViewBase();
   ~BraveSidePanelViewBase() override;
   BraveSidePanelViewBase(const BraveSidePanelViewBase&) = delete;
@@ -25,9 +27,11 @@ class BraveSidePanelViewBase : public views::View, public views::ViewObserver {
  private:
   // views::ViewObserver overrides:
   void OnViewVisibilityChanged(views::View* observed_view,
-                               views::View* starting_view) override;
+                               views::View* starting_view,
+                               bool visible) override;
 
-  base::ScopedObservation<views::View, views::ViewObserver> observation_{this};
+  base::ScopedObservation<views::View, views::ViewObserver> view_observation_{
+      this};
 };
 
 #endif  // BRAVE_BROWSER_UI_VIEWS_SIDE_PANEL_BRAVE_SIDE_PANEL_VIEW_BASE_H_

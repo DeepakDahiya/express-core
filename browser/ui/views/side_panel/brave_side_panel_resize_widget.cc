@@ -7,8 +7,11 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
 #include "brave/browser/ui/views/side_panel/brave_side_panel.h"
+#include "build/build_config.h"
+#include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/views/controls/resize_area.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/widget/widget.h"
@@ -16,6 +19,32 @@
 #if defined(USE_AURA)
 #include "ui/aura/window.h"
 #include "ui/views/view_constants_aura.h"
+#endif
+
+#if BUILDFLAG(IS_MAC)
+namespace {
+
+// Subclassed to clear resize cursor when goes out. On macOS, it seems
+// widget doesn't clear current cursor(resize) when mouse goes out in some
+// specific situation unexpectedly. Because of that, cursor is not changed when
+// mouse moves in. Widget doesn't update its cursor if requested one is same
+// with previous one. Maybe this problem happens because it's located above
+// WebView.
+class CustomResizeArea : public views::ResizeArea {
+  METADATA_HEADER(CustomResizeArea, views::ResizeArea)
+ public:
+  using ResizeArea::ResizeArea;
+
+  void OnMouseExited(const ui::MouseEvent& event) override {
+    ResizeArea::OnMouseExited(event);
+    GetWidget()->SetCursor(ui::Cursor());
+  }
+};
+
+BEGIN_METADATA(CustomResizeArea)
+END_METADATA
+
+}  // namespace
 #endif
 
 SidePanelResizeWidget::SidePanelResizeWidget(
@@ -29,17 +58,23 @@ SidePanelResizeWidget::SidePanelResizeWidget(
   observations_.AddObservation(browser_view->contents_container());
 
   widget_ = std::make_unique<views::Widget>();
-  views::Widget::InitParams params(views::Widget::InitParams::TYPE_CONTROL);
+  views::Widget::InitParams params(
+      views::Widget::InitParams::CLIENT_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_CONTROL);
   params.delegate = this;
   params.name = "SidePanelResizeWidget";
-  params.ownership = views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
   params.parent = browser_view->GetWidget()->GetNativeView();
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.activatable = views::Widget::InitParams::Activatable::kNo;
   widget_->Init(std::move(params));
 
-  auto resize_area = std::make_unique<views::ResizeArea>(resize_area_delegate);
-  widget_->SetContentsView(std::move(resize_area));
+#if BUILDFLAG(IS_MAC)
+  widget_->SetContentsView(
+      std::make_unique<CustomResizeArea>(resize_area_delegate));
+#else
+  widget_->SetContentsView(
+      std::make_unique<views::ResizeArea>(resize_area_delegate));
+#endif
 
 #if defined(USE_AURA)
   widget_->GetNativeView()->SetProperty(views::kHostViewKey,
@@ -77,9 +112,9 @@ void SidePanelResizeWidget::OnViewBoundsChanged(views::View* observed_view) {
   widget_->SetBounds(rect);
 }
 
-void SidePanelResizeWidget::OnViewVisibilityChanged(
-    views::View* observed_view,
-    views::View* starting_view) {
+void SidePanelResizeWidget::OnViewVisibilityChanged(views::View* observed_view,
+                                                    views::View* starting_view,
+                                                    bool visible) {
   // As this widget is for resizing side panel,
   // show only this when panel is visible.
   if (panel_ != observed_view) {

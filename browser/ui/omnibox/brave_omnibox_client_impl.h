@@ -8,11 +8,17 @@
 
 #include "base/memory/raw_ptr.h"
 #include "brave/browser/autocomplete/brave_autocomplete_scheme_classifier.h"
+#include "brave/components/time_period_storage/weekly_storage.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_client.h"
+#include "components/prefs/pref_change_registrar.h"
 
 class PrefRegistrySimple;
 class Profile;
 class SearchEngineTracker;
+
+namespace ai_chat {
+class AIChatMetrics;
+}  // namespace ai_chat
 
 class BraveOmniboxClientImpl : public ChromeOmniboxClient {
  public:
@@ -26,7 +32,6 @@ class BraveOmniboxClientImpl : public ChromeOmniboxClient {
   static void RegisterProfilePrefs(PrefRegistrySimple* prefs);
 
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override;
-  bool IsAutocompleteEnabled() const override;
 
   void OnURLOpenedFromOmnibox(OmniboxLog* log) override;
 
@@ -41,13 +46,17 @@ class BraveOmniboxClientImpl : public ChromeOmniboxClient {
       bool destination_url_entered_with_http_scheme,
       const std::u16string& text,
       const AutocompleteMatch& match,
-      const AutocompleteMatch& alternative_nav_match,
-      IDNA2008DeviationCharacter deviation_char_in_hostname) override;
+      const AutocompleteMatch& alternative_nav_match) override;
 
  private:
+  void RecordSearchEventP3A();
+
   raw_ptr<Profile> profile_ = nullptr;
   raw_ptr<SearchEngineTracker> search_engine_tracker_ = nullptr;
+  raw_ptr<ai_chat::AIChatMetrics> ai_chat_metrics_ = nullptr;
   BraveAutocompleteSchemeClassifier scheme_classifier_;
+  WeeklyStorage search_storage_;
+  PrefChangeRegistrar pref_change_registrar_;
 };
 
 #endif  // BRAVE_BROWSER_UI_OMNIBOX_BRAVE_OMNIBOX_CLIENT_IMPL_H_

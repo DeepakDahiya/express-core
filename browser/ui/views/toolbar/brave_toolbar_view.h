@@ -6,6 +6,7 @@
 #ifndef BRAVE_BROWSER_UI_VIEWS_TOOLBAR_BRAVE_TOOLBAR_VIEW_H_
 #define BRAVE_BROWSER_UI_VIEWS_TOOLBAR_BRAVE_TOOLBAR_VIEW_H_
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "base/scoped_observation.h"
 #include "brave/components/brave_vpn/common/buildflags/buildflags.h"
@@ -14,11 +15,14 @@
 #include "components/prefs/pref_member.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
+class AIChatButton;
+
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
 class BraveVPNButton;
 #endif
 
-class BookmarkButton;
+class BraveBookmarkButton;
+class SidePanelButton;
 class WalletButton;
 
 class BraveToolbarView : public ToolbarView,
@@ -28,8 +32,10 @@ class BraveToolbarView : public ToolbarView,
   explicit BraveToolbarView(Browser* browser, BrowserView* browser_view);
   ~BraveToolbarView() override;
 
-  BookmarkButton* bookmark_button() const { return bookmark_; }
+  BraveBookmarkButton* bookmark_button() const { return bookmark_; }
   WalletButton* wallet_button() const { return wallet_; }
+  SidePanelButton* side_panel_button() const { return side_panel_; }
+  AIChatButton* ai_chat_button() const { return ai_chat_button_; }
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
   BraveVPNButton* brave_vpn_button() const { return brave_vpn_; }
@@ -40,7 +46,7 @@ class BraveToolbarView : public ToolbarView,
   void UpdateHorizontalPadding();
 
   void Init() override;
-  void Layout() override;
+  void Layout(PassKey) override;
   void Update(content::WebContents* tab) override;
   void OnThemeChanged() override;
   void OnEditBookmarksEnabledChanged();
@@ -51,9 +57,12 @@ class BraveToolbarView : public ToolbarView,
       const views::ViewHierarchyChangedDetails& details) override;
 
  private:
+  friend class BraveToolbarViewTest;
+  FRIEND_TEST_ALL_PREFIXES(BraveToolbarViewTest, ToolbarDividerNotShownTest);
+
   void LoadImages() override;
   void ResetLocationBarBounds();
-  void ResetButtonBounds();
+  void ResetBookmarkButtonBounds();
   void UpdateBookmarkVisibility();
 
   // ProfileAttributesStorage::Observer:
@@ -61,11 +70,18 @@ class BraveToolbarView : public ToolbarView,
   void OnProfileWasRemoved(const base::FilePath& profile_path,
                            const std::u16string& profile_name) override;
 
-  raw_ptr<BookmarkButton> bookmark_ = nullptr;
+  void UpdateAIChatButtonVisibility();
+  void UpdateWalletButtonVisibility();
+
+  views::View* toolbar_divider_for_testing() { return toolbar_divider_; }
+  views::View* split_tabs_for_testing() const { return split_tabs_; }
+
+  raw_ptr<BraveBookmarkButton> bookmark_ = nullptr;
   // Tracks the preference to determine whether bookmark editing is allowed.
   BooleanPrefMember edit_bookmarks_enabled_;
 
   raw_ptr<WalletButton> wallet_ = nullptr;
+  raw_ptr<SidePanelButton> side_panel_ = nullptr;
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
   raw_ptr<BraveVPNButton> brave_vpn_ = nullptr;
@@ -74,6 +90,13 @@ class BraveToolbarView : public ToolbarView,
 #endif
 
   BooleanPrefMember show_bookmarks_button_;
+
+  raw_ptr<AIChatButton> ai_chat_button_ = nullptr;
+  BooleanPrefMember show_ai_chat_button_;
+  BooleanPrefMember hide_ai_chat_button_by_policy_;
+
+  BooleanPrefMember show_wallet_button_;
+  BooleanPrefMember wallet_private_window_enabled_;
 
   BooleanPrefMember location_bar_is_wide_;
 

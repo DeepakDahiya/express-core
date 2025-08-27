@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
 
+#include "base/check.h"
 #include "base/check_is_test.h"
 #include "base/command_line.h"
 #include "brave/browser/ui/tabs/brave_tab_prefs.h"
@@ -55,7 +56,7 @@ bool ShouldShowVerticalTabs(const Browser* browser) {
     return false;
   }
 
-  return browser->profile()->GetOriginalProfile()->GetPrefs()->GetBoolean(
+  return browser->profile()->GetPrefs()->GetBoolean(
       brave_tabs::kVerticalTabsEnabled);
 }
 
@@ -64,7 +65,7 @@ bool ShouldShowWindowTitleForVerticalTabs(const Browser* browser) {
     return false;
   }
 
-  return browser->profile()->GetOriginalProfile()->GetPrefs()->GetBoolean(
+  return browser->profile()->GetPrefs()->GetBoolean(
       brave_tabs::kVerticalTabsShowTitleOnWindow);
 }
 
@@ -73,8 +74,13 @@ bool IsFloatingVerticalTabsEnabled(const Browser* browser) {
     return false;
   }
 
-  return browser->profile()->GetOriginalProfile()->GetPrefs()->GetBoolean(
+  return browser->profile()->GetPrefs()->GetBoolean(
       brave_tabs::kVerticalTabsFloatingEnabled);
+}
+
+bool IsVerticalTabOnRight(const Browser* browser) {
+  return browser->profile()->GetPrefs()->GetBoolean(
+      brave_tabs::kVerticalTabsOnRight);
 }
 
 std::pair<int, int> GetLeadingTrailingCaptionButtonWidth(
@@ -127,13 +133,6 @@ std::pair<int, int> GetLeadingTrailingCaptionButtonWidth(
     // the HWND and BrowserFrameViewWin will draw frame and window caption
     // button.
     auto size = WindowFrameUtil::GetWindowsCaptionButtonAreaSize();
-    if (WindowFrameUtil::IsWindowsTabSearchCaptionButtonEnabled(
-            BrowserView::GetBrowserViewForNativeWindow(frame->GetNativeWindow())
-                ->browser())) {
-      size.set_width(size.width() +
-                     WindowFrameUtil::kWindowsCaptionButtonWidth +
-                     WindowFrameUtil::kWindowsCaptionButtonVisualSpacing);
-    }
     return {0, size.width()};
   }
 

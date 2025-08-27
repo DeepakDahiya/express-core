@@ -4,11 +4,12 @@
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
 #include "brave/browser/ui/webui/brave_vpn/vpn_panel_handler.h"
-#include "brave/browser/ui/webui/brave_vpn/vpn_panel_ui.h"
 
 #include <utility>
 
+#include "base/check.h"
 #include "brave/browser/brave_vpn/brave_vpn_service_factory.h"
+#include "brave/browser/ui/webui/brave_vpn/vpn_panel_ui.h"
 #include "brave/components/brave_vpn/browser/brave_vpn_service.h"
 #include "brave/components/brave_vpn/common/brave_vpn_constants.h"
 #include "brave/components/brave_vpn/common/brave_vpn_utils.h"
@@ -20,24 +21,11 @@
 
 namespace {
 
-GURL GetURLForUIType(const std::string& type, GURL manage_url) {
-  if (type == "recover" || type == "checkout") {
-    DCHECK(manage_url.is_valid());
-    std::string query = "intent=" + type + "&product=vpn";
-    GURL::Replacements replacements;
-    replacements.SetQueryStr(query);
-    return manage_url.ReplaceComponents(replacements);
-  } else if (type == "privacy") {
-    return GURL("https://brave.com/privacy/browser/#vpn");
-  } else if (type == "about") {
-    return GURL(brave_vpn::kAboutUrl);
-  }
-  DCHECK_EQ(type, "manage");
-  return manage_url;
-}
-
-bool ShouldOpenSingletonTab(const std::string& type) {
-  return type == "manage" || type == "privacy" || type == "about";
+bool ShouldOpenSingletonTab(brave_vpn::mojom::ManageURLType type) {
+  return type == brave_vpn::mojom::ManageURLType::MANAGE ||
+         type == brave_vpn::mojom::ManageURLType::PRIVACY ||
+         type == brave_vpn::mojom::ManageURLType::ABOUT_SMART_PROXY ||
+         type == brave_vpn::mojom::ManageURLType::ABOUT;
 }
 
 void ShowSingletonVPNTab(Browser* browser, const GURL& url) {
@@ -86,10 +74,11 @@ void VPNPanelHandler::CloseUI() {
 }
 
 void VPNPanelHandler::OpenVpnUIUrl(
-    const std::string& type,
+    brave_vpn::mojom::ManageURLType type,
     brave_vpn::mojom::ProductUrlsPtr product_urls) {
   auto* browser = chrome::FindLastActiveWithProfile(profile_);
-  auto url = GetURLForUIType(type, GURL(product_urls->manage));
+  const auto url =
+      brave_vpn::GetManageURLForUIType(type, GURL(product_urls->manage));
   if (ShouldOpenSingletonTab(type)) {
     ShowSingletonVPNTab(browser, url);
   } else {
@@ -97,7 +86,7 @@ void VPNPanelHandler::OpenVpnUIUrl(
   }
 }
 
-void VPNPanelHandler::OpenVpnUI(const std::string& type) {
+void VPNPanelHandler::OpenVpnUI(brave_vpn::mojom::ManageURLType type) {
   brave_vpn::BraveVpnService* vpn_service =
       brave_vpn::BraveVpnServiceFactory::GetForProfile(profile_);
   CHECK(vpn_service);

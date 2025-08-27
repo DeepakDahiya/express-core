@@ -8,15 +8,20 @@
 
 #include <memory>
 
+#include "base/gtest_prod_util.h"
 #include "base/memory/raw_ptr.h"
 #include "chrome/browser/ui/views/infobars/infobar_view.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
+namespace web_discovery {
+FORWARD_DECLARE_TEST(WebDiscoveryTest, InfobarAddedTest);
+}  // namespace web_discovery
+
 class WebDiscoveryInfoBarDelegate;
 
 class WebDiscoveryInfoBarView : public InfoBarView {
+  METADATA_HEADER(WebDiscoveryInfoBarView, InfoBarView)
  public:
-  METADATA_HEADER(WebDiscoveryInfoBarView);
 
   explicit WebDiscoveryInfoBarView(
       std::unique_ptr<WebDiscoveryInfoBarDelegate> delegate);
@@ -26,8 +31,10 @@ class WebDiscoveryInfoBarView : public InfoBarView {
   WebDiscoveryInfoBarView& operator=(const WebDiscoveryInfoBarView&) = delete;
 
  private:
+  FRIEND_TEST_ALL_PREFIXES(web_discovery::WebDiscoveryTest, InfobarAddedTest);
+
   // InfoBarView overrides:
-  void Layout() override;
+  void Layout(PassKey) override;
   void ChildPreferredSizeChanged(views::View* child) override;
 
   WebDiscoveryInfoBarDelegate* GetDelegate();

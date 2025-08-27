@@ -61,11 +61,12 @@ void BraveNewsFeedsContainerView::OnThemeChanged() {
   views::View::OnThemeChanged();
   auto is_dark = dark_mode::GetActiveBraveDarkModeType() ==
                  dark_mode::BraveDarkModeType::BRAVE_DARK_MODE_TYPE_DARK;
-  SetBackground(views::CreateSolidBackground(is_dark ? kBackgroundColorDark
-                                                     : kBackgroundColorLight));
+  constexpr float kCornerRadius = 12;
+  SetBackground(views::CreateRoundedRectBackground(
+      is_dark ? kBackgroundColorDark : kBackgroundColorLight, kCornerRadius));
   SetBorder(views::CreateRoundedRectBorder(
-      1, 12, is_dark ? kBorderColorDark : kBorderColorLight));
+      1, kCornerRadius, is_dark ? kBorderColorDark : kBorderColorLight));
 }
 
-BEGIN_METADATA(BraveNewsFeedsContainerView, views::View)
+BEGIN_METADATA(BraveNewsFeedsContainerView)
 END_METADATA

@@ -7,7 +7,8 @@
 
 #include <utility>
 
-#include "brave/components/brave_ads/browser/units/notification_ad/custom_notification_ad_feature.h"
+#include "base/check.h"
+#include "brave/components/brave_ads/browser/ad_units/notification_ad/custom_notification_ad_feature.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/native_theme/native_theme.h"
@@ -28,9 +29,10 @@ void NotificationAdPopupWidget::InitWidget(
     gfx::NativeView browser_native_view) {
   CHECK(delegate);
 
-  views::Widget::InitParams params;
+  views::Widget::InitParams params(
+      Widget::InitParams::CLIENT_OWNS_WIDGET,
+      views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
   params.delegate = delegate;
-  params.type = views::Widget::InitParams::TYPE_WINDOW_FRAMELESS;
   params.opacity = views::Widget::InitParams::WindowOpacity::kTranslucent;
   params.bounds = bounds;
 

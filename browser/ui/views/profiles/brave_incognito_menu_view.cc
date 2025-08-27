@@ -6,9 +6,10 @@
 #include "brave/browser/ui/views/profiles/brave_incognito_menu_view.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
-#include "brave/components/l10n/common/localization_util.h"
+#include "base/check.h"
 #include "brave/components/tor/buildflags/buildflags.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/app/vector_icons/vector_icons.h"
@@ -39,12 +40,12 @@ bool ShouldShowTorProfileButton(Profile* profile) {
 #endif
 }
 
-int GetProfileMenuTitleId(Profile* profile) {
-  return profile->IsTor() ? IDS_TOR_PROFILE_NAME : IDS_PRIVATE_PROFILE_NAME;
+int GetProfileMenuTitleId(Profile& profile) {
+  return profile.IsTor() ? IDS_TOR_PROFILE_NAME : IDS_PRIVATE_PROFILE_NAME;
 }
 
-int GetProfileMenuCloseButtonTextId(Profile* profile) {
-  return profile->IsTor() ? IDS_PROFILES_EXIT_TOR : IDS_PROFILES_EXIT_PRIVATE;
+int GetProfileMenuCloseButtonTextId(Profile& profile) {
+  return profile.IsTor() ? IDS_PROFILES_EXIT_TOR : IDS_PROFILES_EXIT_PRIVATE;
 }
 
 }  // namespace
@@ -53,8 +54,7 @@ void BraveIncognitoMenuView::BuildMenu() {
   AddTorButton();
 
   AddFeatureButton(
-      brave_l10n::GetLocalizedResourceUTF16String(
-          GetProfileMenuCloseButtonTextId(browser()->profile())),
+      l10n_util::GetStringUTF16(GetProfileMenuCloseButtonTextId(profile())),
       base::BindRepeating(&BraveIncognitoMenuView::OnExitButtonClicked,
                           base::Unretained(this)),
       vector_icons::kCloseIcon);
@@ -69,25 +69,19 @@ void BraveIncognitoMenuView::AddedToWidget() {
   const ui::ColorId icon_color = provider->GetTypographyProvider().GetColorId(
       views::style::CONTEXT_LABEL, views::style::STYLE_PRIMARY);
 
-  int window_count = BrowserList::GetOffTheRecordBrowsersActiveForProfile(
-      browser()->profile());
-  SetProfileIdentityInfo(
-      /*profile_name=*/std::u16string(),
-      /*profile_background_color=*/SK_ColorTRANSPARENT,
-      /*edit_button_params=*/absl::nullopt,
-      ui::ImageModel::FromVectorIcon(kIncognitoProfileIcon, icon_color),
-      brave_l10n::GetLocalizedResourceUTF16String(
-          GetProfileMenuTitleId(browser()->profile())),
-      window_count > 1 ? l10n_util::GetPluralStringFUTF16(
-                             IDS_INCOGNITO_WINDOW_COUNT_MESSAGE, window_count)
-                       : std::u16string());
+  IdentitySectionParams params;
+  params.title = l10n_util::GetStringUTF16(GetProfileMenuTitleId(profile()));
+  params.profile_image_padding = std::nearbyint(kIdentityInfoImageSize * 0.25f);
+  params.profile_image =
+      ui::ImageModel::FromVectorIcon(kIncognitoProfileIcon, icon_color);
+  SetProfileIdentityWithCallToAction(std::move(params));
+  AddBottomMargin();
 }
 
 void BraveIncognitoMenuView::AddTorButton() {
-  if (ShouldShowTorProfileButton(browser()->profile())) {
+  if (ShouldShowTorProfileButton(&profile())) {
     AddFeatureButton(
-        brave_l10n::GetLocalizedResourceUTF16String(
-            IDS_PROFILES_OPEN_TOR_PROFILE_BUTTON),
+        l10n_util::GetStringUTF16(IDS_PROFILES_OPEN_TOR_PROFILE_BUTTON),
         base::BindRepeating(&BraveIncognitoMenuView::OnTorProfileButtonClicked,
                             base::Unretained(this)),
         vector_icons::kLaunchIcon);
@@ -95,19 +89,18 @@ void BraveIncognitoMenuView::AddTorButton() {
 }
 
 void BraveIncognitoMenuView::OnTorProfileButtonClicked() {
-  TorProfileManager::SwitchToTorProfile(browser()->profile());
+  TorProfileManager::SwitchToTorProfile(&profile());
 }
 
 std::u16string BraveIncognitoMenuView::GetAccessibleWindowTitle() const {
-  return browser()->profile()->IsTor()
-             ? brave_l10n::GetLocalizedResourceUTF16String(IDS_TOR_PROFILE_NAME)
-             : IncognitoMenuView::GetAccessibleWindowTitle();
+  return profile().IsTor() ? l10n_util::GetStringUTF16(IDS_TOR_PROFILE_NAME)
+                           : IncognitoMenuView::GetAccessibleWindowTitle();
 }
 
 void BraveIncognitoMenuView::OnExitButtonClicked() {
-  if (browser()->profile()->IsTor()) {
-    RecordClick(ActionableItem::kExitProfileButton);
-    TorProfileManager::CloseTorProfileWindows(browser()->profile());
+  if (profile().IsTor()) {
+    OnActionableItemClicked(ActionableItem::kExitProfileButton);
+    TorProfileManager::CloseTorProfileWindows(&profile());
   } else {
     IncognitoMenuView::OnExitButtonClicked();
   }

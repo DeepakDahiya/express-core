@@ -6,7 +6,9 @@
 #ifndef BRAVE_BROWSER_UI_BRAVE_BROWSER_WINDOW_H_
 #define BRAVE_BROWSER_UI_BRAVE_BROWSER_WINDOW_H_
 
-#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
+#include <string>
+
+#include "brave/components/brave_wayback_machine/buildflags/buildflags.h"
 #include "brave/components/playlist/common/buildflags/buildflags.h"
 #include "brave/components/speedreader/common/buildflags/buildflags.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -46,8 +48,7 @@ class BraveBrowserWindow : public BrowserWindow {
   virtual speedreader::SpeedreaderBubbleView* ShowSpeedreaderBubble(
       speedreader::SpeedreaderTabHelper* tab_helper,
       speedreader::SpeedreaderBubbleLocation location);
-  virtual void ShowReaderModeToolbar() {}
-  virtual void HideReaderModeToolbar() {}
+  virtual void UpdateReaderModeToolbar() {}
 #endif
 
 #if defined(TOOLKIT_VIEWS)
@@ -55,13 +56,22 @@ class BraveBrowserWindow : public BrowserWindow {
   virtual void ToggleSidebar();
   virtual bool HasSelectedURL() const;
   virtual void CleanAndCopySelectedURL();
+
+  // Returns true when bubble is shown.
+  virtual bool ShowBraveHelpBubbleView(const std::string& text);
 #endif
 
 #if BUILDFLAG(ENABLE_PLAYLIST_WEBUI)
   virtual void ShowPlaylistBubble() {}
 #endif
 
-  virtual void ShowBraveVPNBubble() {}
+#if BUILDFLAG(ENABLE_BRAVE_WAYBACK_MACHINE)
+  virtual void ShowWaybackMachineBubble() {}
+#endif
+
+  // Returns true if all tabs in this window is being dragged.
+  virtual bool IsInTabDragging() const;
+  virtual void ReadyToListenFullscreenChanges() {}
 };
 
 #endif  // BRAVE_BROWSER_UI_BRAVE_BROWSER_WINDOW_H_

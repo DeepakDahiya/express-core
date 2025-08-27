@@ -7,13 +7,14 @@
 
 #include <utility>
 
+#include "base/check.h"
 #include "brave/browser/brave_vpn/brave_vpn_service_factory.h"
 #include "brave/browser/ui/color/brave_color_id.h"
 #include "brave/components/brave_vpn/browser/brave_vpn_service.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 
 using ConnectionState = brave_vpn::mojom::ConnectionState;
@@ -43,7 +44,7 @@ int GetLongestStringIdForConnectionState() {
        {ConnectionState::CONNECTING, ConnectionState::CONNECTED,
         ConnectionState::DISCONNECTING, ConnectionState::DISCONNECTED}) {
     auto id = GetStringIdForConnectionState(state);
-    auto text = brave_l10n::GetLocalizedResourceUTF16String(id);
+    auto text = l10n_util::GetStringUTF16(id);
     if (text.length() > max) {
       max = text.length();
       longest_string_id = id;
@@ -76,26 +77,10 @@ void BraveVPNStatusLabel::OnConnectionStateChanged(ConnectionState state) {
   UpdateState();
 }
 
-gfx::Size BraveVPNStatusLabel::CalculatePreferredSize(
-    const views::SizeBounds& available_size) const {
-  auto size = views::Label::CalculatePreferredSize(available_size);
-  if (longest_state_string_id_ == -1)
-    return size;
-  auto text =
-      brave_l10n::GetLocalizedResourceUTF16String(longest_state_string_id_);
-  if (text == GetText())
-    return size;
-  size.set_width(font_list().GetExpectedTextWidth(text.length()) +
-                 GetInsets().width());
-  size.set_height(GetHeightForWidth(size.width()));
-  return size;
-}
-
 void BraveVPNStatusLabel::UpdateState() {
   const auto state = service_->GetConnectionState();
 
-  SetText(brave_l10n::GetLocalizedResourceUTF16String(
-      GetStringIdForConnectionState(state)));
+  SetText(l10n_util::GetStringUTF16(GetStringIdForConnectionState(state)));
 }
 
 BEGIN_METADATA(BraveVPNStatusLabel)

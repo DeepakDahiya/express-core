@@ -9,19 +9,25 @@
 #include <memory>
 #include <string>
 
+#include "base/check.h"
 #include "base/feature_list.h"
 #include "base/memory/raw_ptr.h"
 #include "base/task/single_thread_task_runner.h"
+#include "brave/browser/brave_browser_features.h"
 #include "brave/browser/ui/webui/brave_webui_source.h"
 #include "brave/browser/ui/webui/settings/brave_import_bulk_data_handler.h"
 #include "brave/browser/ui/webui/settings/brave_search_engines_handler.h"
+#include "brave/browser/ui/webui/welcome_page/brave_welcome_ui_prefs.h"
 #include "brave/browser/ui/webui/welcome_page/welcome_dom_handler.h"
 #include "brave/components/brave_welcome/common/features.h"
 #include "brave/components/brave_welcome/resources/grit/brave_welcome_generated_map.h"
 #include "brave/components/constants/pref_names.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/l10n/common/localization_util.h"
+#include "brave/components/p3a/pref_names.h"
+#include "brave/components/web_discovery/buildflags/buildflags.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/regional_capabilities/regional_capabilities_service_factory.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/webui/settings/privacy_sandbox_handler.h"
@@ -31,11 +37,14 @@
 #include "components/country_codes/country_codes.h"
 #include "components/grit/brave_components_resources.h"
 #include "components/grit/brave_components_strings.h"
+#include "components/metrics/metrics_pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/regional_capabilities/regional_capabilities_prefs.h"
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/page_navigator.h"
 #include "content/public/browser/web_ui_data_source.h"
 #include "content/public/browser/web_ui_message_handler.h"
+#include "ui/base/l10n/l10n_util.h"
 
 namespace {
 
@@ -73,32 +82,24 @@ constexpr webui::LocalizedString kLocalizedStrings[] = {
     {"braveWelcomeSelectThemeLightLabel",
      IDS_BRAVE_WELCOME_SELECT_THEME_LIGHT_LABEL},
     {"braveWelcomeSelectThemeDarkLabel",
-     IDS_BRAVE_WELCOME_SELECT_THEME_DARK_LABEL}};
+     IDS_BRAVE_WELCOME_SELECT_THEME_DARK_LABEL},
+    {"braveWelcomeHelpWDPTitle", IDS_BRAVE_WELCOME_HELP_WDP_TITLE},
+    {"braveWelcomeHelpWDPSubtitle", IDS_BRAVE_WELCOME_HELP_WDP_SUBTITLE},
+    {"braveWelcomeHelpWDPDescription", IDS_BRAVE_WELCOME_HELP_WDP_DESCRIPTION},
+    {"braveWelcomeHelpWDPLearnMore", IDS_BRAVE_WELCOME_HELP_WDP_LEARN_MORE},
+    {"braveWelcomeHelpWDPAccept", IDS_BRAVE_WELCOME_HELP_WDP_ACCEPT},
+    {"braveWelcomeHelpWDPReject", IDS_BRAVE_WELCOME_HELP_WDP_REJECT}};
 
 void OpenJapanWelcomePage(Profile* profile) {
-  DCHECK(profile);
+  CHECK(profile);
   Browser* browser = chrome::FindBrowserWithProfile(profile);
   if (browser) {
     content::OpenURLParams open_params(
         GURL("https://brave.com/ja/desktop-ntp-tutorial"), content::Referrer(),
         WindowOpenDisposition::NEW_BACKGROUND_TAB,
         ui::PAGE_TRANSITION_AUTO_TOPLEVEL, false);
-    browser->OpenURL(open_params);
+    browser->OpenURL(open_params, /*navigation_handle_callback=*/{});
   }
-}
-
-// Converts Chromium country ID to 2 digit country string
-// For more info see src/components/country_codes/country_codes.h
-std::string CountryIDToCountryString(int country_id) {
-  if (country_id == country_codes::kCountryIDUnknown) {
-    return std::string();
-  }
-
-  char chars[3] = {static_cast<char>(country_id >> 8),
-                   static_cast<char>(country_id), 0};
-  std::string country_string(chars);
-  DCHECK_EQ(country_string.size(), 2U);
-  return country_string;
 }
 
 }  // namespace
@@ -106,8 +107,7 @@ std::string CountryIDToCountryString(int country_id) {
 BraveWelcomeUI::BraveWelcomeUI(content::WebUI* web_ui, const std::string& name)
     : WebUIController(web_ui) {
   content::WebUIDataSource* source = CreateAndAddWebUIDataSource(
-      web_ui, name, kBraveWelcomeGenerated, kBraveWelcomeGeneratedSize,
-      IDR_BRAVE_WELCOME_HTML,
+      web_ui, name, kBraveWelcomeGenerated, IDR_BRAVE_WELCOME_HTML,
       /*disable_trusted_types_csp=*/true);
 
   // Lottie animations tick on a worker thread and requires the document CSP to
@@ -125,14 +125,22 @@ BraveWelcomeUI::BraveWelcomeUI(content::WebUI* web_ui, const std::string& name)
                                                              // browser
 
   Profile* profile = Profile::FromWebUI(web_ui);
+  CHECK(profile);
   // added to allow front end to read/modify default search engine
-  web_ui->AddMessageHandler(
-      std::make_unique<settings::BraveSearchEnginesHandler>(profile));
+  web_ui->AddMessageHandler(std::make_unique<
+                            settings::BraveSearchEnginesHandler>(
+      profile,
+      regional_capabilities::RegionalCapabilitiesServiceFactory::GetForProfile(
+          profile)));
 
   // Open additional page in Japanese region
-  int country_id = country_codes::GetCountryIDFromPrefs(profile->GetPrefs());
-  if (!profile->GetPrefs()->GetBoolean(prefs::kHasSeenWelcomePage)) {
-    if (country_id == country_codes::CountryStringToCountryID("JP")) {
+  country_codes::CountryId country_id =
+      country_codes::CountryId::Deserialize(profile->GetPrefs()->GetInteger(
+          regional_capabilities::prefs::kCountryIDAtInstall));
+  const bool is_jpn = country_id == country_codes::CountryId("JP");
+  if (!profile->GetPrefs()->GetBoolean(
+          brave::welcome_ui::prefs::kHasSeenBraveWelcomePage)) {
+    if (is_jpn) {
       base::SingleThreadTaskRunner::GetCurrentDefault()->PostDelayedTask(
           FROM_HERE, base::BindOnce(&OpenJapanWelcomePage, profile),
           base::Seconds(3));
@@ -140,13 +148,12 @@ BraveWelcomeUI::BraveWelcomeUI(content::WebUI* web_ui, const std::string& name)
   }
 
   for (const auto& str : kLocalizedStrings) {
-    std::u16string l10n_str =
-        brave_l10n::GetLocalizedResourceUTF16String(str.id);
+    std::u16string l10n_str = l10n_util::GetStringUTF16(str.id);
     source->AddString(str.name, l10n_str);
   }
 
   // Variables considered when determining which onboarding cards to show
-  source->AddString("countryString", CountryIDToCountryString(country_id));
+  source->AddString("countryString", country_id.CountryCode());
   source->AddBoolean(
       "showRewardsCard",
       base::FeatureList::IsEnabled(brave_welcome::features::kShowRewardsCard));
@@ -155,7 +162,23 @@ BraveWelcomeUI::BraveWelcomeUI(content::WebUI* web_ui, const std::string& name)
       "hardwareAccelerationEnabledAtStartup",
       content::GpuDataManager::GetInstance()->HardwareAccelerationEnabled());
 
-  profile->GetPrefs()->SetBoolean(prefs::kHasSeenWelcomePage, true);
+  // Add managed state information for welcome flow logic
+  PrefService* local_state = g_browser_process->local_state();
+  source->AddBoolean(
+      "isWebDiscoveryEnabledManaged",
+#if BUILDFLAG(ENABLE_EXTENSIONS) || BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
+      profile->GetPrefs()->IsManagedPreference(kWebDiscoveryEnabled));
+#else
+      false);
+#endif
+  source->AddBoolean("isMetricsReportingEnabledManaged",
+                     local_state->IsManagedPreference(
+                         metrics::prefs::kMetricsReportingEnabled));
+  source->AddBoolean("isP3AEnabledManaged",
+                     local_state->IsManagedPreference(p3a::kP3AEnabled));
+
+  profile->GetPrefs()->SetBoolean(
+      brave::welcome_ui::prefs::kHasSeenBraveWelcomePage, true);
 
   AddBackgroundColorToSource(source, web_ui->GetWebContents());
 }

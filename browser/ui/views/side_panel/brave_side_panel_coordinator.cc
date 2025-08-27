@@ -5,21 +5,34 @@
 
 #include "brave/browser/ui/views/side_panel/brave_side_panel_coordinator.h"
 
+#include <optional>
+#include <string>
+#include <utility>
+
+#include "base/check.h"
+#include "base/debug/crash_logging.h"
+#include "base/debug/dump_without_crashing.h"
+#include "base/logging.h"
 #include "brave/browser/ui/sidebar/sidebar_service_factory.h"
 #include "brave/browser/ui/sidebar/sidebar_utils.h"
 #include "brave/browser/ui/views/frame/brave_browser_view.h"
-#include "brave/components/sidebar/sidebar_service.h"
+#include "brave/browser/ui/views/sidebar/sidebar_container_view.h"
+#include "brave/browser/ui/views/toolbar/brave_toolbar_view.h"
+#include "brave/browser/ui/views/toolbar/side_panel_button.h"
+#include "brave/components/sidebar/browser/sidebar_service.h"
+#include "brave/grit/brave_generated_resources.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/views/side_panel/side_panel_entry.h"
 
 namespace {
 
-absl::optional<SidePanelEntry::Id> GetDefaultEntryId(Profile* profile) {
+std::optional<SidePanelEntry::Id> GetDefaultEntryId(Profile* profile) {
   auto* service = sidebar::SidebarServiceFactory::GetForProfile(profile);
   auto panel_item = service->GetDefaultPanelItem();
   if (panel_item.has_value()) {
     return SidePanelIdFromSideBarItem(panel_item.value());
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 }  // namespace
@@ -27,18 +40,12 @@ absl::optional<SidePanelEntry::Id> GetDefaultEntryId(Profile* profile) {
 BraveSidePanelCoordinator::~BraveSidePanelCoordinator() = default;
 
 void BraveSidePanelCoordinator::Show(
-    absl::optional<SidePanelEntry::Id> entry_id,
-    absl::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger) {
-  // Choose Brave's own default, and exclude items that user has removed
-  // from sidebar. If none are enabled, do nothing.
-  if (!entry_id.has_value() && !GetLastActiveEntryKey()) {
-    entry_id = GetDefaultEntryId(browser_view_->GetProfile());
-    if (!entry_id.has_value()) {
-      return;
-    }
-  }
+    SidePanelEntry::Key entry_key,
+    std::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger) {
+  sidebar::SetLastUsedSidePanel(browser_view_->GetProfile()->GetPrefs(),
+                                entry_key.id());
 
-  SidePanelCoordinator::Show(entry_id, open_trigger);
+  SidePanelCoordinator::Show(entry_key, open_trigger);
 }
 
 void BraveSidePanelCoordinator::OnTabStripModelChanged(
@@ -68,4 +75,116 @@ std::unique_ptr<views::View> BraveSidePanelCoordinator::CreateHeader() {
   // hide the Chromium combobox-style header.
   header->SetVisible(false);
   return header;
+}
+
+void BraveSidePanelCoordinator::Toggle() {
+  if (IsSidePanelShowing() &&
+      !browser_view_->unified_side_panel()->IsClosing()) {
+    Close();
+  } else if (const auto key = GetLastActiveEntryKey()) {
+    Show(*key, SidePanelUtil::SidePanelOpenTrigger::kToolbarButton);
+  }
+}
+
+void BraveSidePanelCoordinator::Toggle(
+    SidePanelEntryKey key,
+    SidePanelUtil::SidePanelOpenTrigger open_trigger) {
+  SidePanelCoordinator::Toggle(key, open_trigger);
+}
+
+void BraveSidePanelCoordinator::OnViewVisibilityChanged(
+    views::View* observed_view,
+    views::View* starting_view,
+    bool visible) {
+  UpdateToolbarButtonHighlight(observed_view->GetVisible());
+
+  // See the comment of SidePanelCoordinator::OnViewVisibilityChanged()
+  // about this condition.
+  bool update_items_state = true;
+  if (observed_view->GetVisible() || !current_key_) {
+    update_items_state = false;
+  }
+
+  SidePanelCoordinator::OnViewVisibilityChanged(observed_view, starting_view,
+                                                visible);
+
+  if (update_items_state) {
+    GetBraveBrowserView()->sidebar_container_view()->UpdateActiveItemState();
+  }
+}
+
+std::optional<SidePanelEntry::Key>
+BraveSidePanelCoordinator::GetLastActiveEntryKey() const {
+  // Don't give last active if user removed all panel items.
+  const auto default_entry_id = GetDefaultEntryId(browser_view_->GetProfile());
+  if (!default_entry_id) {
+    return std::nullopt;
+  }
+
+  // Use last used one from previous launch instead of default entry if we have
+  // it.
+  if (const auto entry_id =
+          sidebar::GetLastUsedSidePanel(browser_view_->browser())) {
+    return SidePanelEntryKey(*entry_id);
+  }
+
+  return SidePanelEntryKey(*default_entry_id);
+}
+
+void BraveSidePanelCoordinator::UpdateToolbarButtonHighlight(
+    bool side_panel_visible) {
+  // Workaround to prevent crashing while window closing.
+  // See https://github.com/brave/brave-browser/issues/34334
+  if (!browser_view_ || !browser_view_->GetWidget() ||
+      browser_view_->GetWidget()->IsClosed()) {
+    return;
+  }
+
+  auto* brave_toolbar =
+      static_cast<BraveToolbarView*>(browser_view_->toolbar());
+  if (auto* side_panel_button = brave_toolbar->side_panel_button()) {
+    side_panel_button->SetHighlighted(side_panel_visible);
+    side_panel_button->SetTooltipText(l10n_util::GetStringUTF16(
+        side_panel_visible ? IDS_TOOLTIP_SIDEBAR_HIDE
+                           : IDS_TOOLTIP_SIDEBAR_SHOW));
+  }
+}
+
+void BraveSidePanelCoordinator::PopulateSidePanel(
+    bool supress_animations,
+    const UniqueKey& unique_key,
+    std::optional<SidePanelUtil::SidePanelOpenTrigger> open_trigger,
+    SidePanelEntry* entry,
+    std::optional<std::unique_ptr<views::View>> content_view) {
+  CHECK(entry);
+  actions::ActionItem* const action_item = GetActionItem(entry->key());
+  if (!action_item) {
+    const std::string entry_id = SidePanelEntryIdToString(entry->key().id());
+    LOG(ERROR) << __func__ << " no side panel action item for " << entry_id;
+    SCOPED_CRASH_KEY_STRING64("SidePanel", "entry_id", entry_id);
+    base::debug::DumpWithoutCrashing();
+    return;
+  }
+
+  // Notify to give opportunity to observe another panel entries from
+  // global or active tab's contextual registry.
+  GetBraveBrowserView()->sidebar_container_view()->WillShowSidePanel();
+  SidePanelCoordinator::PopulateSidePanel(supress_animations, unique_key,
+                                          std::move(open_trigger), entry,
+                                          std::move(content_view));
+}
+
+void BraveSidePanelCoordinator::NotifyPinnedContainerOfActiveStateChange(
+    SidePanelEntryKey key,
+    bool is_active) {
+  if (!browser_view_->toolbar()->pinned_toolbar_actions_container()) {
+    return;
+  }
+
+  SidePanelCoordinator::NotifyPinnedContainerOfActiveStateChange(key,
+                                                                 is_active);
+}
+
+BraveBrowserView* BraveSidePanelCoordinator::GetBraveBrowserView() {
+  return static_cast<BraveBrowserView*>(browser_view_);
 }

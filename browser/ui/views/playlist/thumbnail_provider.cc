@@ -5,19 +5,23 @@
 
 #include "brave/browser/ui/views/playlist/thumbnail_provider.h"
 
+#include <algorithm>
+#include <memory>
 #include <utility>
 
+#include "base/check.h"
 #include "base/containers/flat_map.h"
 #include "base/containers/lru_cache.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
+#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "base/task/thread_pool.h"
 #include "base/task/thread_pool/thread_pool_instance.h"
 #include "brave/browser/playlist/playlist_service_factory.h"
-#include "brave/browser/playlist/playlist_tab_helper.h"
 #include "brave/components/playlist/browser/playlist_constants.h"
 #include "brave/components/playlist/browser/playlist_service.h"
+#include "brave/components/playlist/browser/playlist_tab_helper.h"
 #include "net/base/filename_util.h"
 
 namespace {
@@ -30,10 +34,11 @@ ItemImageCache& GetInMemoryCache(playlist::PlaylistService* service) {
   // We don't want to mix up images from different services, as the
   // PlaylistService is bound to a Profile.
   static base::NoDestructor<base::flat_map<uintptr_t, ItemImageCache>> s_cache;
-  if (!base::Contains(*s_cache, key)) {
-    s_cache->insert({key, ItemImageCache(/*max size=*/30)});
+  auto it = s_cache->find(key);
+  if (it == s_cache->end()) {
+    it = s_cache->insert({key, ItemImageCache(/*max size=*/30)}).first;
   }
-  return s_cache->at(key);
+  return it->second;
 }
 
 bool IsItemThumbnailCached(const playlist::mojom::PlaylistItemPtr& item) {
@@ -66,8 +71,7 @@ void ThumbnailProvider::GetThumbnail(
                 std::string raw_data;
                 if (base::ReadFileToString(path, &raw_data)) {
                   return gfx::Image::CreateFrom1xPNGBytes(
-                      reinterpret_cast<unsigned char*>(raw_data.data()),
-                      raw_data.size());
+                      base::as_byte_span(raw_data));
                 }
 
                 VLOG(2) << __FUNCTION__ << " Failed to read " << path;
@@ -117,7 +121,7 @@ void ThumbnailProvider::GetThumbnail(
   }
 
   // Else, find the first cached thumbnail.
-  auto iter = base::ranges::find_if(list->items, &IsItemThumbnailCached);
+  auto iter = std::ranges::find_if(list->items, &IsItemThumbnailCached);
   if (iter == list->items.end()) {
     std::move(callback).Run({});
     return;

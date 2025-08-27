@@ -7,17 +7,20 @@
 
 #include <string>
 
+#include "brave/browser/ui/webui/untrusted_sanitized_image_source.h"
 #include "brave/components/brave_wallet/browser/brave_wallet_constants.h"
 #include "brave/components/constants/webui_url_constants.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "brave/components/nft_display/resources/grit/nft_display_generated_map.h"
-#include "chrome/browser/ui/webui/webui_util.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/grit/browser_resources.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/grit/brave_components_resources.h"
+#include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/base/l10n/l10n_util.h"
+#include "ui/webui/resources/grit/webui_resources.h"
+#include "ui/webui/webui_util.h"
 
 namespace nft {
 
@@ -27,20 +30,16 @@ UntrustedNftUI::UntrustedNftUI(content::WebUI* web_ui)
       web_ui->GetWebContents()->GetBrowserContext(), kUntrustedNftURL);
 
   for (const auto& str : brave_wallet::kLocalizedStrings) {
-    std::u16string l10n_str =
-        brave_l10n::GetLocalizedResourceUTF16String(str.id);
+    std::u16string l10n_str = l10n_util::GetStringUTF16(str.id);
     untrusted_source->AddString(str.name, l10n_str);
   }
 
   untrusted_source->SetDefaultResource(IDR_BRAVE_WALLET_NFT_DISPLAY_HTML);
-  untrusted_source->AddResourcePaths(
-      base::make_span(kNftDisplayGenerated, kNftDisplayGeneratedSize));
+  untrusted_source->AddResourcePaths(kNftDisplayGenerated);
   untrusted_source->AddFrameAncestor(GURL(kBraveUIWalletPageURL));
   untrusted_source->AddFrameAncestor(GURL(kBraveUIWalletPanelURL));
-  webui::SetupWebUIDataSource(
-      untrusted_source,
-      base::make_span(kNftDisplayGenerated, kNftDisplayGeneratedSize),
-      IDR_BRAVE_WALLET_NFT_DISPLAY_HTML);
+  webui::SetupWebUIDataSource(untrusted_source, kNftDisplayGenerated,
+                              IDR_BRAVE_WALLET_NFT_DISPLAY_HTML);
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ScriptSrc,
       std::string("script-src 'self' chrome-untrusted://resources;"));
@@ -62,7 +61,12 @@ UntrustedNftUI::UntrustedNftUI(content::WebUI* web_ui)
                               kUntrustedMarketURL);
   untrusted_source->OverrideContentSecurityPolicy(
       network::mojom::CSPDirectiveName::ImgSrc,
-      std::string("img-src 'self' https: data:;"));
+      std::string("img-src 'self' chrome-untrusted://resources "
+                  "chrome-untrusted://image;"));
+
+  Profile* profile = Profile::FromWebUI(web_ui);
+  content::URLDataSource::Add(
+      profile, std::make_unique<UntrustedSanitizedImageSource>(profile));
 }
 
 UntrustedNftUI::~UntrustedNftUI() = default;

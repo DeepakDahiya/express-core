@@ -6,6 +6,7 @@
 #include "brave/browser/ui/views/profiles/brave_profile_menu_view.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
 #include "brave/browser/profiles/profile_util.h"
@@ -23,57 +24,31 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/image_model.h"
 
-void BraveProfileMenuView::BuildIdentity() {
-  ProfileMenuView::BuildIdentity();
-  Profile* profile = browser()->profile();
-  ProfileAttributesEntry* profile_attributes =
-      g_browser_process->profile_manager()
-          ->GetProfileAttributesStorage()
-          .GetProfileAttributesWithPath(profile->GetPath());
-  // Reset IdentityInfo to get rid of the subtitle string
-  // IDS_PROFILES_LOCAL_PROFILE_STATE("Not signed in").
-  SetProfileIdentityInfo(
-      /*profile_name=*/std::u16string(),
-      profile_attributes->GetProfileThemeColors().profile_highlight_color,
-      /*edit_button_params=*/absl::nullopt,
-      ui::ImageModel::FromImage(profile_attributes->GetAvatarIcon()),
-      /*title=*/profile_attributes->GetName());
+void BraveProfileMenuView::MaybeBuildCloseBrowsersButton() {
+  Profile* profile = browser().profile();
+  int window_count = chrome::GetBrowserCount(profile);
+  if (!profile->IsOffTheRecord() && profile->HasPrimaryOTRProfile()) {
+    window_count += chrome::GetBrowserCount(
+        profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
+  }
+
+  int button_title_id = IDS_PROFILE_MENU_CLOSE_PROFILE_X_WINDOWS_BUTTON;
+  if (profile->IsGuestSession()) {
+    button_title_id = IDS_GUEST_PROFILE_MENU_CLOSE_X_WINDOWS_BUTTON;
+  } else {
+    if (window_count <= 1) {
+      return;
+    }
+  }
+
+  AddFeatureButton(
+      l10n_util::GetPluralStringFUTF16(button_title_id, window_count),
+      base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
+                          base::Unretained(this)),
+      vector_icons::kCloseIcon);
 }
-
-// We don't want autofill buttons in this menu.
-void BraveProfileMenuView::BuildAutofillButtons() {}
-
-// We don't want to show any Chromium sync info.
-void BraveProfileMenuView::BuildSyncInfo() {}
 
 // We don't want feature buttons to manage google account
 void BraveProfileMenuView::BuildFeatureButtons() {
-  Profile* profile = browser()->profile();
-  int window_count = chrome::GetBrowserCount(profile);
-  if (!profile->IsOffTheRecord() && profile->HasPrimaryOTRProfile())
-    window_count += chrome::GetBrowserCount(
-        profile->GetPrimaryOTRProfile(/*create_if_needed=*/true));
-  if (profile->IsGuestSession()) {
-    AddFeatureButton(
-        l10n_util::GetPluralStringFUTF16(IDS_GUEST_PROFILE_MENU_CLOSE_BUTTON,
-                                         window_count),
-        base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
-                            base::Unretained(this)),
-        vector_icons::kCloseIcon);
-  } else {
-    if (window_count > 1) {
-      AddFeatureButton(
-          l10n_util::GetPluralStringFUTF16(IDS_PROFILES_CLOSE_X_WINDOWS_BUTTON,
-                                           window_count),
-          base::BindRepeating(&ProfileMenuView::OnExitProfileButtonClicked,
-                              base::Unretained(this)),
-          vector_icons::kCloseIcon);
-    }
-  }
+  MaybeBuildCloseBrowsersButton();
 }
-
-gfx::ImageSkia BraveProfileMenuView::GetSyncIcon() const {
-  // We don't need sync overlay.
-  return gfx::ImageSkia();
-}
-

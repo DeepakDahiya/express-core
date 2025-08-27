@@ -7,8 +7,6 @@
 
 #include <utility>
 
-#include "base/strings/utf_string_conversions.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/ui/color/chrome_color_id.h"
 #include "chrome/browser/ui/view_ids.h"
@@ -16,37 +14,35 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/omnibox/browser/vector_icons.h"
 #include "components/strings/grit/components_strings.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-BookmarkButton::BookmarkButton(PressedCallback callback)
+BraveBookmarkButton::BraveBookmarkButton(PressedCallback callback)
     : ToolbarButton(std::move(callback)) {
   SetID(VIEW_ID_STAR_BUTTON);
   set_tag(IDC_BOOKMARK_THIS_TAB);
 }
 
-BookmarkButton::~BookmarkButton() = default;
+BraveBookmarkButton::~BraveBookmarkButton() = default;
 
-const char* BookmarkButton::GetClassName() const {
-  return "BookmarkButton";
-}
-
-void BookmarkButton::SetToggled(bool on) {
+void BraveBookmarkButton::SetToggled(bool on) {
   active_ = on;
   UpdateImageAndText();
 }
 
-void BookmarkButton::UpdateImageAndText() {
+void BraveBookmarkButton::UpdateImageAndText() {
   const ui::ColorProvider* color_provider = GetColorProvider();
   SkColor icon_color = color_provider->GetColor(kColorToolbarButtonIcon);
   const gfx::VectorIcon& icon =
       active_ ? omnibox::kStarActiveIcon : omnibox::kStarIcon;
-  SetImageModel(views::Button::STATE_NORMAL,
-                ui::ImageModel::FromVectorIcon(icon, icon_color, 16));
+  SetImageModel(
+      views::Button::STATE_NORMAL,
+      ui::ImageModel::FromVectorIcon(icon, icon_color, GetIconSize()));
 
   int tooltip_id = active_ ? IDS_TOOLTIP_STARRED : IDS_TOOLTIP_STAR;
-  SetTooltipText(brave_l10n::GetLocalizedResourceUTF16String(tooltip_id));
+  SetTooltipText(l10n_util::GetStringUTF16(tooltip_id));
 }
 
-BEGIN_METADATA(BookmarkButton)
+BEGIN_METADATA(BraveBookmarkButton)
 END_METADATA

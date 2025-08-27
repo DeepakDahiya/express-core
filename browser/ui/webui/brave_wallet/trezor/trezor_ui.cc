@@ -12,10 +12,10 @@
 #include "components/grit/brave_components_resources.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
-#include "ui/resources/grit/webui_resources.h"
+#include "ui/webui/resources/grit/webui_resources.h"
 
 namespace {
-const char kTrezorConnectURL[] = "https://connect.trezor.io/";
+constexpr char kTrezorConnectURL[] = "https://connect.trezor.io/";
 }  // namespace
 
 namespace trezor {
@@ -25,8 +25,7 @@ UntrustedTrezorUI::UntrustedTrezorUI(content::WebUI* web_ui)
   auto* untrusted_source = content::WebUIDataSource::CreateAndAdd(
       web_ui->GetWebContents()->GetBrowserContext(), kUntrustedTrezorURL);
   untrusted_source->SetDefaultResource(IDR_BRAVE_WALLET_TREZOR_BRIDGE_HTML);
-  untrusted_source->AddResourcePaths(
-      base::make_span(kTrezorBridgeGenerated, kTrezorBridgeGeneratedSize));
+  untrusted_source->AddResourcePaths(kTrezorBridgeGenerated);
   untrusted_source->AddFrameAncestor(GURL(kBraveUIWalletPageURL));
   untrusted_source->AddFrameAncestor(GURL(kBraveUIWalletPanelURL));
   untrusted_source->OverrideContentSecurityPolicy(

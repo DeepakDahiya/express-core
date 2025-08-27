@@ -6,14 +6,22 @@
 #include "brave/browser/ui/tabs/brave_tab_strip_model.h"
 
 #include <algorithm>
+#include <cstdint>
+#include <iterator>
 #include <vector>
 
+#include "base/containers/span.h"
+#include "base/feature_list.h"
+#include "base/strings/utf_string_conversions.h"
 #include "brave/browser/ui/brave_browser_window.h"
+#include "brave/browser/ui/tabs/features.h"
 #include "brave/components/constants/pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
+#include "chrome/browser/ui/tab_ui_helper.h"
+#include "chrome/browser/ui/tabs/public/tab_features.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_delegate.h"
 #include "chrome/browser/ui/tabs/tab_strip_model_observer.h"
 #include "components/prefs/pref_service.h"
@@ -28,8 +36,9 @@ BraveTabStripModel::~BraveTabStripModel() = default;
 
 void BraveTabStripModel::SelectRelativeTab(TabRelativeDirection direction,
                                            TabStripUserGestureDetails detail) {
-  if (contents_data_.empty())
+  if (GetTabCount() == 0) {
     return;
+  }
 
   bool is_mru_enabled = profile()->GetPrefs()->GetBoolean(kMRUCyclingEnabled);
 
@@ -40,14 +49,26 @@ void BraveTabStripModel::SelectRelativeTab(TabRelativeDirection direction,
   }
 }
 
+void BraveTabStripModel::UpdateWebContentsStateAt(int index,
+                                                  TabChangeType change_type) {
+  if (base::FeatureList::IsEnabled(tabs::features::kBraveRenamingTabs)) {
+    // Make sure that the tab's last origin is updated when the url changes.
+    // When last origin changes, the custom title is reset.
+    GetTabAtIndex(index)->GetTabFeatures()->tab_ui_helper()->UpdateLastOrigin();
+  }
+
+  TabStripModel::UpdateWebContentsStateAt(index, change_type);
+}
+
 void BraveTabStripModel::SelectMRUTab(TabRelativeDirection direction,
                                       TabStripUserGestureDetails detail) {
   if (mru_cycle_list_.empty()) {
     // Start cycling
 
     Browser* browser = chrome::FindBrowserWithTab(GetWebContentsAt(0));
-    if (!browser)
+    if (!browser) {
       return;
+    }
 
     // Create a list of tab indexes sorted by time of last activation
     for (int i = 0; i < count(); ++i) {
@@ -56,8 +77,8 @@ void BraveTabStripModel::SelectMRUTab(TabRelativeDirection direction,
 
     std::sort(mru_cycle_list_.begin(), mru_cycle_list_.end(),
               [this](int a, int b) {
-                return GetWebContentsAt(a)->GetLastActiveTime() >
-                       GetWebContentsAt(b)->GetLastActiveTime();
+                return GetWebContentsAt(a)->GetLastActiveTimeTicks() >
+                       GetWebContentsAt(b)->GetLastActiveTimeTicks();
               });
 
     // Tell the cycling controller that we start cycling to handle tabs keys
@@ -81,4 +102,33 @@ void BraveTabStripModel::StopMRUCycling() {
 
 std::vector<int> BraveTabStripModel::GetTabIndicesForCommandAt(int tab_index) {
   return TabStripModel::GetIndicesForCommand(tab_index);
+}
+
+void BraveTabStripModel::CloseTabs(base::span<int> indices,
+                                   uint32_t close_types) {
+  std::vector<content::WebContents*> contentses;
+  for (const auto& index : indices) {
+    contentses.push_back(GetWebContentsAt(index));
+  }
+  TabStripModel::CloseTabs(contentses, close_types);
+}
+
+void BraveTabStripModel::SetCustomTitleForTab(
+    int index,
+    const std::optional<std::u16string>& title) {
+  CHECK(base::FeatureList::IsEnabled(tabs::features::kBraveRenamingTabs));
+
+  auto* tab_interface = GetTabAtIndex(index);
+  CHECK(tab_interface);
+  auto* tab_ui_helper = tab_interface->GetTabFeatures()->tab_ui_helper();
+  CHECK(tab_ui_helper);
+  tab_ui_helper->SetCustomTitle(title);
+
+  for (auto& observer : observers_) {
+    observer.TabCustomTitleChanged(
+        GetWebContentsAt(index),
+        title.has_value() ? base::UTF16ToUTF8(*title) : std::string());
+  }
+
+  NotifyTabChanged(tab_interface, TabChangeType::kAll);
 }

@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/views/sidebar/sidebar_item_view.h"
 
+#include "base/check.h"
 #include "brave/browser/ui/color/brave_color_id.h"
 #include "brave/grit/brave_theme_resources.h"
 #include "chrome/browser/ui/views/event_utils.h"
@@ -17,6 +18,15 @@ SidebarItemView::SidebarItemView(const std::u16string& accessible_name)
     : SidebarButtonView(accessible_name) {}
 
 SidebarItemView::~SidebarItemView() = default;
+
+void SidebarItemView::SetActiveState(bool active) {
+  if (active_ == active) {
+    return;
+  }
+
+  active_ = active;
+  SetHighlighted(active_);
+}
 
 void SidebarItemView::DrawHorizontalBorder(bool top) {
   DCHECK(!draw_horizontal_border_);
@@ -38,17 +48,6 @@ void SidebarItemView::ClearHorizontalBorder() {
 void SidebarItemView::OnPaintBorder(gfx::Canvas* canvas) {
   ImageButton::OnPaintBorder(canvas);
 
-  // Draw item highlight
-  if (draw_highlight_) {
-    auto& bundle = ui::ResourceBundle::GetSharedInstance();
-
-    auto* image = bundle.GetImageSkiaNamed(
-        draw_highlight_on_left_ ? IDR_SIDEBAR_ITEM_HIGHLIGHT
-                                : IDR_SIDEBAR_ITEM_HIGHLIGHT_RIGHT);
-    canvas->DrawImageInt(
-        *image, draw_highlight_on_left_ ? 0 : width() - image->width(), 0);
-  }
-
   const ui::ColorProvider* color_provider = GetColorProvider();
   if (draw_horizontal_border_ && color_provider) {
     constexpr float kHorizontalBorderWidth = 2;
@@ -66,10 +65,28 @@ void SidebarItemView::OnPaintBorder(gfx::Canvas* canvas) {
 }
 
 bool SidebarItemView::IsTriggerableEvent(const ui::Event& e) {
-  return e.type() == ui::ET_GESTURE_TAP ||
-         e.type() == ui::ET_GESTURE_TAP_DOWN ||
+  return e.type() == ui::EventType::kGestureTap ||
+         e.type() == ui::EventType::kGestureTapDown ||
          event_utils::IsPossibleDispositionEvent(e);
 }
 
-BEGIN_METADATA(SidebarItemView, SidebarButtonView)
+void SidebarItemView::StateChanged(ButtonState old_state) {
+  SidebarButtonView::StateChanged(old_state);
+
+  // Set highlight state again. It seems DnD clears highlight state.
+  if (GetState() == views::Button::STATE_NORMAL) {
+    SetHighlighted(active_);
+  }
+}
+
+void SidebarItemView::OnThemeChanged() {
+  SidebarButtonView::OnThemeChanged();
+
+  // TODO(simonhong): Need to check more why this only
+  // gives hover color instead of activated color after
+  // resetting ink drop config.
+  SetHighlighted(active_);
+}
+
+BEGIN_METADATA(SidebarItemView)
 END_METADATA

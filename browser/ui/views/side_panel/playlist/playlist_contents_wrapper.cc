@@ -7,37 +7,38 @@
 
 #include <utility>
 
+#include "base/check.h"
+#include "base/logging.h"
 #include "brave/browser/ui/views/side_panel/playlist/playlist_side_panel_coordinator.h"
 #include "chrome/browser/picture_in_picture/picture_in_picture_window_manager.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
 #include "chrome/browser/ui/exclusive_access/fullscreen_within_tab_helper.h"
-#include "chrome/browser/ui/side_panel/side_panel_ui.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_ui.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_web_ui_view.h"
 #include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 #include "ui/views/widget/widget.h"
 
 PlaylistContentsWrapper::PlaylistContentsWrapper(
     const GURL& webui_url,
-    content::BrowserContext* browser_context,
+    Profile* profile,
     int task_manager_string_id,
-    bool webui_resizes_host,
     bool esc_closes_ui,
     BrowserView* browser_view,
     PlaylistSidePanelCoordinator* coordinator)
-    : BubbleContentsWrapperT(webui_url,
-                             browser_context,
-                             task_manager_string_id,
-                             webui_resizes_host,
-                             esc_closes_ui),
+    : WebUIContentsWrapperT(webui_url,
+                            profile,
+                            task_manager_string_id,
+                            esc_closes_ui),
       browser_view_(browser_view),
       coordinator_(coordinator) {}
 
 PlaylistContentsWrapper::~PlaylistContentsWrapper() = default;
 
 bool PlaylistContentsWrapper::CanEnterFullscreenModeForTab(
-    content::RenderFrameHost* requesting_frame,
-    const blink::mojom::FullscreenOptions& options) {
+    content::RenderFrameHost* requesting_frame) {
   return true;
 }
 
@@ -49,7 +50,8 @@ void PlaylistContentsWrapper::EnterFullscreenModeForTab(
       ->SetIsFullscreenWithinTab(true);
 
   auto* fullscreen_controller = browser_view_->browser()
-                                    ->exclusive_access_manager()
+                                    ->GetFeatures()
+                                    .exclusive_access_manager()
                                     ->fullscreen_controller();
   was_browser_fullscreen_ = fullscreen_controller->IsFullscreenForBrowser();
   DCHECK(!fullscreen_controller->IsTabFullscreen())
@@ -61,9 +63,7 @@ void PlaylistContentsWrapper::EnterFullscreenModeForTab(
   fullscreen_display_id_ = options.display_id;
   if (was_browser_fullscreen_) {
     // In case it was in fullscreen for browser, we should trigger layout here.
-    auto side_panel_web_view = coordinator_->side_panel_web_view();
-    DCHECK(side_panel_web_view);
-    side_panel_web_view->InvalidateLayout();
+    coordinator_->side_panel_web_view()->InvalidateLayout();
   } else {
     widget->SetFullscreen(true, fullscreen_display_id_);
   }
@@ -131,7 +131,7 @@ void PlaylistContentsWrapper::ExitPictureInPicture() {
   PictureInPictureWindowManager::GetInstance()->ExitPictureInPicture();
 }
 
-void PlaylistContentsWrapper::AddNewContents(
+content::WebContents* PlaylistContentsWrapper::AddNewContents(
     content::WebContents* source,
     std::unique_ptr<content::WebContents> new_contents,
     const GURL& target_url,
@@ -139,7 +139,7 @@ void PlaylistContentsWrapper::AddNewContents(
     const blink::mojom::WindowFeatures& window_features,
     bool user_gesture,
     bool* was_blocked) {
-  static_cast<WebContentsDelegate*>(browser_view_->browser())
+  return static_cast<WebContentsDelegate*>(browser_view_->browser())
       ->AddNewContents(source, std::move(new_contents), target_url, disposition,
                        window_features, user_gesture, was_blocked);
 }
@@ -164,7 +164,5 @@ void PlaylistContentsWrapper::OnExitFullscreen() {
   fullscreen_observation_.Reset();
   fullscreen_display_id_ = display::kInvalidDisplayId;
 
-  auto side_panel_web_view = coordinator_->side_panel_web_view();
-  DCHECK(side_panel_web_view);
-  side_panel_web_view->InvalidateLayout();
+  coordinator_->side_panel_web_view()->InvalidateLayout();
 }

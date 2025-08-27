@@ -4,15 +4,19 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/browser/ui/brave_browser.h"
+#include "brave/browser/ui/browser_commands.h"
+#include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
 #include "brave/components/constants/pref_names.h"
 #include "build/build_config.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/frame/window_frame_util.h"
+#include "chrome/browser/ui/ui_features.h"
 #include "chrome/browser/ui/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/frame/tab_strip_region_view.h"
 #include "chrome/browser/ui/views/tab_search_bubble_host.h"
 #include "chrome/browser/ui/views/tabs/tab_search_button.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_view.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
@@ -33,26 +37,14 @@ IN_PROC_BROWSER_TEST_F(BraveTabsSearchButtonTest, HideShowSettingTest) {
   auto* prefs = browser()->profile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(kTabsSearchShow));
 
+  auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
   views::View* button = nullptr;
-  if (WindowFrameUtil::IsWindowsTabSearchCaptionButtonEnabled(browser())) {
-    auto* frame_view = BrowserView::GetBrowserViewForBrowser(browser())
-                           ->frame()
-                           ->GetFrameView();
-    auto* tab_search_bubble_host = frame_view->GetTabSearchBubbleHost();
-    ASSERT_NE(nullptr, tab_search_bubble_host);
-    button = tab_search_bubble_host->button();
+  if (features::HasTabSearchToolbarButton()) {
+    button = browser_view->toolbar()->tab_search_button();
   } else {
-    auto* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
-    auto* tab_search_container =
-        browser_view->tab_strip_region_view()->tab_search_container();
-    if (!tab_search_container) {
-      return;
-    }
-    button = browser_view->tab_strip_region_view()
-                 ->tab_search_container()
-                 ->tab_search_button();
+    button = browser_view->tab_strip_region_view()->GetTabSearchButton();
   }
-  ASSERT_NE(nullptr, button);
+  ASSERT_TRUE(button);
   EXPECT_TRUE(button->GetVisible());
 
   prefs->SetBoolean(kTabsSearchShow, false);

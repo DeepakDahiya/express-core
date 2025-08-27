@@ -6,8 +6,10 @@
 #include "brave/browser/ui/views/text_recognition_dialog_view.h"
 
 #include <memory>
+#include <optional>
 #include <utility>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
@@ -16,14 +18,15 @@
 #include "base/task/thread_pool.h"
 #include "base/time/time.h"
 #include "brave/browser/ui/views/text_recognition_dialog_tracker.h"
-#include "brave/components/l10n/common/localization_util.h"
 #include "brave/components/text_recognition/browser/text_recognition.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "build/build_config.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/base/models/combobox_model.h"
+#include "ui/base/mojom/dialog_button.mojom.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/views/controls/combobox/combobox.h"
 #include "ui/views/controls/label.h"
@@ -56,7 +59,7 @@ class TargetLanguageComboboxModel : public ui::ComboboxModel {
     return base::UTF8ToUTF16(languages_[index]);
   }
 
-  absl::optional<size_t> GetDefaultIndex() const override { return 0; }
+  std::optional<size_t> GetDefaultIndex() const override { return 0; }
 
  private:
   const std::vector<std::string> languages_;
@@ -100,11 +103,11 @@ TextRecognitionDialogView::TextRecognitionDialogView(const SkBitmap& image)
                          base::BindRepeating(
                              &TextRecognitionDialogView::OnShowResultTimerFired,
                              base::Unretained(this))) {
-  SetModalType(ui::MODAL_TYPE_CHILD);
-  SetButtons(ui::DIALOG_BUTTON_OK);
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
-                 brave_l10n::GetLocalizedResourceUTF16String(
-                     IDS_TEXT_RECOGNITION_DIALOG_CLOSE_BUTTON));
+  SetModalType(ui::mojom::ModalType::kChild);
+  SetButtons(static_cast<int>(ui::mojom::DialogButton::kOk));
+  SetButtonLabel(
+      ui::mojom::DialogButton::kOk,
+      l10n_util::GetStringUTF16(IDS_TEXT_RECOGNITION_DIALOG_CLOSE_BUTTON));
   SetShowCloseButton(false);
 
   SetLayoutManager(std::make_unique<views::FlexLayout>())
@@ -151,12 +154,12 @@ void TextRecognitionDialogView::StartExtractingText(
     const std::string& language_code) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  result_ = absl::nullopt;
+  result_ = std::nullopt;
   show_result_timer_.Reset();
 
   if (image_.empty()) {
     show_result_timer_.Stop();
-    OnGetTextFromImage({});
+    OnGetTextFromImage({false, {}});
     return;
   }
 
@@ -166,7 +169,7 @@ void TextRecognitionDialogView::StartExtractingText(
     scroll_view_ = nullptr;
   }
 
-  header_label_->SetText(brave_l10n::GetLocalizedResourceUTF16String(
+  header_label_->SetText(l10n_util::GetStringUTF16(
       IDS_TEXT_RECOGNITION_DIALOG_HEADER_IN_PROGRESS));
   AdjustWidgetSize();
 
@@ -185,21 +188,20 @@ void TextRecognitionDialogView::StartExtractingText(
     combobox_->SetEnabled(false);
   }
 
-  com_task_runner_->PostTaskAndReplyWithResult(
+  com_task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&text_recognition::GetTextFromImage, language_code, image_,
                      base::BindPostTaskToCurrentDefault(base::BindOnce(
                          &TextRecognitionDialogView::OnGetTextFromImage,
-                         weak_factory_.GetWeakPtr()))),
-      base::BindOnce(&TextRecognitionDialogView::TextRecognizationSupported,
-                     weak_factory_.GetWeakPtr()));
+                         weak_factory_.GetWeakPtr()))));
 #endif
 }
 
 void TextRecognitionDialogView::OnGetTextFromImage(
-    const std::vector<std::string>& text) {
+    const std::pair<bool, std::vector<std::string>>& supported_text) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
+  auto& text = supported_text.second;
   if (show_result_timer_.IsRunning()) {
     result_ = text;
     return;
@@ -216,7 +218,7 @@ void TextRecognitionDialogView::OnGetTextFromImage(
   AdjustWidgetSize();
 
   if (on_get_text_callback_for_test_) {
-    std::move(on_get_text_callback_for_test_).Run(text);
+    std::move(on_get_text_callback_for_test_).Run(supported_text);
   }
 }
 
@@ -228,13 +230,13 @@ void TextRecognitionDialogView::UpdateContents(
       << "Update when timer is fired or stopped.";
 
   if (text.empty()) {
-    header_label_->SetText(brave_l10n::GetLocalizedResourceUTF16String(
-        IDS_TEXT_RECOGNITION_DIALOG_HEADER_FAILED));
+    header_label_->SetText(
+        l10n_util::GetStringUTF16(IDS_TEXT_RECOGNITION_DIALOG_HEADER_FAILED));
     return;
   }
 
-  header_label_->SetText(brave_l10n::GetLocalizedResourceUTF16String(
-      IDS_TEXT_RECOGNITION_DIALOG_HEADER_COMPLETE));
+  header_label_->SetText(
+      l10n_util::GetStringUTF16(IDS_TEXT_RECOGNITION_DIALOG_HEADER_COMPLETE));
 
   // Treat each string in |text| as a separated line string.
   const auto unified_string = base::UTF8ToUTF16(base::JoinString(text, "\n"));
@@ -267,7 +269,7 @@ void TextRecognitionDialogView::OnShowResultTimerFired() {
 
   // Fired after getting text from image.
   // Show the result now.
-  OnGetTextFromImage(*result_);
+  OnGetTextFromImage({true, *result_});
 }
 
 #if BUILDFLAG(IS_WIN)
@@ -303,15 +305,7 @@ bool TextRecognitionDialogView::OnLanguageOptionchanged(size_t index) {
   return false;
 }
 
-void TextRecognitionDialogView::TextRecognizationSupported(bool supported) {
-  // If supported, we can get result via OnGetTextFromImage().
-  if (supported) {
-    return;
-  }
-
-  OnGetTextFromImage({});
-}
 #endif
 
-BEGIN_METADATA(TextRecognitionDialogView, views::DialogDelegateView)
+BEGIN_METADATA(TextRecognitionDialogView)
 END_METADATA

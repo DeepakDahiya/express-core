@@ -7,6 +7,7 @@
 #define BRAVE_BROWSER_UI_VIEWS_TABS_BRAVE_BROWSER_TAB_STRIP_CONTROLLER_H_
 
 #include <memory>
+#include <optional>
 
 #include "chrome/browser/ui/views/tabs/browser_tab_strip_controller.h"
 
@@ -24,10 +25,20 @@ class BraveBrowserTabStripController : public BrowserTabStripController {
       const BraveBrowserTabStripController&) = delete;
   ~BraveBrowserTabStripController() override;
 
+  const std::optional<int> GetModelIndexOf(Tab* tab);
+
+  // Enters rename mode for the tab at the given index. This only affects UI
+  // side.
+  void EnterTabRenameModeAt(int index);
+
+  // Sets the custom title for the tab at the specified index.
+  void SetCustomTitleForTab(int index,
+                            const std::optional<std::u16string>& title);
+
   // BrowserTabStripController overrides:
   void ShowContextMenuForTab(Tab* tab,
                              const gfx::Point& p,
-                             ui::MenuSourceType source_type) override;
+                             ui::mojom::MenuSourceType source_type) override;
 
  private:
   // If non-NULL it means we're showing a menu for the tab.

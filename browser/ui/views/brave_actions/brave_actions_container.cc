@@ -13,7 +13,7 @@
 #include "brave/browser/ui/views/brave_actions/brave_rewards_action_view.h"
 #include "brave/browser/ui/views/brave_actions/brave_shields_action_view.h"
 #include "brave/browser/ui/views/rounded_separator.h"
-#include "brave/components/brave_rewards/common/pref_names.h"
+#include "brave/components/brave_rewards/core/pref_names.h"
 #include "brave/components/constants/pref_names.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -23,14 +23,10 @@
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/view.h"
 
-namespace {
-
-constexpr gfx::Size kToolbarActionSize(34, 24);
-
-}  // namespace
-
-BraveActionsContainer::BraveActionsContainer(Browser* browser, Profile* profile)
-    : browser_(browser) {}
+BraveActionsContainer::BraveActionsContainer(
+    BrowserWindowInterface* browser_window_interface,
+    Profile* profile)
+    : browser_window_interface_(browser_window_interface) {}
 
 BraveActionsContainer::~BraveActionsContainer() = default;
 
@@ -65,33 +61,34 @@ void BraveActionsContainer::Init() {
   // React to Brave Rewards preferences changes.
   show_brave_rewards_button_.Init(
       brave_rewards::prefs::kShowLocationBarButton,
-      browser_->profile()->GetPrefs(),
+      browser_window_interface_->GetProfile()->GetPrefs(),
       base::BindRepeating(
           &BraveActionsContainer::OnBraveRewardsPreferencesChanged,
           base::Unretained(this)));
 }
 
 bool BraveActionsContainer::ShouldShowBraveRewardsAction() const {
-  if (!brave_rewards::IsSupportedForProfile(browser_->profile())) {
+  if (!brave_rewards::IsSupportedForProfile(
+          browser_window_interface_->GetProfile())) {
     return false;
   }
-  const PrefService* prefs = browser_->profile()->GetPrefs();
+  const PrefService* prefs =
+      browser_window_interface_->GetProfile()->GetPrefs();
   return prefs->GetBoolean(brave_rewards::prefs::kShowLocationBarButton);
 }
 
 void BraveActionsContainer::AddActionViewForShields() {
-  shields_action_btn_ =
-      AddChildViewAt(std::make_unique<BraveShieldsActionView>(
-                         *browser_->profile(), *browser_->tab_strip_model()),
-                     1);
-  shields_action_btn_->SetPreferredSize(kToolbarActionSize);
+  shields_action_btn_ = AddChildViewAt(
+      std::make_unique<BraveShieldsActionView>(browser_window_interface_), 1);
+  shields_action_btn_->SetPreferredSize(GetActionSize());
   shields_action_btn_->Init();
 }
 
 void BraveActionsContainer::AddActionViewForRewards() {
-  auto button = std::make_unique<BraveRewardsActionView>(browser_);
+  auto button =
+      std::make_unique<BraveRewardsActionView>(browser_window_interface_);
   rewards_action_btn_ = AddChildViewAt(std::move(button), 2);
-  rewards_action_btn_->SetPreferredSize(kToolbarActionSize);
+  rewards_action_btn_->SetPreferredSize(GetActionSize());
   rewards_action_btn_->SetVisible(ShouldShowBraveRewardsAction());
   rewards_action_btn_->Update();
 }
@@ -106,7 +103,7 @@ void BraveActionsContainer::Update() {
   }
 
   UpdateVisibility();
-  Layout();
+  DeprecatedLayoutImmediately();
 }
 
 void BraveActionsContainer::UpdateVisibility() {
@@ -123,6 +120,11 @@ void BraveActionsContainer::UpdateVisibility() {
   // If no buttons are visible, then we want to hide this view so that the
   // separator is not displayed.
   SetVisible(!should_hide_ && can_show);
+}
+
+gfx::Size BraveActionsContainer::GetActionSize() const {
+  return {34, GetLayoutConstant(LOCATION_BAR_HEIGHT) -
+                  2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING)};
 }
 
 void BraveActionsContainer::SetShouldHide(bool should_hide) {

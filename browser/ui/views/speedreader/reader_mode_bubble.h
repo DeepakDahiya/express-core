@@ -34,8 +34,8 @@ class SpeedreaderService;
 // mode, and this bubble is shown to prompt the user to enable Speedreader.
 class ReaderModeBubble : public SpeedreaderBubbleView,
                          public LocationBarBubbleDelegateView {
+  METADATA_HEADER(ReaderModeBubble, LocationBarBubbleDelegateView)
  public:
-  METADATA_HEADER(ReaderModeBubble);
   ReaderModeBubble(views::View* anchor_view, SpeedreaderTabHelper* tab_helper);
   ReaderModeBubble(const ReaderModeBubble&) = delete;
   ReaderModeBubble& operator=(const ReaderModeBubble&) = delete;
@@ -54,7 +54,8 @@ class ReaderModeBubble : public SpeedreaderBubbleView,
   void Init() override;
 
   // views::View
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Size CalculatePreferredSize(
+      const views::SizeBounds& available_size) const override;
 
   SpeedreaderService* GetSpeedreaderService();
   void OnSiteToggled(const ui::Event& event);

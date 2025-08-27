@@ -18,8 +18,8 @@ class Checkbox;
 namespace brave_vpn {
 
 class BraveVpnFallbackDialogView : public views::DialogDelegateView {
+  METADATA_HEADER(BraveVpnFallbackDialogView, views::DialogDelegateView)
  public:
-  METADATA_HEADER(BraveVpnFallbackDialogView);
 
   static void Show(Browser* browser);
 
@@ -33,10 +33,9 @@ class BraveVpnFallbackDialogView : public views::DialogDelegateView {
 
   void OnAccept();
   void OnClosing();
-  void OnLearnMoreLinkClicked();
 
   // views::DialogDelegate overrides:
-  ui::ModalType GetModalType() const override;
+  ui::mojom::ModalType GetModalType() const override;
   bool ShouldShowCloseButton() const override;
   bool ShouldShowWindowTitle() const override;
 

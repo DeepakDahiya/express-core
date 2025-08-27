@@ -5,6 +5,9 @@
 
 #include "brave/browser/ui/views/permission_bubble/brave_wallet_permission_prompt_impl.h"
 
+#include <optional>
+
+#include "base/check.h"
 #include "brave/browser/brave_wallet/brave_wallet_tab_helper.h"
 #include "components/permissions/permission_uma_util.h"
 
@@ -47,12 +50,26 @@ BraveWalletPermissionPromptImpl::GetPromptDisposition() const {
   return permissions::PermissionPromptDisposition::ANCHORED_BUBBLE;
 }
 
-absl::optional<gfx::Rect>
+bool BraveWalletPermissionPromptImpl::IsAskPrompt() const {
+  return true;
+}
+
+std::optional<gfx::Rect>
 BraveWalletPermissionPromptImpl::GetViewBoundsInScreen() const {
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 bool BraveWalletPermissionPromptImpl::ShouldFinalizeRequestAfterDecided()
     const {
   return true;
+}
+
+std::vector<permissions::ElementAnchoredBubbleVariant>
+BraveWalletPermissionPromptImpl::GetPromptVariants() const {
+  return {};
+}
+
+std::optional<permissions::feature_params::PermissionElementPromptPosition>
+BraveWalletPermissionPromptImpl::GetPromptPosition() const {
+  return std::nullopt;
 }

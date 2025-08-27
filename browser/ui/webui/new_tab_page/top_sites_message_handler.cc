@@ -10,6 +10,7 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
 #include "base/i18n/rtl.h"
 #include "base/strings/utf_string_conversions.h"
 #include "brave/browser/ntp_background/view_counter_service_factory.h"
@@ -82,6 +83,7 @@ void TopSitesMessageHandler::RegisterMessages() {
 
 // ntp_tiles::MostVisitedSites::Observer:
 void TopSitesMessageHandler::OnURLsAvailable(
+    bool is_user_triggered,
     const std::map<ntp_tiles::SectionType, ntp_tiles::NTPTilesVector>&
         sections) {
   if (!most_visited_sites_)

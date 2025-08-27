@@ -8,6 +8,9 @@
 #include <numeric>
 #include <string>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/notreached.h"
 #include "brave/browser/ui/views/tabs/vertical_tab_utils.h"
 #include "brave/browser/ui/views/toolbar/brave_toolbar_view.h"
 #include "chrome/browser/ui/layout_constants.h"
@@ -31,12 +34,10 @@ ui::NavButtonProvider::ButtonState ButtonStateToNavButtonProviderState(
       return ui::NavButtonProvider::ButtonState::kPressed;
     case views::Button::STATE_DISABLED:
       return ui::NavButtonProvider::ButtonState::kDisabled;
-
     case views::Button::STATE_COUNT:
-    default:
-      NOTREACHED();
       return ui::NavButtonProvider::ButtonState::kNormal;
   }
+  NOTREACHED();
 }
 
 }  // namespace
@@ -44,14 +45,12 @@ ui::NavButtonProvider::ButtonState ButtonStateToNavButtonProviderState(
 BraveBrowserFrameViewLinuxNative::BraveBrowserFrameViewLinuxNative(
     BrowserFrame* frame,
     BrowserView* browser_view,
-    BrowserFrameViewLayoutLinux* layout,
-    std::unique_ptr<ui::NavButtonProvider> nav_button_provider,
-    ui::WindowFrameProvider* window_frame_provider)
+    BrowserFrameViewLayoutLinuxNative* layout,
+    std::unique_ptr<ui::NavButtonProvider> nav_button_provider)
     : BrowserFrameViewLinuxNative(frame,
                                   browser_view,
                                   layout,
-                                  std::move(nav_button_provider),
-                                  window_frame_provider) {}
+                                  std::move(nav_button_provider)) {}
 
 BraveBrowserFrameViewLinuxNative::~BraveBrowserFrameViewLinuxNative() = default;
 
@@ -107,8 +106,8 @@ void BraveBrowserFrameViewLinuxNative::MaybeUpdateCachedFrameButtonImages() {
   UpdateLeadingTrailingCaptionButtonWidth();
 }
 
-void BraveBrowserFrameViewLinuxNative::Layout() {
-  BrowserFrameViewLinuxNative::Layout();
+void BraveBrowserFrameViewLinuxNative::Layout(PassKey) {
+  LayoutSuperclass<BrowserFrameViewLinuxNative>(this);
 
   UpdateLeadingTrailingCaptionButtonWidth();
 }
@@ -124,7 +123,6 @@ views::Button* BraveBrowserFrameViewLinuxNative::FrameButtonToButton(
       return close_button();
   }
   NOTREACHED();
-  return nullptr;
 }
 
 void BraveBrowserFrameViewLinuxNative::
@@ -192,5 +190,5 @@ void BraveBrowserFrameViewLinuxNative::
 
 // Unfortunately, BrowserFrameViewLinux(Native) doesn't declare metadata.
 // OpaqueBrowserFrameView is the nearest ancestor.
-BEGIN_METADATA(BraveBrowserFrameViewLinuxNative, OpaqueBrowserFrameView)
+BEGIN_METADATA(BraveBrowserFrameViewLinuxNative)
 END_METADATA

@@ -5,16 +5,35 @@
 
 #include "brave/browser/ui/views/playlist/playlist_action_dialogs.h"
 
+#include <algorithm>
 #include <string>
 #include <utility>
+#include <variant>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/logging.h"
+#include "base/notreached.h"
+#include "base/strings/utf_string_conversions.h"
 #include "brave/browser/playlist/playlist_service_factory.h"
-#include "brave/browser/playlist/playlist_tab_helper.h"
 #include "brave/browser/ui/color/brave_color_id.h"
+#include "brave/browser/ui/playlist/playlist_browser_finder.h"
+#include "brave/browser/ui/views/location_bar/brave_location_bar_view.h"
+#include "brave/browser/ui/views/playlist/playlist_bubbles_controller.h"
 #include "brave/browser/ui/views/playlist/thumbnail_view.h"
 #include "brave/browser/ui/views/side_panel/playlist/playlist_side_panel_coordinator.h"
 #include "brave/components/playlist/browser/playlist_service.h"
+#include "brave/components/playlist/browser/playlist_tab_helper.h"
+#include "chrome/browser/ui/browser.h"
+#include "chrome/browser/ui/browser_finder.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
+#include "chrome/browser/ui/singleton_tabs.h"
+#include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/side_panel/side_panel_ui.h"
+#include "third_party/abseil-cpp/absl/strings/str_format.h"
+#include "ui/base/cursor/cursor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/dialog_button.mojom.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/textfield/textfield.h"
@@ -22,19 +41,13 @@
 
 namespace {
 
-BrowserView* FindBrowserViewFromSidebarContents(
-    content::WebContents* contents) {
-  auto* proxy = PlaylistSidePanelCoordinator::Proxy::FromWebContents(contents);
-  if (!proxy) {
+BrowserView* FindBrowserViewFromWebContents(content::WebContents* contents) {
+  auto* browser = playlist::FindBrowserForPlaylistWebUI(contents);
+  if (!browser) {
     return nullptr;
   }
 
-  auto coordinator = proxy->GetCoordinator();
-  if (!coordinator) {
-    return nullptr;
-  }
-
-  return coordinator->GetBrowserView();
+  return BrowserView::GetBrowserViewForBrowser(browser);
 }
 
 bool CanMoveItem(const playlist::mojom::PlaylistItemPtr& item) {
@@ -48,9 +61,8 @@ bool CanMoveItem(const playlist::mojom::PlaylistItemPtr& item) {
 // This class takes PlaylistItems and show tiled thumbnail and the count of
 // them. When only one item is passed, shows the title of it instead.
 class TiledItemsView : public views::BoxLayoutView {
+  METADATA_HEADER(TiledItemsView, views::BoxLayoutView)
  public:
-  METADATA_HEADER(TiledItemsView);
-
   static constexpr gfx::Size kThumbnailSize = gfx::Size(64, 48);
   static constexpr int kCornerRadius = 4;
 
@@ -60,7 +72,7 @@ class TiledItemsView : public views::BoxLayoutView {
     DCHECK_GE(items.size(), 1u);
 
     SetPreferredSize(gfx::Size(464, 72));
-    SetBorder(views::CreateThemedRoundedRectBorder(
+    SetBorder(views::CreateRoundedRectBorder(
         /*thickness=*/1, kCornerRadius, kColorBravePlaylistListBorder));
     SetInsideBorderInsets(gfx::Insets(8));
     SetBetweenChildSpacing(16);
@@ -115,7 +127,7 @@ class TiledItemsView : public views::BoxLayoutView {
   raw_ptr<ThumbnailProvider> thumbnail_provider_;
 };
 
-BEGIN_METADATA(TiledItemsView, views::BoxLayoutView)
+BEGIN_METADATA(TiledItemsView)
 END_METADATA
 
 // A textfield that limits the maximum length of the input text.
@@ -153,8 +165,8 @@ class BoundedTextfield : public views::Textfield {
     Textfield::InsertChar(event);
   }
 
-  void Layout() override {
-    views::Textfield::Layout();
+  void Layout(PassKey) override {
+    LayoutSuperclass<views::Textfield>(this);
 
     length_label_->SetBoundsRect(GetContentsBounds());
   }
@@ -168,7 +180,7 @@ class BoundedTextfield : public views::Textfield {
 
   void UpdateLengthLabel() {
     length_label_->SetText(base::UTF8ToUTF16(
-        base::StringPrintf("%zu/%zu", GetText().length(), max_length_)));
+        absl::StrFormat("%zu/%zu", GetText().length(), max_length_)));
   }
 
   const size_t max_length_;
@@ -187,7 +199,7 @@ namespace playlist {
 void ShowCreatePlaylistDialog(content::WebContents* contents) {
   DVLOG(2) << __FUNCTION__;
   PlaylistActionDialog::Show<PlaylistNewPlaylistDialog>(
-      FindBrowserViewFromSidebarContents(contents),
+      FindBrowserViewFromWebContents(contents),
       playlist::PlaylistServiceFactory::GetForBrowserContext(
           contents->GetBrowserContext()));
 }
@@ -196,7 +208,7 @@ void ShowRemovePlaylistDialog(content::WebContents* contents,
                               const std::string& playlist_id) {
   DVLOG(2) << __FUNCTION__;
   PlaylistActionDialog::Show<PlaylistRemovePlaylistConfirmDialog>(
-      FindBrowserViewFromSidebarContents(contents),
+      FindBrowserViewFromWebContents(contents),
       playlist::PlaylistServiceFactory::GetForBrowserContext(
           contents->GetBrowserContext()),
       playlist_id);
@@ -210,11 +222,72 @@ void ShowMoveItemsDialog(content::WebContents* contents,
   param.service = playlist::PlaylistServiceFactory::GetForBrowserContext(
       contents->GetBrowserContext());
   param.playlist_id = playlist_id;
-  base::ranges::copy(items, std::back_inserter(param.items));
+  std::ranges::copy(items, std::back_inserter(param.items));
 
   PlaylistActionDialog::Show<PlaylistMoveDialog>(
-      FindBrowserViewFromSidebarContents(contents), std::move(param));
+      FindBrowserViewFromWebContents(contents), std::move(param));
 }
+
+void ShowPlaylistSettings(content::WebContents* contents) {
+  auto* browser_view = FindBrowserViewFromWebContents(contents);
+  CHECK(browser_view);
+  ShowSingletonTab(browser_view->browser(),
+                   GURL("brave://settings/braveContent#playlist-section"));
+}
+
+void ShowPlaylistAddBubble(content::WebContents* contents) {
+  auto* browser_view = FindBrowserViewFromWebContents(contents);
+  CHECK(browser_view);
+
+  auto* tab_strip_model = browser_view->browser()->tab_strip_model();
+  auto* playlist_tab_helper = PlaylistTabHelper::FromWebContents(
+      tab_strip_model->GetActiveWebContents());
+  if (playlist_tab_helper->found_items().empty()) {
+    return;
+  }
+
+  static_cast<BraveLocationBarView*>(browser_view->GetLocationBarView())
+      ->ShowPlaylistBubble(PlaylistBubblesController::BubbleType::kAdd);
+}
+
+void ClosePanel(content::WebContents* contents) {
+  auto* browser_view = FindBrowserViewFromWebContents(contents);
+  CHECK(browser_view);
+  // TODO(): If this not opened in the Side Panel, we should consider
+  // closing the tab.
+  if (SidePanelUI* ui =
+          browser_view->browser()->GetFeatures().side_panel_ui()) {
+    ui->Close();
+  }
+}
+
+namespace {
+// A button that shows a label and changes the cursor to a hand when hovered.
+class PlaylistLabelButton : public views::LabelButton {
+  METADATA_HEADER(PlaylistLabelButton, views::LabelButton)
+ public:
+  PlaylistLabelButton(views::Button::PressedCallback callback = {},
+                      const std::u16string& text = std::u16string())
+      : LabelButton(std::move(callback), text) {
+    SetEnabledTextColors(kColorBravePlaylistTextInteractive);
+    const int size_diff = 13 - label()->font_list().GetFontSize();
+    label()->SetFontList(label()->font_list().Derive(
+        size_diff, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::SEMIBOLD));
+  }
+
+  ~PlaylistLabelButton() override = default;
+
+  ui::Cursor GetCursor(const ui::MouseEvent& event) override {
+    if (!GetEnabled()) {
+      return ui::Cursor();
+    }
+    return ui::mojom::CursorType::kHand;
+  }
+};
+
+BEGIN_METADATA(PlaylistLabelButton)
+END_METADATA
+}  // namespace
 
 }  // namespace playlist
 
@@ -228,7 +301,7 @@ PlaylistActionDialog::PlaylistActionDialog() {
 
 PlaylistActionDialog::~PlaylistActionDialog() = default;
 
-BEGIN_METADATA(PlaylistActionDialog, views::DialogDelegateView)
+BEGIN_METADATA(PlaylistActionDialog)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -239,7 +312,7 @@ PlaylistNewPlaylistDialog::PlaylistNewPlaylistDialog(
     playlist::PlaylistService* service)
     : service_(service) {
   thumbnail_provider_ = std::make_unique<ThumbnailProvider>(*service_);
-  const auto kSpacing = 24;
+  static constexpr int kSpacing = 24;
   SetBorder(views::CreateEmptyBorder(gfx::Insets(kSpacing)));
   SetLayoutManager(std::make_unique<views::BoxLayout>(
                        views::BoxLayout::Orientation::kVertical, gfx::Insets(),
@@ -248,9 +321,9 @@ PlaylistNewPlaylistDialog::PlaylistNewPlaylistDialog(
           views::BoxLayout::CrossAxisAlignment::kStretch);
   SetTitle(l10n_util::GetStringUTF16(IDS_PLAYLIST_NEW_PLAYLIST_DIALOG_TITLE));
   SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
+      ui::mojom::DialogButton::kOk,
       l10n_util::GetStringUTF16(IDS_PLAYLIST_NEW_PLAYLIST_DIALOG_OK));
-  SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
+  SetButtonEnabled(ui::mojom::DialogButton::kOk, false);
 
   auto create_container = [](views::View* parent, int container_label_string_id,
                              int container_label_color_id,
@@ -269,7 +342,7 @@ PlaylistNewPlaylistDialog::PlaylistNewPlaylistDialog(
         container_label->font_list().DeriveWithSizeDelta(
             container_label->font_list().GetFontSize() -
             container_label_font_size));
-    container_label->SetEnabledColorId(container_label_color_id);
+    container_label->SetEnabledColor(container_label_color_id);
     return container;
   };
 
@@ -300,7 +373,7 @@ PlaylistNewPlaylistDialog::PlaylistNewPlaylistDialog(
         std::make_unique<views::ScrollView>());
     scroll_view->ClipHeightTo(/*min_height=*/0, /*max_height=*/224);
     scroll_view->SetDrawOverflowIndicator(false);
-    scroll_view->SetBorder(views::CreateThemedRoundedRectBorder(
+    scroll_view->SetBorder(views::CreateRoundedRectBorder(
         /*thickness=*/1,
         /*corner_radius=*/4.f, kColorBravePlaylistListBorder));
 
@@ -325,11 +398,12 @@ views::View* PlaylistNewPlaylistDialog::GetInitiallyFocusedView() {
 void PlaylistNewPlaylistDialog::ContentsChanged(
     views::Textfield* sender,
     const std::u16string& new_contents) {
-  if (new_contents.size() == IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
+  if (new_contents.size() ==
+      IsDialogButtonEnabled(ui::mojom::DialogButton::kOk)) {
     return;
   }
 
-  SetButtonEnabled(ui::DIALOG_BUTTON_OK, new_contents.size());
+  SetButtonEnabled(ui::mojom::DialogButton::kOk, new_contents.size());
   DialogModelChanged();
 }
 
@@ -358,7 +432,7 @@ void PlaylistNewPlaylistDialog::CreatePlaylist() {
   }
 }
 
-BEGIN_METADATA(PlaylistNewPlaylistDialog, PlaylistActionDialog)
+BEGIN_METADATA(PlaylistNewPlaylistDialog)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -367,16 +441,17 @@ END_METADATA
 // static
 bool PlaylistMoveDialog::CanMoveItems(
     const std::vector<playlist::mojom::PlaylistItemPtr>& items) {
-  return base::ranges::all_of(items, &CanMoveItem);
+  return std::ranges::all_of(items, &CanMoveItem);
 }
 
 void PlaylistMoveDialog::ContentsChanged(views::Textfield* sender,
                                          const std::u16string& new_contents) {
-  if (new_contents.size() == IsDialogButtonEnabled(ui::DIALOG_BUTTON_OK)) {
+  if (new_contents.size() ==
+      IsDialogButtonEnabled(ui::mojom::DialogButton::kOk)) {
     return;
   }
 
-  SetButtonEnabled(ui::DIALOG_BUTTON_OK, new_contents.size());
+  SetButtonEnabled(ui::mojom::DialogButton::kOk, new_contents.size());
   DialogModelChanged();
 }
 
@@ -419,7 +494,7 @@ PlaylistMoveDialog::PlaylistMoveDialog(PassKey, MoveParam param)
     : PlaylistMoveDialog(std::move(param)) {}
 
 PlaylistMoveDialog::PlaylistMoveDialog(
-    absl::variant<raw_ptr<playlist::PlaylistTabHelper>, MoveParam> source)
+    std::variant<raw_ptr<playlist::PlaylistTabHelper>, MoveParam> source)
     : source_(std::move(source)) {
   thumbnail_provider_ =
       is_from_tab_helper()
@@ -480,7 +555,7 @@ void PlaylistMoveDialog::EnterChoosePlaylistMode() {
   auto* description = contents_container_->AddChildView(
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_PLAYLIST_MOVE_MEDIA_DIALOG_DESCRIPTION)));
-  description->SetEnabledColorId(kColorBravePlaylistMoveDialogDescription);
+  description->SetEnabledColor(kColorBravePlaylistMoveDialogDescription);
   description->SetPreferredSize(gfx::Size(kContentsWidth, 17));
   description->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
@@ -488,7 +563,7 @@ void PlaylistMoveDialog::EnterChoosePlaylistMode() {
       contents_container_->AddChildView(std::make_unique<views::ScrollView>());
   scroll_view->ClipHeightTo(/*min_height=*/0, /*max_height=*/224);
   scroll_view->SetDrawOverflowIndicator(false);
-  scroll_view->SetBorder(views::CreateThemedRoundedRectBorder(
+  scroll_view->SetBorder(views::CreateRoundedRectBorder(
       /*thickness=*/1,
       /*corner_radius=*/4.f, kColorBravePlaylistListBorder));
   list_view_ =
@@ -519,7 +594,7 @@ void PlaylistMoveDialog::EnterChoosePlaylistMode() {
   }
   list_view_->SetSelected({candidate_playlist_id});
 
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+  SetButtonLabel(ui::mojom::DialogButton::kOk,
                  l10n_util::GetStringUTF16(IDS_PLAYLIST_MOVE_MEDIA_DIALOG_OK));
 
   // AcceptCallback is invoked by the base class so it's okay to bind
@@ -528,7 +603,7 @@ void PlaylistMoveDialog::EnterChoosePlaylistMode() {
                                    base::Unretained(this)));
 
   // This view owns the button so it's okay to bind Unretained(this).
-  SetExtraView(std::make_unique<views::LabelButton>(
+  SetExtraView(std::make_unique<playlist::PlaylistLabelButton>(
       base::BindRepeating(&PlaylistMoveDialog::OnNewPlaylistPressed,
                           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_PLAYLIST_MOVE_MEDIA_DIALOG_NEW_PLAYLIST)));
@@ -545,7 +620,7 @@ void PlaylistMoveDialog::EnterCreatePlaylistMode() {
   auto* title = contents_container_->AddChildView(
       std::make_unique<views::Label>(l10n_util::GetStringUTF16(
           IDS_PLAYLIST_MOVE_MEDIA_DIALOG_PLAYLIST_NAME)));
-  title->SetEnabledColorId(
+  title->SetEnabledColor(
       kColorBravePlaylistMoveDialogCreatePlaylistAndMoveTitle);
   title->SetHorizontalAlignment(gfx::HorizontalAlignment::ALIGN_LEFT);
 
@@ -555,8 +630,8 @@ void PlaylistMoveDialog::EnterCreatePlaylistMode() {
   new_playlist_name_textfield_->set_controller(this);
   new_playlist_name_textfield_->RequestFocus();
 
-  SetButtonEnabled(ui::DIALOG_BUTTON_OK, false);
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+  SetButtonEnabled(ui::mojom::DialogButton::kOk, false);
+  SetButtonLabel(ui::mojom::DialogButton::kOk,
                  l10n_util::GetStringUTF16(
                      IDS_PLAYLIST_MOVE_MEDIA_DIALOG_CREATE_AND_MOVE));
 
@@ -566,7 +641,7 @@ void PlaylistMoveDialog::EnterCreatePlaylistMode() {
                                    base::Unretained(this)));
 
   // This view owns the button so it's okay to bind Unretained(this).
-  SetExtraView(std::make_unique<views::LabelButton>(
+  SetExtraView(std::make_unique<playlist::PlaylistLabelButton>(
       base::BindRepeating(&PlaylistMoveDialog::OnBackPressed,
                           base::Unretained(this)),
       l10n_util::GetStringUTF16(IDS_PLAYLIST_MOVE_MEDIA_DIALOG_BACK)));
@@ -594,9 +669,9 @@ void PlaylistMoveDialog::OnMoveToPlaylist() {
     // rebuild views. It's okay because this view is about to be closed.
     tab_helper_observation_.Reset();
     std::vector<playlist::mojom::PlaylistItemPtr> items;
-    base::ranges::transform(get_tab_helper()->saved_items(),
-                            std::back_inserter(items),
-                            [](const auto& item) { return item->Clone(); });
+    std::ranges::transform(get_tab_helper()->saved_items(),
+                           std::back_inserter(items),
+                           [](const auto& item) { return item->Clone(); });
     get_tab_helper()->MoveItems(std::move(items), selected.front()->Clone());
   } else {
     auto& move_param = get_move_param();
@@ -618,9 +693,9 @@ void PlaylistMoveDialog::OnCreatePlaylistAndMove() {
     tab_helper_observation_.Reset();
 
     std::vector<playlist::mojom::PlaylistItemPtr> items;
-    base::ranges::transform(get_tab_helper()->saved_items(),
-                            std::back_inserter(items),
-                            [](const auto& item) { return item->Clone(); });
+    std::ranges::transform(get_tab_helper()->saved_items(),
+                           std::back_inserter(items),
+                           [](const auto& item) { return item->Clone(); });
     get_tab_helper()->MoveItemsToNewPlaylist(
         std::move(items),
         base::UTF16ToUTF8(new_playlist_name_textfield_->GetText()));
@@ -655,7 +730,7 @@ void PlaylistMoveDialog::OnCreatePlaylistAndMove() {
   }
 }
 
-BEGIN_METADATA(PlaylistMoveDialog, PlaylistActionDialog)
+BEGIN_METADATA(PlaylistMoveDialog)
 END_METADATA
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -671,7 +746,7 @@ PlaylistRemovePlaylistConfirmDialog::PlaylistRemovePlaylistConfirmDialog(
   SetTitle(
       l10n_util::GetStringUTF16(IDS_PLAYLIST_REMOVE_PLAYLIST_DIALOG_TITLE));
   SetButtonLabel(
-      ui::DIALOG_BUTTON_OK,
+      ui::mojom::DialogButton::kOk,
       l10n_util::GetStringUTF16(IDS_PLAYLIST_REMOVE_PLAYLIST_DIALOG_OK));
 
   auto* description =
@@ -702,5 +777,5 @@ void PlaylistRemovePlaylistConfirmDialog::RemovePlaylist() {
   service_->RemovePlaylist(playlist_id_);
 }
 
-BEGIN_METADATA(PlaylistRemovePlaylistConfirmDialog, PlaylistActionDialog)
+BEGIN_METADATA(PlaylistRemovePlaylistConfirmDialog)
 END_METADATA

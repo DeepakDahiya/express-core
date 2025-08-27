@@ -14,6 +14,7 @@
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/views/bubble/bubble_border.h"
 
 BraveRoundedOmniboxResultsFrame::BraveRoundedOmniboxResultsFrame(
     views::View* contents,
@@ -43,7 +44,7 @@ void BraveRoundedOmniboxResultsFrame::UpdateShadowBorder() {
   auto border = std::make_unique<views::BubbleBorder>(
       views::BubbleBorder::Arrow::NONE,
       views::BubbleBorder::Shadow::STANDARD_SHADOW);
-  border->SetCornerRadius(corner_radius);
+  border->set_rounded_corners(gfx::RoundedCornersF(corner_radius));
   border->set_md_shadow_elevation(GetShadowElevation());
   if (tabs::utils::ShouldShowVerticalTabs(browser_) &&
       !tabs::utils::ShouldShowWindowTitleForVerticalTabs(browser_)) {
@@ -57,5 +58,5 @@ void BraveRoundedOmniboxResultsFrame::UpdateShadowBorder() {
   SetBorder(std::move(border));
 }
 
-BEGIN_METADATA(BraveRoundedOmniboxResultsFrame, RoundedOmniboxResultsFrame)
+BEGIN_METADATA(BraveRoundedOmniboxResultsFrame)
 END_METADATA

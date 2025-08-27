@@ -6,17 +6,20 @@
 #include "brave/browser/ui/webui/settings/brave_import_bulk_data_handler.h"
 
 #include <memory>
+#include <optional>
 #include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/functional/bind.h"
 #include "base/json/json_reader.h"
 #include "base/rand_util.h"
-#include "base/strings/utf_string_conversions.h"
+#include "brave/browser/ui/webui/welcome_page/brave_welcome_ui_prefs.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_attributes_entry.h"
 #include "chrome/browser/profiles/profile_attributes_storage.h"
@@ -95,7 +98,8 @@ void BraveImportBulkDataHandler::PrepareProfile(
                       CHECK(created_profile);
                       // Migrate welcome page flag to new profiles.
                       created_profile->GetPrefs()->SetBoolean(
-                          prefs::kHasSeenWelcomePage, true);
+                          brave::welcome_ui::prefs::kHasSeenBraveWelcomePage,
+                          true);
                       std::move(initialized_callback).Run(created_profile);
                     },
                     std::move(profile_callback)));
@@ -119,19 +123,19 @@ void BraveImportBulkDataHandler::HandleImportDataBulk(
   }
 }
 
-absl::optional<int> BraveImportBulkDataHandler::GetProfileIndex(
-    const importer::SourceProfile& source_profile) {
+std::optional<int> BraveImportBulkDataHandler::GetProfileIndex(
+    const user_data_importer::SourceProfile& source_profile) {
   for (auto index : importing_profiles_) {
     const auto& profile = GetSourceProfileAt(index);
     if (profile.source_path == source_profile.source_path) {
       return index;
     }
   }
-  return absl::nullopt;
+  return std::nullopt;
 }
 
 void BraveImportBulkDataHandler::StartImport(
-    const importer::SourceProfile& source_profile,
+    const user_data_importer::SourceProfile& source_profile,
     uint16_t imported_items) {
   if (!imported_items)
     return;
@@ -159,13 +163,13 @@ void BraveImportBulkDataHandler::StartImport(
 }
 
 void BraveImportBulkDataHandler::NotifyImportProgress(
-    const importer::SourceProfile& source_profile,
+    const user_data_importer::SourceProfile& source_profile,
     const base::Value::Dict& info) {
   FireWebUIListener("brave-import-data-status-changed", info);
 }
 
 void BraveImportBulkDataHandler::OnImportEnded(
-    const importer::SourceProfile& source_profile) {
+    const user_data_importer::SourceProfile& source_profile) {
   auto index = GetProfileIndex(source_profile);
   if (index.has_value()) {
     importing_profiles_.erase(index.value());

@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/side_panel/ai_chat/ai_chat_side_panel_utils.h"
 
+#include "base/notimplemented.h"
 #include "chrome/browser/ui/browser_finder.h"
 
 namespace ai_chat {
@@ -13,6 +14,10 @@ namespace ai_chat {
 Browser* GetBrowserForWebContents(content::WebContents* web_contents) {
   NOTIMPLEMENTED();
   return nullptr;
+}
+
+void ClosePanel(content::WebContents* web_contents) {
+  NOTIMPLEMENTED();
 }
 #endif
 

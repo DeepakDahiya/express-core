@@ -15,12 +15,17 @@ class WebContents;
 
 namespace playlist {
 
+// Definitions of these functions live in playlist_action_dialogs.cc as they
+// are tookit(views) dependent.
 void ShowCreatePlaylistDialog(content::WebContents* contents);
 void ShowRemovePlaylistDialog(content::WebContents* contents,
                               const std::string& playlist_id);
 void ShowMoveItemsDialog(content::WebContents* contents,
                          const std::string& playlist_id,
                          const std::vector<std::string>& items);
+void ShowPlaylistSettings(content::WebContents* contents);
+void ShowPlaylistAddBubble(content::WebContents* contents);
+void ClosePanel(content::WebContents* contents);
 
 }  // namespace playlist
 

@@ -17,7 +17,6 @@
 #include "ui/gfx/geometry/skia_conversions.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
-#include "ui/views/view_class_properties.h"
 
 using tabs::features::HorizontalTabsUpdateEnabled;
 
@@ -48,7 +47,8 @@ gfx::Size BraveNewTabButton::GetButtonSize() {
   return {28, 28};
 }
 
-gfx::Size BraveNewTabButton::CalculatePreferredSize() const {
+gfx::Size BraveNewTabButton::CalculatePreferredSize(
+    const views::SizeBounds& available_size) const {
   // Overridden so that we use Brave's custom button size
   gfx::Size size = GetButtonSize();
   const auto insets = GetInsets();
@@ -67,13 +67,7 @@ SkPath BraveNewTabButton::GetBorderPath(const gfx::Point& origin,
 
 BraveNewTabButton::BraveNewTabButton(TabStrip* tab_strip,
                                      PressedCallback callback)
-    : NewTabButton(tab_strip, std::move(callback)) {
-  if (HorizontalTabsUpdateEnabled()) {
-    // Ensure that the new tab button is vertically centered within its flex
-    // layout container.
-    SetProperty(views::kCrossAxisAlignmentKey, views::LayoutAlignment::kCenter);
-  }
-}
+    : NewTabButton(tab_strip, std::move(callback)) {}
 
 BraveNewTabButton::~BraveNewTabButton() = default;
 
@@ -83,7 +77,7 @@ void BraveNewTabButton::PaintIcon(gfx::Canvas* canvas) {
   if (HorizontalTabsUpdateEnabled()) {
     // Instead of letting `NewTabButton` draw a "plus", paint a vector icon to
     // the canvas in the center of the view.
-    constexpr int kIconSize = 16;
+    constexpr int kIconSize = 18;
     gfx::Rect bounds = GetContentsBounds();
     canvas->Translate(
         gfx::Vector2d((bounds.width() - kIconSize) / 2 + bounds.x(),

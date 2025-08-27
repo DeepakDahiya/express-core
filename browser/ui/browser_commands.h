@@ -6,16 +6,32 @@
 #ifndef BRAVE_BROWSER_UI_BROWSER_COMMANDS_H_
 #define BRAVE_BROWSER_UI_BROWSER_COMMANDS_H_
 
+#include <optional>
+#include <vector>
+
+#include "brave/components/brave_wayback_machine/buildflags/buildflags.h"
+#include "brave/components/commander/common/buildflags/buildflags.h"
 #include "brave/components/playlist/common/buildflags/buildflags.h"
+#include "chrome/browser/ui/tabs/split_tab_metrics.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
+#include "content/public/browser/page_navigator.h"
+#include "url/gurl.h"
+#include "url/origin.h"
 
 class Browser;
-class GURL;
+class Profile;
 
 namespace brave {
+
 bool HasSelectedURL(Browser* browser);
 void CleanAndCopySelectedURL(Browser* browser);
-void NewOffTheRecordWindowTor(Browser*);
+void NewOffTheRecordWindowTor(Browser* browser);
+void NewOffTheRecordWindowTor(Profile* profile);
+
 void NewTorConnectionForSite(Browser*);
+
+void ToggleAIChat(Browser* browser);
+
 void ShowWalletBubble(Browser* browser);
 void ShowApproveWalletBubble(Browser* browser);
 void CloseWalletBubble(Browser* browser);
@@ -24,7 +40,6 @@ void ShowBraveVPNBubble(Browser* browser);
 void ToggleBraveVPNButton(Browser* browser);
 void ToggleBraveVPNTrayIcon();
 void OpenBraveVPNUrls(Browser* browser, int command_id);
-void OpenIpfsFilesWebUI(Browser* browser);
 // Copies an url sanitized by URLSanitizerService.
 void CopySanitizedURL(Browser* browser, const GURL& url);
 // Copies an url cleared through:
@@ -45,13 +60,42 @@ void ToggleSidebar(Browser* browser);
 void ToggleShieldsEnabled(Browser* browser);
 void ToggleJavascriptEnabled(Browser* browser);
 
+#if BUILDFLAG(ENABLE_COMMANDER)
+void ToggleCommander(Browser* browser);
+#endif
+
 #if BUILDFLAG(ENABLE_PLAYLIST_WEBUI)
 void ShowPlaylistBubble(Browser* browser);
+#endif
+
+#if BUILDFLAG(ENABLE_BRAVE_WAYBACK_MACHINE)
+void ShowWaybackMachineBubble(Browser* browser);
 #endif
 
 void GroupTabsOnCurrentOrigin(Browser* browser);
 void MoveGroupToNewWindow(Browser* browser);
 
+bool IsInGroup(Browser* browser);
+bool HasUngroupedTabs(Browser* browser);
+
+void GroupUngroupedTabs(Browser* browser);
+void UngroupCurrentGroup(Browser* browser);
+void RemoveTabFromGroup(Browser* browser);
+void NameGroup(Browser* browser);
+void NewTabInGroup(Browser* browser);
+
+bool CanUngroupAllTabs(Browser* browser);
+void UngroupAllTabs(Browser* browser);
+
+void ToggleGroupExpanded(Browser* browser);
+void CloseUngroupedTabs(Browser* browser);
+void CloseTabsNotInCurrentGroup(Browser* browser);
+void CloseGroup(Browser* browser);
+
+bool CanBringAllTabs(Browser* browser);
+void BringAllTabs(Browser* browser);
+
+bool HasDuplicateTabs(Browser* browser);
 void CloseDuplicateTabs(Browser* browser);
 
 bool CanCloseTabsToLeft(Browser* browser);
@@ -70,6 +114,44 @@ void UnmuteAllTabs(Browser* browser);
 
 void ScrollTabToTop(Browser* browser);
 void ScrollTabToBottom(Browser* browser);
+
+void ExportAllBookmarks(Browser* browser);
+void ToggleAllBookmarksButtonVisibility(Browser* browser);
+
+// In case |tab| is not provided, the active tab will be used.
+bool CanOpenNewSplitViewForTab(
+    Browser* browser,
+    std::optional<tabs::TabHandle> tab = std::nullopt);
+void NewSplitViewForTab(Browser* browser,
+                        std::optional<tabs::TabHandle> tab = std::nullopt);
+void OpenLinkInSplitView(Browser* browser,
+                         content::OpenURLParams open_url_params);
+// In case |indices| empty, selected tabs will be used.
+void TileTabs(Browser* browser, const std::vector<int>& indices = {});
+void BreakTiles(Browser* browser, const std::vector<int>& indices = {});
+bool IsTabsTiled(Browser* browser, const std::vector<int>& indices = {});
+bool CanTileTabs(Browser* browser, const std::vector<int>& indices = {});
+void SwapTabsInTile(Browser* browser);
+
+// Split view API with SideBySide.
+// false if active tab is already split tab.
+bool CanOpenNewSplitTabsWithSideBySide(Browser* browser);
+
+// true if two tabs are selected and both are not in split tabs.
+bool CanSplitTabsWithSideBySide(Browser* browser);
+
+// Add to split with selected two tabs.
+void SplitTabsWithSideBySide(Browser* browser,
+                             split_tabs::SplitTabCreatedSource source);
+
+// true if any selected tab is split tabs.
+bool IsSplitTabs(Browser* browser);
+
+// Remove split tabs of selected tabs.
+void RemoveSplitWithSideBySide(Browser* browser);
+
+// Swap tabs in active tab.
+void SwapTabsInSplitWithSideBySide(Browser* browser);
 
 }  // namespace brave
 

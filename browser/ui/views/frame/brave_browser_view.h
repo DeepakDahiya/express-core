@@ -9,6 +9,7 @@
 #include <map>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "base/gtest_prod_util.h"
@@ -17,10 +18,15 @@
 #include "base/scoped_observation.h"
 #include "brave/browser/ui/commands/accelerator_service.h"
 #include "brave/browser/ui/tabs/brave_tab_strip_model.h"
+#include "brave/browser/ui/tabs/split_view_browser_data.h"
+#include "brave/browser/ui/tabs/split_view_browser_data_observer.h"
 #include "brave/components/brave_vpn/common/buildflags/buildflags.h"
+#include "brave/components/brave_wayback_machine/buildflags/buildflags.h"
 #include "brave/components/commands/browser/accelerator_pref_manager.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/tabs/tab_model.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/frame/contents_web_view.h"
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
@@ -48,11 +54,20 @@ namespace sidebar {
 class SidebarBrowserTest;
 }  // namespace sidebar
 
+namespace views {
+class Widget;
+}  // namespace views
+
 class BraveBrowser;
+class BraveHelpBubbleHostView;
+class BraveMultiContentsView;
 class ContentsLayoutManager;
 class SidebarContainerView;
-class WalletButton;
+class SidePanelEntry;
+class SplitView;
 class VerticalTabStripWidgetDelegateView;
+class ViewShadow;
+class WalletButton;
 
 class BraveBrowserView : public BrowserView,
                          public commands::AcceleratorService::Observer {
@@ -63,32 +78,50 @@ class BraveBrowserView : public BrowserView,
   BraveBrowserView& operator=(const BraveBrowserView&) = delete;
   ~BraveBrowserView() override;
 
+  static BraveBrowserView* From(BrowserView* view);
+
+  SplitView* split_view() { return split_view_; }
+  const SplitView* split_view() const { return split_view_; }
+
   void SetStarredState(bool is_starred) override;
   void ShowUpdateChromeDialog() override;
+
+  void ShowBraveVPNBubble(bool show_select = false);
   void CreateWalletBubble();
   void CreateApproveWalletBubble();
   void CloseWalletBubble();
   WalletButton* GetWalletButton();
   views::View* GetWalletButtonAnchorView();
+  void UpdateContentsSeparatorVisibility();
+
+  // Triggers layout of web modal dialogs
+  void NotifyDialogPositionRequiresUpdate();
 
   // BrowserView overrides:
+  void Layout(PassKey) override;
   void StartTabCycling() override;
   views::View* GetAnchorViewForBraveVPNPanel();
   gfx::Rect GetShieldsBubbleRect() override;
 #if BUILDFLAG(ENABLE_SPEEDREADER)
+  // Give active tab's reader mode toolbar.
+  ReaderModeToolbarView* reader_mode_toolbar();
   speedreader::SpeedreaderBubbleView* ShowSpeedreaderBubble(
       speedreader::SpeedreaderTabHelper* tab_helper,
       speedreader::SpeedreaderBubbleLocation location) override;
-  void ShowReaderModeToolbar() override;
-  void HideReaderModeToolbar() override;
+  void UpdateReaderModeToolbar() override;
 #endif
   bool GetTabStripVisible() const override;
-#if BUILDFLAG(IS_WIN)
-  bool GetSupportsTitle() const override;
-#endif
   bool ShouldShowWindowTitle() const override;
   void OnThemeChanged() override;
-  TabSearchBubbleHost* GetTabSearchBubbleHost() override;
+  void OnActiveTabChanged(content::WebContents* old_contents,
+                          content::WebContents* new_contents,
+                          int index,
+                          int reason) override;
+  bool AcceleratorPressed(const ui::Accelerator& accelerator) override;
+  bool IsInTabDragging() const override;
+  views::View* GetContentsContainerForLayoutManager() override;
+  void ReadyToListenFullscreenChanges() override;
+  bool PreHandleMouseEvent(const blink::WebMouseEvent& event) override;
 
 #if defined(USE_AURA)
   views::View* sidebar_host_view() { return sidebar_host_view_; }
@@ -101,21 +134,41 @@ class BraveBrowserView : public BrowserView,
   vertical_tab_strip_widget_delegate_view() {
     return vertical_tab_strip_widget_delegate_view_;
   }
+  bool ShowBraveHelpBubbleView(const std::string& text) override;
 
   // commands::AcceleratorService:
   void OnAcceleratorsChanged(const commands::Accelerators& changed) override;
+
+  BraveMultiContentsView* GetBraveMultiContentsView() const;
+
+  SidebarContainerView* sidebar_container_view() {
+    return sidebar_container_view_;
+  }
 
  private:
   class TabCyclingEventHandler;
   friend class WindowClosingConfirmBrowserTest;
   friend class sidebar::SidebarBrowserTest;
   friend class VerticalTabStripDragAndDropBrowserTest;
+  friend class SplitViewBrowserTest;
+  friend class SplitViewLocationBarBrowserTest;
+  friend class BraveBrowserViewTest;
 
   FRIEND_TEST_ALL_PREFIXES(VerticalTabStripBrowserTest, VisualState);
   FRIEND_TEST_ALL_PREFIXES(VerticalTabStripBrowserTest, Fullscreen);
   FRIEND_TEST_ALL_PREFIXES(VerticalTabStripDragAndDropBrowserTest,
                            DragTabToReorder);
   FRIEND_TEST_ALL_PREFIXES(SpeedReaderBrowserTest, Toolbar);
+  FRIEND_TEST_ALL_PREFIXES(SpeedReaderBrowserTest, ToolbarLangs);
+  FRIEND_TEST_ALL_PREFIXES(VerticalTabStripBrowserTest, ExpandedState);
+  FRIEND_TEST_ALL_PREFIXES(VerticalTabStripBrowserTest, ExpandedWidth);
+  FRIEND_TEST_ALL_PREFIXES(SideBySideEnabledBrowserTest,
+                           BraveMultiContentsViewTest);
+  FRIEND_TEST_ALL_PREFIXES(VerticalTabStripHideCompletelyTest, GetMinimumWidth);
+  FRIEND_TEST_ALL_PREFIXES(SideBySideWithRoundedCornersTest,
+                           TabFullscreenStateTest);
+  FRIEND_TEST_ALL_PREFIXES(BraveBrowserViewWithRoundedCornersTest,
+                           ContentsBackgroundEventHandleTest);
 
   static void SetDownloadConfirmReturnForTesting(bool allow);
 
@@ -126,20 +179,31 @@ class BraveBrowserView : public BrowserView,
       TabStripModel* tab_strip_model,
       const TabStripModelChange& change,
       const TabStripSelectionChange& selection) override;
-  void ShowBraveVPNBubble() override;
   views::CloseRequestResult OnWindowCloseRequested() override;
   void ConfirmBrowserCloseWithPendingDownloads(
       int download_count,
       Browser::DownloadCloseType dialog_type,
       base::OnceCallback<void(bool)> callback) override;
   void MaybeShowReadingListInSidePanelIPH() override;
+  void UpdateDevToolsForContents(content::WebContents* web_contents,
+                                 bool update_devtools_web_contents) override;
   void OnWidgetActivationChanged(views::Widget* widget, bool active) override;
+  void GetAccessiblePanes(std::vector<views::View*>* panes) override;
+  void ShowSplitView(bool focus_active_view) override;
+  void HideSplitView() override;
+  void UpdateActiveTabInSplitView() override;
+
+  void UpdateContentsInSplitView(
+      const std::vector<std::pair<tabs::TabInterface*, int>>& prev_tabs,
+      const std::vector<std::pair<tabs::TabInterface*, int>>& new_tabs)
+      override;
 
   void StopTabCycling();
   void UpdateSearchTabsButtonState();
   void OnPreferenceChanged(const std::string& pref_name);
   void OnWindowClosingConfirmResponse(bool allowed_to_close);
   BraveBrowser* GetBraveBrowser() const;
+  void UpdateWebViewRoundedCorners();
 
   sidebar::Sidebar* InitSidebar() override;
   void ToggleSidebar() override;
@@ -150,12 +214,24 @@ class BraveBrowserView : public BrowserView,
   void ShowPlaylistBubble() override;
 #endif
 
+#if BUILDFLAG(ENABLE_BRAVE_WAYBACK_MACHINE)
+  void ShowWaybackMachineBubble() override;
+#endif
+
   void UpdateSideBarHorizontalAlignment();
+  views::View* contents_separator_for_testing() const {
+    return contents_separator_;
+  }
+
+  std::unique_ptr<views::Widget> vertical_tab_strip_widget_;
 
   bool closing_confirm_dialog_activated_ = false;
+  raw_ptr<BraveHelpBubbleHostView> brave_help_bubble_host_view_ = nullptr;
   raw_ptr<SidebarContainerView> sidebar_container_view_ = nullptr;
+  raw_ptr<views::View> sidebar_separator_view_ = nullptr;
+  raw_ptr<views::View> contents_background_view_ = nullptr;
   raw_ptr<views::View> vertical_tab_strip_host_view_ = nullptr;
-  raw_ptr<VerticalTabStripWidgetDelegateView>
+  raw_ptr<VerticalTabStripWidgetDelegateView, DanglingUntriaged>
       vertical_tab_strip_widget_delegate_view_ = nullptr;
 
 #if defined(USE_AURA)
@@ -167,10 +243,14 @@ class BraveBrowserView : public BrowserView,
 #endif
 
 #if BUILDFLAG(ENABLE_SPEEDREADER)
-  std::unique_ptr<ReaderModeToolbarView> reader_mode_toolbar_view_;
+  raw_ptr<ReaderModeToolbarView> reader_mode_toolbar_;
 #endif
 
   std::unique_ptr<TabCyclingEventHandler> tab_cycling_event_handler_;
+  std::unique_ptr<ViewShadow> contents_shadow_;
+
+  raw_ptr<SplitView> split_view_ = nullptr;
+
   PrefChangeRegistrar pref_change_registrar_;
   base::ScopedObservation<commands::AcceleratorService,
                           commands::AcceleratorService::Observer>

@@ -5,6 +5,7 @@
 
 #include "brave/browser/ui/brave_ads/notification_ad_popup_handler.h"
 
+#include "base/check.h"
 #include "brave/browser/ui/brave_ads/notification_ad.h"
 #include "brave/browser/ui/brave_ads/notification_ad_delegate.h"
 #include "brave/browser/ui/views/brave_ads/notification_ad_popup.h"
@@ -17,12 +18,10 @@ NotificationAdPopupHandler::NotificationAdPopupHandler() = default;
 NotificationAdPopupHandler::~NotificationAdPopupHandler() = default;
 
 // static
-void NotificationAdPopupHandler::Show(Profile* profile,
+void NotificationAdPopupHandler::Show(Profile& profile,
                                       const NotificationAd& notification_ad,
                                       gfx::NativeWindow browser_native_window,
                                       gfx::NativeView browser_native_view) {
-  CHECK(profile);
-
   const std::string& id = notification_ad.id();
   CHECK(!id.empty());
 

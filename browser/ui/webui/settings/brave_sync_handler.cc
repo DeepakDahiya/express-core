@@ -10,8 +10,13 @@
 #include <utility>
 #include <vector>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
+#include "base/logging.h"
+#include "base/notreached.h"
 #include "base/strings/string_number_conversions.h"
+#include "base/types/cxx23_to_underlying.h"
 #include "brave/components/brave_sync/brave_sync_prefs.h"
 #include "brave/components/brave_sync/crypto/crypto.h"
 #include "brave/components/brave_sync/qr_code_data.h"
@@ -23,6 +28,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/device_info_sync_service_factory.h"
 #include "chrome/browser/sync/sync_service_factory.h"
+#include "components/qr_code_generator/bitmap_generator.h"
 #include "components/sync/engine/sync_protocol_error.h"
 #include "components/sync/service/sync_user_settings.h"
 #include "components/sync_device_info/device_info_sync_service.h"
@@ -36,7 +42,7 @@ using brave_sync::TimeLimitedWords;
 
 namespace {
 
-std::string GetSyncCodeValidationString(
+std::string GetSyncCodeValidationErrorString(
     TimeLimitedWords::ValidationStatus validation_result) {
   using ValidationStatus = TimeLimitedWords::ValidationStatus;
   switch (validation_result) {
@@ -50,10 +56,12 @@ std::string GetSyncCodeValidationString(
       return l10n_util::GetStringUTF8(IDS_BRAVE_SYNC_CODE_EXPIRED);
     case ValidationStatus::kValidForTooLong:
       return l10n_util::GetStringUTF8(IDS_BRAVE_SYNC_CODE_VALID_FOR_TOO_LONG);
-    default:
-      NOTREACHED();
-      return "";
+    case ValidationStatus::kValid:
+      // kValid means no error and we don't display any error when all is ok
+      return "OK";
   }
+  NOTREACHED() << "Unexpected value for TimeLimitedWords::ValidationStatus: "
+               << base::to_underlying(validation_result);
 }
 
 }  // namespace
@@ -90,10 +98,13 @@ void BraveSyncHandler::RegisterMessages() {
       "SyncDeleteDevice",
       base::BindRepeating(&BraveSyncHandler::HandleDeleteDevice,
                           base::Unretained(this)));
-
   web_ui()->RegisterMessageCallback(
       "SyncPermanentlyDeleteAccount",
       base::BindRepeating(&BraveSyncHandler::HandlePermanentlyDeleteAccount,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "SyncGetWordsCount",
+      base::BindRepeating(&BraveSyncHandler::HandleSyncGetWordsCount,
                           base::Unretained(this)));
 }
 
@@ -111,8 +122,9 @@ void BraveSyncHandler::OnJavascriptDisallowed() {
 }
 
 void BraveSyncHandler::OnDeviceInfoChange() {
-  if (IsJavascriptAllowed())
+  if (IsJavascriptAllowed()) {
     FireWebUIListener("device-info-changed", GetSyncDeviceList());
+  }
 }
 
 void BraveSyncHandler::HandleGetDeviceList(const base::Value::List& args) {
@@ -127,8 +139,9 @@ void BraveSyncHandler::HandleGetSyncCode(const base::Value::List& args) {
 
   auto* sync_service = GetSyncService();
   std::string sync_code;
-  if (sync_service)
+  if (sync_service) {
     sync_code = sync_service->GetOrCreateSyncCode();
+  }
 
   auto time_limited_sync_code = TimeLimitedWords::GenerateForNow(sync_code);
   if (time_limited_sync_code.has_value()) {
@@ -148,8 +161,9 @@ void BraveSyncHandler::HandleGetPureSyncCode(const base::Value::List& args) {
 
   auto* sync_service = GetSyncService();
   std::string sync_code;
-  if (sync_service)
+  if (sync_service) {
     sync_code = sync_service->GetOrCreateSyncCode();
+  }
 
   ResolveJavascriptCallback(args[0], base::Value(sync_code));
 }
@@ -181,24 +195,23 @@ void BraveSyncHandler::HandleGetQRCode(const base::Value::List& args) {
   const std::string qr_code_string =
       brave_sync::QrCodeData::CreateWithActualDate(sync_code_hex)->ToJson();
 
-  base::Value callback_id_disconnect(args[0].Clone());
-  base::Value callback_id_arg(args[0].Clone());
+  auto qr_image = qr_code_generator::GenerateBitmap(
+      base::as_byte_span(qr_code_string),
+      qr_code_generator::ModuleStyle::kCircles,
+      qr_code_generator::LocatorStyle::kRounded,
+      qr_code_generator::CenterImage::kDino,
+      qr_code_generator::QuietZone::kWillBeAddedByClient);
 
-  qrcode_service_ = std::make_unique<qrcode_generator::QRImageGenerator>();
+  if (!qr_image.has_value()) {
+    VLOG(1) << "QR code generator failure: "
+            << base::to_underlying(qr_image.error());
+    ResolveJavascriptCallback(args[0].Clone(), base::Value(false));
+    return;
+  }
 
-  qrcode_generator::mojom::GenerateQRCodeRequestPtr request =
-      qrcode_generator::mojom::GenerateQRCodeRequest::New();
-  request->data = qr_code_string;
-  request->center_image = qrcode_generator::mojom::CenterImage::CHROME_DINO;
-  request->render_module_style = qrcode_generator::mojom::ModuleStyle::CIRCLES;
-  request->render_locator_style =
-      qrcode_generator::mojom::LocatorStyle::ROUNDED;
-
-  qrcode_service_->GenerateQRCode(
-      std::move(request),
-      base::BindOnce(&BraveSyncHandler::OnCodeGeneratorResponse,
-                     weak_ptr_factory_.GetWeakPtr(),
-                     std::move(callback_id_arg)));
+  const std::string data_url = webui::GetBitmapDataUrl(qr_image.value());
+  VLOG(1) << "QR code data url: " << data_url;
+  ResolveJavascriptCallback(args[0].Clone(), base::Value(data_url));
 }
 
 void BraveSyncHandler::HandleSetSyncCode(const base::Value::List& args) {
@@ -218,9 +231,11 @@ void BraveSyncHandler::HandleSetSyncCode(const base::Value::List& args) {
   if (!pure_words_with_status.has_value()) {
     LOG(ERROR) << "Could not validate a sync code, validation_result="
                << static_cast<int>(pure_words_with_status.error()) << " "
-               << GetSyncCodeValidationString(pure_words_with_status.error());
-    RejectJavascriptCallback(args[0], base::Value(GetSyncCodeValidationString(
-                                          pure_words_with_status.error())));
+               << GetSyncCodeValidationErrorString(
+                      pure_words_with_status.error());
+    RejectJavascriptCallback(args[0],
+                             base::Value(GetSyncCodeValidationErrorString(
+                                 pure_words_with_status.error())));
     return;
   }
 
@@ -258,7 +273,6 @@ void BraveSyncHandler::HandleSetSyncCode(const base::Value::List& args) {
   // we will set the result at BraveSyncHandler::OnJoinChainResult.
   // Otherwise we will not let to send request to the server.
 
-  sync_service->SetSyncFeatureRequested();
   sync_service->GetUserSettings()->SetInitialSyncFeatureSetupComplete(
       syncer::SyncFirstSetupCompleteSource::ADVANCED_FLOW_CONFIRM);
 }
@@ -394,18 +408,12 @@ base::Value::List BraveSyncHandler::GetSyncDeviceList() {
   return device_list;
 }
 
-void BraveSyncHandler::OnCodeGeneratorResponse(
-    base::Value callback_id,
-    const qrcode_generator::mojom::GenerateQRCodeResponsePtr response) {
-  if (!response || response->error_code !=
-                       qrcode_generator::mojom::QRCodeGeneratorError::NONE) {
-    VLOG(1) << "QR code generator failure: " << response->error_code;
-    ResolveJavascriptCallback(callback_id, base::Value(false));
-    return;
-  }
-
-  const std::string data_url = webui::GetBitmapDataUrl(response->bitmap);
-  VLOG(1) << "QR code data url: " << data_url;
-
-  ResolveJavascriptCallback(callback_id, base::Value(data_url));
+void BraveSyncHandler::HandleSyncGetWordsCount(const base::Value::List& args) {
+  AllowJavascript();
+  CHECK_EQ(2U, args.size());
+  CHECK(args[1].is_string());
+  const std::string time_limited_sync_code = args[1].GetString();
+  ResolveJavascriptCallback(
+      args[0].Clone(),
+      base::Value(TimeLimitedWords::GetWordsCount(time_limited_sync_code)));
 }

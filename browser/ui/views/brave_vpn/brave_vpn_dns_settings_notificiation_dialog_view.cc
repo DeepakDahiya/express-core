@@ -14,8 +14,10 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/grit/brave_components_strings.h"
+#include "components/prefs/pref_service.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
+#include "ui/base/mojom/dialog_button.mojom.h"
 #include "ui/views/controls/button/checkbox.h"
 #include "ui/views/controls/link.h"
 #include "ui/views/controls/styled_label.h"
@@ -26,7 +28,7 @@ namespace brave_vpn {
 namespace {
 
 constexpr char kBraveVPNLearnMoreURL[] =
-    "https://support.brave.com/hc/en-us/articles/10864482160141";
+    "https://support.brave.app/hc/en-us/articles/10864482160141";
 
 constexpr int kChildSpacing = 16;
 constexpr int kPadding = 24;
@@ -62,8 +64,8 @@ BraveVpnDnsSettingsNotificiationDialogView::
       views::BoxLayout::Orientation::kVertical,
       gfx::Insets::TLBR(kTopPadding, kPadding, kBottomPadding, kPadding),
       kChildSpacing));
-  SetButtons(ui::DIALOG_BUTTON_OK);
-  SetButtonLabel(ui::DIALOG_BUTTON_OK,
+  SetButtons(static_cast<int>(ui::mojom::DialogButton::kOk));
+  SetButtonLabel(ui::mojom::DialogButton::kOk,
                  l10n_util::GetStringUTF16(
                      IDS_BRAVE_VPN_DNS_SETTINGS_NOTIFICATION_DIALOG_OK_TEXT));
 
@@ -120,8 +122,9 @@ void BraveVpnDnsSettingsNotificiationDialogView::OnLearnMoreLinkClicked() {
   AcceptDialog();
 }
 
-ui::ModalType BraveVpnDnsSettingsNotificiationDialogView::GetModalType() const {
-  return ui::MODAL_TYPE_WINDOW;
+ui::mojom::ModalType BraveVpnDnsSettingsNotificiationDialogView::GetModalType()
+    const {
+  return ui::mojom::ModalType::kWindow;
 }
 
 bool BraveVpnDnsSettingsNotificiationDialogView::ShouldShowCloseButton() const {
@@ -141,8 +144,7 @@ void BraveVpnDnsSettingsNotificiationDialogView::OnClosing() {
                      !dont_ask_again_checkbox_->GetChecked());
 }
 
-BEGIN_METADATA(BraveVpnDnsSettingsNotificiationDialogView,
-               views::DialogDelegateView)
+BEGIN_METADATA(BraveVpnDnsSettingsNotificiationDialogView)
 END_METADATA
 
 }  // namespace brave_vpn

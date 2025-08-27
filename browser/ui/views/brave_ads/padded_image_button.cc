@@ -8,14 +8,14 @@
 #include <algorithm>
 #include <utility>
 
+#include "base/check.h"
+#include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/metadata/metadata_impl_macros.h"
 #include "ui/color/color_provider.h"
-#include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/animation/ink_drop.h"
-#include "ui/views/animation/ink_drop_impl.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 
@@ -49,7 +49,7 @@ PaddedImageButton::PaddedImageButton(PressedCallback callback)
   SetHasInkDropActionOnClick(true);
 }
 
-void PaddedImageButton::AdjustBorderInsetToFitHeight(const int height) {
+void PaddedImageButton::AdjustBorderInsetToFitHeight(int height) {
   views::Border* border = GetBorder();
   CHECK(border);
 
@@ -71,7 +71,7 @@ void PaddedImageButton::OnThemeChanged() {
       color_utils::GetColorWithMaxContrast(background_color));
 }
 
-BEGIN_METADATA(PaddedImageButton, views::ImageButton)
+BEGIN_METADATA(PaddedImageButton)
 END_METADATA
 
 }  // namespace brave_ads

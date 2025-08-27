@@ -5,11 +5,17 @@
 
 #include "brave/browser/ui/webui/settings/default_brave_shields_handler.h"
 
-#include <string>
+#include <utility>
+#include <vector>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/values.h"
-#include "brave/components/brave_shields/browser/brave_shields_util.h"
+#include "brave/browser/webcompat_reporter/webcompat_reporter_service_factory.h"
+#include "brave/components/brave_shields/core/browser/brave_shields_utils.h"
+#include "brave/components/brave_shields/core/common/features.h"
+#include "brave/components/webcompat_reporter/browser/webcompat_reporter_service.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/content_settings/cookie_settings_factory.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
@@ -65,9 +71,14 @@ void DefaultBraveShieldsHandler::RegisterMessages() {
           &DefaultBraveShieldsHandler::SetFingerprintingControlType,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setHTTPSEverywhereEnabled",
+      "getFingerprintingBlockEnabled",
       base::BindRepeating(
-          &DefaultBraveShieldsHandler::SetHTTPSEverywhereEnabled,
+          &DefaultBraveShieldsHandler::GetFingerprintingBlockEnabled,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setFingerprintingBlockEnabled",
+      base::BindRepeating(
+          &DefaultBraveShieldsHandler::SetFingerprintingBlockEnabled,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getHttpsUpgradeControlType",
@@ -93,9 +104,24 @@ void DefaultBraveShieldsHandler::RegisterMessages() {
       base::BindRepeating(
           &DefaultBraveShieldsHandler::SetForgetFirstPartyStorageEnabled,
           base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setContactInfoSaveFlag",
+      base::BindRepeating(&DefaultBraveShieldsHandler::SetContactInfoSaveFlag,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getContactInfo",
+      base::BindRepeating(&DefaultBraveShieldsHandler::GetContactInfo,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getHideBlockAllCookieTogle",
+      base::BindRepeating(
+          &DefaultBraveShieldsHandler::GetHideBlockAllCookieFlag,
+          base::Unretained(this)));
 
   content_settings_observation_.Observe(
       HostContentSettingsMapFactory::GetForProfile(profile_));
+  cookie_settings_observation_.Observe(
+      CookieSettingsFactory::GetForProfile(profile_).get());
 }
 
 void DefaultBraveShieldsHandler::OnContentSettingChanged(
@@ -128,6 +154,14 @@ void DefaultBraveShieldsHandler::OnContentSettingChanged(
   FireWebUIListener("brave-shields-settings-changed");
 }
 
+void DefaultBraveShieldsHandler::OnThirdPartyCookieBlockingChanged(
+    bool block_third_party_cookies) {
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+  FireWebUIListener("brave-shields-settings-changed");
+}
+
 void DefaultBraveShieldsHandler::IsAdControlEnabled(
     const base::Value::List& args) {
   CHECK_EQ(args.size(), 1U);
@@ -137,7 +171,7 @@ void DefaultBraveShieldsHandler::IsAdControlEnabled(
       HostContentSettingsMapFactory::GetForProfile(profile_), GURL());
 
   AllowJavascript();
-  ResolveJavascriptCallback(args[0].Clone(),
+  ResolveJavascriptCallback(args[0],
                             base::Value(setting == ControlType::BLOCK));
 }
 
@@ -162,7 +196,7 @@ void DefaultBraveShieldsHandler::IsFirstPartyCosmeticFilteringEnabled(
       HostContentSettingsMapFactory::GetForProfile(profile_), GURL());
 
   AllowJavascript();
-  ResolveJavascriptCallback(args[0].Clone(), base::Value(enabled));
+  ResolveJavascriptCallback(args[0], base::Value(enabled));
 }
 
 void DefaultBraveShieldsHandler::SetCosmeticFilteringControlType(
@@ -187,8 +221,24 @@ void DefaultBraveShieldsHandler::GetCookieControlType(
       CookieSettingsFactory::GetForProfile(profile_).get(), GURL());
 
   AllowJavascript();
-  ResolveJavascriptCallback(args[0].Clone(),
-                            base::Value(ControlTypeToString(setting)));
+  ResolveJavascriptCallback(args[0], base::Value(ControlTypeToString(setting)));
+}
+
+void DefaultBraveShieldsHandler::GetHideBlockAllCookieFlag(
+    const base::Value::List& args) {
+  CHECK_EQ(args.size(), 1U);
+  CHECK(profile_);
+  const ControlType setting = brave_shields::GetCookieControlType(
+      HostContentSettingsMapFactory::GetForProfile(profile_),
+      CookieSettingsFactory::GetForProfile(profile_).get(), GURL());
+
+  const bool block_all_cookies_feature_enabled = base::FeatureList::IsEnabled(
+      brave_shields::features::kBlockAllCookiesToggle);
+
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0],
+                            base::Value(setting != ControlType::BLOCK &&
+                                        !block_all_cookies_feature_enabled));
 }
 
 void DefaultBraveShieldsHandler::SetCookieControlType(
@@ -212,8 +262,7 @@ void DefaultBraveShieldsHandler::GetFingerprintingControlType(
       HostContentSettingsMapFactory::GetForProfile(profile_), GURL());
 
   AllowJavascript();
-  ResolveJavascriptCallback(args[0].Clone(),
-                            base::Value(ControlTypeToString(setting)));
+  ResolveJavascriptCallback(args[0], base::Value(ControlTypeToString(setting)));
 }
 
 void DefaultBraveShieldsHandler::SetFingerprintingControlType(
@@ -228,14 +277,27 @@ void DefaultBraveShieldsHandler::SetFingerprintingControlType(
       profile_->GetPrefs());
 }
 
-void DefaultBraveShieldsHandler::SetHTTPSEverywhereEnabled(
+void DefaultBraveShieldsHandler::GetFingerprintingBlockEnabled(
+    const base::Value::List& args) {
+  CHECK_EQ(args.size(), 1U);
+  CHECK(profile_);
+
+  ControlType setting = brave_shields::GetFingerprintingControlType(
+      HostContentSettingsMapFactory::GetForProfile(profile_), GURL());
+  bool result = setting != ControlType::ALLOW;
+  AllowJavascript();
+  ResolveJavascriptCallback(args[0], base::Value(result));
+}
+
+void DefaultBraveShieldsHandler::SetFingerprintingBlockEnabled(
     const base::Value::List& args) {
   CHECK_EQ(args.size(), 1U);
   CHECK(profile_);
   bool value = args[0].GetBool();
 
-  brave_shields::SetHTTPSEverywhereEnabled(
-      HostContentSettingsMapFactory::GetForProfile(profile_), value, GURL(),
+  brave_shields::SetFingerprintingControlType(
+      HostContentSettingsMapFactory::GetForProfile(profile_),
+      value ? ControlType::DEFAULT : ControlType::ALLOW, GURL(),
       g_browser_process->local_state());
 }
 
@@ -248,8 +310,7 @@ void DefaultBraveShieldsHandler::GetHttpsUpgradeControlType(
       HostContentSettingsMapFactory::GetForProfile(profile_), GURL());
 
   AllowJavascript();
-  ResolveJavascriptCallback(args[0].Clone(),
-                            base::Value(ControlTypeToString(setting)));
+  ResolveJavascriptCallback(args[0], base::Value(ControlTypeToString(setting)));
 }
 
 void DefaultBraveShieldsHandler::SetHttpsUpgradeControlType(
@@ -275,10 +336,59 @@ void DefaultBraveShieldsHandler::SetNoScriptControlType(
       g_browser_process->local_state());
 }
 
+void DefaultBraveShieldsHandler::SetContactInfoSaveFlag(
+    const base::Value::List& args) {
+  CHECK_EQ(args.size(), 1U);
+  CHECK(profile_);
+  if (!args[0].is_bool()) {
+    return;
+  }
+  bool value = args[0].GetBool();
+
+  auto* webcompat_reporter_service =
+      webcompat_reporter::WebcompatReporterServiceFactory::GetServiceForContext(
+          profile_);
+  if (webcompat_reporter_service) {
+    webcompat_reporter_service->SetContactInfoSaveFlag(value);
+  }
+}
+
+void DefaultBraveShieldsHandler::GetContactInfo(const base::Value::List& args) {
+  CHECK_EQ(args.size(), 1U);
+  CHECK(profile_);
+  AllowJavascript();
+
+  auto* webcompat_reporter_service =
+      webcompat_reporter::WebcompatReporterServiceFactory::GetServiceForContext(
+          profile_);
+  if (!webcompat_reporter_service) {
+    base::Value::Dict params_dict;
+    params_dict.Set("contactInfo", "");
+    params_dict.Set("contactInfoSaveFlag", false);
+    ResolveJavascriptCallback(args[0], std::move(params_dict));
+    return;
+  }
+
+  webcompat_reporter_service->GetBrowserParams(
+      base::BindOnce(&DefaultBraveShieldsHandler::OnGetContactInfo,
+                     weak_ptr_factory_.GetWeakPtr(), args[0].Clone()));
+}
+void DefaultBraveShieldsHandler::OnGetContactInfo(
+    base::Value javascript_callback,
+    const std::optional<std::string>& contact_info,
+    const bool contact_info_save_flag,
+    const std::vector<std::string>& components) {
+  base::Value::Dict params_dict;
+  params_dict.Set("contactInfo", contact_info.value_or(""));
+  params_dict.Set("contactInfoSaveFlag", contact_info_save_flag);
+  ResolveJavascriptCallback(javascript_callback, std::move(params_dict));
+}
+
 void DefaultBraveShieldsHandler::SetForgetFirstPartyStorageEnabled(
     const base::Value::List& args) {
   CHECK_EQ(args.size(), 1U);
   CHECK(profile_);
+
   bool value = args[0].GetBool();
 
   brave_shields::SetForgetFirstPartyStorageEnabled(
@@ -295,5 +405,5 @@ void DefaultBraveShieldsHandler::GetForgetFirstPartyStorageEnabled(
       HostContentSettingsMapFactory::GetForProfile(profile_), GURL());
 
   AllowJavascript();
-  ResolveJavascriptCallback(args[0].Clone(), base::Value(result));
+  ResolveJavascriptCallback(args[0], base::Value(result));
 }

@@ -5,23 +5,26 @@
 
 #include "brave/browser/ui/webui/settings/brave_adblock_handler.h"
 
-#include <memory>
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "base/check_op.h"
+#include "base/feature_list.h"
 #include "base/functional/bind.h"
 #include "base/json/values_util.h"
 #include "base/values.h"
 #include "brave/browser/brave_browser_process.h"
 #include "brave/components/brave_adblock/resources/grit/brave_adblock_generated_map.h"
-#include "brave/components/brave_shields/browser/ad_block_custom_filters_provider.h"
-#include "brave/components/brave_shields/browser/ad_block_regional_service_manager.h"
-#include "brave/components/brave_shields/browser/ad_block_service.h"
+#include "brave/components/brave_shields/content/browser/ad_block_custom_filters_provider.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
+#include "brave/components/brave_shields/core/browser/ad_block_component_service_manager.h"
+#include "brave/components/brave_shields/core/browser/ad_block_custom_resource_provider.h"
+#include "brave/components/brave_shields/core/common/features.h"
+#include "brave/components/brave_shields/core/common/pref_names.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser_navigator_params.h"
 #include "chrome/browser/ui/singleton_tabs.h"
 #include "content/public/browser/web_ui.h"
 #include "ui/base/l10n/time_format.h"
@@ -31,7 +34,6 @@ BraveAdBlockHandler::BraveAdBlockHandler() = default;
 BraveAdBlockHandler::~BraveAdBlockHandler() = default;
 
 void BraveAdBlockHandler::RegisterMessages() {
-  profile_ = Profile::FromWebUI(web_ui());
   web_ui()->RegisterMessageCallback(
       "brave_adblock.getRegionalLists",
       base::BindRepeating(&BraveAdBlockHandler::GetRegionalLists,
@@ -40,6 +42,11 @@ void BraveAdBlockHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "brave_adblock.enableFilterList",
       base::BindRepeating(&BraveAdBlockHandler::EnableFilterList,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "brave_adblock.updateFilterLists",
+      base::BindRepeating(&BraveAdBlockHandler::UpdateFilterLists,
                           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
@@ -81,15 +88,44 @@ void BraveAdBlockHandler::RegisterMessages() {
       "brave_adblock.updateCustomFilters",
       base::BindRepeating(&BraveAdBlockHandler::UpdateCustomFilters,
                           base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "brave_adblock.getCustomScriptlets",
+      base::BindRepeating(&BraveAdBlockHandler::GetCustomScriptlets,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "brave_adblock.addCustomScriptlet",
+      base::BindRepeating(&BraveAdBlockHandler::AddCustomScriptlet,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "brave_adblock.updateCustomScriptlet",
+      base::BindRepeating(&BraveAdBlockHandler::UpdateCustomScriptlet,
+                          base::Unretained(this)));
+
+  web_ui()->RegisterMessageCallback(
+      "brave_adblock.removeCustomScriptlet",
+      base::BindRepeating(&BraveAdBlockHandler::RemoveCustomScriptlet,
+                          base::Unretained(this)));
+  pref_change_registrar_.Init(g_browser_process->local_state());
 }
 
 void BraveAdBlockHandler::OnJavascriptAllowed() {
   service_observer_.Observe(g_brave_browser_process->ad_block_service()
                                 ->subscription_service_manager());
+  custom_resources_observer_.Observe(
+      g_brave_browser_process->ad_block_service()->custom_resource_provider());
+  pref_change_registrar_.Add(
+      brave_shields::prefs::kAdBlockCustomFilters,
+      base::BindRepeating(&BraveAdBlockHandler::RefreshCustomFilters,
+                          weak_factory_.GetWeakPtr()));
 }
 
 void BraveAdBlockHandler::OnJavascriptDisallowed() {
   service_observer_.Reset();
+  custom_resources_observer_.Reset();
+  pref_change_registrar_.RemoveAll();
 }
 
 void BraveAdBlockHandler::OnServiceUpdateEvent() {
@@ -100,10 +136,17 @@ void BraveAdBlockHandler::OnServiceUpdateEvent() {
   RefreshSubscriptionsList();
 }
 
+void BraveAdBlockHandler::OnCustomResourcesChanged() {
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+  FireWebUIListener("brave_adblock.onCustomResourcesChanged");
+}
+
 void BraveAdBlockHandler::GetRegionalLists(const base::Value::List& args) {
   AllowJavascript();
   auto regional_lists = g_brave_browser_process->ad_block_service()
-                            ->regional_service_manager()
+                            ->component_service_manager()
                             ->GetRegionalLists();
 
   ResolveJavascriptCallback(args[0], regional_lists);
@@ -112,15 +155,33 @@ void BraveAdBlockHandler::GetRegionalLists(const base::Value::List& args) {
 void BraveAdBlockHandler::EnableFilterList(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 2U);
 
-  if (!args[0].is_string() || !args[1].is_bool())
+  if (!args[0].is_string() || !args[1].is_bool()) {
     return;
+  }
 
   std::string uuid = args[0].GetString();
   bool enabled = args[1].GetBool();
 
   g_brave_browser_process->ad_block_service()
-      ->regional_service_manager()
+      ->component_service_manager()
       ->EnableFilterList(uuid, enabled);
+}
+
+void BraveAdBlockHandler::UpdateFilterLists(const base::Value::List& args) {
+  AllowJavascript();
+
+  DCHECK_EQ(args.size(), 1U);
+  if (!args[0].is_string()) {
+    return;
+  }
+
+  std::string callback_id = args[0].GetString();
+
+  g_brave_browser_process->ad_block_service()
+      ->component_service_manager()
+      ->UpdateFilterLists(
+          base::BindOnce(&BraveAdBlockHandler::OnFilterListsUpdated,
+                         weak_factory_.GetWeakPtr(), std::move(callback_id)));
 }
 
 void BraveAdBlockHandler::GetListSubscriptions(const base::Value::List& args) {
@@ -140,14 +201,16 @@ void BraveAdBlockHandler::GetCustomFilters(const base::Value::List& args) {
 void BraveAdBlockHandler::AddSubscription(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
   AllowJavascript();
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
 
-  if (!subscription_url.is_valid())
+  if (!subscription_url.is_valid()) {
     return;
+  }
 
   g_brave_browser_process->ad_block_service()
       ->subscription_service_manager()
@@ -160,14 +223,16 @@ void BraveAdBlockHandler::SetSubscriptionEnabled(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 2U);
   AllowJavascript();
-  if (!args[0].is_string() || !args[1].is_bool())
+  if (!args[0].is_string() || !args[1].is_bool()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   bool enabled = args[1].GetBool();
   const GURL subscription_url = GURL(subscription_url_string);
-  if (!subscription_url.is_valid())
+  if (!subscription_url.is_valid()) {
     return;
+  }
   g_brave_browser_process->ad_block_service()
       ->subscription_service_manager()
       ->EnableSubscription(subscription_url, enabled);
@@ -178,8 +243,9 @@ void BraveAdBlockHandler::SetSubscriptionEnabled(
 void BraveAdBlockHandler::UpdateSubscription(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
   AllowJavascript();
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -195,8 +261,9 @@ void BraveAdBlockHandler::UpdateSubscription(const base::Value::List& args) {
 void BraveAdBlockHandler::DeleteSubscription(const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
   AllowJavascript();
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -213,8 +280,9 @@ void BraveAdBlockHandler::DeleteSubscription(const base::Value::List& args) {
 void BraveAdBlockHandler::ViewSubscriptionSource(
     const base::Value::List& args) {
   DCHECK_EQ(args.size(), 1U);
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string subscription_url_string = args[0].GetString();
   const GURL subscription_url = GURL(subscription_url_string);
@@ -231,8 +299,9 @@ void BraveAdBlockHandler::ViewSubscriptionSource(
 }
 
 void BraveAdBlockHandler::UpdateCustomFilters(const base::Value::List& args) {
-  if (!args[0].is_string())
+  if (!args[0].is_string()) {
     return;
+  }
 
   std::string custom_filters = args[0].GetString();
   g_brave_browser_process->ad_block_service()
@@ -240,8 +309,84 @@ void BraveAdBlockHandler::UpdateCustomFilters(const base::Value::List& args) {
       ->UpdateCustomFilters(custom_filters);
 }
 
+void BraveAdBlockHandler::GetCustomScriptlets(const base::Value::List& args) {
+  CHECK(base::FeatureList::IsEnabled(
+      brave_shields::features::kCosmeticFilteringCustomScriptlets));
+  CHECK(args.size() == 1u && args[0].is_string());
+
+  g_brave_browser_process->ad_block_service()
+      ->custom_resource_provider()
+      ->GetCustomResources(
+          base::BindOnce(&BraveAdBlockHandler::OnGetCustomScriptlets,
+                         weak_factory_.GetWeakPtr(), args[0].GetString()));
+}
+
+void BraveAdBlockHandler::OnGetCustomScriptlets(const std::string& callback_id,
+                                                base::Value custom_resources) {
+  AllowJavascript();
+  ResolveJavascriptCallback(callback_id, custom_resources);
+}
+
+void BraveAdBlockHandler::AddCustomScriptlet(const base::Value::List& args) {
+  CHECK(base::FeatureList::IsEnabled(
+      brave_shields::features::kCosmeticFilteringCustomScriptlets));
+  CHECK(args.size() == 2u && args[0].is_string() && args[1].is_dict());
+
+  g_brave_browser_process->ad_block_service()
+      ->custom_resource_provider()
+      ->AddResource(
+          Profile::FromWebUI(web_ui())->GetPrefs(), args[1],
+          base::BindOnce(&BraveAdBlockHandler::OnScriptletUpdateStatus,
+                         weak_factory_.GetWeakPtr(), args[0].GetString()));
+}
+
+void BraveAdBlockHandler::UpdateCustomScriptlet(const base::Value::List& args) {
+  CHECK(base::FeatureList::IsEnabled(
+      brave_shields::features::kCosmeticFilteringCustomScriptlets));
+  CHECK(args.size() == 3u && args[0].is_string() && args[1].is_string() &&
+        args[2].is_dict());
+
+  g_brave_browser_process->ad_block_service()
+      ->custom_resource_provider()
+      ->UpdateResource(
+          Profile::FromWebUI(web_ui())->GetPrefs(), args[1].GetString(),
+          args[2],
+          base::BindOnce(&BraveAdBlockHandler::OnScriptletUpdateStatus,
+                         weak_factory_.GetWeakPtr(), args[0].GetString()));
+}
+
+void BraveAdBlockHandler::RemoveCustomScriptlet(const base::Value::List& args) {
+  CHECK(base::FeatureList::IsEnabled(
+      brave_shields::features::kCosmeticFilteringCustomScriptlets));
+  CHECK(args.size() == 2u && args[0].is_string() && args[1].is_string());
+
+  g_brave_browser_process->ad_block_service()
+      ->custom_resource_provider()
+      ->RemoveResource(
+          Profile::FromWebUI(web_ui())->GetPrefs(), args[1].GetString(),
+          base::BindOnce(&BraveAdBlockHandler::OnScriptletUpdateStatus,
+                         weak_factory_.GetWeakPtr(), args[0].GetString()));
+}
+
+void BraveAdBlockHandler::OnScriptletUpdateStatus(
+    const std::string& callback_id,
+    brave_shields::AdBlockCustomResourceProvider::ErrorCode error_code) {
+  AllowJavascript();
+  ResolveJavascriptCallback(callback_id,
+                            base::Value(static_cast<int>(error_code)));
+}
+
 void BraveAdBlockHandler::RefreshSubscriptionsList() {
   FireWebUIListener("brave_adblock.onGetListSubscriptions", GetSubscriptions());
+}
+
+void BraveAdBlockHandler::RefreshCustomFilters() {
+  const std::string& custom_filters =
+      g_brave_browser_process->ad_block_service()
+          ->custom_filters_provider()
+          ->GetCustomFilters();
+  FireWebUIListener("brave_adblock.onCustomFiltersChanged",
+                    base::Value(custom_filters));
 }
 
 base::Value::List BraveAdBlockHandler::GetSubscriptions() {
@@ -283,4 +428,17 @@ base::Value::List BraveAdBlockHandler::GetSubscriptions() {
   }
 
   return list_value;
+}
+
+void BraveAdBlockHandler::OnFilterListsUpdated(std::string callback_id,
+                                               bool success) {
+  if (!IsJavascriptAllowed()) {
+    return;
+  }
+
+  if (success) {
+    ResolveJavascriptCallback(base::Value(callback_id), base::Value());
+  } else {
+    RejectJavascriptCallback(base::Value(callback_id), base::Value());
+  }
 }

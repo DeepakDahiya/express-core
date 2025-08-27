@@ -9,23 +9,27 @@
 #include <memory>
 #include <string>
 
+#include "base/gtest_prod_util.h"
 #include "base/scoped_observation.h"
 #include "brave/browser/ui/views/side_panel/playlist/playlist_contents_wrapper.h"
-#include "brave/browser/ui/views/side_panel/playlist/playlist_side_panel_web_view.h"
-#include "chrome/browser/ui/browser_user_data.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 
 namespace playlist {
 class PlaylistUI;
+FORWARD_DECLARE_TEST(PlaylistBrowserTest, PanelToggleTestWhilePlaying);
 }  // namespace playlist
 
-class Browser;
+class BrowserWindowInterface;
 class SidePanelRegistry;
+class SidePanelEntryScope;
+class SidePanelWebUIView;
 
-class PlaylistSidePanelCoordinator
-    : public BrowserUserData<PlaylistSidePanelCoordinator>,
-      public views::ViewObserver {
+namespace sidebar {
+class SidebarController;
+}  // namespace sidebar
+
+class PlaylistSidePanelCoordinator : public views::ViewObserver {
  public:
   class Proxy : public content::WebContentsUserData<Proxy> {
    public:
@@ -44,7 +48,9 @@ class PlaylistSidePanelCoordinator
     WEB_CONTENTS_USER_DATA_KEY_DECL();
   };
 
-  explicit PlaylistSidePanelCoordinator(Browser* browser);
+  PlaylistSidePanelCoordinator(BrowserWindowInterface* browser,
+                               sidebar::SidebarController* sidebar_controller,
+                               Profile* profile);
   PlaylistSidePanelCoordinator(const PlaylistSidePanelCoordinator&) = delete;
   PlaylistSidePanelCoordinator& operator=(const PlaylistSidePanelCoordinator&) =
       delete;
@@ -52,16 +58,14 @@ class PlaylistSidePanelCoordinator
 
   void CreateAndRegisterEntry(SidePanelRegistry* global_registry);
 
-  BubbleContentsWrapperT<playlist::PlaylistUI>* contents_wrapper() {
+  WebUIContentsWrapperT<playlist::PlaylistUI>* contents_wrapper() {
     return contents_wrapper_.get();
   }
 
   void ActivatePanel();
   void LoadPlaylist(const std::string& playlist_id, const std::string& item_id);
 
-  base::WeakPtr<PlaylistSidePanelWebView> side_panel_web_view() {
-    return side_panel_web_view_;
-  }
+  SidePanelWebUIView* side_panel_web_view() { return side_panel_web_view_; }
 
   BrowserView* GetBrowserView();
 
@@ -69,24 +73,24 @@ class PlaylistSidePanelCoordinator
   void OnViewIsDeleting(views::View* view) override;
 
  private:
-  friend class BrowserUserData<PlaylistSidePanelCoordinator>;
+  FRIEND_TEST_ALL_PREFIXES(playlist::PlaylistBrowserTest,
+                           PanelToggleTestWhilePlaying);
 
-  void DestroyWebContentsIfNeeded();
+  std::unique_ptr<views::View> CreateWebView(SidePanelEntryScope& scope);
 
-  std::unique_ptr<views::View> CreateWebView();
+  const raw_ptr<BrowserWindowInterface> browser_;
+  const raw_ptr<sidebar::SidebarController> sidebar_controller_;
+  const raw_ptr<Profile> profile_;
 
-  raw_ptr<Browser> browser_ = nullptr;
-
+  bool is_audible_for_testing_ = false;
   std::unique_ptr<PlaylistContentsWrapper> contents_wrapper_;
 
-  base::WeakPtr<PlaylistSidePanelWebView> side_panel_web_view_;
+  raw_ptr<SidePanelWebUIView> side_panel_web_view_;
 
   base::ScopedObservation<views::View, views::ViewObserver> view_observation_{
       this};
 
   base::WeakPtrFactory<PlaylistSidePanelCoordinator> weak_ptr_factory_{this};
-
-  BROWSER_USER_DATA_KEY_DECL();
 };
 
 #endif  // BRAVE_BROWSER_UI_VIEWS_SIDE_PANEL_PLAYLIST_PLAYLIST_SIDE_PANEL_COORDINATOR_H_
