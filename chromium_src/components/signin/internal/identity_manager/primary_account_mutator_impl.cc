@@ -7,13 +7,12 @@
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 
 #define RevokeSyncConsent RevokeSyncConsent_ChromiumImpl
-#include "src/components/signin/internal/identity_manager/primary_account_mutator_impl.cc"
+#include <components/signin/internal/identity_manager/primary_account_mutator_impl.cc>
 #undef RevokeSyncConsent
 
 namespace signin {
 
 void PrimaryAccountMutatorImpl::RevokeSyncConsent(
-    signin_metrics::ProfileSignout source_metric,
-    signin_metrics::SignoutDelete delete_metric) {}
+    signin_metrics::ProfileSignout source_metric) {}
 
 }  // namespace signin

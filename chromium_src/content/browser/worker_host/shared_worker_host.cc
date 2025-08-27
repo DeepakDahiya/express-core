@@ -3,15 +3,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "src/content/browser/worker_host/shared_worker_host.cc"
+#include <content/browser/worker_host/shared_worker_host.cc>
 
 namespace content {
 
-void SharedWorkerHost::GetBraveFarblingLevel(
+void SharedWorkerHost::GetBraveShieldsSettings(
     const GURL& url,
-    base::OnceCallback<void(uint8_t)> callback) {
+    base::OnceCallback<void(brave_shields::mojom::ShieldsSettingsPtr)>
+        callback) {
   std::move(callback).Run(
-      GetContentClient()->browser()->WorkerGetBraveFarblingLevel(
+      GetContentClient()->browser()->WorkerGetBraveShieldSettings(
           url, GetProcessHost()->GetBrowserContext()));
 }
 

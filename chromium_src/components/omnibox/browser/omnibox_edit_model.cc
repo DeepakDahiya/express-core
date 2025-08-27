@@ -8,43 +8,25 @@
 #include "base/memory/raw_ptr.h"
 #include "brave/components/commander/common/buildflags/buildflags.h"
 #include "components/omnibox/browser/omnibox_controller.h"
-#include "url/gurl.h"
+#include "components/vector_icons/vector_icons.h"
 
 #if BUILDFLAG(ENABLE_COMMANDER)
 #include "brave/components/commander/common/constants.h"
 #include "brave/components/commander/common/features.h"
 #endif
 
-#if !BUILDFLAG(IS_IOS)
-#include "content/public/common/url_constants.h"
-#endif
-
-namespace {
-void BraveAdjustTextForCopy(GURL* url) {
-#if !BUILDFLAG(IS_IOS)
-  if (url->scheme() == content::kChromeUIScheme) {
-    GURL::Replacements replacements;
-    replacements.SetSchemeStr(content::kBraveUIScheme);
-    *url = url->ReplaceComponents(replacements);
-  }
-#endif
-}
-
-}  // namespace
-
-#define BRAVE_ADJUST_TEXT_FOR_COPY BraveAdjustTextForCopy(url_from_text);
-
 #define CanPasteAndGo CanPasteAndGo_Chromium
 #define PasteAndGo PasteAndGo_Chromium
-#include "src/components/omnibox/browser/omnibox_edit_model.cc"
+#define GetSuperGIcon GetSuperGIcon_Unused
+#include <components/omnibox/browser/omnibox_edit_model.cc>
+#undef GetSuperGIcon
 #undef CanPasteAndGo
 #undef PasteAndGo
-#undef BRAVE_ADJUST_TEXT_FOR_COPY
 
 bool OmniboxEditModel::CanPasteAndGo(const std::u16string& text) const {
 #if BUILDFLAG(ENABLE_COMMANDER)
   if (base::FeatureList::IsEnabled(features::kBraveCommander) &&
-      base::StartsWith(text, commander::kCommandPrefix)) {
+      text.starts_with(commander::kCommandPrefix)) {
     return false;
   }
 #endif
@@ -58,4 +40,18 @@ void OmniboxEditModel::PasteAndGo(const std::u16string& text,
   }
 
   PasteAndGo_Chromium(text, match_selection_timestamp);
+}
+
+// Chromium dynamically updates search engine's favicon when the user visits the
+// search engine (see SearchEngineTabHelper::OnFaviconUpdated). However, Google
+// search has different favicons for regular search vs shopping search. Because
+// of this, if Google is the default search engine the omnibox would switch
+// between the two favicons depending on which search was used last. To avoid
+// this Chrome uses prepackaged icons returned by the method below. We don't
+// have the same icons since those are Chrome specific, so we are going to use a
+// generic Google color icon here for both light and dark modes.
+ui::ImageModel OmniboxEditModel::GetSuperGIcon(int image_size,
+                                               bool dark_mode) const {
+  return ui::ImageModel::FromVectorIcon(vector_icons::kGoogleColorIcon,
+                                        gfx::kPlaceholderColor, image_size);
 }

@@ -9,12 +9,12 @@
 #include "components/signin/internal/identity_manager/primary_account_manager.h"
 #include "components/signin/public/identity_manager/primary_account_mutator.h"
 
-#define RevokeSyncConsent                                                      \
-  RevokeSyncConsent_ChromiumImpl(signin_metrics::ProfileSignout source_metric, \
-                                 signin_metrics::SignoutDelete delete_metric); \
+#define RevokeSyncConsent                            \
+  RevokeSyncConsent_ChromiumImpl(                    \
+      signin_metrics::ProfileSignout source_metric); \
   void RevokeSyncConsent
 
-#include "src/components/signin/internal/identity_manager/primary_account_mutator_impl.h"  // IWYU pragma: export
+#include <components/signin/internal/identity_manager/primary_account_mutator_impl.h>  // IWYU pragma: export
 
 #undef RevokeSyncConsent
 

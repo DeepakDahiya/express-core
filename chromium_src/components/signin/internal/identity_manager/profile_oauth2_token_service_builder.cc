@@ -5,9 +5,11 @@
 
 #include "components/signin/internal/identity_manager/profile_oauth2_token_service_builder.h"
 
+#if BUILDFLAG(ENABLE_DICE_SUPPORT)
 #include "brave/components/signin/internal/identity_manager/brave_mutable_profile_oauth2_token_service_delegate.h"
+#endif  // BUILDFLAG(ENABLE_DICE_SUPPORT)
 
 #define MutableProfileOAuth2TokenServiceDelegate \
   BraveMutableProfileOAuth2TokenServiceDelegate
-#include "src/components/signin/internal/identity_manager/profile_oauth2_token_service_builder.cc"
+#include <components/signin/internal/identity_manager/profile_oauth2_token_service_builder.cc>
 #undef MutableProfileOAuth2TokenServiceDelegate

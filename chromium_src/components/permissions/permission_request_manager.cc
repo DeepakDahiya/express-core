@@ -3,21 +3,37 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <optional>
 #include <string>
 
+#include "base/check.h"
+#include "base/check_is_test.h"
 #include "base/containers/contains.h"
 #include "brave/components/brave_wallet/browser/permission_utils.h"
-#include "src/components/permissions/permission_request_manager.cc"
+
+#define BRAVE_PERMISSION_REQUEST_MANAGER_GET_REQUESTING_ORIGIN \
+  if (!ShouldBeGrouppedInRequests(request.get()))
+
+// |tab_is_hidden_| should be updated after upstream sets.
+#define BRAVE_PERMISSION_REQUEST_MANAGER_ON_VISIBILITY_CHANGED \
+  UpdateTabIsHiddenWithTabActivationState();
+
+#include <components/permissions/permission_request_manager.cc>
+
+#undef BRAVE_PERMISSION_REQUEST_MANAGER_ON_VISIBILITY_CHANGED
+#undef BRAVE_PERMISSION_REQUEST_MANAGER_GET_REQUESTING_ORIGIN
+
 #include "url/origin.h"
 
 namespace permissions {
 
 bool PermissionRequestManager::ShouldGroupRequests(PermissionRequest* a,
-                                                   PermissionRequest* b) {
+                                                   PermissionRequest* b) const {
   url::Origin origin_a;
   url::Origin origin_b;
   if (a->request_type() == RequestType::kBraveEthereum ||
-      a->request_type() == RequestType::kBraveSolana) {
+      a->request_type() == RequestType::kBraveSolana ||
+      a->request_type() == RequestType::kBraveCardano) {
     if (a->request_type() == b->request_type() &&
         brave_wallet::ParseRequestingOriginFromSubRequest(
             a->request_type(), url::Origin::Create(a->requesting_origin()),
@@ -31,6 +47,18 @@ bool PermissionRequestManager::ShouldGroupRequests(PermissionRequest* a,
   }
 
   return ::permissions::ShouldGroupRequests(a, b);
+}
+
+bool PermissionRequestManager::ShouldBeGrouppedInRequests(
+    PermissionRequest* a) const {
+  DCHECK(!requests_.empty());
+  // Called from PermissionRequestManager::GetRequestingOrigin when DCHECK IS ON
+  // to adjust the check for grouped requests. |requests_| is cheked by the
+  // caller to not be empty.
+  if (requests_.front().get() == a) {
+    return true;
+  }
+  return ShouldGroupRequests(requests_.front().get(), a);
 }
 
 // Accept/Deny/Cancel each sub-request, total size of all passed in requests
@@ -48,19 +76,14 @@ void PermissionRequestManager::AcceptDenyCancel(
   DCHECK((accepted_requests.size() + denied_requests.size() +
           cancelled_requests.size()) == requests_.size());
 
-  // We need to process requests in reverse order because
-  // PermissionRequestQueue impelementation of Push and Pop are paired with
-  // base::circular_dequeue's (push_back, pop_back) and (push_front, pop_front)
-  // Once pending_permission_requests_ is popped to the vector request_, the
-  // order is fixed because the reorder takes place in
-  // pending_permission_requests_.
-  for (auto it = requests_.crbegin(); it != requests_.crend(); ++it) {
-    if (base::Contains(accepted_requests, *it)) {
-      PermissionGrantedIncludingDuplicates(*it, /*is_one_time=*/false);
-    } else if (base::Contains(denied_requests, *it)) {
-      PermissionDeniedIncludingDuplicates(*it);
+  for (const auto& request : requests_) {
+    if (base::Contains(accepted_requests, request.get())) {
+      PermissionGrantedIncludingDuplicates(request.get(),
+                                           /*is_one_time=*/false);
+    } else if (base::Contains(denied_requests, request.get())) {
+      PermissionDeniedIncludingDuplicates(request.get());
     } else {
-      CancelledIncludingDuplicates(*it);
+      CancelRequestIncludingDuplicates(request.get());
     }
   }
 
@@ -78,6 +101,29 @@ void PermissionRequestManager::AcceptDenyCancel(
     action = PermissionAction::DENIED;
   }
   CurrentRequestsDecided(action);
+}
+
+void PermissionRequestManager::OnTabActiveStateChanged(bool active) {
+  tab_is_activated_ = active;
+
+  // OnVisibilityChanged() has logic for |tab_is_hidden_| state changes.
+  // Tab activation state could affect |tab_is_hidden_| state.
+  OnVisibilityChanged(web_contents()->GetVisibility());
+}
+
+void PermissionRequestManager::UpdateTabIsHiddenWithTabActivationState() {
+  if (!tab_is_activated_.has_value()) {
+    return;
+  }
+
+  // In split view, permission manager can have invalid tab hidden state.
+  // If it's inactive split tab, permission manager should set false
+  // to |tab_is_hidden_| to prevent launching permission bubble from
+  // that inactive split tab. Otherwise, it launches permission bubble even
+  // it's inactive tab.
+  if (!tab_is_hidden_ && !tab_is_activated_.value()) {
+    tab_is_hidden_ = true;
+  }
 }
 
 }  // namespace permissions

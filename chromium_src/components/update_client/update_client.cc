@@ -5,13 +5,19 @@
 
 #include "components/update_client/update_client.h"
 
+#include "base/logging.h"
+
 #define UpdateClientFactory UpdateClientFactory_ChromiumImpl
-#include "src/components/update_client/update_client.cc"
+#include <components/update_client/update_client.cc>
 #undef UpdateClientFactory
 
 #include "base/logging.h"
 
 namespace update_client {
+
+bool CrxInstaller::IsBraveComponent() const {
+  return false;
+}
 
 scoped_refptr<UpdateClient> UpdateClientFactory(
     scoped_refptr<Configurator> config) {

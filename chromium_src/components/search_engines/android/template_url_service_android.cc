@@ -8,15 +8,15 @@
 #define DoesDefaultSearchEngineHaveLogo \
   DoesDefaultSearchEngineHaveLogo_ChromiumImpl
 
-#include "src/components/search_engines/android/template_url_service_android.cc"
+#include <components/search_engines/android/template_url_service_android.cc>
 
 #undef DoesDefaultSearchEngineHaveLogo
 
 jboolean TemplateUrlServiceAndroid::DoesDefaultSearchEngineHaveLogo(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj) {
-  if (IsDefaultSearchEngineGoogle(env, obj))
+    JNIEnv* env) {
+  if (IsDefaultSearchEngineGoogle(env)) {
     return false;
+  }
 
-  return DoesDefaultSearchEngineHaveLogo_ChromiumImpl(env, obj);
+  return DoesDefaultSearchEngineHaveLogo_ChromiumImpl(env);
 }

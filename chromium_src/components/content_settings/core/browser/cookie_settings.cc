@@ -5,12 +5,15 @@
 
 #include "components/content_settings/core/browser/cookie_settings.h"
 
+#include <optional>
+
+#include "base/check.h"
 #include "net/base/features.h"
 #include "net/base/url_util.h"
 
 #define ShutdownOnUIThread ShutdownOnUIThread_ChromiumImpl
 
-#include "src/components/content_settings/core/browser/cookie_settings.cc"
+#include <components/content_settings/core/browser/cookie_settings.cc>
 
 #undef ShutdownOnUIThread
 
@@ -27,11 +30,10 @@ void CookieSettings::ShutdownOnUIThread() {
 bool CookieSettings::ShouldUseEphemeralStorage(
     const url::Origin& origin,
     const net::SiteForCookies& site_for_cookies,
-    const absl::optional<url::Origin>& top_frame_origin,
-    net::CookieSettingOverrides overrides,
+    base::optional_ref<const url::Origin> top_frame_origin,
     url::Origin& storage_origin) {
   const bool should_use = CookieSettingsBase::ShouldUseEphemeralStorage(
-      origin.GetURL(), site_for_cookies, overrides, top_frame_origin);
+      origin.GetURL(), site_for_cookies, top_frame_origin);
   if (!should_use) {
     return false;
   }

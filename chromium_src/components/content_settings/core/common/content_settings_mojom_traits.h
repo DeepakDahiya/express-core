@@ -11,7 +11,7 @@
 
 #define RendererContentSettingRules RendererContentSettingRules_ChromiumImpl
 
-#include "src/components/content_settings/core/common/content_settings_mojom_traits.h"  // IWYU pragma: export
+#include <components/content_settings/core/common/content_settings_mojom_traits.h>  // IWYU pragma: export
 
 #undef RendererContentSettingRules
 
@@ -39,6 +39,11 @@ struct StructTraits<
   static const std::vector<ContentSettingPatternSource>&
   cosmetic_filtering_rules(const RendererContentSettingRules& r) {
     return r.cosmetic_filtering_rules;
+  }
+  static const std::map<ContentSettingsType,
+                        std::vector<ContentSettingPatternSource>>&
+  webcompat_rules(const RendererContentSettingRules& r) {
+    return r.webcompat_rules;
   }
 
   static bool Read(

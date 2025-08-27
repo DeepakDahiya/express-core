@@ -6,15 +6,16 @@
 #ifndef BRAVE_CHROMIUM_SRC_COMPONENTS_CRX_FILE_CRX_CREATOR_H_
 #define BRAVE_CHROMIUM_SRC_COMPONENTS_CRX_FILE_CRX_CREATOR_H_
 
-#include "src/components/crx_file/crx_creator.h"  // IWYU pragma: export
+#include <components/crx_file/crx_creator.h>  // IWYU pragma: export
+
+#include "base/containers/span.h"
 
 namespace crx_file {
 
-CreatorResult CreateWithPublisherKey(
+CreatorResult CreateWithMultipleKeys(
     const base::FilePath& output_path,
     const base::FilePath& zip_path,
-    crypto::RSAPrivateKey* developer_key /*signing_key in Chromium*/,
-    crypto::RSAPrivateKey* publisher_key);
+    base::span<const crypto::keypair::PrivateKey> keys);
 }  // namespace crx_file
 
 #endif  // BRAVE_CHROMIUM_SRC_COMPONENTS_CRX_FILE_CRX_CREATOR_H_

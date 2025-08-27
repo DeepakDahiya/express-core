@@ -6,25 +6,24 @@
 #ifndef BRAVE_CHROMIUM_SRC_EXTENSIONS_COMMON_CONSTANTS_H_
 #define BRAVE_CHROMIUM_SRC_EXTENSIONS_COMMON_CONSTANTS_H_
 
-#include "src/extensions/common/constants.h"  // IWYU pragma: export
+#include "build/build_config.h"
 
-EXTENSIONS_EXPORT extern const int kBraveActionGraphicSize;
-EXTENSIONS_EXPORT extern const int kBraveActionLeftMarginExtra;
+#if BUILDFLAG(IS_IOS) || BUILDFLAG(IS_ANDROID)
+// ios and android cannot include extensions deps
+namespace extensions {
+inline constexpr char kExtensionScheme[] = "chrome-extension";
+}
+#else
+#include <extensions/common/constants.h>  // IWYU pragma: export
 
-EXTENSIONS_EXPORT extern const char brave_extension_id[];
-EXTENSIONS_EXPORT extern const char hangouts_extension_id[];
-EXTENSIONS_EXPORT extern const char crl_set_extension_id[];
+inline constexpr int kBraveActionLeftMarginExtra = -2;
 
-EXTENSIONS_EXPORT extern const char brave_webtorrent_extension_id[];
-EXTENSIONS_EXPORT extern const char brave_webtorrent_extension_filename[];
-EXTENSIONS_EXPORT extern const char brave_webtorrent_extension_filename2[];
+inline constexpr char brave_extension_id[] = "mnojpmjdmbbfmejpflffifhffcmidifd";
+inline constexpr char crl_set_extension_id[] =
+    "hfnkpimlhhgieaddgfemjhofmfblmnib";
 
-EXTENSIONS_EXPORT extern const char ipfs_companion_extension_id[];
-EXTENSIONS_EXPORT extern const char ipfs_companion_extension_name[];
-EXTENSIONS_EXPORT extern const char ipfs_companion_extension_public_key[];
-EXTENSIONS_EXPORT extern const char ipfs_companion_beta_extension_id[];
-EXTENSIONS_EXPORT extern const char ipfs_persmission_extension_id[];
-
-EXTENSIONS_EXPORT extern const char google_translate_extension_id[];
+inline constexpr char google_translate_extension_id[] =
+    "aapbdbdomjkkjkaonfhkkikfgjllcleb";
+#endif
 
 #endif  // BRAVE_CHROMIUM_SRC_EXTENSIONS_COMMON_CONSTANTS_H_

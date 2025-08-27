@@ -5,6 +5,8 @@
 
 #include "components/permissions/request_type.h"
 
+#include <optional>
+
 #include "build/build_config.h"
 
 #if BUILDFLAG(IS_ANDROID)
@@ -16,39 +18,34 @@
 
 #if BUILDFLAG(IS_ANDROID)
 namespace {
-constexpr auto kAndroidInfobarPermissionCookie =
-    IDR_ANDROID_INFOBAR_PERMISSION_COOKIE;
+constexpr auto kAndroidStorageAccess = IDR_ANDROID_STORAGE_ACCESS;
 }  // namespace
-#else
-namespace vector_icons {
-constexpr auto& kMicIconValue = vector_icons::kMicIcon;
-}  // namespace vector_icons
 #endif
 
 // Add Brave cases into GetIconIdAndroid.
-// kWidevine is not expected to happen here as Widevine is not enabled in
-// Android, we add this case here just to avoid build error due to unhandled
-// cases in the switch.
-//
 // TODO(jocelyn): Might need to update icon when we have ethereum.enable UI
 // support in Android.
-#define IDR_ANDROID_INFOBAR_PERMISSION_COOKIE        \
-  kAndroidInfobarPermissionCookie;                   \
+#define IDR_ANDROID_STORAGE_ACCESS                   \
+  kAndroidStorageAccess;                             \
   case RequestType::kWidevine:                       \
   case RequestType::kBraveEthereum:                  \
   case RequestType::kBraveSolana:                    \
+  case RequestType::kBraveCardano:                   \
   case RequestType::kBraveGoogleSignInPermission:    \
   case RequestType::kBraveLocalhostAccessPermission: \
+  case RequestType::kBraveOpenAIChat:                \
     return IDR_ANDROID_INFOBAR_PERMISSION_COOKIE
 
 // Add Brave cases into GetIconIdDesktop.
-#define kMicIcon                                     \
-  kMicIconValue;                                     \
+#define kStorageAccessIcon                           \
+  kStorageAccessIcon;                                \
   case RequestType::kWidevine:                       \
   case RequestType::kBraveEthereum:                  \
   case RequestType::kBraveSolana:                    \
+  case RequestType::kBraveCardano:                   \
   case RequestType::kBraveGoogleSignInPermission:    \
   case RequestType::kBraveLocalhostAccessPermission: \
+  case RequestType::kBraveOpenAIChat:                \
     return vector_icons::kExtensionIcon
 
 #define BRAVE_PERMISSION_KEY_FOR_REQUEST_TYPE                     \
@@ -58,10 +55,14 @@ constexpr auto& kMicIconValue = vector_icons::kMicIcon;
     return "brave_ethereum";                                      \
   case permissions::RequestType::kBraveSolana:                    \
     return "brave_solana";                                        \
+  case permissions::RequestType::kBraveCardano:                   \
+    return "brave_cardano";                                       \
   case permissions::RequestType::kBraveGoogleSignInPermission:    \
     return "brave_google_sign_in";                                \
   case permissions::RequestType::kBraveLocalhostAccessPermission: \
-    return "brave_localhost_access";
+    return "brave_localhost_access";                              \
+  case permissions::RequestType::kBraveOpenAIChat:                \
+    return "brave_ai_chat";
 
 #define ContentSettingsTypeToRequestType \
   ContentSettingsTypeToRequestType_ChromiumImpl
@@ -71,14 +72,14 @@ constexpr auto& kMicIconValue = vector_icons::kMicIcon;
 
 #define IsRequestablePermissionType IsRequestablePermissionType_ChromiumImpl
 
-#include "src/components/permissions/request_type.cc"
+#include <components/permissions/request_type.cc>
 
-#undef BRAVE_PERMISSION_KEY_FOR_REQUEST_TYPE
-#undef IDR_ANDROID_INFOBAR_PERMISSION_COOKIE
-#undef kMicIcon
-#undef ContentSettingsTypeToRequestType
-#undef RequestTypeToContentSettingsType
 #undef IsRequestablePermissionType
+#undef RequestTypeToContentSettingsType
+#undef ContentSettingsTypeToRequestType
+#undef BRAVE_PERMISSION_KEY_FOR_REQUEST_TYPE
+#undef kStorageAccessIcon
+#undef IDR_ANDROID_STORAGE_ACCESS
 
 namespace permissions {
 
@@ -89,17 +90,26 @@ RequestType ContentSettingsTypeToRequestType(
       return RequestType::kBraveEthereum;
     case ContentSettingsType::BRAVE_SOLANA:
       return RequestType::kBraveSolana;
+    case ContentSettingsType::BRAVE_CARDANO:
+      return RequestType::kBraveCardano;
     case ContentSettingsType::BRAVE_GOOGLE_SIGN_IN:
       return RequestType::kBraveGoogleSignInPermission;
     case ContentSettingsType::BRAVE_LOCALHOST_ACCESS:
       return RequestType::kBraveLocalhostAccessPermission;
+    case ContentSettingsType::BRAVE_OPEN_AI_CHAT:
+      return RequestType::kBraveOpenAIChat;
+    case ContentSettingsType::DEFAULT:
+      // Currently we have only one DEFAULT type that is
+      // not mapped, which is Widevine, it's used for
+      // UMA purpose only
+      return RequestType::kWidevine;
     default:
       return ContentSettingsTypeToRequestType_ChromiumImpl(
           content_settings_type);
   }
 }
 
-absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
+std::optional<ContentSettingsType> RequestTypeToContentSettingsType(
     RequestType request_type) {
   switch (request_type) {
     case RequestType::kBraveGoogleSignInPermission:
@@ -110,6 +120,10 @@ absl::optional<ContentSettingsType> RequestTypeToContentSettingsType(
       return ContentSettingsType::BRAVE_ETHEREUM;
     case RequestType::kBraveSolana:
       return ContentSettingsType::BRAVE_SOLANA;
+    case RequestType::kBraveOpenAIChat:
+      return ContentSettingsType::BRAVE_OPEN_AI_CHAT;
+    case RequestType::kBraveCardano:
+      return ContentSettingsType::BRAVE_CARDANO;
     default:
       return RequestTypeToContentSettingsType_ChromiumImpl(request_type);
   }
@@ -121,6 +135,8 @@ bool IsRequestablePermissionType(ContentSettingsType content_settings_type) {
     case ContentSettingsType::BRAVE_LOCALHOST_ACCESS:
     case ContentSettingsType::BRAVE_ETHEREUM:
     case ContentSettingsType::BRAVE_SOLANA:
+    case ContentSettingsType::BRAVE_OPEN_AI_CHAT:
+    case ContentSettingsType::BRAVE_CARDANO:
       return true;
     default:
       return IsRequestablePermissionType_ChromiumImpl(content_settings_type);

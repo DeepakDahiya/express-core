@@ -3,7 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "src/components/gcm_driver/gcm_driver_desktop.cc"
+#include <components/gcm_driver/gcm_driver_desktop.cc>
 
 namespace gcm {
 
@@ -11,11 +11,12 @@ BraveGCMDriverDesktop::~BraveGCMDriverDesktop() = default;
 
 void BraveGCMDriverDesktop::SetEnabled(bool enabled) {
   enabled_ = enabled;
+  initialized_ = true;
 }
 
 GCMClient::Result BraveGCMDriverDesktop::EnsureStarted(
-  GCMClient::StartMode start_mode) {
-  if (!enabled_) {
+    GCMClient::StartMode start_mode) {
+  if (!initialized_ || !enabled_) {
     return GCMClient::GCM_DISABLED;
   }
 

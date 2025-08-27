@@ -1,12 +1,14 @@
-/* Copyright (c) 2021 The Brave Authors. All rights reserved.
+/* Copyright (c) 2025 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #ifndef BRAVE_CHROMIUM_SRC_COMPONENTS_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
 #define BRAVE_CHROMIUM_SRC_COMPONENTS_PERMISSIONS_PERMISSION_CONTEXT_BASE_H_
 
-#include "base/functional/callback.h"
+#include <map>
+
+#include "components/permissions/permission_request_data.h"
 
 namespace permissions {
 class PermissionContextBase;
@@ -14,25 +16,20 @@ using PermissionContextBase_BraveImpl = PermissionContextBase;
 class PermissionLifetimeManager;
 }  // namespace permissions
 
+#define PermissionContextBaseTests \
+  PermissionContextBaseTests;      \
+  friend PermissionContextBase_BraveImpl
+
 #define PermissionContextBase PermissionContextBase_ChromiumImpl
 #define PermissionDecided virtual PermissionDecided
-#define BRAVE_PERMISSION_CONTEXT_BASE_H_              \
-  friend PermissionContextBase_BraveImpl;             \
-                                                      \
- protected:                                           \
-  base::RepeatingCallback<PermissionLifetimeManager*( \
-      content::BrowserContext*)>                      \
-      permission_lifetime_manager_factory_;
 #define CleanUpRequest virtual CleanUpRequest
 
-#include "src/components/permissions/permission_context_base.h"  // IWYU pragma: export
+#include <components/permissions/permission_context_base.h>  // IWYU pragma: export
 
-#undef BRAVE_PERMISSION_CONTEXT_BASE_H_
-#undef CleanUpRequest
-#undef PermissionDecided
+#undef PermissionContextBaseTests
 #undef PermissionContextBase
-
-#include <map>
+#undef PermissionDecided
+#undef CleanUpRequest
 
 namespace permissions {
 
@@ -41,7 +38,7 @@ class PermissionContextBase : public PermissionContextBase_ChromiumImpl {
   PermissionContextBase(
       content::BrowserContext* browser_context,
       ContentSettingsType content_settings_type,
-      blink::mojom::PermissionsPolicyFeature permissions_policy_feature);
+      network::mojom::PermissionsPolicyFeature permissions_policy_feature);
 
   ~PermissionContextBase() override;
 
@@ -49,8 +46,9 @@ class PermissionContextBase : public PermissionContextBase_ChromiumImpl {
       const base::RepeatingCallback<
           PermissionLifetimeManager*(content::BrowserContext*)>& factory);
 
-  void DecidePermission(permissions::PermissionRequestData request_data,
-                        BrowserPermissionCallback callback) override;
+  void DecidePermission(
+      std::unique_ptr<permissions::PermissionRequestData> request_data,
+      BrowserPermissionCallback callback) override;
 
   bool IsPendingGroupedRequestsEmptyForTesting();
 
@@ -69,12 +67,11 @@ class PermissionContextBase : public PermissionContextBase_ChromiumImpl {
     GroupedPermissionRequests();
     ~GroupedPermissionRequests();
 
-    using GroupedRequests =
-        std::vector<std::pair<std::unique_ptr<PermissionRequest>,
-                              BrowserPermissionCallback>>;
+    using GroupedRequests = std::vector<
+        std::pair<base::WeakPtr<PermissionRequest>, BrowserPermissionCallback>>;
 
     bool IsDone() const;
-    void AddRequest(std::pair<std::unique_ptr<PermissionRequest>,
+    void AddRequest(std::pair<base::WeakPtr<PermissionRequest>,
                               BrowserPermissionCallback> request);
     BrowserPermissionCallback GetNextCallback();
     void RequestFinished();
@@ -87,13 +84,15 @@ class PermissionContextBase : public PermissionContextBase_ChromiumImpl {
     size_t next_callback_index_ = 0;
   };
 
-  void PermissionDecided(const PermissionRequestID& id,
-                         const GURL& requesting_origin,
-                         const GURL& embedding_origin,
-                         ContentSetting content_setting,
-                         bool is_one_time,
-                         bool is_final_decision) override;
-  void CleanUpRequest(const PermissionRequestID& id) override;
+  void PermissionDecided(PermissionDecision decision,
+                         bool is_final_decision,
+                         const PermissionRequestData& request_data) override;
+  void CleanUpRequest(content::WebContents* web_contents,
+                      const PermissionRequestID& id,
+                      bool embedded_permission_element_initiated) override;
+
+  base::RepeatingCallback<PermissionLifetimeManager*(content::BrowserContext*)>
+      permission_lifetime_manager_factory_;
 
   std::map<std::string, std::unique_ptr<GroupedPermissionRequests>>
       pending_grouped_requests_;

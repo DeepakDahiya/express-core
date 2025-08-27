@@ -5,13 +5,19 @@
 
 #include "components/component_updater/configurator_impl.h"
 
-#define EnabledBackgroundDownloader EnabledBackgroundDownloader_ChromiumImpl
-#include "src/components/component_updater/configurator_impl.cc"
+#define EnabledBackgroundDownloader EnabledBackgroundDownloader_Unused
+#define EnabledCupSigning EnabledCupSigning_Unused
+#include <components/component_updater/configurator_impl.cc>
+#undef EnabledCupSigning
 #undef EnabledBackgroundDownloader
 
 namespace component_updater {
 
 bool ConfiguratorImpl::EnabledBackgroundDownloader() const {
+  return false;
+}
+
+bool ConfiguratorImpl::EnabledCupSigning() const {
   return false;
 }
 

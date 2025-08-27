@@ -7,6 +7,8 @@
 #define BRAVE_CHROMIUM_SRC_COMPONENTS_SYNC_SERVICE_SYNC_SERVICE_IMPL_H_
 
 #include "base/gtest_prod_util.h"
+#include "components/signin/public/identity_manager/identity_manager.h"
+#include "components/sync/engine/sync_engine_host.h"
 
 #define BRAVE_SYNC_SERVICE_IMPL_H_                                             \
  private:                                                                      \
@@ -17,7 +19,9 @@
                            PermanentlyDeleteAccount);                          \
   FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest,                           \
                            OnAccountDeleted_FailureAndRetry);                  \
-  FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest, JoinDeletedChain);
+  FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest, JoinDeletedChain);        \
+  FRIEND_TEST_ALL_PREFIXES(BraveSyncServiceImplTest,                           \
+                           ForcedSetDecryptionPassphrase);
 
 // Forcing this include before define virtual to avoid error of
 // "duplicate 'virtual' declaration specifier" at SyncEngine's
@@ -28,11 +32,13 @@
 #include "components/sync/engine/sync_engine.h"
 #define Initialize virtual Initialize
 #define ResetEngine virtual ResetEngine
+#define StopAndClear virtual StopAndClear
 
-#include "src/components/sync/service/sync_service_impl.h"  // IWYU pragma: export
+#include <components/sync/service/sync_service_impl.h>  // IWYU pragma: export
 
 #undef ResetEngine
 #undef Initialize
+#undef StopAndClear
 
 #undef BRAVE_SYNC_SERVICE_IMPL_H_
 

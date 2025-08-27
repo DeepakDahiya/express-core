@@ -11,16 +11,16 @@
 
 #define GetStarterPackEngines GetStarterPackEngines_ChromiumImpl
 
-#include "src/components/search_engines/template_url_starter_pack_data.cc"
+#include <components/search_engines/template_url_starter_pack_data.cc>
 #undef GetStarterPackEngines
 
 namespace {
 
-const char kChromeSchema[] = "chrome://";
-const char kBraveSchema[] = "brave://";
+constexpr char kChromeSchema[] = "chrome://";
+constexpr char kBraveSchema[] = "brave://";
 }  // namespace
 
-namespace TemplateURLStarterPackData {
+namespace template_url_starter_pack_data {
 
 std::vector<std::unique_ptr<TemplateURLData>> GetStarterPackEngines() {
   auto t_urls = GetStarterPackEngines_ChromiumImpl();
@@ -38,4 +38,4 @@ std::vector<std::unique_ptr<TemplateURLData>> GetStarterPackEngines() {
   return t_urls;
 }
 
-}  // namespace TemplateURLStarterPackData
+}  // namespace template_url_starter_pack_data

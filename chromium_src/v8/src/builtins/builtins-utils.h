@@ -6,7 +6,7 @@
 #ifndef BRAVE_CHROMIUM_SRC_V8_SRC_BUILTINS_BUILTINS_UTILS_H_
 #define BRAVE_CHROMIUM_SRC_V8_SRC_BUILTINS_BUILTINS_UTILS_H_
 
-#include "src/v8/src/builtins/builtins-utils.h"  // IWYU pragma: export
+#include <v8/src/builtins/builtins-utils.h>  // IWYU pragma: export
 
 #include "brave/components/brave_page_graph/common/buildflags.h"
 
@@ -15,15 +15,17 @@ namespace internal {
 
 #if BUILDFLAG(ENABLE_BRAVE_PAGE_GRAPH_WEBAPI_PROBES)
 
-constexpr bool IsBuiltinTrackedInPageGraph(const char* name) {
-  constexpr const char* const kBuiltinsToTrack[] = {
+consteval bool IsBuiltinTrackedInPageGraph(std::string_view name) {
+  constexpr std::string_view kBuiltinsToTrack[] = {
+      "Console",
       "Date",
       "Json",
   };
-  for (const char* builtin_to_track : kBuiltinsToTrack) {
+  for (std::string_view builtin_to_track : kBuiltinsToTrack) {
     // Check if |name| starts with |builtin_to_track|.
-    if (strstr(name, builtin_to_track) == name)
+    if (name.starts_with(builtin_to_track)) {
       return true;
+    }
   }
   return false;
 }

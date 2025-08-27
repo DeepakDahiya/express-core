@@ -1,13 +1,17 @@
 /* Copyright (c) 2021 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "components/permissions/permission_request.h"
 
+#include <optional>
 #include <vector>
 
+#include "base/check.h"
 #include "base/containers/contains.h"
+#include "base/containers/fixed_flat_set.h"
+#include "base/notreached.h"
 #include "build/build_config.h"
 #include "components/grit/brave_components_strings.h"
 #include "components/strings/grit/components_strings.h"
@@ -18,14 +22,21 @@
 
 // `kWidevine` handled by an override in `WidevinePermissionRequest` and the
 // Brave Ethereum/Solana permission has its own permission request prompt.
+#if BUILDFLAG(IS_ANDROID)
 #define BRAVE_ENUM_ITEMS_FOR_SWITCH \
   case RequestType::kBraveEthereum: \
   case RequestType::kBraveSolana:   \
-    NOTREACHED();                   \
-    return std::u16string();        \
+  case RequestType::kBraveCardano:  \
   case RequestType::kWidevine:      \
-    NOTREACHED();                   \
-    return std::u16string();
+    NOTREACHED();
+#else
+#define BRAVE_ENUM_ITEMS_FOR_SWITCH \
+  case RequestType::kBraveEthereum: \
+  case RequestType::kBraveSolana:   \
+  case RequestType::kBraveCardano:  \
+  case RequestType::kWidevine:      \
+    NOTREACHED();
+#endif
 
 // For permission strings that we also need on Android, we need to use
 // a string that has a placeholder ($1) in it.
@@ -36,6 +47,9 @@
     break;                                                 \
   case RequestType::kBraveLocalhostAccessPermission:       \
     message_id = IDS_LOCALHOST_ACCESS_PERMISSION_FRAGMENT; \
+    break;                                                 \
+  case RequestType::kBraveOpenAIChat:                      \
+    message_id = IDS_OPEN_AI_CHAT_PERMISSION_FRAGMENT;     \
     break;
 
 #define BRAVE_ENUM_ITEMS_FOR_SWITCH_ANDROID          \
@@ -45,6 +59,9 @@
     break;                                           \
   case RequestType::kBraveLocalhostAccessPermission: \
     message_id = IDS_LOCALHOST_ACCESS_INFOBAR_TEXT;  \
+    break;                                           \
+  case RequestType::kBraveOpenAIChat:                \
+    message_id = IDS_OPEN_AI_CHAT_INFOBAR_TEXT;      \
     break;
 
 namespace {
@@ -72,7 +89,7 @@ const unsigned int IDS_VR_PERMISSION_FRAGMENT_OVERRIDE =
   BRAVE_ENUM_ITEMS_FOR_SWITCH_DESKTOP
 #endif
 
-#include "src/components/permissions/permission_request.cc"
+#include <components/permissions/permission_request.cc>
 #undef IDS_VR_INFOBAR_TEXT
 #undef IDS_VR_PERMISSION_FRAGMENT
 #undef BRAVE_ENUM_ITEMS_FOR_SWITCH_ANDROID
@@ -84,49 +101,71 @@ const unsigned int IDS_VR_PERMISSION_FRAGMENT_OVERRIDE =
 namespace permissions {
 
 PermissionRequest::PermissionRequest(
-    const GURL& requesting_origin,
-    RequestType request_type,
-    bool has_gesture,
+    std::unique_ptr<PermissionRequestData> request_data,
     PermissionDecidedCallback permission_decided_callback,
-    base::OnceClosure delete_callback)
-    : PermissionRequest_ChromiumImpl(requesting_origin,
-                                     request_type,
-                                     has_gesture,
-                                     std::move(permission_decided_callback),
-                                     std::move(delete_callback)) {}
-
-PermissionRequest::PermissionRequest(
-    PermissionRequestData request_data,
-    PermissionDecidedCallback permission_decided_callback,
-    base::OnceClosure delete_callback)
+    base::OnceClosure request_finished_callback,
+    bool uses_automatic_embargo)
     : PermissionRequest_ChromiumImpl(std::move(request_data),
                                      std::move(permission_decided_callback),
-                                     std::move(delete_callback)) {}
+                                     std::move(request_finished_callback),
+                                     uses_automatic_embargo) {}
 
 PermissionRequest::~PermissionRequest() = default;
 
-bool PermissionRequest::SupportsLifetime() const {
-  const RequestType kExcludedTypes[] = {
-    RequestType::kDiskQuota,
-    RequestType::kMultipleDownloads,
 #if BUILDFLAG(IS_ANDROID)
-    RequestType::kProtectedMediaIdentifier,
+PermissionRequest::AnnotatedMessageText
+PermissionRequest::GetDialogAnnotatedMessageText(
+    const GURL& embedding_origin) const {
+  if (request_type() != RequestType::kStorageAccess) {
+    return PermissionRequest_ChromiumImpl::GetDialogAnnotatedMessageText(
+        embedding_origin);
+  }
+  std::u16string requesting_origin_string_formatted =
+      url_formatter::FormatUrlForSecurityDisplay(
+          requesting_origin(),
+          url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+  std::u16string embedding_origin_string_formatted =
+      url_formatter::FormatUrlForSecurityDisplay(
+          embedding_origin, url_formatter::SchemeDisplay::OMIT_CRYPTOGRAPHIC);
+  return AnnotatedMessageText(
+      l10n_util::GetStringFUTF16(IDS_STORAGE_ACCESS_INFOBAR_TEXT,
+                                 requesting_origin_string_formatted,
+                                 embedding_origin_string_formatted),
+      /*bolded_ranges=*/{});
+}
+
+// static
+PermissionRequest::AnnotatedMessageText
+PermissionRequest::GetDialogAnnotatedMessageText(
+    std::u16string requesting_origin_formatted_for_display,
+    int message_id,
+    bool format_origin_bold) {
+  return PermissionRequest_ChromiumImpl::GetDialogAnnotatedMessageText(
+      requesting_origin_formatted_for_display, message_id, format_origin_bold);
+}
+#endif
+
+bool PermissionRequest::SupportsLifetime() const {
+  static constexpr auto kExcludedTypes = base::MakeFixedFlatSet<RequestType>(
+      {RequestType::kDiskQuota, RequestType::kMultipleDownloads,
+#if BUILDFLAG(IS_ANDROID)
+       RequestType::kProtectedMediaIdentifier,
 #else
     RequestType::kRegisterProtocolHandler,
 #endif  // BUILDFLAG(IS_ANDROID)
 #if BUILDFLAG(ENABLE_WIDEVINE)
-    RequestType::kWidevine
+       RequestType::kWidevine
 #endif  // BUILDFLAG(ENABLE_WIDEVINE)
-  };
-  return !base::Contains(kExcludedTypes, request_type());
+      });
+  return !kExcludedTypes.contains(request_type());
 }
 
-void PermissionRequest::SetLifetime(absl::optional<base::TimeDelta> lifetime) {
+void PermissionRequest::SetLifetime(std::optional<base::TimeDelta> lifetime) {
   DCHECK(SupportsLifetime());
   lifetime_ = std::move(lifetime);
 }
 
-const absl::optional<base::TimeDelta>& PermissionRequest::GetLifetime() const {
+const std::optional<base::TimeDelta>& PermissionRequest::GetLifetime() const {
   DCHECK(SupportsLifetime());
   return lifetime_;
 }

@@ -9,30 +9,47 @@ import re
 import override_utils
 
 # Remove redirect_cc from the command line.
-GOMACC_PATTERN_TO_REPLACE = (r'gomacc(\.exe)', r'(gomacc|redirect_cc)(\.exe)')
+CMD_PATTERN_TO_REPLACE = (r'rewrapper(\.exe)',
+                          r'(rewrapper|redirect_cc)(\.exe)')
 
-# pylint: disable=used-before-assignment
-assert GOMACC_PATTERN_TO_REPLACE[0] in _CLANG_WRAPPER_CMD_LINE_RE.pattern
+_CLANG_WRAPPER_CMD_LINE_RE: object  # Injected from upstream compile_db.py.
+assert CMD_PATTERN_TO_REPLACE[0] in _CLANG_WRAPPER_CMD_LINE_RE.pattern
 _CLANG_WRAPPER_CMD_LINE_RE = re.compile(
-    _CLANG_WRAPPER_CMD_LINE_RE.pattern.replace(*GOMACC_PATTERN_TO_REPLACE),
+    _CLANG_WRAPPER_CMD_LINE_RE.pattern.replace(*CMD_PATTERN_TO_REPLACE),
     re.VERBOSE)
 
 
 @override_utils.override_function(globals())
-def _FilterFlags(original_function, command, additional_filtered_flags):
-    filtered_flags = [
-        # Remove clangd-indexer unsupported flag.
-        '-gno-codeview-command-line'
-    ]
-    if additional_filtered_flags:
-        additional_filtered_flags.extend(filtered_flags)
-    else:
-        additional_filtered_flags = filtered_flags
+def ProcessCompileDatabase(original_function,
+                           compile_db,
+                           filtered_args,
+                           target_os=None):
+    # Handle multiple flags passed as a single comma-separated value.
+    if filtered_args and len(filtered_args) == 1 and ',' in filtered_args[0]:
+        filtered_args = filtered_args[0].split(',')
 
+    ext_filtered_flags = [
+        # Remove clangd-indexer unsupported flags.
+        '-gno-codeview-command-line',
+        '-Wno-delayed-template-parsing-in-cxx20',
+        '-Wno-thread-safety-reference-return',
+        '-Wno-c++11-narrowing-const-reference',
+    ]
+
+    if filtered_args:
+        filtered_args.extend(ext_filtered_flags)
+    else:
+        filtered_args = ext_filtered_flags
+
+    return original_function(compile_db, filtered_args, target_os=target_os)
+
+
+@override_utils.override_function(globals())
+def _FilterFlags(original_function, command, additional_filtered_flags):
     flags = original_function(command, additional_filtered_flags)
     flags_to_restore = [
-        # Clangd 15+ is required, VSCode extension includes it.
         ' -Xclang -fexperimental-max-bitint-width=256',
+        ' -Xclang -iquote../../brave/chromium_src',
     ]
 
     for flag_to_restore in flags_to_restore:

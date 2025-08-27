@@ -10,7 +10,7 @@
 #include "net/base/features.h"
 #include "url/origin.h"
 
-#include "src/services/network/cookie_settings.cc"
+#include <services/network/cookie_settings.cc>
 
 namespace network {
 
@@ -28,7 +28,8 @@ bool CookieSettings::IsEphemeralCookieAccessible(
   // specific cookie or not, so we simply return |true| if that's the case.
   // See https://crrev.com/c/2895004 for the upstream change that required this.
   if (IsEphemeralCookieAccessAllowed(url, site_for_cookies, top_frame_origin,
-                                     overrides)) {
+                                     overrides,
+                                     /*cookie_partition_key=*/std::nullopt)) {
     return true;
   }
 
@@ -44,7 +45,8 @@ CookieSettings::IsEphemeralPrivacyModeEnabled(
     const std::optional<url::Origin>& top_frame_origin,
     net::CookieSettingOverrides overrides) const {
   if (IsEphemeralCookieAccessAllowed(url, site_for_cookies, top_frame_origin,
-                                     overrides)) {
+                                     overrides,
+                                     /*cookie_partition_key=*/std::nullopt)) {
     return net::NetworkDelegate::PrivacySetting::kStateAllowed;
   }
 
@@ -65,7 +67,8 @@ bool CookieSettings::AnnotateAndMoveUserBlockedEphemeralCookies(
     top_frame_origin_opt = *top_frame_origin;
 
   if (IsEphemeralCookieAccessAllowed(url, site_for_cookies,
-                                     top_frame_origin_opt, overrides)) {
+                                     top_frame_origin_opt, overrides,
+                                     /*cookie_partition_key=*/std::nullopt)) {
     return true;
   }
 

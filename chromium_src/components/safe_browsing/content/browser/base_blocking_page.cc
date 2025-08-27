@@ -7,8 +7,8 @@
 
 namespace {
 
-const char kSafeBrowsingHelpCenterURL[] =
-    "https://support.brave.com/hc/en-us/articles/"
+constexpr char kSafeBrowsingHelpCenterURL[] =
+    "https://support.brave.app/hc/en-us/articles/"
     "15222663599629-Safe-Browsing-in-Brave";
 
 }  // namespace
@@ -32,5 +32,5 @@ class BraveSafeBrowsingLoudErrorUI : public SafeBrowsingLoudErrorUI {
 }  // namespace security_interstitials
 
 #define SafeBrowsingLoudErrorUI BraveSafeBrowsingLoudErrorUI
-#include "src/components/safe_browsing/content/browser/base_blocking_page.cc"
+#include <components/safe_browsing/content/browser/base_blocking_page.cc>
 #undef SafeBrowsingLoudErrorUI

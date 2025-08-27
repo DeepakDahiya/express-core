@@ -3,10 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "src/components/search/ntp_features.cc"
-
 #include "base/feature_override.h"
 #include "build/build_config.h"
+
+#include <components/search/ntp_features.cc>
 
 namespace ntp_features {
 
@@ -17,9 +17,6 @@ OVERRIDE_FEATURE_DEFAULT_STATES({{
     {kNtpAlphaBackgroundCollections, base::FEATURE_DISABLED_BY_DEFAULT},
     {kNtpBackgroundImageErrorDetection, base::FEATURE_DISABLED_BY_DEFAULT},
     {kNtpChromeCartModule, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kNtpHistoryClustersModule, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kNtpHistoryClustersModuleDiscounts, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kNtpHistoryClustersModuleLoad, base::FEATURE_DISABLED_BY_DEFAULT},
     {kNtpModulesMaxColumnCount, base::FEATURE_DISABLED_BY_DEFAULT},
 }});
 

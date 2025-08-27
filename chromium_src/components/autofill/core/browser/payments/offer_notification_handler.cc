@@ -5,7 +5,7 @@
 
 #include "components/autofill/core/browser/payments/offer_notification_handler.h"
 
-#include "components/autofill/core/browser/data_model/autofill_offer_data.h"
+#include "components/autofill/core/browser/data_model/payments/autofill_offer_data.h"
 #include "components/autofill/core/browser/payments/autofill_offer_manager.h"
 
 namespace autofill {
@@ -14,7 +14,7 @@ namespace {
 
 // This replicates the functionality that the removed upstream flag
 // kAutofillEnableOfferNotificationForPromoCodes used to have.
-bool BraveIsOfferValid(AutofillOfferData* offer) {
+bool BraveIsOfferValid(const AutofillOfferData* offer) {
   if (!offer) {
     return false;
   }
@@ -33,5 +33,5 @@ bool BraveIsOfferValid(AutofillOfferData* offer) {
 #define IsUrlEligible(URL) \
   IsUrlEligible(URL) && BraveIsOfferValid(offer_manager_->GetOfferForUrl(URL))
 
-#include "src/components/autofill/core/browser/payments/offer_notification_handler.cc"
+#include <components/autofill/core/browser/payments/offer_notification_handler.cc>
 #undef IsUrlEligible

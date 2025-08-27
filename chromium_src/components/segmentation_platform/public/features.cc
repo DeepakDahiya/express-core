@@ -5,15 +5,13 @@
 
 #include "components/segmentation_platform/public/features.h"
 
-#include "src/components/segmentation_platform/public/features.cc"
-
 #include "base/feature_override.h"
+
+#include <components/segmentation_platform/public/features.cc>
 
 namespace segmentation_platform::features {
 
 OVERRIDE_FEATURE_DEFAULT_STATES({{
-    {kSegmentationPlatformCollectTabRankData,
-     base::FEATURE_DISABLED_BY_DEFAULT},
     {kSegmentationPlatformDeviceTier, base::FEATURE_DISABLED_BY_DEFAULT},
     {kSegmentationPlatformFeature, base::FEATURE_DISABLED_BY_DEFAULT},
     {kSegmentationPlatformTimeDelaySampling, base::FEATURE_DISABLED_BY_DEFAULT},

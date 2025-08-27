@@ -4,14 +4,22 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "ios/web/web_state/ui/crw_web_controller.h"
-#include "net/base/mac/url_conversions.h"
+#include "net/base/apple/url_conversions.h"
 #include "url/gurl.h"
 
 #include <Webkit/Webkit.h>
 
+// Replace the underlying CRWWKNavigationHandler with our subclass
+#define _navigationHandler                                         \
+  _navigationHandler =                                             \
+      [[BraveCRWWKNavigationHandler alloc] initWithDelegate:self]; \
+  if (false) [[maybe_unused]]                                      \
+  auto* _
+// Support for tab sync
 #define webViewNavigationProxy webViewNavigationProxy_ChromiumImpl
-#include "src/ios/web/web_state/ui/crw_web_controller.mm"
+#include <ios/web/web_state/ui/crw_web_controller.mm>
 #undef webViewNavigationProxy
+#undef _navigationHandler
 
 #pragma mark - BackForwardList
 
@@ -76,6 +84,10 @@
 
 - (WKBackForwardList*)backForwardList {
   return (WKBackForwardList*)[[BackForwardList alloc] init];
+}
+
+- (NSString*)title {
+  return @"";
 }
 @end
 

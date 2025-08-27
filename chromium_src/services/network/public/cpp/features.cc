@@ -1,19 +1,18 @@
-/* Copyright (c) 2021 The Brave Authors. All rights reserved.
+/* Copyright (c) 2025 The Brave Authors. All rights reserved.
  * This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
- * You can obtain one at http://mozilla.org/MPL/2.0/. */
-
-#include "src/services/network/public/cpp/features.cc"
+ * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "base/feature_override.h"
 
-namespace network {
-namespace features {
+#include <services/network/public/cpp/features.cc>
+
+namespace network::features {
 
 OVERRIDE_FEATURE_DEFAULT_STATES({{
-    {kFledgePst, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kPrivateStateTokens, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kBrowsingTopics, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kInterestGroupStorage, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kSharedStorageAPI, base::FEATURE_DISABLED_BY_DEFAULT},
 }});
 
-}  // namespace features
-}  // namespace network
+}  // namespace network::features

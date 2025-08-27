@@ -6,6 +6,7 @@
 #include <string>
 #include <vector>
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/no_destructor.h"
@@ -23,14 +24,15 @@
 #define PopulateSharedResourcesDataSource \
   PopulateSharedResourcesDataSource_ChromiumImpl
 
-#include "src/content/browser/webui/shared_resources_data_source.cc"
+#include <content/browser/webui/shared_resources_data_source.cc>
 
 #undef PopulateSharedResourcesDataSource
 
 namespace {
 
 bool ShouldHandleWebUIRequestCallback(const std::string& path) {
-  if (!base::EqualsCaseInsensitiveASCII(path, "fonts/poppins.css")) {
+  if (!base::EqualsCaseInsensitiveASCII(path, "fonts/poppins.css") &&
+      !base::EqualsCaseInsensitiveASCII(path, "fonts/inter.css")) {
     return false;
   }
 

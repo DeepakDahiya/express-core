@@ -7,7 +7,7 @@
 #define BRAVE_CHROMIUM_SRC_COMPONENTS_PERMISSIONS_PERMISSION_UTIL_H_
 
 #define PermissionUtil PermissionUtil_ChromiumImpl
-#include "src/components/permissions/permission_util.h"  // IWYU pragma: export
+#include <components/permissions/permission_util.h>  // IWYU pragma: export
 #undef PermissionUtil
 
 namespace permissions {
@@ -19,7 +19,7 @@ class PermissionUtil : public PermissionUtil_ChromiumImpl {
                                 blink::PermissionType* out);
   static bool IsPermission(ContentSettingsType type);
 
-  static blink::PermissionType ContentSettingTypeToPermissionType(
+  static blink::PermissionType ContentSettingsTypeToPermissionType(
       ContentSettingsType permission);
 
   static GURL GetCanonicalOrigin(ContentSettingsType permission,

@@ -3,10 +3,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "src/content/public/common/content_features.cc"
-
 #include "base/feature_override.h"
 #include "build/build_config.h"
+
+#include <content/public/common/content_features.cc>
 
 namespace features {
 
@@ -18,20 +18,16 @@ BASE_FEATURE(kIdleDetection,
              base::FEATURE_DISABLED_BY_DEFAULT);
 
 OVERRIDE_FEATURE_DEFAULT_STATES({{
-    {kAttributionFencedFrameReportingBeacon, base::FEATURE_DISABLED_BY_DEFAULT},
     {kCookieDeprecationFacilitatedTesting, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kDevToolsPrivacyUI, base::FEATURE_DISABLED_BY_DEFAULT},
     {kDigitalGoodsApi, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kDIPS, base::FEATURE_DISABLED_BY_DEFAULT},
     {kFedCm, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kFirstPartySets, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kLegacyTechReportEnableCookieIssueReports,
-     base::FEATURE_DISABLED_BY_DEFAULT},
-    {kLegacyTechReportTopLevelUrl, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kNotificationTriggers, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kPrefetchProxy, base::FEATURE_DISABLED_BY_DEFAULT},
     {kPrivacySandboxAdsAPIsOverride, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kSignedHTTPExchange, base::FEATURE_DISABLED_BY_DEFAULT},
-#if BUILDFLAG(IS_ANDROID)
-    {kWebNfc, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kServiceWorkerAutoPreload, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kWebIdentityDigitalCredentials, base::FEATURE_DISABLED_BY_DEFAULT},
+#if BUILDFLAG(IS_WIN) || BUILDFLAG(IS_MAC) || BUILDFLAG(IS_LINUX)
+    {kPwaNavigationCapturing, base::FEATURE_DISABLED_BY_DEFAULT},
 #endif
     {kWebOTP, base::FEATURE_DISABLED_BY_DEFAULT},
 }});

@@ -5,16 +5,15 @@
 
 #include "components/sync/service/sync_internals_util.h"
 
+#include "base/check_op.h"
 #include "brave/components/sync/service/brave_sync_service_impl.h"
 #include "components/os_crypt/sync/os_crypt.h"
 
 #define ConstructAboutInformation ConstructAboutInformation_ChromiumImpl
-#include "src/components/sync/service/sync_internals_util.cc"
+#include <components/sync/service/sync_internals_util.cc>
 #undef ConstructAboutInformation
 
-namespace syncer {
-
-namespace sync_ui_util {
+namespace syncer::sync_ui_util {
 
 base::Value::Dict ConstructAboutInformation(
     IncludeSensitiveData include_sensitive_data,
@@ -49,6 +48,10 @@ base::Value::Dict ConstructAboutInformation(
       section_brave_sync.AddBoolStat("OS encryption available");
   is_os_encryption_available->Set(OSCrypt::IsEncryptionAvailable());
 
+  Stat<std::string>* leave_chain_details =
+      section_brave_sync.AddStringStat("Leave chain details");
+  leave_chain_details->Set(brave_sync_service->prefs().GetLeaveChainDetails());
+
   base::Value::List* details = about_info.FindList(kDetailsKey);
   DCHECK_NE(details, nullptr);
 
@@ -56,6 +59,4 @@ base::Value::Dict ConstructAboutInformation(
   return about_info;
 }
 
-}  // namespace sync_ui_util
-
-}  // namespace syncer
+}  // namespace syncer::sync_ui_util

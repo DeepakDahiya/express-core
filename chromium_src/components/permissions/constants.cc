@@ -6,12 +6,12 @@
 #include "components/permissions/constants.h"
 
 #define kChooserBluetoothOverviewURL kChooserBluetoothOverviewURL_ChromeOverride
-#include "src/components/permissions/constants.cc"
+#include <components/permissions/constants.cc>
 #undef kChooserBluetoothOverviewURL
 
 namespace permissions {
 
-const char kChooserBluetoothOverviewURL[] =
+constexpr char kChooserBluetoothOverviewURL[] =
     "https://github.com/brave/brave-browser/wiki/Web-API-Permissions";
 
 }  // namespace permissions

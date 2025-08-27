@@ -5,17 +5,14 @@
 
 #include "content/browser/renderer_host/mixed_content_checker.h"
 
-#include "base/strings/string_util.h"
-
-#include "src/content/browser/renderer_host/mixed_content_checker.cc"
+#include <content/browser/renderer_host/mixed_content_checker.cc>
 
 namespace content {
 
 // static
 bool MixedContentChecker::DoesOriginSchemeRestrictMixedContent(
     const url::Origin& origin) {
-  constexpr const char kOnion[] = ".onion";
-  if (base::EndsWith(origin.host(), kOnion) &&
+  if (origin.host().ends_with(".onion") &&
       (origin.scheme() == url::kHttpsScheme ||
        origin.scheme() == url::kHttpScheme ||
        origin.scheme() == url::kWsScheme ||

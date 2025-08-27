@@ -5,26 +5,25 @@
 
 #include "components/search_engines/search_engine_utils.h"
 
+#include "base/compiler_specific.h"
 #include "brave/components/search_engines/brave_prepopulated_engines.h"
 
 #define GetEngineType GetEngineType_ChromiumImpl
-#include "src/components/search_engines/search_engine_utils.cc"
+#include <components/search_engines/search_engine_utils.cc>
 #undef GetEngineType
 
-namespace SearchEngineUtils {
+namespace search_engine_utils {
 
 SearchEngineType GetEngineType(const GURL& url) {
   SearchEngineType type = GetEngineType_ChromiumImpl(url);
   if (type == SEARCH_ENGINE_OTHER) {
-    const auto& brave_engines_map =
-        TemplateURLPrepopulateData::GetBraveEnginesMap();
-    for (const auto& entry : brave_engines_map) {
+    for (const auto& entry : TemplateURLPrepopulateData::kBraveEngines) {
       const auto* engine = entry.second;
       if (SameDomain(url, GURL(engine->search_url))) {
         return engine->type;
       }
-      for (size_t j = 0; j < engine->alternate_urls_size; ++j) {
-        if (SameDomain(url, GURL(engine->alternate_urls[j]))) {
+      for (const auto* alternate_url : engine->alternate_urls) {
+        if (SameDomain(url, GURL(alternate_url))) {
           return engine->type;
         }
       }
@@ -33,4 +32,4 @@ SearchEngineType GetEngineType(const GURL& url) {
   return type;
 }
 
-}  // namespace SearchEngineUtils
+}  // namespace search_engine_utils

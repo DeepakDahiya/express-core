@@ -4,11 +4,14 @@
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "components/permissions/permission_request_data.h"
-#include "components/permissions/permission_context_base.h"
+
+#include <optional>
+
+#include "components/permissions/content_setting_permission_context_base.h"
 
 namespace permissions {
 
-absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists_BraveImpl(
+std::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists_BraveImpl(
     ContentSettingsType content_settings_type) {
   switch (content_settings_type) {
     case ContentSettingsType::BRAVE_ETHEREUM:
@@ -19,6 +22,10 @@ absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists_BraveImpl(
       return RequestType::kBraveGoogleSignInPermission;
     case ContentSettingsType::BRAVE_LOCALHOST_ACCESS:
       return RequestType::kBraveLocalhostAccessPermission;
+    case ContentSettingsType::BRAVE_OPEN_AI_CHAT:
+      return RequestType::kBraveOpenAIChat;
+    case ContentSettingsType::BRAVE_CARDANO:
+      return RequestType::kBraveCardano;
     default:
       return ContentSettingsTypeToRequestTypeIfExists(content_settings_type);
   }
@@ -31,7 +38,7 @@ absl::optional<RequestType> ContentSettingsTypeToRequestTypeIfExists_BraveImpl(
 #define ContentSettingsTypeToRequestTypeIfExists \
   ContentSettingsTypeToRequestTypeIfExists_BraveImpl
 
-#include "src/components/permissions/permission_request_data.cc"
+#include <components/permissions/permission_request_data.cc>
 
 #undef ContentSettingsTypeToRequestTypeIfExists
 #undef PermissionContextBase

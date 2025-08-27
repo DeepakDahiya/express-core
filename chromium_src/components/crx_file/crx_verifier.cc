@@ -5,27 +5,32 @@
 
 #include "components/crx_file/crx_verifier.h"
 
+#include <array>
 #include <utility>
-#include <vector>
 
-#include "base/no_destructor.h"
+#include "base/containers/span.h"
 
 namespace {
 
-// The brave publisher key in alternative to google one (kPublisherKeyHash).
+// The Brave publisher key that is accepted in addition to upstream's
+// kPublisherKeyHash. This key may be used to verify updates of the browser
+// itself. If you change this constant, then you will likely also need to change
+// the associated file crx-private-key.der, which is not in Git.
+// Until May 2024, components were only signed with 0x93, 0x74, 0xd6... Since
+// then, they are also signed with this new key. Now, the value here ensures
+// that only binaries signed with the new key are accepted.
 constexpr uint8_t kBravePublisherKeyHash[] = {
-    0x93, 0x74, 0xd6, 0x2a, 0x32, 0x76, 0x74, 0x74, 0xac, 0x99, 0xd9,
-    0xc0, 0x55, 0xea, 0xf2, 0x6e, 0x10, 0x7,  0x45, 0x6,  0xb9, 0xd5,
-    0x35, 0xc8, 0x35, 0x8,  0x28, 0x97, 0x5f, 0x7a, 0xc1, 0x97};
+    0xb8, 0xb9, 0xd3, 0x85, 0xd5, 0x1d, 0x37, 0x9d, 0x92, 0x56, 0xa0,
+    0xf0, 0xa7, 0xf5, 0x1b, 0xb0, 0x8e, 0x3e, 0xb5, 0x64, 0xab, 0x85,
+    0xbd, 0x19, 0xd6, 0xff, 0x49, 0xa7, 0x35, 0x19, 0x84, 0xf7};
 
-std::vector<uint8_t>& GetBravePublisherKeyHash() {
-  static base::NoDestructor<std::vector<uint8_t>> brave_publisher_key(
-      std::begin(kBravePublisherKeyHash), std::end(kBravePublisherKeyHash));
-  return *brave_publisher_key;
+auto GetBravePublisherKeyHash() {
+  static auto brave_publisher_key = std::to_array(kBravePublisherKeyHash);
+  return base::span(brave_publisher_key);
 }
 
 // Used in the patch in crx_verifier.cc.
-bool IsBravePublisher(const std::vector<uint8_t>& key_hash) {
+bool IsBravePublisher(base::span<const uint8_t> key_hash) {
   return GetBravePublisherKeyHash() == key_hash;
 }
 
@@ -33,10 +38,10 @@ bool IsBravePublisher(const std::vector<uint8_t>& key_hash) {
 
 namespace crx_file {
 
-void SetBravePublisherKeyHashForTesting(const std::vector<uint8_t>& test_key) {
-  GetBravePublisherKeyHash() = test_key;
+void SetBravePublisherKeyHashForTesting(base::span<const uint8_t> test_key) {
+  GetBravePublisherKeyHash().copy_from(test_key);
 }
 
 }  // namespace crx_file
 
-#include "src/components/crx_file/crx_verifier.cc"
+#include <components/crx_file/crx_verifier.cc>

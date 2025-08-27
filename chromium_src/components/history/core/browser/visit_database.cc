@@ -10,6 +10,24 @@
   case SOURCE_BRAVE_IMPORTED:  \
   case SOURCE_SAFARI_IMPORTED
 
-#include "src/components/history/core/browser/visit_database.cc"
+#include <components/history/core/browser/visit_database.cc>
 
 #undef SOURCE_SAFARI_IMPORTED
+
+namespace history {
+
+bool VisitDatabase::GetKnownToSyncCount(int* count) {
+  sql::Statement statement(
+      GetDB().GetCachedStatement(SQL_FROM_HERE,
+                                 "SELECT COUNT(*) "
+                                 "FROM visits "
+                                 "WHERE is_known_to_sync == TRUE"));
+
+  *count = 0;
+  if (statement.Step()) {
+    *count = statement.ColumnInt(0);
+  }
+  return true;
+}
+
+}  // namespace history

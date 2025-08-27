@@ -3,19 +3,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "src/components/sync/engine/sync_scheduler_impl_unittest.cc"
+#include <components/sync/engine/sync_scheduler_impl_unittest.cc>
 
 namespace syncer {
 
 namespace {
 
-void SimulatePollFailedRegularTransientError(ModelTypeSet requested_types,
+void SimulatePollFailedRegularTransientError(DataTypeSet requested_types,
                                              SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError::ProtocolError(TRANSIENT_ERROR));
 }
 
-void SimulatePollFailedNigoryNotReady(ModelTypeSet requested_types,
+void SimulatePollFailedNigoryNotReady(DataTypeSet requested_types,
                                       SyncCycle* cycle) {
   cycle->mutable_status_controller()->set_last_download_updates_result(
       SyncerError::ProtocolError(TRANSIENT_ERROR));

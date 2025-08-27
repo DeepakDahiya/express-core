@@ -7,15 +7,6 @@
 
 #include "components/permissions/permissions_client.h"
 
-// Since we don't do UMA just reuse an existing UMA type instead of adding one.
-#define BRAVE_GET_UMA_VALUE_FOR_REQUEST_TYPE         \
-  case RequestType::kWidevine:                       \
-  case RequestType::kBraveEthereum:                  \
-  case RequestType::kBraveSolana:                    \
-  case RequestType::kBraveGoogleSignInPermission:    \
-  case RequestType::kBraveLocalhostAccessPermission: \
-    return RequestTypeForUma::PERMISSION_VR;
-
 // We do not record permissions UKM and this can save us from patching
 // in RecordPermissionAction for unhandling switch cases for Brave's content
 // settings type.
@@ -25,6 +16,12 @@
     return;                        \
   PermissionsClient::Get()->GetUkmSourceId
 
-#include "src/components/permissions/permission_uma_util.cc"
-#undef BRAVE_GET_UMA_VALUE_FOR_REQUEST_TYPE
+#define kTpcdGrant                  \
+  kRemoteList:                      \
+  source_suffix = "FromRemoteList"; \
+  break;                            \
+  case SettingSource::kTpcdGrant
+
+#include <components/permissions/permission_uma_util.cc>
 #undef GetUkmSourceId
+#undef kTpcdGrant

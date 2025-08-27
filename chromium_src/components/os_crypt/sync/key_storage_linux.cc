@@ -5,6 +5,8 @@
 
 #include "components/os_crypt/sync/key_storage_linux.h"
 
+#include "base/logging.h"
+
 #define BRAVE_KEY_STORAGE_LINUX                             \
   const char KeyStorageLinux::kFolderName[] = "Brave Keys"; \
   const char KeyStorageLinux::kKey[] = "Brave Safe Storage";
@@ -36,7 +38,7 @@
   static const base::NoDestructor<std::string> kDefaultApplicationName("brave");
 // clang-format on
 
-#include "src/components/os_crypt/sync/key_storage_linux.cc"
+#include <components/os_crypt/sync/key_storage_linux.cc>
 #undef BRAVE_KEY_STORAGE_LINUX_CREATE_SERVICE_INTERNAL
 #undef BRAVE_KEY_STORAGE_LINUX_CREATE_SERVICE
 #undef BRAVE_KEY_STORAGE_LINUX

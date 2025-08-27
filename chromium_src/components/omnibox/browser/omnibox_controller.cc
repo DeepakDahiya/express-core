@@ -5,16 +5,33 @@
 
 #include "components/omnibox/browser/omnibox_controller.h"
 
-#include "brave/components/omnibox/browser/brave_omnibox_client.h"
+#include "brave/components/omnibox/browser/brave_omnibox_prefs.h"
+#include "components/prefs/pref_service.h"
+#include "components/search_engines/template_url_starter_pack_data.h"
+
+namespace {
+
+bool IsAutocompleteEnabled(const PrefService* prefs) {
+  return prefs->GetBoolean(omnibox::kAutocompleteEnabled);
+}
+
+}  // namespace
 
 #define StartAutocomplete StartAutocomplete_ChromiumImpl
-#include "src/components/omnibox/browser/omnibox_controller.cc"
+
+// We disable starter pack expansion to hide @gemini search keyword. Piggy back
+// on it to also disable @aimode.
+#define kGemini                                  \
+  kGemini || (turl && turl->starter_pack_id() == \
+                          template_url_starter_pack_data::kAiMode)
+
+#include <components/omnibox/browser/omnibox_controller.cc>
+#undef kGemini
 #undef StartAutocomplete
 
 void OmniboxController::StartAutocomplete(
     const AutocompleteInput& input) const {
-  auto* client = static_cast<BraveOmniboxClient*>(client_.get());
-  if (!client->IsAutocompleteEnabled()) {
+  if (!IsAutocompleteEnabled(client_->GetPrefs())) {
     ClearPopupKeywordMode();
     return;
   }

@@ -14,8 +14,6 @@
 
 #define RemoveChangeListener                                          \
   NotUsed() const {}                                                  \
-  base::Time ModifyExpiration(const base::Time& expiry_date,          \
-                              const base::Time& creation_date) const; \
   net::CookieOptions MakeOptionsForSet(                               \
       mojom::RestrictedCookieManagerRole role, const GURL& url,       \
       const net::SiteForCookies& site_for_cookies,                    \
@@ -26,7 +24,7 @@
       const CookieSettings& cookie_settings) const;                   \
   void RemoveChangeListener
 
-#include "src/services/network/restricted_cookie_manager.h"  // IWYU pragma: export
+#include <services/network/restricted_cookie_manager.h>  // IWYU pragma: export
 
 #undef RemoveChangeListener
 

@@ -5,9 +5,11 @@
 
 #include "components/viz/service/gl/gpu_service_impl.h"
 
+#include "base/strings/utf_string_conversions.h"
+
 #define InitializeWithHost InitializeWithHost_ChromiumImpl
 
-#include "src/components/viz/service/gl/gpu_service_impl.cc"
+#include <components/viz/service/gl/gpu_service_impl.cc>
 
 #undef InitializeWithHost
 
@@ -24,14 +26,31 @@ void GpuServiceImpl::InitializeWithHost(
     mojo::PendingRemote<mojom::GpuHost> pending_gpu_host,
     gpu::GpuProcessShmCount use_shader_cache_shm_count,
     scoped_refptr<gl::GLSurface> default_offscreen_surface,
+    mojom::GpuServiceCreationParamsPtr creation_params,
+#if BUILDFLAG(IS_ANDROID)
     gpu::SyncPointManager* sync_point_manager,
     gpu::SharedImageManager* shared_image_manager,
     gpu::Scheduler* scheduler,
-    base::WaitableEvent* shutdown_event) {
+#endif
+    base::WaitableEvent* shutdown_event
+#if BUILDFLAG(IS_ANDROID)
+    ,
+    const gpu::SharedContextState::GrContextOptionsProvider*
+        gr_context_options_provider
+#endif
+) {
   InitializeWithHost_ChromiumImpl(
       std::move(pending_gpu_host), std::move(use_shader_cache_shm_count),
-      std::move(default_offscreen_surface), sync_point_manager,
-      shared_image_manager, scheduler, shutdown_event);
+      std::move(default_offscreen_surface), std::move(creation_params),
+#if BUILDFLAG(IS_ANDROID)
+      sync_point_manager, shared_image_manager, scheduler,
+#endif
+      shutdown_event
+#if BUILDFLAG(IS_ANDROID)
+      ,
+      gr_context_options_provider
+#endif
+  );
 #if BUILDFLAG(IS_WIN)
   if (gpu_host_) {
     std::string result;

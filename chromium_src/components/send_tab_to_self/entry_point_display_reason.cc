@@ -3,22 +3,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include <optional>
+
 #include "components/send_tab_to_self/entry_point_display_reason.h"
 
 #define GetEntryPointDisplayReason GetEntryPointDisplayReason_ChromiumImpl
-#include "src/components/send_tab_to_self/entry_point_display_reason.cc"
+#include <components/send_tab_to_self/entry_point_display_reason.cc>
 #undef GetEntryPointDisplayReason
 
-namespace send_tab_to_self {
+namespace send_tab_to_self::internal {
 
-namespace internal {
-
-absl::optional<EntryPointDisplayReason> GetEntryPointDisplayReason(
+std::optional<EntryPointDisplayReason> GetEntryPointDisplayReason(
     const GURL& url_to_share,
     syncer::SyncService* sync_service,
     SendTabToSelfModel* send_tab_to_self_model,
     PrefService* pref_service) {
-  absl::optional<send_tab_to_self::EntryPointDisplayReason> reason =
+  std::optional<send_tab_to_self::EntryPointDisplayReason> reason =
       GetEntryPointDisplayReason_ChromiumImpl(
           url_to_share, sync_service, send_tab_to_self_model, pref_service);
   if (!reason) {
@@ -31,12 +31,10 @@ absl::optional<EntryPointDisplayReason> GetEntryPointDisplayReason(
   // still want to prevent the UI from showing.
   if (*reason == EntryPointDisplayReason::kInformNoTargetDevice ||
       *reason == EntryPointDisplayReason::kOfferSignIn) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   return reason;
 }
 
-}  // namespace internal
-
-}  // namespace send_tab_to_self
+}  // namespace send_tab_to_self::internal

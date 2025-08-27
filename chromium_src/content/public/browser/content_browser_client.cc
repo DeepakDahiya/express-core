@@ -3,7 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "src/content/public/browser/content_browser_client.cc"
+#include "base/debug/dump_without_crashing.h"
+
+#include <content/public/browser/content_browser_client.cc>
 
 namespace content {
 
@@ -19,10 +21,36 @@ bool ContentBrowserClient::AllowWorkerFingerprinting(
   return true;
 }
 
-uint8_t ContentBrowserClient::WorkerGetBraveFarblingLevel(
+std::optional<base::UnguessableToken>
+ContentBrowserClient::GetEphemeralStorageToken(
+    RenderFrameHost* render_frame_host,
+    const url::Origin& origin) {
+  return std::nullopt;
+}
+
+bool ContentBrowserClient::CanThirdPartyStoragePartitioningBeDisabled(
+    BrowserContext* browser_context,
+    const url::Origin& origin) {
+  return false;
+}
+
+brave_shields::mojom::ShieldsSettingsPtr
+ContentBrowserClient::WorkerGetBraveShieldSettings(
     const GURL& url,
     BrowserContext* browser_context) {
-  return 1 /* OFF */;
+  // BraveContentBrowserClient should implement this. It's possible this is
+  // reached somehow, add dumps to see if it's true.
+  base::debug::DumpWithoutCrashing();
+  return brave_shields::mojom::ShieldsSettingsPtr();
+}
+
+std::optional<GURL> ContentBrowserClient::SanitizeURL(content::RenderFrameHost*,
+                                                      const GURL& url) {
+  return std::nullopt;
+}
+
+bool ContentBrowserClient::IsWindowsRecallDisabled() {
+  return false;
 }
 
 }  // namespace content

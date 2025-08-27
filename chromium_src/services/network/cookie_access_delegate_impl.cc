@@ -5,7 +5,9 @@
 
 #include "services/network/cookie_access_delegate_impl.h"
 
-#include "src/services/network/cookie_access_delegate_impl.cc"
+#include <optional>
+
+#include <services/network/cookie_access_delegate_impl.cc>
 
 namespace network {
 
@@ -16,12 +18,12 @@ bool CookieAccessDelegateImpl::NotUsed() const {
 bool CookieAccessDelegateImpl::ShouldUseEphemeralStorage(
     const GURL& url,
     const net::SiteForCookies& site_for_cookies,
-    net::CookieSettingOverrides overrides,
-    const absl::optional<url::Origin>& top_frame_origin) const {
-  if (!cookie_settings_)
+    base::optional_ref<const url::Origin> top_frame_origin) const {
+  if (!cookie_settings_) {
     return false;
-  return cookie_settings_->ShouldUseEphemeralStorage(
-      url, site_for_cookies, overrides, top_frame_origin);
+  }
+  return cookie_settings_->ShouldUseEphemeralStorage(url, site_for_cookies,
+                                                     top_frame_origin);
 }
 
 }  // namespace network
