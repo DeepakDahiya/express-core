@@ -11,10 +11,10 @@ source_set("ipfs") {
   ]
   deps = [
     "//base",
-    "//brave/base/mac",
+    "//brave/base/apple",
     "//brave/components/ipfs",
     "//components/user_prefs",
-    "//ios/chrome/browser/shared/model/browser_state",
+    "//ios/chrome/browser/shared/model/profile",
     "//net",
     "//url",
   ]

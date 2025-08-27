@@ -7,10 +7,10 @@
 #define BRAVE_IOS_BROWSER_API_BRAVE_REWARDS_BRAVE_REWARDS_API_H_
 
 #import <Foundation/Foundation.h>
-#import "rewards.mojom.objc.h"
-#import "rewards_types.mojom.objc.h"
 
-@class RewardsObserver, PromotionSolution, RewardsNotification;
+#import "rewards.mojom.objc.h"
+
+@class RewardsObserver, RewardsNotification;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -20,6 +20,8 @@ typedef NSString* ExternalWalletType NS_SWIFT_NAME(ExternalWalletType)
 static ExternalWalletType const ExternalWalletTypeUphold = @"uphold";
 static ExternalWalletType const ExternalWalletTypeAnonymous = @"anonymous";
 static ExternalWalletType const ExternalWalletTypeUnblindedTokens = @"blinded";
+
+@protocol PrefServiceBridge;
 
 /// The error domain for rewards related errors
 OBJC_EXPORT NSString* const BraveRewardsErrorDomain;
@@ -33,8 +35,12 @@ OBJC_EXPORT BraveGeneralRewardsNotificationID const
 OBJC_EXPORT BraveGeneralRewardsNotificationID const
     BraveGeneralRewardsNotificationIDWalletDisconnected;
 
+OBJC_EXPORT NSString* const BraveRewardsDisabledByPolicyPrefName;
+
 OBJC_EXPORT
 @interface BraveRewardsAPI : NSObject
+
++ (BOOL)isSupported:(id<PrefServiceBridge>)prefService;
 
 /// Create a rewards engine that will read and write its state to the given path
 - (instancetype)initWithStateStoragePath:(NSString*)path;
@@ -146,32 +152,6 @@ OBJC_EXPORT
 - (void)removeRecurringTipForPublisherWithId:(NSString*)publisherId
     NS_SWIFT_NAME(removeRecurringTip(publisherId:));
 
-#pragma mark - Promotions
-
-@property(nonatomic, readonly)
-    NSArray<BraveRewardsPromotion*>* pendingPromotions;
-
-@property(nonatomic, readonly)
-    NSArray<BraveRewardsPromotion*>* finishedPromotions;
-
-/// Updates `pendingPromotions` and `finishedPromotions` based on the database
-- (void)updatePendingAndFinishedPromotions:(nullable void (^)())completion;
-
-- (void)fetchPromotions:
-    (nullable void (^)(NSArray<BraveRewardsPromotion*>* grants))completion;
-
-- (void)claimPromotion:(NSString*)promotionId
-             publicKey:(NSString*)deviceCheckPublicKey
-            completion:(void (^)(BraveRewardsResult result,
-                                 NSString* _Nonnull nonce))completion;
-
-- (void)attestPromotion:(NSString*)promotionId
-               solution:(PromotionSolution*)solution
-             completion:
-                 (nullable void (^)(BraveRewardsResult result,
-                                    BraveRewardsPromotion* _Nullable promotion))
-                     completion;
-
 #pragma mark - Misc
 
 - (void)rewardsInternalInfo:
@@ -182,39 +162,12 @@ OBJC_EXPORT
 
 @property(nonatomic, readonly, copy) NSString* rewardsDatabasePath;
 
-- (void)fetchAutoContributeProperties:
-    (void (^)(BraveRewardsAutoContributeProperties* _Nullable properties))
-        completion;
-
-#pragma mark - Reporting
-
-@property(nonatomic) UInt32 selectedTabId;
-
-/// Report that a page has loaded in the current browser tab, and the HTML is
-/// available for analysis
-- (void)reportLoadedPageWithURL:(NSURL*)url
-                          tabId:(UInt32)tabId
-    NS_SWIFT_NAME(reportLoadedPage(url:tabId:));
-
-- (void)reportXHRLoad:(NSURL*)url
-                tabId:(UInt32)tabId
-        firstPartyURL:(NSURL*)firstPartyURL
-          referrerURL:(nullable NSURL*)referrerURL;
-
-/// Report that a tab with a given id navigated or was closed by the user
-- (void)reportTabNavigationOrClosedWithTabId:(UInt32)tabId
-    NS_SWIFT_NAME(reportTabNavigationOrClosed(tabId:));
-
 #pragma mark - Preferences
 
 /// The number of seconds before a publisher is added.
 - (void)setMinimumVisitDuration:(int)minimumVisitDuration;
 /// The minimum number of visits before a publisher is added
 - (void)setMinimumNumberOfVisits:(int)minimumNumberOfVisits;
-/// The auto-contribute amount
-- (void)setContributionAmount:(double)contributionAmount;
-/// Whether or not the user will automatically contribute
-- (void)setAutoContributeEnabled:(bool)autoContributeEnabled;
 /// A custom user agent for network operations on rewards
 @property(nonatomic, copy, nullable) NSString* customUserAgent;
 

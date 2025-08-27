@@ -10,21 +10,12 @@
 
 #import "brave_core_switches.h"  // NOLINT
 
-@class BraveBookmarksAPI;
-@class BraveHistoryAPI;
-@class BravePasswordAPI;
-@class BraveOpenTabsAPI;
 @class BraveP3AUtils;
-@class BraveSendTabAPI;
-@class BraveSyncAPI;
-@class BraveSyncProfileServiceIOS;
-@class BraveStats;
-@class BraveWalletAPI;
 @class AdblockService;
-@class BraveTabGeneratorAPI;
-@class WebImageDownloader;
-@class NTPBackgroundImagesService;
-@protocol IpfsAPI;
+@class HTTPSUpgradeExceptionsService;
+@class BraveUserAgentExceptionsIOS;
+@class BraveProfileController;
+@protocol PrefServiceBridge;
 
 NS_ASSUME_NONNULL_BEGIN
 
@@ -44,23 +35,11 @@ typedef bool (^BraveCoreLogHandler)(BraveCoreLogSeverity severity,
 OBJC_EXPORT
 @interface BraveCoreMain : NSObject
 
-@property(nonatomic, readonly) BraveBookmarksAPI* bookmarksAPI;
+@property(nonatomic, readonly)
+    HTTPSUpgradeExceptionsService* httpsUpgradeExceptionsService;
 
-@property(nonatomic, readonly) BraveHistoryAPI* historyAPI;
-
-@property(nonatomic, readonly) BravePasswordAPI* passwordAPI;
-
-@property(nonatomic, readonly) BraveOpenTabsAPI* openTabsAPI;
-
-@property(nonatomic, readonly) BraveSendTabAPI* sendTabAPI;
-
-@property(nonatomic, readonly) BraveSyncAPI* syncAPI;
-
-@property(nonatomic, readonly) BraveSyncProfileServiceIOS* syncProfileService;
-
-@property(nonatomic, readonly) BraveTabGeneratorAPI* tabGeneratorAPI;
-
-@property(nonatomic, readonly) WebImageDownloader* webImageDownloader;
+@property(nonatomic, readonly, nullable)
+    BraveUserAgentExceptionsIOS* braveUserAgentExceptions;
 
 /// Sets the global log handler for Chromium & BraveCore logs.
 ///
@@ -69,30 +48,26 @@ OBJC_EXPORT
 /// the `serverity` passed in.
 + (void)setLogHandler:(nullable BraveCoreLogHandler)logHandler;
 
-- (instancetype)init NS_UNAVAILABLE;
+- (instancetype)init;
 
-- (instancetype)initWithUserAgent:(NSString*)userAgent;
-
-- (instancetype)initWithUserAgent:(NSString*)userAgent
-               additionalSwitches:
-                   (NSArray<BraveCoreSwitch*>*)additionalSwitches;
+- (instancetype)initWithAdditionalSwitches:
+    (NSArray<BraveCoreSwitch*>*)additionalSwitches;
 
 - (void)scheduleLowPriorityStartupTasks;
 
-@property(readonly) BraveWalletAPI* braveWalletAPI;
-
-@property(readonly) BraveStats* braveStats;
+- (void)setUserAgent:(NSString*)userAgent;
 
 @property(readonly) AdblockService* adblockService;
 
-@property(readonly) id<IpfsAPI> ipfsAPI;
-
 - (void)initializeP3AServiceForChannel:(NSString*)channel
-                         weekOfInstall:(NSString*)weekOfInstall;
+                      installationDate:(NSDate*)installDate;
 
 @property(readonly) BraveP3AUtils* p3aUtils;
 
-@property(readonly) NTPBackgroundImagesService* backgroundImagesService;
+@property(readonly) id<PrefServiceBridge> localState;
+
+@property(readonly, nullable) BraveProfileController* profileController;
+- (void)loadDefaultProfile:(void (^)(BraveProfileController*))completionHandler;
 
 /// Sets up bundle path overrides and initializes ICU from the BraveCore bundle
 /// without setting up a BraveCoreMain instance.
@@ -100,6 +75,7 @@ OBJC_EXPORT
 /// Should only be called in unit tests
 + (bool)initializeICUForTesting;
 
++ (void)initializeResourceBundleForTesting;
 @end
 
 NS_ASSUME_NONNULL_END

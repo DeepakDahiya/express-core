@@ -9,11 +9,19 @@
 
 #import "base/command_line.h"
 #import "base/task/sequenced_task_runner.h"
+#include "base/task/single_thread_task_runner.h"
 #include "brave/components/brave_component_updater/browser/brave_component.h"
 #include "brave/components/brave_component_updater/browser/brave_component_updater_delegate.h"
 #include "brave/components/brave_component_updater/browser/local_data_files_service.h"
+#include "brave/components/brave_sync/network_time_helper.h"
+#include "brave/components/brave_wallet/browser/wallet_data_files_installer.h"
+#include "brave/components/debounce/core/browser/debounce_component_installer.h"
+#include "brave/components/https_upgrade_exceptions/browser/https_upgrade_exceptions_service.h"
 #include "brave/components/url_sanitizer/browser/url_sanitizer_component_installer.h"
+#include "brave/ios/browser/brave_wallet/wallet_data_files_installer_delegate_impl.h"
+#include "components/application_locale_storage/application_locale_storage.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
+#include "net/base/features.h"
 
 BraveApplicationContextImpl::BraveApplicationContextImpl(
     base::SequencedTaskRunner* local_state_task_runner,
@@ -33,11 +41,6 @@ ukm::UkmRecorder* BraveApplicationContextImpl::GetUkmRecorder() {
   return nullptr;
 }
 
-BrowserPolicyConnectorIOS*
-BraveApplicationContextImpl::GetBrowserPolicyConnector() {
-  return nullptr;
-}
-
 gcm::GCMDriver* BraveApplicationContextImpl::GetGCMDriver() {
   return nullptr;
 }
@@ -47,10 +50,10 @@ gcm::GCMDriver* BraveApplicationContextImpl::GetGCMDriver() {
 brave_component_updater::BraveComponent::Delegate*
 BraveApplicationContextImpl::brave_component_updater_delegate() {
   if (!brave_component_updater_delegate_) {
-    brave_component_updater_delegate_ =
-        std::make_unique<brave::BraveComponentUpdaterDelegate>(
-            GetComponentUpdateService(), GetLocalState(),
-            GetApplicationLocale());
+    brave_component_updater_delegate_ = std::make_unique<
+        brave_component_updater::BraveComponentUpdaterDelegate>(
+        GetComponentUpdateService(), GetLocalState(),
+        GetApplicationLocaleStorage()->Get());
   }
 
   return brave_component_updater_delegate_.get();
@@ -76,11 +79,43 @@ BraveApplicationContextImpl::url_sanitizer_component_installer() {
   return url_sanitizer_component_installer_.get();
 }
 
+debounce::DebounceComponentInstaller*
+BraveApplicationContextImpl::debounce_component_installer() {
+  if (!debounce_component_installer_) {
+    debounce_component_installer_ =
+        std::make_unique<debounce::DebounceComponentInstaller>(
+            local_data_files_service());
+  }
+  return debounce_component_installer_.get();
+}
+
+https_upgrade_exceptions::HttpsUpgradeExceptionsService*
+BraveApplicationContextImpl::https_upgrade_exceptions_service() {
+  if (!https_upgrade_exceptions_service_) {
+    https_upgrade_exceptions_service_ =
+        https_upgrade_exceptions::HttpsUpgradeExceptionsServiceFactory(
+            local_data_files_service());
+  }
+  return https_upgrade_exceptions_service_.get();
+}
+
 void BraveApplicationContextImpl::StartBraveServices() {
-  // We need to Initialize the component installer
+  // We need to Initialize the component installers
   // before calling Start on the local_data_files_service
   url_sanitizer_component_installer();
+  debounce_component_installer();
+
+  if (base::FeatureList::IsEnabled(net::features::kBraveHttpsByDefault)) {
+    https_upgrade_exceptions_service();
+  }
 
   // Start the local data file service
   local_data_files_service()->Start();
+
+  brave_sync::NetworkTimeHelper::GetInstance()->SetNetworkTimeTracker(
+      GetNetworkTimeTracker(),
+      base::SingleThreadTaskRunner::GetCurrentDefault());
+
+  brave_wallet::WalletDataFilesInstaller::GetInstance().SetDelegate(
+      std::make_unique<brave_wallet::WalletDataFilesInstallerDelegateImpl>());
 }

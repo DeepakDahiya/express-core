@@ -7,7 +7,6 @@
 
 #include <utility>
 
-#include "base/logging.h"
 #include "base/no_destructor.h"
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 
@@ -57,4 +56,9 @@ void BraveRenderThreadObserver::SetInitialConfiguration(bool is_tor_process) {
 void BraveRenderThreadObserver::SetConfiguration(
     brave::mojom::DynamicParamsPtr params) {
   *GetDynamicConfigParams() = std::move(*params);
+}
+
+bool BraveRenderThreadObserver::IsOnionAllowed() const {
+  return is_tor_process_ ||
+         !GetDynamicConfigParams()->onion_only_in_tor_windows;
 }

@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+@protocol ProfileBridge;
+
 NS_ASSUME_NONNULL_BEGIN
 
 /// A wrapper to obtain a Brave or Chromium keyed service based on the current
@@ -15,7 +17,7 @@ NS_ASSUME_NONNULL_BEGIN
 ///
 /// Create a subclass of this class for each factory you want to expose to Swift
 /// using the concrete return type and then implement the required
-/// `serviceForBrowserState:` method.
+/// `serviceForProfile:` method.
 ///
 /// This must be an Obj-C interface instead of a protocol due to limitations
 /// of Obj-C's lightweight generics
@@ -28,7 +30,15 @@ NS_ASSUME_NONNULL_BEGIN
 /// the same service regardless of private mode, or you may receive `nil` if
 /// the service you requested does not support private browsing.
 + (nullable ResultType)getForPrivateMode:(bool)isPrivateBrowsing
-    NS_SWIFT_NAME(get(privateMode:))NS_REQUIRES_SUPER;
+    NS_SWIFT_NAME(get(privateMode:)) NS_REQUIRES_SUPER NS_SWIFT_UI_ACTOR;
+
+/// Obtain the desired service based on the profile
+///
+/// Depending on the type of service you are requesting, you may receive
+/// the same service regardless of private mode, or you may receive `nil` if
+/// the service you requested does not support private browsing.
++ (nullable ResultType)getForProfile:(id<ProfileBridge>)profile
+    NS_SWIFT_NAME(get(profile:)) NS_REQUIRES_SUPER NS_SWIFT_UI_ACTOR;
 
 - (instancetype)init NS_UNAVAILABLE;
 

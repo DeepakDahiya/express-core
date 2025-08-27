@@ -75,6 +75,7 @@ OBJC_EXPORT
 @property(nonatomic, readonly) bool isInitialSyncFeatureSetupComplete;
 @property(nonatomic) bool isSyncAccountDeletedNoticePending;
 @property(nonatomic, readonly) bool isFailedDecryptSeedNoticeDismissed;
+@property(readonly) bool isInSyncGroup;
 
 - (instancetype)init NS_UNAVAILABLE;
 
@@ -116,13 +117,13 @@ OBJC_EXPORT
 
 - (NSString*)getTimeLimitedWordsFromWords:(NSString*)words;
 
+- (NSDate*)getExpirationFromTimeLimitedWords:(NSString*)timeLimitedWords;
+
 - (NSString*)getHexSeedFromQrCodeJson:(NSString*)json;
 
 - (nullable UIImage*)getQRCodeImage:(CGSize)size;
 
 - (nullable NSString*)getDeviceListJSON;
-
-- (BraveSyncInternalsController*)createSyncInternalsController;
 
 - (id)createSyncDeviceObserver:(void (^)())onDeviceInfoChanged;
 - (id)createSyncServiceObserver:(void (^)())onSyncServiceStateChanged

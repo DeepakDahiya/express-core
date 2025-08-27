@@ -6,8 +6,11 @@
 #ifndef BRAVE_RENDERER_BRAVE_WALLET_BRAVE_WALLET_RENDER_FRAME_OBSERVER_H_
 #define BRAVE_RENDERER_BRAVE_WALLET_BRAVE_WALLET_RENDER_FRAME_OBSERVER_H_
 
+#include <optional>
+
 #include "brave/common/brave_renderer_configuration.mojom.h"
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
+#include "brave/components/brave_wallet/renderer/js_cardano_provider.h"
 #include "brave/components/brave_wallet/renderer/js_ethereum_provider.h"
 #include "brave/components/brave_wallet/renderer/js_solana_provider.h"
 #include "brave/renderer/brave_wallet/brave_wallet_render_frame_observer_p3a_util.h"
@@ -32,7 +35,7 @@ class BraveWalletRenderFrameObserver : public content::RenderFrameObserver {
   // RenderFrameObserver implementation.
   void DidStartNavigation(
       const GURL& url,
-      absl::optional<blink::WebNavigationType> navigation_type) override;
+      std::optional<blink::WebNavigationType> navigation_type) override;
   void DidClearWindowObject() override;
 
   void DidFinishLoad() override;

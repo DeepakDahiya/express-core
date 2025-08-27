@@ -9,10 +9,10 @@
 #include <memory>
 
 #include "brave/components/brave_wallet/common/brave_wallet.mojom.h"
-#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/shared/model/profile/profile_keyed_service_factory_ios.h"
 #include "mojo/public/cpp/bindings/pending_remote.h"
 
-class ChromeBrowserState;
+class ProfileIOS;
 class KeyedService;
 
 namespace base {
@@ -28,13 +28,9 @@ namespace brave_wallet {
 
 class BraveWalletService;
 
-class BraveWalletServiceFactory : public BrowserStateKeyedServiceFactory {
+class BraveWalletServiceFactory : public ProfileKeyedServiceFactoryIOS {
  public:
-  // Creates the service if it doesn't exist already for |browser_state|.
-  static mojo::PendingRemote<mojom::BraveWalletService> GetForBrowserState(
-      ChromeBrowserState* browser_state);
-  static BraveWalletService* GetServiceForState(
-      ChromeBrowserState* browser_state);
+  static BraveWalletService* GetServiceForState(ProfileIOS* profile);
 
   static BraveWalletServiceFactory* GetInstance();
 
@@ -44,12 +40,8 @@ class BraveWalletServiceFactory : public BrowserStateKeyedServiceFactory {
   BraveWalletServiceFactory();
   ~BraveWalletServiceFactory() override;
 
-  // BrowserContextKeyedServiceFactory:
-  // BrowserStateKeyedServiceFactory implementation.
+  // ProfileKeyedServiceFactoryIOS implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
-      web::BrowserState* context) const override;
-  bool ServiceIsNULLWhileTesting() const override;
-  web::BrowserState* GetBrowserStateToUse(
       web::BrowserState* context) const override;
 
   BraveWalletServiceFactory(const BraveWalletServiceFactory&) = delete;

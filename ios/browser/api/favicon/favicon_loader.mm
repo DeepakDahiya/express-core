@@ -4,19 +4,21 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/ios/browser/api/favicon/favicon_loader.h"
+
 #include <memory>
 
+#include "base/check.h"
 #include "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
 #import "brave/ios/browser/favicon/brave_ios_favicon_loader.h"
 #import "brave/ios/browser/favicon/brave_ios_favicon_loader_factory.h"
 #include "components/favicon_base/favicon_types.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#include "ios/chrome/browser/shared/model/profile/profile_ios.h"
+#include "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 #include "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #import "ios/chrome/common/ui/favicon/favicon_constants.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -44,31 +46,26 @@ FaviconLoaderSize const FaviconLoaderSizeDesiredLargest =
 @end
 
 @implementation FaviconLoader
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)browserState {
+- (instancetype)initWithBrowserState:(ProfileIOS*)profile {
   if ((self = [super init])) {
     favicon_loader_ =
-        brave_favicon::BraveIOSFaviconLoaderFactory::GetForBrowserState(
-            browserState);
+        brave_favicon::BraveIOSFaviconLoaderFactory::GetForProfile(profile);
     DCHECK(favicon_loader_);
   }
   return self;
 }
 
 + (instancetype)getForPrivateMode:(bool)privateMode {
-  ios::ChromeBrowserStateManager* browser_state_manager =
-      GetApplicationContext()->GetChromeBrowserStateManager();
-  CHECK(browser_state_manager);
-
-  ChromeBrowserState* browser_state =
-      browser_state_manager->GetLastUsedBrowserState();
-  CHECK(browser_state);
+  std::vector<ProfileIOS*> profiles =
+      GetApplicationContext()->GetProfileManager()->GetLoadedProfiles();
+  ProfileIOS* last_used_profile = profiles.at(0);
 
   if (privateMode) {
-    browser_state = browser_state->GetOffTheRecordChromeBrowserState();
-    CHECK(browser_state);
+    last_used_profile = last_used_profile->GetOffTheRecordProfile();
+    CHECK(last_used_profile);
   }
 
-  return [[FaviconLoader alloc] initWithBrowserState:browser_state];
+  return [[FaviconLoader alloc] initWithBrowserState:last_used_profile];
 }
 
 - (void)faviconForPageURLOrHost:(NSURL*)url

@@ -5,16 +5,17 @@
 
 #include "brave/ios/browser/api/bookmarks/importer/bookmarks_importer.h"
 
+#include <algorithm>
 #include <set>
 
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
-#include "base/ranges/algorithm.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/strings/utf_string_conversions.h"
 #include "brave/ios/browser/api/bookmarks/importer/imported_bookmark_entry.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -22,13 +23,13 @@
 #include "components/bookmarks/common/bookmark_pref_names.h"
 #include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_strings.h"
+#include "components/sync/base/features.h"
 #include "components/user_prefs/user_prefs.h"
-#include "ios/chrome/browser/bookmarks/model/local_or_syncable_bookmark_model_factory.h"
+#include "ios/chrome/browser/bookmarks/model/bookmark_model_factory.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#include "ios/chrome/browser/shared/model/profile/profile_ios.h"
+#include "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 #include "ui/base/l10n/l10n_util.h"
-#include "url/gurl.h"
 
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
@@ -48,25 +49,25 @@ std::u16string GenerateUniqueFolderName(BookmarkModel* model,
   }
 
   // If the given name is unique, use it.
-  if (existing_folder_names.find(folder_name) == existing_folder_names.end())
+  if (existing_folder_names.find(folder_name) == existing_folder_names.end()) {
     return folder_name;
+  }
 
   // Otherwise iterate until we find a unique name.
   for (size_t i = 1; i <= existing_folder_names.size(); ++i) {
     std::u16string name =
         folder_name + u" (" + base::NumberToString16(i) + u")";
-    if (existing_folder_names.find(name) == existing_folder_names.end())
+    if (existing_folder_names.find(name) == existing_folder_names.end()) {
       return name;
+    }
   }
 
   NOTREACHED();
-  return folder_name;
 }
 
 // Shows the bookmarks toolbar.
-void ShowBookmarkBar(ChromeBrowserState* browser_state) {
-  browser_state->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar,
-                                        true);
+void ShowBookmarkBar(ProfileIOS* profile) {
+  profile->GetPrefs()->SetBoolean(bookmarks::prefs::kShowBookmarkBar, true);
 }
 
 }  // namespace
@@ -77,13 +78,12 @@ void BookmarksImporter::AddBookmarks(
   if (bookmarks.empty())
     return;
 
-  ios::ChromeBrowserStateManager* browser_state_manager =
-      GetApplicationContext()->GetChromeBrowserStateManager();
-  ChromeBrowserState* browser_state =
-      browser_state_manager->GetLastUsedBrowserState();
-  BookmarkModel* model =
-      ios::LocalOrSyncableBookmarkModelFactory::GetForBrowserState(
-          browser_state);
+  std::vector<ProfileIOS*> profiles =
+      GetApplicationContext()->GetProfileManager()->GetLoadedProfiles();
+  ProfileIOS* last_used_profile = profiles.at(0);
+
+  bookmarks::BookmarkModel* model =
+      ios::BookmarkModelFactory::GetForProfile(last_used_profile);
   DCHECK(model->loaded());
 
   // If the bookmark bar is currently empty, we should import directly to it.
@@ -150,7 +150,7 @@ void BookmarksImporter::AddBookmarks(
         continue;
       }
 
-      const auto it = base::ranges::find_if(
+      const auto it = std::ranges::find_if(
           parent->children(), [folder_name](const auto& node) {
             return node->is_folder() && node->GetTitle() == *folder_name;
           });
@@ -179,5 +179,5 @@ void BookmarksImporter::AddBookmarks(
 
   // If the user was previously using a toolbar, we should show the bar.
   if (import_to_top_level && !add_all_to_top_level)
-    ShowBookmarkBar(browser_state);
+    ShowBookmarkBar(last_used_profile);
 }

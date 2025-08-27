@@ -7,7 +7,8 @@
 
 #include <unordered_map>
 
-#include "components/sync/base/model_type.h"
+#include "base/memory/raw_ptr.h"
+#include "components/sync/base/data_type.h"
 #include "components/sync/base/user_selectable_type.h"
 #include "components/sync/service/sync_service.h"
 #include "components/sync/service/sync_user_settings.h"
@@ -16,6 +17,10 @@
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
 #endif
+
+static_assert(static_cast<NSInteger>(syncer::UserSelectableType::kCookies) ==
+                  static_cast<NSInteger>(syncer::UserSelectableType::kLastType),
+              "syncer::UserSelectableType has changed in a Chromium update");
 
 namespace brave {
 namespace ios {
@@ -38,7 +43,15 @@ std::unordered_map<syncer::UserSelectableType, BraveSyncUserSelectableTypes>
         {syncer::UserSelectableType::kApps, BraveSyncUserSelectableTypes_APPS},
         {syncer::UserSelectableType::kReadingList,
          BraveSyncUserSelectableTypes_READING_LIST},
-        {syncer::UserSelectableType::kTabs, BraveSyncUserSelectableTypes_TABS}};
+        {syncer::UserSelectableType::kTabs, BraveSyncUserSelectableTypes_TABS},
+        {syncer::UserSelectableType::kSavedTabGroups,
+         BraveSyncUserSelectableTypes_SAVED_TAB_GROUPS},
+        {syncer::UserSelectableType::kPayments,
+         BraveSyncUserSelectableTypes_PAYMENTS},
+        {syncer::UserSelectableType::kProductComparison,
+         BraveSyncUserSelectableTypes_PRODUCT_COMPARISON},
+        {syncer::UserSelectableType::kCookies,
+         BraveSyncUserSelectableTypes_COOKIES}};
 
 syncer::UserSelectableTypeSet user_types_from_options(
     BraveSyncUserSelectableTypes options) {
@@ -65,7 +78,7 @@ BraveSyncUserSelectableTypes options_from_user_types(
 }  // namespace brave
 
 @interface BraveSyncProfileServiceIOS () {
-  syncer::SyncService* sync_service_;
+  raw_ptr<syncer::SyncService> sync_service_;
   std::unordered_map<syncer::UserSelectableType, BraveSyncUserSelectableTypes>
       type_mapping;
 }
@@ -88,12 +101,11 @@ BraveSyncUserSelectableTypes options_from_user_types(
 
 - (BraveSyncUserSelectableTypes)activeSelectableTypes {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
-  syncer::ModelTypeSet active_types = sync_service_->GetActiveDataTypes();
+  syncer::DataTypeSet active_types = sync_service_->GetActiveDataTypes();
 
   syncer::UserSelectableTypeSet user_types;
   for (syncer::UserSelectableType type : syncer::UserSelectableTypeSet::All()) {
-    if (active_types.Has(
-            syncer::UserSelectableTypeToCanonicalModelType(type))) {
+    if (active_types.Has(syncer::UserSelectableTypeToCanonicalDataType(type))) {
       user_types.Put(type);
     }
   }

@@ -11,14 +11,13 @@
 
 #import "base/apple/foundation_util.h"
 #include "base/base64.h"
+#include "base/compiler_specific.h"
 #include "base/containers/span.h"
 #include "base/functional/bind.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/scoped_refptr.h"
-#import "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
-#include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_anonymization_key.h"
 #include "net/cert/cert_verify_proc_ios.h"
@@ -51,14 +50,10 @@ namespace {
 @implementation BraveCertificateUtility
 + (NSArray<NSData*>*)acceptableSPKIHashes {
   NSMutableArray* result = [[NSMutableArray alloc] init];
-  for (std::size_t i = 0; i < sizeof(net::kBraveAcceptableCerts) /
-                                  sizeof(net::kBraveAcceptableCerts[0]);
-       ++i) {
-    if (net::kBraveAcceptableCerts[i]) {
-      std::string data = std::string(net::kBraveAcceptableCerts[i]);
-      if (data.size() > 0) {
-        [result addObject:[NSData dataWithBytes:&data[0] length:data.size()]];
-      }
+  for (const net::SHA256HashValue* cert : net::kBraveAcceptableCerts) {
+    if (cert) {
+      auto data = base::as_byte_span(*cert);
+      [result addObject:[NSData dataWithBytes:data.data() length:data.size()]];
     }
   }
   return result;
@@ -73,8 +68,7 @@ namespace {
   }
 
   bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer(net::x509_util::CreateCryptoBuffer(
-      base::make_span(CFDataGetBytePtr(cert_data),
-                      base::checked_cast<size_t>(CFDataGetLength(cert_data)))));
+      base::apple::CFDataToSpan(cert_data.get())));
 
   if (!cert_buffer) {
     return nil;
@@ -98,8 +92,7 @@ namespace {
   }
 
   bssl::UniquePtr<CRYPTO_BUFFER> cert_buffer(net::x509_util::CreateCryptoBuffer(
-      base::make_span(CFDataGetBytePtr(cert_data),
-                      base::checked_cast<size_t>(CFDataGetLength(cert_data)))));
+      base::apple::CFDataToSpan(cert_data.get())));
 
   if (!cert_buffer) {
     return nil;
@@ -148,12 +141,12 @@ namespace {
     for (CFIndex i = 1; i < cert_count; i++) {
       SecCertificateRef secCertificate =
           base::apple::CFCastStrict<SecCertificateRef>(
-              CFArrayGetValueAtIndex(certificateChain, i));
+              CFArrayGetValueAtIndex(certificateChain.get(), i));
       intermediates.emplace_back(secCertificate, base::scoped_policy::RETAIN);
     }
     SecCertificateRef secCertificate =
         base::apple::CFCastStrict<SecCertificateRef>(
-            CFArrayGetValueAtIndex(certificateChain, 0));
+            CFArrayGetValueAtIndex(certificateChain.get(), 0));
     return net::x509_util::CreateX509CertificateFromSecCertificate(
         base::apple::ScopedCFTypeRef<SecCertificateRef>(
             secCertificate, base::scoped_policy::RETAIN),
@@ -195,18 +188,10 @@ namespace {
 
   // Check the Public Key Pins to see if the certificate chain is valid
   // For this, we use the verification result above
-  std::string failure_log;
-  net::NetworkAnonymizationKey network_anonymization_key =
-      net::NetworkAnonymizationKey::CreateTransient();
-
   net::TransportSecurityState::PKPStatus status =
       transport_security_state->CheckPublicKeyPins(
-          net::HostPortPair(base::SysNSStringToUTF8(host), port),
-          verify_result.is_issued_by_known_root,
-          verify_result.public_key_hashes, cert.get(),
-          verify_result.verified_cert.get(),
-          net::TransportSecurityState::ENABLE_PIN_REPORTS,
-          network_anonymization_key, &failure_log);
+          base::SysNSStringToUTF8(host), verify_result.is_issued_by_known_root,
+          verify_result.public_key_hashes);
   switch (status) {
     case net::TransportSecurityState::PKPStatus::VIOLATED:
       return net::ERR_FAILED;

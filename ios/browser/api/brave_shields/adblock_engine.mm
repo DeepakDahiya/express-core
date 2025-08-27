@@ -6,8 +6,8 @@
 #include "brave/ios/browser/api/brave_shields/adblock_engine.h"
 
 #include "base/strings/sys_string_conversions.h"
-#include "brave/base/mac/conversions.h"
-#include "brave/components/brave_shields/adblock/rs/src/lib.rs.h"
+#include "brave/base/apple/foundation_util.h"
+#include "brave/components/brave_shields/core/browser/adblock/rs/src/lib.rs.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -76,11 +76,14 @@ class AdblockEngineBox final {
 - (instancetype)initWithRules:(NSString*)rules error:(NSError**)error {
   if ((self = [super init])) {
     if (rules.length > 0) {
-      std::vector<std::uint8_t> vecRules(rules.length);
+      std::vector<std::uint8_t> vecRules;
       NSData* data = [rules dataUsingEncoding:NSUTF8StringEncoding];
+
       if (data) {
+        vecRules.resize(data.length);
         [data getBytes:vecRules.data() length:data.length];
       }
+
       auto result = adblock::engine_with_rules(vecRules);
       if (result.result_kind == adblock::ResultKind::Success) {
         adblock_engine = std::move(result.value);
@@ -88,7 +91,27 @@ class AdblockEngineBox final {
         if (error) {
           *error = [[self class] adblockErrorForKind:result.result_kind
                                              message:result.error_message];
+        } else {
+          *error = [[self class]
+              adblockErrorForKind:adblock::ResultKind::AdblockError
+                          message:
+                              "Unknown error initializing engine with rules"];
         }
+        return nil;
+      }
+    }
+  }
+  return self;
+}
+
+- (instancetype)initWithSerializedData:(NSData*)data error:(NSError**)error {
+  if ((self = [super init])) {
+    if (![self deserialize:data]) {
+      if (error) {
+        *error =
+            [[self class] adblockErrorForKind:adblock::ResultKind::AdblockError
+                                      message:"Failed to deserialize data"];
+        return nil;
       }
     }
   }
@@ -163,6 +186,21 @@ class AdblockEngineBox final {
   std::vector<std::uint8_t> vecData(data.length);
   [data getBytes:vecData.data() length:data.length];
   return adblock_engine->deserialize(vecData);
+}
+
+- (nullable NSData*)serialize:(NSError**)error {
+  auto result = adblock_engine->serialize();
+
+  if (result.empty()) {
+    if (error) {
+      *error =
+          [[self class] adblockErrorForKind:adblock::ResultKind::AdblockError
+                                    message:"Failed to serialize data"];
+    }
+    return nil;
+  }
+
+  return [NSData dataWithBytes:result.data() length:result.size()];
 }
 
 - (void)addTag:(NSString*)tag {

@@ -11,8 +11,7 @@
 // This file contains patched mojom usage to ensure that all new definitions,
 // values and members are properly added using the patching mechanism.
 
-namespace brave_ast_patcher {
-namespace mojom {
+namespace brave_ast_patcher::mojom {
 
 // Create interface implementations to ensure new methods exist and are
 // overridable.
@@ -61,9 +60,8 @@ TEST(BraveAstPatcherTest, OriginalTypes) {
   EXPECT_EQ(global_struct.nested_enum_member,
             GlobalStruct::NestedEnum::VALUE_NESTED_CONSTANT);
 
-  GlobalUnion global_union;
-  global_union.set_bool_value(false);
-  global_union.set_string_value(std::string());
+  auto global_union = GlobalUnion::NewBoolValue(false);
+  global_union->set_string_value(std::string());
 
   EXPECT_EQ(static_cast<int>(GlobalInterface::NestedEnum::VALUE), 0);
   EXPECT_EQ(
@@ -90,9 +88,8 @@ TEST(BraveAstPatcherTest, NewTypes) {
   new_global_struct.new_global_enum_member = NewGlobalEnum::VALUE;
   new_global_struct.nested_enum_member = NewGlobalStruct::NestedEnum::VALUE;
 
-  NewGlobalUnion new_global_union;
-  new_global_union.set_int32_value(0);
-  new_global_union.set_float_value(0.0f);
+  auto new_global_union = NewGlobalUnion::NewInt32Value(0);
+  new_global_union->set_float_value(0.0f);
 
   EXPECT_EQ(static_cast<int>(NewGlobalInterface::NestedEnum::VALUE), 0);
   EXPECT_EQ(
@@ -124,9 +121,8 @@ TEST(BraveAstPatcherTest, ExtendedTypes) {
   EXPECT_EQ(global_struct.new_nested_enum_member,
             GlobalStruct::NewNestedEnum::VALUE_NESTED_CONSTANT);
 
-  GlobalUnion global_union;
-  global_union.set_int32_value(0);
-  global_union.set_float_value(0.0f);
+  auto global_union = GlobalUnion::NewInt32Value(0);
+  global_union->set_float_value(0.0f);
 
   EXPECT_EQ(static_cast<int>(GlobalInterface::NestedEnum::NEW_VALUE), 1);
   EXPECT_EQ(
@@ -145,5 +141,4 @@ TEST(BraveAstPatcherTest, InterfaceInstantiations) {
   NewGlobalInterfaceImpl new_global_interface_impl;
 }
 
-}  // namespace mojom
-}  // namespace brave_ast_patcher
+}  // namespace brave_ast_patcher::mojom

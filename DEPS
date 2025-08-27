@@ -2,14 +2,13 @@ use_relative_paths = True
 
 vars = {
   'download_prebuilt_sparkle': True,
+  'checkout_dmg_tool': False,
 }
 
 deps = {
-  "vendor/requests": "https://github.com/kennethreitz/requests@e4d59bedfd3c7f4f254f4f5d036587bcd8152458",
-  "vendor/boto": "https://github.com/boto/boto@f7574aa6cc2c819430c1f05e9a1a1a666ef8169b",
   "vendor/python-patch": "https://github.com/brave/python-patch@d8880110be6554686bc08261766538c2926d4e82",
   "vendor/omaha": {
-    "url": "https://github.com/brave/omaha.git@138c95d58f9c41113f7e0dd5acdbcaab8be20df9",
+    "url": "https://github.com/brave/omaha.git@32383a4dc9c50a88e42be0e03e5b2f2ba7ad058b",
     "condition": "checkout_win",
   },
   "vendor/sparkle": {
@@ -18,12 +17,16 @@ deps = {
   },
   "vendor/bat-native-tweetnacl": "https://github.com/brave-intl/bat-native-tweetnacl.git@800f9d40b7409239ff192e0be634764e747c7a75",
   "vendor/gn-project-generators": "https://github.com/brave/gn-project-generators.git@b76e14b162aa0ce40f11920ec94bfc12da29e5d0",
-  "vendor/web-discovery-project": "https://github.com/brave/web-discovery-project@2d05ad803e249f3686d093b9318f783c6cb5f380",
+  "vendor/web-discovery-project": "https://github.com/brave/web-discovery-project@6bf2f8988c205b2f78421ba4be2b6fc0515afd71",
   "third_party/bip39wally-core-native": "https://github.com/brave-intl/bat-native-bip39wally-core.git@0d3a8713a2b388d2156fe49a70ef3f7cdb44b190",
   "third_party/ethash/src": "https://github.com/chfast/ethash.git@e4a15c3d76dc09392c7efd3e30d84ee3b871e9ce",
   "third_party/bitcoin-core/src": "https://github.com/bitcoin/bitcoin.git@8105bce5b384c72cf08b25b7c5343622754e7337", # v25.0
   "third_party/argon2/src": "https://github.com/P-H-C/phc-winner-argon2.git@62358ba2123abd17fccf2a108a301d4b52c01a7c",
-  "third_party/rapidjson/src": "https://github.com/Tencent/rapidjson.git@06d58b9e848c650114556a23294d0b6440078c61",
+  "third_party/libdmg-hfsplus": {
+    "url": "https://github.com/fanquake/libdmg-hfsplus.git@1cc791e4173da9cb0b0cc16c5a1aaa25d5eb5efa",
+    "condition": 'checkout_mac and host_os != "mac" and checkout_dmg_tool',
+  },
+  "third_party/reclient_configs/src": "https://github.com/EngFlow/reclient-configs.git@21c8fe69ff771956c179847b8c1d9fd216181967",
   'third_party/android_deps/libs/com_google_android_play_core': {
       'packages': [
           {
@@ -34,15 +37,13 @@ deps = {
       'condition': 'checkout_android',
       'dep_type': 'cipd',
   },
-  "third_party/playlist_component/src": "https://github.com/brave/playlist-component.git@c043566e2ff6133d110cf516ed472451039139e2",
-  "third_party/rust/star_constellation/v0_2/crate": "https://github.com/brave/constellation.git@db575edec12509ce1bda6afe68bb58e538a21d3a",
-  "third_party/rust/challenge_bypass_ristretto/v1/crate": "https://github.com/brave-intl/challenge-bypass-ristretto.git@a1da4641734adc8312215b38a8221962d2c8e045",
+  "third_party/playlist_component/src": "https://github.com/brave/playlist-component.git@673d40f017a1559bb685a15cf608ad1d4a94f8fb",
   "third_party/rust/futures_retry/v0_5/crate": "https://github.com/brave-intl/futures-retry.git@2aaaafbc3d394661534d4dbd14159d164243c20e",
-  "third_party/rust/kuchiki/v0_8/crate": "https://github.com/brave/kuchiki.git@589eadca2c1d06ddda2919354590bfe1ace88a43",
   "third_party/macholib": {
     "url": "https://github.com/ronaldoussoren/macholib.git@36a6777ccd0891c5d1b44ba885573d7c90740015",
     "condition": "checkout_mac",
   },
+  "components/brave_wallet/browser/zcash/rust/librustzcash/src": "https://github.com/brave/librustzcash.git@127aacc83dc9ed12fc38c3c7f5b52f7f51011e4d", # v2
 }
 
 recursedeps = [
@@ -56,6 +57,12 @@ hooks = [
     'action': ['vpython3', 'script/bootstrap.py'],
   },
   {
+    'name': 'bootstrap_ios',
+    'pattern': '.',
+    'condition': 'checkout_ios and host_os == "mac"',
+    'action': ['vpython3', 'script/ios_bootstrap.py']
+  },
+  {
     # Download hermetic xcode for goma
     'name': 'download_hermetic_xcode',
     'pattern': '.',
@@ -63,10 +70,37 @@ hooks = [
     'action': ['vpython3', 'build/mac/download_hermetic_xcode.py'],
   },
   {
+    'name': 'configure_reclient',
+    'pattern': '.',
+    'action': ['python3', 'third_party/reclient_configs/src/configure_reclient.py',
+               '--src_dir=..',
+               '--custom_py=third_party/reclient_configs/brave_custom/brave_custom.py'],
+  },
+  {
+    'name': 'hardlink_brave_siso_config',
+    'pattern': '.',
+    'action': [
+      'python3', 'build/hardlink_file.py',
+      'build/config/siso/brave_siso_config.star',
+      '../build/config/siso/brave_siso_config.star'
+    ],
+  },
+  {
     'name': 'download_sparkle',
     'pattern': '.',
     'condition': 'checkout_mac and download_prebuilt_sparkle',
-    'action': ['vpython3', 'build/mac/download_sparkle.py', '1.24.3'],
+    'action': ['vpython3', 'build/download_dep.py',
+               'sparkle/sparkle-1.24.3.tar.gz',
+               '//build/mac_files/sparkle_binaries'],
+  },
+  {
+    'name': 'download_omaha4',
+    'pattern': '.',
+    'condition': 'checkout_mac',
+    'action': ['vpython3', 'build/download_dep.py',
+               'omaha4/BraveUpdater-136.1.79.71.zip',
+               '//brave/third_party/updater/mac',
+               'BraveUpdater.app/'],
   },
   {
     'name': 'update_pip',
@@ -92,13 +126,17 @@ hooks = [
     'name': 'wireguard_nt',
     'pattern': '.',
     'condition': 'checkout_win',
-    'action': ['vpython3', 'build/win/download_brave_vpn_wireguard_binaries.py', '0.10.1', 'brave-vpn-wireguard-nt-dlls'],
+    'action': ['vpython3', 'build/download_dep.py',
+               'brave-vpn-wireguard-dlls/brave-vpn-wireguard-nt-dlls-0.10.1.zip',
+               '//brave/third_party/brave-vpn-wireguard-nt-dlls'],
   },
   {
     'name': 'wireguard_tunnel',
     'pattern': '.',
     'condition': 'checkout_win',
-    'action': ['vpython3', 'build/win/download_brave_vpn_wireguard_binaries.py', 'v0.5.3', 'brave-vpn-wireguard-tunnel-dlls'],
+    'action': ['vpython3', 'build/download_dep.py',
+               'brave-vpn-wireguard-dlls/brave-vpn-wireguard-tunnel-dlls-v0.5.3.zip',
+               '//brave/third_party/brave-vpn-wireguard-tunnel-dlls'],
   },
   {
     # Install Web Discovery Project dependencies for Windows, Linux, and macOS
@@ -121,39 +159,54 @@ hooks = [
                '--source-dir', '.',
                '--filter', '^[0-9]\{{1,\}}\.[0-9]\{{1,\}}\.[0-9]\{{1,\}}$'],
   },
+  {
+    # Downloads & overwrites Chromium's swift-format dep on macOS only
+    'name': 'download_swift_format',
+    'pattern': '.',
+    'condition': 'host_os == "mac"',
+    'action': ['python3', 'build/apple/download_swift_format.py', '510.1.0', '0ddbb486640cde862fa311dc0f7387e6c5171bdcc0ee0c89bc9a1f8a75e8bfaf']
+  },
+  {
+    # Chromium_src files require custom formatting to correctly sort includes
+    # that reference original files.
+    'name': 'generate_chromium_src_clang_format',
+    'pattern': '.',
+    'action': ['vpython3', 'tools/chromium_src/generate_clang_format.py',
+               '../.clang-format', 'chromium_src/.clang-format'],
+  },
+  {
+    # We only need a custom .clang-format in chromium_src. It was previously
+    # generated in the root of brave/, so we remove it now. This hook can be
+    # removed after 08/2025.
+    'name': 'remove_stale_clang_format',
+    'pattern': '.',
+    'action': ['python3', '../tools/remove_stale_files.py', '.clang-format']
+  },
+  {
+    'name': 'update_midl_files',
+    'pattern': '.',
+    'condition': 'checkout_win',
+    'action': ['python3', 'build/util/update_midl_files.py']
+  },
+  {
+    'name': 'build_libdmg_hfsplus',
+    'pattern': '.',
+    "condition": 'checkout_mac and host_os != "mac" and checkout_dmg_tool',
+    'action': ['build/mac/cross-compile/build-libdmg-hfsplus.py', 'third_party/libdmg-hfsplus']
+  },
+  {
+    'name': 'download_rust_toolchain_aux',
+    'pattern': '.',
+    'action': ['python3', 'build/rust/download_rust_toolchain_aux.py']
+  },
 ]
 
 include_rules = [
-  #Everybody can use some things.
-  "+brave_base",
-  "+brave_domains",
-  "+crypto",
-  "+net",
-  "+sql",
-  "+ui/base",
-
   "-chrome",
-  "-brave/app",
-  "-brave/browser",
-  "-brave/common",
-  "-brave/renderer",
-  "-brave/services",
-  "-ios",
-  "-brave/third_party/bitcoin-core",
-  "-brave/third_party/argon2",
-]
+  "-brave",
+  "-third_party/rust",
 
-# Temporary workaround for massive nummber of incorrect test includes
-specific_include_rules = {
-  ".*test.*(\.cc|\.mm|\.h)": [
-    "+bat",
-    "+brave",
-    "+chrome",
-    "+components",
-    "+content",
-    "+extensions",
-    "+mojo",
-    "+services",
-    "+third_party",
-  ],
-}
+  # Everybody can use some things.
+  "+brave/base",
+  "+brave/brave_domains",
+]

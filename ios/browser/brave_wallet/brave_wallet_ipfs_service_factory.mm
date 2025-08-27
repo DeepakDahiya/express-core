@@ -7,30 +7,26 @@
 
 #include "brave/components/brave_wallet/browser/brave_wallet_ipfs_service.h"
 #include "brave/components/brave_wallet/browser/pref_names.h"
-#include "brave/ios/browser/brave_wallet/json_rpc_service_factory.h"
 #include "components/keyed_service/core/keyed_service.h"
-#include "components/keyed_service/ios/browser_state_dependency_manager.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
-#include "ios/chrome/browser/shared/model/browser_state/browser_state_otr_helper.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
+#include "ios/chrome/browser/shared/model/profile/profile_ios.h"
 #include "ios/web/public/browser_state.h"
 
 namespace brave_wallet {
 
 // static
 mojo::PendingRemote<mojom::IpfsService>
-BraveWalletIpfsServiceFactory::GetForBrowserState(
-    ChromeBrowserState* browser_state) {
-  return static_cast<BraveWalletIpfsService*>(
-             GetInstance()->GetServiceForBrowserState(browser_state, true))
+BraveWalletIpfsServiceFactory::GetForProfile(ProfileIOS* profile) {
+  return GetInstance()
+      ->GetServiceForProfileAs<BraveWalletIpfsService>(profile, true)
       ->MakeRemote();
 }
 
 // static
 BraveWalletIpfsService* BraveWalletIpfsServiceFactory::GetServiceForState(
-    ChromeBrowserState* browser_state) {
-  return static_cast<BraveWalletIpfsService*>(
-      GetInstance()->GetServiceForBrowserState(browser_state, true));
+    ProfileIOS* profile) {
+  return GetInstance()->GetServiceForProfileAs<BraveWalletIpfsService>(profile,
+                                                                       true);
 }
 
 // static
@@ -40,28 +36,20 @@ BraveWalletIpfsServiceFactory* BraveWalletIpfsServiceFactory::GetInstance() {
 }
 
 BraveWalletIpfsServiceFactory::BraveWalletIpfsServiceFactory()
-    : BrowserStateKeyedServiceFactory(
-          "BraveWalletIpfsService",
-          BrowserStateDependencyManager::GetInstance()) {}
+    : ProfileKeyedServiceFactoryIOS("BraveWalletIpfsService",
+                                    ProfileSelection::kRedirectedInIncognito,
+                                    ServiceCreation::kCreateLazily,
+                                    TestingCreation::kNoServiceForTests) {}
 
 BraveWalletIpfsServiceFactory::~BraveWalletIpfsServiceFactory() = default;
 
 std::unique_ptr<KeyedService>
 BraveWalletIpfsServiceFactory::BuildServiceInstanceFor(
     web::BrowserState* context) const {
-  auto* browser_state = ChromeBrowserState::FromBrowserState(context);
+  auto* profile = ProfileIOS::FromBrowserState(context);
   std::unique_ptr<BraveWalletIpfsService> ipfs_service(
-      new BraveWalletIpfsService(browser_state->GetPrefs()));
+      new BraveWalletIpfsService(profile->GetPrefs()));
   return ipfs_service;
-}
-
-bool BraveWalletIpfsServiceFactory::ServiceIsNULLWhileTesting() const {
-  return true;
-}
-
-web::BrowserState* BraveWalletIpfsServiceFactory::GetBrowserStateToUse(
-    web::BrowserState* context) const {
-  return GetBrowserStateRedirectedInIncognito(context);
 }
 
 }  // namespace brave_wallet

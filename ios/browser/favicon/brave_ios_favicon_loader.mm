@@ -7,6 +7,8 @@
 
 #import <UIKit/UIKit.h>
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "base/functional/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/no_destructor.h"
@@ -18,7 +20,7 @@
 #include "components/favicon_base/favicon_callback.h"
 #include "components/favicon_base/favicon_types.h"
 #include "components/keyed_service/core/service_access_type.h"
-#include "ios/chrome/browser/favicon/favicon_service_factory.h"
+#include "ios/chrome/browser/favicon/model/favicon_service_factory.h"
 #import "ios/chrome/browser/shared/ui/util/uikit_ui_util.h"
 #import "ios/chrome/common/ui/favicon/favicon_attributes.h"
 #include "ios/web/public/thread/web_thread.h"
@@ -50,11 +52,12 @@ base::CancelableTaskTracker::TaskId GetIconRawBitmapForPageUrl(
        favicon_base::IconType::kFavicon, favicon_base::IconType::kTouchIcon,
        favicon_base::IconType::kTouchPrecomposedIcon});
 
-  scoped_refptr<favicon::LargeIconWorker> worker =
-      base::MakeRefCounted<favicon::LargeIconWorker>(
-          min_source_size_in_pixel, desired_size_in_pixel,
-          std::move(raw_bitmap_callback),
-          favicon_base::LargeIconImageCallback(), tracker);
+  scoped_refptr<favicon::LargeIconWorker> worker = base::MakeRefCounted<
+      favicon::LargeIconWorker>(
+      min_source_size_in_pixel, desired_size_in_pixel,
+      favicon::LargeIconService::NoBigEnoughIconBehavior::kReturnFallbackColor,
+      std::move(raw_bitmap_callback), favicon_base::LargeIconImageCallback(),
+      tracker);
 
   return favicon_service->GetRawFaviconForPageURL(
       page_url, *large_icon_types, max_size_in_pixel, /*fallback_to_host=*/true,

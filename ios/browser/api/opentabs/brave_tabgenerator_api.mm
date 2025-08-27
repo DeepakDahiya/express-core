@@ -4,18 +4,17 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/ios/browser/api/opentabs/brave_tabgenerator_api.h"
-#import "brave/ios/browser/api/web/web_state/web_state+private.h"
 
 #include <memory>
 
+#include "base/check.h"
+#include "base/memory/raw_ptr.h"
 #include "base/strings/sys_string_conversions.h"
-
+#import "brave/ios/browser/api/web/web_state/web_state+private.h"
 #include "ios/chrome/browser/shared/model/browser/browser.h"
 #include "ios/web/public/thread/web_thread.h"
 #include "ios/web/web_state/web_state_impl.h"
-
-#include "net/base/mac/url_conversions.h"
-#include "url/gurl.h"
+#include "net/base/apple/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -54,24 +53,29 @@
 #pragma mark - BraveTabGeneratorAPI
 
 @interface BraveTabGeneratorAPI () {
-  Browser* browser_;
+  raw_ptr<Browser> browser_;
+  raw_ptr<Browser> otr_browser_;
 }
 @end
 
 @implementation BraveTabGeneratorAPI
 
-- (instancetype)initWithBrowser:(Browser*)browser {
+- (instancetype)initWithBrowser:(Browser*)browser
+                     otrBrowser:(Browser*)otrBrowser {
   if ((self = [super init])) {
     DCHECK_CURRENTLY_ON(web::WebThread::UI);
     DCHECK(browser);
+    DCHECK(otrBrowser);
     browser_ = browser;
+    otr_browser_ = otrBrowser;
   }
   return self;
 }
 
 - (BraveSyncTab*)createBraveSyncTab:(bool)isOffTheRecord {
-  return [[BraveSyncTab alloc] initWithBrowser:browser_
-                                isOffTheRecord:isOffTheRecord];
+  return [[BraveSyncTab alloc]
+      initWithBrowser:isOffTheRecord ? otr_browser_ : browser_
+       isOffTheRecord:isOffTheRecord];
 }
 
 - (void)dealloc {

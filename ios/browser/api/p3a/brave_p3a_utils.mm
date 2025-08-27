@@ -6,6 +6,7 @@
 #include "brave/ios/browser/api/p3a/brave_p3a_utils.h"
 
 #include "base/callback_list.h"
+#include "base/memory/raw_ptr.h"
 #include "base/memory/scoped_refptr.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
@@ -14,9 +15,7 @@
 #include "brave/components/p3a/metric_log_type.h"
 #include "brave/components/p3a/p3a_service.h"
 #include "brave/components/p3a/pref_names.h"
-#include "brave/ios/browser/api/p3a/brave_histograms_controller+private.h"
 #include "components/prefs/pref_service.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
 
 P3AMetricLogType const P3AMetricLogTypeSlow =
     static_cast<P3AMetricLogType>(p3a::MetricLogType::kSlow);
@@ -44,17 +43,13 @@ NSString* const P3ACreativeMetricPrefix =
 @end
 
 @implementation BraveP3AUtils {
-  ChromeBrowserState* _browserState;
-  PrefService* _localState;
+  raw_ptr<PrefService> _localState;
   scoped_refptr<p3a::P3AService> _p3aService;
 }
 
-- (instancetype)initWithBrowserState:(ChromeBrowserState*)mainBrowserState
-                          localState:(PrefService*)localState
-                          p3aService:
-                              (scoped_refptr<p3a::P3AService>)p3aService {
+- (instancetype)initWithLocalState:(PrefService*)localState
+                        p3aService:(scoped_refptr<p3a::P3AService>)p3aService {
   if ((self = [super init])) {
-    _browserState = mainBrowserState;
     _localState = localState;
     _p3aService = p3aService;
   }
@@ -79,40 +74,32 @@ NSString* const P3ACreativeMetricPrefix =
   _localState->CommitPendingWrite();
 }
 
-- (BraveHistogramsController*)histogramsController {
-  return [[BraveHistogramsController alloc] initWithBrowserState:_browserState];
-}
-
 - (P3ACallbackRegistration*)registerRotationCallback:
-    (void (^)(P3AMetricLogType logType, BOOL isConstellation))callback {
+    (void (^)(P3AMetricLogType logType))callback {
   if (!_p3aService) {
     return nil;
   }
   return [[P3ACallbackRegistration alloc]
       initWithSubscription:_p3aService->RegisterRotationCallback(
-                               base::BindRepeating(^(
-                                   p3a::MetricLogType log_type,
-                                   bool is_constellation) {
-                                 callback(
-                                     static_cast<P3AMetricLogType>(log_type),
-                                     is_constellation);
-                               }))];
+                               base::BindRepeating(
+                                   ^(p3a::MetricLogType log_type) {
+                                     callback(static_cast<P3AMetricLogType>(
+                                         log_type));
+                                   }))];
 }
 
 - (P3ACallbackRegistration*)registerMetricCycledCallback:
-    (void (^)(NSString* histogramName, BOOL isConstellation))callback {
+    (void (^)(NSString* histogramName))callback {
   if (!_p3aService) {
     return nil;
   }
   return [[P3ACallbackRegistration alloc]
       initWithSubscription:_p3aService->RegisterMetricCycledCallback(
-                               base::BindRepeating(^(
-                                   const std::string& histogram_name,
-                                   bool is_constellation) {
-                                 callback(
-                                     base::SysUTF8ToNSString(histogram_name),
-                                     is_constellation);
-                               }))];
+                               base::BindRepeating(
+                                   ^(const std::string& histogram_name) {
+                                     callback(base::SysUTF8ToNSString(
+                                         histogram_name));
+                                   }))];
 }
 
 - (void)registerDynamicMetric:(NSString*)histogramName

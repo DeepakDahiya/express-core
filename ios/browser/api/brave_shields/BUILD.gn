@@ -16,11 +16,16 @@ source_set("brave_shields") {
   ]
   deps = [
     "//base",
-    "//brave/base/mac",
-    "//brave/components/brave_component_updater/browser",
-    "//brave/components/brave_shields/adblock:rust_lib",
-    "//brave/components/brave_shields/browser:component_installer",
-    "//brave/components/brave_shields/common",
+    "//brave/base/apple",
+    "//brave/components/brave_component_updater/browser:public",
+    "//brave/components/brave_shields/core/browser",
+    "//brave/components/brave_shields/core/browser/adblock",
+    "//brave/components/brave_shields/core/common",
+    "//brave/components/cosmetic_filters/resources/data:generated_resources",
+    "//brave/components/resources:static_resources",
+    "//components/application_locale_storage",
     "//components/component_updater",
+    "//ios/chrome/browser/shared/model/application_context",
+    "//ui/base",
   ]
 }

@@ -8,6 +8,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include "base/check.h"
 #include "base/files/file_util.h"
 #include "base/functional/callback.h"
 #include "base/i18n/icu_string_conversions.h"
@@ -187,10 +188,8 @@ void ImportBookmarksFile(
     if (is_bookmark &&
         post_data.empty() &&
         (valid_url_callback.is_null() || valid_url_callback.Run(url))) {
-      if (toolbar_folder_index > path.size() && !path.empty()) {
-        NOTREACHED();  // error in parsing.
-        break;
-      }
+      CHECK(toolbar_folder_index <= path.size() ||
+            path.empty());  // error in parsing.
 
       ImportedBookmarkEntry entry;
       entry.creation_time = add_date;

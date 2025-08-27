@@ -14,8 +14,7 @@
 #include "components/password_manager/core/browser/password_store/password_store_consumer.h"
 #include "components/password_manager/core/browser/password_store/password_store_interface.h"
 #include "ios/web/public/thread/web_thread.h"
-#include "net/base/mac/url_conversions.h"
-#include "url/gurl.h"
+#include "net/base/apple/url_conversions.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -271,7 +270,8 @@ void PasswordStoreConsumerIOS::OnGetPasswordStoreResults(
 }
 
 - (void)removeLogin:(IOSPasswordForm*)passwordForm {
-  password_store_->RemoveLogin([self createCredentialForm:passwordForm]);
+  password_store_->RemoveLogin(FROM_HERE,
+                               [self createCredentialForm:passwordForm]);
 }
 
 - (void)updateLogin:(IOSPasswordForm*)newPasswordForm

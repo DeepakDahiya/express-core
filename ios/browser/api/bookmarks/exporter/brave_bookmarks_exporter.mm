@@ -4,35 +4,36 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "brave/ios/browser/api/bookmarks/exporter/brave_bookmarks_exporter.h"
-#include "brave/ios/browser/api/bookmarks/brave_bookmarks_api.h"
 
-#include <functional>
 #include <vector>
 
 #include "base/apple/foundation_util.h"
 #include "base/base_paths.h"
+#include "base/check.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback_helpers.h"
+#include "base/notreached.h"
 #include "base/path_service.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/uuid.h"
 #include "base/values.h"
-#include "brave/components/l10n/common/localization_util.h"
+#include "brave/ios/browser/api/bookmarks/brave_bookmarks_api.h"
 #include "brave/ios/browser/api/bookmarks/exporter/bookmark_html_writer.h"
 #include "brave/ios/browser/api/bookmarks/exporter/bookmarks_encoder.h"
 #include "components/bookmarks/browser/bookmark_node.h"
 #include "components/bookmarks/browser/bookmark_uuids.h"
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/shared/model/application_context/application_context.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state.h"
-#include "ios/chrome/browser/shared/model/browser_state/chrome_browser_state_manager.h"
+#include "ios/chrome/browser/shared/model/profile/profile_ios.h"
+#include "ios/chrome/browser/shared/model/profile/profile_manager_ios.h"
 #include "ios/web/public/thread/web_task_traits.h"
 #include "ios/web/public/thread/web_thread.h"
-#import "net/base/mac/url_conversions.h"
+#import "net/base/apple/url_conversions.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -42,28 +43,36 @@
 class BraveBookmarksExportObserver : public BookmarksExportObserver {
  public:
   BraveBookmarksExportObserver(
-      std::function<void(BraveBookmarksExporterState)> on_export_finished);
+      base::OnceCallback<void(BraveBookmarksExporterState)> on_export_finished);
   void OnExportFinished(Result result) override;
 
  private:
-  std::function<void(BraveBookmarksExporterState)> _on_export_finished;
+  base::OnceCallback<void(BraveBookmarksExporterState)> _on_export_finished;
 };
 
 BraveBookmarksExportObserver::BraveBookmarksExportObserver(
-    std::function<void(BraveBookmarksExporterState)> on_export_finished)
-    : _on_export_finished(on_export_finished) {}
+    base::OnceCallback<void(BraveBookmarksExporterState)> on_export_finished)
+    : _on_export_finished(std::move(on_export_finished)) {}
 
 void BraveBookmarksExportObserver::OnExportFinished(Result result) {
   switch (result) {
     case Result::kSuccess:
-      return _on_export_finished(BraveBookmarksExporterStateCompleted);
+      std::move(_on_export_finished).Run(BraveBookmarksExporterStateCompleted);
+      break;
     case Result::kCouldNotCreateFile:
-      return _on_export_finished(BraveBookmarksExporterStateErrorCreatingFile);
+      std::move(_on_export_finished)
+          .Run(BraveBookmarksExporterStateErrorCreatingFile);
+      break;
     case Result::kCouldNotWriteHeader:
-      return _on_export_finished(BraveBookmarksExporterStateErrorWritingHeader);
+      std::move(_on_export_finished)
+          .Run(BraveBookmarksExporterStateErrorWritingHeader);
+      break;
     case Result::kCouldNotWriteNodes:
-      return _on_export_finished(BraveBookmarksExporterStateErrorWritingNodes);
+      std::move(_on_export_finished)
+          .Run(BraveBookmarksExporterStateErrorWritingNodes);
+      break;
     default:
+      delete this;
       NOTREACHED();
   }
   delete this;
@@ -82,47 +91,43 @@ void BraveBookmarksExportObserver::OnExportFinished(Result result) {
 
 - (instancetype)init {
   if ((self = [super init])) {
-    export_thread_ = web::GetIOThreadTaskRunner({});
+    // This work must be done on the UI thread because it currently relies on
+    // fetching information from ProfileIOS which is main-thread bound
+    export_thread_ = web::GetUIThreadTaskRunner({});
   }
   return self;
 }
 
 - (void)exportToFile:(NSString*)filePath
         withListener:(void (^)(BraveBookmarksExporterState))listener {
-  auto start_export =
-      [](BraveBookmarksExporter* weak_exporter, NSString* filePath,
-         std::function<void(BraveBookmarksExporterState)> listener) {
-        // Export cancelled as the exporter has been deallocated
-        __strong BraveBookmarksExporter* exporter = weak_exporter;
-        if (!exporter) {
-          listener(BraveBookmarksExporterStateStarted);
-          listener(BraveBookmarksExporterStateCancelled);
-          return;
-        }
-
-        DCHECK(GetApplicationContext());
-
-        base::FilePath destination_file_path =
-            base::apple::NSStringToFilePath(filePath);
-
-        listener(BraveBookmarksExporterStateStarted);
-
-        ios::ChromeBrowserStateManager* browserStateManager =
-            GetApplicationContext()->GetChromeBrowserStateManager();
-        DCHECK(browserStateManager);
-
-        ChromeBrowserState* chromeBrowserState =
-            browserStateManager->GetLastUsedBrowserState();
-        DCHECK(chromeBrowserState);
-
-        bookmark_html_writer::WriteBookmarks(
-            chromeBrowserState, destination_file_path,
-            new BraveBookmarksExportObserver(listener));
-      };
-
   __weak BraveBookmarksExporter* weakSelf = self;
-  export_thread_->PostTask(
-      FROM_HERE, base::BindOnce(start_export, weakSelf, filePath, listener));
+
+  auto start_export = ^{
+    // Export cancelled as the exporter has been deallocated
+    __strong BraveBookmarksExporter* exporter = weakSelf;
+    if (!exporter) {
+      listener(BraveBookmarksExporterStateStarted);
+      listener(BraveBookmarksExporterStateCancelled);
+      return;
+    }
+
+    DCHECK(GetApplicationContext());
+
+    base::FilePath destination_file_path =
+        base::apple::NSStringToFilePath(filePath);
+
+    listener(BraveBookmarksExporterStateStarted);
+
+    std::vector<ProfileIOS*> profiles =
+        GetApplicationContext()->GetProfileManager()->GetLoadedProfiles();
+    ProfileIOS* last_used_profile = profiles.at(0);
+
+    bookmark_html_writer::WriteBookmarks(
+        last_used_profile, destination_file_path,
+        new BraveBookmarksExportObserver(base::BindOnce(listener)));
+  };
+
+  export_thread_->PostTask(FROM_HERE, base::BindOnce(start_export));
 }
 
 - (void)exportToFile:(NSString*)filePath
@@ -134,45 +139,40 @@ void BraveBookmarksExportObserver::OnExportFinished(Result result) {
     return;
   }
 
-  auto start_export =
-      [](BraveBookmarksExporter* weak_exporter, NSString* filePath,
-         NSArray<IOSBookmarkNode*>* bookmarks,
-         std::function<void(BraveBookmarksExporterState)> listener) {
-        // Export cancelled as the exporter has been deallocated
-        __strong BraveBookmarksExporter* exporter = weak_exporter;
-        if (!exporter) {
-          listener(BraveBookmarksExporterStateStarted);
-          listener(BraveBookmarksExporterStateCancelled);
-          return;
-        }
-
-        listener(BraveBookmarksExporterStateStarted);
-        base::FilePath destination_file_path =
-            base::apple::NSStringToFilePath(filePath);
-
-        // Create artificial nodes
-        auto bookmark_bar_node = [exporter getBookmarksBarNode];
-        auto other_folder_node = [exporter getOtherBookmarksNode];
-        auto mobile_folder_node = [exporter getMobileBookmarksNode];
-
-        for (IOSBookmarkNode* bookmark : bookmarks) {
-          // We export as the |mobile_bookmarks_node| by default.
-          [bookmark setNativeParent:mobile_folder_node.get()];
-        }
-
-        auto encoded_bookmarks =
-            ios::bookmarks_encoder::Encode(bookmark_bar_node.get(),
-                                           other_folder_node.get(),
-                                           mobile_folder_node.get());
-        bookmark_html_writer::WriteBookmarks(
-            std::move(encoded_bookmarks), destination_file_path,
-            new BraveBookmarksExportObserver(listener));
-      };
-
   __weak BraveBookmarksExporter* weakSelf = self;
-  export_thread_->PostTask(
-      FROM_HERE,
-      base::BindOnce(start_export, weakSelf, filePath, bookmarks, listener));
+
+  auto start_export = ^{
+    // Export cancelled as the exporter has been deallocated
+    __strong BraveBookmarksExporter* exporter = weakSelf;
+    if (!exporter) {
+      listener(BraveBookmarksExporterStateStarted);
+      listener(BraveBookmarksExporterStateCancelled);
+      return;
+    }
+
+    listener(BraveBookmarksExporterStateStarted);
+    base::FilePath destination_file_path =
+        base::apple::NSStringToFilePath(filePath);
+
+    // Create artificial nodes
+    auto bookmark_bar_node = [exporter getBookmarksBarNode];
+    auto other_folder_node = [exporter getOtherBookmarksNode];
+    auto mobile_folder_node = [exporter getMobileBookmarksNode];
+
+    for (IOSBookmarkNode* bookmark : bookmarks) {
+      // We export as the |mobile_bookmarks_node| by default.
+      [bookmark setNativeParent:mobile_folder_node.get()];
+    }
+
+    auto encoded_bookmarks = ios::bookmarks_encoder::Encode(
+        bookmark_bar_node.get(), other_folder_node.get(),
+        mobile_folder_node.get());
+    bookmark_html_writer::WriteBookmarks(
+        std::move(encoded_bookmarks), destination_file_path,
+        new BraveBookmarksExportObserver(base::BindOnce(listener)));
+  };
+
+  export_thread_->PostTask(FROM_HERE, base::BindOnce(start_export));
 }
 
 // MARK: - Internal artificial nodes used for exporting arbitrary bookmarks to a file
@@ -186,8 +186,7 @@ void BraveBookmarksExportObserver::OnExportFinished(Result result) {
   auto node = std::make_unique<bookmarks::BookmarkNode>(
       /*id=*/1, base::Uuid::ParseLowercase(bookmarks::kBookmarkBarNodeUuid),
       GURL());
-  node->SetTitle(brave_l10n::GetLocalizedResourceUTF16String(
-      IDS_BOOKMARK_BAR_FOLDER_NAME));
+  node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_FOLDER_NAME));
   return node;
 }
 
@@ -195,8 +194,7 @@ void BraveBookmarksExportObserver::OnExportFinished(Result result) {
   auto node = std::make_unique<bookmarks::BookmarkNode>(
       /*id=*/2, base::Uuid::ParseLowercase(bookmarks::kOtherBookmarksNodeUuid),
       GURL());
-  node->SetTitle(brave_l10n::GetLocalizedResourceUTF16String(
-      IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
+  node->SetTitle(l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_OTHER_FOLDER_NAME));
   return node;
 }
 
@@ -204,8 +202,8 @@ void BraveBookmarksExportObserver::OnExportFinished(Result result) {
   auto node = std::make_unique<bookmarks::BookmarkNode>(
       /*id=*/3, base::Uuid::ParseLowercase(bookmarks::kMobileBookmarksNodeUuid),
       GURL());
-  node->SetTitle(brave_l10n::GetLocalizedResourceUTF16String(
-      IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
+  node->SetTitle(
+      l10n_util::GetStringUTF16(IDS_BOOKMARK_BAR_MOBILE_FOLDER_NAME));
   return node;
 }
 @end

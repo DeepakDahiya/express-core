@@ -16,10 +16,12 @@
 #include "brave/components/brave_component_updater/browser/switches.h"
 #include "brave/components/brave_sync/buildflags.h"
 #include "brave/components/update_client/buildflags.h"
+#include "brave/components/variations/command_line_utils.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/component_updater/component_updater_switches.h"
 #include "components/sync/base/command_line_switches.h"
-#include "components/sync/base/model_type.h"
+#include "components/sync/base/data_type.h"
+#include "components/variations/variations_switches.h"
 #include "ios/chrome/browser/flags/chrome_switches.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -69,6 +71,8 @@ void BraveMainDelegate::BasicStartupComplete() {
     command_line->AppendSwitchASCII(syncer::kSyncServiceURL,
                                     BUILDFLAG(BRAVE_SYNC_ENDPOINT));
   }
+
+  variations::AppendBraveCommandLineOptions(*command_line);
 
   if (!command_line->HasSwitch(switches::kVModule)) {
     command_line->AppendSwitchASCII(switches::kVModule, "*/brave/*=0");

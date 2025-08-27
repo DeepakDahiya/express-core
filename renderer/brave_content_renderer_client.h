@@ -30,14 +30,18 @@ class BraveContentRendererClient : public ChromeContentRendererClient {
   void RenderThreadStarted() override;
   void SetRuntimeFeaturesDefaultsBeforeBlinkInitialization() override;
   void RenderFrameCreated(content::RenderFrame* render_frame) override;
-  void GetSupportedKeySystems(media::GetSupportedKeySystemsCB cb) override;
+  std::unique_ptr<media::KeySystemSupportRegistration> GetSupportedKeySystems(
+      content::RenderFrame* render_frame,
+      media::GetSupportedKeySystemsCB cb) override;
   void RunScriptsAtDocumentStart(content::RenderFrame* render_frame) override;
+  void RunScriptsAtDocumentEnd(content::RenderFrame* render_frame) override;
   void WillEvaluateServiceWorkerOnWorkerThread(
       blink::WebServiceWorkerContextProxy* context_proxy,
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
       const GURL& service_worker_scope,
-      const GURL& script_url) override;
+      const GURL& script_url,
+      const blink::ServiceWorkerToken& service_worker_token) override;
   void WillDestroyServiceWorkerContextOnWorkerThread(
       v8::Local<v8::Context> v8_context,
       int64_t service_worker_version_id,
@@ -47,7 +51,7 @@ class BraveContentRendererClient : public ChromeContentRendererClient {
   CreateURLLoaderThrottleProvider(
       blink::URLLoaderThrottleProviderType provider_type) override;
 
-  bool IsTorProcess() const;
+  bool IsOnionAllowed() const;
 
  private:
   std::unique_ptr<BraveRenderThreadObserver> brave_observer_;

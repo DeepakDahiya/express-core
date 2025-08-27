@@ -5,9 +5,9 @@
 
 #include "brave/ios/browser/api/url/url_spoof_checker.h"
 
+#include "base/check.h"
 #include "base/functional/bind.h"
 #include "base/functional/callback.h"
-#include "base/notreached.h"
 #include "base/strings/sys_string_conversions.h"
 #include "build/build_config.h"
 #include "components/lookalikes/core/lookalike_url_ui_util.h"
@@ -17,7 +17,7 @@
 #include "components/url_formatter/spoof_checks/top_domains/domains-trie-inc.cc"
 #include "components/url_formatter/spoof_checks/top_domains/top_domain_util.h"
 #include "components/url_formatter/url_formatter.h"
-#include "net/base/mac/url_conversions.h"
+#include "net/base/apple/url_conversions.h"
 #include "url/gurl.h"
 #include "url/origin.h"
 

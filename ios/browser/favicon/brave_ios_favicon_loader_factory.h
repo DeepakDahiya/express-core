@@ -9,21 +9,19 @@
 #include <memory>
 
 #include "base/no_destructor.h"
-#include "components/keyed_service/ios/browser_state_keyed_service_factory.h"
+#include "ios/chrome/browser/shared/model/profile/profile_keyed_service_factory_ios.h"
 
-class ChromeBrowserState;
+class ProfileIOS;
 
 namespace brave_favicon {
 class BraveFaviconLoader;
 
 // Singleton that owns all FaviconLoaders and associates them with
-// ChromeBrowserState.
-class BraveIOSFaviconLoaderFactory : public BrowserStateKeyedServiceFactory {
+// ProfileIOS.
+class BraveIOSFaviconLoaderFactory : public ProfileKeyedServiceFactoryIOS {
  public:
-  static BraveFaviconLoader* GetForBrowserState(
-      ChromeBrowserState* browser_state);
-  static BraveFaviconLoader* GetForBrowserStateIfExists(
-      ChromeBrowserState* browser_state);
+  static BraveFaviconLoader* GetForProfile(ProfileIOS* profile);
+  static BraveFaviconLoader* GetForProfileIfExists(ProfileIOS* profile);
   static BraveIOSFaviconLoaderFactory* GetInstance();
   static TestingFactory GetDefaultFactory();
 
@@ -37,12 +35,9 @@ class BraveIOSFaviconLoaderFactory : public BrowserStateKeyedServiceFactory {
   BraveIOSFaviconLoaderFactory();
   ~BraveIOSFaviconLoaderFactory() override;
 
-  // BrowserStateKeyedServiceFactory implementation.
+  // ProfileKeyedServiceFactoryIOS implementation.
   std::unique_ptr<KeyedService> BuildServiceInstanceFor(
       web::BrowserState* context) const override;
-  web::BrowserState* GetBrowserStateToUse(
-      web::BrowserState* context) const override;
-  bool ServiceIsNULLWhileTesting() const override;
 };
 }  // namespace brave_favicon
 

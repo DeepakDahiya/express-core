@@ -5,7 +5,6 @@
 
 #include "base/strings/strcat.h"
 #include "base/strings/string_util.h"
-#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/test/base/in_process_browser_test.h"
@@ -57,12 +56,12 @@ constexpr char kLoadPassJs[] = R"(
 )";
 
 std::string GetHeadersForURL(const std::string& url) {
-  if (base::EndsWith(url, kPage, base::CompareCase::SENSITIVE)) {
+  if (url.ends_with(kPage)) {
     return kPageHeaders;
-  } else if (base::EndsWith(url, kPassJs, base::CompareCase::SENSITIVE)) {
+  } else if (url.ends_with(kPassJs)) {
     return kPassJsHeaders;
   } else {
-    EXPECT_FALSE(base::EndsWith(url, kWebBundle, base::CompareCase::SENSITIVE))
+    EXPECT_FALSE(url.ends_with(kWebBundle))
         << "Received request for web bundle headers, which should not have "
            "happened. URL:"
         << url;
@@ -71,10 +70,10 @@ std::string GetHeadersForURL(const std::string& url) {
 }
 
 std::string GetContentForURL(const std::string& url) {
-  if (base::EndsWith(url, kPage, base::CompareCase::SENSITIVE)) {
+  if (url.ends_with(kPage)) {
     return kPageHtml;
   } else {
-    EXPECT_FALSE(base::EndsWith(url, kWebBundle, base::CompareCase::SENSITIVE))
+    EXPECT_FALSE(url.ends_with(kWebBundle))
         << "Received request for web bundle content, which should not have "
            "happened. URL:"
         << url;
