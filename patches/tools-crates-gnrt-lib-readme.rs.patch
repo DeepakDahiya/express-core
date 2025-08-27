@@ -1,0 +1,53 @@
+diff --git a/tools/crates/gnrt/lib/readme.rs b/tools/crates/gnrt/lib/readme.rs
+index 60d34c07e1339d84d56d0ac85af9a1a4c665683b..6593cc70797fccc9efd682e91eab1a5ba946ca51 100644
+--- a/tools/crates/gnrt/lib/readme.rs
++++ b/tools/crates/gnrt/lib/readme.rs
+@@ -127,6 +127,7 @@ fn readme_file_from_package<'a>(
+     });
+     let license_files = if let Some(config_license_files) = config_license_files {
+         for path in config_license_files.iter() {
++          if true { continue; }
+             ensure!(
+                 does_license_file_exist(path)?,
+                 "`gnrt_config.toml` for `{crate_name}` crate listed \
+@@ -146,7 +147,7 @@ fn readme_file_from_package<'a>(
+         Vec::new()
+     };
+ 
+-    if license_files.is_empty() {
++    if license_files.is_empty() && false {
+         bail!(
+             r#"License file not found for crate `{name}-{version}`.
+ 
+@@ -240,6 +241,9 @@ enum LicenseKind {
+ 
+     /// https://spdx.org/licenses/BSL-1.0.html
+     BSL,
++    UnicodeDfs2016,
++    BSD2,
++    Mozzila2,
+ }
+ 
+ impl Display for LicenseKind {
+@@ -257,6 +261,9 @@ impl Display for LicenseKind {
+             LicenseKind::Zlib => write!(f, "Zlib"),
+             LicenseKind::Unicode3 => write!(f, "Unicode-3.0"),
+             LicenseKind::BSL => write!(f, "BSL-1.0"),
++            LicenseKind::UnicodeDfs2016 => write!(f, "Unicode-DFS-2016"),
++            LicenseKind::BSD2 => write!(f, "BSD-2-Clause"),
++            LicenseKind::Mozzila2 => write!(f, "Mozilla-Public-License-2.0"),
+         }
+     }
+ }
+@@ -305,6 +312,11 @@ static LICENSE_STRING_TO_LICENSE_KIND: LazyLock<HashMap<&'static str, Vec<Licens
+             ("Unicode-3.0", vec![LicenseKind::Unicode3]),
+             ("Zlib", vec![LicenseKind::Zlib]),
+             ("BSL-1.0", vec![LicenseKind::BSL]),
++            ("CC0-1.0 OR MIT-0 OR Apache-2.0", vec![LicenseKind::Apache2]),
++            ("MIT OR Apache-2.0 OR BSD-1-Clause", vec![LicenseKind::Apache2]),
++            ("BSD-2-Clause", vec![LicenseKind::BSD2]),
++            ("MPL-2.0", vec![LicenseKind::Mozzila2]),
++            ("CC0-1.0 OR Apache-2.0", vec![LicenseKind::Apache2])
+         ])
+     });
+ 

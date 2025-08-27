@@ -1,25 +1,21 @@
 diff --git a/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsCategory.java b/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsCategory.java
-index 92cb47ce4b9541ba6fee2dfeec9ad666e100cd60..58e5f661afac7142ef4d3cfa55afb7988fba50bb 100644
+index ab6778ee43e4e503ce0856ac2364429bccac5cc4..54e3d5ee63b62dac2ab8c82becb970acda33eb0a 100644
 --- a/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsCategory.java
 +++ b/components/browser_ui/site_settings/android/java/src/org/chromium/components/browser_ui/site_settings/SiteSettingsCategory.java
-@@ -70,7 +70,7 @@ public class SiteSettingsCategory {
-         Type.ZOOM,
-         Type.STORAGE_ACCESS,
-         Type.TRACKING_PROTECTION,
--        Type.NUM_ENTRIES
-+        Type.NUM_ENTRIES, Type.AUTOPLAY, Type.BRAVE_GOOGLE_SIGN_IN, Type.BRAVE_LOCALHOST_ACCESS
+@@ -80,6 +80,7 @@ public class SiteSettingsCategory {
+         Type.SERIAL_PORT,
+         Type.LOCAL_NETWORK_ACCESS,
+         Type.WINDOW_MANAGEMENT,
++        Type.AUTOPLAY, Type.BRAVE_GOOGLE_SIGN_IN, Type.BRAVE_LOCALHOST_ACCESS,
+         Type.NUM_ENTRIES
      })
      @Retention(RetentionPolicy.SOURCE)
-     public @interface Type {
-@@ -107,9 +107,10 @@ public class SiteSettingsCategory {
-         int ZOOM = 28;
-         int STORAGE_ACCESS = 29;
-         int TRACKING_PROTECTION = 30;
-+        int AUTOPLAY = 31; int BRAVE_GOOGLE_SIGN_IN = 32; int BRAVE_LOCALHOST_ACCESS = 33;
+@@ -125,7 +126,7 @@ public class SiteSettingsCategory {
+         int WINDOW_MANAGEMENT = 36;
  
          /** Number of handled categories used for calculating array sizes. */
--        int NUM_ENTRIES = 31;
-+        int NUM_ENTRIES = 34;
+-        int NUM_ENTRIES = 37;
++        int AUTOPLAY = 37; int BRAVE_GOOGLE_SIGN_IN = 38; int BRAVE_LOCALHOST_ACCESS = 39; int NUM_ENTRIES = 40;
      }
  
      private final BrowserContextHandle mBrowserContextHandle;

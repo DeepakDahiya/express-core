@@ -1,20 +1,36 @@
 diff --git a/chrome/browser/ui/views/location_bar/location_bar_view.cc b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-index 0d5ab98ae28cb12518f7cd64893d8c72cca7a260..685c4c7ad5efc613b834429b2886993fd2fd716a 100644
+index 17880bc0b8ecf9a5c18400ee97f2b2f9c0fb88f2..732508fb6c3122fcceda0c68e870a34a6bca438a 100644
 --- a/chrome/browser/ui/views/location_bar/location_bar_view.cc
 +++ b/chrome/browser/ui/views/location_bar/location_bar_view.cc
-@@ -688,6 +688,7 @@ void LocationBarView::Layout() {
-   if (show_overriding_permission_chip)
-     text_left += text_overriding_permission_chip_indent;
- 
-+  BRAVE_LAYOUT_LEADING_DECORATIONS
-   LocationBarLayout leading_decorations(LocationBarLayout::Position::kLeftEdge,
-                                         text_left);
-   LocationBarLayout trailing_decorations(
-@@ -760,6 +761,7 @@ void LocationBarView::Layout() {
+@@ -732,6 +732,7 @@ void LocationBarView::Layout(PassKey) {
+                                   .indent_input_when_popup_closed) &&
+                              !location_icon_view_->ShouldShowLabel() &&
+                              !ShouldShowKeywordBubble();
++  BRAVE_LOCATION_BAR_VIEW_LAYOUT_LEADING_DECORATIONS
+   if (should_indent) {
+     icon_left += 7 /*icon_indent*/;
+     icon_left += omnibox_feature_configs::AdjustOmniboxIndent()
+@@ -818,6 +819,7 @@ void LocationBarView::Layout(PassKey) {
+       }
+       selected_keyword_view_->SetCustomImage(image);
+     }
++  BRAVE_LOCATION_BAR_VIEW_LAYOUT_HANDLE_SEARCH_PROMOTION_BUTTON_VISIBILITY
+   } else if (location_icon_view_->GetShowText() &&
+              !ShouldChipOverrideLocationIcon()) {
+     location_icon_view_->SetVisible(true);
+@@ -865,6 +867,7 @@ void LocationBarView::Layout(PassKey) {
      }
    };
  
-+  BRAVE_LAYOUT_TRAILING_DECORATIONS
++  BRAVE_LOCATION_BAR_VIEW_LAYOUT_RIGHT_MOST_TRAILING_DECORATIONS
    add_trailing_decoration(page_action_icon_container_,
                            /*intra_item_padding=*/0);
-   for (ContentSettingImageView* view : base::Reversed(content_setting_views_)) {
+   add_trailing_decoration(page_action_container_,
+@@ -880,6 +883,7 @@ void LocationBarView::Layout(PassKey) {
+   }
+ 
+   add_trailing_decoration(clear_all_button_, /*intra_item_padding=*/0);
++  BRAVE_LOCATION_BAR_VIEW_LAYOUT_LEFT_MOST_TRAILING_DECORATIONS
+ 
+   // Perform layout.
+   int entry_width = width();

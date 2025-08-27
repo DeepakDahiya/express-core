@@ -1,8 +1,8 @@
 diff --git a/chrome/installer/linux/debian/build.sh b/chrome/installer/linux/debian/build.sh
-index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d19b92455 100755
+index 09c528257d342f0726b63e24207f0e98402e81ab..7417090166b3b7defd282791704d3d6a2480109c 100755
 --- a/chrome/installer/linux/debian/build.sh
 +++ b/chrome/installer/linux/debian/build.sh
-@@ -21,7 +21,7 @@ gen_changelog() {
+@@ -22,7 +22,7 @@ gen_changelog() {
    process_template "${SCRIPTDIR}/changelog.template" "${DEB_CHANGELOG}"
    debchange -a --nomultimaint -m --changelog "${DEB_CHANGELOG}" \
      "Release Notes: ${RELEASENOTES}"
@@ -11,7 +11,7 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
    mkdir -p "$(dirname "${GZLOG}")"
    gzip -9 -c "${DEB_CHANGELOG}" > "${GZLOG}"
    chmod 644 "${GZLOG}"
-@@ -30,7 +30,7 @@ gen_changelog() {
+@@ -31,7 +31,7 @@ gen_changelog() {
  # Create the Debian control file needed by dpkg-deb.
  gen_control() {
    dpkg-gencontrol -v"${VERSIONFULL}" -c"${DEB_CONTROL}" -l"${DEB_CHANGELOG}" \
@@ -20,7 +20,7 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
    -O > "${STAGEDIR}/DEBIAN/control"
    rm -f "${DEB_CONTROL}"
  }
-@@ -41,7 +41,7 @@ prep_staging_debian() {
+@@ -42,7 +42,7 @@ prep_staging_debian() {
    install -m 755 -d "${STAGEDIR}/DEBIAN" \
      "${STAGEDIR}/etc/cron.daily" \
      "${STAGEDIR}/usr/share/menu" \
@@ -29,7 +29,7 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
  }
  
  # Put the package contents in the staging area.
-@@ -85,6 +85,7 @@ stage_install_debian() {
+@@ -90,6 +90,7 @@ stage_install_debian() {
    process_template "${OUTPUTDIR}/installer/debian/postrm" \
      "${STAGEDIR}/DEBIAN/postrm"
    chmod 755 "${STAGEDIR}/DEBIAN/postrm"
@@ -37,7 +37,7 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
  }
  
  verify_package() {
-@@ -92,7 +93,7 @@ verify_package() {
+@@ -97,7 +98,7 @@ verify_package() {
    local EXPECTED_DEPENDS="${TMPFILEDIR}/expected_deb_depends"
    local ACTUAL_DEPENDS="${TMPFILEDIR}/actual_deb_depends"
    echo ${DEPENDS} | sed 's/, /\n/g' | LANG=C sort > "${EXPECTED_DEPENDS}"
@@ -46,7 +46,7 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
        grep '^ Depends: ' | sed 's/^ Depends: //' | sed 's/, /\n/g' | \
        LANG=C sort > "${ACTUAL_DEPENDS}"
    BAD_DIFF=0
-@@ -118,7 +119,7 @@ do_package() {
+@@ -123,7 +124,7 @@ do_package() {
      gen_control
    fi
    log_cmd fakeroot dpkg-deb -Znone -b "${STAGEDIR}" "${TMPFILEDIR}"
@@ -55,7 +55,7 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
    if [ ${IS_OFFICIAL_BUILD} -ne 0 ]; then
      (cd "${TMPFILEDIR}" && ar -x "${TMPFILEDIR}/${PACKAGEFILE}")
      xz -z9 -T0 --lzma2='dict=256MiB' "${TMPFILEDIR}/data.tar"
-@@ -164,8 +165,11 @@ verify_channel() {
+@@ -169,8 +170,11 @@ verify_channel() {
        ;;
      dev|unstable|alpha )
        CHANNEL=unstable
@@ -64,10 +64,10 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
        ;;
 +    nightly )
 +      ;;
-     * )
-       echo
-       echo "ERROR: '$CHANNEL' is not a valid channel type."
-@@ -173,6 +177,7 @@ verify_channel() {
+     # Canary is released twice a day automatically, so no release notes
+     # attached.
+     canary )
+@@ -184,6 +188,7 @@ verify_channel() {
        exit 1
        ;;
    esac
@@ -75,10 +75,10 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
  }
  
  process_opts() {
-@@ -252,6 +257,17 @@ fi
- eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/export \1='\2'/" \
+@@ -262,6 +267,16 @@ else
+ fi
+ eval $(sed -e "s/^\([^=]\+\)=\(.*\)$/\1='\2'/" \
    "${OUTPUTDIR}/installer/theme/BRANDING")
- 
 +PACKAGEANDCHANNEL="${PACKAGE}-${CHANNEL}"
 +if [ "$CHANNEL" = "unstable" ]; then
 +  PACKAGEANDCHANNEL="${PACKAGE}-dev"
@@ -89,11 +89,10 @@ index 7cd40b9c37cce8370238c3a1b3850d209ad8d4e2..19b35fdcb96d1a235b7ef2ab42cde14d
 +if [ "$CHANNEL" = "stable" ]; then
 +  PACKAGEANDCHANNEL="${PACKAGE}"
 +fi
-+
+ 
  verify_channel
  
- # Some Debian packaging tools want these set.
-@@ -262,6 +278,8 @@ export ARCHITECTURE="${ARCHITECTURE}"
+@@ -273,6 +288,8 @@ export ARCHITECTURE="${ARCHITECTURE}"
  DEB_COMMON_DEPS="${OUTPUTDIR}/deb_common.deps"
  COMMON_DEPS=$(sed ':a;N;$!ba;s/\n/, /g' "${DEB_COMMON_DEPS}")
  COMMON_PREDEPS="dpkg (>= 1.14.0)"

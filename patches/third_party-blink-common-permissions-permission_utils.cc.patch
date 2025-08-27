@@ -1,5 +1,5 @@
 diff --git a/third_party/blink/common/permissions/permission_utils.cc b/third_party/blink/common/permissions/permission_utils.cc
-index 82b16083339538807e7466e9b41214f8663b50ec..ee60ca569974e523e26db0ce5fb6fdf5764b3cbb 100644
+index 4dd8b8d4498cbe00b5739f620037ebe6915b6033..03d9e25008d1eb355a0630e50b897d3fb9ed6136 100644
 --- a/third_party/blink/common/permissions/permission_utils.cc
 +++ b/third_party/blink/common/permissions/permission_utils.cc
 @@ -28,6 +28,7 @@ mojom::PermissionStatus ToPermissionStatus(const std::string& status) {
@@ -10,3 +10,11 @@ index 82b16083339538807e7466e9b41214f8663b50ec..ee60ca569974e523e26db0ce5fb6fdf5
      case PermissionType::GEOLOCATION:
        return "Geolocation";
      case PermissionType::NOTIFICATIONS:
+@@ -250,6 +251,7 @@ std::optional<PermissionType> PermissionDescriptorInfoToPermissionType(
+     bool clipboard_has_user_gesture,
+     bool fullscreen_allow_without_user_gesture) {
+   switch (name) {
++    BRAVE_PERMISSION_UTIL_PERMISSION_DESCRIPTOR_INFO_TO_PERMISSION_TYPE
+     case PermissionName::GEOLOCATION:
+       return PermissionType::GEOLOCATION;
+     case PermissionName::NOTIFICATIONS:

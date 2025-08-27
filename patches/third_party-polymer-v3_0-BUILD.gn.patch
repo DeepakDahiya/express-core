@@ -1,20 +1,32 @@
 diff --git a/third_party/polymer/v3_0/BUILD.gn b/third_party/polymer/v3_0/BUILD.gn
-index 5d11077706efd09792b2cb30bafd676dc28c2879..3376bc13523fe199949a4b6588f6d8f26cd82525 100644
+index d57a35c48a5c4012f3d917aad84eff39c590f177..68296f8eb73b5db4d7acd8414577679243a968ce 100644
 --- a/third_party/polymer/v3_0/BUILD.gn
 +++ b/third_party/polymer/v3_0/BUILD.gn
-@@ -47,6 +47,7 @@ js_files = [
+@@ -19,6 +19,7 @@ js_files = [
  ]
  
  if (is_chromeos_ash) {
 +} if (!is_android) {
    js_files += [
-     "iron-dropdown/iron-dropdown.js",
-     "iron-dropdown/iron-dropdown-scroll-manager.js",
-@@ -179,6 +180,7 @@ ts_library("library") {
-   ]
+     "iron-a11y-announcer/iron-a11y-announcer.js",
+     "iron-a11y-keys/iron-a11y-keys.js",
+@@ -235,11 +236,13 @@ ts_library("library") {
+   # Also needed on LaCros for Print Preview. Remove once CrOS Print Preview
+   # launches.
+   if (is_chromeos) {
++  } if (!is_android) {
+     definitions +=
+         [ "components-chromium/iron-fit-behavior/iron-fit-behavior.d.ts" ]
+   }
  
    if (is_chromeos_ash) {
 +  } if (!is_android) {
      definitions += [
-       "components-chromium/iron-dropdown/iron-dropdown.d.ts",
-       "components-chromium/iron-dropdown/iron-dropdown-scroll-manager.d.ts",
+       "components-chromium/iron-a11y-announcer/iron-a11y-announcer.d.ts",
+       "components-chromium/iron-a11y-keys/iron-a11y-keys.d.ts",
+@@ -282,4 +285,5 @@ ts_library("library") {
+       "components-chromium/paper-tooltip/paper-tooltip.d.ts",
+     ]
+   }
++  import("//brave/third_party/polymer/v3_0/sources.gni") visibility += brave_polymer_library_visibility
+ }

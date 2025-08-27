@@ -1,8 +1,8 @@
 diff --git a/net/socket/socks_connect_job.cc b/net/socket/socks_connect_job.cc
-index 92c2a710c0344f578a7d7540273e56309ff38bd3..1b543894fa9e8b542d7798ee3466511d9edbac6c 100644
+index 79862bda68ff8979d242956735070d944f3f8050..a41ac1d77d78423211080ef5a944b8051ab4c167 100644
 --- a/net/socket/socks_connect_job.cc
 +++ b/net/socket/socks_connect_job.cc
-@@ -178,9 +178,11 @@ int SOCKSConnectJob::DoSOCKSConnect() {
+@@ -185,9 +185,11 @@ int SOCKSConnectJob::DoSOCKSConnect() {
  
    // Add a SOCKS connection on top of the tcp socket.
    if (socks_params_->is_socks_v5()) {
@@ -15,5 +15,5 @@ index 92c2a710c0344f578a7d7540273e56309ff38bd3..1b543894fa9e8b542d7798ee3466511d
 +        socks_params_->traffic_annotation(),
 +        socks_params_->transport_params()->destination());
    } else {
+     // TODO(crbug.com/393349123): Handle resolved DNS aliases for socks4.
      auto socks_socket = std::make_unique<SOCKSClientSocket>(
-         transport_connect_job_->PassSocket(), socks_params_->destination(),

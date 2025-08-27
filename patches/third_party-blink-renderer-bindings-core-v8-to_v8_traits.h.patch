@@ -1,0 +1,12 @@
+diff --git a/third_party/blink/renderer/bindings/core/v8/to_v8_traits.h b/third_party/blink/renderer/bindings/core/v8/to_v8_traits.h
+index 4453bf15225aa4983792594b44f5847c5b768ab3..38e683faef2ac403d05dec96250434670906c9c0 100644
+--- a/third_party/blink/renderer/bindings/core/v8/to_v8_traits.h
++++ b/third_party/blink/renderer/bindings/core/v8/to_v8_traits.h
+@@ -722,6 +722,7 @@ struct ToV8Traits<IDLNullable<IDLSequence<T>>> {
+       return v8::Null(script_state->GetIsolate());
+     return ToV8Traits<IDLSequence<T>>::ToV8(script_state, *value);
+   }
++  BRAVE_TO_V8_TRAITS_PAGE_GRAPH_OVERRIDE
+ };
+ 
+ // Nullable Frozen Array
