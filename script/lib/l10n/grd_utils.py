@@ -109,8 +109,7 @@ def write_xml_file_from_tree(string_path, xml_tree):
         f.write(transformed_content)
 
 
-def update_braveified_grd_tree_override(source_xml_tree,
-                                        branding_replacements_only):
+def braveify_grd_tree(source_xml_tree, branding_replacements_only):
     """Takes in a grd(p) tree and replaces all messages and comments with Brave
        wording"""
     for elem in source_xml_tree.xpath('//message'):
@@ -119,11 +118,12 @@ def update_braveified_grd_tree_override(source_xml_tree,
         generate_braveified_node(elem, True, branding_replacements_only)
 
 
-def write_braveified_grd_override(source_string_path):
+def braveify_grd_in_place(source_string_path):
     """Takes in a grd file and replaces all messages and comments with Brave
        wording"""
     source_xml_tree = lxml.etree.parse(source_string_path)
-    update_braveified_grd_tree_override(source_xml_tree, False)
+    braveify_grd_tree(source_xml_tree, False)
+    print(f'Applying branding to {source_string_path}')
     write_xml_file_from_tree(source_string_path, source_xml_tree)
 
 
@@ -146,14 +146,16 @@ def get_override_file_path(source_string_path):
     return override_string_path
 
 
-def update_xtbs_locally(grd_file_path, brave_source_root):
+def update_xtbs_locally(grd_file_path, brave_source_root, only_for_lang):
     """Updates XTBs from the local Chromium files"""
     xtb_files = get_xtb_files(grd_file_path)
     chromium_grd_file_path = get_chromium_grd_src_with_fallback(grd_file_path,
         brave_source_root)
-    chromium_xtb_files = get_xtb_files(grd_file_path)
+    chromium_xtb_files = get_xtb_files(chromium_grd_file_path)
     if len(xtb_files) != len(chromium_xtb_files):
-        assert False, 'XTB files and Chromium XTB file length mismatch.'
+        assert False, (f'XTB files counts in {grd_file_path} and ' +
+                       f'{chromium_grd_file_path} do not match ( ' +
+                       f'{len(xtb_files)} vs {len(chromium_xtb_files)}).')
 
     grd_base_path = os.path.dirname(grd_file_path)
     chromium_grd_base_path = os.path.dirname(chromium_grd_file_path)
@@ -169,18 +171,27 @@ def update_xtbs_locally(grd_file_path, brave_source_root):
             len(GOOGLE_CHROME_STRINGS_MIGRATION_MAP)
         brave_strings_string_ids = remove_google_chrome_strings(
             grd_strings, GOOGLE_CHROME_STRINGS_MIGRATION_MAP)
-    assert len(grd_strings) == len(chromium_grd_strings)
+    assert len(grd_strings) == len(chromium_grd_strings), (
+        f'String count in {grd_file_path} and in {chromium_grd_file_path} do' +
+        f'not match: {len(grd_strings)} vs {len(chromium_grd_strings)}.')
+
+    # Verify that string names match
     for idx, grd_string in enumerate(grd_strings):
         assert chromium_grd_strings[idx][0] == grd_string[0]
 
-    fp_map = {chromium_grd_strings[idx][2]: grd_strings[idx][2] for
-              (idx, grd_string) in enumerate(grd_strings)}
+    # [2] is the string fingerprint
+    fp_map = {
+        chromium_grd_strings[idx][2]: grd_strings[idx][2]
+        for (idx, _) in enumerate(grd_strings)
+    }
 
     xtb_file_paths = [os.path.join(
-        grd_base_path, path) for (_, path) in xtb_files]
+        grd_base_path, path) for (lang, path) in xtb_files \
+            if not only_for_lang or only_for_lang == lang]
     chromium_xtb_file_paths = [
         os.path.join(chromium_grd_base_path, path) for
-        (_, path) in chromium_xtb_files]
+        (lang, path) in chromium_xtb_files \
+            if not only_for_lang or only_for_lang == lang]
     for idx, xtb_file in enumerate(xtb_file_paths):
         chromium_xtb_file = chromium_xtb_file_paths[idx]
         if not os.path.exists(chromium_xtb_file):
@@ -212,6 +223,58 @@ def update_xtbs_locally(grd_file_path, brave_source_root):
                 xml_declaration=False, encoding='utf-8').strip())
         with open(xtb_file, mode='wb') as f:
             f.write(transformed_content)
+
+
+def combine_override_xtb_into_original(source_string_path, only_for_lang):
+    """Applies XTB override file to the original"""
+    source_base_path = os.path.dirname(source_string_path)
+    override_path = get_override_file_path(source_string_path)
+    override_base_path = os.path.dirname(override_path)
+    xtb_files = get_xtb_files(source_string_path)
+    override_xtb_files = get_xtb_files(override_path)
+    assert len(xtb_files) == len(override_xtb_files)
+
+    for (idx, _) in enumerate(xtb_files):
+        (lang, xtb_path) = xtb_files[idx]
+        if only_for_lang and lang != only_for_lang:
+            continue
+        (override_lang, override_xtb_path) = override_xtb_files[idx]
+        assert lang == override_lang
+
+        xtb_tree = lxml.etree.parse(os.path.join(source_base_path, xtb_path))
+        override_xtb_tree = lxml.etree.parse(
+            os.path.join(override_base_path, override_xtb_path))
+        translationbundle = xtb_tree.xpath('//translationbundle')[0]
+        override_translations = override_xtb_tree.xpath('//translation')
+        translations = xtb_tree.xpath('//translation')
+
+        override_translation_fps = [
+            t.attrib['id'] for t in override_translations
+        ]
+        translation_fps = [t.attrib['id'] for t in translations]
+
+        # Remove translations that we have a matching FP for
+        for translation in xtb_tree.xpath('//translation'):
+            if translation.attrib['id'] in override_translation_fps:
+                translation.getparent().remove(translation)
+            elif translation_fps.count(translation.attrib['id']) > 1:
+                translation.getparent().remove(translation)
+                translation_fps.remove(translation.attrib['id'])
+
+        # Append the override translations into the original translation bundle
+        for translation in override_translations:
+            translationbundle.append(translation)
+
+        xtb_content = (b'<?xml version="1.0" ?>\n' +
+                       lxml.etree.tostring(xtb_tree,
+                                           pretty_print=True,
+                                           xml_declaration=False,
+                                           encoding='utf-8').strip())
+        with open(os.path.join(source_base_path, xtb_path), mode='wb') as f:
+            f.write(xtb_content)
+        # Delete the override xtb for this lang
+        os.remove(os.path.join(override_base_path, override_xtb_path))
+
 
 
 def get_xtb_files(grd_file_path):
@@ -262,6 +325,12 @@ def get_original_grd(src_root, grd_file_path):
         return os.path.join(src_root, 'chrome', 'android', 'features', 'tab_ui',
                             'java', 'strings',
                             'android_chrome_tab_ui_strings.grd')
+    if grd_file_name == 'android_webapps_strings.grd':
+        return os.path.join(src_root, 'components', 'webapps', 'browser',
+                            'android', 'android_webapps_strings.grd')
+    if grd_file_name == 'browser_ui_strings.grd':
+        return os.path.join(src_root, 'components', 'browser_ui', 'strings',
+                            'android', 'browser_ui_strings.grd')
     return None
 
 
@@ -281,7 +350,7 @@ def get_grd_strings(grd_file_path, validate_tags=True):
 
         # Check for a duplicate message_name, this can happen, for example,
         # for the same message id but one is title case and the other isn't.
-        # Both need to be uploaded to Transifex with different message names.
+        # Both need to be uploaded to Crowdin with different message names.
         # When XTB files are later generated, the ID doesn't matter at all.
         # The only thing that matters is the fingerprint string hash.
         if dupe_dict[message_name] > 1:
@@ -297,7 +366,8 @@ def get_grd_strings(grd_file_path, validate_tags=True):
         assert message_name, 'Message name is empty'
         assert (message_name.startswith('IDS_') or
                 message_name.startswith('IDR_') or
-                message_name.startswith('PRINT_PREVIEW_MEDIA_')), \
+                message_name.startswith('PRINT_PREVIEW_MEDIA_') or
+                message_name == 'DATA_SHARING_GROUP_LABEL_NEW_ACTIVITY'), \
             f'Invalid message ID: {message_name}'
         # None of the PRINT_PREVIEW_MEDIA_ messages currently get uploaded for
         # translation, but in case this changes let's keep the prefix in the
