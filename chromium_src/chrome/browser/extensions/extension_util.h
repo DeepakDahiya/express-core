@@ -8,15 +8,14 @@
 
 #define GetInstallPromptPermissionSetForExtension \
   GetInstallPromptPermissionSetForExtension_ChromiumImpl
-#include "src/chrome/browser/extensions/extension_util.h"  // IWYU pragma: export
+#include <chrome/browser/extensions/extension_util.h>  // IWYU pragma: export
 #undef GetInstallPromptPermissionSetForExtension
 
 namespace extensions {
 namespace util {
 std::unique_ptr<const PermissionSet> GetInstallPromptPermissionSetForExtension(
     const Extension* extension,
-    Profile* profile,
-    bool include_optional_permissions);
+    Profile* profile);
 }  // namespace util
 }  // namespace extensions
 

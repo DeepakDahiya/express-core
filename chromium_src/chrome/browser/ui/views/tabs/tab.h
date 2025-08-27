@@ -18,14 +18,17 @@ class BraveTab;
 #define GetWidthOfLargestSelectableRegion \
   virtual GetWidthOfLargestSelectableRegion
 
+#define SetData virtual SetData
 #define ActiveStateChanged virtual ActiveStateChanged
 #define GetGroupColor virtual GetGroupColor
 #define UpdateIconVisibility virtual UpdateIconVisibility
 #define ShouldRenderAsNormalTab virtual ShouldRenderAsNormalTab
 #define MaybeAdjustLeftForPinnedTab virtual MaybeAdjustLeftForPinnedTab
+#define IsActive virtual IsActive
 
-#include "src/chrome/browser/ui/views/tabs/tab.h"  // IWYU pragma: export
+#include <chrome/browser/ui/views/tabs/tab.h>  // IWYU pragma: export
 
+#undef IsActive
 #undef MaybeAdjustLeftForPinnedTab
 #undef ShouldRenderAsNormalTab
 #undef UpdateIconVisibility
@@ -33,5 +36,6 @@ class BraveTab;
 #undef ActiveStateChanged
 #undef GetWidthOfLargestSelectableRegion
 #undef kMinimumContentsWidthForCloseButtons
+#undef SetData
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_TABS_TAB_H_

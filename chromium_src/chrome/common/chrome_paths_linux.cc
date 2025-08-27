@@ -6,7 +6,7 @@
 #include "chrome/common/chrome_paths_internal.h"
 
 #define GetDefaultUserDataDirectory GetDefaultUserDataDirectory_Disabled
-#include "src/chrome/common/chrome_paths_linux.cc"
+#include <chrome/common/chrome_paths_linux.cc>
 #undef GetDefaultUserDataDirectory
 
 #include "brave/common/brave_channel_info_posix.h"
@@ -14,7 +14,7 @@
 namespace chrome {
 
 bool GetDefaultUserDataDirectory(base::FilePath* result) {
-  std::unique_ptr<base::Environment> env(base::Environment::Create());
+  auto env = base::Environment::Create();
   base::FilePath config_dir;
   std::string chrome_config_home_str;
   config_dir =

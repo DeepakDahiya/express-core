@@ -5,14 +5,18 @@
 
 #include "chrome/browser/ui/tabs/tab_renderer_data.h"
 
+#include "base/check.h"
+#include "base/feature_list.h"
+
 #define FromTabInModel FromTabInModel_ChromiumImpl
-#include "src/chrome/browser/ui/tabs/tab_renderer_data.cc"
+#include <chrome/browser/ui/tabs/tab_renderer_data.cc>
 #undef FromTabInModel
 
 #include "brave/browser/ui/tabs/features.h"
 #include "brave/browser/ui/tabs/shared_pinned_tab_service.h"
 #include "brave/browser/ui/tabs/shared_pinned_tab_service_factory.h"
 #include "brave/components/constants/webui_url_constants.h"
+#include "chrome/browser/resource_coordinator/tab_load_tracker.h"
 #include "url/gurl.h"
 
 TabRendererData TabRendererData::FromTabInModel(const TabStripModel* model,
@@ -44,5 +48,28 @@ TabRendererData TabRendererData::FromTabInModel(const TabStripModel* model,
       data.should_themify_favicon = false;
     }
   }
+
+  // Show which tabs are unloaded.
+  if (!data.should_show_discard_status) {
+    content::WebContents* const contents = model->GetWebContentsAt(index);
+    using resource_coordinator::TabLoadTracker;
+    const auto loading_state = TabLoadTracker::Get()->GetLoadingState(contents);
+    if (loading_state == TabLoadTracker::LoadingState::UNLOADED) {
+      data.should_show_discard_status = true;
+    }
+  }
+
+  if (base::FeatureList::IsEnabled(tabs::features::kBraveRenamingTabs)) {
+    tabs::TabInterface* const tab = model->GetTabAtIndex(index);
+    CHECK(tab);
+
+    tabs::TabFeatures* const features = tab->GetTabFeatures();
+    CHECK(features);
+
+    TabUIHelper* const tab_ui_helper = features->tab_ui_helper();
+    CHECK(tab_ui_helper);
+    data.is_custom_title = tab_ui_helper->has_custom_title();
+  }
+
   return data;
 }

@@ -7,14 +7,14 @@
 // no-include-guard-because-multiply-included
 
 #include "build/build_config.h"
-#include "chrome/common/importer/importer_type.h"
+#include "components/user_data_importer/common/importer_type.h"
 
 #if !BUILDFLAG(IS_WIN)
 #define TYPE_BOOKMARKS_FILE TYPE_WHALE
 #else
 #define TYPE_EDGE TYPE_WHALE
 #endif
-#include "src/chrome/common/importer/profile_import_process_param_traits_macros.h"  // IWYU pragma: export
+#include <chrome/common/importer/profile_import_process_param_traits_macros.h>  // IWYU pragma: export
 #if !BUILDFLAG(IS_WIN)
 #undef TYPE_BOOKMARKS_FILE
 #else

@@ -5,12 +5,9 @@
 
 #include "chrome/browser/lookalikes/lookalike_url_navigation_throttle.h"
 
-#define MaybeCreateNavigationThrottle MaybeCreateNavigationThrottle_ChromiumImpl
-#include "src/chrome/browser/lookalikes/lookalike_url_navigation_throttle.cc"
-#undef MaybeCreateNavigationThrottle
+#define MaybeCreateAndAdd MaybeCreateAndAdd_ChromiumImpl
+#include <chrome/browser/lookalikes/lookalike_url_navigation_throttle.cc>
+#undef MaybeCreateAndAdd
 
-std::unique_ptr<LookalikeUrlNavigationThrottle>
-LookalikeUrlNavigationThrottle::MaybeCreateNavigationThrottle(
-    content::NavigationHandle* navigation_handle) {
-  return nullptr;
-}
+void LookalikeUrlNavigationThrottle::MaybeCreateAndAdd(
+    content::NavigationThrottleRegistry& registry) {}

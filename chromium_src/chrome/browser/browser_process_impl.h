@@ -17,27 +17,27 @@
 #include "chrome/common/buildflags.h"
 #include "components/keep_alive_registry/keep_alive_state_observer.h"
 #include "components/metrics_services_manager/metrics_services_manager.h"
-#include "components/nacl/common/buildflags.h"
 #include "components/prefs/persistent_pref_store.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/buildflags/buildflags.h"
 #include "printing/buildflags/buildflags.h"
 #include "services/network/public/cpp/network_quality_tracker.h"
 #include "services/network/public/mojom/network_service.mojom-forward.h"
 
 #define Init virtual Init
+#define PreMainMessageLoopRun virtual PreMainMessageLoopRun
 
 #if !BUILDFLAG(IS_ANDROID)
 #define StartTearDown virtual StartTearDown
 #define PostDestroyThreads virtual PostDestroyThreads
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-#include "src/chrome/browser/browser_process_impl.h"  // IWYU pragma: export
+#include <chrome/browser/browser_process_impl.h>  // IWYU pragma: export
 
 #undef PostDestroyThreads
 #undef StartTearDown
+#undef PreMainMessageLoopRun
 #undef Init
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_BROWSER_PROCESS_IMPL_H_

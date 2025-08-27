@@ -31,19 +31,19 @@ ExtensionTelemetryServiceFactory::ExtensionTelemetryServiceFactory()
                                  ProfileSelections::BuildNoProfilesSelected()) {
 }
 
-content::BrowserContext*
-ExtensionTelemetryServiceFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  return nullptr;
-}
-
 bool ExtensionTelemetryServiceFactory::ServiceIsCreatedWithBrowserContext()
     const {
-  return true;
+  return false;
 }
 
 bool ExtensionTelemetryServiceFactory::ServiceIsNULLWhileTesting() const {
   return true;
+}
+
+std::unique_ptr<KeyedService>
+ExtensionTelemetryServiceFactory::BuildServiceInstanceForBrowserContext(
+    content::BrowserContext* context) const {
+  return nullptr;
 }
 
 }  // namespace safe_browsing

@@ -5,16 +5,14 @@
 
 #define InitializePageLoadMetricsForWebContents \
   InitializePageLoadMetricsForWebContents_Chromium
-#include "src/chrome/browser/page_load_metrics/page_load_metrics_initialize.cc"
+#include <chrome/browser/page_load_metrics/page_load_metrics_initialize.cc>
 #undef InitializePageLoadMetricsForWebContents
 
 #include "brave/components/brave_perf_predictor/browser/perf_predictor_page_metrics_observer.h"
 
-namespace chrome {
-
 namespace {
 
-class BravePageLoadMetricsEmbedder : public chrome::PageLoadMetricsEmbedder {
+class BravePageLoadMetricsEmbedder : public PageLoadMetricsEmbedder {
  public:
   explicit BravePageLoadMetricsEmbedder(content::WebContents* web_contents);
   BravePageLoadMetricsEmbedder(const BravePageLoadMetricsEmbedder&) = delete;
@@ -24,19 +22,20 @@ class BravePageLoadMetricsEmbedder : public chrome::PageLoadMetricsEmbedder {
 
  protected:
   // page_load_metrics::PageLoadMetricsEmbedderBase:
-  void RegisterEmbedderObservers(
-      ::page_load_metrics::PageLoadTracker* tracker) override;
+  void RegisterObservers(page_load_metrics::PageLoadTracker* tracker,
+                         content::NavigationHandle* navigation_handle) override;
 };
 
 BravePageLoadMetricsEmbedder::BravePageLoadMetricsEmbedder(
     content::WebContents* web_contents)
-    : chrome::PageLoadMetricsEmbedder(web_contents) {}
+    : PageLoadMetricsEmbedder(web_contents) {}
 
 BravePageLoadMetricsEmbedder::~BravePageLoadMetricsEmbedder() = default;
 
-void BravePageLoadMetricsEmbedder::RegisterEmbedderObservers(
-    page_load_metrics::PageLoadTracker* tracker) {
-  PageLoadMetricsEmbedder::RegisterEmbedderObservers(tracker);
+void BravePageLoadMetricsEmbedder::RegisterObservers(
+    page_load_metrics::PageLoadTracker* tracker,
+    content::NavigationHandle* navigation_handle) {
+  PageLoadMetricsEmbedder::RegisterObservers(tracker, navigation_handle);
 
   tracker->AddObserver(
       std::make_unique<
@@ -55,5 +54,3 @@ void InitializePageLoadMetricsForWebContents(
       web_contents,
       std::make_unique<BravePageLoadMetricsEmbedder>(web_contents));
 }
-
-}  // namespace chrome

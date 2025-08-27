@@ -13,16 +13,14 @@
 
 #include "base/check.h"
 
-namespace std {
-namespace brave {
+namespace std::brave {
 using string = ::std::string;
 }
-}  // namespace std
 
 #define throw CHECK(false) <<
 #define ios_base brave
 #define failure string
-#include "src/brave/third_party/bitcoin-core/src/src/serialize.h"  // IWYU pragma: export
+#include <brave/third_party/bitcoin-core/src/src/serialize.h>  // IWYU pragma: export
 #undef throw
 #undef ios_base
 #undef failure

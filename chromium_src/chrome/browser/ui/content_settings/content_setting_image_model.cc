@@ -10,7 +10,7 @@
 
 #define GenerateContentSettingImageModels \
   GenerateContentSettingImageModels_ChromiumImpl
-#include "src/chrome/browser/ui/content_settings/content_setting_image_model.cc"
+#include <chrome/browser/ui/content_settings/content_setting_image_model.cc>
 #undef GenerateContentSettingImageModels
 
 std::vector<std::unique_ptr<ContentSettingImageModel>>
@@ -27,7 +27,8 @@ void ContentSettingImageModel::GetIconFromType(
     raw_ptr<const gfx::VectorIcon>* icon,
     raw_ptr<const gfx::VectorIcon>* badge) {
   if (type == ContentSettingsType::AUTOPLAY) {
-    *badge = (blocked ? &vector_icons::kBlockedBadgeIcon : &gfx::kNoneIcon);
+    *badge = (blocked ? &vector_icons::kBlockedBadgeIcon
+                      : &gfx::VectorIcon::EmptyIcon());
     *icon = &kAutoplayStatusIcon;
   } else {
     ::GetIconFromType(type, blocked, icon, badge);

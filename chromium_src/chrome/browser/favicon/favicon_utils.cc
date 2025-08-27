@@ -11,7 +11,7 @@
 
 // Allow brave internal pages to break out of favicon themeing
 #define ShouldThemifyFaviconForEntry ShouldThemifyFaviconForEntry_ChromiumImpl
-#include "src/chrome/browser/favicon/favicon_utils.cc"
+#include <chrome/browser/favicon/favicon_utils.cc>
 #undef ShouldThemifyFaviconForEntry
 
 namespace favicon {
@@ -21,7 +21,8 @@ bool ShouldThemifyFaviconForEntry(content::NavigationEntry* entry) {
   // Don't theme for certain brave favicons which are full color
   if (virtual_url.SchemeIs(content::kChromeUIScheme) &&
       (virtual_url.host_piece() == kRewardsPageHost ||
-       virtual_url.host_piece() == kWalletPageHost)) {
+       virtual_url.host_piece() == kWalletPageHost ||
+       virtual_url.host_piece() == kAIChatUIHost)) {
     return false;
   }
   return ShouldThemifyFaviconForEntry_ChromiumImpl(entry);

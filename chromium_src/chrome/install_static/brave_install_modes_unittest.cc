@@ -3,13 +3,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "chrome/install_static/install_modes.h"
-
 #include <windows.h>  // NOLINT
 
 #include <cguid.h>  // NOLINT
 
+#include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
+#include "chrome/install_static/install_modes.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,7 +32,7 @@ namespace {
 MATCHER(ContainsIllegalProgIdChar, "") {
   const wchar_t* scan = arg;
   wchar_t c;
-  while ((c = *scan++) != 0) {
+  while ((c = UNSAFE_TODO(*scan++)) != 0) {
     if (!base::IsAsciiAlphaNumeric(c) && c != L'.') {
       return true;
     }
@@ -45,7 +45,7 @@ MATCHER(ContainsIllegalProgIdChar, "") {
 TEST(InstallModes, VerifyModes) {
   ASSERT_THAT(NUM_INSTALL_MODES, Gt(0));
   for (int i = 0; i < NUM_INSTALL_MODES; ++i) {
-    const InstallConstants& mode = kInstallModes[i];
+    const InstallConstants& mode = UNSAFE_TODO(kInstallModes[i]);
 
     // The modes must be listed in order.
     ASSERT_THAT(mode.index, Eq(i));
@@ -148,8 +148,9 @@ TEST(InstallModes, GetClientStateMediumKeyPath) {
 
 #if defined(OFFICIAL_BUILD)
 TEST(InstallModes, NightlyModesTest) {
-  EXPECT_TRUE(kInstallModes[NIGHTLY_INDEX].supports_system_level);
-  EXPECT_TRUE(kInstallModes[NIGHTLY_INDEX].supports_set_as_default_browser);
+  EXPECT_TRUE(UNSAFE_TODO(kInstallModes[NIGHTLY_INDEX]).supports_system_level);
+  EXPECT_TRUE(UNSAFE_TODO(kInstallModes[NIGHTLY_INDEX])
+                  .supports_set_as_default_browser);
 }
 #endif
 

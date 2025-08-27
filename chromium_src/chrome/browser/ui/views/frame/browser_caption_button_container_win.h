@@ -6,14 +6,17 @@
 #ifndef BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_CAPTION_BUTTON_CONTAINER_WIN_H_
 #define BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_CAPTION_BUTTON_CONTAINER_WIN_H_
 
-#include <string>
-
-#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/metadata/metadata_header_macros.h"
 
 #define BrowserCaptionButtonContainer BrowserCaptionButtonContainer_ChromiumImpl
+#define OnWindowControlsOverlayEnabledChanged     \
+  OnWindowControlsOverlayEnabledChanged_Unused(); \
+  friend class BraveBrowserFrameViewWin;          \
+  void OnWindowControlsOverlayEnabledChanged
 
-#include "src/chrome/browser/ui/views/frame/browser_caption_button_container_win.h"  // IWYU pragma: export
+#include <chrome/browser/ui/views/frame/browser_caption_button_container_win.h>  // IWYU pragma: export
+
+#undef OnWindowControlsOverlayEnabledChanged
 #undef BrowserCaptionButtonContainer
 
 class BrowserCaptionButtonContainer
@@ -25,11 +28,7 @@ class BrowserCaptionButtonContainer
   ~BrowserCaptionButtonContainer() override;
 
  private:
-  void UpdateSearchTabsButtonState();
-  void OnPreferenceChanged(const std::string& pref_name);
-
   const raw_ptr<BrowserFrameViewWin> frame_view_;
-  PrefChangeRegistrar pref_change_registrar_;
 };
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_CAPTION_BUTTON_CONTAINER_WIN_H_

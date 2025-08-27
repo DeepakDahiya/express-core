@@ -4,68 +4,86 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "base/feature_override.h"
-#include "brave/browser/android/preferences/features.h"
 #include "brave/browser/android/safe_browsing/features.h"
-#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
+#include "brave/browser/android/youtube_script_injector/features.h"
+#include "brave/browser/brave_browser_features.h"
+#include "brave/components/ai_chat/core/common/features.h"
+#include "brave/components/brave_account/features.h"
+#include "brave/components/brave_ads/core/public/ad_units/new_tab_page_ad/new_tab_page_ad_feature.h"
 #include "brave/components/brave_news/common/features.h"
-#include "brave/components/brave_rewards/common/features.h"
+#include "brave/components/brave_rewards/core/features.h"
 #include "brave/components/brave_search_conversion/features.h"
-#include "brave/components/brave_shields/common/features.h"
+#include "brave/components/brave_shields/core/common/features.h"
 #include "brave/components/brave_vpn/common/features.h"
 #include "brave/components/brave_wallet/common/features.h"
-#include "brave/components/debounce/common/features.h"
+#include "brave/components/debounce/core/common/features.h"
 #include "brave/components/google_sign_in_permission/features.h"
+#include "brave/components/ntp_background_images/browser/features.h"
 #include "brave/components/playlist/common/features.h"
 #include "brave/components/request_otr/common/features.h"
 #include "brave/components/speedreader/common/features.h"
+#include "brave/components/web_discovery/buildflags/buildflags.h"
+#include "brave/components/webcompat/core/common/features.h"
 #include "net/base/features.h"
 #include "third_party/blink/public/common/features.h"
 
-#if BUILDFLAG(ENABLE_AI_CHAT)
-#include "brave/components/ai_chat/core/common/features.h"
-#define BRAVE_AI_CHAT_FLAG &ai_chat::features::kAIChat,
+#define BRAVE_AI_CHAT_FLAGS \
+  &ai_chat::features::kAIChat, &ai_chat::features::kAIChatHistory,
+
+#if BUILDFLAG(ENABLE_WEB_DISCOVERY_NATIVE)
+#include "brave/components/web_discovery/common/features.h"
+#define BRAVE_WEB_DISCOVERY_FLAG \
+  &web_discovery::features::kBraveWebDiscoveryNative,
 #else
-#define BRAVE_AI_CHAT_FLAG
+#define BRAVE_WEB_DISCOVERY_FLAG
 #endif
 
 // clang-format off
 #define kForceWebContentsDarkMode kForceWebContentsDarkMode,            \
-    BRAVE_AI_CHAT_FLAG                                                  \
+    BRAVE_AI_CHAT_FLAGS                                                 \
+    BRAVE_WEB_DISCOVERY_FLAG                                            \
     &brave_rewards::features::kBraveRewards,                            \
     &brave_search_conversion::features::kOmniboxBanner,                 \
     &brave_vpn::features::kBraveVPNLinkSubscriptionAndroidUI,           \
     &brave_wallet::features::kNativeBraveWalletFeature,                 \
-    &brave_wallet::features::kBraveWalletSolanaFeature,                 \
-    &brave_wallet::features::kBraveWalletFilecoinFeature,               \
-    &brave_wallet::features::kBraveWalletSnsFeature,                    \
     &playlist::features::kPlaylist,                                     \
+    &download::features::kParallelDownloading,                          \
     &preferences::features::kBraveBackgroundVideoPlayback,              \
+    &preferences::features::kBravePictureInPictureForYouTubeVideos,     \
     &request_otr::features::kBraveRequestOTRTab,                        \
     &safe_browsing::features::kBraveAndroidSafeBrowsing,                \
     &speedreader::kSpeedreaderFeature,                                  \
     &debounce::features::kBraveDebounce,                                \
+    &webcompat::features::kBraveWebcompatExceptionsService,             \
     &net::features::kBraveHttpsByDefault,                               \
+    &net::features::kBraveFallbackDoHProvider,                          \
     &google_sign_in_permission::features::kBraveGoogleSignInPermission, \
     &net::features::kBraveForgetFirstPartyStorage,                      \
-    &brave_shields::features::kBraveLocalhostAccessPermission
+    &brave_shields::features::kBraveShowStrictFingerprintingMode,       \
+    &brave_shields::features::kBraveLocalhostAccessPermission,          \
+    &brave_shields::features::kBlockAllCookiesToggle,                   \
+    &brave_shields::features::kBraveShieldsElementPicker,               \
+    &features::kBraveAndroidDynamicColors,                              \
+    &features::kNewAndroidOnboarding,                                   \
+    &brave_ads::kNewTabPageAdFeature,                                   \
+    &ntp_background_images::features::kBraveNTPBrandedWallpaperSurveyPanelist, \
+    &brave_account::features::kBraveAccount
 
 // clang-format on
 
-#include "src/chrome/browser/flags/android/chrome_feature_list.cc"
+#include <chrome/browser/flags/android/chrome_feature_list.cc>
 #undef kForceWebContentsDarkMode
-#undef BRAVE_AI_CHAT_FLAG
+#undef BRAVE_AI_CHAT_FLAGS
+#undef BRAVE_WEB_DISCOVERY_FLAG
 
 namespace chrome {
 namespace android {
 
 OVERRIDE_FEATURE_DEFAULT_STATES({{
-    {kAddToHomescreenIPH, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kBaselineGM3SurfaceColors, base::FEATURE_DISABLED_BY_DEFAULT},
-    // Disable until we sort out UI issues
-    // https://github.com/brave/brave-browser/issues/29688
-    {kIncognitoReauthenticationForAndroid, base::FEATURE_DISABLED_BY_DEFAULT},
-    {kShowScrollableMVTOnNTPAndroid, base::FEATURE_ENABLED_BY_DEFAULT},
-    {kStartSurfaceAndroid, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kMagicStackAndroid, base::FEATURE_DISABLED_BY_DEFAULT},
+    {kAdaptiveButtonInTopToolbarCustomizationV2,
+     base::FEATURE_DISABLED_BY_DEFAULT},
+    {kClearBrowsingDataAndroidSurvey, base::FEATURE_DISABLED_BY_DEFAULT},
 }});
 
 }  // namespace android

@@ -12,7 +12,6 @@
 #include "chrome/install_static/install_modes.h"
 #include "chrome/install_static/policy_path_parser.h"
 #include "chrome/install_static/user_data_dir.h"
-#include "components/nacl/common/buildflags.h"
 #include "components/version_info/channel.h"
 
 #if defined(OFFICIAL_BUILD)
@@ -24,7 +23,7 @@
 
 #define GetChromeChannel GetChromeChannel_ChromiumImpl
 
-#include "src/chrome/install_static/install_util.cc"
+#include <chrome/install_static/install_util.cc>
 
 #undef GetChromeChannel
 

@@ -11,6 +11,8 @@
 namespace brave_wallet {
 class EthereumProviderImplUnitTest;
 class SolanaProviderImplUnitTest;
+class CardanoProviderImplUnitTest;
+class BraveWalletServiceUnitTest;
 }  // namespace brave_wallet
 
 namespace permissions {
@@ -22,10 +24,12 @@ class BraveWalletPermissionContextUnitTest;
       content::BrowserContext* profile) const;              \
   friend brave_wallet::EthereumProviderImplUnitTest;        \
   friend brave_wallet::SolanaProviderImplUnitTest;          \
+  friend brave_wallet::CardanoProviderImplUnitTest;         \
+  friend brave_wallet::BraveWalletServiceUnitTest;          \
   friend permissions::BraveWalletPermissionContextUnitTest; \
   std::unique_ptr<KeyedService> BuildServiceInstanceForBrowserContext
 
-#include "src/chrome/browser/permissions/permission_manager_factory.h"  // IWYU pragma: export
+#include <chrome/browser/permissions/permission_manager_factory.h>  // IWYU pragma: export
 #undef BuildServiceInstanceForBrowserContext
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_PERMISSIONS_PERMISSION_MANAGER_FACTORY_H_

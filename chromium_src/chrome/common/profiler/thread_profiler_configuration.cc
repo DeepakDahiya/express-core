@@ -8,11 +8,11 @@
 #define IsProfilerEnabledForCurrentProcessAndThread \
   IsProfilerEnabledForCurrentProcessAndThread_ChromiumImpl
 
-#include "src/chrome/common/profiler/thread_profiler_configuration.cc"
+#include <chrome/common/profiler/thread_profiler_configuration.cc>
 
 #undef IsProfilerEnabledForCurrentProcessAndThread
 
 bool ThreadProfilerConfiguration::IsProfilerEnabledForCurrentProcessAndThread(
-    metrics::CallStackProfileParams::Thread thread) const {
+    sampling_profiler::ProfilerThreadType thread) const {
   return false;
 }

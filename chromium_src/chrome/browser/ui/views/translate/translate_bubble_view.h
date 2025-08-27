@@ -15,7 +15,7 @@ using BraveTranslateBubbleView = TranslateBubbleView;
   unused_is_in_incognito_window_ = false; \
   friend BraveTranslateBubbleView;        \
   bool is_in_incognito_window_ /* make the field non-constant */
-#include "src/chrome/browser/ui/views/translate/translate_bubble_view.h"  // IWYU pragma: export
+#include <chrome/browser/ui/views/translate/translate_bubble_view.h>  // IWYU pragma: export
 #undef is_in_incognito_window_
 #undef CreateTranslateIcon
 #undef TranslateBubbleView
@@ -23,8 +23,8 @@ using BraveTranslateBubbleView = TranslateBubbleView;
 #include "brave/components/translate/core/common/brave_translate_features.h"
 
 class TranslateBubbleView : public TranslateBubbleView_ChromiumImpl {
+  METADATA_HEADER(TranslateBubbleView, TranslateBubbleView_ChromiumImpl)
  public:
-  METADATA_HEADER(TranslateBubbleView);
 
   template <class... Args>
   explicit TranslateBubbleView(Args&&... args)

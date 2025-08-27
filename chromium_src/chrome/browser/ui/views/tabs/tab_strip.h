@@ -23,16 +23,21 @@ class BraveTabHoverCardController;
   UnUsed() { return true; } \
   virtual bool ShouldDrawStrokes
 #define GetDragContext                                                  \
-  Unused_GetDragContext() { return nullptr; }                           \
+  Unused_GetDragContext() {                                             \
+    return nullptr;                                                     \
+  }                                                                     \
   friend class BraveTabStrip;                                           \
   friend class BraveTabDragContext;                                     \
+  bool IsTabTiled(const Tab* tab) const override;                       \
+  const Browser* GetBrowser() const override;                           \
+  bool IsFirstTabInTile(const Tab* tab) const override;                 \
   static constexpr bool IsUsingBraveTabHoverCardController() {          \
     return std::is_same_v<std::unique_ptr<BraveTabHoverCardController>, \
                           decltype(TabStrip::hover_card_controller_)>;  \
   }                                                                     \
   virtual TabDragContext* GetDragContext
 #define TabHoverCardController BraveTabHoverCardController
-#include "src/chrome/browser/ui/views/tabs/tab_strip.h"  // IWYU pragma: export
+#include <chrome/browser/ui/views/tabs/tab_strip.h>  // IWYU pragma: export
 #undef TabHoverCardController
 #undef GetDragContext
 #undef ShouldDrawStrokes

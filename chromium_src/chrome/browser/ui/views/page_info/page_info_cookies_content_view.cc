@@ -5,38 +5,40 @@
 
 #include "chrome/browser/ui/views/page_info/page_info_cookies_content_view.h"
 
-#include "base/check_is_test.h"
 #include "chrome/browser/ui/views/page_info/page_info_main_view.h"
 
-#define SetCookieInfo SetCookieInfo_ChromiumImpl
-#include "src/chrome/browser/ui/views/page_info/page_info_cookies_content_view.cc"
-#undef SetCookieInfo
+// We need to override `control_state` kHidden, or the layout will DCHECK since
+// we hide the cookie container. We can't copy or mutate the original
+// `cookie_info` passed into `SetCookieInfo` since it is const, and it's copy
+// constructor is deleted, and copying the fields manually is prone to bugs when
+// new fields are added.
+#define BRAVE_PAGE_INFO_COOKIES_CONTENT_VIEW_SET_THIRD_PARTY_COOKIES_INFO \
+  controls_state = CookieControlsState::kHidden;
 
-void PageInfoCookiesContentView::SetCookieInfo(
-    const CookiesNewInfo& cookie_info) {
+#define SetCookieInfo SetCookieInfo_ChromiumImpl
+#include <chrome/browser/ui/views/page_info/page_info_cookies_content_view.cc>
+#undef SetCookieInfo
+#undef BRAVE_PAGE_INFO_COOKIES_CONTENT_VIEW_SET_THIRD_PARTY_COOKIES_INFO
+
+void PageInfoCookiesContentView::SetCookieInfo(const CookiesInfo& cookie_info) {
   SetCookieInfo_ChromiumImpl(cookie_info);
 
-  // Remove cookies text and link to settings.
-  RemoveChildView(children()[0]);
+  // Hide cookies description and link to settings.
+  cookies_description_wrapper_->SetVisible(false);
+  third_party_cookies_container_->SetVisible(false);
 
   // Remove separator.
   // cookies_buttons_container_view_'s children are:
-  // [0]: blocking_third_party_cookies_row_, which we set to invisible below
-  // [1]: separator
-  // [3]: on-site data button row, which we want to keep.
-  if (cookies_buttons_container_view_) {
-    if (cookies_buttons_container_view_->children().size() == 3u) {
-      cookies_buttons_container_view_->RemoveChildView(
-          cookies_buttons_container_view_->children()[1]);
-    } else {
-      CHECK_IS_TEST();
-    }
-  }
+  // [0]: separator
+  // [1]: on-site data button row, which we want to keep
+  if (cookies_buttons_container_view_ &&
+      cookies_buttons_container_view_->children().size() > 0) {
+    // Setting `cookies_dialog_button_` to nullptr as removing the first child
+    // view below will result in this pointer being invalidated.
+    cookies_dialog_button_ = nullptr;
 
-  // Hide 3P cookies toggle if shown.
-  if (blocking_third_party_cookies_row_) {
-    blocking_third_party_cookies_row_->SetVisible(false);
+    cookies_buttons_container_view_->RemoveChildViewT(
+        cookies_buttons_container_view_->children()[0]);
   }
-
   PreferredSizeChanged();
 }

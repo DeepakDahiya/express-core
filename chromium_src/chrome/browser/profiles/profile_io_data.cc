@@ -8,14 +8,12 @@
 
 #define IsHandledProtocol IsHandledProtocol_ChromiumImpl
 #define IsHandledURL IsHandledURL_ChromiumImpl
-#include "src/chrome/browser/profiles/profile_io_data.cc"
+#include <chrome/browser/profiles/profile_io_data.cc>
 #undef IsHandledURL
 #undef IsHandledProtocol
 
 bool ProfileIOData::IsHandledProtocol(const std::string& scheme) {
   if (scheme == kBraveUIScheme)
-    return true;
-  if (scheme == "ipfs" || scheme == "ipns")
     return true;
   return IsHandledProtocol_ChromiumImpl(scheme);
 }

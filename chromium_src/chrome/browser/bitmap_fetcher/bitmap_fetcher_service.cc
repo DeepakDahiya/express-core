@@ -3,11 +3,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "src/chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc"
+#include <chrome/browser/bitmap_fetcher/bitmap_fetcher_service.cc>
 
-BitmapFetcherService::RequestId BitmapFetcherService::RequestImage(
+BitmapFetcherService::RequestId
+BitmapFetcherService::RequestImageWithNetworkTrafficAnnotationTag(
     const GURL& url,
     BitmapFetchedCallback callback,
-    const net::NetworkTrafficAnnotationTag& ta) {
-  return RequestImageImpl(url, std::move(callback), ta);
+    const net::NetworkTrafficAnnotationTag& tag) {
+  return RequestImageImpl(url, std::move(callback), tag);
 }

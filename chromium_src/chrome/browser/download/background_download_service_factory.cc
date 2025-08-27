@@ -6,9 +6,9 @@
 #include "chrome/browser/download/background_download_service_factory.h"
 
 #include "brave/browser/brave_browser_process.h"
-#include "brave/components/brave_shields/browser/ad_block_service.h"
-#include "brave/components/brave_shields/browser/ad_block_subscription_download_client.h"
-#include "brave/components/brave_shields/browser/ad_block_subscription_service_manager.h"
+#include "brave/components/brave_shields/content/browser/ad_block_service.h"
+#include "brave/components/brave_shields/content/browser/ad_block_subscription_download_client.h"
+#include "brave/components/brave_shields/content/browser/ad_block_subscription_service_manager.h"
 #include "chrome/browser/download/deferred_client_wrapper.h"
 #include "components/download/content/factory/download_service_factory_helper.h"
 
@@ -40,6 +40,10 @@ std::unique_ptr<BackgroundDownloadService> BuildDownloadServiceOverride(
           base::BindOnce(&CreateAdBlockSubscriptionDownloadClient),
           simple_factory_key)));
 
+  // Do not download prediction models
+  clients->erase(
+      download::DownloadClient::OPTIMIZATION_GUIDE_PREDICTION_MODELS);
+
   return BuildDownloadService(
       simple_factory_key, std::move(clients), network_connection_tracker,
       storage_dir, download_manager_coordinator, std::move(proto_db_provider),
@@ -54,23 +58,23 @@ std::unique_ptr<BackgroundDownloadService> BuildInMemoryDownloadServiceOverride(
     const base::FilePath& storage_dir,
     BlobContextGetterFactoryPtr blob_context_getter_factory,
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
-    scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory) {
+    URLLoaderFactoryGetterPtr url_loader_factory_getter) {
   clients->insert(std::make_pair(
       download::DownloadClient::CUSTOM_LIST_SUBSCRIPTIONS,
       std::make_unique<download::DeferredClientWrapper>(
           base::BindOnce(&CreateAdBlockSubscriptionDownloadClient),
           simple_factory_key)));
 
-  return BuildInMemoryDownloadService(simple_factory_key, std::move(clients),
-                                      network_connection_tracker, storage_dir,
-                                      std::move(blob_context_getter_factory),
-                                      io_task_runner, url_loader_factory);
+  return BuildInMemoryDownloadService(
+      simple_factory_key, std::move(clients), network_connection_tracker,
+      storage_dir, std::move(blob_context_getter_factory), io_task_runner,
+      std::move(url_loader_factory_getter));
 }
 
 }  // namespace download
 
 #define BuildDownloadService BuildDownloadServiceOverride
 #define BuildInMemoryDownloadService BuildInMemoryDownloadServiceOverride
-#include "src/chrome/browser/download/background_download_service_factory.cc"
+#include <chrome/browser/download/background_download_service_factory.cc>
 #undef BuildInMemoryDownloadService
 #undef BuildDownloadService

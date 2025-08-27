@@ -12,17 +12,19 @@
 
 class TabHoverCardBubbleView;
 
-#define BRAVE_TAB_HOVER_CARD_BUBBLE_VIEW_H_             \
-  bool has_thumbnail_view() { return thumbnail_view_; } \
-                                                        \
- protected:                                             \
+#define BRAVE_TAB_HOVER_CARD_BUBBLE_VIEW_H_ \
+  bool has_thumbnail_view() {               \
+    return thumbnail_view_;                 \
+  }                                         \
+                                            \
+ protected:                                 \
   void BraveUpdateCardContent(const Tab* tab);
 
 #define TabHoverCardBubbleView TabHoverCardBubbleView_ChromiumImpl
 #define UpdateCardContent virtual UpdateCardContent
 #define SetTargetTabImage virtual SetTargetTabImage
 #define SetPlaceholderImage virtual SetPlaceholderImage
-#include "src/chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h"  // IWYU pragma: export
+#include <chrome/browser/ui/views/tabs/tab_hover_card_bubble_view.h>  // IWYU pragma: export
 #undef SetPlaceholderImage
 #undef SetTargetTabImage
 #undef UpdateCardContent

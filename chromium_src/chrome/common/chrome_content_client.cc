@@ -5,9 +5,11 @@
 
 #include "chrome/common/chrome_content_client.h"
 
+#include <algorithm>
+
 #define AddPlugins AddPlugins_ChromiumImpl
 
-#include "src/chrome/common/chrome_content_client.cc"
+#include <chrome/common/chrome_content_client.cc>
 
 #undef AddPlugins
 
@@ -15,7 +17,7 @@ void ChromeContentClient::AddPlugins(
     std::vector<content::ContentPluginInfo>* plugins) {
   AddPlugins_ChromiumImpl(plugins);
 #if BUILDFLAG(ENABLE_PDF)
-  auto iter = base::ranges::find_if(*plugins, [](const auto& plugin_info) {
+  auto iter = std::ranges::find_if(*plugins, [](const auto& plugin_info) {
     return plugin_info.name == "Chromium PDF Plugin";
   });
   if (iter == plugins->end()) {

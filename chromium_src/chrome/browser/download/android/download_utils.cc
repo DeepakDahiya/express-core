@@ -13,9 +13,9 @@ namespace {
 // 'Java_MimeUtils_canAutoOpenMimeType' error message.
 bool DummyMimeUtilUsage() {
   JNIEnv* env = nullptr;
-  if (Java_MimeUtils_canAutoOpenMimeType(
-          env, base::android::ConvertUTF8ToJavaString(env, "")))
+  if (Java_MimeUtils_canAutoOpenMimeType(env, "")) {
     return true;
+  }
 
   return DummyMimeUtilUsage();
 }
@@ -24,5 +24,5 @@ bool DummyMimeUtilUsage() {
 
 #define Java_MimeUtils_canAutoOpenMimeType \
   Java_BraveMimeUtils_canAutoOpenMimeType
-#include "src/chrome/browser/download/android/download_utils.cc"
+#include <chrome/browser/download/android/download_utils.cc>
 #undef Java_MimeUtils_canAutoOpenMimeType

@@ -7,7 +7,6 @@
 
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/logging.h"
 #include "base/path_service.h"
 #include "base/stl_util.h"
 #include "build/branding_buildflags.h"
@@ -24,5 +23,5 @@
 
 #undef BUILDFLAG_INTERNAL_GOOGLE_CHROME_BRANDING
 #define BUILDFLAG_INTERNAL_GOOGLE_CHROME_BRANDING() (1)
-#include "src/chrome/common/media/cdm_host_file_path.cc"
+#include <chrome/common/media/cdm_host_file_path.cc>
 #undef BUILDFLAG_INTERNAL_GOOGLE_CHROME_BRANDING

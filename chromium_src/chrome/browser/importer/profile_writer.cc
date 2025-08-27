@@ -5,9 +5,9 @@
 
 #include "base/uuid.h"
 #include "chrome/browser/autofill/personal_data_manager_factory.h"
-#include "components/autofill/core/browser/personal_data_manager.h"
+#include "components/autofill/core/browser/data_manager/personal_data_manager.h"
 
-#include "src/chrome/browser/importer/profile_writer.cc"
+#include <chrome/browser/importer/profile_writer.cc>
 
 void ProfileWriter::AddCreditCard(const std::u16string& name_on_card,
                                   const std::u16string& expiration_month,
@@ -15,7 +15,7 @@ void ProfileWriter::AddCreditCard(const std::u16string& name_on_card,
                                   const std::u16string& decrypted_card_number,
                                   const std::string& origin) {
   autofill::PersonalDataManager* personal_data =
-      autofill::PersonalDataManagerFactory::GetForProfile(profile_);
+      autofill::PersonalDataManagerFactory::GetForBrowserContext(profile_);
 
   autofill::CreditCard credit_card = autofill::CreditCard(
       base::Uuid::GenerateRandomV4().AsLowercaseString(), origin);
@@ -40,7 +40,7 @@ void ProfileWriter::AddCreditCard(const std::u16string& name_on_card,
                            expiration_year);
   }
 
-  personal_data->AddCreditCard(credit_card);
+  personal_data->payments_data_manager().AddCreditCard(credit_card);
 }
 
 #if BUILDFLAG(IS_ANDROID)

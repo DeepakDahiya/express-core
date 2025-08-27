@@ -7,9 +7,11 @@
 #define BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_H_
 
 #include "brave/browser/ui/brave_browser_window.h"
+#include "brave/browser/ui/views/bookmarks/brave_bookmark_bar_view.h"
 #include "brave/browser/ui/views/frame/brave_browser_view_layout.h"
 #include "brave/browser/ui/views/side_panel/brave_side_panel.h"
 #include "build/build_config.h"
+#include "chrome/browser/ui/exclusive_access/exclusive_access_context.h"
 #include "chrome/browser/ui/views/side_panel/side_panel.h"
 
 #define BrowserViewLayoutDelegateImpl \
@@ -19,45 +21,58 @@
 #define BrowserWindow BraveBrowserWindow
 #define BrowserViewLayout BraveBrowserViewLayout
 #define SidePanel BraveSidePanel
-#define GetContentsLayoutManager     \
-  GetContentsLayoutManager_Unused(); \
-  virtual ContentsLayoutManager* GetContentsLayoutManager
+#define BookmarkBarView BraveBookmarkBarView
 
 #define MaybeShowReadingListInSidePanelIPH \
   virtual MaybeShowReadingListInSidePanelIPH
 
+#define UpdateDevToolsForContents virtual UpdateDevToolsForContents
 #define GetTabStripVisible virtual GetTabStripVisible
-#define BrowserViewLayout BraveBrowserViewLayout
 
 #define GetTabSearchBubbleHost     \
   GetTabSearchBubbleHost_Unused(); \
   virtual TabSearchBubbleHost* GetTabSearchBubbleHost
 
-#if BUILDFLAG(IS_WIN)
-#define GetSupportsTitle virtual GetSupportsTitle
+#define UpdateExclusiveAccessBubble                            \
+  UpdateExclusiveAccessBubble_ChromiumImpl(                    \
+      const ExclusiveAccessBubbleParams& params,               \
+      ExclusiveAccessBubbleHideCallback first_hide_callback);  \
+  virtual views::View* GetContentsContainerForLayoutManager(); \
+  void UpdateExclusiveAccessBubble
 
+#if BUILDFLAG(IS_WIN)
 // On Windows <winuser.h> defines LoadAccelerators
-#pragma push_macro("LoadAccelerators")
+// Using push_macro seems to be causing #undef not to work in Chromium 125.
+// Unclear what causes this.
+// #pragma push_macro("LoadAccelerators")
 #undef LoadAccelerators
 #endif
 #define LoadAccelerators virtual LoadAccelerators
+#define ShowSplitView virtual ShowSplitView
+#define HideSplitView virtual HideSplitView
+#define UpdateActiveTabInSplitView virtual UpdateActiveTabInSplitView
+#define UpdateContentsInSplitView virtual UpdateContentsInSplitView
 
-#include "src/chrome/browser/ui/views/frame/browser_view.h"  // IWYU pragma: export
+#include <chrome/browser/ui/views/frame/browser_view.h>  // IWYU pragma: export
 
+#undef UpdateActiveTabInSplitView
+#undef UpdateContentsInSplitView
+#undef HideSplitView
+#undef ShowSplitView
 #undef LoadAccelerators
 #if BUILDFLAG(IS_WIN)
-#pragma pop_macro("LoadAccelerators")
-#undef GetSupportsTitle
+// #pragma pop_macro("LoadAccelerators")
 #endif
 
+#undef UpdateExclusiveAccessBubble
 #undef GetTabSearchBubbleHost
-#undef BrowserViewLayout
 #undef GetTabStripVisible
-#undef BrowserViewLayoutDelegateImpl
-#undef BrowserWindow
+#undef UpdateDevToolsForContents
 #undef MaybeShowReadingListInSidePanelIPH
-#undef BrowserViewLayout
+#undef BookmarkBarView
 #undef SidePanel
-#undef GetContentsLayoutManager
+#undef BrowserViewLayout
+#undef BrowserWindow
+#undef BrowserViewLayoutDelegateImpl
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_VIEWS_FRAME_BROWSER_VIEW_H_

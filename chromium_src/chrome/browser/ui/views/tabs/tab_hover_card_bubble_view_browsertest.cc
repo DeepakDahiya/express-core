@@ -3,7 +3,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-#include "base/strings/utf_string_conversions.h"
 #include "brave/browser/ui/views/tabs/brave_tab_hover_card_controller.h"
 #include "build/build_config.h"
 #include "chrome/app/chrome_command_ids.h"
@@ -41,10 +40,11 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest,
 
   // DialogBrowserTest:
   void ShowUi(const std::string& name) override {
-    TabRendererData new_tab_data = TabRendererData();
-    new_tab_data.title = kTabTitle;
-    new_tab_data.last_committed_url = GURL(kTabUrl);
-    GetTabStrip(browser())->AddTabAt(0, new_tab_data);
+    std::vector<std::pair<int, TabRendererData>> data_list;
+    data_list.emplace_back(0, TabRendererData());
+    data_list[0].second.title = kTabTitle;
+    data_list[0].second.last_committed_url = GURL(kTabUrl);
+    GetTabStrip(browser())->AddTabsAt(std::move(data_list));
 
     SimulateHoverTab(browser(), 0);
   }
@@ -56,13 +56,15 @@ class TabHoverCardBubbleViewBrowserTest : public DialogBrowserTest,
     TabStrip* const tab_strip = GetTabStrip(browser());
     Tab* const tab = tab_strip->tab_at(1);
     if (!tab) {
-      NOTREACHED();
+      SCOPED_TRACE(testing::Message()
+                   << "expected tab strip to have a tab at index 1");
       return false;
     }
 
     TabHoverCardBubbleView* const hover_card = GetHoverCard(tab_strip);
     if (!hover_card) {
-      NOTREACHED();
+      SCOPED_TRACE(testing::Message()
+                   << "expected tab strip to have a hover card");
       return false;
     }
 

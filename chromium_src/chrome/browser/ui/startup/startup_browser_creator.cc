@@ -4,6 +4,9 @@
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 #include "chrome/browser/ui/startup/startup_browser_creator.h"
+
+#include "base/command_line.h"
+#include "base/logging.h"
 #include "brave/components/constants/brave_switches.h"
 #include "brave/components/tor/buildflags/buildflags.h"
 #include "chrome/browser/ui/startup/startup_browser_creator_impl.h"
@@ -31,7 +34,7 @@ class BraveStartupBrowserCreatorImpl final : public StartupBrowserCreatorImpl {
 
   void Launch(Profile* profile,
               chrome::startup::IsProcessStartup process_startup,
-              std::unique_ptr<OldLaunchModeRecorder> launch_mode_recorder);
+              bool restore_tabbed_browser);
 };
 
 BraveStartupBrowserCreatorImpl::BraveStartupBrowserCreatorImpl(
@@ -53,12 +56,16 @@ BraveStartupBrowserCreatorImpl::BraveStartupBrowserCreatorImpl(
 // If the --tor command line flag was provided, switch the profile to Tor mode
 // and then call the original Launch method.
 //
+// This switch is primarily used for testing and is not the same as using the
+// Tor browser. In particular, you will see some profile-wide network traffic
+// not going through the tor proxy (e.g. adblock list updates, P3A).
+//
 // Note that if the --tor switch is used together with --silent-launch, Tor
 // won't be launched.
 void BraveStartupBrowserCreatorImpl::Launch(
     Profile* profile,
     chrome::startup::IsProcessStartup process_startup,
-    std::unique_ptr<OldLaunchModeRecorder> launch_mode_recorder) {
+    bool restore_tabbed_browser) {
 #if BUILDFLAG(ENABLE_TOR)
   if (StartupBrowserCreatorImpl::command_line_->HasSwitch(switches::kTor)) {
     // Call StartupBrowserCreatorImpl::Launch() with the Tor profile so that if
@@ -70,9 +77,9 @@ void BraveStartupBrowserCreatorImpl::Launch(
 #endif
 
   StartupBrowserCreatorImpl::Launch(profile, process_startup,
-                                    std::move(launch_mode_recorder));
+                                    restore_tabbed_browser);
 }
 
 #define StartupBrowserCreatorImpl BraveStartupBrowserCreatorImpl
-#include "src/chrome/browser/ui/startup/startup_browser_creator.cc"
+#include <chrome/browser/ui/startup/startup_browser_creator.cc>
 #undef StartupBrowserCreatorImpl

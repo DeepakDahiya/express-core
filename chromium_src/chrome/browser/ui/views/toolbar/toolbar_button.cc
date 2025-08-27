@@ -3,11 +3,20 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
 // you can obtain one at http://mozilla.org/MPL/2.0/.
 
+#include "chrome/browser/ui/views/toolbar/toolbar_button.h"
+
 #include <utility>
 
-#include "src/chrome/browser/ui/views/toolbar/toolbar_button.cc"
+#include "base/check.h"
+#include "brave/browser/ui/color/brave_color_id.h"
+#include "ui/views/controls/highlight_path_generator.h"
 
-void ToolbarButton::SetMenuModel(std::unique_ptr<ui::MenuModel> model) {
+#define ToolbarButton ToolbarButton_ChromiumImpl
+#include <chrome/browser/ui/views/toolbar/toolbar_button.cc>
+#undef ToolbarButton
+
+void ToolbarButton_ChromiumImpl::SetMenuModel(
+    std::unique_ptr<ui::MenuModel> model) {
   model_ = std::move(model);
 }
 
@@ -45,13 +54,34 @@ void ToolbarButton::InkDropRippleAnimationEnded(views::InkDropState state) {
   OnInkDropStateChanged(state);
 }
 
+void ToolbarButton::UpdateIcon() {
+  if (HasVectorIcons() && icon_enabled_colors_override_) {
+    UpdateIconsWithColors(
+        ui::TouchUiController::Get()->touch_ui() ? GetVectorTouchIcon()
+                                                 : GetVectorIcon(),
+        *icon_enabled_colors_override_, *icon_enabled_colors_override_,
+        *icon_enabled_colors_override_,
+        GetForegroundColor(ButtonState::STATE_DISABLED));
+    return;
+  }
+
+  ToolbarButton_ChromiumImpl::UpdateIcon();
+}
+
 void ToolbarButton::OnInkDropStateChanged(views::InkDropState state) {
+  if (icon_enabled_colors_override_) {
+    return UpdateIcon();
+  }
+
   // Use different color for icon when activated.
   activated_ = state == views::InkDropState::ACTIVATED;
 
   if (!activated_) {
-    // Set upstream colors for deactivated state.
-    UpdateIcon();
+    // Set upstream colors for deactivated state. When called from the button
+    // destructor, the color provider may no longer be there.
+    if (GetColorProvider()) {
+      UpdateIcon();
+    }
     return;
   }
 

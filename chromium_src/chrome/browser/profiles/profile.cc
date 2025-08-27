@@ -5,15 +5,26 @@
 
 #include "brave/chromium_src/chrome/browser/profiles/profile.h"
 
+#include "base/strings/string_util.h"
+#include "brave/components/ai_chat/core/common/buildflags/buildflags.h"
+#include "brave/components/ai_chat/core/common/features.h"
+#include "brave/components/constants/brave_constants.h"
 #include "brave/components/tor/tor_constants.h"
+#include "components/search_engines/search_engine_choice/search_engine_choice_utils.h"
 
 #define BRAVE_ALLOWS_BROWSER_WINDOWS *this == TorID() ||
 
 #define IsIncognitoProfile IsIncognitoProfile_ChromiumImpl
 #define IsPrimaryOTRProfile IsPrimaryOTRProfile_ChromiumImpl
-#include "src/chrome/browser/profiles/profile.cc"
+#include <chrome/browser/profiles/profile.cc>
 #undef IsIncognitoProfile
 #undef IsPrimaryOTRProfile
+#undef BRAVE_ALLOWS_BROWSER_WINDOWS
+
+namespace {
+const char kSearchBackupResultsOTRProfileIDPrefix[] =
+    "SearchBackupResults::OTR";
+}  // namespace
 
 // static
 const Profile::OTRProfileID Profile::OTRProfileID::TorID() {
@@ -22,6 +33,17 @@ const Profile::OTRProfileID Profile::OTRProfileID::TorID() {
 
 bool Profile::IsTor() const {
   return IsOffTheRecord() && GetOTRProfileID() == OTRProfileID::TorID();
+}
+
+bool Profile::IsAIChatAgent() const {
+#if BUILDFLAG(ENABLE_BRAVE_AI_CHAT_AGENT_PROFILE)
+  if (!ai_chat::features::IsAIChatAgentProfileEnabled()) {
+    return false;
+  }
+  return GetPath().BaseName().value() == brave::kAIChatAgentProfileDir;
+#else
+  return false;
+#endif
 }
 
 bool Profile::IsIncognitoProfile() const {
@@ -35,4 +57,14 @@ bool Profile::IsPrimaryOTRProfile() const {
   if (IsTor())
     return true;
   return IsPrimaryOTRProfile_ChromiumImpl();
+}
+
+Profile::OTRProfileID
+Profile::OTRProfileID::CreateUniqueForSearchBackupResults() {
+  return CreateUnique(kSearchBackupResultsOTRProfileIDPrefix);
+}
+
+bool Profile::OTRProfileID::IsSearchBackupResults() const {
+  return base::StartsWith(profile_id_, kSearchBackupResultsOTRProfileIDPrefix,
+                          base::CompareCase::SENSITIVE);
 }

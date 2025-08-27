@@ -3,8 +3,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include <ostream>
+
 #include "base/notreached.h"
-#include "base/strings/stringprintf.h"
 #include "brave/installer/util/brave_shell_util.h"
 #include "chrome/common/chrome_icon_resources_win.h"
 #include "chrome/install_static/install_util.h"
@@ -25,21 +26,15 @@ int GetIconIndexForFileType() {
     case version_info::Channel::CANARY:
       return icon_resources::kSxSFileTypeIndex;
     default:
-      NOTREACHED();
-      return icon_resources::kFileTypeIndex;
+      break;
   }
+  // Official build uses above four types of channel.
+  NOTREACHED() << "All available types are handled above.";
 }
 
 #endif  // OFFICIAL_BUILD
 
 }  // namespace
-
-#define BRAVE_IPFS L"ipfs"
-#define BRAVE_IPNS L"ipns"
-
-#define BRAVE_BROWSER_PROTOCOL_ASSOCIATIONS BRAVE_IPFS, BRAVE_IPNS,
-
-#define BRAVE_POTENTIAL_PROTOCOL_ASSOCIATIONS BRAVE_IPFS, BRAVE_IPNS,
 
 #if defined(OFFICIAL_BUILD)
 // Add BraveFile prog id in registry with proper icon.
@@ -74,11 +69,7 @@ int GetIconIndexForFileType() {
 #define BRAVE_GET_SHELL_INTEGRATION_ENTRIES
 #endif
 
-#include "src/chrome/installer/util/shell_util.cc"
+#include <chrome/installer/util/shell_util.cc>
 #undef BRAVE_GET_SHELL_INTEGRATION_ENTRIES
 #undef BRAVE_GET_APP_EXT_REGISTRATION_ENTRIES
 #undef BRAVE_GET_CHROME_PROG_ID_ENTRIES
-#undef BRAVE_IPFS
-#undef BRAVE_IPNS
-#undef BRAVE_POTENTIAL_PROTOCOL_ASSOCIATIONS
-#undef BRAVE_BROWSER_PROTOCOL_ASSOCIATIONS

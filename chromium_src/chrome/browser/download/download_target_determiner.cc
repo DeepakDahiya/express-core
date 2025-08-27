@@ -11,14 +11,12 @@
   true) {}                                                \
   if (
 
-#define BRAVE_DOWNLOAD_TARGET_DETERMINER_GET_DANGER_LEVEL2       \
-  if (danger_level == DownloadFileType::ALLOW_ON_USER_GESTURE) { \
-    if (base::FeatureList::IsEnabled(                            \
-            features::kBraveOverrideDownloadDangerLevel)) {      \
-      return DownloadFileType::NOT_DANGEROUS;                    \
-    }                                                            \
+#define BRAVE_DOWNLOAD_TARGET_DETERMINER_GET_DANGER_LEVEL2 \
+  if (base::FeatureList::IsEnabled(                        \
+          features::kBraveOverrideDownloadDangerLevel)) {  \
+    return DownloadFileType::NOT_DANGEROUS;                \
   }
 
-#include "src/chrome/browser/download/download_target_determiner.cc"
+#include <chrome/browser/download/download_target_determiner.cc>
 #undef BRAVE_DOWNLOAD_TARGET_DETERMINER_GET_DANGER_LEVEL
 #undef BRAVE_DOWNLOAD_TARGET_DETERMINER_GET_DANGER_LEVEL2

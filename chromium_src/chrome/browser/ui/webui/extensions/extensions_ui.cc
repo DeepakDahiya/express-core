@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "brave/browser/extensions/manifest_v2/brave_hosted_extensions.h"
 #include "brave/browser/ui/webui/navigation_bar_data_provider.h"
 #include "brave/grit/brave_generated_resources.h"
 #include "chrome/browser/profiles/profile.h"
@@ -25,6 +26,11 @@ void BraveAddExtensionsResources(content::WebUIDataSource* source,
                              IDS_EXTENSIONS_BRAVE_SPANNING_WARNING);
   source->AddLocalizedString("privateAndTorInfoWarning",
                              IDS_EXTENSIONS_BRAVE_PRIVATE_AND_TOR_WARNING);
+  source->AddLocalizedString("braveHosted", IDS_EXTENSIONS_BRAVE_HOSTED);
+
+  const std::string mv2_extensions =
+      base::JoinString(extensions_mv2::kPreconfiguredManifestV2Extensions, ",");
+  source->AddString("braveHostedExtensions", mv2_extensions);
 }
 
 }  // namespace
@@ -44,7 +50,7 @@ void BraveAddExtensionsResources(content::WebUIDataSource* source,
 #define BRAVE_CREATE_EXTENSIONS_SOURCE \
   BraveAddExtensionsResources(source, profile);
 
-#include "src/chrome/browser/ui/webui/extensions/extensions_ui.cc"
+#include <chrome/browser/ui/webui/extensions/extensions_ui.cc>
 #undef BRAVE_CREATE_EXTENSIONS_SOURCE
 #undef IDS_EXTENSIONS_ITEM_SOURCE_WEBSTORE
 #undef IDS_EXTENSIONS_ITEM_CHROME_WEB_STORE

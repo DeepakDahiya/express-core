@@ -9,15 +9,14 @@
 
 #include "brave/grit/brave_theme_resources_map.h"
 
-#define BRAVE_RESOURCES_UTIL                              \
-  for (size_t i = 0; i < kBraveThemeResourcesSize; ++i) { \
-    storage.emplace_back(kBraveThemeResources[i].path,    \
-                         kBraveThemeResources[i].id);     \
+#define BRAVE_RESOURCES_UTIL                          \
+  for (const auto& resource : kBraveThemeResources) { \
+    storage.emplace_back(resource.path, resource.id); \
   }
 
 #else
 #define BRAVE_RESOURCES_UTIL
 #endif  // !BUILDFLAG(IS_ANDROID)
 
-#include "src/chrome/browser/resources_util.cc"
+#include <chrome/browser/resources_util.cc>
 #undef BRAVE_RESOURCES_UTIL

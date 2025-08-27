@@ -17,7 +17,7 @@
 
 namespace {
 
-const char kBraveReferralCode[] = "brave-referral-code";
+constexpr char kBraveReferralCode[] = "brave-referral-code";
 
 void SavePromoCode(installer::InstallStatus install_status) {
   if (!InstallUtil::GetInstallReturnCode(install_status)) {
@@ -44,5 +44,5 @@ void SavePromoCode(installer::InstallStatus install_status) {
 #define DoLegacyCleanups         \
   SavePromoCode(install_status); \
   DoLegacyCleanups
-#include "src/chrome/installer/setup/setup_main.cc"
+#include <chrome/installer/setup/setup_main.cc>
 #undef DoLegacyCleanups

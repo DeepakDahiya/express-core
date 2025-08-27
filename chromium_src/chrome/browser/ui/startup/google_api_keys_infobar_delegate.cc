@@ -6,10 +6,10 @@
 #include "google_apis/google_api_keys.h"
 
 namespace google_apis {
-const char kBraveAPIKeysDevelopersHowToURL[] =
-    "https://community.brave.com";
+constexpr char kBraveAPIKeysDevelopersHowToURL[] =
+    "https://community.brave.app";
 }  // namespace google_apis
 
 #define kAPIKeysDevelopersHowToURL kBraveAPIKeysDevelopersHowToURL
-#include "src/chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc"
+#include <chrome/browser/ui/startup/google_api_keys_infobar_delegate.cc>
 #undef kAPIKeysDevelopersHowToURL

@@ -6,13 +6,19 @@
 #ifndef BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
 #define BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_
 
-#define SelectRelativeTab virtual SelectRelativeTab
-#define TAB_STRIP_MODEL_H_ friend class BraveTabStripModel;
-#define IsReadLaterSupportedForAny virtual IsReadLaterSupportedForAny
+#define SelectRelativeTab(...)            \
+  virtual SelectRelativeTab(__VA_ARGS__); \
+  friend class BraveTabStripModel
 
-#include "src/chrome/browser/ui/tabs/tab_strip_model.h"  // IWYU pragma: export
+#define DraggingTabsSession DraggingTabsSessionChromium
+#define IsReadLaterSupportedForAny virtual IsReadLaterSupportedForAny
+#define UpdateWebContentsStateAt virtual UpdateWebContentsStateAt
+
+#include <chrome/browser/ui/tabs/tab_strip_model.h>  // IWYU pragma: export
+
+#undef UpdateWebContentsStateAt
 #undef IsReadLaterSupportedForAny
+#undef DraggingTabsSession
 #undef SelectRelativeTab
-#undef TAB_STRIP_MODEL_H_
 
 #endif  // BRAVE_CHROMIUM_SRC_CHROME_BROWSER_UI_TABS_TAB_STRIP_MODEL_H_

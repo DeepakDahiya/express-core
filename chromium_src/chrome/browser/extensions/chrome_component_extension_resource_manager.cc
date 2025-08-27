@@ -7,29 +7,10 @@
 
 #include "brave/components/brave_extension/grit/brave_extension_generated_map.h"
 #include "brave/components/brave_extension/grit/brave_extension_resources_map.h"
-#include "brave/components/brave_webtorrent/browser/buildflags/buildflags.h"
 
-#if BUILDFLAG(ENABLE_BRAVE_WEBTORRENT)
-#include "brave/components/brave_webtorrent/grit/brave_webtorrent_generated_map.h"
-#include "brave/components/brave_webtorrent/grit/brave_webtorrent_resources_map.h"
-#endif
+#define BRAVE_CHROME_COMPONENT_EXTENSION_RESOURCE_MANAGER_DATA_DATA \
+  AddComponentResourceEntries(kBraveExtension);                     \
+  AddComponentResourceEntries(kBraveExtensionGenerated);
 
-#if BUILDFLAG(ENABLE_BRAVE_WEBTORRENT)
-#define BRAVE_WEBTORRENT_RESOURCES                            \
-  AddComponentResourceEntries(kBraveWebtorrentResources,      \
-                              kBraveWebtorrentResourcesSize); \
-  AddComponentResourceEntries(kBraveWebtorrentGenerated,      \
-                              kBraveWebtorrentGeneratedSize);
-#else
-#define BRAVE_WEBTORRENT_RESOURCES
-#endif
-
-#define BRAVE_CHROME_COMPONENT_EXTENSION_RESOURCE_MANAGER_DATA_DATA  \
-  AddComponentResourceEntries(kBraveExtension, kBraveExtensionSize); \
-  AddComponentResourceEntries(kBraveExtensionGenerated,              \
-                              kBraveExtensionGeneratedSize);         \
-  BRAVE_WEBTORRENT_RESOURCES
-
-#include "src/chrome/browser/extensions/chrome_component_extension_resource_manager.cc"
+#include <chrome/browser/extensions/chrome_component_extension_resource_manager.cc>
 #undef BRAVE_CHROME_COMPONENT_EXTENSION_RESOURCE_MANAGER_DATA_DATA
-#undef BRAVE_WEBTORRENT_RESOURCES

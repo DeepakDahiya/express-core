@@ -7,7 +7,6 @@
 
 #include <cmath>
 
-#include "brave/browser/ui/tabs/features.h"
 #include "brave/browser/ui/views/tabs/brave_compound_tab_container.h"
 #include "brave/browser/ui/views/tabs/brave_tab.h"
 #include "brave/browser/ui/views/tabs/brave_tab_group_header.h"
@@ -23,8 +22,11 @@
 #include "ui/gfx/win/hwnd_util.h"
 #endif
 
-#define AddTab(TAB, MODEL_INDEX, PINNED) \
-  AddTab(std::make_unique<BraveTab>(this), MODEL_INDEX, PINNED)
+// Overrides TabContainer::TabInsertionParams construction in
+// TabStrip::AddTabsAt
+#define param(TAB, MODEL_INDEX, PINNED) \
+  param(std::make_unique<BraveTab>(this), MODEL_INDEX, PINNED)
+
 #define CompoundTabContainer BraveCompoundTabContainer
 #define TabContainerImpl BraveTabContainer
 #define TabHoverCardController BraveTabHoverCardController
@@ -38,33 +40,35 @@
   if (tabs::utils::ShouldShowVerticalTabs(tab_strip_->GetBrowser())) {       \
     tabs::UpdateInsertionIndexForVerticalTabs(                               \
         dragged_bounds, first_dragged_tab_index, num_dragged_tabs,           \
-        dragged_group, candidate_index, tab_strip_->controller_.get(),       \
+        GetTabAt(first_dragged_tab_index)->group().has_value(),              \
+        candidate_index, tab_strip_->controller_.get(),                      \
         &tab_strip_->tab_container_.get(), min_distance, min_distance_index, \
         tab_strip_);                                                         \
     continue;                                                                \
   }
 
-#define BRAVE_TAB_DRAG_CONTEXT_IMPL_CALCULATE_BOUNDS_FOR_DRAGGED_VIEWS        \
-  if (tabs::utils::ShouldShowVerticalTabs(tab_strip_->GetBrowser())) {        \
-    return tabs::CalculateBoundsForVerticalDraggedViews(views, tab_strip_);   \
-  }                                                                           \
-  if (tabs::features::HorizontalTabsUpdateEnabled()) {                        \
-    return tabs::CalculateBoundsForHorizontalDraggedViews(views, tab_strip_); \
+#define BRAVE_TAB_DRAG_CONTEXT_IMPL_CALCULATE_BOUNDS_FOR_DRAGGED_VIEWS      \
+  if (tabs::utils::ShouldShowVerticalTabs(tab_strip_->GetBrowser())) {      \
+    return tabs::CalculateBoundsForVerticalDraggedViews(views, tab_strip_); \
   }
 
-#define BRAVE_TAB_DRAG_CONTEXT_IMPL_PAINT_CHILDREN                      \
-  for (const ZOrderableTabContainerElement& child : orderable_children) \
-    if (!child.view()->layer()) {                                       \
-      child.view()->Paint(paint_info);                                  \
-    }                                                                   \
-  return;
+#include <chrome/browser/ui/views/tabs/tab_strip.cc>
 
-#include "src/chrome/browser/ui/views/tabs/tab_strip.cc"
-
-#undef BRAVE_TAB_DRAG_CONTEXT_IMPL_PAINT_CHILDREN
 #undef BRAVE_TAB_DRAG_CONTEXT_IMPL_CALCULATE_BOUNDS_FOR_DRAGGED_VIEWS
 #undef BRAVE_TAB_DRAG_CONTEXT_IMPL_CALCULATE_INSERTION_INDEX
 #undef TabHoverCardController
 #undef CompoundTabContainer
 #undef TabContainerImpl
-#undef AddTab
+#undef param
+
+bool TabStrip::IsTabTiled(const Tab* tab) const {
+  return false;
+}
+
+bool TabStrip::IsFirstTabInTile(const Tab* tab) const {
+  return false;
+}
+
+const Browser* TabStrip::GetBrowser() const {
+  return controller_->GetBrowser();
+}

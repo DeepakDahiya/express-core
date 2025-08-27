@@ -3,9 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "chrome/install_static/product_install_details.h"
-
 #include "base/base_paths.h"
+#include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/i18n/case_conversion.h"
 #include "base/path_service.h"
@@ -17,6 +16,7 @@
 #include "chrome/install_static/install_constants.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/product_install_details.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -182,7 +182,7 @@ class MakeProductDetailsTest : public testing::TestWithParam<TestData> {
     std::wstring result(L"Software\\");
 #if defined(OFFICIAL_BUILD)
       result.append(L"BraveSoftware\\Update\\ClientState\\");
-      result.append(kInstallModes[test_data().index].app_guid);
+      result.append(UNSAFE_TODO(kInstallModes[test_data().index]).app_guid);
 #else
       result.append(kProductPathName);
 #endif

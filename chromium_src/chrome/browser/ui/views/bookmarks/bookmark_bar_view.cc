@@ -3,6 +3,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+#include "base/check.h"
+#include "base/check_op.h"
 #include "brave/browser/ui/brave_view_ids.h"
 #include "brave/browser/ui/views/bookmarks/bookmark_bar_instructions_view.h"
 #include "brave/browser/ui/views/bookmarks/brave_bookmark_context_menu.h"
@@ -14,7 +16,7 @@ constexpr int kBookmarkBarInstructionsPadding = 6;
 
 BookmarkBarInstructionsView* GetInstructionView(
     views::View* bookmark_bar_view) {
-  for (auto* child : bookmark_bar_view->children()) {
+  for (views::View* child : bookmark_bar_view->children()) {
     if (child->GetID() == BRAVE_VIEW_ID_BOOKMARK_IMPORT_INSTRUCTION_VIEW)
       return static_cast<BookmarkBarInstructionsView*>(child);
   }
@@ -61,18 +63,10 @@ void LayoutBookmarkBarInstructionsView(views::View* bookmark_bar_view,
 
 }  // namespace
 
-namespace views {
-void InstallNoHighlightPathGenerator(View* view) {
-  // Do nothing: the default highlight path is what we want.
-}
-}  // namespace views
-
-#define BRAVE_LAYOUT                                                  \
-  LayoutBookmarkBarInstructionsView(this, bookmark_model_, browser(), \
-                                    button_height, x, max_x, y);
+#define BRAVE_LAYOUT                                                           \
+  LayoutBookmarkBarInstructionsView(this, bookmark_service_->bookmark_model(), \
+                                    browser(), button_height, x, max_x, y);
 #define BookmarkContextMenu BraveBookmarkContextMenu
-#define InstallPillHighlightPathGenerator InstallNoHighlightPathGenerator
-#include "src/chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc"
-#undef InstallPillHighlightPathGenerator
+#include <chrome/browser/ui/views/bookmarks/bookmark_bar_view.cc>
 #undef BookmarkContextMenu
 #undef BRAVE_LAYOUT

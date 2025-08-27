@@ -7,27 +7,39 @@
 
 #include <utility>
 
+#include "base/check.h"
+#include "base/files/file_path.h"
+#include "base/task/bind_post_task.h"
+#include "base/task/sequenced_task_runner.h"
 #include "base/task/thread_pool.h"
 #include "base/threading/thread.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/importer/profile_writer.h"
 #include "chrome/common/url_constants.h"
-#include "chrome/utility/importer/bookmark_html_reader.h"
 #include "components/url_formatter/url_fixer.h"
+#include "components/user_data_importer/common/imported_bookmark_entry.h"
+#include "components/user_data_importer/common/importer_data_types.h"
+#include "components/user_data_importer/content/content_bookmark_parser.h"
+#include "components/user_data_importer/utility/bookmark_parser.h"
 
 #define BraveBookmarkBridge BookmarkBridge
-#include "brave/build/android/jni_headers/BraveBookmarkBridge_jni.h"
+#include "chrome/android/chrome_jni_headers/BraveBookmarkBridge_jni.h"
 #undef BraveBookmarkBridge
 
-#include "src/chrome/browser/bookmarks/android/bookmark_bridge.cc"
 #include "ui/android/window_android.h"
 
+#include <chrome/browser/bookmarks/android/bookmark_bridge.cc>
+
 using base::android::JavaParamRef;
+using user_data_importer::BookmarkParser;
+using user_data_importer::ContentBookmarkParser;
+using user_data_importer::SearchEngineInfo;
 
 namespace internal {
-
 // Returns true if |url| has a valid scheme that we allow to import. We
 // filter out the URL with a unsupported scheme.
+// Taken from src/chrome/utility/importer/bookmarks_file_importer.cc because
+// the file is not compiled on Android
 bool CanImportURL(const GURL& url) {
   // The URL is not valid.
   if (!url.is_valid()) {
@@ -35,9 +47,8 @@ bool CanImportURL(const GURL& url) {
   }
 
   // Filter out the URLs with unsupported schemes.
-  const char* const kInvalidSchemes[] = {"wyciwyg", "place"};
-  for (size_t i = 0; i < std::size(kInvalidSchemes); ++i) {
-    if (url.SchemeIs(kInvalidSchemes[i])) {
+  for (const char* invalid_scheme : {"wyciwyg", "place"}) {
+    if (url.SchemeIs(invalid_scheme)) {
       return false;
     }
   }
@@ -56,16 +67,15 @@ bool CanImportURL(const GURL& url) {
     }
 
     GURL fixed_url(url_formatter::FixupURL(url.spec(), std::string()));
-    for (size_t i = 0; i < chrome::kNumberOfChromeHostURLs; ++i) {
-      if (fixed_url.DomainIs(chrome::kChromeHostURLs[i])) {
+    const base::span<const base::cstring_view> hosts = chrome::ChromeURLHosts();
+    for (const base::cstring_view host : hosts) {
+      if (fixed_url.DomainIs(host)) {
         return true;
       }
     }
 
-    for (size_t i = 0; i < chrome::kNumberOfChromeDebugURLs; ++i) {
-      if (fixed_url == chrome::kChromeDebugURLs[i]) {
-        return true;
-      }
+    if (base::Contains(chrome::ChromeDebugURLs(), fixed_url.spec())) {
+      return true;
     }
 
     // If url has either chrome:// or about: schemes but wasn't found in the
@@ -82,21 +92,13 @@ bool CanImportURL(const GURL& url) {
 
 namespace {
 
-class FileBookmarksExportObserver : public BookmarksExportObserver {
- public:
-  explicit FileBookmarksExportObserver(const JavaParamRef<jobject>& obj)
-      : obj_(ScopedJavaGlobalRef<jobject>(obj)) {}
+void OnExportFinished(ScopedJavaGlobalRef<jobject> obj,
+                      bookmark_html_writer::Result result) {
+  JNIEnv* env = AttachCurrentThread();
+  Java_BraveBookmarkBridge_bookmarksExported(
+      env, obj, result == bookmark_html_writer::Result::kSuccess);
+}
 
-  void OnExportFinished(Result result) override {
-    JNIEnv* env = AttachCurrentThread();
-    Java_BraveBookmarkBridge_bookmarksExported(env, obj_,
-                                               result == Result::kSuccess);
-    delete this;
-  }
-
- private:
-  const ScopedJavaGlobalRef<jobject> obj_;
-};
 }  // namespace
 
 // Attempts to create a TemplateURL from the provided data. |title| is optional.
@@ -121,6 +123,7 @@ void BookmarkBridge::ImportBookmarks(
     const base::android::JavaParamRef<jobject>& obj,
     const base::android::JavaParamRef<jobject>& java_window,
     const base::android::JavaParamRef<jstring>& j_import_path) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   ui::WindowAndroid* window =
       ui::WindowAndroid::FromJavaWindowAndroid(java_window);
   CHECK(window);
@@ -128,40 +131,50 @@ void BookmarkBridge::ImportBookmarks(
   std::u16string import_path =
       base::android::ConvertJavaStringToUTF16(env, j_import_path);
 
-  std::vector<ImportedBookmarkEntry> bookmarks;
-  std::vector<importer::SearchEngineInfo> search_engines;
+  bookmark_parser_ = base::SequenceBound<ContentBookmarkParser>(
+      base::ThreadPool::CreateSequencedTaskRunner(
+          {base::MayBlock(), base::TaskPriority::USER_VISIBLE}));
 
-  base::ThreadPool::PostTaskAndReplyWithResult(
-      FROM_HERE, {base::MayBlock()},
-      base::BindOnce(&BookmarkBridge::ImportBookmarksReader,
-                     base::Unretained(this), import_path, bookmarks,
-                     search_engines),
-      base::BindOnce(&BookmarkBridge::ImportBookmarksImpl,
-                     weak_ptr_factory_.GetWeakPtr()));
+  bookmark_parser_.AsyncCall(&BookmarkParser::Parse)
+      .WithArgs(base::FilePath::FromUTF16Unsafe(import_path),
+                base::BindPostTaskToCurrentDefault(
+                    base::BindOnce(&BookmarkBridge::OnParseFinished,
+                                   weak_ptr_factory_.GetWeakPtr())));
 }
 
-void BookmarkBridge::ImportBookmarksImpl(
-    std::pair<std::vector<ImportedBookmarkEntry>,
-              std::vector<importer::SearchEngineInfo>> importedItems) {
-  std::vector<ImportedBookmarkEntry> bookmarks = get<0>(importedItems);
-  std::vector<importer::SearchEngineInfo> search_engines =
-      get<1>(importedItems);
-  auto* writer = new ProfileWriter(profile_);
+void BookmarkBridge::OnParseFinished(
+    BookmarkParser::BookmarkParsingResult result) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  bool import_succeeded = result.has_value();
+  if (import_succeeded) {
+    std::vector<user_data_importer::ImportedBookmarkEntry>& bookmarks =
+        result->bookmarks;
+    const std::vector<SearchEngineInfo>& search_engines =
+        result->search_engines;
 
-  if (!bookmarks.empty()) {
-    writer->AddBookmarks(bookmarks, u"Imported");
-  }
+    auto* writer = new ProfileWriter(profile_);
 
-  if (!search_engines.empty()) {
-    TemplateURLService::OwnedTemplateURLVector owned_template_urls;
-    for (const auto& search_engine : search_engines) {
-      std::unique_ptr<TemplateURL> owned_template_url = CreateTemplateURL(
-          search_engine.url, search_engine.keyword, search_engine.display_name);
-      if (owned_template_url) {
-        owned_template_urls.push_back(std::move(owned_template_url));
-      }
+    if (!bookmarks.empty()) {
+      std::erase_if(bookmarks,
+                    [](user_data_importer::ImportedBookmarkEntry bookmark) {
+                      return !internal::CanImportURL(bookmark.url);
+                    });
+
+      writer->AddBookmarks(bookmarks, u"Imported");
     }
-    writer->AddKeywords(std::move(owned_template_urls), false);
+
+    if (!search_engines.empty()) {
+      TemplateURLService::OwnedTemplateURLVector owned_template_urls;
+      for (const auto& search_engine : search_engines) {
+        std::unique_ptr<TemplateURL> owned_template_url =
+            CreateTemplateURL(search_engine.url, search_engine.keyword,
+                              search_engine.display_name);
+        if (owned_template_url) {
+          owned_template_urls.push_back(std::move(owned_template_url));
+        }
+      }
+      writer->AddKeywords(std::move(owned_template_urls), false);
+    }
   }
 
   JNIEnv* env = AttachCurrentThread();
@@ -171,22 +184,7 @@ void BookmarkBridge::ImportBookmarksImpl(
     return;
   }
 
-  Java_BraveBookmarkBridge_bookmarksImported(env, obj, !bookmarks.empty());
-}
-
-std::pair<std::vector<ImportedBookmarkEntry>,
-          std::vector<importer::SearchEngineInfo>>
-BookmarkBridge::ImportBookmarksReader(
-    std::u16string import_path,
-    std::vector<ImportedBookmarkEntry> bookmarks,
-    std::vector<importer::SearchEngineInfo> search_engines) {
-  base::FilePath import_path_ = base::FilePath::FromUTF16Unsafe(import_path);
-  bookmark_html_reader::ImportBookmarksFile(
-      base::RepeatingCallback<bool(void)>(),
-      base::BindRepeating(internal::CanImportURL), import_path_, &bookmarks,
-      &search_engines, nullptr);
-
-  return std::make_pair(bookmarks, search_engines);
+  Java_BraveBookmarkBridge_bookmarksImported(env, obj, import_succeeded);
 }
 
 void BookmarkBridge::ExportBookmarks(
@@ -207,7 +205,7 @@ void BookmarkBridge::ExportBookmarks(
   base::FilePath file_export_path =
       base::FilePath::FromUTF16Unsafe(export_path);
 
-  BookmarksExportObserver* observer = new FileBookmarksExportObserver(obj);
-
-  bookmark_html_writer::WriteBookmarks(profile_, file_export_path, observer);
+  bookmark_html_writer::WriteBookmarks(
+      profile_, file_export_path,
+      base::BindOnce(&OnExportFinished, ScopedJavaGlobalRef<jobject>(obj)));
 }

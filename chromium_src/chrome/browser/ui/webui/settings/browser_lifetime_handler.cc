@@ -12,7 +12,7 @@
 #endif
 
 #define BrowserLifetimeHandler BrowserLifetimeHandler_ChromiumImpl
-#include "src/chrome/browser/ui/webui/settings/browser_lifetime_handler.cc"
+#include <chrome/browser/ui/webui/settings/browser_lifetime_handler.cc>
 #undef BrowserLifetimeHandler
 
 namespace settings {
@@ -21,10 +21,11 @@ BrowserLifetimeHandler::~BrowserLifetimeHandler() {}
 
 void BrowserLifetimeHandler::HandleRelaunch(const base::Value::List& args) {
 #if BUILDFLAG(ENABLE_SPARKLE)
-  brave_relaunch_handler::RelaunchOnMac();
-#else
-  BrowserLifetimeHandler_ChromiumImpl::HandleRelaunch(args);
+  if (brave_relaunch_handler::RelaunchOnMac()) {
+    return;
+  }
 #endif
+  BrowserLifetimeHandler_ChromiumImpl::HandleRelaunch(args);
 }
 
 }  // namespace settings

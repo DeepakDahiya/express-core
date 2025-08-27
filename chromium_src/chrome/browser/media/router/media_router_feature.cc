@@ -5,19 +5,21 @@
 
 #include "chrome/browser/media/router/media_router_feature.h"
 
+#include "base/check.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_context.h"
 
 #define MediaRouterEnabled MediaRouterEnabled_ChromiumImpl
-#define GlobalMediaControlsCastStartStopEnabled \
-  GlobalMediaControlsCastStartStopEnabled_ChromiumImpl
-#include "src/chrome/browser/media/router/media_router_feature.cc"
-#undef GlobalMediaControlsCastStartStopEnabled
+#include <chrome/browser/media/router/media_router_feature.cc>
 #undef MediaRouterEnabled
 
 namespace media_router {
 
 bool MediaRouterEnabled(content::BrowserContext* context) {
+  if (context->IsTor()) {
+    // Disable Media Router in Tor windows.
+    return false;
+  }
 #if BUILDFLAG(IS_ANDROID)
   return MediaRouterEnabled_ChromiumImpl(context);
 #else
@@ -26,18 +28,15 @@ bool MediaRouterEnabled(content::BrowserContext* context) {
   }
   const PrefService::Preference* pref = GetMediaRouterPref(context);
   CHECK(pref->GetValue()->is_bool());
+  // Chromium has a pref for Media Router but it is only controlled via
+  // enterprise policy. In Brave, the pref can be controlled both via
+  // brave://settings/extensions and enterprise policy, with the latter taking
+  // precedence.
+  if (pref->IsManaged()) {
+    return MediaRouterEnabled_ChromiumImpl(context);
+  }
   return pref->GetValue()->GetBool();
 #endif
 }
-
-#if !BUILDFLAG(IS_ANDROID)
-// This override forces GlobalMediaControlsCastStartStopEnabled to use our
-// version of MediaRouterEnabled, rather than the original. The implementation
-// of this function must be kept in sync with the original implementation.
-bool GlobalMediaControlsCastStartStopEnabled(content::BrowserContext* context) {
-  return base::FeatureList::IsEnabled(kGlobalMediaControlsCastStartStop) &&
-         MediaRouterEnabled(context);
-}
-#endif
 
 }  // namespace media_router

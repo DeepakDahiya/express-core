@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Copyright (c) 2024 The Brave Authors. All rights reserved.
+     This Source Code Form is subject to the terms of the Mozilla Public
+     License, v. 2.0. If a copy of the MPL was not distributed with this file,
+     You can obtain one at https://mozilla.org/MPL/2.0/.
+-->
+<lint>
+    <issue id="ExportedService" severity="ignore" />
+    <issue id="DuplicateDefinition">
+        <ignore regexp="chrome/android/java/res/values/brave_colors.xml" />
+    </issue>
+    <issue id="StringFormatCount">
+        <ignore regexp="sponsored_images_bottom_sheet_text" />
+        <ignore regexp="notification_marketing" />
+        <ignore regexp="renew_monthly_save" />
+        <ignore regexp="wallet_swap_fees_notice" />
+        <ignore regexp="processing_fee" />
+    </issue>
+    <issue id="WrongConstant">
+        <ignore regexp="ContentSettingsType.BRAVE_CONTENT_SETTINGS_TYPES_LIST" />
+    </issue>
+    <issue id="UnusedResources">
+        <ignore regexp="The resource `R.string.playlist_.*` appears to be unused" />
+        <ignore regexp="The resource `R.string.new_tab_otr.*` appears to be unused" />
+        <ignore regexp="The resource `R.dimen.md_incognito_ntp.*` appears to be unused" />
+        <ignore regexp="The resource `R.layout.incognito.*` appears to be unused" />
+        <ignore regexp="The resource `R.layout.logo_view_layout` appears to be unused" />
+        <ignore regexp="The resource `R.style.*_BrowserUI_Switch_Incognito` appears to be unused" />
+        <ignore regexp="The resource `R.style.CardTransparentForDark` appears to be unused" />
+        <ignore regexp="The resource `R.dimen.toolbar_hairline_height` appears to be unused" />
+        <ignore
+            regexp="The resource `R.style.TextAppearance_IncognitoNewTabLearnMoreLinkModern` appears to be unused" />
+        <ignore regexp="The resource `R.dimen.quick_action_search_widget_.*` appears to be unused"/>
+        <ignore regexp="The resource `R.xml.quick_action_search_widget_.*` appears to be unused"/>
+        <ignore regexp="The resource `R.layout.quick_action_search_widget_.*` appears to be unused"/>
+        <ignore regexp="The resource `R.string.quick_action_search_widget_.*` appears to be unused"/>
+        <ignore regexp="The resource `R.drawable.quick_action_search_widget_.*` appears to be unused"/>
+        <ignore regexp="The resource `R.drawable.hairline_border` appears to be unused"/>
+        <ignore regexp="The resource `R.string.dino_widget_description` appears to be unused"/>
+        <ignore regexp="The resource `R.style.IncognitoTextViewWithClickableSpans` appears to be unused"/>
+        <ignore regexp="The resource `R.style.IncognitoNewTabLearnMoreLinkModernTextView` appears to be unused"/>
+        <ignore regexp="The resource `R.style.IncognitoNewTabTextView` appears to be unused"/>
+        <ignore regexp="The resource `R.string.incognito_tab_learn_more_accessibility_label` appears to be unused"/>
+        <ignore regexp="The resource `R.string.accessibility_incognito_3pc_settings` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_asset_bg_color` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_asset_outline_color_primary` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_asset_outline_color_secondary` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_icon_tabswitcher_bg_color` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_tab_border_color` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_tab_group_border_color` appears to be unused"/>
+        <ignore regexp="The resource `R.color.empty_state_icon_bg_color` appears to be unused"/>
+        <ignore regexp="The resource `R.macro.default_bg_color_elev_0` appears to be unused"/>
+        <ignore regexp="The resource `R.drawable.incognito_card_bg` appears to be unused"/>
+    </issue>
+</lint>

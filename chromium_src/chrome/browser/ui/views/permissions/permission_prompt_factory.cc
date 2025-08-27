@@ -3,6 +3,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this file,
  * You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+#include "base/logging.h"
 #include "chrome/browser/ui/permission_bubble/permission_prompt.h"
 #include "components/permissions/request_type.h"
 
@@ -11,7 +12,7 @@
 #endif
 
 #define CreatePermissionPrompt CreatePermissionPrompt_ChromiumImpl
-#include "src/chrome/browser/ui/views/permissions/permission_prompt_factory.cc"
+#include <chrome/browser/ui/views/permissions/permission_prompt_factory.cc>
 #undef CreatePermissionPrompt
 
 std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
@@ -28,7 +29,9 @@ std::unique_ptr<permissions::PermissionPrompt> CreatePermissionPrompt(
   if (delegate->Requests()[0]->request_type() ==
           permissions::RequestType::kBraveEthereum ||
       delegate->Requests()[0]->request_type() ==
-          permissions::RequestType::kBraveSolana) {
+          permissions::RequestType::kBraveSolana ||
+      delegate->Requests()[0]->request_type() ==
+          permissions::RequestType::kBraveCardano) {
     return std::make_unique<BraveWalletPermissionPromptImpl>(
         browser, web_contents, *delegate);
   }
