@@ -5,6 +5,10 @@
 ## why the filter is required and create an associated tracking issue.
 ##
 
+# This test fails because the product name is Brave instead of Chromium -
+# hardcoded in the test.
+-CrashClientUploadInfoTest.GetClientProductInfo
+
 # This test fails because we override PrivacySandboxSettings and
 # IsPrivacySandboxRestricted in IsPrivacySandboxRestricted c'tor causes a
 # different code path that triggers a DCHECK in ProfileManager::RemoveKeepAlive.
@@ -13,25 +17,27 @@
 -StartupBrowserCreatorTriggeredResetTest.TestMultiProfile
 
 # These tests fail on CI but pass locally
+-All/CookieSettingsTest.AllowCookiesUsingExceptions/0
+-All/CookieSettingsTest.AllowCookiesUsingExceptions/2
+-All/CookieSettingsTest.AllowCookiesUsingExceptions/5
+-AiDataKeyedServiceBrowserTest.TabInnerText
 -AutofillContextMenuManagerFeedbackUIBrowserTest.DisplaysFeedbackDialogUI
 -AutomationApiTest.*
 -AutomationApiTestWithLanguageDetection.DetectedLanguage
 -ManifestUpdateManagerBrowserTest.UninstallDialogCancelStillShowsAppUpdateDialog
+-ExtensionUninstallDialogViewBrowserTest.WebAppWindowAshCrash
 -SaveDesktopSnapshotTest.SaveDesktopSnapshot
 -TabHoverCardBubbleViewDialogBrowserTest.InvokeUi_tab_hover_card
+-WebAppFrameToolbarBrowserTest_OriginText.OutOfScopeBarShown/*
+-WebAppFrameToolbarBrowserTest_OriginText.ThemeColorChange/0
 
-# This test passes locally but fails on CI likely because BraveMainDelegate is
-# available in the Chromium tests. It fails with the message:
-#
-# Terminating render process for bad Mojo message: Received bad user message:
-# No binder found for interface brave_news.mojom.BraveNewsController for the
-# frame/document scope
-#
-# The binder is not instantiated because BraveContentBrowserClient is also not
-# available. The difference between CI and local execution has not been
-# investigated.
--FetchManifestAndInstallCommandTest.MultipleInstalls
--WebAppTabStripBrowserTest.OnlyNavigateHomeTabIfDifferentUrl
+# These tests are flaky both on CI and locally
+-CmdLineURLIncognitoBasicTestFeatureDisabled/LaunchNavigationBrowserBasicTest.CmdLineLaunch/0
+-CmdLineURLIncognitoBasicTestFeatureEnabled/LaunchNavigationBrowserBasicTest.CmdLineLaunch/0
+-PersistentBackground/ExtensionWebRequestApiTestWithContextType.WebRequestRedirectsWorkers/BackgroundResourceFetchDisabled
+-PersistentBackground/ExtensionWebRequestApiTestWithContextType.WebRequestRedirectsWorkers/BackgroundResourceFetchEnabled
+-ServiceWorker/ExtensionWebRequestApiTestWithContextType.WebRequestRedirectsWorkers/BackgroundResourceFetchDisabled
+-ServiceWorker/ExtensionWebRequestApiTestWithContextType.WebRequestRedirectsWorkers/BackgroundResourceFetchEnabled
 
 # This test fails because we modify the Profile Picker UI to skip the initial
 # screen and the tests ends up creating 2 profiles instead of the intended one.
@@ -42,10 +48,29 @@
 -StartupBrowserCreatorWelcomeBackTest.WelcomeBackStandardNoPolicy/UsingForYouFre
 
 # These tests fail on CI but passes locally
--LiveCaptionUnavailabilityNotifierTest.CaptionBubbleDestroyed
+-All/PrintCompositorDocumentDataTypeBrowserTest.WindowDotPrint/Xps
 -AppMenuBrowserTest.*
+-LiveCaptionUnavailabilityNotifierTest.CaptionBubbleDestroyed
+-SoftNavigationTabRestoreTest.SoftNavigationToRestoredTab
 
--All/MediaEngagementAutoplayBrowserTest.*
+# These tests fail in Release due to resource being optimized out.
+# Check failed: !data->empty(). Unable to find resource: 10679. If this happens
+# in a browser test running on Windows, it may be that dead-code elimination
+# stripped out the code that uses the resource, causing the resource to be
+# stripped out because the resource is not used by chrome.dll. See
+# https://crbug.com/1181150.
+-All/CreateShortcutConfirmationViewBrowserTest.*
+
+# These tests fail because in Release we set GOOGLE_CHROME_BRANDING in
+# chrome/browser/extensions/install_verifier.cc (on Win and Mac), which causes
+# InstallVerifier::ShouldEnforce to return true and leads to the test failing
+# to install extension due to it not being from webstore. Unclear why this is
+# not failing upstream for the same reason.
+-ChromeSignoutConfirmationPromptWithExtensionsPixelTest.*
+
+# These tests fail upstream when DCHECKs are enabled.
+-PenIdBrowserTest.*
+
 -All/ExternallyManagedBrowserTestWithPrefMigrationRead.ReinstallPolicyAppWithLocallyInstalledApp/1
 -All/PDFPluginDisabledTest.*
 -All/WebAppOfflinePageTest.WebAppOfflinePageIsDisplayed/*
@@ -73,10 +98,7 @@
 -Enabled/NetworkServiceSandboxEnabledTest.IsRespected/0
 -Enabled/RendererAppContainerEnabledTest.IsRespected/0
 -ExtensionInstalledBubbleViewsBrowserTest.*
--FedCmAccountSelectionViewBrowserTest.*
 -FencedFrameFileSystemAccessBrowserTest/FencedFrameFileSystemAccessBrowserTest.*
--FileSystemAccessBrowserSlowLoadTest.*
--FileSystemAccessBrowserTestForWebUI.*
 -IEImporterBrowserTest.*
 -ImageWriterUtilityClientTest.*
 -InfoBarUiTest.*
@@ -84,7 +106,6 @@
 -InterstitialUITest.*
 -IsolatedAppBrowserServiceWorkerPushTest.ServiceWorkerPartitionedWhenWakingUpDuetoPushNotification
 -KnownInterceptionDisclosureUITest.*
--LiveCaptionControllerTest.*
 -LocalePolicyTest.*
 -MediaSessionPictureInPictureWindowControllerBrowserTest.*
 -MediaSessionVideoPictureInPictureWindowControllerBrowserTest.*
@@ -124,14 +145,18 @@
 -ServiceWorker/ExtensionManagementApiTest.*
 -ServiceWorkerPushMessagingTest.OnPush
 -SigninUtilWinBrowserTest5/SigninUtilWinBrowserTest.*
+-SigninUtilWinBrowserTest5/SigninUtilWinBrowserTestWithParams.FixReauth/0
+-SigninUtilWinBrowserTest5/SigninUtilWinBrowserTestWithParams.Run/0
 -SigninUtilWinBrowserTest6/SigninUtilWinBrowserTest.*
+-SigninUtilWinBrowserTest6/SigninUtilWinBrowserTestWithParams.FixReauth/0
+-SigninUtilWinBrowserTest6/SigninUtilWinBrowserTestWithParams.Run/0
+-SigninUtilWinNoStartingWindowBrowserTest.FRESigninFlow
 -SpellcheckServiceBrowserTest.*
 -SSLUIMITMSoftwareEnabledTest.*
 -StartupBrowserCreatorCorruptProfileTest.*
 -StartupMetricsTest.*
 -StatusBubbleViewsTest.*
 -TabSearchBubbleHostBrowserTest.*
--VideoPictureInPictureWindowControllerBrowserTest.*
 -WebAppBrowserTest_FileHandler.RegKeysFileExtension
 -WebAppGlassBrowserFrameViewTest.*
 -WebAppIntegrationBrowserTestWin.*

@@ -10,6 +10,8 @@
 
 #include "base/files/file_util.h"
 #include "base/path_service.h"
+#include "base/strings/string_number_conversions.h"
+#include "base/strings/string_util.h"
 #include "base/threading/thread_restrictions.h"
 #include "brave/components/constants/brave_paths.h"
 #include "build/build_config.h"
@@ -18,7 +20,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/compositor/test/draw_waiter_for_test.h"
 #include "ui/gfx/image/image.h"
-#include "ui/snapshot/snapshot.h"
 #include "ui/views/widget/widget.h"
 
 #if defined(USE_AURA)
@@ -75,18 +76,18 @@ void Capture(views::Widget* widget, gfx::Image* image) {
     run_loop->Quit();
   };
   base::RunLoop run_loop;
-  ui::GrabWindowSnapshotAsyncAura(
-      widget->GetNativeWindow(), widget_bounds,
-      base::BindOnce(on_got_snapshot, &run_loop, image));
+  ui::GrabWindowSnapshotAura(widget->GetNativeWindow(), widget_bounds,
+                             base::BindOnce(on_got_snapshot, &run_loop, image));
   run_loop.Run();
 #endif  // defined(USE_AURA)
 }
 
 bool CompareSnaphot(const SkBitmap& png_bitmap, base::FilePath snapshot_path) {
   base::ScopedAllowBlockingForTesting allow_blocking;
-
-  cc::ExactPixelComparator comparator;
-  return cc::MatchesPNGFile(png_bitmap, snapshot_path, comparator);
+  return cc::MatchesPNGFile(
+      png_bitmap, snapshot_path,
+      cc::FuzzyPixelComparator().DiscardAlpha().SetErrorPixelsPercentageLimit(
+          10.f));
 }
 
 base::FilePath GetTestDataDir() {

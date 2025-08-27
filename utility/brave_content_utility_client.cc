@@ -8,7 +8,6 @@
 #include <memory>
 #include <utility>
 
-#include "brave/components/ipfs/buildflags/buildflags.h"
 #include "brave/components/services/bat_ads/bat_ads_service_impl.h"
 #include "brave/components/services/bat_ads/public/interfaces/bat_ads.mojom.h"
 #include "brave/components/services/bat_rewards/public/interfaces/rewards_engine_factory.mojom.h"
@@ -20,15 +19,13 @@
 #include "brave/utility/importer/brave_profile_import_impl.h"
 #endif
 
-#if BUILDFLAG(ENABLE_IPFS)
-#include "brave/components/services/ipfs/ipfs_service_impl.h"
-#include "brave/components/services/ipfs/public/mojom/ipfs_service.mojom.h"
-#endif
-
 #if BUILDFLAG(ENABLE_TOR)
 #include "brave/components/services/tor/public/interfaces/tor.mojom.h"
 #include "brave/components/services/tor/tor_launcher_impl.h"
 #endif
+
+#include "brave/components/services/brave_wallet/brave_wallet_utils_service_impl.h"
+#include "brave/components/services/brave_wallet/public/mojom/brave_wallet_utils_service.mojom.h"
 
 namespace {
 
@@ -36,12 +33,6 @@ namespace {
 auto RunBraveProfileImporter(
     mojo::PendingReceiver<brave::mojom::ProfileImport> receiver) {
   return std::make_unique<BraveProfileImportImpl>(std::move(receiver));
-}
-#endif
-
-#if BUILDFLAG(ENABLE_IPFS)
-auto RunIpfsService(mojo::PendingReceiver<ipfs::mojom::IpfsService> receiver) {
-  return std::make_unique<ipfs::IpfsServiceImpl>(std::move(receiver));
 }
 #endif
 
@@ -63,6 +54,13 @@ auto RunBatAdsService(
   return std::make_unique<bat_ads::BatAdsServiceImpl>(std::move(receiver));
 }
 
+auto RunBraveWalletUtilsService(
+    mojo::PendingReceiver<brave_wallet::mojom::BraveWalletUtilsService>
+        receiver) {
+  return std::make_unique<brave_wallet::BraveWalletUtilsServiceImpl>(
+      std::move(receiver));
+}
+
 }  // namespace
 
 BraveContentUtilityClient::BraveContentUtilityClient() = default;
@@ -74,10 +72,6 @@ void BraveContentUtilityClient::RegisterMainThreadServices(
   services.Add(RunBraveProfileImporter);
 #endif
 
-#if BUILDFLAG(ENABLE_IPFS)
-  services.Add(RunIpfsService);
-#endif
-
 #if BUILDFLAG(ENABLE_TOR)
   services.Add(RunTorLauncher);
 #endif
@@ -85,6 +79,8 @@ void BraveContentUtilityClient::RegisterMainThreadServices(
   services.Add(RunRewardsEngineFactory);
 
   services.Add(RunBatAdsService);
+
+  services.Add(RunBraveWalletUtilsService);
 
   return ChromeContentUtilityClient::RegisterMainThreadServices(services);
 }

@@ -47,10 +47,6 @@ async def main():
         help='Directory to output all files for symbol server.',
     )
     parser.add_argument(
-        '--pdb-only-symbols-dir',
-        help='Directory to output only pdb files.',
-    )
-    parser.add_argument(
         '--run-source-index',
         default=False,
         action='store_true',
@@ -76,8 +72,6 @@ async def main():
 
     if args.clear:
         shutil.rmtree(args.symbols_dir, ignore_errors=True)
-        if args.pdb_only_symbols_dir:
-            shutil.rmtree(args.pdb_only_symbols_dir, ignore_errors=True)
 
     tasks = [
         run_with_semaphore(process_image(args, image_path))
@@ -126,7 +120,6 @@ def get_images_with_pdbs(args):
 
 
 async def process_image(args, image_path):
-    assert os.path.isabs(image_path)
     start_time = datetime.utcnow()
     output = f'Processing {image_path}'
 
@@ -136,7 +129,6 @@ async def process_image(args, image_path):
     )
     output += f'\n{image_fingerprint=!s}'
 
-    assert os.path.isabs(pdb_path)
     pdb_fingerprint = await get_pdb_fingerprint(pdb_path)
     output += f'\n{pdb_fingerprint=!s}'
 
@@ -153,10 +145,6 @@ async def process_image(args, image_path):
     if args.run_source_index:
         run_source_index_result = await run_source_index(args, copied_pdb_path)
         output += '\n' + run_source_index_result.strip()
-
-    if args.pdb_only_symbols_dir:
-        await copy_symbol(copied_pdb_path, pdb_fingerprint,
-                          args.pdb_only_symbols_dir)
 
     elapsed = datetime.utcnow() - start_time
     output += (f'\nCompleted. Elapsed time {elapsed.total_seconds()} seconds')
@@ -184,7 +172,6 @@ async def get_pdb_info_from_img(image_path):
 
 
 async def get_pdb_fingerprint(pdb_path):
-    assert os.path.isabs(pdb_path)
     llvm_pdbutil_path = os.path.join(ROOT_DIR, 'third_party', 'llvm-build',
                                      'Release+Asserts', 'bin',
                                      'llvm-pdbutil.exe')

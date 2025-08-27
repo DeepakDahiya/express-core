@@ -1,67 +1,81 @@
-// Copyright 2019 The Brave Authors. All rights reserved.
+// Copyright (c) 2019 The Brave Authors. All rights reserved.
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this file,
-// you can obtain one at https://mozilla.org/MPL/2.0/.
+// You can obtain one at https://mozilla.org/MPL/2.0/.
 
-// @ts-nocheck TODO(petemill): Define types and remove ts-nocheck
+import { CrLitElement } from '//resources/lit/v3_0/lit.rollup.js'
 
-import {PolymerElement} from 'chrome://resources/polymer/v3_0/polymer/polymer_bundled.min.js';
-import {CrSearchFieldMixin} from 'chrome://resources/cr_elements/cr_search_field/cr_search_field_mixin.js';
-import {getTemplate} from './br_toolbar_search_field.html.js'
+import type {CrIconButtonElement} from '../cr_icon_button/cr_icon_button.js';
+import { CrSearchFieldMixinLit } from '../cr_search_field/cr_search_field_mixin_lit.js'
 
-const BraveToolbarSearchFieldBase = CrSearchFieldMixin(PolymerElement)
+import { getHtml } from './br_toolbar_search_field.html.js'
+import { getCss } from './br_toolbar_search_field.css.js'
 
-class BraveToolbarSearchField extends BraveToolbarSearchFieldBase {
+import type { PropertyValues } from '//resources/lit/v3_0/lit.rollup.js'
+
+const BraveToolbarSearchFieldBase = CrSearchFieldMixinLit(CrLitElement)
+
+export interface BrToolbarSearchFieldElement {
+  $: {
+    icon: CrIconButtonElement
+    pageSearchToggle: HTMLInputElement
+    searchInput: HTMLInputElement
+  }
+}
+
+export class BrToolbarSearchFieldElement extends BraveToolbarSearchFieldBase {
   static get is() {
     return 'br-toolbar-search-field'
   }
 
-  static get template() {
-    return getTemplate()
+  static override get styles() {
+    return getCss()
   }
 
-  static get properties() {
+  override render() {
+    return getHtml.bind(this)()
+  }
+
+  static override get properties() {
     return {
-      narrow: {
-	type: Boolean,
-	reflectToAttribute: true,
-      },
-
-      showingSearch: {
-	type: Boolean,
-	value: false,
-	notify: true,
-	observer: 'showingSearchChanged_',
-	reflectToAttribute: true
-      },
-
-      // Prompt text to display in the search field.
-      label: String,
-
-      // Tooltip to display on the clear search button.
-      clearLabel: String,
+      narrow: { type: Boolean, reflect: true },
+      showingSearch: { type: Boolean, reflect: true, notify: true },
 
       // When true, show a loading spinner to indicate that the backend is
       // processing the search. Will only show if the search field is open.
-      spinnerActive: {type: Boolean, reflectToAttribute: true},
+      spinnerActive: { type: Boolean, reflect: true },
 
-      /** @private */
-      isSpinnerShown_: {
-	type: Boolean,
-	computed: 'computeIsSpinnerShown_(spinnerActive, showingSearch)'
-      },
-
-      /** @private */
-      searchFocused_: {type: Boolean, value: false},
+      iconOverride: { type: String },
+      searchFocused_: { type: Boolean },
+      inputAriaDescription: { type: String },
     }
   }
 
-  /** @return {!HTMLInputElement} */
-  getSearchInput() {
+  accessor narrow: boolean = false;
+  accessor showingSearch: boolean = false;
+  accessor spinnerActive: boolean = false;
+
+  accessor searchFocused_: boolean = false;
+  isBlurring_: boolean = false;
+  accessor iconOverride: string|undefined;
+  accessor inputAriaDescription: string = ''
+
+  get isSpinnerShown() {
+    return this.computeIsSpinnerShown_()
+  }
+
+  override willUpdate(changedProperties: PropertyValues<this>) {
+    super.willUpdate(changedProperties);
+
+    if (changedProperties.has('showingSearch')) {
+      this.showingSearchChanged_(this.showingSearch, changedProperties.get('showingSearch'))
+    }
+  }
+
+  override getSearchInput() {
     return this.$.searchInput
   }
 
-  /** @return {boolean} */
   isSearchFocused() {
     return this.searchFocused_
   }
@@ -71,38 +85,23 @@ class BraveToolbarSearchField extends BraveToolbarSearchFieldBase {
     this.focus_()
   }
 
-  onSearchTermInput() {
-    super.onSearchTermInput(this)
+  override onSearchTermInput() {
+    super.onSearchTermInput()
     this.showingSearch = this.hasSearchText || this.isSearchFocused()
   }
 
-  /** @private */
-  async focus_() {
+  focus_() {
     this.getSearchInput().focus()
   }
 
-  /**
-   * @param {boolean} narrow
-   * @return {number}
-   * @private
-   */
-  computeIconTabIndex_(narrow) {
+  computeIconTabIndex_(narrow: boolean) {
     return narrow ? 0 : -1
   }
 
-  /**
-   * @param {boolean} narrow
-   * @return {string}
-   * @private
-   */
-  computeIconAriaHidden_(narrow) {
+  computeIconAriaHidden_(narrow: boolean) {
     return Boolean(!narrow).toString()
   }
 
-  /**
-   * @return {boolean}
-   * @private
-   */
   computeIsSpinnerShown_() {
     // TODO(petemill): Show a spinner for brave version of toolbar
     const showSpinner = this.spinnerActive && this.showingSearch
@@ -118,55 +117,35 @@ class BraveToolbarSearchField extends BraveToolbarSearchFieldBase {
   onInputBlur_() {
     this.isBlurring_ = true
     this.searchFocused_ = false
-    if (!this.hasSearchText)
+  }
+
+  onSearchTermKeydown_(e: KeyboardEvent) {
+    if (e.key === 'Escape')
       this.showingSearch = false
   }
 
-  /** @private */
-  onSearchTermKeydown_(e) {
-    if (e.key == 'Escape')
-      this.showingSearch = false
-  }
-
-  /**
-   * @param {Event} e
-   * @private
-   */
-  showSearch_(e) {
+  showSearch_() {
     this.showingSearch = true
   }
 
-  /**
-   * @param {Event} e
-   * @private
-   */
-  clearSearch_(e) {
+  clearSearch_() {
     this.setValue('')
     this.focus_()
   }
 
-  showingSearchInputClicked_() {
-    this.showingSearch = this.$$('.page-search_toggle').checked
-  }
-
-  labelMouseDown_(e) {
+  labelMouseDown_(e: MouseEvent) {
     e.preventDefault() // prevents input blur
   }
 
-  /**
-   * @param {boolean} current
-   * @param {boolean|undefined} previous
-   * @private
-   */
-  showingSearchChanged_(current, previous) {
+  showingSearchChanged_(current: boolean, previous?: boolean) {
     const wasBlurring = this.isBlurring_
     this.isBlurring_ = false
 
     // Prevent unnecessary 'search-changed' event from firing on startup.
-    if (previous == undefined)
+    if (previous === undefined)
       return
 
-    // Prevent unneccessary re-enable when bluring from input to toggle
+    // Prevent unneccessary re-enable when blurring from input to toggle
     if (wasBlurring && !this.hasSearchText)
       return
 
@@ -180,5 +159,11 @@ class BraveToolbarSearchField extends BraveToolbarSearchFieldBase {
   }
 }
 
+declare global {
+  interface HTMLElementTagNameMap {
+    'br-toolbar-search-field': BrToolbarSearchFieldElement;
+  }
+}
+
 customElements.define(
-  BraveToolbarSearchField.is, BraveToolbarSearchField)
+  BrToolbarSearchFieldElement.is, BrToolbarSearchFieldElement)

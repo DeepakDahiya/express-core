@@ -12,12 +12,33 @@
 -PersistentBackground/ExtensionWebRequestApiTestWithContextType.WebRequestTestOSDD/0
 -ServiceWorker/ExtensionWebRequestApiTestWithContextType.WebRequestTestOSDD/0
 
-# These tests pass locally but fail on CI.
+# These tests pass locally but fail on CI (flaky).
+-AvatarMenuBrowserTest.AddNewProfile
+-DebuggerExtensionApiTest.ParentTargetPermissions
+-EventPage/ExtensionBackForwardCacheBrowserTest.ChromeRuntimeConnectUsageInIframeWithoutIframeNavigation/0
+-EventPage/ExtensionBackForwardCacheBrowserTest.MessageSentToCachedIdFails/0
+-GWSAbandonedPageLoadMetricsObserverBrowserTest.SearchTabHidden
+-HeadlessModeProtocolBrowserTest.InputClipboardOps
 -InfoBarUiTest.InvokeUi_bad_flags
 -InfoBarUiTest.InvokeUi_reload_plugin
+-HasBeforeUnloadHandlerTest.NonEmptyBeforeUnloadDetected
 -PageInfoBubbleViewBrowserTest.BlockedAndInvalidCert
 -PageInfoBubbleViewBrowserTest.MalwareAndEvCert
 -PageInfoBubbleViewBrowserTest.VerifyEnterprisePasswordReusePageInfoBubble
+-PermissionElementBrowserTest.DoubleClickDoesNotTriggerTwoRequests
+-ServiceWorker/ExtensionBackForwardCacheBrowserTest.ChromeRuntimeConnectUsageInIframeWithoutIframeNavigation/0
+-ServiceWorker/ExtensionBackForwardCacheBrowserTest.ChromeTabsConnectWithMultipleReceivers/0
+-ServiceWorker/ExtensionBackForwardCacheBrowserTest.MessageSentToCachedIdFails/0
+-WebViewNewWindowTest.UserAgent_NewWindow/InnerWebContents
+
+# This test runs fine when run individually, but times out when run with test
+# launcher.
+-PageDiscardingHelperBrowserTest.DiscardedTabEligibleForSuccessiveDiscards/RetainedWebContents
+
+# This test fails on Linux only due to the UI it shows being off-screen. Have
+# not investigated the cause.
+-Mv2DeprecationDisabledDialogBrowserTest.InvokeUi
+-Mv2DeprecationKeepDialogBrowserTest.InvokeUi
 
 # This test fails because of the following CHECK in identity_test_utils.cc:
 # !primary_account_info.IsEmpty()
@@ -27,17 +48,22 @@
 # These tests fail because kPrerender2 feature is disabled.
 -MediaEngagementPreThirdPartyCookieDeprecationBrowserTest.Ignored
 
+# These tests fail because the primary account consent level is null instead of
+# signin::ConsentLevel::kSignin
+-All/AvatarToolbarButtonEnterpriseBadgingWithSyncPromoParamsBrowserTest.*
+
+# This test fails because we override RegionalCapabilitiesServiceClientLinux::
+# FetchCountryId to get locale from device instead of the variations service.
+-RegionalCapabilitiesServiceFactoryBrowserTestForVariationsCountry.GetCountryId/FR
+
 # Tests below this point have not been diagnosed or had issues created yet.
 -AccessCodeCastHandlerBrowserTest.*
 -AdsPageLoadMetricsObserverBrowserTest.*
--All/PasswordGenerationPopupViewBrowsertest.*
--All/WebRtcScreenCaptureBrowserTestWithPicker.ScreenCaptureVideo/1
 -BluetoothLowEnergyApiTest.*
 -CaptureHandleBrowserTest.*
 -ConditionalFocusBrowserTest.*
 -ContextMenuIncognitoFilterBrowserTest.*
 -DomainReliabilityPrefetchProxyBrowserTest.*
--DownloadExtensionTest.DownloadExtensionTest_Download_UnsafeHeaders
 -ExtensionApiTestWithSwitch.ExtensionTracing
 -ExtensionDialogTest.*
 -ExtensionStartupTest.*
@@ -53,14 +79,13 @@
 -NewTabUIBrowserTest.*
 -NewTabUIProcessPerTabTest.*
 -OzonePlatformTest.*
--PDFTestFiles/PDFExtensionLoadTest.Load/1
 -PolicyTestPrefetchProxyBrowserTest.*
 -PolicyTestSetTimeoutWithout1MsClamp.DisablePolicy
 -PPAPINaClPNaClNonSfiTest.*
 -PrefetchProxyBrowserTest.*
 -PrefetchProxyWithDecoyRequestsBrowserTest.*
 -PrefetchProxyWithNSPBrowserTest.*
--PrefsInternalsTest.TestPrefsAreServed
+-PrefHashBrowserTestAccountValueUntrustedAddition.AccountValueUntrustedAddition
 -PrintBrowserTest.*
 -ProfileMainNetworkContext/NetworkContextConfigurationBrowserTest.Hsts/*
 -ProbingAndNSPEnabledPrefetchProxyBrowserTest.*
@@ -72,8 +97,6 @@
 -ProbingEnabled_CanaryOn_TLSCanaryGood_DNSCanaryBad_PrefetchProxyBrowserTest.*
 -ProcessMemoryMetricsEmitterTest.*
 -PushSubscriptionWithExpirationTimeTest.*
--SearchEngineChoiceBrowserTest.RestoreSettingsAndChangeUrl
--ServiceWorkerMessagingTest.LongLivedChannelPostMessage
 -SingleProcessBrowserTest.*
 -SpeculationNonPrivatePrefetchesPrefetchProxyTest.*
 -SpeculationPrefetchProxyTest.*

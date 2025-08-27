@@ -5,32 +5,24 @@
 ## why the filter is required and create an associated tracking issue.
 ##
 
-# These fail because we override IdentityManager::GetAccountsInCookieJar
--SupervisedUserURLFilterTest.UrlsNotRequiringGuardianApprovalAllowed
+# These tests fail because we override RegionalCapabilitiesServiceClientLinux::
+# FetchCountryId to get locale from device instead of the variations service.
+-RegionalCapabilitiesServiceClientLinuxTest.FetchCountryId
+-RegionalCapabilitiesServiceClientLinuxTest.FetchCountryIdWithDisabledUseFinchPermanentCountryForFetchCountryId
 
-# These fail because we disable DIPS via features::kDIPS
--All/DIPSDatabasePopupsTest.*
--DIPSDatabaseBounceTableGarbageCollectionTest.*
-
-# These fail because we disable prefs::kSafeBrowsingScoutReportingEnabled.
--Impl/TrialComparisonCertVerifierControllerTest.OfficialBuildTrialEnabled/1
--Impl/TrialComparisonCertVerifierControllerTest.OfficialBuildTrialEnabledTwoClients/1
--Impl/TrialComparisonCertVerifierControllerTest.OfficialBuildTrialEnabledUmaOnly/1
+# These tests pass locally but fail on CI (flaky).
+-PasswordStatusCheckServiceBaseTest.PrefInitialized
 
 # These fail because OsIntegrationTestOverride::GetShortcutPath and
 # OsIntegrationTestOverride::IsRunOnOsLoginEnabled on Linux hard-codes "chrome-"
 # into the shortcut name but our shortcut starts with "brave-".
--All/InstallAppLocallyCommandTest.BasicBehavior/OSIntegrationSubManagers_Disabled
--All/InstallAppLocallyCommandTest.BasicBehavior/OSIntegrationSubManagers_SaveStateAndExecute
--All/InstallAppLocallyCommandTest.BasicBehavior/OSIntegrationSubManagers_SaveStateToDB
--All/RunOnOsLoginSubManagerExecuteTest.*
 -All/ShortcutSubManagerExecuteTest.*
+-RunOnOsLoginSubManagerExecuteTest.*
+-ShortcutCreatorLinuxTest.ShortcutCreatedWithCorrectFile
+-ShortcutSubManagerExecuteTest.*
+-InstallAppLocallyCommandTest.BasicBehavior
 -WebAppPolicyForceUnregistrationTest.*
 
--ChromeBrowsingDataRemoverDelegateTest.*
 -ChromePaths.*
--Chromium/ChannelInfoTest.*
--ExtensionServiceTest.*
--MediaFileSystemRegistryTest.*
 -ShellIntegrationTest.*
 -WebAppShortcutLinuxTest.*

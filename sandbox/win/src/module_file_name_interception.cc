@@ -6,24 +6,26 @@
 #include "brave/sandbox/win/src/module_file_name_interception.h"
 
 #include <string.h>
+
 #include <algorithm>
+#include <optional>
 #include <string>
 #include <string_view>
 
+#include "base/compiler_specific.h"
 #include "base/strings/string_util.h"
 #include "base/win/windows_types.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 
 namespace {
 
 void ReplaceAt(char* dest, size_t dest_size, std::string_view src) {
-  ::strncpy_s(dest, dest_size, src.data(),
-              std::min(dest_size - 1, src.length()));
+  UNSAFE_TODO(::strncpy_s(dest, dest_size, src.data(),
+                          std::min(dest_size - 1, src.length())));
 }
 
 void ReplaceAt(wchar_t* dest, size_t dest_size, std::wstring_view src) {
-  ::wcsncpy_s(dest, dest_size, src.data(),
-              std::min(dest_size - 1, src.length()));
+  UNSAFE_TODO(::wcsncpy_s(dest, dest_size, src.data(),
+                          std::min(dest_size - 1, src.length())));
 }
 
 template <typename CharT>
@@ -58,13 +60,13 @@ struct TestBraveToChrome<wchar_t> {
 };
 
 template <template <class T> class FromTo, typename CharT>
-absl::optional<DWORD> PatchFilenameImpl(CharT* filename,
-                                        DWORD length,
-                                        DWORD size) {
-  if (!base::EndsWith(base::BasicStringPiece<CharT>(filename, length),
+std::optional<DWORD> PatchFilenameImpl(CharT* filename,
+                                       DWORD length,
+                                       DWORD size) {
+  if (!base::EndsWith(std::basic_string_view<CharT>(filename, length),
                       FromTo<CharT>::kBrave,
                       base::CompareCase::INSENSITIVE_ASCII)) {
-    return absl::nullopt;
+    return std::nullopt;
   }
 
   constexpr DWORD kBraveLen = FromTo<CharT>::kBrave.length();
@@ -75,12 +77,13 @@ absl::optional<DWORD> PatchFilenameImpl(CharT* filename,
   --size;  // space for null-terminator
 
   const size_t brave_pos = length - kBraveLen;
-  ReplaceAt(filename + brave_pos, size - brave_pos, FromTo<CharT>::kChrome);
+  ReplaceAt(UNSAFE_TODO(filename + brave_pos), size - brave_pos,
+            FromTo<CharT>::kChrome);
   if (size < length + kLenDiff) {
     ::SetLastError(ERROR_INSUFFICIENT_BUFFER);
   }
   length = std::min(size, length + kLenDiff);
-  filename[length] = 0;
+  UNSAFE_TODO(filename[length]) = 0;
   return length;
 }
 

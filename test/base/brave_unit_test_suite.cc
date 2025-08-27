@@ -5,7 +5,6 @@
 
 #include "brave/test/base/brave_unit_test_suite.h"
 
-#include "base/logging.h"
 #include "brave/common/resource_bundle_helper.h"
 #include "brave/components/constants/brave_paths.h"
 #include "build/build_config.h"
@@ -20,9 +19,7 @@ void BraveUnitTestSuite::Initialize() {
   // When ChromeExtensionsBrowserClient is initialized, it needs
   install_static::InitializeProductDetailsForPrimaryModule();
 #endif
+  // This will also add Brave resources bundle via chromium_src override.
   ChromeUnitTestSuite::Initialize();
 
-  brave::InitializeResourceBundle();
-
-  brave::RegisterPathProvider();
 }

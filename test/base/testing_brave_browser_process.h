@@ -23,7 +23,7 @@ class AdBlockService;
 }
 
 namespace brave_vpn {
-class BraveVPNOSConnectionAPI;
+class BraveVPNConnectionManager;
 }
 
 class TestingBraveBrowserProcess : public BraveBrowserProcess {
@@ -50,9 +50,6 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
   // BraveBrowserProcess overrides:
   void StartBraveServices() override;
   brave_shields::AdBlockService* ad_block_service() override;
-#if BUILDFLAG(ENABLE_GREASELION)
-  greaselion::GreaselionDownloadService* greaselion_download_service() override;
-#endif
   debounce::DebounceComponentInstaller* debounce_component_installer() override;
 #if BUILDFLAG(ENABLE_REQUEST_OTR)
   request_otr::RequestOTRComponentInstallerPolicy*
@@ -60,7 +57,6 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
 #endif
   brave::URLSanitizerComponentInstaller* URLSanitizerComponentInstaller()
       override;
-  brave_shields::HTTPSEverywhereService* https_everywhere_service() override;
   https_upgrade_exceptions::HttpsUpgradeExceptionsService*
   https_upgrade_exceptions_service() override;
   localhost_permission::LocalhostPermissionComponent*
@@ -71,9 +67,6 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
   tor::BraveTorClientUpdater* tor_client_updater() override;
   tor::BraveTorPluggableTransportUpdater* tor_pluggable_transport_updater()
       override;
-#endif
-#if BUILDFLAG(ENABLE_IPFS)
-  ipfs::BraveIpfsClientUpdater* ipfs_client_updater() override;
 #endif
   p3a::P3AService* p3a_service() override;
   brave::BraveReferralsService* brave_referrals_service() override;
@@ -86,11 +79,10 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
       override;
 #endif
   brave_ads::ResourceComponent* resource_component() override;
-  brave::BraveFarblingService* brave_farbling_service() override;
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
-  brave_vpn::BraveVPNOSConnectionAPI* brave_vpn_os_connection_api() override;
-  void SetBraveVPNOSConnectionAPIForTesting(
-      std::unique_ptr<brave_vpn::BraveVPNOSConnectionAPI> api);
+  brave_vpn::BraveVPNConnectionManager* brave_vpn_connection_manager() override;
+  void SetBraveVPNConnectionManagerForTesting(
+      std::unique_ptr<brave_vpn::BraveVPNConnectionManager> manager);
 #endif
   misc_metrics::ProcessMiscMetrics* process_misc_metrics() override;
 
@@ -109,8 +101,8 @@ class TestingBraveBrowserProcess : public BraveBrowserProcess {
   std::unique_ptr<brave_shields::AdBlockService> ad_block_service_;
 
 #if BUILDFLAG(ENABLE_BRAVE_VPN)
-  std::unique_ptr<brave_vpn::BraveVPNOSConnectionAPI>
-      brave_vpn_os_connection_api_;
+  std::unique_ptr<brave_vpn::BraveVPNConnectionManager>
+      brave_vpn_connection_manager_;
 #endif
 };
 
