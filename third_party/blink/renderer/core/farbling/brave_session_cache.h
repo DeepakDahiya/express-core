@@ -6,12 +6,14 @@
 #ifndef BRAVE_THIRD_PARTY_BLINK_RENDERER_CORE_FARBLING_BRAVE_SESSION_CACHE_H_
 #define BRAVE_THIRD_PARTY_BLINK_RENDERER_CORE_FARBLING_BRAVE_SESSION_CACHE_H_
 
+#include <optional>
 #include <string>
 
+#include "base/containers/span.h"
 #include "brave/third_party/blink/renderer/brave_farbling_constants.h"
 #include "brave/third_party/blink/renderer/platform/brave_audio_farbling_helper.h"
+#include "components/content_settings/core/common/content_settings_types.h"
 #include "third_party/abseil-cpp/absl/random/random.h"
-#include "third_party/abseil-cpp/absl/types/optional.h"
 #include "third_party/blink/renderer/core/core_export.h"
 #include "third_party/blink/renderer/core/execution_context/execution_context.h"
 #include "third_party/blink/renderer/core/frame/dom_window.h"
@@ -44,20 +46,23 @@ enum FarbleKey : uint64_t {
 typedef absl::randen_engine<uint64_t> FarblingPRNG;
 
 CORE_EXPORT blink::WebContentSettingsClient* GetContentSettingsClientFor(
-    ExecutionContext* context,
-    bool require_filled_content_settings_rules = false);
+    ExecutionContext* context);
 CORE_EXPORT BraveFarblingLevel
 GetBraveFarblingLevelFor(ExecutionContext* context,
+                         ContentSettingsType webcompat_settings_type,
                          BraveFarblingLevel default_value);
-CORE_EXPORT bool AllowFingerprinting(ExecutionContext* context);
+CORE_EXPORT bool AllowFingerprinting(
+    ExecutionContext* context,
+    ContentSettingsType webcompat_settings_type);
 CORE_EXPORT bool AllowFontFamily(ExecutionContext* context,
-                                 const AtomicString& family_name);
+                                 const blink::AtomicString& family_name);
 CORE_EXPORT int FarbleInteger(ExecutionContext* context,
                               brave::FarbleKey key,
                               int spoof_value,
                               int min_value,
                               int max_value);
-CORE_EXPORT bool BlockScreenFingerprinting(ExecutionContext* context);
+CORE_EXPORT bool BlockScreenFingerprinting(ExecutionContext* context,
+                                           bool early = false);
 CORE_EXPORT int FarbledPointerScreenCoordinate(const DOMWindow* view,
                                                FarbleKey key,
                                                int client_coordinate,
@@ -70,36 +75,33 @@ class CORE_EXPORT BraveSessionCache final
   static const char kSupplementName[];
 
   explicit BraveSessionCache(ExecutionContext&);
-  virtual ~BraveSessionCache() = default;
+  ~BraveSessionCache() = default;
 
   static BraveSessionCache& From(ExecutionContext&);
   static void Init();
 
-  BraveFarblingLevel GetBraveFarblingLevel() { return farbling_level_; }
-  void FarbleAudioChannel(float* dst, size_t count);
-  void PerturbPixels(const unsigned char* data, size_t size);
-  WTF::String GenerateRandomString(std::string seed, wtf_size_t length);
+  BraveFarblingLevel GetBraveFarblingLevel(
+      ContentSettingsType webcompat_settings_type);
+  void FarbleAudioChannel(base::span<float> dst);
+  void PerturbPixels(base::span<uint8_t> data);
+  WTF::String GenerateRandomString(std::string seed, blink::wtf_size_t length);
   WTF::String FarbledUserAgent(WTF::String real_user_agent);
   int FarbledInteger(FarbleKey key,
                      int spoof_value,
                      int min_random_offset,
                      int max_random_offset);
   bool AllowFontFamily(blink::WebContentSettingsClient* settings,
-                       const AtomicString& family_name);
+                       const blink::AtomicString& family_name);
   FarblingPRNG MakePseudoRandomGenerator(FarbleKey key = FarbleKey::kNone);
-  absl::optional<blink::BraveAudioFarblingHelper> GetAudioFarblingHelper() {
-    return audio_farbling_helper_;
-  }
+  std::optional<blink::BraveAudioFarblingHelper> GetAudioFarblingHelper();
 
  private:
-  bool farbling_enabled_;
-  uint64_t session_key_;
-  uint8_t domain_key_[32];
-  WTF::HashMap<FarbleKey, int> farbled_integers_;
-  BraveFarblingLevel farbling_level_;
-  absl::optional<blink::BraveAudioFarblingHelper> audio_farbling_helper_;
+  void PerturbPixelsInternal(base::span<uint8_t> data);
 
-  void PerturbPixelsInternal(const unsigned char* data, size_t size);
+  WTF::HashMap<FarbleKey, int> farbled_integers_;
+  brave_shields::mojom::ShieldsSettingsPtr default_shields_settings_;
+  std::optional<blink::BraveAudioFarblingHelper> audio_farbling_helper_;
+  WTF::HashMap<ContentSettingsType, BraveFarblingLevel> farbling_levels_;
 };
 
 }  // namespace brave

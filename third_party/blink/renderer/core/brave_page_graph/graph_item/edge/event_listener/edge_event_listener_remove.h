@@ -19,7 +19,8 @@ class EdgeEventListenerRemove final : public EdgeEventListenerAction {
   EdgeEventListenerRemove(GraphItemContext* context,
                           NodeActor* out_node,
                           NodeHTMLElement* in_node,
-                          const String& event_type,
+                          const FrameId& frame_id,
+                          const blink::String& event_type,
                           const EventListenerId listener_id,
                           NodeActor* listener_script);
   ~EdgeEventListenerRemove() override;

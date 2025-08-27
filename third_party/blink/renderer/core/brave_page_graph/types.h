@@ -13,6 +13,7 @@
 #include "brave/third_party/blink/renderer/core/brave_page_graph/blink_probe_types.h"
 #include "third_party/blink/renderer/bindings/core/v8/script_source_location_type.h"
 #include "third_party/blink/renderer/core/core_export.h"
+#include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/graphics/dom_node_id.h"
 #include "third_party/blink/renderer/platform/weborigin/kurl.h"
 #include "third_party/blink/renderer/platform/wtf/hash_functions.h"
@@ -28,8 +29,9 @@ class GraphEdge;
 class GraphNode;
 class NodeHTML;
 
-using ItemDesc = String;
-using ItemName = String;
+using FrameId = blink::DOMNodeId;
+using ItemDesc = blink::String;
+using ItemName = blink::String;
 using GraphMLId = std::string;
 
 using Binding = const char*;
@@ -40,14 +42,14 @@ using ScriptId = int;
 using ScriptPosition = int;
 using EventListenerId = int;
 using GraphItemId = uint64_t;
-using MethodName = String;
+using MethodName = blink::String;
 using RequestURL = blink::KURL;
 using InspectorId = uint64_t;
 
-using GraphItemUniquePtrList = Vector<std::unique_ptr<GraphItem>>;
-using EdgeList = Vector<const GraphEdge*>;
-using NodeList = Vector<GraphNode*>;
-using HTMLNodeList = Vector<NodeHTML*>;
+using GraphItemUniquePtrList = blink::Vector<std::unique_ptr<GraphItem>>;
+using EdgeList = blink::Vector<const GraphEdge*>;
+using NodeList = blink::Vector<GraphNode*>;
+using HTMLNodeList = blink::Vector<NodeHTML*>;
 
 struct CORE_EXPORT FingerprintingRule {
   FingerprintingRule(const std::string& primary_pattern,
@@ -71,7 +73,7 @@ struct ScriptSource {
   blink::DOMNodeId dom_node_id = blink::kInvalidDOMNodeId;
   ScriptId parent_script_id = 0;
   blink::KURL url;
-  String function_name;
+  blink::String function_name;
   blink::ScriptSourceLocationType location_type =
       blink::ScriptSourceLocationType::kUnknown;
   bool is_module = false;
@@ -81,7 +83,7 @@ struct ScriptSource {
 };
 
 struct ScriptData {
-  String code;
+  blink::String code;
   ScriptSource source;
 
   bool operator==(const ScriptData& rhs) const;
@@ -102,10 +104,12 @@ enum GraphMLAttrDef {
   kGraphMLAttrDefCallArgs,
   kGraphMLAttrDefEdgeType,
   kGraphMLAttrDefEventListenerId,
-  kGraphMLAttrDefFrameId,
+  kGraphMLAttrDefEdgeFrameId,
+  kGraphMLAttrDefNodeFrameId,
   kGraphMLAttrDefHost,
   kGraphMLAttrDefIncognito,
   kGraphMLAttrDefIsDeleted,
+  kGraphMLAttrDefIsFrameAttached,
   kGraphMLAttrDefIsStyle,
   kGraphMLAttrDefKey,
   kGraphMLAttrDefMethodName,
@@ -123,11 +127,12 @@ enum GraphMLAttrDef {
   kGraphMLAttrDefResourceType,
   kGraphMLAttrDefResponseHash,
   kGraphMLAttrDefRule,
-  kGraphMLAttrDefScriptIdForEdge,
-  kGraphMLAttrDefScriptIdForNode,
+  kGraphMLAttrDefEdgeScriptId,
+  kGraphMLAttrDefNodeScriptId,
   kGraphMLAttrDefScriptPosition,
   kGraphMLAttrDefScriptType,
   kGraphMLAttrDefSecondaryPattern,
+  kGraphMLAttrDefSecurityOrigin,
   kGraphMLAttrDefSource,
   kGraphMLAttrDefStatus,
   kGraphMLAttrDefSuccess,
@@ -158,6 +163,7 @@ CORE_EXPORT std::string GraphMLForTypeToString(const GraphMLAttrForType type);
 enum RequestStatus {
   kRequestStatusStart = 0,
   kRequestStatusComplete,
+  kRequestStatusRedirect,
   kRequestStatusError,
   kRequestStatusBlocked
 };
@@ -172,7 +178,7 @@ CORE_EXPORT std::string StorageLocationToString(const StorageLocation location);
 
 template <typename KeyArg, typename MappedArg>
 using ZeroBasedHashMap =
-    HashMap<KeyArg, MappedArg, WTF::IntWithZeroKeyHashTraits<KeyArg>>;
+    blink::HashMap<KeyArg, MappedArg, blink::IntWithZeroKeyHashTraits<KeyArg>>;
 
 }  // namespace brave_page_graph
 

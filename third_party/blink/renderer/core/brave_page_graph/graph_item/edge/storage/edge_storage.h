@@ -19,10 +19,11 @@ class EdgeStorage : public GraphEdge {
   EdgeStorage(GraphItemContext* context,
               GraphNode* out_node,
               GraphNode* in_node,
-              const String& key);
+              const FrameId& frame_id,
+              const blink::String& key);
   ~EdgeStorage() override;
 
-  const String& GetKey() const { return key_; }
+  const blink::String& GetKey() const { return key_; }
 
   ItemName GetItemDesc() const override;
 
@@ -38,7 +39,8 @@ class EdgeStorage : public GraphEdge {
   virtual bool IsEdgeStorageSet() const;
 
  private:
-  const String key_;
+  const FrameId frame_id_;
+  const blink::String key_;
 };
 
 }  // namespace brave_page_graph

@@ -5,8 +5,16 @@
 
 #include "brave/third_party/blink/renderer/brave_font_whitelist.h"
 
+#include <algorithm>
 #include <string_view>
 #include <vector>
+
+#include "base/compiler_specific.h"
+#include "base/containers/fixed_flat_set.h"
+
+#if BUILDFLAG(IS_LINUX)
+#include "base/linux_util.h"
+#endif
 
 namespace brave {
 
@@ -79,7 +87,6 @@ constexpr auto kFontFarblingSet = base::MakeFixedFlatSet<std::string_view>(
     });
 
 #if BUILDFLAG(IS_MAC)
-bool kCanRestrictFonts = true;
 // This list covers the fonts installed by default on Mac OS as of Mac OS 12.3.
 constexpr auto kFontWhitelist = base::MakeFixedFlatSet<std::string_view>(
     base::sorted_unique,
@@ -372,7 +379,6 @@ constexpr auto kFontWhitelist = base::MakeFixedFlatSet<std::string_view>(
         "zapfino",
     });
 #elif BUILDFLAG(IS_WIN)
-bool kCanRestrictFonts = true;
 // This list covers the fonts installed by default on Windows 11.
 // See <https://docs.microsoft.com/en-us/typography/fonts/windows_11_font_list>
 constexpr auto kFontWhitelist = base::MakeFixedFlatSet<std::string_view>(
@@ -693,7 +699,6 @@ constexpr auto kFontWhitelist = base::MakeFixedFlatSet<std::string_view>(
         "yu gothic ui semilight",
     });
 #elif BUILDFLAG(IS_ANDROID)
-bool kCanRestrictFonts = true;
 // This list covers the fonts and font aliases listed in data/fonts/fonts.xml of
 // the Android Open Source Project. To reduce memory and maintenance, most
 // region-specific Noto fonts are handled by wildcards outside this list.
@@ -1793,137 +1798,200 @@ constexpr auto kFontWhitelistFedora32 =
 
 constexpr auto kFontWhitelist = kEmptyFontSet;
 #else
-bool kCanRestrictFonts = false;
-base::flat_set<std::string_view> kFontWhitelist =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
+constexpr auto kFontWhitelist = kEmptyFontSet;
 #endif
 
 #if BUILDFLAG(IS_WIN)
-base::flat_set<std::string_view> kFontWhitelistAR =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "aldhabi", "andalus", "arabic typesetting", "microsoft uighur",
-        "microsoft uighur bold", "sakkal majalla", "sakkal majalla bold",
-        "simplified arabic", "simplified arabic bold",
-        "simplified arabic fixed", "traditional arabic",
-        "traditional arabic bold", "urdu typesetting",
-        "urdu typesetting bold"});
-base::flat_set<std::string_view> kFontWhitelistAS =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "shonar bangla", "shonar bangla bold", "vrinda", "vrinda bold"});
-base::flat_set<std::string_view> kFontWhitelistIU =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"euphemia"});
-base::flat_set<std::string_view> kFontWhitelistHI =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "aparajita", "aparajita italic", "aparajita bold",
-        "aparajita bold italic", "kokila", "kokila italic", "kokila bold",
-        "kokila bold italic", "mangal", "mangal bold", "sanskrit text",
-        "utsaah", "utsaah italic", "utsaah bold", "utsaah bold italic"});
-base::flat_set<std::string_view> kFontWhitelistAM =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{"nyala"});
-base::flat_set<std::string_view> kFontWhitelistGU =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"shruti", "shruti bold"});
-base::flat_set<std::string_view> kFontWhitelistPA =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"raavi", "raavi bold"});
-base::flat_set<std::string_view> kFontWhitelistZH =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "dengxian light", "dengxian", "dengxian bold", "fangsong", "kaiti",
-        "simhei", "dfkai-sb", "mingliu", "mingliu_hkscs", "pmingliu"});
-base::flat_set<std::string_view> kFontWhitelistHE =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "aharoni bold", "david", "david bold", "frankruehl", "gisha",
-        "gisha bold", "levenim mt", "levenim mt bold", "miriam", "miriam fixed",
-        "narkisim", "rod"});
-base::flat_set<std::string_view> kFontWhitelistJA =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"biz udgothic",
-                                      "biz udgothic bold",
-                                      "biz udpgothic",
-                                      "biz udpgothic bold",
-                                      "biz udmincho medium",
-                                      "biz udpmincho medium",
-                                      "meiryo",
-                                      "meiryo italic",
-                                      "meiryo bold",
-                                      "meiryo bold italic",
-                                      "meiryo ui",
-                                      "meiryo ui italic",
-                                      "meiryo ui bold",
-                                      "meiryo ui bold italic",
-                                      "ms mincho",
-                                      "ms pmincho",
-                                      "ud digi kyokasho",
-                                      "ud digi kyokasho n-b",
-                                      "ud digi kyokasho nk-b",
-                                      "ud digi kyokasho nk-r",
-                                      "ud digi kyokasho np-b",
-                                      "ud digi kyokasho np-r",
-                                      "ud digi kyokasho n-r",
-                                      "yu mincho light",
-                                      "yu mincho regular",
-                                      "yu mincho demibold"});
-base::flat_set<std::string_view> kFontWhitelistKN =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"tunga", "tunga bold"});
-base::flat_set<std::string_view> kFontWhitelistKM =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "daunpenh", "khmer ui", "khmer ui bold", "moolboran"});
-base::flat_set<std::string_view> kFontWhitelistKO =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{
-        "batang", "batangche", "dotum", "dotumche", "gulim", "gulimche",
-        "gungsuh", "gungsuhche"});
-base::flat_set<std::string_view> kFontWhitelistLO =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"dokchampa", "lao ui", "lao ui bold"});
-base::flat_set<std::string_view> kFontWhitelistML =
-    base::MakeFlatSet<std::string_view>(
-        std::vector<std::string_view>{"kartika", "kartika bold"});
-#else
-base::flat_set<std::string_view> kFontWhitelistAR =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistAS =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistIU =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistHI =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistAM =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistGU =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistPA =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistZH =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistHE =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistJA =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistKN =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistKM =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistKO =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistLO =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
-base::flat_set<std::string_view> kFontWhitelistML =
-    base::MakeFlatSet<std::string_view>(std::vector<std::string_view>{});
+constexpr auto kFontWhitelistAR = base::MakeFixedFlatSet<std::string_view>({
+    "aldhabi",
+    "andalus",
+    "arabic typesetting",
+    "microsoft uighur",
+    "microsoft uighur bold",
+    "sakkal majalla",
+    "sakkal majalla bold",
+    "simplified arabic",
+    "simplified arabic bold",
+    "simplified arabic fixed",
+    "traditional arabic",
+    "traditional arabic bold",
+    "urdu typesetting",
+    "urdu typesetting bold",
+});
+constexpr auto kFontWhitelistAS = base::MakeFixedFlatSet<std::string_view>({
+    "shonar bangla",
+    "shonar bangla bold",
+    "vrinda",
+    "vrinda bold",
+});
+constexpr auto kFontWhitelistIU = base::MakeFixedFlatSet<std::string_view>({
+    "euphemia",
+});
+constexpr auto kFontWhitelistHI = base::MakeFixedFlatSet<std::string_view>({
+    "aparajita",
+    "aparajita italic",
+    "aparajita bold",
+    "aparajita bold italic",
+    "kokila",
+    "kokila italic",
+    "kokila bold",
+    "kokila bold italic",
+    "mangal",
+    "mangal bold",
+    "sanskrit text",
+    "utsaah",
+    "utsaah italic",
+    "utsaah bold",
+    "utsaah bold italic",
+});
+constexpr auto kFontWhitelistAM = base::MakeFixedFlatSet<std::string_view>({
+    "nyala",
+});
+constexpr auto kFontWhitelistGU = base::MakeFixedFlatSet<std::string_view>({
+    "shruti",
+    "shruti bold",
+});
+constexpr auto kFontWhitelistPA = base::MakeFixedFlatSet<std::string_view>({
+    "raavi",
+    "raavi bold",
+});
+constexpr auto kFontWhitelistZH = base::MakeFixedFlatSet<std::string_view>({
+    "dengxian light",
+    "dengxian",
+    "dengxian bold",
+    "fangsong",
+    "kaiti",
+    "simhei",
+    "dfkai-sb",
+    "mingliu",
+    "mingliu_hkscs",
+    "pmingliu",
+});
+constexpr auto kFontWhitelistHE = base::MakeFixedFlatSet<std::string_view>({
+    "aharoni bold",
+    "david",
+    "david bold",
+    "frankruehl",
+    "gisha",
+    "gisha bold",
+    "levenim mt",
+    "levenim mt bold",
+    "miriam",
+    "miriam fixed",
+    "narkisim",
+    "rod",
+});
+constexpr auto kFontWhitelistJA = base::MakeFixedFlatSet<std::string_view>({
+    "biz udgothic",
+    "biz udgothic bold",
+    "biz udpgothic",
+    "biz udpgothic bold",
+    "biz udmincho medium",
+    "biz udpmincho medium",
+    "meiryo",
+    "meiryo italic",
+    "meiryo bold",
+    "meiryo bold italic",
+    "meiryo ui",
+    "meiryo ui italic",
+    "meiryo ui bold",
+    "meiryo ui bold italic",
+    "ms mincho",
+    "ms pmincho",
+    "ud digi kyokasho",
+    "ud digi kyokasho n-b",
+    "ud digi kyokasho nk-b",
+    "ud digi kyokasho nk-r",
+    "ud digi kyokasho np-b",
+    "ud digi kyokasho np-r",
+    "ud digi kyokasho n-r",
+    "yu mincho light",
+    "yu mincho regular",
+    "yu mincho demibold",
+});
+constexpr auto kFontWhitelistKN = base::MakeFixedFlatSet<std::string_view>({
+    "tunga",
+    "tunga bold",
+});
+constexpr auto kFontWhitelistKM = base::MakeFixedFlatSet<std::string_view>({
+    "daunpenh",
+    "khmer ui",
+    "khmer ui bold",
+    "moolboran",
+});
+constexpr auto kFontWhitelistKO = base::MakeFixedFlatSet<std::string_view>({
+    "batang",
+    "batangche",
+    "dotum",
+    "dotumche",
+    "gulim",
+    "gulimche",
+    "gungsuh",
+    "gungsuhche",
+});
+constexpr auto kFontWhitelistLO = base::MakeFixedFlatSet<std::string_view>({
+    "dokchampa",
+    "lao ui",
+    "lao ui bold",
+});
+constexpr auto kFontWhitelistML = base::MakeFixedFlatSet<std::string_view>({
+    "kartika",
+    "kartika bold",
+});
+#elif !BUILDFLAG(IS_LINUX)
+constexpr auto kFontWhitelistAR = kEmptyFontSet;
+constexpr auto kFontWhitelistAS = kEmptyFontSet;
+constexpr auto kFontWhitelistIU = kEmptyFontSet;
+constexpr auto kFontWhitelistHI = kEmptyFontSet;
+constexpr auto kFontWhitelistAM = kEmptyFontSet;
+constexpr auto kFontWhitelistGU = kEmptyFontSet;
+constexpr auto kFontWhitelistPA = kEmptyFontSet;
+constexpr auto kFontWhitelistZH = kEmptyFontSet;
+constexpr auto kFontWhitelistHE = kEmptyFontSet;
+constexpr auto kFontWhitelistJA = kEmptyFontSet;
+constexpr auto kFontWhitelistKN = kEmptyFontSet;
+constexpr auto kFontWhitelistKM = kEmptyFontSet;
+constexpr auto kFontWhitelistKO = kEmptyFontSet;
+constexpr auto kFontWhitelistLO = kEmptyFontSet;
+constexpr auto kFontWhitelistML = kEmptyFontSet;
 #endif
 }  // namespace
 
-bool AllowFontByFamilyName(const AtomicString& family_name,
+base::span<const std::string_view> GetMainFontWhitelist() {
+#if BUILDFLAG(IS_LINUX)
+  const auto distro = GetLinuxDistro();
+  if (distro == LinuxDistro::kUbuntu2204) {
+    return kFontWhitelistUbuntu2204;
+  } else if (distro == LinuxDistro::kUbuntu2004) {
+    return kFontWhitelistUbuntu2004;
+  } else if (distro == LinuxDistro::kFedora32) {
+    return kFontWhitelistFedora32;
+  } else {
+    return kFontWhitelist;
+  }
+#else
+  return kFontWhitelist;
+#endif
+}
+
+bool AllowFontByFamilyName(const blink::AtomicString& family_name,
                            WTF::String default_language) {
-  if (!kCanRestrictFonts)
+  auto fontWhitelist = GetMainFontWhitelist();
+  if (g_simulate_empty_font_whitelist_for_testing) [[unlikely]] {
+    return false;
+  }
+  if (fontWhitelist.empty()) {
     return true;
+  }
   std::string lower_ascii_name = family_name.LowerASCII().Ascii();
-  if (kFontWhitelist.contains(lower_ascii_name))
+  if (std::ranges::binary_search(fontWhitelist, lower_ascii_name)) {
     return true;
-  if (GetAdditionalFontWhitelistByLocale(default_language)
-          .contains(lower_ascii_name))
+  }
+  if (std::ranges::binary_search(
+          GetAdditionalFontWhitelistByLocale(default_language),
+          lower_ascii_name)) {
     return true;
+  }
 #if BUILDFLAG(IS_ANDROID)
   // There are literally hundreds of region-specific Noto fonts.
   // To reduce memory and maintenance, we allow them by wildcard.
@@ -1934,8 +2002,25 @@ bool AllowFontByFamilyName(const AtomicString& family_name,
   return false;
 }
 
-const base::flat_set<std::string_view>& GetAdditionalFontWhitelistByLocale(
+bool IsFontAllowedForFarbling(const blink::AtomicString& family_name) {
+  std::string lower_ascii_name = family_name.LowerASCII().Ascii();
+  return kFontFarblingSet.contains(lower_ascii_name);
+}
+
+base::span<const std::string_view> GetAdditionalFontWhitelistByLocale(
     WTF::String locale_language) {
+#if BUILDFLAG(IS_LINUX)
+  if (locale_language != "en" && locale_language != "la") {
+    const auto distro = GetLinuxDistro();
+    if (distro == LinuxDistro::kUbuntu2204) {
+      return kFontWhitelistUbuntu2204Languages;
+    } else if (distro == LinuxDistro::kUbuntu2004) {
+      return kFontWhitelistUbuntu2004Languages;
+    } else if (distro == LinuxDistro::kFedora32) {
+      return kFontWhitelistFedora32;
+    }
+  }
+#else
   if (locale_language == "ar" || locale_language == "fa" ||
       locale_language == "ur")
     return kFontWhitelistAR;
@@ -1967,22 +2052,16 @@ const base::flat_set<std::string_view>& GetAdditionalFontWhitelistByLocale(
     return kFontWhitelistLO;
   if (locale_language == "ml")
     return kFontWhitelistML;
+#endif
   return kEmptyFontSet;
 }
 
-void set_font_whitelist_for_testing(
-    bool can_restrict_fonts,
-    const base::flat_set<std::string_view>& font_whitelist) {
-  kCanRestrictFonts = can_restrict_fonts;
-  kFontWhitelist = font_whitelist;
+size_t GetFontWhitelistSizeForTesting() {
+  return GetMainFontWhitelist().size();
 }
 
-bool get_can_restrict_fonts_for_testing() {
-  return kCanRestrictFonts;
-}
-
-const base::flat_set<std::string_view>& get_font_whitelist_for_testing() {
-  return kFontWhitelist;
+void SetSimulateEmptyFontWhitelistForTesting(bool enable) {
+  g_simulate_empty_font_whitelist_for_testing = enable;
 }
 
 }  // namespace brave

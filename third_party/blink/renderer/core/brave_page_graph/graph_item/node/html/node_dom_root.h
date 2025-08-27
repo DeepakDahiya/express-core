@@ -16,10 +16,16 @@ class NodeDOMRoot final : public NodeHTMLElement {
  public:
   NodeDOMRoot(GraphItemContext* context,
               const blink::DOMNodeId dom_node_id,
-              const String& tag_name);
+              const blink::String& tag_name,
+              bool is_attached);
 
-  void SetURL(const String& url) { url_ = url; }
-  const String& GetURL() const { return url_; }
+  void SetURL(const blink::String& url) { url_ = url; }
+  const blink::String& GetURL() const { return url_; }
+
+  void SetSecurityOrigin(const blink::String& security_origin) {
+    security_origin_ = security_origin;
+  }
+  const blink::String& GetSecurityOrigin() const { return security_origin_; }
 
   ItemName GetItemName() const override;
   ItemDesc GetItemDesc() const override;
@@ -30,7 +36,9 @@ class NodeDOMRoot final : public NodeHTMLElement {
   bool IsNodeDOMRoot() const override;
 
  private:
-  String url_;
+  blink::String url_;
+  blink::String security_origin_;
+  const bool is_attached_;
 };
 
 }  // namespace brave_page_graph

@@ -5,6 +5,7 @@
 
 #include "brave/third_party/blink/renderer/core/resource_pool_limiter/resource_pool_limiter.h"
 
+#include "base/check.h"
 #include "base/notreached.h"
 #include "third_party/blink/renderer/core/execution_context/security_context.h"
 #include "third_party/blink/renderer/core/frame/local_dom_window.h"
@@ -54,7 +55,6 @@ int GetResourceLimit(ResourcePoolLimiter::ResourceType resource_type) {
       return 250;
   }
   NOTREACHED();
-  return 0;
 }
 
 }  // namespace

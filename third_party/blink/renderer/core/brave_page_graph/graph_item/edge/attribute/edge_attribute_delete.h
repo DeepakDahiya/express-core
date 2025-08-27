@@ -20,7 +20,8 @@ class EdgeAttributeDelete final : public EdgeAttribute {
   EdgeAttributeDelete(GraphItemContext* context,
                       NodeActor* out_node,
                       NodeHTMLElement* in_node,
-                      const String& name,
+                      const FrameId& frame_id,
+                      const blink::String& name,
                       const bool is_style = false);
   ~EdgeAttributeDelete() override;
 

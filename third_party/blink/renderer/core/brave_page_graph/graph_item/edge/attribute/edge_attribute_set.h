@@ -20,12 +20,13 @@ class EdgeAttributeSet final : public EdgeAttribute {
   EdgeAttributeSet(GraphItemContext* context,
                    NodeActor* out_node,
                    NodeHTMLElement* in_node,
-                   const String& name,
-                   const String& value,
+                   const FrameId& frame_id,
+                   const blink::String& name,
+                   const blink::String& value,
                    const bool is_style = false);
   ~EdgeAttributeSet() override;
 
-  const String& GetValue() const { return value_; }
+  const blink::String& GetValue() const { return value_; }
 
   ItemName GetItemName() const override;
   ItemDesc GetItemDesc() const override;
@@ -36,7 +37,7 @@ class EdgeAttributeSet final : public EdgeAttribute {
   bool IsEdgeAttributeSet() const override;
 
  private:
-  const String value_;
+  const blink::String value_;
 };
 
 }  // namespace brave_page_graph

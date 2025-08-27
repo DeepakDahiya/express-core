@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "base/strings/string_number_conversions.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
 #include "third_party/blink/renderer/platform/loader/fetch/resource.h"
 
@@ -123,6 +124,8 @@ std::string RequestStatusToString(const RequestStatus status) {
       return "started";
     case kRequestStatusComplete:
       return "complete";
+    case kRequestStatusRedirect:
+      return "redirect";
     case kRequestStatusError:
       return "error";
     case kRequestStatusBlocked:

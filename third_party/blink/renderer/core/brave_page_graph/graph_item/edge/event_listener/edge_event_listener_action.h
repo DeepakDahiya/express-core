@@ -20,13 +20,14 @@ class EdgeEventListenerAction : public GraphEdge {
   EdgeEventListenerAction(GraphItemContext* context,
                           NodeActor* out_node,
                           NodeHTMLElement* in_node,
-                          const String& event_type,
+                          const FrameId& frame_id,
+                          const blink::String& event_type,
                           const EventListenerId listener_id,
                           NodeActor* listener_script);
 
   ~EdgeEventListenerAction() override;
 
-  const String& GetEventType() const { return event_type_; }
+  const blink::String& GetEventType() const { return event_type_; }
   EventListenerId GetListenerId() const { return listener_id_; }
   NodeActor* GetListenerNode() const { return listener_script_; }
   ScriptId GetListenerScriptId() const;
@@ -42,7 +43,8 @@ class EdgeEventListenerAction : public GraphEdge {
   virtual bool IsEdgeEventListenerRemove() const;
 
  private:
-  const String event_type_;
+  const FrameId frame_id_;
+  const blink::String event_type_;
   const EventListenerId listener_id_;
   NodeActor* listener_script_;
 };

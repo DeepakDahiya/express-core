@@ -8,9 +8,10 @@
 #include <algorithm>
 #include <sstream>
 
+#include "base/check_op.h"
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/attribute/edge_attribute_delete.h"
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/attribute/edge_attribute_set.h"
-#include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/edge_structure.h"
+#include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/edge_document.h"
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/event_listener/edge_event_listener.h"
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/event_listener/edge_event_listener_add.h"
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/edge/event_listener/edge_event_listener_remove.h"
@@ -23,7 +24,7 @@
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graph_item/node/actor/node_actor.h"
 #include "brave/third_party/blink/renderer/core/brave_page_graph/graphml.h"
 #include "third_party/blink/renderer/core/dom/dom_node_ids.h"
-#include "third_party/blink/renderer/platform/wtf/text/text_stream.h"
+#include "third_party/blink/renderer/platform/wtf/text/string_builder_stream.h"
 
 using ::blink::DOMNodeId;
 using ::blink::DynamicTo;
@@ -32,7 +33,7 @@ namespace brave_page_graph {
 
 NodeHTMLElement::NodeHTMLElement(GraphItemContext* context,
                                  const DOMNodeId dom_node_id,
-                                 const String& tag_name)
+                                 const blink::String& tag_name)
     : NodeHTML(context, dom_node_id), tag_name_(tag_name) {}
 
 NodeHTMLElement::~NodeHTMLElement() = default;
@@ -42,7 +43,7 @@ ItemName NodeHTMLElement::GetItemName() const {
 }
 
 ItemDesc NodeHTMLElement::GetItemDesc() const {
-  WTF::TextStream ts;
+  blink::StringBuilder ts;
   ts << NodeHTML::GetItemDesc();
 
   ts << " [" << tag_name_;
@@ -56,7 +57,7 @@ ItemDesc NodeHTMLElement::GetItemDesc() const {
   }
   ts << "]";
 
-  return ts.Release();
+  return ts.ReleaseString();
 }
 
 void NodeHTMLElement::AddGraphMLTag(xmlDocPtr doc,
@@ -64,16 +65,16 @@ void NodeHTMLElement::AddGraphMLTag(xmlDocPtr doc,
   NodeHTML::AddGraphMLTag(doc, parent_node);
 
   for (NodeHTML* child_node : child_nodes_) {
-    EdgeStructure html_edge(GetContext(), const_cast<NodeHTMLElement*>(this),
-                            child_node);
-    html_edge.AddGraphMLTag(doc, parent_node);
+    EdgeDocument document_edge(GetContext(), const_cast<NodeHTMLElement*>(this),
+                               child_node);
+    document_edge.AddGraphMLTag(doc, parent_node);
   }
 
   // For each event listener, draw an edge from the listener script to the DOM
   // node to which it's attached.
   for (auto& event_listener : event_listeners_) {
     const EventListenerId listener_id = event_listener.key;
-    const String& event_type = event_listener.value->GetEventType();
+    const blink::String& event_type = event_listener.value->GetEventType();
     NodeActor* listener_node = event_listener.value->GetListenerNode();
 
     EdgeEventListener event_listener_edge(
@@ -95,7 +96,6 @@ void NodeHTMLElement::PlaceChildNodeAfterSiblingNode(NodeHTML* child,
   // If this node has no current children, then this is easy, just add
   // the provided child as the only child.
   if (child_nodes_.size() == 0) {
-    CHECK(sibling == nullptr);
     child_nodes_.push_back(child);
     return;
   }
@@ -109,13 +109,13 @@ void NodeHTMLElement::PlaceChildNodeAfterSiblingNode(NodeHTML* child,
 
   // Otherwise, figure out where the sibling is in the child node set.
   const auto sib_pos = child_nodes_.Find(sibling);
-  CHECK_NE(sib_pos, WTF::kNotFound);
+  CHECK_NE(sib_pos, blink::kNotFound);
   child_nodes_.insert(sib_pos + 1, child);
 }
 
 void NodeHTMLElement::RemoveChildNode(NodeHTML* child_node) {
   const auto child_pos = child_nodes_.Find(child_node);
-  CHECK_NE(child_pos, WTF::kNotFound);
+  CHECK_NE(child_pos, blink::kNotFound);
   child_nodes_.EraseAt(child_pos);
 }
 
@@ -135,8 +135,7 @@ void NodeHTMLElement::AddInEdge(const GraphEdge* in_edge) {
   } else if (const EdgeEventListenerRemove* remove_event_listener_in_edge =
                  DynamicTo<EdgeEventListenerRemove>(in_edge)) {
     event_listeners_.erase(remove_event_listener_in_edge->GetListenerId());
-  } else if (const EdgeNodeRemove* remove_node_in_edge =
-                 DynamicTo<EdgeNodeRemove>(in_edge)) {
+  } else if (DynamicTo<EdgeNodeRemove>(in_edge)) {
     // Special case for when something (script) is removing an HTML element
     // from the DOM.  Update the parallel HTML context by removing the pointer
     // to the parent element.

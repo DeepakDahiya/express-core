@@ -2,78 +2,81 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# @generated from third_party/rust/chromium_crates_io/BUILD.gn.hbs by
+# tools/crates/gnrt.
+# Do not edit!
+
 import("//build/rust/cargo_crate.gni")
 
 cargo_crate("lib") {
   crate_name = "tracing"
   epoch = "0.1"
   crate_type = "rlib"
-  crate_root = "crate/src/lib.rs"
+  crate_root = "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/lib.rs"
   sources = [
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/baseline.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/dispatch_get_clone.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/dispatch_get_ref.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/empty_span.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/enter_span.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/event.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/shared.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/span_fields.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/span_no_fields.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/benches/span_repeated.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/dispatcher.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/field.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/instrument.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/level_filters.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/lib.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/macros.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/span.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/stdlib.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/src/subscriber.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/enabled.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/event.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/filter_caching_is_lexically_scoped.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/filters_are_not_reevaluated_for_the_same_span.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/filters_are_reevaluated_for_different_call_sites.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/filters_dont_leak.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/future_send.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/macro_imports.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/macros.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/macros_incompatible_concat.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/macros_redefined_core.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/max_level_hint.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/multiple_max_level_hints.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/no_subscriber.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/register_callsite_deadlock.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/scoped_clobbers_default.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/span.rs",
-    "//brave/third_party/rust/tracing/v0_1/crate/tests/subscriber.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/dispatcher.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/field.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/instrument.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/level_filters.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/lib.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/macros.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/span.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/stdlib.rs",
+    "//brave/third_party/rust/chromium_crates_io/vendor/tracing-v0_1/src/subscriber.rs",
   ]
-  inputs = [
-    "//brave/third_party/rust/tracing/v0_1/crate/CHANGELOG.md",
-    "//brave/third_party/rust/tracing/v0_1/crate/README.md",
-  ]
+  inputs = []
 
-  # Unit tests skipped. Generate with --with-tests to include them.
   build_native_rust_unit_tests = false
   edition = "2018"
-  cargo_pkg_version = "0.1.37"
   cargo_pkg_authors =
       "Eliza Weisman <eliza@buoyant.io>, Tokio Contributors <team@tokio.rs>"
   cargo_pkg_name = "tracing"
   cargo_pkg_description = "Application-level tracing for Rust."
-  library_configs -= [ "//build/config/compiler:chromium_code" ]
-  library_configs += [ "//build/config/compiler:no_chromium_code" ]
-  executable_configs -= [ "//build/config/compiler:chromium_code" ]
-  executable_configs += [ "//build/config/compiler:no_chromium_code" ]
+  cargo_pkg_repository = "https://github.com/tokio-rs/tracing"
+  cargo_pkg_version = "0.1.41"
+
   deps = [
     "//brave/third_party/rust/pin_project_lite/v0_2:lib",
     "//brave/third_party/rust/tracing_attributes/v0_1:lib",
     "//brave/third_party/rust/tracing_core/v0_1:lib",
-    "//third_party/rust/cfg_if/v1:lib",
   ]
   features = [
     "attributes",
+    "default",
+    "release_max_level_debug",
     "std",
     "tracing-attributes",
   ]
+  rustenv = []
+  rustflags = []
+
+  #####################################################################
+  # Tweaking which GN `config`s apply to this target.
+
+  # Config changes that apply to all `//third_party/rust` crates.
+  _configs_to_remove = [
+    # We don't need code coverage data for any `chromium_crates_io` crates.
+    "//build/config/coverage:default_coverage",
+
+    # This is third-party code, so remove `chromium_code` config.  We are not
+    # at the same time adding `//build/config/compiler:no_chromium_code`,
+    # because 1) we don't want to pull how warnings are handled by that config
+    # and 2) that config doesn't have any non-warnings-related stuff.
+    "//build/config/compiler:chromium_code",
+  ]
+  _configs_to_add = []
+
+  # Changing (if needed) which configs apply to this specific crate (based on
+  # `extra_kv.configs_to_remove` and `extra_kv.configs_to_add` from
+  # `gnrt_config.toml`).
+  _configs_to_remove += []
+  _configs_to_add += []
+
+  # Applying config changes.
+  library_configs -= _configs_to_remove
+  library_configs += _configs_to_add
+  executable_configs -= _configs_to_remove
+  executable_configs += _configs_to_add
+  proc_macro_configs -= _configs_to_remove
+  proc_macro_configs += _configs_to_add
 }

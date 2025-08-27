@@ -20,11 +20,12 @@ class EdgeAttribute : public GraphEdge {
   EdgeAttribute(GraphItemContext* context,
                 NodeActor* out_node,
                 NodeHTMLElement* in_node,
-                const String& name,
+                const FrameId& frame_id,
+                const blink::String& name,
                 const bool is_style = false);
   ~EdgeAttribute() override;
 
-  const String& GetName() const { return name_; }
+  const blink::String& GetName() const { return name_; }
   bool IsStyle() const { return is_style_; }
 
   ItemDesc GetItemDesc() const override;
@@ -38,7 +39,8 @@ class EdgeAttribute : public GraphEdge {
   virtual bool IsEdgeAttributeSet() const;
 
  private:
-  const String name_;
+  const FrameId frame_id_;
+  const blink::String name_;
   const bool is_style_;
 };
 
