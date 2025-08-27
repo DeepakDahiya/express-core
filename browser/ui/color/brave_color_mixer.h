@@ -13,10 +13,6 @@ namespace ui {
 class ColorProvider;
 }  // namespace ui
 
-// Exposed for testing.
-SkColor GetLocationBarBackground(bool dark, bool priv, bool hover);
-SkColor GetOmniboxResultBackground(int id, bool dark, bool priv);
-
 // Handling normal profile's dark or light theme.
 void AddBraveThemeColorMixer(ui::ColorProvider* provider,
                              const ui::ColorProviderKey& key);
@@ -26,11 +22,10 @@ void AddPrivateThemeColorMixer(ui::ColorProvider* provider,
                                const ui::ColorProviderKey& key);
 void AddTorThemeColorMixer(ui::ColorProvider* provider,
                            const ui::ColorProviderKey& key);
-void AddBraveOmniboxLightThemeColorMixer(ui::ColorProvider* provider,
-                                         const ui::ColorProviderKey& key);
-void AddBraveOmniboxDarkThemeColorMixer(ui::ColorProvider* provider,
-                                        const ui::ColorProviderKey& key);
+void AddBraveOmniboxColorMixer(ui::ColorProvider* provider,
+                               const ui::ColorProviderKey& key);
 void AddBraveOmniboxPrivateThemeColorMixer(ui::ColorProvider* provider,
                                            const ui::ColorProviderKey& key);
-
+void AddBravifiedTabStripColorMixer(ui::ColorProvider* provider,
+                                    const ui::ColorProviderKey& key);
 #endif  // BRAVE_BROWSER_UI_COLOR_BRAVE_COLOR_MIXER_H_

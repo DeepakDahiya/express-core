@@ -9,6 +9,8 @@
 #include <string>
 #include <utility>
 
+#include "base/check.h"
+#include "chrome/browser/ui/browser_window/public/browser_window_features.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 
 namespace brave_rewards {
@@ -21,9 +23,7 @@ class PanelObserver : public RewardsPanelCoordinator::Observer {
   explicit PanelObserver(F f) : f_(std::move(f)) {}
   ~PanelObserver() override = default;
 
-  void OnRewardsPanelRequested(const mojom::RewardsPanelArgs& args) override {
-    f_(args);
-  }
+  void OnRewardsPanelRequested() override { f_(); }
 
  private:
   F f_;
@@ -41,13 +41,10 @@ class RewardsPanelCoordinatorTest : public BrowserWithTestWindowTest {
   void SetUp() override {
     BrowserWithTestWindowTest::SetUp();
 
-    RewardsPanelCoordinator::CreateForBrowser(browser());
-    coordinator_ = RewardsPanelCoordinator::FromBrowser(browser());
+    coordinator_ = browser()->GetFeatures().rewards_panel_coordinator();
     DCHECK(coordinator_);
 
-    observer_ = MakePanelObserver([this](const mojom::RewardsPanelArgs& args) {
-      last_args_ = args.Clone();
-    });
+    observer_ = MakePanelObserver([this]() { called_ = true; });
     coordinator_->AddObserver(observer_.get());
   }
 
@@ -60,41 +57,19 @@ class RewardsPanelCoordinatorTest : public BrowserWithTestWindowTest {
   }
 
  protected:
-  const mojom::RewardsPanelArgs& last_args() const {
-    CHECK(last_args_);
-    return *last_args_;
-  }
+  bool called() const { return called_; }
 
   RewardsPanelCoordinator& coordinator() { return *coordinator_; }
 
  private:
-  mojom::RewardsPanelArgsPtr last_args_;
+  bool called_ = false;
   std::unique_ptr<RewardsPanelCoordinator::Observer> observer_;
   raw_ptr<RewardsPanelCoordinator> coordinator_ = nullptr;
 };
 
 TEST_F(RewardsPanelCoordinatorTest, OpenRewardsPanel) {
   EXPECT_TRUE(coordinator().OpenRewardsPanel());
-  EXPECT_EQ(last_args().view, mojom::RewardsPanelView::kDefault);
-  EXPECT_EQ(last_args().data, "");
-}
-
-TEST_F(RewardsPanelCoordinatorTest, ShowRewardsSetup) {
-  EXPECT_TRUE(coordinator().ShowRewardsSetup());
-  EXPECT_EQ(last_args().view, mojom::RewardsPanelView::kRewardsSetup);
-  EXPECT_EQ(last_args().data, "");
-}
-
-TEST_F(RewardsPanelCoordinatorTest, ShowGrantCaptcha) {
-  EXPECT_TRUE(coordinator().ShowGrantCaptcha("abc123"));
-  EXPECT_EQ(last_args().view, mojom::RewardsPanelView::kGrantCaptcha);
-  EXPECT_EQ(last_args().data, "abc123");
-}
-
-TEST_F(RewardsPanelCoordinatorTest, ShowAdaptiveCaptcha) {
-  EXPECT_TRUE(coordinator().ShowAdaptiveCaptcha());
-  EXPECT_EQ(last_args().view, mojom::RewardsPanelView::kAdaptiveCaptcha);
-  EXPECT_EQ(last_args().data, "");
+  EXPECT_TRUE(called());
 }
 
 }  // namespace brave_rewards
