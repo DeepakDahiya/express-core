@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/profiles/profile_avatar_icon_util.cc b/chrome/browser/profiles/profile_avatar_icon_util.cc
-index 356b86e5517e965202db44bc6535f231e2b58085..4229799234aefcf38a82974634c6d9f9839fcd9c 100644
+index a8d0bc968d2e5fa55cb44a1ae01c4990c3303cd4..1aaf7d834cd107eac8dec2e9ec891e4a859c3bff 100644
 --- a/chrome/browser/profiles/profile_avatar_icon_util.cc
 +++ b/chrome/browser/profiles/profile_avatar_icon_util.cc
-@@ -465,7 +465,7 @@ constexpr size_t kDefaultAvatarIconsCount = 1;
- #elif BUILDFLAG(IS_CHROMEOS)
+@@ -276,7 +276,7 @@ constexpr size_t kDefaultAvatarIconsCount = 1;
+ #elif BUILDFLAG(IS_CHROMEOS_ASH)
  constexpr size_t kDefaultAvatarIconsCount = 27;
  #else
 -constexpr size_t kDefaultAvatarIconsCount = 56;
@@ -11,23 +11,23 @@ index 356b86e5517e965202db44bc6535f231e2b58085..4229799234aefcf38a82974634c6d9f9
  #endif
  
  #if !BUILDFLAG(IS_ANDROID)
-@@ -640,6 +640,7 @@ size_t GetPlaceholderAvatarIndex() {
+@@ -375,6 +375,7 @@ size_t GetPlaceholderAvatarIndex() {
  
  size_t GetModernAvatarIconStartIndex() {
- #if !BUILDFLAG(IS_CHROMEOS) && !BUILDFLAG(IS_ANDROID)
+ #if !BUILDFLAG(IS_CHROMEOS_ASH) && !BUILDFLAG(IS_ANDROID)
 +  BRAVE_GET_MODERN_AVATAR_ICON_START_INDEX
    return GetPlaceholderAvatarIndex() + 1;
  #else
    // Only use the placeholder avatar on ChromeOS and Android.
-@@ -673,6 +674,7 @@ std::string GetPlaceholderAvatarIconUrl() {
+@@ -408,6 +409,7 @@ std::string GetPlaceholderAvatarIconUrl() {
  
  const IconResourceInfo* GetDefaultAvatarIconResourceInfo(size_t index) {
    CHECK_LT(index, kDefaultAvatarIconsCount);
 +  BRAVE_GET_DEFAULT_AVATAR_ICON_RESOURCE_INFO
-   static const std::array<IconResourceInfo, kDefaultAvatarIconsCount>
-       resource_info = {{
+   static const IconResourceInfo resource_info[kDefaultAvatarIconsCount] = {
    // Old avatar icons:
-@@ -984,6 +986,7 @@ base::Value::List GetIconsAndLabelsForProfileAvatarSelector(
+ #if !BUILDFLAG(IS_ANDROID)
+@@ -672,6 +674,7 @@ base::Value::List GetIconsAndLabelsForProfileAvatarSelector(
          selected_avatar_idx == GetPlaceholderAvatarIndex());
      avatars.Insert(avatars.begin(),
                     base::Value(std::move(generic_avatar_info)));

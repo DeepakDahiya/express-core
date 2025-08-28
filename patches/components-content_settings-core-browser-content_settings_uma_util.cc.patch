@@ -1,12 +1,12 @@
 diff --git a/components/content_settings/core/browser/content_settings_uma_util.cc b/components/content_settings/core/browser/content_settings_uma_util.cc
-index cad1940afb7fb8ce44bb3ea374158d9d0a7055dd..12ec655bb5050a5dd8da3a991ebe6c1d2c47c351 100644
+index 064e3c46cf0566003962bc1747e7970b7d71c233..16b3a973388bf7eca5293a2090327a64d3602e41 100644
 --- a/components/content_settings/core/browser/content_settings_uma_util.cc
 +++ b/components/content_settings/core/browser/content_settings_uma_util.cc
-@@ -164,6 +164,7 @@ constexpr auto kHistogramValue = base::MakeFixedFlatMap<ContentSettingsType,
+@@ -125,6 +125,7 @@ constexpr auto kHistogramValue = base::MakeFixedFlatMap<ContentSettingsType,
  
      // As mentioned at the top, please don't forget to update ContentType in
      // enums.xml when you add entries here!
 +    BRAVE_HISTOGRAM_VALUE_LIST
  });
- // LINT.ThenChange(//tools/metrics/histograms/enums.xml:ContentType)
  
+ constexpr int kkHistogramValueMax =

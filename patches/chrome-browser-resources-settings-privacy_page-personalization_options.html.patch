@@ -1,32 +1,32 @@
 diff --git a/chrome/browser/resources/settings/privacy_page/personalization_options.html b/chrome/browser/resources/settings/privacy_page/personalization_options.html
-index 4eea720df84587f0fdf09bdef0a0d7bf66fbec19..f5e3893553d47b3f430cec9433d02e90df6bb871 100644
+index 271e1373160b4fa6a13ee897528d342b06d0660b..0c6b6a54d4f561b3e22dfbe50aa29893aa77f37e 100644
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.html
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.html
-@@ -24,6 +24,7 @@
- 
+@@ -13,6 +13,7 @@
+         padding-inline-start: 0;
+       }
      </style>
- 
 +<if expr="_google_chrome">
  <if expr="not is_chromeos">
-     <div id="chromeSigninUserChoiceSetting" class="hr cr-row" role="group"
-         hidden="[[!chromeSigninUserChoiceInfo_.shouldShowSettings]]"
-@@ -65,6 +66,7 @@
+     <!-- Signout is not supported yet on lacros, https://crbug.com/1217645 -->
+     <settings-toggle-button id="signinAllowedToggle"
+@@ -26,6 +27,7 @@
          no-set-pref>
      </settings-toggle-button>
- </if><!-- not chromeos -->
+ </if><!-- not chromeos and not lacros -->
 +</if>
  <if expr="_google_chrome">
- <if expr="is_chromeos">
+ <if expr="chromeos_ash">
      <!-- Ash Browser settings show a link to the OS settings instead. -->
-@@ -74,6 +76,7 @@
+@@ -35,6 +37,7 @@
          on-click="onMetricsReportingLinkClick_" external>
      </cr-link-row>
  </if><!-- chromeos -->
 +</if><!-- _google_chrome -->
- <if expr="not is_chromeos">
+ <if expr="not chromeos_ash">
      <settings-toggle-button id="metricsReportingControl"
          class="hr"
-@@ -89,13 +92,14 @@
+@@ -50,7 +53,7 @@
        </template>
      </settings-toggle-button>
  </if><!-- not chromeos -->
@@ -35,14 +35,15 @@ index 4eea720df84587f0fdf09bdef0a0d7bf66fbec19..f5e3893553d47b3f430cec9433d02e90
      <settings-toggle-button id="urlCollectionToggle"
          class="hr"
          pref="{{prefs.url_keyed_anonymized_data_collection.enabled}}"
-         label="$i18n{urlKeyedAnonymizedDataCollection}"
-         sub-label="$i18n{urlKeyedAnonymizedDataCollectionDesc}">
-     </settings-toggle-button>
+@@ -67,6 +70,7 @@
+           on-click="onPageContentRowClick_">
+       </cr-link-row>
+     </template>
 +</if>
  <if expr="_google_chrome">
- <if expr="not is_chromeos">
+ <if expr="not chromeos_ash">
      <settings-toggle-button id="spellCheckControl"
-@@ -151,6 +155,7 @@
+@@ -117,6 +121,7 @@
        </settings-toggle-button>
      </template>
  
@@ -50,8 +51,8 @@ index 4eea720df84587f0fdf09bdef0a0d7bf66fbec19..f5e3893553d47b3f430cec9433d02e90
      <template is="dom-if" if="[[showSignoutDialog_]]" restamp>
        <settings-signout-dialog sync-status="[[syncStatus]]"
            on-close="onSignoutDialogClosed_">
-@@ -171,3 +176,4 @@
-       <div>$i18n{chromeSigninChoiceToast}</div>
-     </cr-toast>
+@@ -134,3 +139,4 @@
+           on-close="onRelaunchDialogClose"></relaunch-confirmation-dialog>
+     </template>
  </if>
 +</if>

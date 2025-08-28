@@ -1,12 +1,12 @@
 diff --git a/ui/webui/resources/BUILD.gn b/ui/webui/resources/BUILD.gn
-index 51d850a601335730f83b42156804f2c9e1ca6638..2eeadc3f81bed8870c19d87ccd3a2979e5c43e10 100644
+index 4a04beef2bee615f59f89e23fba16eda6bf6ac5a..3bacbfd5f6b4a3dda27e297e2e99a8cc5155c7a0 100644
 --- a/ui/webui/resources/BUILD.gn
 +++ b/ui/webui/resources/BUILD.gn
-@@ -131,6 +131,7 @@ generate_grd("build_grd") {
+@@ -126,6 +126,7 @@ generate_grd("build_grd") {
        "$root_gen_dir/ui/webui/resources/cr_components/page_image_service/resources.grdp",
      ]
    }
 +  import("//brave/ui/webui/resources/sources.gni") grdp_files += brave_resources_extra_grdps public_deps += brave_resources_extra_grdps_deps
  }
  
- if (is_chromeos) {
+ if (is_chromeos_ash) {

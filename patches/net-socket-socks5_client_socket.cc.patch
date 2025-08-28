@@ -1,38 +1,55 @@
 diff --git a/net/socket/socks5_client_socket.cc b/net/socket/socks5_client_socket.cc
-index 3eeeb7e204c3d0040ae9277fc1eecb4fb5b684de..2f68f69d889f3192ba814e346afb96fcaea2bf96 100644
+index e6677d9c8a13a3be96ed0fc2bc9a69f47ffe530e..5985594663fa571596b1fdd5e788b5de1cc2e199 100644
 --- a/net/socket/socks5_client_socket.cc
 +++ b/net/socket/socks5_client_socket.cc
-@@ -224,6 +224,7 @@ int SOCKS5ClientSocket::DoLoop(int last_io_result) {
+@@ -222,6 +222,9 @@ int SOCKS5ClientSocket::DoLoop(int last_io_result) {
          net_log_.EndEventWithNetErrorCode(NetLogEventType::SOCKS5_GREET_READ,
                                            rv);
          break;
-+        BRAVE_SOCKS5_CLIENT_SOCKET_DO_LOOP
++      case STATE_AUTH:
++        rv = DoAuth(rv);
++        break;
        case STATE_HANDSHAKE_WRITE:
          DCHECK_EQ(OK, rv);
          net_log_.BeginEvent(NetLogEventType::SOCKS5_HANDSHAKE_WRITE);
-@@ -263,8 +264,7 @@ int SOCKS5ClientSocket::DoGreetWrite() {
+@@ -251,8 +254,6 @@ int SOCKS5ClientSocket::DoLoop(int last_io_result) {
+   return rv;
+ }
+ 
+-const char kSOCKS5GreetWriteData[] = { 0x05, 0x01, 0x00 };  // no authentication
+-
+ int SOCKS5ClientSocket::DoGreetWrite() {
+   // Since we only have 1 byte to send the hostname length in, if the
+   // URL has a hostname longer than 255 characters we can't send it.
+@@ -262,8 +263,12 @@ int SOCKS5ClientSocket::DoGreetWrite() {
    }
  
-   if (!write_buf_) {
--    auto greet_buffer =
--        base::MakeRefCounted<WrappedIOBuffer>(kSOCKS5GreetWriteData);
-+    BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_WRITE
-     write_buf_ = base::MakeRefCounted<DrainableIOBuffer>(
-         std::move(greet_buffer), greet_buffer->size());
+   if (buffer_.empty()) {
+-    buffer_ =
+-        std::string(kSOCKS5GreetWriteData, std::size(kSOCKS5GreetWriteData));
++    const char greeting[] = {
++      0x05,			// SOCKS version
++      0x01,			// number of authentication methods
++      static_cast<char>(auth_method()),
++    };
++    buffer_ = std::string(greeting, sizeof(greeting));
+     bytes_sent_ = 0;
    }
-@@ -324,6 +324,7 @@ int SOCKS5ClientSocket::DoGreetReadComplete(int result) {
+ 
+@@ -322,14 +327,14 @@ int SOCKS5ClientSocket::DoGreetReadComplete(int result) {
+                                    "version", buffer_[0]);
      return ERR_SOCKS_CONNECTION_FAILED;
    }
-   if (read_data[1] != 0x00) {
-+  BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_READ_COMPLETE_1
+-  if (buffer_[1] != 0x00) {
++  if (buffer_[1] != auth_method()) {
      net_log_.AddEventWithIntParams(NetLogEventType::SOCKS_UNEXPECTED_AUTH,
-                                    "method", read_data[1]);
+                                    "method", buffer_[1]);
      return ERR_SOCKS_CONNECTION_FAILED;
-@@ -331,6 +332,7 @@ int SOCKS5ClientSocket::DoGreetReadComplete(int result) {
+   }
  
-   read_buf_.reset();
-   next_state_ = STATE_HANDSHAKE_WRITE;
-+  BRAVE_SOCKS5_CLIENT_SOCKET_DO_GREET_READ_COMPLETE_2
+   buffer_.clear();
+-  next_state_ = STATE_HANDSHAKE_WRITE;
++  next_state_ = STATE_AUTH;
    return OK;
  }
  

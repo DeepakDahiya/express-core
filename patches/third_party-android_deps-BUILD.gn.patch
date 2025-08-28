@@ -1,0 +1,12 @@
+diff --git a/third_party/android_deps/BUILD.gn b/third_party/android_deps/BUILD.gn
+index 4c09d3c2d44634d64d0371b1443f403bd999eb2f..7d9c79c5c8fe5ce4ed0aff21749cd68cc2f6b6b0 100644
+--- a/third_party/android_deps/BUILD.gn
++++ b/third_party/android_deps/BUILD.gn
+@@ -458,6 +458,7 @@ java_prebuilt("com_google_auto_value_auto_value_annotations_java") {
+     ":*",
+     "//third_party/androidx:*",
+   ]
++  visibility += [ "//brave/third_party/android_deps:com_google_android_datatransport_transport_runtime_java__classes" ] supports_android = true
+ }
+ 
+ # This is generated, do not edit. Update BuildConfigGenerator.groovy instead.

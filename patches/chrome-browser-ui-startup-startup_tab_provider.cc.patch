@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/ui/startup/startup_tab_provider.cc b/chrome/browser/ui/startup/startup_tab_provider.cc
+index ccdb7a206e0c018b228dfcb1ddaf308d81b5d415..a498fb4fed676158703486aeb30a55c932a4684b 100644
+--- a/chrome/browser/ui/startup/startup_tab_provider.cc
++++ b/chrome/browser/ui/startup/startup_tab_provider.cc
+@@ -272,6 +272,7 @@ StartupTabs StartupTabProviderImpl::GetPrivacySandboxTabs(
+ bool StartupTabProviderImpl::CanShowWelcome(bool is_signin_allowed,
+                                             bool is_child_account,
+                                             bool is_force_signin_enabled) {
++  if ((true)) return true;
+   return is_signin_allowed && !is_child_account && !is_force_signin_enabled;
+ }
+ 

@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/importer/external_process_importer_host.h b/chrome/browser/importer/external_process_importer_host.h
+index a55ef6ae01873eff0d83d7ea82bfd506ca31566b..c22ff75ec50a6a030b175385b309b12dc7ae9c0c 100644
+--- a/chrome/browser/importer/external_process_importer_host.h
++++ b/chrome/browser/importer/external_process_importer_host.h
+@@ -75,6 +75,7 @@ class ExternalProcessImporterHost
+   void NotifyImportItemEnded(importer::ImportItem item);
+   void NotifyImportEnded();
+ 
++  BRAVE_EXTERNAL_PROCESS_IMPORTER_HOST_H
+  private:
+   // ExternalProcessImporterHost deletes itself in OnImportEnded().
+   ~ExternalProcessImporterHost() override;

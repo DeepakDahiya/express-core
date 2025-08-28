@@ -1,16 +1,16 @@
 diff --git a/components/component_updater/component_updater_service.h b/components/component_updater/component_updater_service.h
-index 57d602a187a6528d8acf83db211ee10785a6712a..4dcf0a46d75fd07a7c76abe20906c2f601718b74 100644
+index ef30796e6679deb39e2efd76c41f584f814c42e5..6f734a84729acee289aec33f045d9f6bed60f9fc 100644
 --- a/components/component_updater/component_updater_service.h
 +++ b/components/component_updater/component_updater_service.h
-@@ -203,6 +203,7 @@ class ComponentUpdateService {
+@@ -197,6 +197,7 @@ class ComponentUpdateService {
    friend class screen_ai::ScreenAIDownloaderNonChromeOS;
    friend class speech::SodaInstallerImpl;
    friend class ::ComponentsHandler;
 +  BRAVE_COMPONENT_UPDATER_SERVICE_H_
    FRIEND_TEST_ALL_PREFIXES(ComponentInstallerTest, RegisterComponent);
-   FRIEND_TEST_ALL_PREFIXES(ComponentUpdaterTest, UpdatesDisabled);
  };
-@@ -217,6 +218,7 @@ class OnDemandUpdater {
+ 
+@@ -210,6 +211,7 @@ class OnDemandUpdater {
    enum class Priority { BACKGROUND = 0, FOREGROUND = 1 };
  
    virtual ~OnDemandUpdater() = default;

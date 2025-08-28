@@ -1,5 +1,5 @@
 diff --git a/tools/gritsettings/resource_ids.spec b/tools/gritsettings/resource_ids.spec
-index 972382ea6c9043e06779330a11de90f87e2a11cd..60472a4a024dcd3ca4fc576b4282b34faa72554f 100644
+index fd39b79a88fc0ae01ba525b37c5f7ea6ed1d38e1..2c85f20c48bfb87a7769a04146cf1749146481db 100644
 --- a/tools/gritsettings/resource_ids.spec
 +++ b/tools/gritsettings/resource_ids.spec
 @@ -38,6 +38,9 @@
@@ -12,54 +12,31 @@ index 972382ea6c9043e06779330a11de90f87e2a11cd..60472a4a024dcd3ca4fc576b4282b34f
    "chrome/app/google_chrome_strings.grd": {
      "messages": [800],
    },
-@@ -413,7 +416,7 @@
-     "includes": [3900],
-   },
-   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/extensions/resources.grd": {
--    "META": {"sizes": {"includes": [120],}},
-+    "META": {"sizes": {"includes": [123],}},
-     "includes": [3920],
-   },
-   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/extensions_zero_state_promo/resources.grd": {
-@@ -449,7 +452,7 @@
-     "includes": [4020],
+@@ -286,7 +289,7 @@
+     "includes": [3220],
    },
    "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/history/resources.grd": {
--    "META": {"sizes": {"includes": [50]}},
-+    "META": {"sizes": {"includes": [51]}},
-     "includes": [4040],
+-    "META": {"sizes": {"includes": [40]}},
++    "META": {"sizes": {"includes": [44]}},
+     "includes": [3240],
    },
-   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/infobar_internals/resources.grd": {
-@@ -601,7 +604,7 @@
-     "includes": [4720],
+   "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/identity_internals/resources.grd": {
+@@ -421,7 +424,7 @@
+     "includes": [3900],
    },
    "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings/resources.grd": {
 -    "META": {"sizes": {"includes": [500],}},
-+    "META": {"sizes": {"includes": [690],}},
-     "includes": [4740],
++    "META": {"sizes": {"includes": [650],}},
+     "includes": [3920],
    },
    "<(SHARED_INTERMEDIATE_DIR)/chrome/browser/resources/settings_shared/resources.grd": {
-@@ -1026,6 +1029,9 @@
-     # Big alignment at start of section.
+@@ -926,6 +929,9 @@
+   "components/components_chromium_strings.grd": {
      "messages": [7020],
    },
 +  "components/components_brave_strings.grd": {
-+    "messages": [7020],
++    "messages": [6020],
 +  },
    "components/components_google_chrome_strings.grd": {
      "messages": [7020],
    },
-@@ -1519,11 +1525,11 @@
-     "includes": [9980],
-   },
-   "<(SHARED_INTERMEDIATE_DIR)/ui/webui/resources/webui_code_cache_resources.grd": {
--    "META": {"sizes": {"includes": [250]}},
-+    "META": {"sizes": {"includes": [252]}},
-     "includes": [9990],
-   },
-   "<(SHARED_INTERMEDIATE_DIR)/ui/webui/resources/webui_resources.grd": {
--    "META": {"sizes": {"includes": [1100]}},
-+    "META": {"sizes": {"includes": [1170]}},
-     "includes": [10000],
-   },
-   "weblayer/weblayer_resources.grd": {

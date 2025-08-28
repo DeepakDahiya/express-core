@@ -1,12 +1,12 @@
 diff --git a/components/content_settings/core/browser/content_settings_utils.cc b/components/content_settings/core/browser/content_settings_utils.cc
-index 710f77f6600caec0286445320296404966635eac..ce4168e901c6db43271bbd1c371d8d8ce230232c 100644
+index f7b72b9bd8937bf19d801ef2ca8fbc06a7246b1a..37124cfe12b422238010877271a5b20411349c1c 100644
 --- a/components/content_settings/core/browser/content_settings_utils.cc
 +++ b/components/content_settings/core/browser/content_settings_utils.cc
-@@ -184,6 +184,7 @@ bool IsConstraintPersistent(const ContentSettingConstraints& constraints) {
- 
- bool CanTrackLastVisit(ContentSettingsType type) {
-   DCHECK(WebsiteSettingsRegistry::GetInstance()->Get(type)) << type;
+@@ -183,6 +183,7 @@ bool CanTrackLastVisit(ContentSettingsType type) {
+   // a valid "initial default" value.
+   if (type == ContentSettingsType::PROTOCOL_HANDLERS)
+     return false;
 +  BRAVE_CAN_TRACK_LAST_VISIT
  
-   // Chooser based content settings will not be tracked by default.
-   // Only allowlisted ones should be tracked.
+   auto* info =
+       content_settings::ContentSettingsRegistry::GetInstance()->Get(type);

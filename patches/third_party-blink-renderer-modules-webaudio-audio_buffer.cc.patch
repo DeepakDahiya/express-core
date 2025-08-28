@@ -1,8 +1,8 @@
 diff --git a/third_party/blink/renderer/modules/webaudio/audio_buffer.cc b/third_party/blink/renderer/modules/webaudio/audio_buffer.cc
-index dc4dbe57cf76b4ba5ec1e9fec011275eeb4e281b..678abda7f4a9823ac95c1b2abd7b9d1b04fd4865 100644
+index 2e032806463bb25fd0371c1a03538985a9fd164a..2e6ac692c7d772ce717cb6fad53cd9f7c1c7d9de 100644
 --- a/third_party/blink/renderer/modules/webaudio/audio_buffer.cc
 +++ b/third_party/blink/renderer/modules/webaudio/audio_buffer.cc
-@@ -201,6 +201,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
+@@ -197,6 +197,7 @@ AudioBuffer::AudioBuffer(AudioBus* bus)
  }
  
  NotShared<DOMFloat32Array> AudioBuffer::getChannelData(
@@ -10,7 +10,7 @@ index dc4dbe57cf76b4ba5ec1e9fec011275eeb4e281b..678abda7f4a9823ac95c1b2abd7b9d1b
      unsigned channel_index,
      ExceptionState& exception_state) {
    if (channel_index >= channels_.size()) {
-@@ -212,6 +213,7 @@ NotShared<DOMFloat32Array> AudioBuffer::getChannelData(
+@@ -208,6 +209,7 @@ NotShared<DOMFloat32Array> AudioBuffer::getChannelData(
      return NotShared<DOMFloat32Array>(nullptr);
    }
  
@@ -18,7 +18,7 @@ index dc4dbe57cf76b4ba5ec1e9fec011275eeb4e281b..678abda7f4a9823ac95c1b2abd7b9d1b
    return getChannelData(channel_index);
  }
  
-@@ -223,13 +225,15 @@ NotShared<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channel_index) {
+@@ -219,13 +221,15 @@ NotShared<DOMFloat32Array> AudioBuffer::getChannelData(unsigned channel_index) {
    return NotShared<DOMFloat32Array>(channels_[channel_index].Get());
  }
  
@@ -37,10 +37,10 @@ index dc4dbe57cf76b4ba5ec1e9fec011275eeb4e281b..678abda7f4a9823ac95c1b2abd7b9d1b
                                    int32_t channel_number,
                                    size_t buffer_offset,
                                    ExceptionState& exception_state) {
-@@ -262,6 +266,7 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
-   DCHECK(dst.data());
+@@ -266,6 +270,7 @@ void AudioBuffer::copyFromChannel(NotShared<DOMFloat32Array> destination,
+   DCHECK_LE(buffer_offset + count, data_length);
  
-   dst.first(count).copy_from(src.subspan(buffer_offset, count));
+   memmove(dst, src + buffer_offset, count * sizeof(*src));
 +  BRAVE_AUDIOBUFFER_COPYFROMCHANNEL
  }
  

@@ -1,52 +1,40 @@
 diff --git a/chrome/browser/resources/settings/privacy_page/personalization_options.ts b/chrome/browser/resources/settings/privacy_page/personalization_options.ts
-index d347ad03556b8276a20093f6581029ac37ecdcfe..4039a4ada0f794e2ffe115b881e3b92a7686d6a1 100644
+index 8db1832a3d0ae966e02cc350808781c786d762b6..02c5f0c1523096aa51691e1bb8af5e3ba9093c69 100644
 --- a/chrome/browser/resources/settings/privacy_page/personalization_options.ts
 +++ b/chrome/browser/resources/settings/privacy_page/personalization_options.ts
-@@ -78,7 +78,7 @@ export class SettingsPersonalizationOptionsElement extends
-     return {
+@@ -80,7 +80,7 @@ export class SettingsPersonalizationOptionsElement extends
+ 
        syncStatus: Object,
  
--      // <if expr="_google_chrome and not is_chromeos">
-+      // <if expr="not is_chromeos">
+-      // <if expr="_google_chrome and not chromeos_ash">
++      // <if expr="not chromeos_ash">
        // TODO(dbeam): make a virtual.* pref namespace and set/get this normally
        // (but handled differently in C++).
        metricsReportingPref_: {
-@@ -141,7 +141,7 @@ export class SettingsPersonalizationOptionsElement extends
+@@ -123,7 +123,7 @@ export class SettingsPersonalizationOptionsElement extends
+   focusConfig: FocusConfig;
+   syncStatus: SyncStatus;
  
-   declare syncStatus: SyncStatus;
- 
--  // <if expr="_google_chrome and not is_chromeos">
-+  // <if expr="not is_chromeos">
-   declare private metricsReportingPref_:
-       chrome.settingsPrivate.PrefObject<boolean>;
-   declare private showRestart_: boolean;
-@@ -185,7 +185,7 @@ export class SettingsPersonalizationOptionsElement extends
+-  // <if expr="_google_chrome and not chromeos_ash">
++  // <if expr="not chromeos_ash">
+   private metricsReportingPref_: chrome.settingsPrivate.PrefObject<boolean>;
+   private showRestart_: boolean;
+   // </if>
+@@ -173,7 +173,7 @@ export class SettingsPersonalizationOptionsElement extends
    override ready() {
      super.ready();
  
--    // <if expr="_google_chrome and not is_chromeos">
-+    // <if expr="not is_chromeos">
+-    // <if expr="_google_chrome and not chromeos_ash">
++    // <if expr="not chromeos_ash">
      const setMetricsReportingPref = (metricsReporting: MetricsReporting) =>
          this.setMetricsReportingPref_(metricsReporting);
      this.addWebUiListener('metrics-reporting-change', setMetricsReportingPref);
-@@ -200,9 +200,11 @@ export class SettingsPersonalizationOptionsElement extends
-         this.setChromeSigninUserChoiceInfo_.bind(this));
-     // </if>
- 
-+    // <if expr="_google_chrome">
-     this.registerHelpBubble(
-         ANONYMIZED_URL_COLLECTION_ID,
-         this.$.urlCollectionToggle.getBubbleAnchor(), {anchorPaddingTop: 10});
-+    // </if>
-   }
- 
-   // <if expr="is_chromeos">
-@@ -223,7 +225,7 @@ export class SettingsPersonalizationOptionsElement extends
+@@ -207,7 +207,7 @@ export class SettingsPersonalizationOptionsElement extends
    }
    // </if>
  
--  // <if expr="_google_chrome and not is_chromeos">
-+  // <if expr="not is_chromeos">
+-  // <if expr="_google_chrome and not chromeos_ash">
++  // <if expr="not chromeos_ash">
    private onMetricsReportingChange_() {
      const enabled = this.$.metricsReportingControl.checked;
      this.browserProxy_.setMetricsReportingEnabled(enabled);

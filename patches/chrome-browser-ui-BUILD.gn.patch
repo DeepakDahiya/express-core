@@ -1,32 +1,30 @@
 diff --git a/chrome/browser/ui/BUILD.gn b/chrome/browser/ui/BUILD.gn
-index ead97b7634ab102af10618935b0192162de4fd68..20e326292669dfe2ff6bbc4a3b5abddd9491400a 100644
+index 085d8472a7e0ea68af55173a4857258701841a9d..04bcf6354b8c8fc32568d6e3ea877e523139ead8 100644
 --- a/chrome/browser/ui/BUILD.gn
 +++ b/chrome/browser/ui/BUILD.gn
-@@ -747,6 +747,7 @@ static_library("ui") {
-     # from //chrome/browser/ui/webui, which are not modularized yet.
-     "//chrome/browser/ui/webui/about:impl",
+@@ -707,6 +707,7 @@ static_library("ui") {
+     "//chrome/browser/safe_browsing",
+     "//chrome/browser/profiling_host",
    ]
-+  import("//brave/browser/sources.gni") public_deps += [ "//brave/browser/ui" ] deps += brave_chrome_browser_ui_allow_circular_includes_from allow_circular_includes_from += brave_chrome_browser_ui_allow_circular_includes_from
++  public_deps += [ "//brave/browser/ui" ] allow_circular_includes_from += [ "//brave/browser/ui" ]
  
    if (enable_vr && is_win) {
      deps += [ "//chrome/browser/vr:vr_base" ]
-@@ -3369,7 +3370,10 @@ static_library("ui") {
-         "//chrome/updater/app/server/win:updater_legacy_idl",
+@@ -4571,10 +4572,13 @@ static_library("ui") {
        ]
+       deps += [ "//chrome/updater/app/server/win:updater_legacy_idl_idl" ]
      } else {
--      sources += [ "webui/help/version_updater_basic.cc" ]
+-      sources += [
+-        "webui/help/version_updater_basic.cc",
+-        "webui/help/version_updater_basic.h",
+-      ]
 +      if (!is_official_build) {
 +        # In official build, //brave/browser/ui handles.
-+        sources += [ "webui/help/version_updater_basic.cc" ]
++        sources += [
++          "webui/help/version_updater_basic.cc",
++          "webui/help/version_updater_basic.h",
++        ]
 +      }
      }
-   }
- 
-@@ -5535,6 +5539,7 @@ static_library("ui_public_dependencies") {
-   if (enable_extensions_core) {
-     public_deps += [ "//extensions/browser" ]
-   }
-+  public_deps += [ "//brave/browser/ui:ui_public_dependencies" ]
-   if (!is_android) {
-     public_deps += [
-       "//build:branding_buildflags",
+   } else {  # 'OS!="win"
+     if (toolkit_views) {

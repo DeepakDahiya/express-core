@@ -1,8 +1,8 @@
 diff --git a/ui/native_theme/native_theme_win.h b/ui/native_theme/native_theme_win.h
-index da5f6e73e96ae2ed36a1f6b52d2a196ed4c7280d..43209034b95cdd833f3143e0a6666389b3af5d3e 100644
+index 0ef829dd59f8375b2e17896be1cc512b9320d358..6de82041573a875329fbbc62dad186fda369043f 100644
 --- a/ui/native_theme/native_theme_win.h
 +++ b/ui/native_theme/native_theme_win.h
-@@ -88,6 +88,7 @@ class COMPONENT_EXPORT(NATIVE_THEME) NativeThemeWin
+@@ -84,6 +84,7 @@ class NATIVE_THEME_EXPORT NativeThemeWin : public NativeTheme,
    PreferredContrast CalculatePreferredContrast() const override;
    ColorScheme GetDefaultSystemColorScheme() const override;
  

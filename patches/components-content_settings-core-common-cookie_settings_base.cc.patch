@@ -1,20 +1,12 @@
 diff --git a/components/content_settings/core/common/cookie_settings_base.cc b/components/content_settings/core/common/cookie_settings_base.cc
-index a01db173f95b7012f189bf79c408b29059585e7d..35b5e62cc1d381b98e96858b96366ab75335781b 100644
+index 3645242f7f22de9280271a3f14e52c157d1840a4..31f9aafa935768f4aa30dbef535029f4ee8df9b2 100644
 --- a/components/content_settings/core/common/cookie_settings_base.cc
 +++ b/components/content_settings/core/common/cookie_settings_base.cc
-@@ -659,6 +659,7 @@ CookieSettingsBase::DecideAccess(const GURL& url,
-     return BlockAllCookies{};
-   }
+@@ -319,6 +319,7 @@ CookieSettingsBase::GetCookieSettingInternal(
+       IsAllowed(setting) && !is_explicit_setting && is_third_party_request &&
+       block_by_global_setting &&
+       !IsThirdPartyCookiesAllowedScheme(first_party_url.scheme());
++  BRAVE_COOKIE_SETTINGS_BASE_GET_COOKIES_SETTINGS_INTERNAL
  
-+  BRAVE_COOKIE_SETTINGS_BASE_DECIDE_ACCESS
-   if (!is_third_party_request) {
-     return AllowAllCookies{ThirdPartyCookieAllowMechanism::kNone};
-   }
-@@ -837,6 +838,7 @@ CookieSettingsBase::GetCookieSettingInternal(
-   if (std::holds_alternative<AllowPartitionedCookies>(choice)) {
-     CHECK(is_third_party_request);
-     CHECK(block_third_party_cookies);
-+    BRAVE_COOKIE_SETTINGS_BASE_GET_COOKIES_SETTINGS_INTERNAL_IS_EXPLICIT_SETTING
-     CHECK(!is_explicit_setting);
- 
-     FireStorageAccessHistogram(StorageAccessResult::ACCESS_BLOCKED);
+   // Only set mechanism for third party allow request.
+   if (IsAllowed(setting) && is_third_party_request) {

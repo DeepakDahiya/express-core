@@ -1,12 +1,12 @@
 diff --git a/chrome/browser/extensions/api/developer_private/extension_info_generator.cc b/chrome/browser/extensions/api/developer_private/extension_info_generator.cc
-index 4780e2b3dbbaeb9e9faf28ac3ba3d29237376823..d3700a2c6926ba214e727adac1d266c78b917b69 100644
+index b385ce034636b8baaf76efe8b0202036fdca0c27..9e972693b5bf0991f6693aa512245a8584f44d4b 100644
 --- a/chrome/browser/extensions/api/developer_private/extension_info_generator.cc
 +++ b/chrome/browser/extensions/api/developer_private/extension_info_generator.cc
-@@ -715,6 +715,7 @@ void ExtensionInfoGenerator::FillExtensionInfo(const Extension& extension,
- #else
-   info.incognito_access_pending_change = false;
- #endif
+@@ -657,6 +657,7 @@ void ExtensionInfoGenerator::CreateExtensionInfoHelper(
+   info->incognito_access.is_enabled = util::CanBeIncognitoEnabled(&extension);
+   info->incognito_access.is_active =
+       util::IsIncognitoEnabled(extension.id(), browser_context_);
 +  BRAVE_CREATE_EXTENSION_INFO_HELPER
  
-   // User Scripts toggle.
-   info.user_scripts_access.is_enabled =
+   // Safety check warning acknowledge status.
+   extension_prefs_->ReadPrefAsBoolean(

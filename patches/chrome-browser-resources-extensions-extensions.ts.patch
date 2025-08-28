@@ -1,0 +1,12 @@
+diff --git a/chrome/browser/resources/extensions/extensions.ts b/chrome/browser/resources/extensions/extensions.ts
+index ba1effe0c8645a8ed8ef92b5a4baccacd707e190..eb05ea74448b1984aea40c0902a47f86926d681c 100644
+--- a/chrome/browser/resources/extensions/extensions.ts
++++ b/chrome/browser/resources/extensions/extensions.ts
+@@ -2,6 +2,7 @@
+ // Use of this source code is governed by a BSD-style license that can be
+ // found in the LICENSE file.
+ 
++import './brave_overrides/index.js';
+ import './manager.js';
+ 
+ export {CrCheckboxElement} from 'chrome://resources/cr_elements/cr_checkbox/cr_checkbox.js';

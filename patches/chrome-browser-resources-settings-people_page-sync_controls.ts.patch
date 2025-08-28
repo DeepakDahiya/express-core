@@ -1,13 +1,13 @@
 diff --git a/chrome/browser/resources/settings/people_page/sync_controls.ts b/chrome/browser/resources/settings/people_page/sync_controls.ts
-index 18b02513270968112f87e9f39248a3b4d8da0c61..e8c76a28022e9af8b057b96cd03b9e169e8bba2f 100644
+index 4975cec621270e575d24169e9aebe625330810e1..b6a931e8f7cab226f27517be2cc600ea1eb07512 100644
 --- a/chrome/browser/resources/settings/people_page/sync_controls.ts
 +++ b/chrome/browser/resources/settings/people_page/sync_controls.ts
-@@ -121,7 +121,7 @@ export class SettingsSyncControlsElement extends
-         'sync-prefs-changed', this.handleSyncPrefsChanged_.bind(this));
+@@ -118,7 +118,7 @@ export class SettingsSyncControlsElement extends
  
      const router = Router.getInstance();
--    if (router.getCurrentRoute() === routes.SYNC_ADVANCED) {
-+    if (router.getCurrentRoute() === routes.BRAVE_SYNC_SETUP) {
+     if (router.getCurrentRoute() ===
+-        (router.getRoutes() as {SYNC_ADVANCED: Route}).SYNC_ADVANCED) {
++        (router.getRoutes() as {BRAVE_SYNC_SETUP: Route}).BRAVE_SYNC_SETUP) {
        this.browserProxy_.didNavigateToSyncPage();
      }
- 
+   }

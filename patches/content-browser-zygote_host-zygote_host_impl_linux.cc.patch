@@ -1,0 +1,12 @@
+diff --git a/content/browser/zygote_host/zygote_host_impl_linux.cc b/content/browser/zygote_host/zygote_host_impl_linux.cc
+index 0be4e3042ac9e38cb4c524cb5e242560d9c296de..40b83c65e80d2454ac66f957c6e21df2de7a662e 100644
+--- a/content/browser/zygote_host/zygote_host_impl_linux.cc
++++ b/content/browser/zygote_host/zygote_host_impl_linux.cc
+@@ -125,6 +125,7 @@ void ZygoteHostImpl::Init(const base::CommandLine& command_line) {
+     use_suid_sandbox_for_adj_oom_score_ = use_suid_sandbox_;
+   } else {
+     LOG(FATAL)
++    BRAVE_ZYGOTE_HOST_IMPL_LINUX_ZYGOTE_HOST_IMPL_INIT
+         << "No usable sandbox! Update your kernel or see "
+            "https://chromium.googlesource.com/chromium/src/+/main/"
+            "docs/linux/suid_sandbox_development.md for more information on "

@@ -1,0 +1,12 @@
+diff --git a/components/sync/engine/model_type_worker.h b/components/sync/engine/model_type_worker.h
+index 76e5212061c893fdcc09560f87d684b354f4db43..b021af60b621e520f4888413a797dc6c9dcfca9a 100644
+--- a/components/sync/engine/model_type_worker.h
++++ b/components/sync/engine/model_type_worker.h
+@@ -207,6 +207,7 @@ class ModelTypeWorker : public UpdateHandler,
+ 
+   static constexpr size_t kMaxPendingInvalidations = 10u;
+ 
++ BRAVE_MODEL_TYPE_WORKER_H_
+  private:
+   struct UnknownEncryptionKeyInfo {
+     // Not increased if the cryptographer knows it's in a pending state

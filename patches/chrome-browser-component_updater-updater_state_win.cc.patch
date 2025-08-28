@@ -1,8 +1,8 @@
 diff --git a/chrome/browser/component_updater/updater_state_win.cc b/chrome/browser/component_updater/updater_state_win.cc
-index 781db7a6b09b53e67c25768a7d4cf5cebbf16260..231b1fb13c63120457c8e7c812725dadf0bad8d8 100644
+index 56f5f518937560daf34b9d475e84d72e7926e28c..930924c19b99a9a8f003bdec6386899c5a31a7fd 100644
 --- a/chrome/browser/component_updater/updater_state_win.cc
 +++ b/chrome/browser/component_updater/updater_state_win.cc
-@@ -19,20 +19,32 @@ namespace {
+@@ -20,20 +20,32 @@ namespace {
  
  // Google Update group policy settings.
  const wchar_t kGoogleUpdatePoliciesKey[] =

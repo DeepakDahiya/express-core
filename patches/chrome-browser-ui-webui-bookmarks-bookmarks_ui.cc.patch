@@ -1,10 +1,10 @@
 diff --git a/chrome/browser/ui/webui/bookmarks/bookmarks_ui.cc b/chrome/browser/ui/webui/bookmarks/bookmarks_ui.cc
-index 469efd3937321fd9d971cfcd7003cb46f87826c7..9e379e4e91c0a1a87db0767e9d8526bbea87270e 100644
+index 100e2ee479988319bed1f7dc9a7c37d029f81822..474e8b2f40a8956ee086c8837985409e47f030c9 100644
 --- a/chrome/browser/ui/webui/bookmarks/bookmarks_ui.cc
 +++ b/chrome/browser/ui/webui/bookmarks/bookmarks_ui.cc
-@@ -154,6 +154,7 @@ content::WebUIDataSource* CreateAndAddBookmarksUIHTMLSource(Profile* profile) {
-       "images/batch_upload_bookmarks_promo_dark.svg",
-       IDR_BOOKMARKS_IMAGES_BATCH_UPLOAD_BOOKMARKS_PROMO_DARK_SVG);
+@@ -129,6 +129,7 @@ content::WebUIDataSource* CreateAndAddBookmarksUIHTMLSource(Profile* profile) {
+   for (const auto& str : kStrings)
+     AddLocalizedString(source, str.name, str.id);
  
 +  BRAVE_CREATE_BOOKMARKS_UI_HTML_SOURCE
    return source;
