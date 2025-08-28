@@ -1,12 +1,12 @@
 diff --git a/front_end/panels/application/ApplicationPanelSidebar.ts b/front_end/panels/application/ApplicationPanelSidebar.ts
-index 018da42c8f556cbe970929ac518d5b12292d638d..ccda486c013dce2fa554df2d70957b5cf5676695 100644
+index e933a39eaf41d15db5aafbc5382f6bbc989ddee4..a9b58c02ceaad38ed63c3dc9bf0ba3ee5003cd45 100644
 --- a/front_end/panels/application/ApplicationPanelSidebar.ts
 +++ b/front_end/panels/application/ApplicationPanelSidebar.ts
-@@ -469,6 +469,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.Targe
-     // Work-around for crbug.com/1152713: Something is wrong with custom scrollbars and size containment.
-     // @ts-ignore
+@@ -563,6 +563,7 @@ export class ApplicationPanelSidebar extends UI.Widget.VBox implements SDK.Targe
+         new Common.ObjectWrapper.ObjectWrapper<SharedStorageTreeElementDispatcher.EventTypes>();
+ 
      this.contentElement.style.contain = 'layout style';
 +    [this.trustTokensTreeElement, this.interestGroupTreeElement, this.sharedStorageListTreeElement].forEach(e => storageTreeElement.removeChild(e)); [this.backgroundFetchTreeElement, this.backgroundSyncTreeElement, this.periodicBackgroundSyncTreeElement, this.reportingApiTreeElement].forEach(e => backgroundServiceTreeElement.removeChild(e));
    }
  
-   private addSidebarSection(title: string): UI.TreeOutline.TreeElement {
+   private addSidebarSection(title: string, jslogContext: string): UI.TreeOutline.TreeElement {

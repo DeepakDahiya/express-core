@@ -1,16 +1,16 @@
 diff --git a/chrome/BUILD.gn b/chrome/BUILD.gn
-index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e78667523132 100644
+index 9fd2e83b2a7bc7e8dae09e45bec64ad41e06ee6a..e1934b46bcc740887b9c0427f165309e887769b1 100644
 --- a/chrome/BUILD.gn
 +++ b/chrome/BUILD.gn
-@@ -199,6 +199,7 @@ if (!is_android && !is_mac) {
-           "common/crash_keys.cc",
-           "common/crash_keys.h",
-         ]
+@@ -194,6 +194,7 @@ if (!is_android && !is_mac) {
+         "common/crash_keys.cc",
+         "common/crash_keys.h",
+       ]
 +      sources -= [ "app/chrome_exe.rc", ] sources += [ "//brave/app/brave_exe.rc", ]
  
-         deps += [
-           ":chrome_dll",
-@@ -516,11 +517,12 @@ if (is_win) {
+       deps += [
+         ":chrome_dll",
+@@ -501,11 +502,12 @@ if (is_win) {
        args += [ "--keystone=0" ]
      }
    }
@@ -24,7 +24,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
      extra_substitutions = [
        "CHROMIUM_BUNDLE_ID=$chrome_mac_bundle_id",
        "CHROMIUM_SHORT_NAME=$chrome_product_short_name",
-@@ -540,6 +542,7 @@ if (is_win) {
+@@ -525,6 +527,7 @@ if (is_win) {
        "//chrome/common:buildflags",
        "//chrome/common:version_header",
      ]
@@ -32,7 +32,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
  
      if (enable_updater) {
        deps += [ ":chromium_updater_privileged_helper" ]
-@@ -682,6 +685,7 @@ if (is_win) {
+@@ -670,6 +673,7 @@ if (is_win) {
        # this dependency directly copies the file into the framework's
        # resources directory.
        public_deps += [ ":chrome_framework_widevine_signature" ]
@@ -40,11 +40,11 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
      }
    }
  
-@@ -725,9 +729,11 @@ if (is_win) {
+@@ -713,9 +717,11 @@ if (is_win) {
        "--scm=0",
      ]
    }
-+  copy("brave_helper_plist") { deps = [ "//brave:brave_helper_plist" ] sources = [ "$root_gen_dir/brave/brave_helper_plist_tweaked.plist" ] outputs = [ "$root_gen_dir/chrome/{{source_file_part}}" ] }
++  copy("brave_helper_plist") { deps = [ "//brave:brave_helper_plist" ] sources = [ "$root_gen_dir/brave/brave_helper_plist_tweaked.plist" ] outputs = [ "$root_gen_dir/chrome/{{source_file_part}}" ] } import("//brave/browser/updater/buildflags.gni") import("//brave/updater/config.gni") # For enable_omaha4 and use_prebuilt_omaha4 below.
  
    compile_entitlements("entitlements") {
      entitlements_templates = [ "app/app-entitlements.plist" ]
@@ -52,7 +52,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
      if (is_chrome_branded && include_branded_entitlements) {
        # These entitlements are bound to the official Google Chrome signing
        # certificate and will not necessarily work in any other build.
-@@ -752,6 +758,7 @@ if (is_win) {
+@@ -740,6 +746,7 @@ if (is_win) {
          info_plist_target = invoker.info_plist_target
        } else {
          info_plist_target = ":chrome_helper_plist"
@@ -60,23 +60,23 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
        }
  
        extra_substitutions = [
-@@ -930,6 +937,7 @@ if (is_win) {
-         sources += [ "//third_party/updater/chrome_mac_universal_prod/${updater_product_full_name}.app" ]
+@@ -923,6 +930,7 @@ if (is_win) {
+     if (enable_updater) {
+       if (is_chrome_branded) {
+         sources += [ "//third_party/updater/chrome_mac_universal_prod/cipd/${updater_product_full_name}.app" ]
++      } else if (!enable_omaha4) {} else if (use_prebuilt_omaha4) { sources += ["//brave/third_party/updater/mac/${updater_product_full_name}.app"]
        } else {
          sources += [ "$root_out_dir/${updater_product_full_name}.app" ]
-+      sources -= [ "$root_out_dir/${updater_product_full_name}.app" ]
  
-         public_deps += [
-           "//chrome/updater/mac:browser_install_script",
-@@ -1267,6 +1275,7 @@ if (is_win) {
+@@ -1208,6 +1216,7 @@ if (is_win) {
        "-current_version",
        chrome_dylib_version,
      ]
-+    import("//brave/browser/sources.gni") public_deps += brave_chrome_framework_public_deps bundle_deps += brave_chrome_framework_bundle_deps framework_contents += brave_chrome_framework_contents configs += brave_chrome_framework_configs
++    import("//brave/browser/sources.gni") public_deps += brave_chrome_framework_public_deps bundle_deps += brave_chrome_framework_bundle_deps framework_contents += brave_chrome_framework_contents
  
      if (!is_component_build) {
        # Specify a sensible install_name for static builds. The library is
-@@ -1447,6 +1456,7 @@ if (is_win) {
+@@ -1405,6 +1414,7 @@ if (is_win) {
  
  group("dependencies") {
    public_deps = [
@@ -84,7 +84,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
      "//build:branding_buildflags",
      "//build:chromeos_buildflags",
      "//chrome/browser",
-@@ -1513,7 +1523,7 @@ group("dependencies") {
+@@ -1449,7 +1459,7 @@ group("dependencies") {
  
  if (is_win) {
    process_version_rc_template("chrome_exe_version") {
@@ -93,7 +93,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
      output = "$target_gen_dir/chrome_exe_version.rc"
    }
  
-@@ -1562,6 +1572,7 @@ group("resources") {
+@@ -1498,6 +1508,7 @@ group("resources") {
      "//chrome/browser:resources",
      "//chrome/common:resources",
      "//chrome/renderer:resources",
@@ -101,7 +101,7 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
    ]
  }
  
-@@ -1615,6 +1626,7 @@ if (!is_android) {
+@@ -1551,6 +1562,7 @@ if (!is_android) {
      if (enable_resource_allowlist_generation) {
        repack_allowlist = _chrome_resource_allowlist
        deps = [ ":resource_allowlist" ]
@@ -109,11 +109,3 @@ index a506e77d09602accb319240b3b1cdd16638c4da1..a96cc82f971f61f41ef55bda24e1e786
      }
  
      if (is_chrome_branded && !is_mac) {
-@@ -1704,6 +1716,7 @@ if (is_android) {
-       "//components/safe_browsing/android:safe_browsing_api_handler",
-       "//components/safe_browsing/android:safe_browsing_mobile",
-       "//content/public/app",
-+      "//brave/third_party/sentry_native:sentry_native",
-     ]
- 
-     # Explicit dependency required for JNI registration to be able to

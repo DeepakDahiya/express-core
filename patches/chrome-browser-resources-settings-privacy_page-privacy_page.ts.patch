@@ -1,12 +1,12 @@
 diff --git a/chrome/browser/resources/settings/privacy_page/privacy_page.ts b/chrome/browser/resources/settings/privacy_page/privacy_page.ts
-index 14f110178507683509991623c54d36b16cdd144a..97e1dece40352656e24a51baad5a16d5a2f944b4 100644
+index 218a1933cd5e73ac54db94f8e23fbd998d43f4c9..89ff667a5da8139637f1ee5399019dc273ea7940 100644
 --- a/chrome/browser/resources/settings/privacy_page/privacy_page.ts
 +++ b/chrome/browser/resources/settings/privacy_page/privacy_page.ts
-@@ -21,6 +21,7 @@ import '../settings_page/settings_animated_pages.js';
- import '../settings_page/settings_subpage.js';
- import '../settings_shared.css.js';
+@@ -25,6 +25,7 @@ import '../site_settings/geolocation_page.js';
+ import '../site_settings/notifications_page.js';
  import '../site_settings/settings_category_default_radio_group.js';
+ import '../site_settings/smart_card_readers_page.js';
 +import './personalization_options.js';
  import './privacy_guide/privacy_guide_dialog.js';
  
- import {SettingsToggleButtonElement} from '/shared/settings/controls/settings_toggle_button.js';
+ import {PrefsMixin} from '/shared/settings/prefs/prefs_mixin.js';

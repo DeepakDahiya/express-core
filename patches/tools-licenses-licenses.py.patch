@@ -1,36 +1,38 @@
 diff --git a/tools/licenses/licenses.py b/tools/licenses/licenses.py
-index 8287504ff1e927e8f16509506127cfe55d1c5e9d..aa80c908e9f9c0b92fe85c587ef7ce6a2e9a4103 100755
+index b0807ee3d8ebcf34f0d740362aa46c8631562d38..8df2583def874ca82f362ba14e8cc4ee0e3fe12f 100755
 --- a/tools/licenses/licenses.py
 +++ b/tools/licenses/licenses.py
-@@ -41,6 +41,7 @@ _REPOSITORY_ROOT = os.path.abspath(
+@@ -42,6 +42,7 @@ _REPOSITORY_ROOT = os.path.abspath(
      os.path.join(os.path.dirname(__file__), '..', '..'))
  sys.path.insert(0, os.path.join(_REPOSITORY_ROOT, 'build'))
  import action_helpers
-+from brave_license_helper import AddBraveCredits, BRAVE_THIRD_PARTY_DIRS, CheckBraveMissingLicense
++from brave_license_helper import AddBraveCredits, BRAVE_THIRD_PARTY_DIRS, CheckBraveMissingLicense, IsBraveRustCrate, ReportBraveIncompleteMetadataFile
  
- # Paths from the root of the tree to directories to skip.
- PRUNE_PATHS = set([
-@@ -421,6 +422,7 @@ SPECIAL_CASES = {
-         "License File": ["//third_party/selenium-atoms/LICENSE.closure"],
+ METADATA_FILE_NAMES = frozenset({
+     "README.chromium", "README.crashpad", "README.v8", "README.pdfium",
+@@ -338,6 +339,7 @@ SPECIAL_CASES = {
+         "License File": ["//third_party/dawn/third_party/khronos/LICENSE"],
      },
  }
 +(PRUNE_DIRS, ADDITIONAL_PATHS) = AddBraveCredits(_REPOSITORY_ROOT, PRUNE_PATHS, SPECIAL_CASES, PRUNE_DIRS, ADDITIONAL_PATHS)
  
  # These buildtools/third_party directories only contain
  # chromium build files. The actual third_party source files and their
-@@ -836,7 +838,8 @@ def FindThirdPartyDirs(prune_paths, root, extra_third_party_dirs=None):
+@@ -785,7 +787,8 @@ def FindThirdPartyDirs(root, extra_third_party_dirs=None):
        if skip in dirs:
          dirs.remove(skip)
  
 -    if os.path.basename(path) == 'third_party':
 +    if (os.path.basename(path) == 'third_party' or
-+        os.path.basename(path) in BRAVE_THIRD_PARTY_DIRS):
++        os.path.basename(path) in BRAVE_THIRD_PARTY_DIRS or IsBraveRustCrate(path)):
        # Add all subdirectories that are not marked for skipping.
-       for dir in dirs:
-         dirpath = os.path.join(path, dir)
-@@ -1094,7 +1097,8 @@ def GenerateCredits(file_template_file,
-                                     enable_warnings=enable_warnings)
+       for d in dirs:
+         dirpath = os.path.join(path, d)
+@@ -1023,8 +1026,10 @@ def GenerateCredits(file_template_file,
+                                        _REPOSITORY_ROOT,
+                                        enable_warnings=enable_warnings)
        if not directory_metadata:
++        ReportBraveIncompleteMetadataFile(path)
          continue
 -    except LicenseError:
 +    except LicenseError as e:

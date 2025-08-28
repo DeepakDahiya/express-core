@@ -1,11 +1,11 @@
 diff --git a/tools/json_schema_compiler/idl_schema.py b/tools/json_schema_compiler/idl_schema.py
-index 1a3774505d128ff38e5206865fc8438b6769e4b0..59a8d8f4418aa47f2b29e8a1c5b98e04a3da6677 100755
+index 81824a896ba6de708c42293cb24f5e3852401d5e..6b745b88812e636f095960c2880a1ebafe85be3e 100755
 --- a/tools/json_schema_compiler/idl_schema.py
 +++ b/tools/json_schema_compiler/idl_schema.py
-@@ -575,6 +575,8 @@ class IDLSchema(object):
-           documentation_options['namespace'] = node.value
-         elif node.name == 'documented_in':
-           documentation_options['documented_in'] = node.value
+@@ -563,6 +563,8 @@ class IDLSchema(object):
+           compiler_options['generate_error_messages'] = True
+         elif node.name == 'deprecated':
+           deprecated = str(node.value)
 +        elif node.name == 'none_as_absent_optional':
 +          compiler_options['none_as_absent_optional'] = True
          else:

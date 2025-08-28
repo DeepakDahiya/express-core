@@ -1,9 +1,9 @@
 diff --git a/components/sync/service/sync_service_impl.h b/components/sync/service/sync_service_impl.h
-index 1303e875eeea0f3f829fd8fb21864fa385f278ba..8e5d63ebbf0bff8cd1fe90e29c3e3d122d81be84 100644
+index 0d76b6a84ebed1c856e6c3bbd2bf448363c154ee..4dad49cc7039938f16a7d1987f811110921ad739 100644
 --- a/components/sync/service/sync_service_impl.h
 +++ b/components/sync/service/sync_service_impl.h
-@@ -259,6 +259,7 @@ class SyncServiceImpl : public SyncService,
-   SyncClient* GetSyncClientForTest();
+@@ -275,6 +275,7 @@ class SyncServiceImpl : public SyncService,
+   size_t GetQueuedLocalDataMigrationItemCountForTest() const;
  
   private:
 +  BRAVE_SYNC_SERVICE_IMPL_H_

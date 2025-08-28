@@ -1,22 +1,22 @@
 diff --git a/chrome/android/java/src/org/chromium/chrome/browser/sync/settings/ManageSyncSettings.java b/chrome/android/java/src/org/chromium/chrome/browser/sync/settings/ManageSyncSettings.java
-index 52e5d94bd0e6382f36bd59309afa58be441aa383..0b33987a613dc2c40f57e8fe0712dcb2df04bdb9 100644
+index 46bc378cb09b6c1f987c43db949331de22002f2c..790fa1a90febd115fdc6404cbede6666815459a8 100644
 --- a/chrome/android/java/src/org/chromium/chrome/browser/sync/settings/ManageSyncSettings.java
 +++ b/chrome/android/java/src/org/chromium/chrome/browser/sync/settings/ManageSyncSettings.java
-@@ -52,7 +52,7 @@ import org.chromium.chrome.browser.sync.ui.PassphraseDialogFragment;
- import org.chromium.chrome.browser.sync.ui.PassphraseTypeDialogFragment;
- import org.chromium.chrome.browser.ui.signin.SignOutDialogCoordinator;
- import org.chromium.chrome.browser.ui.signin.SignOutDialogCoordinator.Listener;
+@@ -66,7 +66,7 @@ import org.chromium.chrome.browser.ui.signin.SigninUtils;
+ import org.chromium.chrome.browser.ui.signin.SignoutButtonPreference;
+ import org.chromium.chrome.browser.ui.signin.history_sync.HistorySyncHelper;
+ import org.chromium.chrome.browser.ui.theme.ChromeSemanticColorUtils;
 -import org.chromium.components.browser_ui.settings.ChromeBaseCheckBoxPreference;
 +import org.chromium.components.browser_ui.settings.brave_tricks.checkbox_to_switch.ChromeBaseCheckBoxPreference;
+ import org.chromium.components.browser_ui.settings.ChromeBasePreference;
  import org.chromium.components.browser_ui.settings.ChromeSwitchPreference;
  import org.chromium.components.browser_ui.settings.SettingsUtils;
- import org.chromium.components.signin.AccountManagerFacadeProvider;
-@@ -363,7 +363,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
-                                 .getIdentityManager(getProfile())
-                                 .getPrimaryAccountInfo(ConsentLevel.SYNC));
+@@ -720,7 +720,7 @@ public class ManageSyncSettings extends ChromeBaseSettingsFragment
+                                                 ? ConsentLevel.SIGNIN
+                                                 : ConsentLevel.SYNC));
          // May happen if account is removed from the device while this screen is shown.
 -        if (signedInAccountName == null) {
 +        if (false) {
-             if (getActivity() != null) getActivity().finish();
+             finishCurrentSettings();
              return;
          }

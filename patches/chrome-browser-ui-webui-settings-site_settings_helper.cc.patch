@@ -1,20 +1,52 @@
 diff --git a/chrome/browser/ui/webui/settings/site_settings_helper.cc b/chrome/browser/ui/webui/settings/site_settings_helper.cc
-index 984a7384410497caf176efb1d73dbadd00e6bbcd..e86f71f8b0b873c13bc16e8669a1a4acad0c8e47 100644
+index 91dade1982c30aafc05e6e1ffb7e8a7c17953cf7..d83cb9993e55f8fb7bfc9432a6fbb153661583ea 100644
 --- a/chrome/browser/ui/webui/settings/site_settings_helper.cc
 +++ b/chrome/browser/ui/webui/settings/site_settings_helper.cc
-@@ -205,6 +205,7 @@ const ContentSettingsTypeNameEntry kContentSettingsTypeGroupNames[] = {
-     {ContentSettingsType::FILE_SYSTEM_ACCESS_EXTENDED_PERMISSION, nullptr},
-     {ContentSettingsType::TPCD_HEURISTICS_GRANTS, nullptr},
-     {ContentSettingsType::FILE_SYSTEM_ACCESS_RESTORE_PERMISSION, nullptr},
+@@ -259,6 +259,7 @@ constexpr auto kContentSettingsTypeGroupNames = std::to_array<
+     // TODO(crbug.com/430494524): Implement the WebUI
+     {ContentSettingsType::GEOLOCATION_WITH_OPTIONS, nullptr},
+     {ContentSettingsType::DEVICE_ATTRIBUTES, nullptr},
 +    BRAVE_CONTENT_SETTINGS_TYPE_GROUP_NAMES_LIST
- };
+ });
  
- static_assert(std::size(kContentSettingsTypeGroupNames) ==
-@@ -466,6 +467,7 @@ bool HasRegisteredGroupName(ContentSettingsType type) {
+ static_assert(
+@@ -533,6 +534,7 @@ bool HasRegisteredGroupName(ContentSettingsType type) {
  }
  
- ContentSettingsType ContentSettingsTypeFromGroupName(base::StringPiece name) {
+ ContentSettingsType ContentSettingsTypeFromGroupName(std::string_view name) {
 +  BRAVE_SITE_SETTINGS_HELPER_CONTENT_SETTINGS_TYPE_FROM_GROUP_NAME
    for (const auto& entry : kContentSettingsTypeGroupNames) {
      // Content setting types that aren't represented in the settings UI
      // will have `nullptr` as their `name`. However, converting `nullptr`
+@@ -547,6 +549,7 @@ ContentSettingsType ContentSettingsTypeFromGroupName(std::string_view name) {
+ }
+ 
+ std::string_view ContentSettingsTypeToGroupName(ContentSettingsType type) {
++  BRAVE_SITE_SETTINGS_HELPER_CONTENT_SETTINGS_TYPE_TO_GROUP_NAME
+   for (const auto& entry : kContentSettingsTypeGroupNames) {
+     if (type == entry.type) {
+       // Content setting types that aren't represented in the settings UI
+@@ -721,6 +724,7 @@ std::string SiteSettingSourceToString(const SiteSettingSource source) {
+ SiteSettingSource ProviderTypeToSiteSettingsSource(
+     const ProviderType provider_type) {
+   switch (provider_type) {
++    BRAVE_PROVIDER_TYPE_TO_SITE_SETTINGS_SOURCE
+     case ProviderType::kWebuiAllowlistProvider:
+     case ProviderType::kComponentExtensionProvider:
+       return SiteSettingSource::kAllowlist;
+@@ -748,6 +752,7 @@ SiteSettingSource ProviderTypeToSiteSettingsSource(
+ 
+ std::string ProviderToDefaultSettingSourceString(const ProviderType provider) {
+   switch (provider) {
++    BRAVE_PROVIDER_TO_DEFAULT_SETTINGS_STRING
+     case ProviderType::kPolicyProvider:
+       return "policy";
+     case ProviderType::kSupervisedProvider:
+@@ -874,6 +879,7 @@ base::Value::Dict GetExceptionForPage(
+   exception.Set(kSource, SiteSettingSourceToString(source));
+   exception.Set(kIncognito, incognito);
+   exception.Set(kIsEmbargoed, is_embargoed);
++  BRAVE_GET_EXCEPTION_FOR_PAGE
+   return exception;
+ }
+ 

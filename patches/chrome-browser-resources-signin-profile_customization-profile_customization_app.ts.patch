@@ -1,5 +1,5 @@
 diff --git a/chrome/browser/resources/signin/profile_customization/profile_customization_app.ts b/chrome/browser/resources/signin/profile_customization/profile_customization_app.ts
-index f22a0f67449244189d88bcfeffd28207c3b03030..4771a3449e9699c332b8ea16a569453c0560d864 100644
+index 1c6030768735d2c91088749090d97379f92c80c6..371c733f12b341fa6215aa774e84a13f07d9026e 100644
 --- a/chrome/browser/resources/signin/profile_customization/profile_customization_app.ts
 +++ b/chrome/browser/resources/signin/profile_customization/profile_customization_app.ts
 @@ -2,6 +2,7 @@
@@ -7,6 +7,6 @@ index f22a0f67449244189d88bcfeffd28207c3b03030..4771a3449e9699c332b8ea16a569453c
  // found in the LICENSE file.
  
 +import 'chrome://resources/brave/polymer_overriding.js';
- import 'chrome://resources/cr_components/customize_themes/customize_themes.js';
  import 'chrome://resources/cr_components/theme_color_picker/theme_color_picker.js';
  import 'chrome://resources/cr_elements/cr_button/cr_button.js';
+ import 'chrome://resources/cr_elements/cr_icon/cr_icon.js';

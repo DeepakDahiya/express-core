@@ -1,12 +1,20 @@
 diff --git a/build/config/android/internal_rules.gni b/build/config/android/internal_rules.gni
-index 4bcc38d19a6fcc895079eba6198b598efc8306c0..8b8349c310996c58070cfbd0295e4d36b171cd9e 100644
+index 82668c13e6971705e763c0425d6d0d2480b3b52d..d5263b36e2c50d6b01afc78de77c651d304bf2dd 100644
 --- a/build/config/android/internal_rules.gni
 +++ b/build/config/android/internal_rules.gni
-@@ -4014,6 +4014,7 @@ if (enable_java_templates) {
+@@ -3563,6 +3563,7 @@ if (enable_java_templates) {
+       } else if (_has_sources) {
+         # Filter directly in compile_java.py when no other processing is required.
+         _processed_jar_path = _javac_jar_path
++        foreach(bytecode_jar, brave_bytecode_jars) { if (rebase_path(_javac_jar_path, root_build_dir) == bytecode_jar) { _processed_jar_path = "$target_out_dir/$target_name.bytecode-rewritten.jar" } }
+       }
+ 
+       if (_build_device_jar) {
+@@ -4131,6 +4132,7 @@ if (enable_java_templates) {
        } else {
          not_needed(invoker, [ "missing_classes_allowlist" ])
        }
-+      foreach(bytecode_jar, brave_bytecode_jars) { if (rebase_path(_unprocessed_jar_path, root_build_dir) == bytecode_jar) { _bytecode_rewriter_output_jar = "$target_out_dir/$target_name.bytecode-rewritten.jar" brave_bytecode_rewriter("${target_name}__bytecode_rewrite") { build_config = _build_config } _unprocessed_jar_deps = [] _unprocessed_jar_deps = [ ":${target_name}__bytecode_rewrite" ] _unprocessed_jar_path = _bytecode_rewriter_output_jar } }
++      foreach(bytecode_jar, brave_bytecode_jars) { if (rebase_path(_unprocessed_jar_path, root_build_dir) == bytecode_jar) { _bytecode_rewriter_output_jar = _processed_jar_path brave_bytecode_rewriter("${target_name}__bytecode_rewrite") { build_config = _build_config } _unprocessed_jar_deps += [ ":${target_name}__bytecode_rewrite" ] _unprocessed_jar_path = _bytecode_rewriter_output_jar } }
  
-       if (_build_host_jar) {
-         _process_host_jar_target_name = "${target_name}__host"
+       if (_filter_jar && _is_prebuilt) {
+         _filter_jar_target_name = "${target_name}__filter_jar"

@@ -1,0 +1,12 @@
+diff --git a/content/public/browser/BUILD.gn b/content/public/browser/BUILD.gn
+index 3f95d514c8348a880128d0bf14a723aa1283ce69..bcfb097fee4afea0ca01f8ab7ddc687e2bde3229 100644
+--- a/content/public/browser/BUILD.gn
++++ b/content/public/browser/BUILD.gn
+@@ -749,6 +749,7 @@ source_set("browser_sources") {
+   if (enable_video_effects) {
+     public_deps += [ "//services/video_effects/public/mojom" ]
+   }
++  import("//brave/content/public/browser/sources.gni") sources += brave_content_public_browser_sources
+ }
+ 
+ if (is_android) {

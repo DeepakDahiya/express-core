@@ -1,9 +1,9 @@
 diff --git a/chrome/browser/first_run/upgrade_util_win.cc b/chrome/browser/first_run/upgrade_util_win.cc
-index 85ce2f93ec74201e7310bef29a17daf22d84496a..d916941733a7eb625c554384132299c044bc617b 100644
+index c3b12ea3877ef69808bae2f779629dc2930f3456..cce3530f167538d0c5db492346def0b24f2e4d7b 100644
 --- a/chrome/browser/first_run/upgrade_util_win.cc
 +++ b/chrome/browser/first_run/upgrade_util_win.cc
-@@ -46,7 +46,7 @@
- #include "components/prefs/pref_service.h"
+@@ -61,7 +61,7 @@
+ #include "third_party/abseil-cpp/absl/cleanup/cleanup.h"
  #include "ui/base/ui_base_switches.h"
  
 -#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
@@ -11,11 +11,21 @@ index 85ce2f93ec74201e7310bef29a17daf22d84496a..d916941733a7eb625c554384132299c0
  #include "chrome/updater/app/server/win/updater_legacy_idl.h"
  #endif
  
-@@ -60,7 +60,7 @@ bool GetNewerChromeFile(base::FilePath* path) {
+@@ -74,7 +74,7 @@ bool GetNewerChromeFile(base::FilePath* path) {
+   return true;
  }
+ 
+-#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
++#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OFFICIAL_BUILD)
+ // Holds the result of the IPC to CoCreate `GoogleUpdate3Web`.
+ struct CreateGoogleUpdate3WebResult
+     : public base::RefCountedThreadSafe<CreateGoogleUpdate3WebResult> {
+@@ -216,7 +216,8 @@ Microsoft::WRL::ComPtr<IUnknown> CreateGoogleUpdate3Web() {
+ #endif  // BUILDFLAG(GOOGLE_CHROME_BRANDING)
  
  bool InvokeGoogleUpdateForRename() {
 -#if BUILDFLAG(GOOGLE_CHROME_BRANDING)
++  return InvokeGoogleUpdateForRenameBrave();
 +#if BUILDFLAG(GOOGLE_CHROME_BRANDING) || defined(OFFICIAL_BUILD)
    // This has been identified as very slow on some startups. Detailed trace
    // events below try to shine a light on each steps. crbug.com/1252004
