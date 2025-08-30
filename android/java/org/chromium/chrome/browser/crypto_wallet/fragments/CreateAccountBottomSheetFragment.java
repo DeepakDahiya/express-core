@@ -31,7 +31,7 @@ import java.util.List;
 public class CreateAccountBottomSheetFragment extends BottomSheetDialogFragment
         implements CreateAccountAdapter.OnCreateAccountClickListener {
     public static final String TAG = "CreateAccount";
-    private View rootView;
+
     private WalletModel mWalletModel;
     private List<CryptoAccountTypeInfo> mSupportedCryptoAccounts;
     private RecyclerView mRvAccounts;
@@ -45,10 +45,11 @@ public class CreateAccountBottomSheetFragment extends BottomSheetDialogFragment
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View onCreateView(
+            @NonNull LayoutInflater inflater,
+            @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
-        rootView = inflater.inflate(R.layout.fragment_create_account, container, false);
-        return rootView;
+        return inflater.inflate(R.layout.fragment_create_account, container, false);
     }
 
     @Override
@@ -73,8 +74,9 @@ public class CreateAccountBottomSheetFragment extends BottomSheetDialogFragment
 
     @Override
     public void onAccountClick(CryptoAccountTypeInfo cryptoAccountTypeInfo) {
-        Intent intent = AddAccountActivity.createIntentToAddAccount(
-                getContext(), cryptoAccountTypeInfo.getCoinType());
+        Intent intent =
+                AddAccountActivity.createIntentToAddAccount(
+                        getContext(), cryptoAccountTypeInfo.getCoinType());
         startActivity(intent);
         dismiss();
     }

@@ -26,11 +26,11 @@ import java.util.List;
  * sub-title.
  */
 public class TwoLineItemFragment extends Fragment {
-    private List<TwoLineItem> items;
-    private TwoLineItemRecyclerViewAdapter adapter;
+    private final List<TwoLineItem> mItems;
+    private TwoLineItemRecyclerViewAdapter mAdapter;
 
     public TwoLineItemFragment(List<TwoLineItem> items) {
-        this.items = items;
+        mItems = items;
     }
 
     public static TwoLineItemFragment newInstance(List<TwoLineItem> items) {
@@ -44,33 +44,34 @@ public class TwoLineItemFragment extends Fragment {
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_two_line_item_list, container, false);
         RecyclerView recyclerView = (RecyclerView) view;
-        adapter = new TwoLineItemRecyclerViewAdapter(items);
-        recyclerView.setAdapter(adapter);
-        recyclerView.setOnTouchListener((v, event) -> {
-            int action = event.getAction();
-            switch (action) {
-                case MotionEvent.ACTION_DOWN:
-                    // Disallow NestedScrollView to intercept touch events.
-                    v.getParent().requestDisallowInterceptTouchEvent(true);
-                    break;
+        mAdapter = new TwoLineItemRecyclerViewAdapter(mItems);
+        recyclerView.setAdapter(mAdapter);
+        recyclerView.setOnTouchListener(
+                (v, event) -> {
+                    int action = event.getAction();
+                    switch (action) {
+                        case MotionEvent.ACTION_DOWN:
+                            // Disallow NestedScrollView to intercept touch events.
+                            v.getParent().requestDisallowInterceptTouchEvent(true);
+                            break;
 
-                case MotionEvent.ACTION_UP:
-                    // Allow NestedScrollView to intercept touch events.
-                    v.getParent().requestDisallowInterceptTouchEvent(false);
-                    break;
-            }
+                        case MotionEvent.ACTION_UP:
+                            // Allow NestedScrollView to intercept touch events.
+                            v.getParent().requestDisallowInterceptTouchEvent(false);
+                            break;
+                    }
 
-            // Handle RecyclerView touch events.
-            v.onTouchEvent(event);
-            return true;
-        });
+                    // Handle RecyclerView touch events.
+                    v.onTouchEvent(event);
+                    return true;
+                });
         return view;
     }
 
     @SuppressLint("NotifyDataSetChanged")
     public void invalidateData() {
-        if (adapter != null) {
-            adapter.notifyDataSetChanged();
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
         }
     }
 }

@@ -21,12 +21,10 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.crypto_wallet.util.AndroidUtils;
 import org.chromium.chrome.browser.crypto_wallet.util.Validations;
 
-/**
- * Fragment to show DApps-related messages
- */
+/** Fragment to show DApps-related messages */
 public class DAppsMessageFragment extends BaseDAppsFragment {
     private static final String TAG = "DAppsMessageFragment";
-    private SignMessageRequest mCurrentSignMessageRequest;
+    private final SignMessageRequest mCurrentSignMessageRequest;
     private boolean mUnicodeEscapeVersion;
     private TextView mSignMessageText;
 
@@ -49,7 +47,7 @@ public class DAppsMessageFragment extends BaseDAppsFragment {
             isEip712 = false;
         } else if (mCurrentSignMessageRequest.signData.which()
                 == SignDataUnion.Tag.EthSignTypedData) {
-            message = mCurrentSignMessageRequest.signData.getEthSignTypedData().message;
+            message = mCurrentSignMessageRequest.signData.getEthSignTypedData().messageJson;
             isEip712 = true;
         } else if (mCurrentSignMessageRequest.signData.which()
                 == SignDataUnion.Tag.SolanaSignData) {
@@ -67,13 +65,15 @@ public class DAppsMessageFragment extends BaseDAppsFragment {
             mSignMessageText.setLines(12);
             view.findViewById(R.id.non_ascii_warning_layout).setVisibility(View.VISIBLE);
             TextView warningLinkText = view.findViewById(R.id.non_ascii_warning_text_link);
-            warningLinkText.setOnClickListener(v -> {
-                warningLinkText.setText(mUnicodeEscapeVersion
-                                ? getString(R.string.wallet_non_ascii_characters_original)
-                                : getString(R.string.wallet_non_ascii_characters_ascii));
-                mUnicodeEscapeVersion = !mUnicodeEscapeVersion;
-                updateTextEthSign(mUnicodeEscapeVersion, message, isEip712);
-            });
+            warningLinkText.setOnClickListener(
+                    v -> {
+                        warningLinkText.setText(
+                                mUnicodeEscapeVersion
+                                        ? getString(R.string.wallet_non_ascii_characters_original)
+                                        : getString(R.string.wallet_non_ascii_characters_ascii));
+                        mUnicodeEscapeVersion = !mUnicodeEscapeVersion;
+                        updateTextEthSign(mUnicodeEscapeVersion, message, isEip712);
+                    });
         }
 
         return view;
@@ -83,21 +83,24 @@ public class DAppsMessageFragment extends BaseDAppsFragment {
             boolean unicodeEscape, final String message, final boolean isEip712) {
         String escapedDomain = "";
         if (isEip712) {
-            String domain = mCurrentSignMessageRequest.signData.getEthSignTypedData().domain;
+            String domain = mCurrentSignMessageRequest.signData.getEthSignTypedData().domainJson;
             escapedDomain = unicodeEscape ? Validations.unicodeEscape(domain) : domain;
         }
         String escapedMessage = unicodeEscape ? Validations.unicodeEscape(message) : message;
 
-        Spanned domainPart = escapedDomain.isEmpty()
-                ? new SpannableString("")
-                : AndroidUtils.formatHTML(
-                        getString(R.string.wallet_sign_message_details_domain_section,
-                                Html.escapeHtml(escapedDomain)));
-        Spanned messagePart = AndroidUtils.formatHTML(
-                getString(R.string.wallet_sign_message_details_message_section,
-                        Html.escapeHtml(escapedMessage)));
+        Spanned domainPart =
+                escapedDomain.isEmpty()
+                        ? new SpannableString("")
+                        : AndroidUtils.formatHTML(
+                                getString(
+                                        R.string.wallet_sign_message_details_domain_section,
+                                        Html.escapeHtml(escapedDomain)));
+        Spanned messagePart =
+                AndroidUtils.formatHTML(
+                        getString(
+                                R.string.wallet_sign_message_details_message_section,
+                                Html.escapeHtml(escapedMessage)));
 
         mSignMessageText.setText(TextUtils.concat(domainPart, messagePart));
     }
-
 }

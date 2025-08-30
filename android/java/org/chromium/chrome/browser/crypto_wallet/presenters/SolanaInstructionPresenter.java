@@ -30,8 +30,8 @@ import java.util.Locale;
 public class SolanaInstructionPresenter {
     public List<SolanaInstructionAccountPresenter> mAccountDatas;
     public boolean mIsUnknown;
-    private boolean isDecodedDataPresent;
-    private SolanaInstruction mSolanaInstruction;
+    private boolean mIsDecodedDataPresent;
+    private final SolanaInstruction mSolanaInstruction;
     private Integer mInstructionType;
     private String mFromPubKey;
     private String mToPubKey;
@@ -42,13 +42,13 @@ public class SolanaInstructionPresenter {
         mSolanaInstruction = solanaInstruction;
         mAccountDatas = new ArrayList<>();
         if (solanaInstruction.accountMetas != null && !mIsUnknown) {
-            isDecodedDataPresent = solanaInstruction.decodedData != null;
+            mIsDecodedDataPresent = solanaInstruction.decodedData != null;
             boolean isAccountParamsPresent =
-                    isDecodedDataPresent && solanaInstruction.decodedData.accountParams != null;
+                    mIsDecodedDataPresent && solanaInstruction.decodedData.accountParams != null;
             int accountParamLen =
                     isAccountParamsPresent ? solanaInstruction.decodedData.accountParams.length : 0;
             boolean isSignerPresent = false;
-            if (isDecodedDataPresent && isAccountParamsPresent) {
+            if (mIsDecodedDataPresent && isAccountParamsPresent) {
                 for (int i = 0; i < solanaInstruction.accountMetas.length; i++) {
                     SolanaAccountMeta solanaAccountMeta = solanaInstruction.accountMetas[i];
                     SolanaInstructionAccountParam solanaInstructionAccountParam = null;
@@ -70,8 +70,10 @@ public class SolanaInstructionPresenter {
                     // accounts[n-1...m]
                     if (i < accountParamLen || isSignerPresent) {
                         mAccountDatas.add(
-                                new SolanaInstructionAccountPresenter(solanaAccountMeta.pubkey,
-                                        solanaInstructionAccountParam, solanaAccountMeta));
+                                new SolanaInstructionAccountPresenter(
+                                        solanaAccountMeta.pubkey,
+                                        solanaInstructionAccountParam,
+                                        solanaAccountMeta));
                     }
                 }
             }
@@ -81,15 +83,20 @@ public class SolanaInstructionPresenter {
     public List<TwoLineItem> toTwoLineList(Context context) {
         List<TwoLineItem> twoLineItems = new ArrayList<>();
         var txSubType =
-                context.getString(TransactionUtils.getSolTxSubType(mSolanaInstruction.programId,
-                        mSolanaInstruction.decodedData != null
-                                ? mSolanaInstruction.decodedData.instructionType
-                                : -1));
+                context.getString(
+                        TransactionUtils.getSolTxSubType(
+                                mSolanaInstruction.programId,
+                                mSolanaInstruction.decodedData != null
+                                        ? mSolanaInstruction.decodedData.instructionType
+                                        : -1));
         if (!txSubType.equals(context.getString(R.string.brave_wallet_unknown))) {
-            twoLineItems.add(new TwoLineItemText(
-                    TransactionUtils.getSolanaProgramIdName(mSolanaInstruction.programId, context)
-                            + " - " + txSubType,
-                    null));
+            twoLineItems.add(
+                    new TwoLineItemText(
+                            TransactionUtils.getSolanaProgramIdName(
+                                            mSolanaInstruction.programId, context)
+                                    + " - "
+                                    + txSubType,
+                            null));
         }
         SolanaInstructionPresenter solanaInstructionPresenter =
                 new SolanaInstructionPresenter(mSolanaInstruction);
@@ -119,39 +126,52 @@ public class SolanaInstructionPresenter {
             for (SolanaAccountMeta solanaAccountMeta : getSolanaInstruction().accountMetas) {
                 var lookupTableIndex = solanaAccountMeta.addrTableLookupIndex;
                 if (lookupTableIndex != null) {
-                    twoLineItemDataSources.add(new TwoLineItemText(
-                            resources.getString(
-                                    R.string.brave_wallet_solana_address_lookup_table_account),
-                            null));
+                    twoLineItemDataSources.add(
+                            new TwoLineItemText(
+                                    resources.getString(
+                                            R.string
+                                                    .brave_wallet_solana_address_lookup_table_account),
+                                    null));
                 }
                 twoLineItemDataSources.add(new TwoLineItemText(null, solanaAccountMeta.pubkey));
                 if (lookupTableIndex != null) {
-                    twoLineItemDataSources.add(new TwoLineItemText(
-                            resources.getString(
-                                    R.string.brave_wallet_solana_address_lookup_table_index),
-                            String.valueOf(Byte.toUnsignedInt(lookupTableIndex.val))));
+                    twoLineItemDataSources.add(
+                            new TwoLineItemText(
+                                    resources.getString(
+                                            R.string
+                                                    .brave_wallet_solana_address_lookup_table_index),
+                                    String.valueOf(Byte.toUnsignedInt(lookupTableIndex.val))));
                 }
             }
         } else {
             for (SolanaInstructionAccountPresenter accountPresenter : mAccountDatas) {
-                var twoLineItemText = new TwoLineItemText(
-                        accountPresenter.mLocalizeAccountHeader, accountPresenter.mPubKey);
+                var twoLineItemText =
+                        new TwoLineItemText(
+                                accountPresenter.mLocalizeAccountHeader, accountPresenter.mPubKey);
                 twoLineItemDataSources.add(twoLineItemText);
                 if (!accountPresenter.mSolanaAccountMeta.isSigner) {
-                    var prependedTableIndexSubTitle = JavaUtils.concatStrings(
-                            System.getProperty(WalletConstants.LINE_SEPARATOR),
-                            accountPresenter.mLocalizeAccountHeader,
-                            resources.getString(
-                                    R.string.brave_wallet_solana_address_lookup_table_account));
+                    var prependedTableIndexSubTitle =
+                            JavaUtils.concatStrings(
+                                    System.getProperty(WalletConstants.LINE_SEPARATOR),
+                                    accountPresenter.mLocalizeAccountHeader,
+                                    resources.getString(
+                                            R.string
+                                                    .brave_wallet_solana_address_lookup_table_account));
                     twoLineItemText.setTitle(prependedTableIndexSubTitle);
                 }
                 if (!accountPresenter.mSolanaAccountMeta.isSigner
                         && accountPresenter.mSolanaAccountMeta.addrTableLookupIndex != null) {
-                    twoLineItemDataSources.add(new TwoLineItemText(
-                            resources.getString(
-                                    R.string.brave_wallet_solana_address_lookup_table_index),
-                            String.valueOf(Byte.toUnsignedInt(accountPresenter.mSolanaAccountMeta
-                                                                      .addrTableLookupIndex.val))));
+                    twoLineItemDataSources.add(
+                            new TwoLineItemText(
+                                    resources.getString(
+                                            R.string
+                                                    .brave_wallet_solana_address_lookup_table_index),
+                                    String.valueOf(
+                                            Byte.toUnsignedInt(
+                                                    accountPresenter
+                                                            .mSolanaAccountMeta
+                                                            .addrTableLookupIndex
+                                                            .val))));
                 }
             }
         }
@@ -160,14 +180,20 @@ public class SolanaInstructionPresenter {
 
     public List<TwoLineItemText> accountParamDataToList() {
         List<TwoLineItemText> twoLineItemDataSources = new ArrayList<>();
-        if (isDecodedDataPresent && mSolanaInstruction.decodedData.params != null) {
+        if (mIsDecodedDataPresent && mSolanaInstruction.decodedData.params != null) {
             for (SolanaInstructionParam instructionParam : mSolanaInstruction.decodedData.params) {
                 String value = instructionParam.value;
                 if (instructionParam.name.equalsIgnoreCase(WalletConstants.SOL_LAMPORTS)) {
-                    value = String.format(Locale.getDefault(), "%.9f",
-                                    Utils.getBalanceForCoinType(
-                                            CoinType.SOL, Utils.SOL_DEFAULT_DECIMALS, value))
-                            + " " + WalletConstants.SOL;
+                    value =
+                            String.format(
+                                            Locale.getDefault(),
+                                            "%.9f",
+                                            Utils.getBalanceForCoinType(
+                                                    CoinType.SOL,
+                                                    Utils.SOL_DEFAULT_DECIMALS,
+                                                    value))
+                                    + " "
+                                    + WalletConstants.SOL;
                 }
                 twoLineItemDataSources.add(
                         new TwoLineItemText(instructionParam.localizedName, value));
@@ -186,7 +212,7 @@ public class SolanaInstructionPresenter {
 
     // Get lamport from decoded data params
     public String getLamportAmount() {
-        if (isDecodedDataPresent && mSolanaInstruction.decodedData.params != null) {
+        if (mIsDecodedDataPresent && mSolanaInstruction.decodedData.params != null) {
             for (SolanaInstructionParam instructionParam : mSolanaInstruction.decodedData.params) {
                 if (instructionParam.name.equalsIgnoreCase(WalletConstants.SOL_LAMPORTS)) {
                     return instructionParam.value;
@@ -198,7 +224,7 @@ public class SolanaInstructionPresenter {
 
     public Integer getInstructionType() {
         if (mInstructionType != null) return mInstructionType;
-        if (isDecodedDataPresent) {
+        if (mIsDecodedDataPresent) {
             mInstructionType = mSolanaInstruction.decodedData.instructionType;
             return mInstructionType;
         }
@@ -260,17 +286,21 @@ public class SolanaInstructionPresenter {
     }
 
     private boolean isAccountMetaPresent() {
-        return isDecodedDataPresent && mSolanaInstruction.decodedData.accountParams != null
+        return mIsDecodedDataPresent
+                && mSolanaInstruction.decodedData.accountParams != null
                 && mSolanaInstruction.accountMetas != null;
     }
 
     private static class SolanaInstructionAccountPresenter {
-        private String mPubKey;
-        private SolanaAccountMeta mSolanaAccountMeta;
-        private String mLocalizeAccountHeader;
-        private String mAccountHeader;
+        private final String mPubKey;
+        private final SolanaAccountMeta mSolanaAccountMeta;
+        private final String mLocalizeAccountHeader;
 
-        private SolanaInstructionAccountPresenter(String pubKey,
+        @SuppressWarnings("UnusedVariable")
+        private final String mAccountHeader;
+
+        private SolanaInstructionAccountPresenter(
+                String pubKey,
                 SolanaInstructionAccountParam solInsAccountParam,
                 SolanaAccountMeta solanaAccountMeta) {
             mPubKey = pubKey;

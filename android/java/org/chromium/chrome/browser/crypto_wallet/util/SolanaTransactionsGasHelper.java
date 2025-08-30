@@ -16,8 +16,8 @@ import java.util.HashMap;
 
 public class SolanaTransactionsGasHelper {
     private final WeakReference<BraveWalletBaseActivity> mActivity;
-    private TransactionInfo[] mTransactionInfos;
-    private HashMap<String, Long> mPerTxFee;
+    private final TransactionInfo[] mTransactionInfos;
+    private final HashMap<String, Long> mPerTxFee;
 
     public SolanaTransactionsGasHelper(
             BraveWalletBaseActivity activity, TransactionInfo[] transactionInfos) {
@@ -38,7 +38,7 @@ public class SolanaTransactionsGasHelper {
                     || txInfo.txType == TransactionType.SOLANA_SPL_TOKEN_TRANSFER
                     || txInfo.txType
                             == TransactionType
-                                       .SOLANA_SPL_TOKEN_TRANSFER_WITH_ASSOCIATED_TOKEN_ACCOUNT_CREATION
+                                    .SOLANA_SPL_TOKEN_TRANSFER_WITH_ASSOCIATED_TOKEN_ACCOUNT_CREATION
                     || txInfo.txType == TransactionType.SOLANA_DAPP_SIGN_AND_SEND_TRANSACTION
                     || txInfo.txType == TransactionType.SOLANA_DAPP_SIGN_TRANSACTION
                     || txInfo.txType == TransactionType.SOLANA_SWAP) {
@@ -59,21 +59,25 @@ public class SolanaTransactionsGasHelper {
             estimatesContext.txMetaId = txInfo.id;
             estimatesContexts.add(estimatesContext);
 
-            if (mActivity.get() != null)
-                mActivity.get().getSolanaTxManagerProxy().getEstimatedTxFee(
-                        txInfo.chainId, txInfo.id, estimatesContext);
+            if (mActivity.get() != null) {
+                mActivity
+                        .get()
+                        .getSolanaTxManagerProxy()
+                        .getSolanaTxFeeEstimation(txInfo.chainId, txInfo.id, estimatesContext);
+            }
         }
 
-        estimatesMultiResponse.setWhenAllCompletedAction(() -> {
-            for (AsyncUtils.GetSolanaEstimatedTxFeeResponseContext estimatesContext :
-                    estimatesContexts) {
-                if (estimatesContext.error != SolanaProviderError.SUCCESS) {
-                    continue;
-                }
-                mPerTxFee.put(estimatesContext.txMetaId, estimatesContext.fee);
-            }
+        estimatesMultiResponse.setWhenAllCompletedAction(
+                () -> {
+                    for (AsyncUtils.GetSolanaEstimatedTxFeeResponseContext estimatesContext :
+                            estimatesContexts) {
+                        if (estimatesContext.error != SolanaProviderError.SUCCESS) {
+                            continue;
+                        }
+                        mPerTxFee.put(estimatesContext.txMetaId, estimatesContext.fee);
+                    }
 
-            runWhenDone.run();
-        });
+                    runWhenDone.run();
+                });
     }
 }
