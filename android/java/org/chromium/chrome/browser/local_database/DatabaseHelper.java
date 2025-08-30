@@ -179,7 +179,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return braveAd;
     }
 
-    private boolean isTopSiteAlreadyAdded(String destinationUrl) {
+    public boolean isTopSiteAlreadyAdded(String destinationUrl) {
         SQLiteDatabase sqldb = this.getReadableDatabase();
         String query =
                 "Select * from "

@@ -1379,14 +1379,9 @@ public abstract class BraveActivity extends ChromeActivity
         super.onResume();
         mIsProcessingPendingDappsTxRequest = false;
         updateBackCallbackState();
-        if (mIsDefaultCheckOnResume) {
-            mIsDefaultCheckOnResume = false;
 
-            if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
-                BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
-            }else{
-                BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
-            }
+        if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
+            BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
         }
 
         PostTask.postTask(
@@ -1538,7 +1533,6 @@ public abstract class BraveActivity extends ChromeActivity
 
         BraveSetDefaultBrowserUtils.checkForBraveSetDefaultBrowser(
                 appOpenCount, BraveActivity.this);
-        migrateBgPlaybackToFeature();
 
         Context app = ContextUtils.getApplicationContext();
         if (null != app
@@ -1932,28 +1926,6 @@ public abstract class BraveActivity extends ChromeActivity
         // }
     }
 
-    private void migrateBgPlaybackToFeature() {
-        if (ChromeSharedPreferences.getInstance()
-                .readBoolean(
-                        BravePreferenceKeys.BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE,
-                        false)) {
-            if (BravePrefServiceBridge.getInstance().getBackgroundVideoPlaybackEnabled()
-                    && ChromeFeatureList.isEnabled(
-                            BraveFeatureList.BRAVE_BACKGROUND_VIDEO_PLAYBACK)) {
-                BravePrefServiceBridge.getInstance().setBackgroundVideoPlaybackEnabled(true);
-            }
-            return;
-        }
-        if (BravePrefServiceBridge.getInstance().getBackgroundVideoPlaybackEnabled()) {
-            BraveFeatureUtil.enableFeature(
-                    BraveFeatureList.BRAVE_BACKGROUND_VIDEO_PLAYBACK_INTERNAL, true, true);
-        }
-        ChromeSharedPreferences.getInstance()
-                .writeBoolean(
-                        BravePreferenceKeys.BRAVE_BACKGROUND_VIDEO_PLAYBACK_CONVERTED_TO_FEATURE,
-                        true);
-    }
-
     private void initBraveNews() {
         ThreadUtils.assertOnUiThread();
         if (BravePrefServiceBridge.getInstance().getShowNews()
@@ -2058,32 +2030,32 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void openBrowserExpressProfileSettings() {
-        SettingsLauncher settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
+        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(this, BrowserExpressProfilePreferences.class);
     }
 
     public void openBrowserExpressLoginSettings() {
-        SettingsLauncher settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
+        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(this, BrowserExpressLoginPreferences.class);
     }
 
     public void openBrowserExpressCommentsSettings() {
-        SettingsLauncher settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
+        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(this, BrowserExpressCommentsPreferences.class);
     }
 
     public void openBrowserExpressSignupSettings() {
-        SettingsLauncher settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
+        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(this, BrowserExpressSignupPreferences.class);
     }
 
     public void openBrowserExpressEditProfileSettings() {
-        SettingsLauncher settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
+        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(this, BrowserExpressEditProfilePreferences.class);
     }
 
     public void openBrowserExpressVerify() {
-        SettingsLauncher settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
+        SettingsNavigation settingsLauncher = SettingsNavigationFactory.createSettingsNavigation();
         settingsLauncher.startSettings(this, BrowserExpressOtpVerifyPreferences.class);
     }
 
