@@ -337,7 +337,7 @@ public class BraveToolbarManager extends ToolbarManager
                 return;
             }
             GURL currentGurl = currentTab.getUrl();
-            boolean isNtp = UrlUtilities.isNTPUrl(currentGurl.getSpec()) || currentTab.getUrl().getSpec().contains("youtube.com");
+            boolean isNtp = UrlUtilities.isNTPUrl(currentGurl) || currentTab.getUrl().getSpec().contains("youtube.com");
             Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
 
             mIsCurrentPageNtpOrHome = isNtp;
@@ -359,7 +359,7 @@ public class BraveToolbarManager extends ToolbarManager
                     return;
                 }
                 GURL currentGurl = tab.getUrl();
-                boolean isNtp = UrlUtilities.isNTPUrl(currentGurl.getSpec()) || tab.getUrl().getSpec().contains("youtube.com");
+                boolean isNtp = UrlUtilities.isNTPUrl(currentGurl) || tab.getUrl().getSpec().contains("youtube.com");
 
                 mIsCurrentPageNtpOrHome = isNtp;
                 setBraveBottomControlsVisible(!isNtp);
@@ -369,7 +369,7 @@ public class BraveToolbarManager extends ToolbarManager
             public void onPageLoadStarted(Tab tab, GURL url) {
                 super.onPageLoadStarted(tab, url);
                 // Prefer using GURL overload if UrlUtilities.isNTPUrl supports it
-                boolean isNtp = UrlUtilities.isNTPUrl(url.getSpec()) || url.getSpec().contains("youtube.com");
+                boolean isNtp = UrlUtilities.isNTPUrl(url) || url.getSpec().contains("youtube.com");
                 mIsCurrentPageNtpOrHome = isNtp;
                 setBraveBottomControlsVisible(!isNtp);
             }
@@ -390,7 +390,7 @@ public class BraveToolbarManager extends ToolbarManager
                     return;
                 }
                 GURL currentGurl = currentTab.getUrl();
-                boolean isNtp = UrlUtilities.isNTPUrl(currentGurl.getSpec()) || currentTab.getUrl().getSpec().contains("youtube.com");
+                boolean isNtp = UrlUtilities.isNTPUrl(currentGurl) || currentTab.getUrl().getSpec().contains("youtube.com");
 
                 mIsCurrentPageNtpOrHome = isNtp;
                 setBraveBottomControlsVisible(!isNtp);
@@ -670,7 +670,7 @@ public class BraveToolbarManager extends ToolbarManager
                 return;
             }
             GURL currentGurl = currentTab.getUrl();
-            boolean isNtp = UrlUtilities.isNTPUrl(currentGurl.getSpec()) || currentTab.getUrl().getSpec().contains("youtube.com");
+            boolean isNtp = UrlUtilities.isNTPUrl(currentGurl) || currentTab.getUrl().getSpec().contains("youtube.com");
             Log.d(TAG, "BraveToolbarManager: isNtp = " + isNtp);
 
             mIsCurrentPageNtpOrHome = isNtp;

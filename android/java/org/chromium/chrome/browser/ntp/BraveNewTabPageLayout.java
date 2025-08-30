@@ -1396,18 +1396,18 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     }
 
     private void setupSponsoredBackgroundContent() {
-        if (mSponsoredRichMediaWebView != null) {
-            return;
-        }
+        // if (mSponsoredRichMediaWebView != null) {
+        //     return;
+        // }
 
-        mSponsoredRichMediaWebView =
-                new SponsoredRichMediaWebView(mActivity, mWindowAndroid, mProfile);
+        // mSponsoredRichMediaWebView =
+        //         new SponsoredRichMediaWebView(mActivity, mWindowAndroid, mProfile);
 
-        mBackgroundSponsoredRichMediaView = findViewById(R.id.bg_sponsored_rich_media_view);
-        mBackgroundSponsoredRichMediaView.setVisibility(View.VISIBLE);
-        mBackgroundSponsoredRichMediaView.addView(mSponsoredRichMediaWebView.getView());
+        // mBackgroundSponsoredRichMediaView = findViewById(R.id.bg_sponsored_rich_media_view);
+        // mBackgroundSponsoredRichMediaView.setVisibility(View.VISIBLE);
+        // mBackgroundSponsoredRichMediaView.addView(mSponsoredRichMediaWebView.getView());
 
-        mSponsoredRichMediaWebView.loadSponsoredRichMedia();
+        // mSponsoredRichMediaWebView.loadSponsoredRichMedia();
     }
 
     private void setBackgroundImage(NTPImage ntpImage) {}
