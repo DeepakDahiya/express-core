@@ -231,36 +231,6 @@ public class BraveNtpAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolde
                     imageCreditViewHolder.mSuperReferralLogo.setVisibility(View.GONE);
 
                     if (backgroundImage.getImageCredit() != null) {
-                        String imageCreditStr =
-                                String.format(
-                                        mActivity
-                                                .getResources()
-                                                .getString(
-                                                        R.string.photo_by,
-                                                        backgroundImage
-                                                                .getImageCredit()
-                                                                .getName()));
-
-                        SpannableStringBuilder spannableString =
-                                new SpannableStringBuilder(imageCreditStr);
-                        spannableString.setSpan(
-                                new android.text.style.StyleSpan(android.graphics.Typeface.BOLD),
-                                ((imageCreditStr.length() - 1)
-                                        - (backgroundImage.getImageCredit().getName().length()
-                                                - 1)),
-                                imageCreditStr.length(),
-                                Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-
-                        imageCreditViewHolder.mCreditTv.setText(spannableString);
-                        imageCreditViewHolder.mCreditTv.setVisibility(View.VISIBLE);
-
-                        imageCreditViewHolder.mCreditTv.setOnClickListener(
-                                view -> {
-                                    if (backgroundImage.getImageCredit() != null) {
-                                        TabUtils.openUrlInSameTab(
-                                                backgroundImage.getImageCredit().getUrl());
-                                    }
-                                });
                     }
                 }
             }

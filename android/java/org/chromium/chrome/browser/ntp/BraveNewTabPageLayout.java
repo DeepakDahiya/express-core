@@ -1410,27 +1410,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         mSponsoredRichMediaWebView.loadSponsoredRichMedia();
     }
 
-    private void setBackgroundImage(NTPImage ntpImage) {
-        mBgImageView = (ImageView) findViewById(R.id.bg_image_view);
-        mBgImageView.setScaleType(ImageView.ScaleType.MATRIX);
-
-        ViewTreeObserver observer = mBgImageView.getViewTreeObserver();
-        observer.addOnGlobalLayoutListener(
-                new ViewTreeObserver.OnGlobalLayoutListener() {
-                    @Override
-                    public void onGlobalLayout() {
-                        mWorkerTask =
-                                new FetchWallpaperWorkerTask(
-                                        ntpImage,
-                                        mBgImageView.getMeasuredWidth(),
-                                        mBgImageView.getMeasuredHeight(),
-                                        mWallpaperRetrievedCallback);
-                        mWorkerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-
-                        mBgImageView.getViewTreeObserver().removeOnGlobalLayoutListener(this);
-                    }
-                });
-    }
+    private void setBackgroundImage(NTPImage ntpImage) {}
 
     private void checkAndShowNTPImage(boolean isReset) {
         NTPImage ntpImage = mSponsoredTab.getTabNTPImage(isReset);

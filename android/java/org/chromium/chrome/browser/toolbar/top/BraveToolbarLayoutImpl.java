@@ -183,6 +183,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 PlaylistServiceObserverImplDelegate {
     private static final String TAG = "BraveToolbar";
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
+    private static final String YOUTUBE_DOMAIN = "youtube.com";
 
     private static final int CONNECTION_TIMEOUT = 5000;
     private static final int READ_TIMEOUT = 5000;

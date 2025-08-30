@@ -482,7 +482,7 @@ public abstract class BraveActivity extends ChromeActivity
 
         int notificationRequestCount = ChromeSharedPreferences.getInstance().readInt("NOTIFICATION_REQUEST_COUNT");
         if(!NotificationManagerCompat.from(this).areNotificationsEnabled() && notificationRequestCount < 3){
-            this.showNotificationRationale();
+            // this.showNotificationRationale();
             ChromeSharedPreferences.getInstance().writeInt("NOTIFICATION_REQUEST_COUNT", notificationRequestCount + 1);
         }
 
