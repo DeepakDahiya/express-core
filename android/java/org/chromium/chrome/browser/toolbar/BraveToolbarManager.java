@@ -109,6 +109,7 @@ import com.bumptech.glide.Glide;
 import org.chromium.base.task.AsyncTask;
 import android.util.Base64;
 import java.io.UnsupportedEncodingException;
+import org.chromium.base.Log;
 
 import java.util.List;
 

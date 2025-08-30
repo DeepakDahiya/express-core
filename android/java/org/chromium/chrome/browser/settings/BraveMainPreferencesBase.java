@@ -275,7 +275,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         //     }
         // }
 
-        // int braveAccountSectionOrder = firstSectionOrder;
+        int braveAccountSectionOrder = firstSectionOrder;
         // if (ChromeFeatureList.isEnabled(BraveFeatureList.BRAVE_ACCOUNT)) {
         //     setPreferenceOrder(PREF_BRAVE_ACCOUNT_SECTION, ++braveAccountSectionOrder);
         //     setPreferenceOrder(PREF_GET_STARTED, ++braveAccountSectionOrder);
@@ -284,7 +284,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         //     removePreferenceIfPresent(PREF_GET_STARTED);
         // }
 
-        // int featuresSectionOrder = braveAccountSectionOrder;
+        int featuresSectionOrder = braveAccountSectionOrder;
         // setPreferenceOrder(PREF_FEATURES_SECTION, ++featuresSectionOrder);
 
         // setPreferenceOrder(PREF_SHIELDS_AND_PRIVACY, ++featuresSectionOrder);

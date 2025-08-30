@@ -192,8 +192,6 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                     Log.e("Express Browser Access Token", ex.getMessage());
                 }
             });
-
-            onClickViews();
         }
     }
 

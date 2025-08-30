@@ -118,8 +118,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
 
         super.onActivityCreated(savedInstanceState);
 
-        initBraveNewsController();
-
         View view = getView();
         if (view != null) {
             mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);

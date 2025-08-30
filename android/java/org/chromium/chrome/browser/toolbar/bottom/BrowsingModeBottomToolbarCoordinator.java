@@ -16,7 +16,6 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager.NameNotFoundException;
 import android.content.Intent;
 import android.net.Uri;
-import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.JavaScriptCallback;
 import org.chromium.base.Callback;
 import org.chromium.base.ContextUtils;
@@ -151,7 +150,6 @@ public class BrowsingModeBottomToolbarCoordinator {
             mCommentsButton.setClickable(true);
             OnClickListener commentsClickHandler = v -> {
                 mCommentsButton.performHapticFeedback(HapticFeedbackConstants.CONFIRM);
-                TabImpl tab = (TabImpl) mTabProvider.get();
                 try {
                     BraveActivity activity = BraveActivity.getBraveActivity();
                     String t = activity.getActivityTab().getUrl().getSpec();
