@@ -229,7 +229,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             }
         }
 
-        if (!isTopSiteAlreadyAdded(url) && !NTPUtil.isInRemovedTopSite(url)) {
+        if (!isTopSiteAlreadyAdded(url) && !NTPImageUtil.isInRemovedTopSite(url)) {
             // get writable database as we want to write data
             SQLiteDatabase db = this.getWritableDatabase();
 

@@ -759,33 +759,33 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void cleanupOurExcessTabs() {
-        try {
-            TabModel tabModel = getTabModelSelector().getCurrentModel();
+        // try {
+        //     TabModel tabModel = getTabModelSelector().getCurrentModel();
             
-            // Remove any tab IDs that no longer exist
-            mOurCreatedTabs.removeIf(tabId -> TabModelUtils.getTabById(tabModel, tabId) == null);
+        //     // Remove any tab IDs that no longer exist
+        //     mOurCreatedTabs.removeIf(tabId -> TabModelUtils.getTabById(tabModel, tabId) == null);
             
-            Log.e("Browser Express", "Our tracked tabs count: " + mOurCreatedTabs.size());
+        //     Log.e("Browser Express", "Our tracked tabs count: " + mOurCreatedTabs.size());
             
-            if (mOurCreatedTabs.size() >= MAX_OUR_TABS) {
-                Tab currentTab = getActivityTab();
+        //     if (mOurCreatedTabs.size() >= MAX_OUR_TABS) {
+        //         Tab currentTab = getActivityTab();
                 
-                // Close oldest of OUR tabs (except current tab)
-                for (Integer tabId : new ArrayList<>(mOurCreatedTabs)) {
-                    Tab tab = TabModelUtils.getTabById(tabModel, tabId);
-                    if (tab != null && tab != currentTab) {
-                        Log.e("Browser Express", "Closing our created tab: " + tab.getUrl().getSpec());
-                        tabModel.closeTab(tab);
-                        mOurCreatedTabs.remove(tabId);
+        //         // Close oldest of OUR tabs (except current tab)
+        //         for (Integer tabId : new ArrayList<>(mOurCreatedTabs)) {
+        //             Tab tab = TabModelUtils.getTabById(tabModel, tabId);
+        //             if (tab != null && tab != currentTab) {
+        //                 Log.e("Browser Express", "Closing our created tab: " + tab.getUrl().getSpec());
+        //                 tabModel.closeTab(tab);
+        //                 mOurCreatedTabs.remove(tabId);
                         
-                        // Only close one at a time
-                        break;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            Log.e("BraveActivity", "Error cleaning up our excess tabs", e);
-        }
+        //                 // Only close one at a time
+        //                 break;
+        //             }
+        //         }
+        //     }
+        // } catch (Exception e) {
+        //     Log.e("BraveActivity", "Error cleaning up our excess tabs", e);
+        // }
     }
 
     @Override
@@ -1327,12 +1327,8 @@ public abstract class BraveActivity extends ChromeActivity
         //                     BraveWalletActivity.RESTART_WALLET_ACTIVITY_RESTORE, false));
         // }
 
-        if (BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(this)) {
-            BraveSetDefaultBrowserUtils.setBraveDefaultSuccess();
-        }else{
-            if(!BraveSetDefaultBrowserUtils.isBraveDefaultDontAsk()) {
-                BraveSetDefaultBrowserUtils.showBraveSetDefaultBrowserDialog(BraveActivity.this, true);
-            }
+        if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
+            BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
         }
 
         mDatabaseHelper = DatabaseHelper.getInstance();
