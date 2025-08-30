@@ -3560,9 +3560,9 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_LIMITED_FUNCTIONALITY_NOTIFICATION_TEXT" desc="Rewards panel limited functionality notification text">
       According to Uphold, there are currently some limitations on your Uphold account. Please log in to your Uphold account and check whether there are any notices or remaining account requirements to complete, then try again.
     </message>
-    <!-- <message name="IDS_BRAVE_ADS_TEXT" desc="Brave ads text">
+    <message name="IDS_BRAVE_ADS_TEXT" desc="Brave ads text">
       Brave Ads
-    </message> -->
+    </message>
     <message name="IDS_WALLET_GENERATION_DISABLED_ERROR_TITLE" desc="wallet generation disabled error title">
       Brave Rewards not available
     </message>
