@@ -49,6 +49,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.widget.AppCompatEditText;
 import androidx.coordinatorlayout.widget.CoordinatorLayout;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
@@ -354,7 +355,6 @@ public abstract class BraveActivity extends ChromeActivity
     public static final int APP_OPEN_COUNT_FOR_WIDGET_PROMO = 25;
     private static final boolean ENABLE_IN_APP_UPDATE = true;
             // Build.VERSION.SDK_INT < Build.VERSION_CODES.UPSIDE_DOWN_CAKE;
-    private AppUpdateManager mAppUpdateManager;
 
     private static final String YOUTUBE_WATCH_PATTERN = "youtube.com/watch";
     private OnBackPressedCallback mYouTubeBackPressedCallback;
@@ -3475,6 +3475,7 @@ public abstract class BraveActivity extends ChromeActivity
                 }
             }
         }
+    }
 
     private enum DifferenceType {
         UP_TO_DATE,

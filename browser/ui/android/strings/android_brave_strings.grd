@@ -4061,9 +4061,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     <message name="IDS_AUTO_RECONNECT_VPN_ACTION_TEXT" desc="Vpn auto reconnect tutorial action text">
       Open Android settings
     </message>
-    <message name="IDS_IN_APP_UPDATE_TEXT" desc="Text for in app update snackbar">
-      Update is downloaded.
-    </message>
     <message name="IDS_UPDATE_FILTER_LIST_SUCCESS_TEXT" desc="Text to notify users for updating filterlist successfully">
       Filter list is updated successfully
     </message>
@@ -4317,9 +4314,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     </message>
     <message name="IDS_ENTER_OTP" desc="Brave wallet password hint text">
       Enter OTP
-    </message>
-    <message name="IDS_ENTER_YOUR_PASSWORD" desc="Brave wallet password hint text">
-      Enter your password
     </message>
     <message name="IDS_TYPE_YOUR_COMMENT" desc="Brave wallet password hint text">
       Add a comment

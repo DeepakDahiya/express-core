@@ -56,6 +56,8 @@ import org.chromium.components.browser_ui.settings.FragmentSettingsLauncher;
 import org.chromium.components.browser_ui.settings.SettingsLauncher;
 import org.chromium.mojo.bindings.ConnectionErrorHandler;
 import org.chromium.mojo.system.MojoException;
+import androidx.preference.Preference;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 

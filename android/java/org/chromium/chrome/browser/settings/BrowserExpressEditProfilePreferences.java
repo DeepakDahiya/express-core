@@ -65,6 +65,8 @@ import org.chromium.base.supplier.ObservableSupplierImpl;
 import com.bumptech.glide.Glide;
 import android.widget.ImageView;
 import org.chromium.chrome.browser.app.helpers.ImageLoader;
+import androidx.preference.Preference;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 

@@ -56,6 +56,8 @@ import org.chromium.mojo.system.MojoException;
 
 import org.chromium.base.supplier.ObservableSupplier;
 import org.chromium.base.supplier.ObservableSupplierImpl;
+import androidx.preference.Preference;
+import androidx.annotation.NonNull;
 
 import java.util.List;
 import java.util.Locale;
