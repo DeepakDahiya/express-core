@@ -7,34 +7,40 @@ package org.chromium.chrome.browser.ntp_background_images.util;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.util.Pair;
-import android.net.Uri;
-import java.io.InputStream;
-import java.io.IOException;
 import android.graphics.BitmapFactory;
+import android.net.Uri;
+import android.util.Pair;
 
+import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
-import org.chromium.base.ContextUtils;
 import org.chromium.base.task.AsyncTask;
 import org.chromium.chrome.browser.ntp_background_images.model.NTPImage;
 import org.chromium.chrome.browser.ntp_background_images.model.Wallpaper;
 
+import java.io.IOException;
+import java.io.InputStream;
+
 public class FetchWallpaperWorkerTask extends AsyncTask<Pair<Bitmap, Bitmap>> {
     public interface WallpaperRetrievedCallback {
         void bgWallpaperRetrieved(Bitmap bgWallpaper);
+
         void logoRetrieved(Wallpaper wallpaper, Bitmap logoWallpaper);
     }
 
-    private Context mContext;
-    private NTPImage mNTPImage;
-    private int mLayoutWidth;
-    private int mLayoutHeight;
+    private final Context mContext;
+    private final NTPImage mNTPImage;
+    private final int mLayoutWidth;
+    private final int mLayoutHeight;
 
     // The callback to use to communicate the results.
-    private WallpaperRetrievedCallback mCallback;
+    private final WallpaperRetrievedCallback mCallback;
 
-    public FetchWallpaperWorkerTask(NTPImage ntpImage, int layoutWidth, int layoutHeight,WallpaperRetrievedCallback callback) {
+    public FetchWallpaperWorkerTask(
+            NTPImage ntpImage,
+            int layoutWidth,
+            int layoutHeight,
+            WallpaperRetrievedCallback callback) {
         mNTPImage = ntpImage;
         mLayoutWidth = layoutWidth;
         mLayoutHeight = layoutHeight;
@@ -68,11 +74,11 @@ public class FetchWallpaperWorkerTask extends AsyncTask<Pair<Bitmap, Bitmap>> {
                     }
                 }
             }
-        }        
+        }
 
         return new Pair<Bitmap, Bitmap>(
-            NTPUtil.getWallpaperBitmap(mNTPImage, mLayoutWidth, mLayoutHeight), 
-            logoBitmap);
+                NTPImageUtil.getWallpaperBitmap(mNTPImage, mLayoutWidth, mLayoutHeight),
+                logoBitmap);
     }
 
     @Override
@@ -81,10 +87,12 @@ public class FetchWallpaperWorkerTask extends AsyncTask<Pair<Bitmap, Bitmap>> {
 
         if (isCancelled()) return;
 
-        if (wallpapers.first != null && !wallpapers.first.isRecycled())
+        if (wallpapers.first != null && !wallpapers.first.isRecycled()) {
             mCallback.bgWallpaperRetrieved(wallpapers.first);
+        }
 
-        if (wallpapers.second != null && !wallpapers.second.isRecycled())
+        if (wallpapers.second != null && !wallpapers.second.isRecycled()) {
             mCallback.logoRetrieved((Wallpaper) mNTPImage, wallpapers.second);
+        }
     }
 }
