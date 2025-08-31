@@ -284,8 +284,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
-        LinearLayout final twitterPostLayout;
-        ImageView final twitterProfilePicture;
+        final LinearLayout twitterPostLayout;
+        final ImageView twitterProfilePicture;
         final TextView twitterUsername;
         final TextView twitterContent;
         final ImageView twitterImage;
