@@ -84,7 +84,7 @@ public class BrowserExpressGetFirstCommentsUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetFirstCommentsRequest(mUrl, mCallback);
+            sendGetFirstCommentsRequest(mUrl);
             return null;
         }
 
