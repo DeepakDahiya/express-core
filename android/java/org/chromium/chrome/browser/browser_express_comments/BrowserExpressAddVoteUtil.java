@@ -102,12 +102,6 @@ public class BrowserExpressAddVoteUtil {
     private static void sendAddVoteRequest(String commentId, String type, String resourceType, String accessToken, AddVoteCallback callback) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
-        String baseUrl;
-        if(resourceType.equals("post")){
-            baseUrl = ADD_POST_VOTE_BASE_URL;
-        }else{
-            baseUrl = ADD_COMMENT_VOTE_BASE_URL;
-        }
         try {
             String countryCode = Locale.getDefault().getCountry();
             String searchQuery = "?country=" + countryCode;

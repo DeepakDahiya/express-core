@@ -35,11 +35,11 @@ public class ImageProcessor {
     }
 
     public static class ProcessImageTask extends AsyncTask<Pair<Uri, String>> {
-        private WeakReference<Context> contextRef;
-        private Uri originalImageUri;
-        private ProcessImageCallback callback;
-        private int maxDimension;
-        private int compressionQuality;
+        private final WeakReference<Context> contextRef;
+        private final Uri originalImageUri;
+        private final ProcessImageCallback callback;
+        private final int maxDimension;
+        private final int compressionQuality;
 
         public ProcessImageTask(Context context, Uri imageUri,
                                 int maxDimension, int compressionQuality,

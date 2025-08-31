@@ -254,12 +254,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     private PlaylistService mPlaylistService;
 
-    private enum BigtechCompany {
-        Google,
-        Facebook,
-        Amazon
-    }
-
     public BraveToolbarLayoutImpl(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
@@ -1819,10 +1813,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     //             && BottomToolbarVariationManager.isTabSwitcherOnBottomControls();
     // }
 
-    private boolean isMenuButtonOnBottomControls() {
-        return mIsBottomControlsVisible
-                && BottomToolbarVariationManager.isMenuButtonOnBottomControls();
-    }
+    // private boolean isMenuButtonOnBottomControls() {
+    //     return mIsBottomControlsVisible
+    //             && BottomToolbarVariationManager.isMenuButtonOnBottomControls();
+    // }
 
     @Override
     public void initialize(

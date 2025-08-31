@@ -46,7 +46,7 @@ public class BrowserExpressClaimUsernameUtil {
     }
 
     public static class ClaimUsernameWorkerTask extends AsyncTask<Void> {
-        private ClaimUsernameCallback mCallback;
+        private final ClaimUsernameCallback mCallback;
         private static Boolean claimUsernameStatus;
         private static String mErrorMessage;
         private static String mAccessToken;

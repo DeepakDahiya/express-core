@@ -86,13 +86,6 @@ public class CommentListFragment extends Fragment {
     private ShimmerFrameLayout mShimmerLoading;
     private ViewGroup mShimmerItems;
 
-    private Button mLolButton;
-    private Button mHeartButton;
-    private Button mCryButton;
-    private Button mFireButton;
-    private Button mLoveButton;
-    private Button mClapButton;
-
     private Button mSendButton;
     private EditText mMessageEditText;
     private TextView mCommentsText;

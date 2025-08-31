@@ -54,8 +54,6 @@ public class UploadService extends JobIntentService {
 
     @Override
     protected void onHandleWork(@NonNull Intent intent) {
-        NotificationManagerCompat notificationManager = NotificationManagerCompat.from(this);
-    
         NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
                 .setContentTitle("Posting Comment")
                 .setContentText("Uploading your media...")

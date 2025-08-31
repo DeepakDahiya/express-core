@@ -89,9 +89,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private List<TopSiteTable> mTopSites;
     private BraveNewTabPageLayout mParentLayout;
     private HeaderViewHolder mHeaderViewHolder;
-    private String INSHORTS_TYPE = "Inshorts";
-    private String TWITTER_TYPE = "Twitter";
-    private String INSTAGRAM_TYPE = "Instagram";
+    private final String INSHORTS_TYPE = "Inshorts";
+    private final String TWITTER_TYPE = "Twitter";
+    private final String INSTAGRAM_TYPE = "Instagram";
 
     private boolean mIsLoading = true;
 
@@ -181,9 +181,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
     }
 
     private class HeaderViewHolder extends RecyclerView.ViewHolder {
-        private LinearLayout topSitesContainer;
-        private ShimmerFrameLayout shimmerLoading;
-        private LinearLayout shimmerItems;
+        private final LinearLayout topSitesContainer;
+        private final ShimmerFrameLayout shimmerLoading;
+        private final LinearLayout shimmerItems;
 
         HeaderViewHolder(View itemView) {
             super(itemView);
@@ -284,8 +284,8 @@ public class PostListAdapter extends RecyclerView.Adapter {
     }
 
     private class PostHolder extends RecyclerView.ViewHolder {
-        LinearLayout twitterPostLayout;
-        ImageView twitterProfilePicture;
+        LinearLayout final twitterPostLayout;
+        ImageView final twitterProfilePicture;
         final TextView twitterUsername;
         final TextView twitterContent;
         final ImageView twitterImage;

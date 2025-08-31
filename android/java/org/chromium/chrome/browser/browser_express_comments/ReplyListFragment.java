@@ -73,8 +73,8 @@ public class ReplyListFragment extends Fragment {
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mCombinedList;
-    private int mPage = 1;
-    private int mPerPage = 100;
+    private final int mPage = 1;
+    private final int mPerPage = 100;
     private String mUrl;
 
     private String mCommentId;
@@ -84,16 +84,8 @@ public class ReplyListFragment extends Fragment {
 
     private Button mSendButton;
     private EditText mMessageEditText;
-    private TextView mCommentsText;
 
     private ImageView mBackButton;
-
-    private Button mLolButton;
-    private Button mHeartButton;
-    private Button mCryButton;
-    private Button mFireButton;
-    private Button mLoveButton;
-    private Button mClapButton;
 
     private LinearLayout mEmptyContainer;
 
@@ -102,8 +94,6 @@ public class ReplyListFragment extends Fragment {
     private boolean mShouldScrollToLastParent;
     private String mTargetScrollCommentId;
     
-    private RecyclerView.OnScrollListener videoScrollListener;
-
     private android.content.BroadcastReceiver mUploadReceiver;
 
     private final Handler mHandler = new Handler(Looper.getMainLooper());
@@ -209,13 +199,6 @@ public class ReplyListFragment extends Fragment {
 
         mMessageEditText = inputCallback.getInputEditText();
         mSendButton = inputCallback.getSendButton();
-
-        mLolButton = view.findViewById(R.id.lol_button);
-        mHeartButton = view.findViewById(R.id.heart_button);
-        mCryButton = view.findViewById(R.id.cry_button);
-        mFireButton = view.findViewById(R.id.fire_button);
-        mLoveButton = view.findViewById(R.id.love_button);
-        mClapButton = view.findViewById(R.id.clap_button);
 
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
@@ -384,23 +367,6 @@ public class ReplyListFragment extends Fragment {
         GlobalVideoPlaybackManager.getInstance().playVideo(bestHolder);
     }
 
-    private void collectVideoHolders(RecyclerView recyclerView, List<CommentListAdapter.CommentHolder> holders) {
-        if (recyclerView == null || recyclerView.getLayoutManager() == null) return;
-        
-        LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-        int first = layoutManager.findFirstVisibleItemPosition();
-        int last = layoutManager.findLastVisibleItemPosition();
-        
-        if (first == RecyclerView.NO_POSITION) return;
-        
-        for (int i = first; i <= last; i++) {
-            RecyclerView.ViewHolder vh = recyclerView.findViewHolderForAdapterPosition(i);
-            if (vh instanceof CommentListAdapter.CommentHolder) {
-                holders.add((CommentListAdapter.CommentHolder) vh);
-            }
-        }
-    }
-    
     private float getVisibilityPercentage(View view) {
         if (view == null) return 0f;
         
@@ -532,9 +498,6 @@ public class ReplyListFragment extends Fragment {
 
             try{
                 BraveActivity activity = BraveActivity.getBraveActivity();
-                // Updating comment count for bottom toolbar
-                mCommentsText = activity.getCommentCountText();
-
                 mMessageEditText.clearFocus();
                 InputMethodManager imm = (InputMethodManager)activity.getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(mMessageEditText.getWindowToken(), 0);

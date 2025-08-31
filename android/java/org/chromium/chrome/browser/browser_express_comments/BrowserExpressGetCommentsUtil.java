@@ -103,7 +103,7 @@ public class BrowserExpressGetCommentsUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetCommentsRequest(mUrl, mCommentId, mPostId, mPage, mPerPage, mAccessToken, mCallback);
+            sendGetCommentsRequest(mUrl, mCommentId, mPostId, mPage, mPerPage, mAccessToken);
             return null;
         }
 
@@ -119,7 +119,7 @@ public class BrowserExpressGetCommentsUtil {
         }
     }
 
-    private static void sendGetCommentsRequest(String pageUrl, String commentId, String postId, int page, int perPage, String accessToken, GetCommentsCallback callback) {
+    private static void sendGetCommentsRequest(String pageUrl, String commentId, String postId, int page, int perPage, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

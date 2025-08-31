@@ -99,10 +99,6 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
         int braveDefaultModalCount = ChromeSharedPreferences.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
-        if (braveDefaultModalCount > 2 && !isFromMenu) {
-        } else {
-        }
-
         Button cancelButton = view.findViewById(R.id.btn_cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override

@@ -391,10 +391,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
         transaction.replace(R.id.bottom_sheet_container, fragment).addToBackStack(null).commit();
     }
 
-    private void pauseAllVideoPlaybackInActiveLists() {
-        GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
-    }
-
     public void openReplies(String commentId) {
         mLastOpenedRepliesForCommentId = commentId;
         mLastOpenedRepliesToRepliesForCommentId = null;
