@@ -1,21 +1,21 @@
 package org.chromium.chrome.browser.browser_express_comments;
 
 public class Comment{  
-    private String _id;  
-    private String content;  
-    private int upvoteCount;  
-    private int downvoteCount;  
-    private int commentCount;  
-    private String commentParent;  
-    private String pageParent;  
-    private String postParent;  
-    private String postContent;
-    private String postUsername;
-    private String postAvatarUrl;
-    private String mediaImageUrl;
-    private String mediaVideoUrl;
-    private User user;
-    private Vote didVote;
+    private final String _id;  
+    private final String content;  
+    private final int upvoteCount;  
+    private final int downvoteCount;  
+    private final int commentCount;  
+    private final String commentParent;  
+    private final String pageParent;  
+    private final String postParent;  
+    private final String postContent;
+    private final String postUsername;
+    private final String postAvatarUrl;
+    private final String mediaImageUrl;
+    private final String mediaVideoUrl;
+    private final User user;
+    private final Vote didVote;
 
     private int mediaWidth;
     private int mediaHeight;

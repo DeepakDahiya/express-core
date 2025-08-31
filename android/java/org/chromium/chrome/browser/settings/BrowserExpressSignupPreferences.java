@@ -157,7 +157,7 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         return true;
     }
 
-    private BrowserExpressSignupPreferencesUtil.SignupCallback signupCallback =
+    private final BrowserExpressSignupPreferencesUtil.SignupCallback signupCallback =
             new BrowserExpressSignupPreferencesUtil.SignupCallback() {
                 @Override
                 public void signupSuccessful(String email) {

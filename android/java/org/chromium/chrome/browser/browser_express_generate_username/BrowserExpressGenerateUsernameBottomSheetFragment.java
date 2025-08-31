@@ -109,7 +109,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         // BraveSetDefaultBrowserUtils.isBottomSheetVisible = false;
     }
 
-    private BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
+    private final BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
             new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
                 @Override
                 public void claimUsernameSuccessful(String accessToken, String refreshToken) {

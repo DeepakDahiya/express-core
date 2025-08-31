@@ -444,7 +444,7 @@ public class ReplyListFragment extends Fragment {
         }
     }
 
-    private BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
+    private final BrowserExpressGetCommentsUtil.GetCommentsCallback getCommentsCallback=
             new BrowserExpressGetCommentsUtil.GetCommentsCallback() {
                 @Override
                 public void getCommentsSuccessful(List<Comment> comments, Comment parentComment, Comment grandParentComment) {
@@ -485,7 +485,7 @@ public class ReplyListFragment extends Fragment {
                 }
             };
 
-    private BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
+    private final BrowserExpressAddCommentUtil.AddCommentCallback addCommentCallback=
             new BrowserExpressAddCommentUtil.AddCommentCallback() {
                 @Override
                 public void addCommentSuccessful(Comment comment, String newAccessToken, String newRefreshToken) {
@@ -603,7 +603,6 @@ public class ReplyListFragment extends Fragment {
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");

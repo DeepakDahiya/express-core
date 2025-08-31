@@ -1681,7 +1681,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }
 
-    private BrowserExpressGetPostsUtil.GetPostsCallback getPostsCallback=
+    private final BrowserExpressGetPostsUtil.GetPostsCallback getPostsCallback=
             new BrowserExpressGetPostsUtil.GetPostsCallback() {
                 @Override
                 public void getPostsSuccessful(List<Post> posts) {
@@ -1704,7 +1704,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 }
             };
 
-    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+    private final BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
@@ -1744,7 +1744,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 }
             };
 
-    private BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
+    private final BrowserExpressClaimUsernameUtil.ClaimUsernameCallback claimUsernameCallback=
             new BrowserExpressClaimUsernameUtil.ClaimUsernameCallback() {
                 @Override
                 public void claimUsernameSuccessful(String accessToken, String refreshToken) {
@@ -1803,7 +1803,6 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");

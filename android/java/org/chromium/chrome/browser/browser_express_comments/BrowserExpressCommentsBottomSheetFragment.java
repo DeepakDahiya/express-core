@@ -80,11 +80,7 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
     public static final String OPEN_KEYBOARD = "open_keyboard";
-    private static final int MAX_IMAGE_DIMENSION = 1920;
-    private static final int IMAGE_COMPRESSION_QUALITY = 80;
 
-    private int mPage = 1;
-    private int mPerPage = 100;
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
@@ -104,7 +100,6 @@ public class BrowserExpressCommentsBottomSheetFragment extends BottomSheetDialog
     private TextView mPostContent;
 
     private Boolean mOpenKeyboard = false;
-    private ProgressBar mCommentProgress;
 
     private ImageButton mAttachButton;
     private FrameLayout mAttachmentPreviewContainer;

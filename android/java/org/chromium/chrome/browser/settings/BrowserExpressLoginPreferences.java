@@ -158,7 +158,7 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         return true;
     }
 
-    private BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
+    private final BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
             new BrowserExpressLoginPreferencesUtil.LoginCallback() {
                 @Override
                 public void loginSuccessful(String accessToken, String refreshToken) {

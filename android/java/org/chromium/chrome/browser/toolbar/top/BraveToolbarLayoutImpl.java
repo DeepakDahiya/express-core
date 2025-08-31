@@ -207,7 +207,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private ImageButton mBraveRewardsButton;
     private ImageButton mYouTubePipButton;
     private HomeButton mHomeButton;
-    private FrameLayout mProfileLayout;
+    // private FrameLayout mProfileLayout;
     private FrameLayout mWalletLayout;
     private FrameLayout mShieldsLayout;
     private FrameLayout mRewardsLayout;
@@ -304,7 +304,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         mBeHomeButton = findViewById(R.id.be_home_button);
         mBottomHomeButton = findViewById(R.id.bottom_home_button);
 
-        mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
+        // mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
         mProfileButton = (ImageButton) findViewById(R.id.profile_button);
 
         mWalletLayout = findViewById(R.id.brave_wallet_button_layout);
@@ -1108,25 +1108,25 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
     }
 
-    private void checkForTooltip(Tab tab) {
-        // We are disabling this feature for now for bottom address bar, until new design is ready
-        // https://github.com/brave/brave-browser/issues/46252
-        if (BottomToolbarConfiguration.isToolbarBottomAnchored()) return;
-        try {
-            if (!BraveShieldsUtils.isTooltipShown
-                    && !BraveActivity.getBraveActivity().mIsDeepLink) {
-                if (!BraveShieldsUtils.hasShieldsTooltipShown(
-                            BraveShieldsUtils.PREF_SHIELDS_TOOLTIP)
-                        && mBraveShieldsHandler.getTrackersBlockedCount(tab.getId())
-                                        + mBraveShieldsHandler.getAdsBlockedCount(tab.getId())
-                                > 0) {
-                    showTooltip(BraveShieldsUtils.PREF_SHIELDS_TOOLTIP, tab.getId());
-                }
-            }
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e(TAG, "checkForTooltip " + e);
-        }
-    }
+    // private void checkForTooltip(Tab tab) {
+    //     // We are disabling this feature for now for bottom address bar, until new design is ready
+    //     // https://github.com/brave/brave-browser/issues/46252
+    //     if (BottomToolbarConfiguration.isToolbarBottomAnchored()) return;
+    //     try {
+    //         if (!BraveShieldsUtils.isTooltipShown
+    //                 && !BraveActivity.getBraveActivity().mIsDeepLink) {
+    //             if (!BraveShieldsUtils.hasShieldsTooltipShown(
+    //                         BraveShieldsUtils.PREF_SHIELDS_TOOLTIP)
+    //                     && mBraveShieldsHandler.getTrackersBlockedCount(tab.getId())
+    //                                     + mBraveShieldsHandler.getAdsBlockedCount(tab.getId())
+    //                             > 0) {
+    //                 showTooltip(BraveShieldsUtils.PREF_SHIELDS_TOOLTIP, tab.getId());
+    //             }
+    //         }
+    //     } catch (BraveActivity.BraveActivityNotFoundException e) {
+    //         Log.e(TAG, "checkForTooltip " + e);
+    //     }
+    // }
 
     private void showTooltip(String tooltipPref, int tabId) {
         try {
@@ -1814,10 +1814,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         updateModernLocationBarColorImpl(mCurrentToolbarColor);
     }
 
-    private boolean isTabSwitcherOnBottomControls() {
-        return mIsBottomControlsVisible
-                && BottomToolbarVariationManager.isTabSwitcherOnBottomControls();
-    }
+    // private boolean isTabSwitcherOnBottomControls() {
+    //     return mIsBottomControlsVisible
+    //             && BottomToolbarVariationManager.isTabSwitcherOnBottomControls();
+    // }
 
     private boolean isMenuButtonOnBottomControls() {
         return mIsBottomControlsVisible
@@ -1931,29 +1931,28 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
     }
 
-    private boolean isMenuOnBottomWithBottomAddressBar() {
-        // If address bar is not on bottom, then menu is not on bottom too.
-        if (!BottomToolbarConfiguration.isToolbarBottomAnchored()) {
-            return false;
-        }
-        // Menu can be on bottom only with ToolbarPhone.
-        if (!BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) {
-            return false;
-        }
-        // In overview mode the menu is on top.
-        Context context = getContext();
-        if (context instanceof BraveActivity && ((BraveActivity) context).isInOverviewMode()) {
-            return false;
-        }
-        return true;
-    }
+    // private boolean isMenuOnBottomWithBottomAddressBar() {
+    //     // If address bar is not on bottom, then menu is not on bottom too.
+    //     if (!BottomToolbarConfiguration.isToolbarBottomAnchored()) {
+    //         return false;
+    //     }
+    //     // Menu can be on bottom only with ToolbarPhone.
+    //     if (!BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) {
+    //         return false;
+    //     }
+    //     // In overview mode the menu is on top.
+    //     Context context = getContext();
+    //     if (context instanceof BraveActivity && ((BraveActivity) context).isInOverviewMode()) {
+    //         return false;
+    //     }
+    //     return true;
+    // }
 
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");
@@ -2150,7 +2149,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
     }
 
-    private BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
+    private final BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
         new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
             @Override
             public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {
@@ -2173,7 +2172,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             }
         };
 
-    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+    private final BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
@@ -2223,7 +2222,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         String[] split_string = accessToken.split("\\.");
                         String base64EncodedHeader = split_string[0];
                         String base64EncodedBody = split_string[1];
-                        String base64EncodedSignature = split_string[2];
 
                         byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
                         String decodedString = new String(data, "UTF-8");

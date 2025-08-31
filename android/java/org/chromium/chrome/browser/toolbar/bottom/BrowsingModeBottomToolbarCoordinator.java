@@ -158,7 +158,6 @@ public class BrowsingModeBottomToolbarCoordinator {
                     String[] split_string = accessToken.split("\\.");
                     String base64EncodedHeader = split_string[0];
                     String base64EncodedBody = split_string[1];
-                    String base64EncodedSignature = split_string[2];
 
                     byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
                     String decodedString = new String(data, "UTF-8");
@@ -409,7 +408,7 @@ public class BrowsingModeBottomToolbarCoordinator {
         return mBookmarkButton;
     }
 
-    private BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
+    private final BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback getFirstCommentsCallback=
             new BrowserExpressGetFirstCommentsUtil.GetFirstCommentsCallback() {
                 @Override
                 public void getFirstCommentsSuccessful(JSONArray comments, int commentCount) {

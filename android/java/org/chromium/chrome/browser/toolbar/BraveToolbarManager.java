@@ -743,7 +743,6 @@ public class BraveToolbarManager extends ToolbarManager
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");
@@ -759,7 +758,7 @@ public class BraveToolbarManager extends ToolbarManager
         
     }
 
-    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+    private final BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {

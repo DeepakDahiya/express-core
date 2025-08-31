@@ -152,7 +152,7 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
         return true;
     }
 
-    private BrowserExpressOtpVerifyPreferencesUtil.OtpVerifyCallback otpVerifyCallback =
+    private final BrowserExpressOtpVerifyPreferencesUtil.OtpVerifyCallback otpVerifyCallback =
             new BrowserExpressOtpVerifyPreferencesUtil.OtpVerifyCallback() {
                 @Override
                 public void otpVerifySuccessful(String accessToken, String refreshToken) {

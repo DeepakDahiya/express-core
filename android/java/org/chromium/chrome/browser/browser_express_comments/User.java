@@ -1,9 +1,9 @@
 package org.chromium.chrome.browser.browser_express_comments;
 
 public class User{  
-    private String _id;  
-    private String username;  
-    private String avatar;
+    private final String _id;  
+    private final String username;  
+    private final String avatar;
 
     public User(String _id, String username, String avatar) {  
         this._id = _id;  

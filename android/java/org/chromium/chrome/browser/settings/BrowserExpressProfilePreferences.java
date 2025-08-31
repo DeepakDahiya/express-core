@@ -234,7 +234,7 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
         return true;
     }
 
-    private BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
+    private final BrowserExpressGetProfilePreferencesUtil.GetProfileCallback getProfileCallback =
             new BrowserExpressGetProfilePreferencesUtil.GetProfileCallback() {
                 @Override
                 public void getProfileSuccessful(String avatar, String xp, String lg, String lr) {
@@ -296,27 +296,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                 public void getProfileFailed(String error) {
                     Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
                 }
-
-                private JSONObject getDecodedToken(String accessToken){
-                    try{
-                        String[] split_string = accessToken.split("\\.");
-                        String base64EncodedHeader = split_string[0];
-                        String base64EncodedBody = split_string[1];
-                        String base64EncodedSignature = split_string[2];
-
-                        byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-                        String decodedString = new String(data, "UTF-8");
-                        JSONObject jsonObj = new JSONObject(decodedString.toString());
-                        return jsonObj;
-                    }catch(JSONException e){
-                        Log.e("Express Browser Access Token", e.getMessage());
-                        return null;
-                    }catch(UnsupportedEncodingException e){
-                        Log.e("Express Browser Access Token", e.getMessage());
-                        return null;
-                    }
-                    
-                }
             };
 
     private JSONObject getDecodedToken(String accessToken){
@@ -324,7 +303,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");

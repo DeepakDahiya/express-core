@@ -248,7 +248,6 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");
@@ -264,7 +263,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
         
     }
 
-    private BrowserExpressEditProfilePreferencesUtil.EditProfileCallback editProfileCallback =
+    private final BrowserExpressEditProfilePreferencesUtil.EditProfileCallback editProfileCallback =
             new BrowserExpressEditProfilePreferencesUtil.EditProfileCallback() {
                 @Override
                 public void editProfileSuccessful(String accessToken, String refreshToken) {
@@ -296,7 +295,7 @@ public class BrowserExpressEditProfilePreferences extends BravePreferenceFragmen
                 }
             };
 
-    private BrowserExpressEditAvatarPreferencesUtil.EditAvatarCallback editAvatarCallback =
+    private final BrowserExpressEditAvatarPreferencesUtil.EditAvatarCallback editAvatarCallback =
             new BrowserExpressEditAvatarPreferencesUtil.EditAvatarCallback() {
                 @Override
                 public void editAvatarSuccessful() {

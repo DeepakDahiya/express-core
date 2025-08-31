@@ -86,15 +86,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     public static final String POST_CONTENT = "post_content";
     public static final String POST_AVATAR_URL = "post_avatar_url";
     public static final String ATTACHMENT_URI = "attachment_uri";
-    private static final int MAX_IMAGE_DIMENSION = 1920;
-    private static final int IMAGE_COMPRESSION_QUALITY = 80;
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
 
-    private Boolean mIsCommentPage = false;
-
-    private int mPage = 1;
-    private int mPerPage = 100;
-    private String mUrl;
     private String mCommentsFor;
     private String mPostId;
     private String mPostAvatarString;
@@ -107,8 +100,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     private ImageView mPostAvatar;
     private TextView mPostUsername;
     private TextView mPostContent;
-
-    private ProgressBar mCommentProgress;
 
     private ImageButton mAttachButton;
     private FrameLayout mAttachmentPreviewContainer;
@@ -124,9 +115,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     private EditText mMessageEditText;
 
     private boolean isFromMenu;
-
-    private String mLastOpenedRepliesForCommentId;
-    private String mLastOpenedRepliesToRepliesForCommentId;
 
     private ActivityResultLauncher<String[]> mMediaPickerLauncher;
 
@@ -303,7 +291,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
 
         mCancelButton.setOnClickListener(v -> dismissBottomsheet());
 
-        mPostButton.setOnClickListener((new View.OnClickListener() {
+        mPostButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
@@ -339,8 +327,8 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                             tempPostParent, tempCommentParent,
                             user,
                             null,
-                            ("image".equals(mSelectedMediaType)) ? mSelectedMediaUri.toString() : null,
-                            ("video".equals(mSelectedMediaType)) ? mSelectedMediaUri.toString() : null,
+                            "image".equals(mSelectedMediaType) ? mSelectedMediaUri.toString() : null,
+                            "video".equals(mSelectedMediaType) ? mSelectedMediaUri.toString() : null,
                             null, null, null
                         );
                         optimisticComment.setUploadStatus(Comment.UploadStatus.POSTING);
@@ -370,7 +358,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
                     }
                 }
             }
-        }));
+        });
     }
 
     @Override
@@ -381,10 +369,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
 
     private void pauseAllVideoPlaybackInActiveLists() {
         GlobalVideoPlaybackManager.getInstance().pauseCurrentlyPlayingVideo();
-    }
-
-    private void releaseAllVideoPlaybackResourcesInActiveLists() {
-        GlobalVideoPlaybackManager.getInstance().releaseAllResources();
     }
 
     public void dismissBottomsheet() {
@@ -667,7 +651,6 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
             String[] split_string = accessToken.split("\\.");
             String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
-            String base64EncodedSignature = split_string[2];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
             String decodedString = new String(data, "UTF-8");

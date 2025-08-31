@@ -53,12 +53,10 @@ public class BrowserExpressGetFirstCommentsUtil {
     }
 
     public static class GetFirstCommentsWorkerTask extends AsyncTask<Void> {
-        private GetFirstCommentsCallback mCallback;
+        private final GetFirstCommentsCallback mCallback;
         private static Boolean getFirstCommentsStatus;
         private static String mErrorMessage;
         private static String mUrl;
-        private static int mPage;
-        private static int mPerPage;
         private static JSONArray mComments;
         private static int mCommentCount;
 
@@ -102,7 +100,7 @@ public class BrowserExpressGetFirstCommentsUtil {
         }
     }
 
-    private static void sendGetFirstCommentsRequest(String pageUrl, GetFirstCommentsCallback callback) {
+    private static void sendGetFirstCommentsRequest(String pageUrl) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
