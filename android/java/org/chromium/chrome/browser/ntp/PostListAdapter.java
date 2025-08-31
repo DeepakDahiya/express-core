@@ -308,7 +308,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         TextView titleText;
         TextView contentText;
         private final Button mCommentButton;
-        private final BraveActivity activity;
+        private BraveActivity activity;
 
         private final Button mReadMoreButton;
         private final Button mReadMoreButton2;
