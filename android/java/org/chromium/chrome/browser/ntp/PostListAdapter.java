@@ -89,9 +89,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private List<TopSiteTable> mTopSites;
     private BraveNewTabPageLayout mParentLayout;
     private HeaderViewHolder mHeaderViewHolder;
-    private final String INSHORTS_TYPE = "Inshorts";
-    private final String TWITTER_TYPE = "Twitter";
-    private final String INSTAGRAM_TYPE = "Instagram";
+    private static final String INSHORTS_TYPE = "Inshorts";
+    private static final String TWITTER_TYPE = "Twitter";
+    private static final String INSTAGRAM_TYPE = "Instagram";
 
     private boolean mIsLoading = true;
 
@@ -302,11 +302,11 @@ public class PostListAdapter extends RecyclerView.Adapter {
         ProgressBar videoProgressBar;
         ValueAnimator progressAnimator;
 
-        ImageView postImage;
-        CardView cardView;
-        TextView publisherNameText;
-        TextView titleText;
-        TextView contentText;
+        final ImageView postImage;
+        final CardView cardView;
+        final TextView publisherNameText;
+        final TextView titleText;
+        final TextView contentText;
         private final Button mCommentButton;
         private BraveActivity activity;
 
@@ -317,7 +317,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private int myPosition;
 
-        private Handler autoScrollHandler;
+        private final Handler autoScrollHandler;
         private Runnable autoScrollRunnable;
         private int currentPosition;
         private boolean isAutoScrolling;

@@ -96,7 +96,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     interface DimensionCallback {
         void onDimensionsReady(int position, int width, int height);
     }
-    private final DimensionCallback mDimensionCallback;
+    // private final DimensionCallback mDimensionCallback;
 
     public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyToReplyAdapter) {
         mContext = context;
@@ -106,15 +106,15 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         mIsReplyAdapter = isReplyAdapter;
         mIsReplyToReplyAdapter = isReplyToReplyAdapter;
 
-        mDimensionCallback = (position, width, height) -> {
-            if (position >= 0 && position < mCommentList.size()) {
-                Comment comment = mCommentList.get(position);
-                comment.setMediaWidth(width);
-                comment.setMediaHeight(height);
+        // mDimensionCallback = (position, width, height) -> {
+        //     if (position >= 0 && position < mCommentList.size()) {
+        //         Comment comment = mCommentList.get(position);
+        //         comment.setMediaWidth(width);
+        //         comment.setMediaHeight(height);
                 
-                notifyItemChanged(position);
-            }
-        };
+        //         notifyItemChanged(position);
+        //     }
+        // };
     }
 
     @Override
@@ -151,45 +151,45 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         holder.bind(comment, position);
     }
 
-    private class VideoDimensionTask extends AsyncTask<int[]> {
-        private final Uri mMediaUri;
-        private final int mPosition;
-        private final DimensionCallback mCallback;
+    // private class VideoDimensionTask extends AsyncTask<int[]> {
+    //     private final Uri mMediaUri;
+    //     private final int mPosition;
+    //     private final DimensionCallback mCallback;
 
-        VideoDimensionTask(Context context, Uri mediaUri, int position, DimensionCallback callback) {
-            this.mMediaUri = mediaUri;
-            this.mPosition = position;
-            this.mCallback = callback;
-        }
+    //     VideoDimensionTask(Context context, Uri mediaUri, int position, DimensionCallback callback) {
+    //         this.mMediaUri = mediaUri;
+    //         this.mPosition = position;
+    //         this.mCallback = callback;
+    //     }
 
-        @Override
-        protected int[] doInBackground() {
-            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-            int[] dimensions = new int[]{0, 0};
-            try {
-                retriever.setDataSource(mMediaUri.toString(), new java.util.HashMap<String, String>());
+    //     @Override
+    //     protected int[] doInBackground() {
+    //         MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+    //         int[] dimensions = new int[]{0, 0};
+    //         try {
+    //             retriever.setDataSource(mMediaUri.toString(), new java.util.HashMap<String, String>());
                 
-                String width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
-                String height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
-                if (width != null && height != null) {
-                    dimensions[0] = Integer.parseInt(width);
-                    dimensions[1] = Integer.parseInt(height);
-                }
-            } catch (Exception e) {
-                Log.e("cr_VideoDimensionTask", "Failed to get dimensions for " + mMediaUri.toString(), e);
-            } finally {
-                try { retriever.release(); } catch (Exception e) {}
-            }
-            return dimensions;
-        }
+    //             String width = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_WIDTH);
+    //             String height = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_HEIGHT);
+    //             if (width != null && height != null) {
+    //                 dimensions[0] = Integer.parseInt(width);
+    //                 dimensions[1] = Integer.parseInt(height);
+    //             }
+    //         } catch (Exception e) {
+    //             Log.e("cr_VideoDimensionTask", "Failed to get dimensions for " + mMediaUri.toString(), e);
+    //         } finally {
+    //             try { retriever.release(); } catch (Exception e) {}
+    //         }
+    //         return dimensions;
+    //     }
 
-        @Override
-        protected void onPostExecute(int[] dimensions) {
-            if (mCallback != null && dimensions[0] > 0) {
-                mCallback.onDimensionsReady(mPosition, dimensions[0], dimensions[1]);
-            }
-        }
-    }
+    //     @Override
+    //     protected void onPostExecute(int[] dimensions) {
+    //         if (mCallback != null && dimensions[0] > 0) {
+    //             mCallback.onDimensionsReady(mPosition, dimensions[0], dimensions[1]);
+    //         }
+    //     }
+    // }
 
     public class CommentHolder extends RecyclerView.ViewHolder {
         TextView usernameText;
@@ -220,7 +220,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private Animation bounceUp;
         private Animation bounceDown;
 
-        private int myPosition; // Set in bind
+        // private int myPosition; // Set in bind
         private BrowserExpressCommentsBottomSheetFragment mParentFragment; // From constructor
 
         private boolean mIsReplyAdapter; // From constructor
@@ -298,7 +298,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         }
 
         void bind(Comment comment, int position) {
-            myPosition = getBindingAdapterPosition(); // getAbsoluteAdapterPosition() is also an option
+            // myPosition = getBindingAdapterPosition(); // getAbsoluteAdapterPosition() is also an option
 
             // Ensure activity is not null before using it extensively
             if (activity == null) {

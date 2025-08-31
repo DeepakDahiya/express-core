@@ -34,14 +34,12 @@ public class PostHogUtil {
     private static final String POST_HOG_API_KEY = "phc_Nn8HVrhAeFqo35ymuvUKOKe59RhXnShdushDuyDn3vL";
 
     public static class PostHogWorkerTask extends AsyncTask<Void> {
-        private static Boolean postHogStatus;
         private static String mErrorMessage;
         private static String mEvent;
         private static String mUserId;
         private static JSONObject mProperties;
 
         public PostHogWorkerTask(String event, String userId, JSONObject properties) {
-            postHogStatus = false;
             mErrorMessage = "";
             mEvent = event;
             mUserId = userId;
@@ -63,7 +61,6 @@ public class PostHogUtil {
 
     private static void sendPostHogRequest(String event, String userId, JSONObject properties) {
         Log.e("Express Browser", "GETTING USER PROFILE 2");
-        StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {
             URL url = new URL(GET_PROFILE_URL);

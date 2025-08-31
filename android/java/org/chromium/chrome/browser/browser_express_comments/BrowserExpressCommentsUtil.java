@@ -77,7 +77,7 @@ public class BrowserExpressCommentsUtil {
 
         @Override
         protected Void doInBackground() {
-            sendClaimUsernameRequest(mCallback);
+            sendClaimUsernameRequest();
             return null;
         }
 
@@ -115,7 +115,7 @@ public class BrowserExpressCommentsUtil {
         }
     }
 
-    private static void sendClaimUsernameRequest(ClaimUsernameCallback callback) {
+    private static void sendClaimUsernameRequest() {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

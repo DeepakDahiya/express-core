@@ -172,6 +172,7 @@ import org.chromium.net.ChromiumNetworkAdapter;
 import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.base.ContextUtils;
 import android.content.SharedPreferences;
+import androidx.annotation.WorkerThread;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout,
@@ -1961,6 +1962,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         
     }
 
+    @WorkerThread
     public String saveFavicon(Context context, String urlString) {
         try {
             URL fullUrl = new URL(urlString);
@@ -2029,7 +2031,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             return BitmapFactory.decodeStream(inputStream);
         }
     }
-
+    
+    @WorkerThread
     private String saveFaviconBitmap(Context context, Bitmap favicon, String host) {
         try {
             // Generate unique filename using MD5 hash
@@ -2090,6 +2093,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         }
     }
 
+    @WorkerThread
     private String getWebsiteName(String urlString) {
         if (urlString == null || urlString.isEmpty()) {
             return "Unknown Website"; // Handle empty input.

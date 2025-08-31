@@ -7,6 +7,10 @@
 
 <resources xmlns:tools="http://schemas.android.com/tools">
 
+    <color name="sheet_bg_color_baseline">#202124</color>
+    <color name="omnibox_bg_color_dark">#202124</color>
+    <color name="omnibox_bg_color">#202124</color>
+
     <!-- Brave colors taken from Nala -->
     <color name="primitive_primary_10">#000668</color>
     <color name="primitive_primary_20">#0210a2</color>

@@ -44,7 +44,7 @@ public class BrowserExpressAddCommentUtil {
     }
 
     public static class AddCommentWorkerTask extends AsyncTask<Void> {
-        private AddCommentCallback mCallback;
+        private final AddCommentCallback mCallback;
         // !!! WARNING: Static fields below are problematic for concurrent operations !!!
         private static Boolean addCommentStatus;
         private static String mErrorMessage;
@@ -98,7 +98,7 @@ public class BrowserExpressAddCommentUtil {
         @Override
         protected Void doInBackground() {
             // Pass the static fields to the send method
-            sendAddCommentRequest(mContent, mParentType, mParentId, mPageUrl, mMediaUri, mMediaType, mAccessToken, mCallback);
+            sendAddCommentRequest(mContent, mParentType, mParentId, mPageUrl, mMediaUri, mMediaType, mAccessToken);
             return null;
         }
 
@@ -146,8 +146,7 @@ public class BrowserExpressAddCommentUtil {
     }
 
     private static void sendAddCommentRequest(String content, String parentType, String parentId, String pageUrl,
-                                               Uri mediaUri, String mediaType, String accessToken,
-                                               AddCommentCallback callback) { // callback is passed to use static setters
+                                               Uri mediaUri, String mediaType, String accessToken) { // callback is passed to use static setters
         Log.e(TAG, "Content: " + content);
         Log.e(TAG, "Parent Type: " + parentType);
         Log.e(TAG, "Parent ID: " + parentId);   
@@ -370,7 +369,7 @@ public class BrowserExpressAddCommentUtil {
     }
 
     public static CommentResult uploadSynchronously(String content, String pType, String url, String pId, Uri mediaUri, String mediaType, String accessToken) throws Exception {
-        sendAddCommentRequest(content, pType, pId, url, mediaUri, mediaType, accessToken, null);
+        sendAddCommentRequest(content, pType, pId, url, mediaUri, mediaType, accessToken);
 
         if (AddCommentWorkerTask.addCommentStatus != null && AddCommentWorkerTask.addCommentStatus) {
             // Success case

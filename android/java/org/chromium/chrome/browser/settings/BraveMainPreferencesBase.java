@@ -58,12 +58,12 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
     // sections
     private static final String PREF_BRAVE_ACCOUNT_SECTION = "brave_account_section";
-    private static final String PREF_FEATURES_SECTION = "features_section";
+    // private static final String PREF_FEATURES_SECTION = "features_section";
     private static final String PREF_DISPLAY_SECTION = "display_section";
     private static final String PREF_GENERAL_SECTION = "general_section";
     private static final String PREF_BASICS_SECTION = "basics_section";
     private static final String PREF_ADVANCED_SECTION = "advanced_section";
-    private static final String PREF_SUPPORT_SECTION = "support_section";
+    // private static final String PREF_SUPPORT_SECTION = "support_section";
     private static final String PREF_ABOUT_SECTION = "about_section";
 
     // prefs
@@ -74,9 +74,9 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_PRIVACY = "privacy";
     private static final String PREF_SHIELDS_AND_PRIVACY = "brave_shields_and_privacy";
     private static final String PREF_BRAVE_SEARCH_ENGINES = "brave_search_engines";
-    private static final String PREF_BRAVE_NEWS_V2 = "brave_news_v2";
+    // private static final String PREF_BRAVE_NEWS_V2 = "brave_news_v2";
     private static final String PREF_BRAVE_PLAYLIST = "brave_playlist";
-    private static final String PREF_SYNC = "brave_sync_layout";
+    // private static final String PREF_SYNC = "brave_sync_layout";
     private static final String PREF_PASSWORDS = "passwords";
     private static final String PREF_NOTIFICATIONS = "notifications";
     private static final String PREF_PAYMENT_METHODS = "autofill_payment_methods";
@@ -84,15 +84,15 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_AUTOFILL_PRIVATE_WINDOW = "autofill_private_window";
     private static final String PREF_TABS = "tabs";
     private static final String PREF_MEDIA = "media";
-    private static final String PREF_APPEARANCE = "appearance";
+    // private static final String PREF_APPEARANCE = "appearance";
     private static final String PREF_NEW_TAB_PAGE = "background_images";
     private static final String PREF_ACCESSIBILITY = "accessibility";
     private static final String PREF_CONTENT_SETTINGS = "content_settings";
     private static final String PREF_ABOUT_CHROME = "about_chrome";
     private static final String PREF_BACKGROUND_IMAGES = "backgroud_images";
-    private static final String PREF_BRAVE_WALLET = "brave_wallet";
-    private static final String PREF_BRAVE_VPN = "brave_vpn";
-    private static final String PREF_BRAVE_LEO = "brave_leo";
+    // private static final String PREF_BRAVE_WALLET = "brave_wallet";
+    // private static final String PREF_BRAVE_VPN = "brave_vpn";
+    // private static final String PREF_BRAVE_LEO = "brave_leo";
     private static final String PREF_USE_CUSTOM_TABS = "use_custom_tabs";
     private static final String PREF_LANGUAGES = "languages";
     private static final String PREF_BRAVE_LANGUAGES = "brave_languages";
@@ -102,7 +102,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_HOME_SCREEN_WIDGET = "home_screen_widget";
 
     private final HashMap<String, Preference> mRemovedPreferences = new HashMap<>();
-    private @Nullable Preference mVpnCalloutPreference;
+    // private @Nullable Preference mVpnCalloutPreference;
     private boolean mNotificationClicked;
 
     @Override
@@ -461,9 +461,9 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         p.setSummary(summary);
     }
 
-    private void updateSummaries() {
-        updateSummary(PREF_BRAVE_STATS, BraveStatsPreferences.getPreferenceSummary());
-    }
+    // private void updateSummaries() {
+    //     updateSummary(PREF_BRAVE_STATS, BraveStatsPreferences.getPreferenceSummary());
+    // }
 
     private void initBraveAccount() {
         Preference getStartedPreference = findPreference(PREF_GET_STARTED);
@@ -500,33 +500,33 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         closingAllTabsClosesBravePreference.setOnPreferenceChangeListener(this);
     }
 
-    private void initRateBrave() {
-        Preference rateBravePreference = findPreference(PREF_RATE_BRAVE);
-        assumeNonNull(rateBravePreference);
-        rateBravePreference.setOnPreferenceClickListener(
-                new Preference.OnPreferenceClickListener() {
-                    @Override
-                    public boolean onPreferenceClick(Preference preference) {
-                        BraveRateDialogFragment rateDialogFragment =
-                                BraveRateDialogFragment.newInstance(true);
-                        rateDialogFragment.show(
-                                getParentFragmentManager(), BraveRateDialogFragment.TAG_FRAGMENT);
-                        return true;
-                    }
-                });
+    // private void initRateBrave() {
+    //     Preference rateBravePreference = findPreference(PREF_RATE_BRAVE);
+    //     assumeNonNull(rateBravePreference);
+    //     rateBravePreference.setOnPreferenceClickListener(
+    //             new Preference.OnPreferenceClickListener() {
+    //                 @Override
+    //                 public boolean onPreferenceClick(Preference preference) {
+    //                     BraveRateDialogFragment rateDialogFragment =
+    //                             BraveRateDialogFragment.newInstance(true);
+    //                     rateDialogFragment.show(
+    //                             getParentFragmentManager(), BraveRateDialogFragment.TAG_FRAGMENT);
+    //                     return true;
+    //                 }
+    //             });
 
-        Preference homeScreenWidgetPreference = findPreference(PREF_HOME_SCREEN_WIDGET);
-        if (homeScreenWidgetPreference != null) {
-            homeScreenWidgetPreference.setOnPreferenceClickListener(
-                    new Preference.OnPreferenceClickListener() {
-                        @Override
-                        public boolean onPreferenceClick(Preference preference) {
-                            BraveSearchWidgetUtils.requestPinAppWidget();
-                            return true;
-                        }
-                    });
-        }
-    }
+    //     Preference homeScreenWidgetPreference = findPreference(PREF_HOME_SCREEN_WIDGET);
+    //     if (homeScreenWidgetPreference != null) {
+    //         homeScreenWidgetPreference.setOnPreferenceClickListener(
+    //                 new Preference.OnPreferenceClickListener() {
+    //                     @Override
+    //                     public boolean onPreferenceClick(Preference preference) {
+    //                         BraveSearchWidgetUtils.requestPinAppWidget();
+    //                         return true;
+    //                     }
+    //                 });
+    //     }
+    // }
 
     @Override
     public boolean onPreferenceChange(Preference preference, Object newValue) {
