@@ -125,14 +125,8 @@ android_aar_prebuilt("com_brave_playlist_java") {
 android_aar_prebuilt("androidx_media3_media3_exoplayer_hls_java") {
   aar_path =
       "libs/androidx_media3_media3_exoplayer_hls/media3-exoplayer-hls-1.2.0.aar"
-  deps = [ ":androidx_room_room_common_java" ]
+  deps = [ "//third_party/androidx:androidx_room_room_common_jvm_java" ]
   info_path = "libs/androidx_media3_media3_exoplayer_hls/androidx_media3_media3_exoplayer_hls.info"
-}
-
-java_prebuilt("androidx_room_room_common_java") {
-  jar_path = "libs/androidx_room_room_common/room-common-2.6.1.jar"
-  output_name = "androidx_room_room_common"
-  supports_android = true
 }
 
 android_aar_prebuilt("androidx_room_room_runtime_java") {
