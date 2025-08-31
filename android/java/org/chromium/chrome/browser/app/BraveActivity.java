@@ -1930,7 +1930,7 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     private void openPlaylist(boolean shouldHandlePlaylistActivity) {
-        Log.e(TAG, "openPlaylist: " + shouldHandlePlaylistActivity);
+        Log.e("BraveActivity", "openPlaylist: " + shouldHandlePlaylistActivity);
         // if (!shouldHandlePlaylistActivity) mIsDeepLink = true;
 
         // if (ChromeSharedPreferences.getInstance()
@@ -3448,8 +3448,8 @@ public abstract class BraveActivity extends ChromeActivity
     
     private class VersionDifference {
         public DifferenceType type;
-        // public String currentVersion;
-        // public String latestVersion;
+        public String currentVersion;
+        public String latestVersion;
     }
 
     private CustomUpdateManager mCustomUpdateManager;
