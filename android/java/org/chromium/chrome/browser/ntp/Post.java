@@ -5,21 +5,21 @@ import java.util.List;
 import java.util.ArrayList;
 
 public class Post{  
-    private String _id;  
-    private String content;  
-    private String type;  
-    private String title;  
-    private String imageUrl;  
-    private String url;  
-    private int upvoteCount;  
-    private int downvoteCount;  
-    private int commentCount;  
-    private String publisherName;  
-    private String publisherImageUrl;  
-    private Boolean redirect;
-    private Boolean showFull;
-    private Vote didVote;
-    private SubPost subPost;
+    private final String _id;  
+    private final String content;  
+    private final String type;  
+    private final String title;  
+    private final String imageUrl;  
+    private final String url;  
+    private final int upvoteCount;  
+    private final int downvoteCount;  
+    private final int commentCount;  
+    private final String publisherName;  
+    private final String publisherImageUrl;  
+    private final Boolean redirect;
+    private final Boolean showFull;
+    private final Vote didVote;
+    private final SubPost subPost;
     private List<Comment> comments;
 
     public Post(String _id, String content, String type, String title, String imageUrl, String url, int upvoteCount, int downvoteCount, int commentCount, String publisherName, String publisherImageUrl, Boolean redirect, Boolean showFull, Vote vote, SubPost subPost) {  

@@ -304,7 +304,7 @@ public class CommentListFragment extends Fragment {
                 workerTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
             }
 
-            mSendButton.setOnClickListener((new View.OnClickListener() {
+            mSendButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (getActivity() != null) {
@@ -370,7 +370,7 @@ public class CommentListFragment extends Fragment {
                         }
                     }
                 }
-            }));
+            });
 
         } catch (BraveActivity.BraveActivityNotFoundException e) {
         } catch(Exception ex){
@@ -484,7 +484,7 @@ public class CommentListFragment extends Fragment {
     }
 
     private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
-        emojiButton.setOnClickListener((new View.OnClickListener() {
+        emojiButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     String content = editText.getText().toString().trim();
@@ -495,7 +495,7 @@ public class CommentListFragment extends Fragment {
                         editText.setText(emojiButton.getText().toString());
                     }
                 }
-            }));
+            });
         }
     }
 
@@ -681,7 +681,6 @@ public class CommentListFragment extends Fragment {
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");
-            String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);

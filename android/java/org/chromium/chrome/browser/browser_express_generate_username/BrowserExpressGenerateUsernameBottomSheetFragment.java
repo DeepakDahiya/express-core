@@ -71,7 +71,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                 .getBehavior()
                 .setState(BottomSheetBehavior.STATE_EXPANDED);
         nextButton = view.findViewById(R.id.btn_next);
-        nextButton.setOnClickListener((new View.OnClickListener() {
+        nextButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if (getActivity() != null) {
@@ -85,7 +85,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
                 }
                 // dismiss();
             }
-        }));
+        });
 
         int braveDefaultModalCount = ChromeSharedPreferences.getInstance().readInt(
                 BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
@@ -95,12 +95,12 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         }
 
         Button cancelButton = view.findViewById(R.id.btn_cancel);
-        cancelButton.setOnClickListener((new View.OnClickListener() {
+        cancelButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 dismiss();
             }
-        }));
+        });
     }
 
     @Override

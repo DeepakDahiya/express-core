@@ -266,7 +266,6 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import android.util.Rational;
 import android.app.PictureInPictureParams;
 
-import org.chromium.brave_shields.mojom.FilterListAndroidHandler;
 import java.util.ArrayList;
 import org.chromium.chrome.browser.notifications.BravePermissionUtils;
 
@@ -348,8 +347,6 @@ public abstract class BraveActivity extends ChromeActivity
 
     private static final int MONTH_1 = 1;
 
-    private static final float MIN_ASPECT_RATIO = 1 / 2.39f;
-    private static final float MAX_ASPECT_RATIO = 2.39f;
     public static final int MAX_FAILED_CAPTCHA_ATTEMPTS = 10;
 
     public static final int APP_OPEN_COUNT_FOR_WIDGET_PROMO = 25;
@@ -360,8 +357,8 @@ public abstract class BraveActivity extends ChromeActivity
     private OnBackPressedCallback mYouTubeBackPressedCallback;
     private boolean mIsCallbackSetup;
     private WebContentsObserver mWebContentsObserver;
-    private Set<Integer> mOurCreatedTabs = new HashSet<>();
-    private static final int MAX_OUR_TABS = 2;
+    private final Set<Integer> mOurCreatedTabs = new HashSet<>();
+    // private static final int MAX_OUR_TABS = 2;
 
     public static final String GOOGLE_SEARCH_ENGINE_KEYWORD = ":g";
     public static final String YOUTUBE_SEARCH_ENGINE_KEYWORD = ":yt";
@@ -376,8 +373,8 @@ public abstract class BraveActivity extends ChromeActivity
     // It will be removed in asm and parent variable will be used instead.
     private UnownedUserDataSupplier<BrowserControlsManager> mBrowserControlsManagerSupplier;
 
-    private static final List<String> sYandexRegions =
-            Arrays.asList("AM", "AZ", "BY", "KG", "KZ", "MD", "RU", "TJ", "TM", "UZ");
+    // private static final List<String> sYandexRegions =
+    //         Arrays.asList("AM", "AZ", "BY", "KG", "KZ", "MD", "RU", "TJ", "TM", "UZ");
 
     private boolean mIsVerification;
     public boolean mIsDeepLink;
@@ -412,9 +409,6 @@ public abstract class BraveActivity extends ChromeActivity
     private BrowserExpressGenerateUsernameBottomSheetFragment mBottomSheetDialog;
     private BrowserExpressUpdateApkBottomSheetFragment mBottomSheetUpdateApkDialog;
     private BrowserExpressCommentsBottomSheetFragment mBottomSheetCommentsDialog;
-    private BrowserExpressReplyWithAttachmentBottomSheetFragment mBottomSheetReplyWithAttachmentDialog;
-
-    private FilterListAndroidHandler mFilterListAndroidHandler;
 
     private DatabaseHelper mDatabaseHelper;
 
@@ -930,11 +924,11 @@ public abstract class BraveActivity extends ChromeActivity
         return mWalletModel;
     }
 
-    private void setWalletBadgeVisibility(boolean visible) {
-        mWalletBadgeVisible = visible;
-        BraveToolbarLayoutImpl layout = getBraveToolbarLayout();
-        layout.updateWalletBadgeVisibility(visible);
-    }
+    // private void setWalletBadgeVisibility(boolean visible) {
+    //     mWalletBadgeVisible = visible;
+    //     BraveToolbarLayoutImpl layout = getBraveToolbarLayout();
+    //     layout.updateWalletBadgeVisibility(visible);
+    // }
 
     private void maybeShowPendingTransactions() {
         if (mWalletModel != null) {
@@ -1772,30 +1766,30 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    private void applyChangesForYahooJp() {
-        boolean isDefaultSearchEngineChanged =
-                ChromeSharedPreferences.getInstance()
-                        .readBoolean(BravePreferenceKeys.DEFAULT_SEARCH_ENGINE_CHANGED, false);
-        TemplateUrlService templateUrlService =
-                TemplateUrlServiceFactory.getForProfile(getCurrentProfile());
-        Runnable onTemplateUrlServiceReady =
-                () -> {
-                    if (isActivityFinishingOrDestroyed()) return;
-                    TemplateUrl yahooJpTemplateUrl =
-                            BraveSearchEngineUtils.getTemplateUrlByShortName(
-                                    getCurrentProfile(), OnboardingPrefManager.YAHOO_JP);
-                    if (yahooJpTemplateUrl != null
-                            && !isDefaultSearchEngineChanged
-                            && templateUrlService.isDefaultSearchEngineGoogle()) {
-                        BraveSearchEngineUtils.setDSEPrefs(yahooJpTemplateUrl, getCurrentProfile());
-                        ChromeSharedPreferences.getInstance()
-                                .writeBoolean(
-                                        BravePreferenceKeys.BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP,
-                                        true);
-                    }
-                };
-        templateUrlService.runWhenLoaded(onTemplateUrlServiceReady);
-    }
+    // private void applyChangesForYahooJp() {
+    //     boolean isDefaultSearchEngineChanged =
+    //             ChromeSharedPreferences.getInstance()
+    //                     .readBoolean(BravePreferenceKeys.DEFAULT_SEARCH_ENGINE_CHANGED, false);
+    //     TemplateUrlService templateUrlService =
+    //             TemplateUrlServiceFactory.getForProfile(getCurrentProfile());
+    //     Runnable onTemplateUrlServiceReady =
+    //             () -> {
+    //                 if (isActivityFinishingOrDestroyed()) return;
+    //                 TemplateUrl yahooJpTemplateUrl =
+    //                         BraveSearchEngineUtils.getTemplateUrlByShortName(
+    //                                 getCurrentProfile(), OnboardingPrefManager.YAHOO_JP);
+    //                 if (yahooJpTemplateUrl != null
+    //                         && !isDefaultSearchEngineChanged
+    //                         && templateUrlService.isDefaultSearchEngineGoogle()) {
+    //                     BraveSearchEngineUtils.setDSEPrefs(yahooJpTemplateUrl, getCurrentProfile());
+    //                     ChromeSharedPreferences.getInstance()
+    //                             .writeBoolean(
+    //                                     BravePreferenceKeys.BRAVE_DEFAULT_SEARCH_ENGINE_MIGRATED_JP,
+    //                                     true);
+    //                 }
+    //             };
+    //     templateUrlService.runWhenLoaded(onTemplateUrlServiceReady);
+    // }
 
     private void setBraveAsDefaultPrivateMode() {
         Runnable onTemplateUrlServiceReady =
@@ -1815,17 +1809,17 @@ public abstract class BraveActivity extends ChromeActivity
                 .runWhenLoaded(onTemplateUrlServiceReady);
     }
 
-    private void enableSearchSuggestions() {
-        TemplateUrl defaultSearchEngineTemplateUrl =
-                BraveSearchEngineUtils.getTemplateUrlByShortName(
-                        getCurrentProfile(),
-                        BraveSearchEngineUtils.getDSEShortName(getCurrentProfile(), false));
-        if (defaultSearchEngineTemplateUrl != null
-                && BRAVE_SEARCH_ENGINE_KEYWORD.equals(
-                        defaultSearchEngineTemplateUrl.getKeyword())) {
-            UserPrefs.get(getCurrentProfile()).setBoolean(Pref.SEARCH_SUGGEST_ENABLED, true);
-        }
-    }
+    // private void enableSearchSuggestions() {
+    //     TemplateUrl defaultSearchEngineTemplateUrl =
+    //             BraveSearchEngineUtils.getTemplateUrlByShortName(
+    //                     getCurrentProfile(),
+    //                     BraveSearchEngineUtils.getDSEShortName(getCurrentProfile(), false));
+    //     if (defaultSearchEngineTemplateUrl != null
+    //             && BRAVE_SEARCH_ENGINE_KEYWORD.equals(
+    //                     defaultSearchEngineTemplateUrl.getKeyword())) {
+    //         UserPrefs.get(getCurrentProfile()).setBoolean(Pref.SEARCH_SUGGEST_ENABLED, true);
+    //     }
+    // }
 
     private void setInAppUpdateTiming() {
         Calendar calendar = Calendar.getInstance();
@@ -1907,20 +1901,20 @@ public abstract class BraveActivity extends ChromeActivity
         BraveVpnUtils.openBraveVpnPlansActivity(this);
     }
 
-    private void checkForVpnCallout() {
-        // String countryCode = Locale.getDefault().getCountry();
+    // private void checkForVpnCallout() {
+    //     // String countryCode = Locale.getDefault().getCountry();
 
-        // if (!countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
-        //         && BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
-        //     if (!TextUtils.isEmpty(BraveVpnPrefUtils.getPurchaseToken())
-        //             && !TextUtils.isEmpty(BraveVpnPrefUtils.getProductId())) {
-        //         mIsVerification = true;
-        //         BraveVpnNativeWorker.getInstance().verifyPurchaseToken(
-        //                 BraveVpnPrefUtils.getPurchaseToken(), BraveVpnPrefUtils.getProductId(),
-        //                 BraveVpnUtils.SUBSCRIPTION_PARAM_TEXT, getPackageName());
-        //     }
-        // }
-    }
+    //     // if (!countryCode.equals(BraveConstants.INDIA_COUNTRY_CODE)
+    //     //         && BraveVpnUtils.isVpnFeatureSupported(BraveActivity.this)) {
+    //     //     if (!TextUtils.isEmpty(BraveVpnPrefUtils.getPurchaseToken())
+    //     //             && !TextUtils.isEmpty(BraveVpnPrefUtils.getProductId())) {
+    //     //         mIsVerification = true;
+    //     //         BraveVpnNativeWorker.getInstance().verifyPurchaseToken(
+    //     //                 BraveVpnPrefUtils.getPurchaseToken(), BraveVpnPrefUtils.getProductId(),
+    //     //                 BraveVpnUtils.SUBSCRIPTION_PARAM_TEXT, getPackageName());
+    //     //     }
+    //     // }
+    // }
 
     private void initBraveNews() {
         ThreadUtils.assertOnUiThread();
@@ -1956,23 +1950,23 @@ public abstract class BraveActivity extends ChromeActivity
         // context.startActivity(playlistActivityIntent);
     }
 
-    private void showLinkVpnSubscriptionDialog() {
-        // LinkVpnSubscriptionDialogFragment linkVpnSubscriptionDialogFragment =
-        //         new LinkVpnSubscriptionDialogFragment();
-        // linkVpnSubscriptionDialogFragment.setCancelable(false);
-        // linkVpnSubscriptionDialogFragment.show(
-        //         getSupportFragmentManager(), "LinkVpnSubscriptionDialogFragment");
-    }
+    // private void showLinkVpnSubscriptionDialog() {
+    //     // LinkVpnSubscriptionDialogFragment linkVpnSubscriptionDialogFragment =
+    //     //         new LinkVpnSubscriptionDialogFragment();
+    //     // linkVpnSubscriptionDialogFragment.setCancelable(false);
+    //     // linkVpnSubscriptionDialogFragment.show(
+    //     //         getSupportFragmentManager(), "LinkVpnSubscriptionDialogFragment");
+    // }
 
-    private void showAdFreeCalloutDialog() {
-        // ChromeSharedPreferences.getInstance()
-        //         .writeBoolean(BravePreferenceKeys.BRAVE_AD_FREE_CALLOUT_DIALOG, false);
+    // private void showAdFreeCalloutDialog() {
+    //     // ChromeSharedPreferences.getInstance()
+    //     //         .writeBoolean(BravePreferenceKeys.BRAVE_AD_FREE_CALLOUT_DIALOG, false);
 
-        // BraveAdFreeCalloutDialogFragment braveAdFreeCalloutDialogFragment =
-        //         new BraveAdFreeCalloutDialogFragment();
-        // braveAdFreeCalloutDialogFragment.show(
-        //         getSupportFragmentManager(), "BraveAdFreeCalloutDialogFragment");
-    }
+    //     // BraveAdFreeCalloutDialogFragment braveAdFreeCalloutDialogFragment =
+    //     //         new BraveAdFreeCalloutDialogFragment();
+    //     // braveAdFreeCalloutDialogFragment.show(
+    //     //         getSupportFragmentManager(), "BraveAdFreeCalloutDialogFragment");
+    // }
 
     public void setNewTabPageManager(NewTabPageManager manager) {
         mNewTabPageManager = manager;
@@ -3343,24 +3337,24 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    private void maybeExecuteLeoVoicePrompt() {
-        Intent intent = getIntent();
-        WebContents webContents = getCurrentWebContents();
-        if (intent != null
-                && IntentUtils.safeGetBooleanExtra(
-                        intent, IntentHandler.EXTRA_INVOKED_FROM_APP_WIDGET, false)
-                && IntentUtils.safeGetBooleanExtra(
-                        intent, BraveIntentHandler.EXTRA_INVOKED_FROM_APP_WIDGET_LEO, false)
-                && !IntentUtils.safeGetBooleanExtra(
-                        intent, BraveIntentHandler.EXTRA_LEO_VOICE_PROMPT_INVOKED, false)
-                && webContents != null) {
-            // Marks that Leo prompt was invoked to avoid re-invoke on resume
-            intent.putExtra(BraveIntentHandler.EXTRA_LEO_VOICE_PROMPT_INVOKED, true);
-            new BraveLeoVoiceRecognitionHandler(
-                            webContents.getTopLevelNativeWindow(), webContents, "")
-                    .startVoiceRecognition();
-        }
-    }
+    // private void maybeExecuteLeoVoicePrompt() {
+    //     Intent intent = getIntent();
+    //     WebContents webContents = getCurrentWebContents();
+    //     if (intent != null
+    //             && IntentUtils.safeGetBooleanExtra(
+    //                     intent, IntentHandler.EXTRA_INVOKED_FROM_APP_WIDGET, false)
+    //             && IntentUtils.safeGetBooleanExtra(
+    //                     intent, BraveIntentHandler.EXTRA_INVOKED_FROM_APP_WIDGET_LEO, false)
+    //             && !IntentUtils.safeGetBooleanExtra(
+    //                     intent, BraveIntentHandler.EXTRA_LEO_VOICE_PROMPT_INVOKED, false)
+    //             && webContents != null) {
+    //         // Marks that Leo prompt was invoked to avoid re-invoke on resume
+    //         intent.putExtra(BraveIntentHandler.EXTRA_LEO_VOICE_PROMPT_INVOKED, true);
+    //         new BraveLeoVoiceRecognitionHandler(
+    //                         webContents.getTopLevelNativeWindow(), webContents, "")
+    //                 .startVoiceRecognition();
+    //     }
+    // }
 
     // QuickSearchCallback
     @Override

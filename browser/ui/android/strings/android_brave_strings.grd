@@ -471,18 +471,18 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_PREFS_AUTOFILL_PRIVATE_WINDOW_SUMMARY" desc="Summary for Autofill in private window option in settings">
         Saved information can be auto-filled in private tabs
       </message>
-      <!-- <message name="IDS_PREFS_SUPPORT_SECTION" desc="Title for the support section ">
+      <message name="IDS_PREFS_SUPPORT_SECTION" desc="Title for the support section ">
         Support
-      </message> -->
+      </message>
       <message name="IDS_PREFS_SECTION_BRAVE_ACCOUNT" desc="Title for the Brave Account section in settings">
         Brave Account
       </message>
       <message name="IDS_GET_STARTED" desc="Button text to get started with Brave Account">
         Get started
       </message>
-      <!-- <message name="IDS_PREFS_SECTION_FEATURES" desc="Title for Brave-specific features section">
+      <message name="IDS_PREFS_SECTION_FEATURES" desc="Title for Brave-specific features section">
         Features
-      </message> -->
+      </message>
       <message name="IDS_BRAVE_SHIELDS_AND_PRIVACY" desc="Label for the settings related to shields and privacy">
         Brave Shields &amp; privacy
       </message>
@@ -1281,12 +1281,12 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_RESET_BRAVE_REWARDS_ERROR_DESCRIPTION" desc="Description for Brave Rewards reset error dialog.">
         There was an error resetting Brave Rewards. Please relaunch Brave and try again.
       </message>
-      <!-- <message name="IDS_SHOW_ADS_WHEN_BRAVE_IS_NOT_IN_USE_TITLE" desc="Title for Show Ads when Brave is not in use option in Brave rewards settings.">
+      <message name="IDS_SHOW_ADS_WHEN_BRAVE_IS_NOT_IN_USE_TITLE" desc="Title for Show Ads when Brave is not in use option in Brave rewards settings.">
         Brave Ads
-      </message> -->
-      <!-- <message name="IDS_SHOW_ADS_WHEN_BRAVE_IS_NOT_IN_USE_SUMMARY" desc="Summary for Show Ads when Brave is not in use option in Brave rewards settings.">
+      </message>
+      <message name="IDS_SHOW_ADS_WHEN_BRAVE_IS_NOT_IN_USE_SUMMARY" desc="Summary for Show Ads when Brave is not in use option in Brave rewards settings.">
         Show notification ads when Brave is not in use
-      </message> -->
+      </message>
       <message name="IDS_RESET_BRAVE_REWARDS_OPTION_DESCRIPTION" desc="Description for preference to reset Brave Rewards.">
         This will delete your Brave Rewards and reset all of your Brave Rewards data
       </message>
@@ -1535,15 +1535,15 @@ Are you sure you want to do this?
       <message name="IDS_BRAVE_REWARDS_LOCAL_GENERAL_GRANT_ERROR_TITLE" desc="">
         Oops, something is wrong. Please try again later.
       </message>
-      <!-- <message name="IDS_PREFS_RATE_BRAVE" desc="Title for rate brave settings option.">
+      <message name="IDS_PREFS_RATE_BRAVE" desc="Title for rate brave settings option.">
         Rate Brave
-      </message> -->
+      </message>
       <message name="IDS_PREFS_SECTION_GENERAL" desc="Title for the general section in settings.">
         General
       </message>
-      <!-- <message name="IDS_PREFS_ABOUT_SECTION" desc="Title for the about section in settings.">
+      <message name="IDS_PREFS_ABOUT_SECTION" desc="Title for the about section in settings.">
         About
-      </message> -->
+      </message>
       <message name="IDS_NEVER" desc="Text for rate brave dialog button.">
         Never
       </message>

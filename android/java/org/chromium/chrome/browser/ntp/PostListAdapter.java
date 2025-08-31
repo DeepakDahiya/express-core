@@ -305,16 +305,15 @@ public class PostListAdapter extends RecyclerView.Adapter {
         ImageView postImage;
         CardView cardView;
         TextView publisherNameText;
-        TextView publishedTimeText;
         TextView titleText;
         TextView contentText;
-        private Button mCommentButton;
-        private BraveActivity activity;
+        private final Button mCommentButton;
+        private final BraveActivity activity;
 
-        private Button mReadMoreButton;
-        private Button mReadMoreButton2;
+        private final Button mReadMoreButton;
+        private final Button mReadMoreButton2;
 
-        private Context context;
+        private final Context context;
 
         private int myPosition;
 
@@ -366,7 +365,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                             super.onScrolled(recyclerView, dx, dy);
                             LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
-                            int position = layoutManager.findFirstVisibleItemPosition();
                         }
                     });
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
@@ -425,11 +423,9 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
             String postType = post.getType().toString();
             SubPost subPost = post.getSubPost();
-            String name = subPost.getAuthorName();
             String username = "@" + subPost.getAuthorUsername();
             String content = subPost.getContent();
             String profilePicUrl = subPost.getAuthorProfilePicture();
-            Boolean verified = subPost.getAuthorVerified();
 
             if (postType.equals(TWITTER_TYPE) || postType.equals(INSTAGRAM_TYPE)) {
                 twitterPostLayout.setVisibility(View.VISIBLE);
@@ -778,28 +774,28 @@ public class PostListAdapter extends RecyclerView.Adapter {
         }
 
         // Make sure to release the player when the view is recycled
-        public void onViewRecycled() {
-            releasePlayer();
-            stopAutoScroll(); // Add this
+        // public void onViewRecycled() {
+        //     releasePlayer();
+        //     stopAutoScroll(); // Add this
 
-            if (twitterImage != null && mContext != null) { // Add mContext null check
-                Glide.with(mContext).clear(twitterImage); // Use mContext from constructor
-                twitterImage.setImageDrawable(null);
-            }
-            if (twitterProfilePicture != null && mContext != null) {
-                Glide.with(mContext).clear(twitterProfilePicture);
-                twitterProfilePicture.setImageDrawable(null);
-            }
-            if (postImage != null && mContext != null) {
-                Glide.with(mContext).clear(postImage);
-                postImage.setImageDrawable(null);
-            }
-        }
+        //     if (twitterImage != null && mContext != null) { // Add mContext null check
+        //         Glide.with(mContext).clear(twitterImage); // Use mContext from constructor
+        //         twitterImage.setImageDrawable(null);
+        //     }
+        //     if (twitterProfilePicture != null && mContext != null) {
+        //         Glide.with(mContext).clear(twitterProfilePicture);
+        //         twitterProfilePicture.setImageDrawable(null);
+        //     }
+        //     if (postImage != null && mContext != null) {
+        //         Glide.with(mContext).clear(postImage);
+        //         postImage.setImageDrawable(null);
+        //     }
+        // }
 
         // Make sure to release the player when the view is detached
-        public void onViewDetachedFromWindow() {
-            releasePlayer();
-        }
+        // public void onViewDetachedFromWindow() {
+        //     releasePlayer();
+        // }
 
         private void setupAutoScroll() {
             if (isAutoScrolling) return;

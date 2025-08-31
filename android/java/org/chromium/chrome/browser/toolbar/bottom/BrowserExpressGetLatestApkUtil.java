@@ -52,7 +52,7 @@ public class BrowserExpressGetLatestApkUtil {
     }
 
     public static class GetLatestApkWorkerTask extends AsyncTask<Void> {
-        private GetLatestApkCallback mCallback;
+        private final GetLatestApkCallback mCallback;
         private static Boolean getLatestApkStatus;
         private static String mErrorMessage;
         private static String mVersion;
@@ -90,7 +90,7 @@ public class BrowserExpressGetLatestApkUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetLatestApkRequest(mCallback);
+            sendGetLatestApkRequest();
             return null;
         }
 
@@ -106,7 +106,7 @@ public class BrowserExpressGetLatestApkUtil {
         }
     }
 
-    private static void sendGetLatestApkRequest(GetLatestApkCallback callback) {
+    private static void sendGetLatestApkRequest() {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

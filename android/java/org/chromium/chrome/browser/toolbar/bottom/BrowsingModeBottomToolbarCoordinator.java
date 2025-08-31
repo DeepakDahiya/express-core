@@ -156,7 +156,6 @@ public class BrowsingModeBottomToolbarCoordinator {
 
                     String accessToken = activity.getAccessToken();
                     String[] split_string = accessToken.split("\\.");
-                    String base64EncodedHeader = split_string[0];
                     String base64EncodedBody = split_string[1];
 
                     byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);

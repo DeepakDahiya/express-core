@@ -225,7 +225,7 @@ public class ReplyListFragment2 extends Fragment {
             BraveActivity activity = BraveActivity.getBraveActivity();
             String accessToken = activity.getAccessToken();
 
-            mSendButton.setOnClickListener((new View.OnClickListener() {
+            mSendButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     if (getActivity() != null) {
@@ -285,7 +285,7 @@ public class ReplyListFragment2 extends Fragment {
                         }
                     }
                 }
-            }));
+            });
 
             // Getting replies
             BrowserExpressGetCommentsUtil.GetCommentsWorkerTask workerTask =
@@ -393,7 +393,7 @@ public class ReplyListFragment2 extends Fragment {
     }
 
     private void setOnClickForEmoji(Button emojiButton, EditText editText){ {
-        emojiButton.setOnClickListener((new View.OnClickListener() {
+        emojiButton.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     String content = editText.getText().toString().trim();
@@ -404,7 +404,7 @@ public class ReplyListFragment2 extends Fragment {
                         editText.setText(emojiButton.getText().toString());
                     }
                 }
-            }));
+            });
         }
     }
 
@@ -521,7 +521,6 @@ public class ReplyListFragment2 extends Fragment {
     private JSONObject getDecodedToken(String accessToken){
         try{
             String[] split_string = accessToken.split("\\.");
-            String base64EncodedHeader = split_string[0];
             String base64EncodedBody = split_string[1];
 
             byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);

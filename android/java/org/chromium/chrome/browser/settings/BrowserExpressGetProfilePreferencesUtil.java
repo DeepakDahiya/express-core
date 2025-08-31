@@ -47,7 +47,7 @@ public class BrowserExpressGetProfilePreferencesUtil {
         private static String mXp;
         private static String mLikesGiven;
         private static String mLikesReceived;
-        private GetProfileCallback mCallback;
+        private final GetProfileCallback mCallback;
         private static Boolean getProfileStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
@@ -80,7 +80,7 @@ public class BrowserExpressGetProfilePreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetProfileRequest(mAccessToken, mCallback);
+            sendGetProfileRequest(mAccessToken);
             return null;
         }
 
@@ -96,7 +96,7 @@ public class BrowserExpressGetProfilePreferencesUtil {
         }
     }
 
-    private static void sendGetProfileRequest(String accessToken, GetProfileCallback callback) {
+    private static void sendGetProfileRequest(String accessToken) {
         Log.e("Express Browser", "GETTING USER PROFILE 2");
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
