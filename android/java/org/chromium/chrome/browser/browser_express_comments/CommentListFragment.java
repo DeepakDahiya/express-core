@@ -210,13 +210,6 @@ public class CommentListFragment extends Fragment {
         mMessageEditText = inputCallback.getInputEditText();
         mSendButton = inputCallback.getSendButton();
 
-        mLolButton = view.findViewById(R.id.lol_button);
-        mHeartButton = view.findViewById(R.id.heart_button);
-        mCryButton = view.findViewById(R.id.cry_button);
-        mFireButton = view.findViewById(R.id.fire_button);
-        mLoveButton = view.findViewById(R.id.love_button);
-        mClapButton = view.findViewById(R.id.clap_button);
-
         mEmptyContainer = view.findViewById(R.id.empty_container);
 
         mBackButton = view.findViewById(R.id.back_button);
