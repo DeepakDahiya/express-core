@@ -102,7 +102,6 @@ android_aar_prebuilt("com_brave_playlist_java") {
     ":com_google_android_exoplayer_extension_cast_java",
     ":com_google_android_exoplayer_extension_mediasession_java",
     ":androidx_media3_media3_exoplayer_hls_java",
-    ":androidx_room_room_runtime_java",
     "//third_party/android_deps:material_design_java",
     "//third_party/androidx:androidx_media3_media3_common_java",
     "//third_party/androidx:androidx_media3_media3_exoplayer_java",
@@ -127,15 +126,6 @@ android_aar_prebuilt("androidx_media3_media3_exoplayer_hls_java") {
       "libs/androidx_media3_media3_exoplayer_hls/media3-exoplayer-hls-1.2.0.aar"
   deps = [ "//third_party/androidx:androidx_room_room_common_jvm_java" ]
   info_path = "libs/androidx_media3_media3_exoplayer_hls/androidx_media3_media3_exoplayer_hls.info"
-}
-
-android_aar_prebuilt("androidx_room_room_runtime_java") {
-  aar_path = "libs/androidx_room_room_runtime/room-runtime-2.6.1.aar"
-  deps = [
-    ":androidx_sqlite_sqlite_framework_java",
-    ":androidx_sqlite_sqlite_java",
-  ]
-  info_path = "libs/androidx_room_room_runtime/androidx_room_room_runtime.info"
 }
 
 android_aar_prebuilt("androidx_sqlite_sqlite_java") {
