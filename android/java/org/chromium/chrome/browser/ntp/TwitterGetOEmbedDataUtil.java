@@ -49,7 +49,7 @@ public class TwitterGetOEmbedDataUtil {
     }
 
     public static class GetTwitterOEmbedDataWorkerTask extends AsyncTask<Void> {
-        private GetTwitterOEmbedDataCallback mCallback;
+        private final GetTwitterOEmbedDataCallback mCallback;
         private static Boolean getTwitterOEmbedDataStatus;
         private static String mErrorMessage;
         private static String mTweetUrl;
@@ -77,7 +77,7 @@ public class TwitterGetOEmbedDataUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetTwitterOEmbedDataRequest(mTweetUrl, mCallback);
+            sendGetTwitterOEmbedDataRequest(mTweetUrl);
             return null;
         }
 
@@ -93,7 +93,7 @@ public class TwitterGetOEmbedDataUtil {
         }
     }
 
-    private static void sendGetTwitterOEmbedDataRequest(String tweetUrl, GetTwitterOEmbedDataCallback callback) {
+    private static void sendGetTwitterOEmbedDataRequest(String tweetUrl) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

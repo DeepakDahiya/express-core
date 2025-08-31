@@ -286,19 +286,19 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private class PostHolder extends RecyclerView.ViewHolder {
         LinearLayout twitterPostLayout;
         ImageView twitterProfilePicture;
-        TextView twitterUsername;
-        TextView twitterContent;
-        ImageView twitterImage;
+        final TextView twitterUsername;
+        final TextView twitterContent;
+        final ImageView twitterImage;
         // VideoView twitterVideo;
-        CardView twitterMediaCard;
-        RecyclerView mTopCommentsRecycler;
+        final CardView twitterMediaCard;
+        final RecyclerView mTopCommentsRecycler;
         CommentListAdapter mCommentAdapter;
         List<Comment> mComments;
-        LinearLayout editTextLayout;
+        final LinearLayout editTextLayout;
 
-        StyledPlayerView twitterVideo;
+        final StyledPlayerView twitterVideo;
         ExoPlayer player;
-        ImageView playPauseIcon;
+        final ImageView playPauseIcon;
         ProgressBar videoProgressBar;
         ValueAnimator progressAnimator;
 

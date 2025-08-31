@@ -234,7 +234,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     private int mCurrentToolbarColor;
 
     private TextView mCommentsText;
-    private BraveHomeButton mBottomHomeButton;
+    // private BraveHomeButton mBottomHomeButton;
     private ImageButton mBeHomeButton;
 
     private boolean mIsPublisherVerified;
@@ -302,7 +302,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
         mCommentsText = findViewById(R.id.comments_button1);
         mBeHomeButton = findViewById(R.id.be_home_button);
-        mBottomHomeButton = findViewById(R.id.bottom_home_button);
+        // mBottomHomeButton = findViewById(R.id.bottom_home_button);
 
         // mProfileLayout = (FrameLayout) findViewById(R.id.profile_button_layout);
         mProfileButton = (ImageButton) findViewById(R.id.profile_button);
@@ -709,7 +709,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
                             int commentCount = 0;
                             mCommentsText = activity.getCommentCountText();
-                            mBottomHomeButton = activity.getBottomHomeButton();
+                            // mBottomHomeButton = activity.getBottomHomeButton();
                             mBeHomeButton = activity.getBeHomeButton();
                             mBeHomeButton.setVisibility(View.VISIBLE);
 
@@ -1128,106 +1128,106 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     //     }
     // }
 
-    private void showTooltip(String tooltipPref, int tabId) {
-        try {
-            HighlightView highlightView = new HighlightView(getContext(), null);
-            highlightView.setColor(ContextCompat.getColor(
-                    getContext(), R.color.onboarding_search_highlight_color));
-            ViewGroup viewGroup =
-                    BraveActivity.getBraveActivity().getWindow().getDecorView().findViewById(
-                            android.R.id.content);
-            float padding = (float) dpToPx(getContext(), 20);
-            mShieldsPopupWindowTooltip =
-                    new PopupWindowTooltip.Builder(getContext())
-                            .anchorView(mBraveShieldsButton)
-                            .arrowColor(ContextCompat.getColor(
-                                    getContext(), R.color.onboarding_arrow_color))
-                            .gravity(Gravity.BOTTOM)
-                            .dismissOnOutsideTouch(true)
-                            .dismissOnInsideTouch(false)
-                            .backgroundDimDisabled(true)
-                            .padding(padding)
-                            .parentPaddingHorizontal(dpToPx(getContext(), 10))
-                            .modal(true)
-                            .onDismissListener(tooltip -> {
-                                if (viewGroup != null && highlightView != null) {
-                                    highlightView.stopAnimation();
-                                    viewGroup.removeView(highlightView);
-                                }
-                            })
-                            .contentView(R.layout.brave_shields_tooltip_layout)
-                            .build();
+    // private void showTooltip(String tooltipPref, int tabId) {
+    //     try {
+    //         HighlightView highlightView = new HighlightView(getContext(), null);
+    //         highlightView.setColor(ContextCompat.getColor(
+    //                 getContext(), R.color.onboarding_search_highlight_color));
+    //         ViewGroup viewGroup =
+    //                 BraveActivity.getBraveActivity().getWindow().getDecorView().findViewById(
+    //                         android.R.id.content);
+    //         float padding = (float) dpToPx(getContext(), 20);
+    //         mShieldsPopupWindowTooltip =
+    //                 new PopupWindowTooltip.Builder(getContext())
+    //                         .anchorView(mBraveShieldsButton)
+    //                         .arrowColor(ContextCompat.getColor(
+    //                                 getContext(), R.color.onboarding_arrow_color))
+    //                         .gravity(Gravity.BOTTOM)
+    //                         .dismissOnOutsideTouch(true)
+    //                         .dismissOnInsideTouch(false)
+    //                         .backgroundDimDisabled(true)
+    //                         .padding(padding)
+    //                         .parentPaddingHorizontal(dpToPx(getContext(), 10))
+    //                         .modal(true)
+    //                         .onDismissListener(tooltip -> {
+    //                             if (viewGroup != null && highlightView != null) {
+    //                                 highlightView.stopAnimation();
+    //                                 viewGroup.removeView(highlightView);
+    //                             }
+    //                         })
+    //                         .contentView(R.layout.brave_shields_tooltip_layout)
+    //                         .build();
 
-            ArrayList<String> blockerNamesList = mBraveShieldsHandler.getBlockerNamesList(tabId);
+    //         ArrayList<String> blockerNamesList = mBraveShieldsHandler.getBlockerNamesList(tabId);
 
-            int adsTrackersCount = mBraveShieldsHandler.getTrackersBlockedCount(tabId)
-                    + mBraveShieldsHandler.getAdsBlockedCount(tabId);
+    //         int adsTrackersCount = mBraveShieldsHandler.getTrackersBlockedCount(tabId)
+    //                 + mBraveShieldsHandler.getAdsBlockedCount(tabId);
 
-            String displayTrackerName = "";
-            if (blockerNamesList.contains(BigtechCompany.Google.name())) {
-                displayTrackerName = BigtechCompany.Google.name();
-            } else if (blockerNamesList.contains(BigtechCompany.Facebook.name())) {
-                displayTrackerName = BigtechCompany.Facebook.name();
-            } else if (blockerNamesList.contains(BigtechCompany.Amazon.name())) {
-                displayTrackerName = BigtechCompany.Amazon.name();
-            }
+    //         String displayTrackerName = "";
+    //         if (blockerNamesList.contains(BigtechCompany.Google.name())) {
+    //             displayTrackerName = BigtechCompany.Google.name();
+    //         } else if (blockerNamesList.contains(BigtechCompany.Facebook.name())) {
+    //             displayTrackerName = BigtechCompany.Facebook.name();
+    //         } else if (blockerNamesList.contains(BigtechCompany.Amazon.name())) {
+    //             displayTrackerName = BigtechCompany.Amazon.name();
+    //         }
 
-            String trackerText = "";
-            if (!displayTrackerName.isEmpty()) {
-                if (adsTrackersCount - 1 == 0) {
-                    trackerText =
-                            String.format(getContext().getResources().getString(
-                                                  R.string.shield_bigtech_tracker_only_blocked),
-                                    displayTrackerName);
+    //         String trackerText = "";
+    //         if (!displayTrackerName.isEmpty()) {
+    //             if (adsTrackersCount - 1 == 0) {
+    //                 trackerText =
+    //                         String.format(getContext().getResources().getString(
+    //                                               R.string.shield_bigtech_tracker_only_blocked),
+    //                                 displayTrackerName);
 
-                } else {
-                    trackerText = String.format(getContext().getResources().getString(
-                                                        R.string.shield_bigtech_tracker_blocked),
-                            displayTrackerName, String.valueOf(adsTrackersCount - 1));
-                }
-            } else {
-                trackerText = String.format(
-                        getContext().getResources().getString(R.string.shield_tracker_blocked),
-                        String.valueOf(adsTrackersCount));
-            }
+    //             } else {
+    //                 trackerText = String.format(getContext().getResources().getString(
+    //                                                     R.string.shield_bigtech_tracker_blocked),
+    //                         displayTrackerName, String.valueOf(adsTrackersCount - 1));
+    //             }
+    //         } else {
+    //             trackerText = String.format(
+    //                     getContext().getResources().getString(R.string.shield_tracker_blocked),
+    //                     String.valueOf(adsTrackersCount));
+    //         }
 
-            TextView tvBlocked = mShieldsPopupWindowTooltip.findViewById(R.id.tv_blocked);
-            tvBlocked.setText(trackerText);
+    //         TextView tvBlocked = mShieldsPopupWindowTooltip.findViewById(R.id.tv_blocked);
+    //         tvBlocked.setText(trackerText);
 
-            if (mBraveShieldsButton != null && mBraveShieldsButton.isShown()) {
-                viewGroup.addView(highlightView);
-                HighlightItem item = new HighlightItem(mBraveShieldsButton);
+    //         if (mBraveShieldsButton != null && mBraveShieldsButton.isShown()) {
+    //             viewGroup.addView(highlightView);
+    //             HighlightItem item = new HighlightItem(mBraveShieldsButton);
 
-                ImageButton braveShieldButton =
-                        new ImageButton(getContext(), null, R.style.ToolbarButton);
-                braveShieldButton.setImageResource(R.drawable.btn_brave);
-                FrameLayout.LayoutParams braveShieldParams =
-                        new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
-                                FrameLayout.LayoutParams.WRAP_CONTENT);
+    //             ImageButton braveShieldButton =
+    //                     new ImageButton(getContext(), null, R.style.ToolbarButton);
+    //             braveShieldButton.setImageResource(R.drawable.btn_brave);
+    //             FrameLayout.LayoutParams braveShieldParams =
+    //                     new FrameLayout.LayoutParams(FrameLayout.LayoutParams.WRAP_CONTENT,
+    //                             FrameLayout.LayoutParams.WRAP_CONTENT);
 
-                int[] location = new int[2];
-                highlightView.getLocationOnScreen(location);
-                braveShieldParams.leftMargin = item.getScreenLeft() + dpToPx(getContext(), 10);
-                braveShieldParams.topMargin = item.getScreenTop()
-                        + ((item.getScreenBottom() - item.getScreenTop()) / 4) - location[1];
-                braveShieldButton.setLayoutParams(braveShieldParams);
-                highlightView.addView(braveShieldButton);
+    //             int[] location = new int[2];
+    //             highlightView.getLocationOnScreen(location);
+    //             braveShieldParams.leftMargin = item.getScreenLeft() + dpToPx(getContext(), 10);
+    //             braveShieldParams.topMargin = item.getScreenTop()
+    //                     + ((item.getScreenBottom() - item.getScreenTop()) / 4) - location[1];
+    //             braveShieldButton.setLayoutParams(braveShieldParams);
+    //             highlightView.addView(braveShieldButton);
 
-                highlightView.setShouldShowHighlight(true);
-                highlightView.setHighlightTransparent(true);
-                highlightView.setHighlightItem(item);
-                highlightView.initializeAnimators();
-                highlightView.startAnimation();
+    //             highlightView.setShouldShowHighlight(true);
+    //             highlightView.setHighlightTransparent(true);
+    //             highlightView.setHighlightItem(item);
+    //             highlightView.initializeAnimators();
+    //             highlightView.startAnimation();
 
-                mShieldsPopupWindowTooltip.show();
-                BraveShieldsUtils.setShieldsTooltipShown(tooltipPref, true);
-                BraveShieldsUtils.isTooltipShown = true;
-            }
+    //             mShieldsPopupWindowTooltip.show();
+    //             BraveShieldsUtils.setShieldsTooltipShown(tooltipPref, true);
+    //             BraveShieldsUtils.isTooltipShown = true;
+    //         }
 
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
-            Log.e(TAG, "showTooltip " + e);
-        }
-    }
+    //     } catch (BraveActivity.BraveActivityNotFoundException e) {
+    //         Log.e(TAG, "showTooltip " + e);
+    //     }
+    // }
 
     public void dismissShieldsTooltip() {
         if (mShieldsPopupWindowTooltip != null && mShieldsPopupWindowTooltip.isShowing()) {
@@ -2214,25 +2214,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 @Override
                 public void getProfileFailed(String error) {
                     Log.e("Express Browser LOGIN", "GET PROFILE FAILED");
-                }
-
-                private JSONObject getDecodedToken(String accessToken){
-                    try{
-                        String[] split_string = accessToken.split("\\.");
-                        String base64EncodedBody = split_string[1];
-
-                        byte[] data = Base64.decode(base64EncodedBody, Base64.DEFAULT);
-                        String decodedString = new String(data, "UTF-8");
-                        JSONObject jsonObj = new JSONObject(decodedString.toString());
-                        return jsonObj;
-                    }catch(JSONException e){
-                        Log.e("Express Browser Access Token", e.getMessage());
-                        return null;
-                    }catch(UnsupportedEncodingException e){
-                        Log.e("Express Browser Access Token", e.getMessage());
-                        return null;
-                    }
-                    
                 }
             };
 }

@@ -86,14 +86,12 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private static final int VIEW_TYPE_TOP_COMMENT = 1;
     private static final int VIEW_TYPE_REPLY_COMMENT = 2;
 
-    private Context mContext;
-    private List<Comment> mCommentList;
-    private EditText mMessageEditText;
-    private BrowserExpressCommentsBottomSheetFragment mParentFragment;
-    private boolean mIsReplyAdapter;
-    private boolean mIsReplyToReplyAdapter;
-
-    private RecyclerView mRecyclerView;
+    private final Context mContext;
+    private final List<Comment> mCommentList;
+    private final EditText mMessageEditText;
+    private final BrowserExpressCommentsBottomSheetFragment mParentFragment;
+    private final boolean mIsReplyAdapter;
+    private final boolean mIsReplyToReplyAdapter;
 
     interface DimensionCallback {
         void onDimensionsReady(int position, int width, int height);
@@ -154,13 +152,11 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     }
 
     private class VideoDimensionTask extends AsyncTask<int[]> {
-        private final Context mContext;
         private final Uri mMediaUri;
         private final int mPosition;
         private final DimensionCallback mCallback;
 
         VideoDimensionTask(Context context, Uri mediaUri, int position, DimensionCallback callback) {
-            this.mContext = context.getApplicationContext();
             this.mMediaUri = mediaUri;
             this.mPosition = position;
             this.mCallback = callback;
@@ -199,26 +195,26 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         TextView usernameText;
         TextView contentText;
         TextView voteCountText;
-        private ImageView mAvatarImage;
-        private ImageButton mUpvoteButton;
-        private ImageButton mDownvoteButton;
-        private Button mReplyButton;
-        private Button mShareButton;
+        private final ImageView mAvatarImage;
+        private final ImageButton mUpvoteButton;
+        private final ImageButton mDownvoteButton;
+        private final Button mReplyButton;
+        private final Button mShareButton;
         private String didVoteType;
         private int finalVote;
         private BraveActivity activity; // Consider how this is used, if context is enough
-        private Button mReadMoreButton;
+        private final Button mReadMoreButton;
 
-        private ProgressBar mPostingProgressBar;
-        private TextView mFailedTextView;
+        private final ProgressBar mPostingProgressBar;
+        private final TextView mFailedTextView;
 
         // private CommentListAdapter mCommentAdapter; // Not used in this class, consider removing
         // private List<Comment> mComments; // Not used in this class, consider removing
 
-        private LinearLayout mActionItemsLayout;
-        private LinearLayout mVoteLayout;
+        private final LinearLayout mActionItemsLayout;
+        private final LinearLayout mVoteLayout;
 
-        private EditText mMessageEditText; // From constructor
+        private final EditText mMessageEditText; // From constructor
         private LinearLayout mCommentLayout;
 
         private Animation bounceUp;
@@ -247,8 +243,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private boolean mHasVideo;
         private boolean mIsVideoInitialized;
 
-        private final int mViewType;
-
         private boolean shouldCloseKeyboardOnReply;
 
         CommentHolder(@NonNull View itemView, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyTopComment, boolean isReplyToReplyAdapter, int viewType) {
@@ -260,8 +254,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             mIsReplyAdapter = isReplyAdapter;
             mIsReplyTopComment = isReplyTopComment;
             mIsReplyToReplyAdapter = isReplyToReplyAdapter;
-
-            mViewType = viewType;
 
             mAvatarImage = itemView.findViewById(R.id.avatar_image);
             usernameText = itemView.findViewById(R.id.username);
@@ -596,7 +588,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                                         mUpvoteButton.setClickable(true);
                                         mDownvoteButton.setClickable(true);
                                         if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
-                                            handleNewToken(newAccessToken, newRefreshToken);
+                                            handleNewToken(newAccessToken);
                                         }
                                     }
 
@@ -664,8 +656,8 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
                             public void addVoteSuccessful(String newAccessToken, String newRefreshToken) {
                                 mUpvoteButton.setClickable(true);
                                 mDownvoteButton.setClickable(true);
-                                if (newRefreshToken != null && !newRefreshToken.isEmpty() && activity != null) {
-                                   handleNewToken(newAccessToken, newRefreshToken);
+                                if (activity != null) {
+                                   handleNewToken(newAccessToken);
                                 }
                             }
 
@@ -710,26 +702,26 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             }
         }
 
-        private void calculateAndCacheDimensions(Comment comment, int position, Uri mediaUri, String mediaType) {
-            if ("video".equals(mediaType)) {
-                new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
-            } else {
-                // For images, load with Glide to get dimensions
-                Glide.with(context)
-                    .asBitmap()
-                    .load(mediaUri)
-                    .into(new CustomTarget<Bitmap>() {
-                        @Override 
-                        public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
-                            if (getBindingAdapterPosition() == position) {
-                                mDimensionCallback.onDimensionsReady(position, resource.getWidth(), resource.getHeight());
-                            }
-                        }
-                        @Override 
-                        public void onLoadCleared(@Nullable Drawable placeholder) {}
-                    });
-            }
-        }
+        // private void calculateAndCacheDimensions(Comment comment, int position, Uri mediaUri, String mediaType) {
+        //     if ("video".equals(mediaType)) {
+        //         new VideoDimensionTask(context, mediaUri, position, mDimensionCallback).executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        //     } else {
+        //         // For images, load with Glide to get dimensions
+        //         Glide.with(context)
+        //             .asBitmap()
+        //             .load(mediaUri)
+        //             .into(new CustomTarget<Bitmap>() {
+        //                 @Override 
+        //                 public void onResourceReady(@NonNull Bitmap resource, @Nullable Transition<? super Bitmap> transition) {
+        //                     if (getBindingAdapterPosition() == position) {
+        //                         mDimensionCallback.onDimensionsReady(position, resource.getWidth(), resource.getHeight());
+        //                     }
+        //                 }
+        //                 @Override 
+        //                 public void onLoadCleared(@Nullable Drawable placeholder) {}
+        //             });
+        //     }
+        // }
 
         private void setAspectRatio(int width, int height) {
             if (width > 0 && height > 0) {
@@ -800,7 +792,7 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
             mIsVideoInitialized = false;
         }
 
-        private void handleNewToken(String newAccessToken, String newRefreshToken) {
+        private void handleNewToken(String newAccessToken) {
             if (activity == null) return;
             try {
                 activity.setAccessToken(newAccessToken); // Assuming this method exists and handles storage

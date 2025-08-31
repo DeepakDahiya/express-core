@@ -1,18 +1,18 @@
 package org.chromium.chrome.browser.ntp;
 
 public class SubPost{  
-    private String id;  
-    private String url;  
-    private String content;  
-    private String authorName;  
-    private String authorUsername;  
-    private Boolean authorVerified;  
-    private String authorProfilePicture;  
-    private String mediaType;  
-    private String mediaImageUrl;  
-    private String mediaVideoUrl;  
-    private int mediaHeight;  
-    private int mediaWidth;  
+    private final String id;  
+    private final String url;  
+    private final String content;  
+    private final String authorName;  
+    private final String authorUsername;  
+    private final Boolean authorVerified;  
+    private final String authorProfilePicture;  
+    private final String mediaType;  
+    private final String mediaImageUrl;  
+    private final String mediaVideoUrl;  
+    private final int mediaHeight;  
+    private final int mediaWidth;  
     
     public SubPost(
         String id,
