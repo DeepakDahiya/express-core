@@ -924,21 +924,6 @@ This file contains all "about" strings.  It is set to NOT be translated, in tran
       <message name="IDS_SURE_ILL_HELP_ONBOARDING" desc="Text for Sure i'll help button onboarding">
         Sure, I'll help
       </message>
-      <message name="IDS_SHIELD_ONBOARDING" desc="Text for shield tooltip onboarding">
-        Tap to view Brave Shields
-      </message>
-      <message name="IDS_SHIELD_TOOLTIP_DESC" desc="Text for shield tooltip description onboarding">
-        See all the bad stuff Brave blocked, on every page, with Shields.
-      </message>
-      <message name="IDS_SHIELD_BIGTECH_TRACKER_BLOCKED" desc="Text for shield tracker big tech blocked tooltip onboarding">
-        <ph name="BIG_TECH">%1$s<ex>google</ex></ph> and <ph name="TRACKER">%2$s<ex>1</ex></ph> other ads &amp; trackers blocked
-      </message>
-      <message name="IDS_SHIELD_BIGTECH_TRACKER_ONLY_BLOCKED" desc="Text for shield tracker only big tech blocked tooltip onboarding">
-        <ph name="BIG_TECH">%1$s<ex>google</ex></ph> and other ads &amp; trackers blocked
-      </message>
-      <message name="IDS_SHIELD_TRACKER_BLOCKED" desc="Text for shield tracker blocked tooltip onboarding">
-        <ph name="TRACKER_COUNT">%1$s<ex>1</ex></ph> ads &amp; trackers blocked
-      </message>
       <message name="IDS_SKIP" desc="Text for skip button in onboarding">
         Skip
       </message>
@@ -3157,9 +3142,6 @@ If you don't accept this request, VPN will not reconnect and your internet conne
     </message>
     <message name="IDS_BRAVE_WALLET_CREATE_ACCOUNT_FILECOIN_DESCRIPTION" desc="Add account modal create account Filecoin description">
       Store FIL asset
-    </message>
-    <message name="IDS_BRAVE_WALLET_CREATE_ACCOUNT_DESCRIPTION" desc="Create Account Tab Description">
-      You don’t yet have a <ph name="ACCOUNT_TYPE"><ex>Solana</ex>%1$s</ph> account. Create one now?
     </message>
     <message name="IDS_BRAVE_ACTION_YES" desc="Action text for general positive actions">
       Yes
