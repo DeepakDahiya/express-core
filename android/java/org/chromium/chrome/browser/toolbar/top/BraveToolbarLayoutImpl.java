@@ -1990,6 +1990,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         return null;
     }
 
+    @WorkerThread
     private List<String> generateFaviconCandidateUrls(URL fullUrl) {
         String baseUrl = fullUrl.getProtocol() + "://" + fullUrl.getHost();
         List<String> candidates = new ArrayList<>();
@@ -2006,6 +2007,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         return candidates;
     }
 
+    @WorkerThread
     private Bitmap downloadFavicon(URL faviconUrl) throws IOException {
         HttpURLConnection connection = (HttpURLConnection) ChromiumNetworkAdapter.openConnection(
                     faviconUrl, NetworkTrafficAnnotationTag.MISSING_TRAFFIC_ANNOTATION);
@@ -2056,7 +2058,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             return null;
         }
     }
-
+    
+    @WorkerThread
     private String generateUniqueFileName(String host) {
         try {
             // Use MD5 hash to create a unique, deterministic filename
