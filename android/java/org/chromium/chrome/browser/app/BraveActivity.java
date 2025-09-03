@@ -1307,9 +1307,9 @@ public abstract class BraveActivity extends ChromeActivity
         //                     BraveWalletActivity.RESTART_WALLET_ACTIVITY_RESTORE, false));
         // }
 
-        if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
-            BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
-        }
+        // if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
+        //     BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
+        // }
 
         mDatabaseHelper = DatabaseHelper.getInstance();
         mDatabaseHelper.initializeDefaultTopSites(BraveActivity.this);
