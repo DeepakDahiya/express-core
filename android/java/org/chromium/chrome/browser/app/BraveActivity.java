@@ -1855,7 +1855,15 @@ public abstract class BraveActivity extends ChromeActivity
 
     private void checkAppUpdate() {
         mAppUpdateManager = AppUpdateManagerFactory.create(BraveActivity.this);
-        mAppUpdateManager.registerListener(mInstallStateUpdatedListener);
+        
+        // Wrap registerListener in try-catch to handle Android security restrictions
+        try {
+            mAppUpdateManager.registerListener(mInstallStateUpdatedListener);
+        } catch (SecurityException e) {
+            // Handle gracefully - app updates will still work without the listener
+            Log.w("BraveActivity", "Could not register app update listener due to Android security restrictions", e);
+            // The app update functionality will still work, we just won't get automatic listener updates
+        }
 
         Task<AppUpdateInfo> appUpdateInfoTask = mAppUpdateManager.getAppUpdateInfo();
 
