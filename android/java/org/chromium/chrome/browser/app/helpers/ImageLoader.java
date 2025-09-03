@@ -88,7 +88,19 @@ public class ImageLoader {
         }
 
         Resources resources = ContextUtils.getApplicationContext().getResources();
-        Profile profile = Utils.getProfile(false);
+        Profile profile = null;
+        try {
+            profile = Utils.getProfile(false);
+        } catch (IllegalStateException e) {
+            // Browser not initialized yet, schedule for later or fail gracefully
+            android.os.Handler handler = new android.os.Handler(android.os.Looper.getMainLooper());
+            handler.postDelayed(() -> {
+                // Retry after a short delay
+                downloadImage(url, requestManager, isCircular, roundedCorners, imageView, customTarget, callback);
+            }, 500); // 500ms delay
+            return;
+        }
+        
         if (profile == null) {
             // Log an error for debugging purposes if you can
             // Log.e(TAG, "Profile is null, cannot proceed with image download.");

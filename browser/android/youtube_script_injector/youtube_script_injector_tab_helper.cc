@@ -1414,6 +1414,16 @@ bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
           prefs->GetBoolean(kBackgroundVideoPlaybackEnabled));
 }
 
+bool IsYouTubeDomain(const GURL& url) {
+  if (net::registry_controlled_domains::SameDomainOrHost(
+          url, GURL("https://www.youtube.com"),
+          net::registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+    return true;
+  }
+
+  return false;
+}
+
 }  // namespace
 
 YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
@@ -1450,7 +1460,10 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
   SetFullscreenRequested(false);
   content::WebContents* contents = web_contents();
   // Filter only YouTube videos.
-  if (!IsYouTubeVideo()) {
+  // if (!IsYouTubeVideo()) {
+  //   return;
+  // }
+  if (!IsYouTubeDomain(contents->GetLastCommittedURL())) {
     return;
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
