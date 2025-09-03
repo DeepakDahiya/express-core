@@ -702,7 +702,8 @@ public class BraveToolbarManager extends ToolbarManager
         if (mBottomControlsCoordinatorSupplier != null
                 && mBottomControlsCoordinatorSupplier.get()
                         instanceof BraveBottomControlsCoordinator) {
-            setBraveBottomControlsVisible(visible);
+            ((BraveBottomControlsCoordinator) mBottomControlsCoordinatorSupplier.get())
+                    .setBottomToolbarVisible(visible);
         }
     }
 
