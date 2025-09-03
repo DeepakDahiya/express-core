@@ -63,7 +63,6 @@ import java.util.List;
 
 public class BrowserExpressSignupPreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
-    private LinearLayout mParentLayout;
     private Button mBtnSignIn;
     private Button mBtnSignUp;
     private EditText mEmailEditText;
@@ -95,7 +94,6 @@ public class BrowserExpressSignupPreferences extends BravePreferenceFragment
 
         View view = getView();
         if (view != null) {
-            mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
             mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);

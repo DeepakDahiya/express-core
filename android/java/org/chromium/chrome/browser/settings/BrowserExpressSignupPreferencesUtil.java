@@ -41,10 +41,10 @@ public class BrowserExpressSignupPreferencesUtil {
     }
 
     public static class SignupWorkerTask extends AsyncTask<Void> {
-        private String mEmail;
-        private String mPassword;
-        private String mName;
-        private SignupCallback mCallback;
+        private final String mEmail;
+        private final String mPassword;
+        private final String mName;
+        private final SignupCallback mCallback;
         private static Boolean signupStatus;
         private static String mErrorMessage;
 
@@ -68,7 +68,7 @@ public class BrowserExpressSignupPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendSignupRequest(mEmail, mPassword, mName, mCallback);
+            sendSignupRequest(mEmail, mPassword, mName);
             return null;
         }
 
@@ -85,7 +85,7 @@ public class BrowserExpressSignupPreferencesUtil {
         }
     }
 
-    private static void sendSignupRequest(String email, String password, String name, SignupCallback callback) {
+    private static void sendSignupRequest(String email, String password, String name) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

@@ -57,7 +57,7 @@ import java.util.HashMap;
 public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
     // sections
-    private static final String PREF_BRAVE_ACCOUNT_SECTION = "brave_account_section";
+    // private static final String PREF_BRAVE_ACCOUNT_SECTION = "brave_account_section";
     // private static final String PREF_FEATURES_SECTION = "features_section";
     private static final String PREF_DISPLAY_SECTION = "display_section";
     private static final String PREF_GENERAL_SECTION = "general_section";
@@ -72,7 +72,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_CLOSING_ALL_TABS_CLOSES_BRAVE =
             "closing_all_tabs_closes_brave";
     private static final String PREF_PRIVACY = "privacy";
-    private static final String PREF_SHIELDS_AND_PRIVACY = "brave_shields_and_privacy";
+    // private static final String PREF_SHIELDS_AND_PRIVACY = "brave_shields_and_privacy";
     private static final String PREF_BRAVE_SEARCH_ENGINES = "brave_search_engines";
     // private static final String PREF_BRAVE_NEWS_V2 = "brave_news_v2";
     private static final String PREF_BRAVE_PLAYLIST = "brave_playlist";
@@ -85,7 +85,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_TABS = "tabs";
     private static final String PREF_MEDIA = "media";
     // private static final String PREF_APPEARANCE = "appearance";
-    private static final String PREF_NEW_TAB_PAGE = "background_images";
+    // private static final String PREF_NEW_TAB_PAGE = "background_images";
     private static final String PREF_ACCESSIBILITY = "accessibility";
     private static final String PREF_CONTENT_SETTINGS = "content_settings";
     private static final String PREF_ABOUT_CHROME = "about_chrome";
@@ -96,10 +96,10 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_USE_CUSTOM_TABS = "use_custom_tabs";
     private static final String PREF_LANGUAGES = "languages";
     private static final String PREF_BRAVE_LANGUAGES = "brave_languages";
-    private static final String PREF_RATE_BRAVE = "rate_brave";
-    private static final String PREF_BRAVE_STATS = "brave_stats";
+    // private static final String PREF_RATE_BRAVE = "rate_brave";
+    // private static final String PREF_BRAVE_STATS = "brave_stats";
     private static final String PREF_DOWNLOADS = "brave_downloads";
-    private static final String PREF_HOME_SCREEN_WIDGET = "home_screen_widget";
+    // private static final String PREF_HOME_SCREEN_WIDGET = "home_screen_widget";
 
     private final HashMap<String, Preference> mRemovedPreferences = new HashMap<>();
     // private @Nullable Preference mVpnCalloutPreference;
@@ -364,7 +364,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         setPreferenceOrder(PREF_ADDRESSES, ++passwordsAndAutofillSectionOrder);
         setPreferenceOrder(PREF_AUTOFILL_PRIVATE_WINDOW, ++passwordsAndAutofillSectionOrder);
 
-        int supportSectionOrder = passwordsAndAutofillSectionOrder;
+        // int supportSectionOrder = passwordsAndAutofillSectionOrder;
         // setPreferenceOrder(PREF_SUPPORT_SECTION, ++supportSectionOrder);
 
         // setPreferenceOrder(PREF_RATE_BRAVE, ++supportSectionOrder);
@@ -455,11 +455,11 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         }
     }
 
-    private void updateSummary(String preferenceString, int summary) {
-        Preference p = findPreference(preferenceString);
-        assumeNonNull(p);
-        p.setSummary(summary);
-    }
+    // private void updateSummary(String preferenceString, int summary) {
+    //     Preference p = findPreference(preferenceString);
+    //     assumeNonNull(p);
+    //     p.setSummary(summary);
+    // }
 
     // private void updateSummaries() {
     //     updateSummary(PREF_BRAVE_STATS, BraveStatsPreferences.getPreferenceSummary());

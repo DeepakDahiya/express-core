@@ -41,9 +41,9 @@ public class BrowserExpressOtpVerifyPreferencesUtil {
     }
 
     public static class OtpVerifyWorkerTask extends AsyncTask<Void> {
-        private String mEmail;
-        private String mOtp;
-        private OtpVerifyCallback mCallback;
+        private final String mEmail;
+        private final String mOtp;
+        private final OtpVerifyCallback mCallback;
         private static Boolean otpVerifyStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
@@ -75,7 +75,7 @@ public class BrowserExpressOtpVerifyPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendOtpVerifyRequest(mEmail, mOtp, mCallback);
+            sendOtpVerifyRequest(mEmail, mOtp);
             return null;
         }
 
@@ -92,7 +92,7 @@ public class BrowserExpressOtpVerifyPreferencesUtil {
         }
     }
 
-    private static void sendOtpVerifyRequest(String email, String otp, OtpVerifyCallback callback) {
+    private static void sendOtpVerifyRequest(String email, String otp) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

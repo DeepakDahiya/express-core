@@ -42,10 +42,10 @@ public class BrowserExpressEditProfilePreferencesUtil {
     }
 
     public static class EditProfileWorkerTask extends AsyncTask<Void> {
-        private String mEmail;
-        private String mName;
-        private String mUsername;
-        private EditProfileCallback mCallback;
+        private final String mEmail;
+        private final String mName;
+        private final String mUsername;
+        private final EditProfileCallback mCallback;
         private static Boolean editProfileStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
@@ -78,7 +78,7 @@ public class BrowserExpressEditProfilePreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendEditProfileRequest(mEmail, mUsername, mName, mAccessToken, mCallback);
+            sendEditProfileRequest(mEmail, mUsername, mName, mAccessToken);
             return null;
         }
 
@@ -94,7 +94,7 @@ public class BrowserExpressEditProfilePreferencesUtil {
         }
     }
 
-    private static void sendEditProfileRequest(String email, String username, String name, String accessToken, EditProfileCallback callback) {
+    private static void sendEditProfileRequest(String email, String username, String name, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

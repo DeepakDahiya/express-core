@@ -83,13 +83,12 @@ public class PostListAdapter extends RecyclerView.Adapter {
     private static final int VIEW_TYPE_HEADER = 0;
     private static final int VIEW_TYPE_POST = 1;
 
-    private Context mContext;
+    private final Context mContext;
     private List<Post> mPostList;
     private RecyclerView mTopPostRecycler;
     private List<TopSiteTable> mTopSites;
     private BraveNewTabPageLayout mParentLayout;
     private HeaderViewHolder mHeaderViewHolder;
-    private static final String INSHORTS_TYPE = "Inshorts";
     private static final String TWITTER_TYPE = "Twitter";
     private static final String INSTAGRAM_TYPE = "Instagram";
 
@@ -299,7 +298,7 @@ public class PostListAdapter extends RecyclerView.Adapter {
         final StyledPlayerView twitterVideo;
         ExoPlayer player;
         final ImageView playPauseIcon;
-        ProgressBar videoProgressBar;
+        final ProgressBar videoProgressBar;
         ValueAnimator progressAnimator;
 
         final ImageView postImage;
@@ -319,7 +318,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
 
         private final Handler autoScrollHandler;
         private Runnable autoScrollRunnable;
-        private int currentPosition;
         private boolean isAutoScrolling;
 
         PostHolder(View itemView, RecyclerView topPostRecycler, RecyclerView.RecycledViewPool commentRecycledViewPool) {
@@ -364,7 +362,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                         @Override
                         public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                             super.onScrolled(recyclerView, dx, dy);
-                            LinearLayoutManager layoutManager = (LinearLayoutManager) recyclerView.getLayoutManager();
                         }
                     });
                 } catch (BraveActivity.BraveActivityNotFoundException e) {
@@ -898,7 +895,6 @@ public class PostListAdapter extends RecyclerView.Adapter {
                 autoScrollHandler.removeCallbacksAndMessages(null);
             }
             isAutoScrolling = false;
-            currentPosition = 0;
         }
     }
 }

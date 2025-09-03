@@ -38,6 +38,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import androidx.core.content.ContextCompat;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -153,8 +154,8 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private static final String TAG = "BraveNewTabPage";
     private static final String BE_PROFILE_PREF = "BE_PROFILE_PREFS";
 
-    private static final int MINIMUM_VISIBLE_HEIGHT_THRESHOLD = 50;
-    private static final int HOUR_MS = 3_600_000;
+    // private static final int MINIMUM_VISIBLE_HEIGHT_THRESHOLD = 50;
+    // private static final int HOUR_MS = 3_600_000;
 
     // To be removed in bytecode, parent variable will be used instead.
     private ViewGroup mMvTilesContainerLayout;
@@ -165,11 +166,11 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private Integer mInitialTileNum;
 
     // Own members.
-    private WindowAndroid mWindowAndroid;
+    // private WindowAndroid mWindowAndroid;
 
     private ImageView mBgImageView;
-    private SponsoredRichMediaWebView mSponsoredRichMediaWebView;
-    private FrameLayout mBackgroundSponsoredRichMediaView;
+    // private SponsoredRichMediaWebView mSponsoredRichMediaWebView;
+    // private FrameLayout mBackgroundSponsoredRichMediaView;
 
     // To be removed in bytecode, parent variable will be used instead.
     private Profile mProfile;
@@ -209,16 +210,16 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private NTPImage mNtpImageGlobal;
     private BraveNewsController mBraveNewsController;
 
-    private long mStartCardViewTime;
-    private long mEndCardViewTime;
-    private String mCreativeInstanceId;
-    private String mUuid;
+    // private long mStartCardViewTime;
+    // private long mEndCardViewTime;
+    // private String mCreativeInstanceId;
+    // private String mUuid;
     //@TODO alex make an enum
-    private String mCardType;
-    private int mItemPosition;
+    // private String mCardType;
+    // private int mItemPosition;
     private int mPrevVisibleNewsCardPosition = -1;
     private int mNewsSessionCardViews;
-    private FeedItemsCard mVisibleCard;
+    // private FeedItemsCard mVisibleCard;
     private String mFeedHash;
     private SharedPreferences.OnSharedPreferenceChangeListener mPreferenceListener;
     private boolean mIsTopSitesEnabled;
@@ -226,8 +227,8 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     private boolean mIsDisplayNewsFeed;
     private boolean mIsDisplayNewsOptin;
     private long mNewsFeedLastViewTime;
-    private ShimmerFrameLayout mShimmerLoading;
-    private ViewGroup mShimmerItems;
+    // private ShimmerFrameLayout mShimmerLoading;
+    // private ViewGroup mShimmerItems;
 
     private Supplier<Tab> mTabProvider;
 
@@ -316,7 +317,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         if (mSponsoredTab == null) {
             initilizeSponsoredTab();
         }
-        checkAndShowNTPImage(false);
+        // checkAndShowNTPImage(false);
         mNTPBackgroundImagesBridge.addObserver(mNTPBackgroundImageServiceObserver);
 
         if (OnboardingPrefManager.getInstance().isFromNotification() ) {
@@ -360,7 +361,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
             mMainLayout = findViewById(R.id.ntp_content);
             
             if (mMainLayout != null) {
-                mMainLayout.setBackgroundColor(mActivity.getResources().getColor(R.color.be_background_black));
+                mMainLayout.setBackgroundColor(ContextCompat.getColor(mActivity, R.color.be_background_black));
             }
 
             String accessToken = ((BraveActivity)mActivity).getAccessToken();
@@ -851,13 +852,13 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         }
     }
 
-    private int firstNewsFeedPosition() {
-        if (mNtpAdapter != null) {
-            return mNtpAdapter.getStatsCount() + mNtpAdapter.getTopSitesCount()
-                    + mNtpAdapter.getNewContentCount() + 1;
-        }
-        return 0;
-    }
+    // private int firstNewsFeedPosition() {
+    //     if (mNtpAdapter != null) {
+    //         return mNtpAdapter.getStatsCount() + mNtpAdapter.getTopSitesCount()
+    //                 + mNtpAdapter.getNewContentCount() + 1;
+    //     }
+    //     return 0;
+    // }
 
     @Override
     public void updateNewsOptin(boolean isOptin) {
@@ -970,7 +971,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                 }
             }
             super.onConfigurationChanged(newConfig);
-            showNTPImage(ntpImage);
+            // showNTPImage(ntpImage);
 
             new Handler(Looper.getMainLooper()).postDelayed(() -> {
                 if (mNtpAdapter != null) {
@@ -1171,7 +1172,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
     public View createTile(Context context, TopSiteTable topSite) {
         View tileView = LayoutInflater.from(context).inflate(R.layout.top_site_tile_layout, null);
 
-        LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
+        // LinearLayout tileLayout = tileView.findViewById(R.id.tile_layout);
         ImageView imageView = tileView.findViewById(R.id.tile_image);
         TextView textView = tileView.findViewById(R.id.tile_text);
         LinearLayout imageContainer = tileView.findViewById(R.id.image_container);
@@ -1321,7 +1322,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
         mNTPBackgroundImagesBridge = NTPBackgroundImagesBridge.getInstance(mProfile);
         mNTPBackgroundImagesBridge.setNewTabPageListener(mNewTabPageListener);
         mIsTablet = isTablet;
-        mWindowAndroid = windowAndroid;
+        // mWindowAndroid = windowAndroid;
 
         assert mMvTilesContainerLayout != null : "Something has changed in the upstream!";
 
@@ -1358,72 +1359,72 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
 
     public void setTabProvider(Supplier<Tab> unused_tabProvider) {}
 
-    private void showNTPImage(NTPImage ntpImage) {
-        Display display = mActivity.getWindowManager().getDefaultDisplay();
-        Point size = new Point();
-        display.getSize(size);
+    // private void showNTPImage(NTPImage ntpImage) {
+    //     Display display = mActivity.getWindowManager().getDefaultDisplay();
+    //     Point size = new Point();
+    //     display.getSize(size);
 
-        mNtpImageGlobal = ntpImage;
-        if (mNtpAdapter != null) {
-            mNtpAdapter.setNtpImage(ntpImage);
-        }
+    //     mNtpImageGlobal = ntpImage;
+    //     if (mNtpAdapter != null) {
+    //         mNtpAdapter.setNtpImage(ntpImage);
+    //     }
 
-        boolean wasWallpaperShown = true;
-        if (ntpImage instanceof Wallpaper && ((Wallpaper) ntpImage).isRichMedia()) {
-            setupSponsoredBackgroundContent();
-        } else if (ntpImage instanceof Wallpaper
-                && NTPImageUtil.isReferralEnabled()
-                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            setBackgroundImage(ntpImage);
+    //     boolean wasWallpaperShown = true;
+    //     if (ntpImage instanceof Wallpaper && ((Wallpaper) ntpImage).isRichMedia()) {
+    //         setupSponsoredBackgroundContent();
+    //     } else if (ntpImage instanceof Wallpaper
+    //             && NTPImageUtil.isReferralEnabled()
+    //             && Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+    //         // setBackgroundImage(ntpImage);
 
-        } else if (UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
-                        .getBoolean(BravePref.NEW_TAB_PAGE_SHOW_BACKGROUND_IMAGE)
-                && mSponsoredTab != null
-                && NTPImageUtil.shouldEnableNTPFeature()) {
-            setBackgroundImage(ntpImage);
-        } else {
-            wasWallpaperShown = false;
-        }
+    //     } else if (UserPrefs.get(ProfileManager.getLastUsedRegularProfile())
+    //                     .getBoolean(BravePref.NEW_TAB_PAGE_SHOW_BACKGROUND_IMAGE)
+    //             && mSponsoredTab != null
+    //             && NTPImageUtil.shouldEnableNTPFeature()) {
+    //         // setBackgroundImage(ntpImage);
+    //     } else {
+    //         wasWallpaperShown = false;
+    //     }
 
-        if (wasWallpaperShown
-                && ntpImage instanceof Wallpaper
-                && getTab() != null
-                && mNewTabTakeoverInfobar == null) {
-            mNewTabTakeoverInfobar = new BraveNewTabTakeoverInfobar(mProfile);
-            mNewTabTakeoverInfobar.maybeDisplayAndIncrementCounter(
-                    mActivity, getTab().getWebContents());
-        }
-    }
+    //     if (wasWallpaperShown
+    //             && ntpImage instanceof Wallpaper
+    //             && getTab() != null
+    //             && mNewTabTakeoverInfobar == null) {
+    //         mNewTabTakeoverInfobar = new BraveNewTabTakeoverInfobar(mProfile);
+    //         mNewTabTakeoverInfobar.maybeDisplayAndIncrementCounter(
+    //                 mActivity, getTab().getWebContents());
+    //     }
+    // }
 
-    private void setupSponsoredBackgroundContent() {
-        // if (mSponsoredRichMediaWebView != null) {
-        //     return;
-        // }
+    // private void setupSponsoredBackgroundContent() {
+    //     // if (mSponsoredRichMediaWebView != null) {
+    //     //     return;
+    //     // }
 
-        // mSponsoredRichMediaWebView =
-        //         new SponsoredRichMediaWebView(mActivity, mWindowAndroid, mProfile);
+    //     // mSponsoredRichMediaWebView =
+    //     //         new SponsoredRichMediaWebView(mActivity, mWindowAndroid, mProfile);
 
-        // mBackgroundSponsoredRichMediaView = findViewById(R.id.bg_sponsored_rich_media_view);
-        // mBackgroundSponsoredRichMediaView.setVisibility(View.VISIBLE);
-        // mBackgroundSponsoredRichMediaView.addView(mSponsoredRichMediaWebView.getView());
+    //     // mBackgroundSponsoredRichMediaView = findViewById(R.id.bg_sponsored_rich_media_view);
+    //     // mBackgroundSponsoredRichMediaView.setVisibility(View.VISIBLE);
+    //     // mBackgroundSponsoredRichMediaView.addView(mSponsoredRichMediaWebView.getView());
 
-        // mSponsoredRichMediaWebView.loadSponsoredRichMedia();
-    }
+    //     // mSponsoredRichMediaWebView.loadSponsoredRichMedia();
+    // }
 
-    private void setBackgroundImage(NTPImage ntpImage) {}
+    // private void setBackgroundImage(NTPImage ntpImage) {}
 
-    private void checkAndShowNTPImage(boolean isReset) {
-        NTPImage ntpImage = mSponsoredTab.getTabNTPImage(isReset);
-        if (ntpImage == null) {
-            mSponsoredTab.setNTPImage(SponsoredImageUtil.getBackgroundImage());
-        } else if (ntpImage instanceof Wallpaper) {
-            Wallpaper mWallpaper = (Wallpaper) ntpImage;
-            if (mWallpaper == null) {
-                mSponsoredTab.setNTPImage(SponsoredImageUtil.getBackgroundImage());
-            }
-        }
-        showNTPImage(ntpImage);
-    }
+    // private void checkAndShowNTPImage(boolean isReset) {
+    //     NTPImage ntpImage = mSponsoredTab.getTabNTPImage(isReset);
+    //     if (ntpImage == null) {
+    //         mSponsoredTab.setNTPImage(SponsoredImageUtil.getBackgroundImage());
+    //     } else if (ntpImage instanceof Wallpaper) {
+    //         Wallpaper mWallpaper = (Wallpaper) ntpImage;
+    //         if (mWallpaper == null) {
+    //             mSponsoredTab.setNTPImage(SponsoredImageUtil.getBackgroundImage());
+    //         }
+    //     }
+    //     showNTPImage(ntpImage);
+    // }
 
     private void initilizeSponsoredTab() {
         if (TabAttributes.from(getTab()).get(String.valueOf(getTab().getId())) == null) {
@@ -1446,7 +1447,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                     if (mSponsoredTab == null) {
                         initilizeSponsoredTab();
                     }
-                    checkAndShowNTPImage(false);
+                    // checkAndShowNTPImage(false);
                 }
 
                 @Override
@@ -1476,7 +1477,7 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                         @Override
                         public void onUpdated() {
                             if (NTPImageUtil.isReferralEnabled()) {
-                                checkAndShowNTPImage(true);
+                                // checkAndShowNTPImage(true);
                                 if (shouldShowSuperReferral()) {
                                     mNTPBackgroundImagesBridge.getTopSites();
                                 }
@@ -1484,26 +1485,26 @@ public class BraveNewTabPageLayout extends NewTabPageLayout
                         }
                     };
 
-    private final FetchWallpaperWorkerTask.WallpaperRetrievedCallback mWallpaperRetrievedCallback =
-            new FetchWallpaperWorkerTask.WallpaperRetrievedCallback() {
-                @Override
-                public void bgWallpaperRetrieved(Bitmap bgWallpaper) {
-                    if (mBgImageView != null) {
-                        mBgImageView.setImageBitmap(bgWallpaper);
-                    }
-                }
+    // private final FetchWallpaperWorkerTask.WallpaperRetrievedCallback mWallpaperRetrievedCallback =
+    //         new FetchWallpaperWorkerTask.WallpaperRetrievedCallback() {
+    //             @Override
+    //             public void bgWallpaperRetrieved(Bitmap bgWallpaper) {
+    //                 if (mBgImageView != null) {
+    //                     mBgImageView.setImageBitmap(bgWallpaper);
+    //                 }
+    //             }
 
-                @Override
-                public void logoRetrieved(Wallpaper wallpaper, Bitmap logoWallpaper) {
-                    if (!NTPImageUtil.isReferralEnabled()) {
-                        mWallpaper = wallpaper;
-                        mSponsoredLogo = logoWallpaper;
-                        if (mNtpAdapter != null) {
-                            mNtpAdapter.setSponsoredLogo(mWallpaper, logoWallpaper);
-                        }
-                    }
-                }
-            };
+    //             @Override
+    //             public void logoRetrieved(Wallpaper wallpaper, Bitmap logoWallpaper) {
+    //                 if (!NTPImageUtil.isReferralEnabled()) {
+    //                     mWallpaper = wallpaper;
+    //                     mSponsoredLogo = logoWallpaper;
+    //                     if (mNtpAdapter != null) {
+    //                         mNtpAdapter.setSponsoredLogo(mWallpaper, logoWallpaper);
+    //                     }
+    //                 }
+    //             }
+    //         };
 
     private void loadTopSites(List<TopSiteTable> topSites) {
         mSuperReferralSitesLayout = new LinearLayout(mActivity);

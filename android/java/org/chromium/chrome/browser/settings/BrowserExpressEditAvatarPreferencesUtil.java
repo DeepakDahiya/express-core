@@ -48,8 +48,8 @@ public class BrowserExpressEditAvatarPreferencesUtil {
     }
 
     public static class EditAvatarWorkerTask extends AsyncTask<Void> {
-        private InputStream mImagePath;
-        private EditAvatarCallback mCallback;
+        private final InputStream mImagePath;
+        private final EditAvatarCallback mCallback;
         private static Boolean editAvatarStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
@@ -75,7 +75,7 @@ public class BrowserExpressEditAvatarPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendEditAvatarRequest(mImagePath, mAccessToken, mCallback);
+            sendEditAvatarRequest(mImagePath, mAccessToken);
             return null;
         }
 
@@ -91,7 +91,7 @@ public class BrowserExpressEditAvatarPreferencesUtil {
         }
     }
 
-    private static void sendEditAvatarRequest(InputStream imageStream, String accessToken, EditAvatarCallback callback) {
+    private static void sendEditAvatarRequest(InputStream imageStream, String accessToken) {
         Log.e("ImagePicker 2", "Inside sendEditAvatarRequest");
         String boundary = "----WebKitFormBoundary" + System.currentTimeMillis();
         String LINE_FEED = "\r\n";

@@ -252,7 +252,6 @@ public class BrowserExpressProfilePreferences extends BravePreferenceFragment
                         }
 
                         String accessToken = activity.getAccessToken();
-                        JSONObject decodedAccessTokenObj = this.getDecodedToken(accessToken);
 
                         Context context = ContextUtils.getApplicationContext();
                         SharedPreferences sharedPref = context.getSharedPreferences(BE_PROFILE_PREF, 0);

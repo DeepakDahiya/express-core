@@ -74,8 +74,8 @@ public class CommentListFragment extends Fragment {
     private RecyclerView mCommentRecycler;
     private CommentListAdapter mCommentAdapter;
     private List<Comment> mComments;
-    private int mPage = 1;
-    private int mPerPage = 100;
+    private final int mPage = 1;
+    private final int mPerPage = 100;
     private String mUrl;
     private String mCommentsFor;
     private String mPostId;
@@ -92,8 +92,6 @@ public class CommentListFragment extends Fragment {
 
     private ImageView mBackButton;
     private TextView mToolbarTitle;
-
-    private ImageView mAvatarImage;
 
     private LinearLayout mEmptyContainer;
 

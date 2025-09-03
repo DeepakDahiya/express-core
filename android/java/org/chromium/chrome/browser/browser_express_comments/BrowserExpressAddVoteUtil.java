@@ -39,7 +39,6 @@ import java.util.Locale;
 public class BrowserExpressAddVoteUtil {
     private static final String TAG = "Add_Vote_Browser_Express";
     private static final String ADD_COMMENT_VOTE_BASE_URL = "https://api.browser.express/v1/comment";
-    private static final String ADD_POST_VOTE_BASE_URL = "https://api.browser.express/v1/post";
 
     public interface AddVoteCallback {
         void addVoteSuccessful(String newAccessToken, String newRefreshToken);
@@ -47,13 +46,12 @@ public class BrowserExpressAddVoteUtil {
     }
 
     public static class AddVoteWorkerTask extends AsyncTask<Void> {
-        private AddVoteCallback mCallback;
+        private final AddVoteCallback mCallback;
         private static Boolean addVoteStatus;
         private static String mErrorMessage;
         private static String mCommentId;
         private static String mType;
         private static String mAccessToken;
-        private static String mResourceType;
 
         private static String mNewAccessToken = "";
         private static String mNewRefreshToken = "";
@@ -65,7 +63,6 @@ public class BrowserExpressAddVoteUtil {
             mCommentId = commentId;
             mType = type;
             mAccessToken = accessToken;
-            mResourceType = resourceType;
         }
 
         public static void setAddVoteSuccessStatus(Boolean status){
@@ -83,7 +80,7 @@ public class BrowserExpressAddVoteUtil {
 
         @Override
         protected Void doInBackground() {
-            sendAddVoteRequest(mCommentId, mType, mResourceType, mAccessToken, mCallback);
+            sendAddVoteRequest(mCommentId, mType, mAccessToken);
             return null;
         }
 
@@ -99,7 +96,7 @@ public class BrowserExpressAddVoteUtil {
         }
     }
 
-    private static void sendAddVoteRequest(String commentId, String type, String resourceType, String accessToken, AddVoteCallback callback) {
+    private static void sendAddVoteRequest(String commentId, String type, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

@@ -62,10 +62,8 @@ import java.util.List;
 
 public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
-    private LinearLayout mParentLayout;
     private Button mBtnSignIn;
     private Button mBtnVerify;
-    private Button mBtnResendOtp;
     private EditText mOtpEditText;
     private TextView mErrorTextView;
 
@@ -89,10 +87,8 @@ public class BrowserExpressOtpVerifyPreferences extends BravePreferenceFragment
 
         View view = getView();
         if (view != null) {
-            mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
             mBtnVerify = (Button) view.findViewById(R.id.btn_verify);
-            mBtnResendOtp = (Button) view.findViewById(R.id.btn_resend_otp);
             mOtpEditText = (EditText) view.findViewById(R.id.browser_express_otp);
             mErrorTextView = (TextView) view.findViewById(R.id.login_error_message);
 

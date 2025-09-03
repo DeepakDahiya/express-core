@@ -56,7 +56,6 @@ import java.util.List;
 
 public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
-    private LinearLayout mParentLayout;
     private Button mGenerateUsername;
 
     private final ObservableSupplierImpl<String> mPageTitle = new ObservableSupplierImpl<>();
@@ -82,7 +81,6 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
 
         View view = getView();
         if (view != null) {
-            mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mGenerateUsername = (Button) view.findViewById(R.id.btn_generate_username);
 
             onClickViews();
@@ -93,7 +91,6 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
         mGenerateUsername.setOnClickListener(view -> {
             try {
                 BraveActivity activity = BraveActivity.getBraveActivity();
-                String accessToken = activity.getAccessToken();
                 activity.showGenerateUsernameBottomSheet();
             } catch (BraveActivity.BraveActivityNotFoundException e) {
                 Log.e("comments", "maybeShowWalletPanel " + e);
@@ -105,17 +102,4 @@ public class BrowserExpressCommentsPreferences extends BravePreferenceFragment
     public boolean onPreferenceChange(@NonNull Preference preference, Object o) {
         return true;
     }
-
-    private final BrowserExpressLoginPreferencesUtil.LoginCallback loginCallback =
-            new BrowserExpressLoginPreferencesUtil.LoginCallback() {
-                @Override
-                public void loginSuccessful(String accessToken, String refreshToken) {
-                    // dismiss();
-                }
-
-                @Override
-                public void loginFailed(String error) {
-                    // dismiss();
-                }
-            };
 }

@@ -51,7 +51,7 @@ public class BrowserExpressGetPostsUtil {
     }
 
     public static class GetPostsWorkerTask extends AsyncTask<Void> {
-        private GetPostsCallback mCallback;
+        private final GetPostsCallback mCallback;
         private static Boolean getPostsStatus;
         private static String mErrorMessage;
         private static int mPage;
@@ -83,7 +83,7 @@ public class BrowserExpressGetPostsUtil {
 
         @Override
         protected Void doInBackground() {
-            sendGetPostsRequest(mPage, mPerPage, mAccessToken, mCallback);
+            sendGetPostsRequest(mPage, mPerPage, mAccessToken);
             return null;
         }
 
@@ -99,7 +99,7 @@ public class BrowserExpressGetPostsUtil {
         }
     }
 
-    private static void sendGetPostsRequest(int page, int perPage, String accessToken, GetPostsCallback callback) {
+    private static void sendGetPostsRequest(int page, int perPage, String accessToken) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

@@ -65,7 +65,6 @@ import org.json.JSONException;
 
 public class BrowserExpressLoginPreferences extends BravePreferenceFragment
         implements Preference.OnPreferenceChangeListener {
-    private LinearLayout mParentLayout;
     private Button mBtnSignUp;
     private Button mBtnSignIn;
     private EditText mEmailEditText;
@@ -92,7 +91,6 @@ public class BrowserExpressLoginPreferences extends BravePreferenceFragment
 
         View view = getView();
         if (view != null) {
-            mParentLayout = (LinearLayout) view.findViewById(R.id.layout_parent);
             mBtnSignUp = (Button) view.findViewById(R.id.btn_sign_up);
             mBtnSignIn = (Button) view.findViewById(R.id.btn_sign_in);
             mEmailEditText = (EditText) view.findViewById(R.id.browser_express_email);

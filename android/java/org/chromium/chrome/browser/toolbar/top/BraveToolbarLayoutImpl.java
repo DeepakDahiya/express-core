@@ -245,7 +245,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     private PopupWindowTooltip mShieldsPopupWindowTooltip;
 
-    private boolean mIsBottomControlsVisible;
+    // private boolean mIsBottomControlsVisible;
 
     private ColorStateList mDarkModeTint;
     private ColorStateList mLightModeTint;
@@ -1784,7 +1784,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
     }
 
     public void onBottomControlsVisibilityChanged(boolean isVisible) {
-        mIsBottomControlsVisible = isVisible;
+        // mIsBottomControlsVisible = isVisible;
         if (BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)
                 && getMenuButtonCoordinator() != null) {
             getMenuButtonCoordinator().setVisibility(true);

@@ -42,9 +42,9 @@ public class BrowserExpressLoginPreferencesUtil {
     }
 
     public static class LoginWorkerTask extends AsyncTask<Void> {
-        private String mEmail;
-        private String mPassword;
-        private LoginCallback mCallback;
+        private final String mEmail;
+        private final String mPassword;
+        private final LoginCallback mCallback;
         private static Boolean loginStatus;
         private static String mErrorMessage;
         private static String mAccessToken;
@@ -76,7 +76,7 @@ public class BrowserExpressLoginPreferencesUtil {
 
         @Override
         protected Void doInBackground() {
-            sendLoginRequest(mEmail, mPassword, mCallback);
+            sendLoginRequest(mEmail, mPassword);
             return null;
         }
 
@@ -92,7 +92,7 @@ public class BrowserExpressLoginPreferencesUtil {
         }
     }
 
-    private static void sendLoginRequest(String email, String password, LoginCallback callback) {
+    private static void sendLoginRequest(String email, String password) {
         StringBuilder sb = new StringBuilder();
         HttpURLConnection urlConnection = null;
         try {

@@ -38,7 +38,7 @@ import android.net.Uri;
 public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
 
-    private boolean isFromMenu;
+    // private boolean isFromMenu;
     private Button nextButton;
 
     public static BrowserExpressUpdateApkBottomSheetFragment newInstance(boolean isFromMenu) {
@@ -56,7 +56,7 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
         setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
 
         if (getArguments() != null) {
-            isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
+            // isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
         }
     }
 
@@ -96,8 +96,8 @@ public class BrowserExpressUpdateApkBottomSheetFragment extends BottomSheetDialo
             }
         });
 
-        int braveDefaultModalCount = ChromeSharedPreferences.getInstance().readInt(
-                BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
+        // int braveDefaultModalCount = ChromeSharedPreferences.getInstance().readInt(
+        //         BravePreferenceKeys.BRAVE_SET_DEFAULT_BOTTOM_SHEET_COUNT);
 
         Button cancelButton = view.findViewById(R.id.btn_cancel);
         cancelButton.setOnClickListener(new View.OnClickListener() {

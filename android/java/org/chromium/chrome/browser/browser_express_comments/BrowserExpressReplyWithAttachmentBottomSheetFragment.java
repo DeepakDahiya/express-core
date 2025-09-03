@@ -114,7 +114,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
     private ImageView mAvatarImage;
     private EditText mMessageEditText;
 
-    private boolean isFromMenu;
+    // private boolean isFromMenu;
 
     private ActivityResultLauncher<String[]> mMediaPickerLauncher;
 
@@ -161,7 +161,7 @@ public class BrowserExpressReplyWithAttachmentBottomSheetFragment extends Dialog
         setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
 
         if (getArguments() != null) {
-            isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
+            // isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
             mCommentsFor = getArguments().getString(COMMENTS_FOR);
             mPostId = getArguments().getString(POST_ID);
             mPostUsernameString = getArguments().getString(POST_USERNAME);

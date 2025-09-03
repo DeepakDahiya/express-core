@@ -86,7 +86,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     private static final int VIEW_TYPE_TOP_COMMENT = 1;
     private static final int VIEW_TYPE_REPLY_COMMENT = 2;
 
-    private final Context mContext;
     private final List<Comment> mCommentList;
     private final EditText mMessageEditText;
     private final BrowserExpressCommentsBottomSheetFragment mParentFragment;
@@ -99,7 +98,6 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
     // private final DimensionCallback mDimensionCallback;
 
     public CommentListAdapter(Context context, List<Comment> commentList, EditText messageEditText, BrowserExpressCommentsBottomSheetFragment parentFragment, boolean isReplyAdapter, boolean isReplyToReplyAdapter) {
-        mContext = context;
         mCommentList = commentList;
         mMessageEditText = messageEditText;
         mParentFragment = parentFragment;
@@ -215,17 +213,17 @@ public class CommentListAdapter extends RecyclerView.Adapter<CommentListAdapter.
         private final LinearLayout mVoteLayout;
 
         private final EditText mMessageEditText; // From constructor
-        private LinearLayout mCommentLayout;
+        private final LinearLayout mCommentLayout;
 
         private Animation bounceUp;
         private Animation bounceDown;
 
         // private int myPosition; // Set in bind
-        private BrowserExpressCommentsBottomSheetFragment mParentFragment; // From constructor
+        private final BrowserExpressCommentsBottomSheetFragment mParentFragment; // From constructor
 
-        private boolean mIsReplyAdapter; // From constructor
-        private boolean mIsReplyTopComment; // From constructor
-        private boolean mIsReplyToReplyAdapter; // From constructor
+        private final boolean mIsReplyAdapter; // From constructor
+        private final boolean mIsReplyTopComment; // From constructor
+        private final boolean mIsReplyToReplyAdapter; // From constructor
 
         ImageView commentImage;
         CardView commentMediaCard;

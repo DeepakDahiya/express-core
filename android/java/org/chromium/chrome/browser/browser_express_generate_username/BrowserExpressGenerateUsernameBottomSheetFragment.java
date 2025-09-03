@@ -36,7 +36,7 @@ import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomSheetDialogFragment {
     private static final String IS_FROM_MENU = "is_from_menu";
 
-    private boolean isFromMenu;
+    // private boolean isFromMenu;
     private Button nextButton;
 
     public static BrowserExpressGenerateUsernameBottomSheetFragment newInstance(boolean isFromMenu) {
@@ -54,7 +54,7 @@ public class BrowserExpressGenerateUsernameBottomSheetFragment extends BottomShe
         setStyle(STYLE_NORMAL, R.style.AppSetDefaultBottomSheetDialogTheme);
 
         if (getArguments() != null) {
-            isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
+            // isFromMenu = getArguments().getBoolean(IS_FROM_MENU);
         }
     }
 
