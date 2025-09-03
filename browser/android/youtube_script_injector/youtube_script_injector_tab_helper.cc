@@ -28,7 +28,7 @@
 #include "url/url_util.h"
 
 namespace {
-  constexpr char16_t kYoutubeBackgroundPlayback[] =
+  constexpr char16_t kYoutubeBackgroundPlayback2[] =
     uR"(
         (function() {
             'use strict';
@@ -1455,7 +1455,7 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
   }
   content::RenderFrameHost::AllowInjectingJavaScript();
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-      kYoutubeBackgroundPlayback, base::NullCallback());
+      kYoutubeBackgroundPlayback2, base::NullCallback());
   
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
@@ -1475,7 +1475,7 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
-    
+
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
         kYoutubeBackgroundPlayback, base::NullCallback());
