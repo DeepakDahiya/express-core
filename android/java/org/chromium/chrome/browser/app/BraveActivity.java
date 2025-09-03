@@ -1356,9 +1356,9 @@ public abstract class BraveActivity extends ChromeActivity
         // mIsProcessingPendingDappsTxRequest = false;
         updateBackCallbackState();
 
-        if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
-            BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
-        }
+        // if (!BraveSetDefaultBrowserUtils.isBraveSetAsDefaultBrowser(BraveActivity.this)) {
+        //     BraveSetDefaultBrowserUtils.openDefaultAppsSettings(BraveActivity.this);
+        // }
 
         PostTask.postTask(
                 TaskTraits.BEST_EFFORT_MAY_BLOCK, () -> { BraveStatsUtil.removeShareStatsFile(); });
