@@ -1600,13 +1600,13 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
       }, contents),
       base::Milliseconds(100));
       
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-            kYoutubePipButton, base::NullCallback());
-      }, contents),
-      base::Milliseconds(200));
+  // base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+  //     FROM_HERE,
+  //     base::BindOnce([](content::WebContents* contents) {
+  //       contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+  //           kYoutubePipButton, base::NullCallback());
+  //     }, contents),
+  //     base::Milliseconds(200));
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
