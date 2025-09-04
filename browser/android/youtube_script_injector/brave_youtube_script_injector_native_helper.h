@@ -13,6 +13,8 @@ namespace youtube_script_injector {
 // Enters Picture-in-Picture mode for the given WebContents
 void EnterPictureInPicture(content::WebContents* web_contents);
 
+void SetPipPlaybackState(content::WebContents* web_contents, bool is_playing);
+
 }  // namespace youtube_script_injector
 
 #endif  // BRAVE_BROWSER_ANDROID_YOUTUBE_SCRIPT_INJECTOR_BRAVE_YOUTUBE_SCRIPT_INJECTOR_NATIVE_HELPER_H_

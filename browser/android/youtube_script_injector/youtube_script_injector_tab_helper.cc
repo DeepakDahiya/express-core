@@ -1620,7 +1620,7 @@ void YouTubeScriptInjectorTabHelper::TogglePipPlayback() {
   EnsureBound(rfh);
   script_injector_remote_->RequestAsyncExecuteScript(
       ISOLATED_WORLD_ID_BRAVE_INTERNAL, kYoutubeTogglePlayback,
-      blink::mojom::UserActivationOption::kNotAllowed,
+      blink::mojom::UserActivationOption::kDoNotActivate,
       blink::mojom::PromiseResultOption::kAwait,
       base::BindOnce(&YouTubeScriptInjectorTabHelper::OnTogglePlaybackScriptComplete,
                      weak_factory_.GetWeakPtr()));
