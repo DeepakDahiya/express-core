@@ -1120,142 +1120,142 @@ const char16_t kYoutubePIP[] =
         }());
     )";
 
-const char16_t kYoutubePipButton[] = 
-    uR"(
-    (function() {
-        // Store tab reference for proper restoration
-        let originalTabId = null;
-        let videoElement = null;
-        let wasPlaying = false;
+// const char16_t kYoutubePipButton[] = 
+//     uR"(
+//     (function() {
+//         // Store tab reference for proper restoration
+//         let originalTabId = null;
+//         let videoElement = null;
+//         let wasPlaying = false;
 
-        const buttonElement = document.createElement('button');
-        buttonElement.className = 'yt-pip-gold';
-        buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
-        buttonElement.title = 'Picture-in-Picture';
+//         const buttonElement = document.createElement('button');
+//         buttonElement.className = 'yt-pip-gold';
+//         buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+//         buttonElement.title = 'Picture-in-Picture';
 
-        // Enhanced CSS (keeping your existing styles)
-        if (!document.getElementById('yt-pip-gold-styles')) {
-            const css = `
-            .yt-pip-gold {
-                position: fixed;
-                bottom: 20px; right: 20px;
-                z-index: 2147483647 !important;
-                pointer-events: auto !important;
-                width: 60px; height: 60px; border-radius: 50%;
-                background: #D4AF37;
-                border: none; cursor: pointer; overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0,0,0,.30);
-                background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: 55%;
-                transition: transform .2s, box-shadow .2s, filter .2s;
-                animation: scalePulse 2.4s ease-in-out infinite;
-            }
-            .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
-            .yt-pip-gold:active { transform: scale(0.95); }
-            .yt-pip-gold:focus { outline: 2px solid #000; outline-offset: 2px; }
-            .yt-pip-gold::before {
-                content: '';
-                position: absolute; top: 0; left: -75%;
-                width: 50%; height: 100%;
-                background: linear-gradient(120deg,
-                            rgba(255,255,255,0) 0%,
-                            rgba(255,255,255,.70) 50%,
-                            rgba(255,255,255,0) 100%);
-                transform: skewX(-25deg);
-                animation: shine 2.8s infinite;
-                pointer-events: none;
-            }
-            @keyframes shine {
-                0% { left: -75%; }
-                100% { left: 125%; }
-            }
-            @keyframes scalePulse {
-                0%, 100% { transform: scale(1); }
-                50% { transform: scale(1.1); }
-            }
-        `;
-            const styleTag = document.createElement('style');
-            styleTag.id = 'yt-pip-gold-styles';
-            styleTag.textContent = css;
-            document.head.appendChild(styleTag);
-        }
+//         // Enhanced CSS (keeping your existing styles)
+//         if (!document.getElementById('yt-pip-gold-styles')) {
+//             const css = `
+//             .yt-pip-gold {
+//                 position: fixed;
+//                 bottom: 20px; right: 20px;
+//                 z-index: 2147483647 !important;
+//                 pointer-events: auto !important;
+//                 width: 60px; height: 60px; border-radius: 50%;
+//                 background: #D4AF37;
+//                 border: none; cursor: pointer; overflow: hidden;
+//                 box-shadow: 0 4px 12px rgba(0,0,0,.30);
+//                 background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
+//                 background-repeat: no-repeat;
+//                 background-position: center;
+//                 background-size: 55%;
+//                 transition: transform .2s, box-shadow .2s, filter .2s;
+//                 animation: scalePulse 2.4s ease-in-out infinite;
+//             }
+//             .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
+//             .yt-pip-gold:active { transform: scale(0.95); }
+//             .yt-pip-gold:focus { outline: 2px solid #000; outline-offset: 2px; }
+//             .yt-pip-gold::before {
+//                 content: '';
+//                 position: absolute; top: 0; left: -75%;
+//                 width: 50%; height: 100%;
+//                 background: linear-gradient(120deg,
+//                             rgba(255,255,255,0) 0%,
+//                             rgba(255,255,255,.70) 50%,
+//                             rgba(255,255,255,0) 100%);
+//                 transform: skewX(-25deg);
+//                 animation: shine 2.8s infinite;
+//                 pointer-events: none;
+//             }
+//             @keyframes shine {
+//                 0% { left: -75%; }
+//                 100% { left: 125%; }
+//             }
+//             @keyframes scalePulse {
+//                 0%, 100% { transform: scale(1); }
+//                 50% { transform: scale(1.1); }
+//             }
+//         `;
+//             const styleTag = document.createElement('style');
+//             styleTag.id = 'yt-pip-gold-styles';
+//             styleTag.textContent = css;
+//             document.head.appendChild(styleTag);
+//         }
 
-        // Enhanced PiP handling
-        buttonElement.addEventListener('click', () => {
-            videoElement = document.querySelector('video');
-            if (videoElement) {
-                // Store current state
-                wasPlaying = !videoElement.paused;
-                originalTabId = window.location.href;
+//         // Enhanced PiP handling
+//         buttonElement.addEventListener('click', () => {
+//             videoElement = document.querySelector('video');
+//             if (videoElement) {
+//                 // Store current state
+//                 wasPlaying = !videoElement.paused;
+//                 originalTabId = window.location.href;
                 
-                videoElement.removeAttribute('disablePictureInPicture');
-                videoElement.requestPictureInPicture().catch(console.error);
-            }
-        });
+//                 videoElement.removeAttribute('disablePictureInPicture');
+//                 videoElement.requestPictureInPicture().catch(console.error);
+//             }
+//         });
 
-        // Enhanced PiP event listeners
-        if (document.pictureInPictureEnabled) {
-            document.addEventListener('enterpictureinpicture', (event) => {
-                console.log('Entered PiP mode');
-                // Ensure video continues playing
-                if (event.target && wasPlaying) {
-                    setTimeout(() => {
-                        if (event.target.paused) {
-                            event.target.play().catch(console.error);
-                        }
-                    }, 100);
-                }
-            });
+//         // Enhanced PiP event listeners
+//         if (document.pictureInPictureEnabled) {
+//             document.addEventListener('enterpictureinpicture', (event) => {
+//                 console.log('Entered PiP mode');
+//                 // Ensure video continues playing
+//                 if (event.target && wasPlaying) {
+//                     setTimeout(() => {
+//                         if (event.target.paused) {
+//                             event.target.play().catch(console.error);
+//                         }
+//                     }, 100);
+//                 }
+//             });
 
-            document.addEventListener('leavepictureinpicture', (event) => {
-                console.log('Left PiP mode');
-                // Force focus back to this tab
-                if (window.focus) {
-                    window.focus();
-                }
+//             document.addEventListener('leavepictureinpicture', (event) => {
+//                 console.log('Left PiP mode');
+//                 // Force focus back to this tab
+//                 if (window.focus) {
+//                     window.focus();
+//                 }
                 
-                // Ensure video continues playing after PiP exit
-                setTimeout(() => {
-                    const video = document.querySelector('video');
-                    if (video && wasPlaying && video.paused) {
-                        video.play().catch(console.error);
-                    }
+//                 // Ensure video continues playing after PiP exit
+//                 setTimeout(() => {
+//                     const video = document.querySelector('video');
+//                     if (video && wasPlaying && video.paused) {
+//                         video.play().catch(console.error);
+//                     }
                     
-                    // Force page visibility to visible
-                    Object.defineProperty(document, 'hidden', {
-                        value: false,
-                        writable: false,
-                        configurable: true
-                    });
-                    Object.defineProperty(document, 'visibilityState', {
-                        value: 'visible',
-                        writable: false,
-                        configurable: true
-                    });
-                }, 200);
-            });
-        }
+//                     // Force page visibility to visible
+//                     Object.defineProperty(document, 'hidden', {
+//                         value: false,
+//                         writable: false,
+//                         configurable: true
+//                     });
+//                     Object.defineProperty(document, 'visibilityState', {
+//                         value: 'visible',
+//                         writable: false,
+//                         configurable: true
+//                     });
+//                 }, 200);
+//             });
+//         }
 
-        const observer = new MutationObserver(() => {
-            const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
-            if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
-            buttonContainerElement.prepend(buttonElement);
-        });
-        observer.observe(document.documentElement, { subtree: true, childList: true });
+//         const observer = new MutationObserver(() => {
+//             const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+//             if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
+//             buttonContainerElement.prepend(buttonElement);
+//         });
+//         observer.observe(document.documentElement, { subtree: true, childList: true });
 
-        // Additional visibility override for problematic devices
-        const originalAddEventListener = document.addEventListener;
-        document.addEventListener = function(type, listener, options) {
-            if (type === 'visibilitychange') {
-                return; // Block visibility change events
-            }
-            return originalAddEventListener.call(this, type, listener, options);
-        };
+//         // Additional visibility override for problematic devices
+//         const originalAddEventListener = document.addEventListener;
+//         document.addEventListener = function(type, listener, options) {
+//             if (type === 'visibilitychange') {
+//                 return; // Block visibility change events
+//             }
+//             return originalAddEventListener.call(this, type, listener, options);
+//         };
 
-    })();
-)";
+//     })();
+// )";
 
 constexpr char16_t kYoutubeBackgroundPlayback[] =
     uR"(
