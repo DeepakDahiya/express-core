@@ -437,6 +437,8 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
 
+        BraveYouTubeScriptInjectorNativeHelper.setListener(this);
+
         // The check on mNativeInitialized is mostly to ensure that mojo
         // services for wallet are initialized.
         // TODO(sergz): verify do we need it in that phase or not.
@@ -572,9 +574,8 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    // C++ will call this method to update the button icon
-    @CalledByNative
     public void setPipPlaybackState(boolean isPlaying) {
+        if (mPipPlayPauseButton == null) return;
         mPipPlayPauseButton.setImageResource(isPlaying ? R.drawable.ic_pause_white_24dp : R.drawable.ic_play_arrow_white_24dp);
     }
 
@@ -947,6 +948,8 @@ public abstract class BraveActivity extends ChromeActivity
             mNotificationPermissionController = null;
         }
 
+        BraveYouTubeScriptInjectorNativeHelper.setListener(null);
+
         BraveSafeBrowsingApiHandler.getInstance().shutdownSafeBrowsing();
         if (ENABLE_IN_APP_UPDATE && mAppUpdateManager != null) {
             mAppUpdateManager.unregisterListener(mInstallStateUpdatedListener);
@@ -968,6 +971,12 @@ public abstract class BraveActivity extends ChromeActivity
         } catch (Exception e) {
             Log.e("BraveActivity", "Error cleaning up callback", e);
         }
+    }
+
+    @Override
+    public void onPipPlaybackStateChanged(boolean isPlaying) {
+        // Now it's safe to call our internal method that updates the UI.
+        setPipPlaybackState(isPlaying);
     }
 
     @Override

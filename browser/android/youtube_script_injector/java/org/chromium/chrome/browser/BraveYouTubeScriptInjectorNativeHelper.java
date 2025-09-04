@@ -18,7 +18,6 @@ import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 import android.view.Surface;
-import org.chromium.chrome.browser.app.BraveActivity;
 
 /**
  * Helper to interact with native methods. Check brave_youtube_script_injector_native_helper.{h|cc}.
@@ -27,6 +26,16 @@ import org.chromium.chrome.browser.app.BraveActivity;
 @NullMarked
 public class BraveYouTubeScriptInjectorNativeHelper {
     private static final String TAG = "YouTubeNativeHelper";
+
+    public interface PipStatusListener {
+        void onPipPlaybackStateChanged(boolean isPlaying);
+    }
+
+    private static WeakReference<PipStatusListener> sListener = new WeakReference<>(null);
+
+    public static void setListener(PipStatusListener listener) {
+        sListener = new WeakReference<>(listener);
+    }
 
     public static void setFullscreen(WebContents webContents) {
         BraveYouTubeScriptInjectorNativeHelperJni.get().setFullscreen(webContents);
@@ -54,14 +63,6 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         BraveYouTubeScriptInjectorNativeHelperJni.get().togglePipPlayback(webContents);
     }
 
-    @CalledByNative
-    public static void setPipPlaybackState(boolean isPlaying) {
-        BraveActivity activity = BraveActivity.getBraveActivity(); // Or however you get activity instance
-        if (activity != null) {
-            activity.setPipPlaybackState(isPlaying);
-        }
-    }
-
     /**
      * @noinspection unused
      */
@@ -82,6 +83,17 @@ public class BraveYouTubeScriptInjectorNativeHelper {
                     Log.e(TAG, "Error entering picture in picture mode.", e);
                 }
             }
+        }
+    }
+
+    @CalledByNative
+    public static void setPipPlaybackState(boolean isPlaying) {
+        final PipStatusListener listener = sListener.get();
+        if (listener != null) {
+            // Post to the UI thread to ensure UI updates are safe.
+            new Handler(Looper.getMainLooper()).post(() -> {
+                listener.onPipPlaybackStateChanged(isPlaying);
+            });
         }
     }
 
