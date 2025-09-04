@@ -304,7 +304,7 @@ import android.view.SurfaceView;
 import android.view.Surface;
 import android.view.SurfaceHolder;
 import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
