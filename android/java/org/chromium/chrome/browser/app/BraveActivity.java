@@ -301,6 +301,10 @@ import org.jni_zero.CalledByNative;
 import android.widget.FrameLayout;
 import android.webkit.JavascriptInterface;
 import android.view.SurfaceView;
+import android.view.Surface;
+import android.view.SurfaceHolder;
+import org.chromium.chrome.browser.tabmodel.TabModel;
+import org.chromium.chrome.browser.tabmodel.TabSelectionType;
 
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
@@ -315,7 +319,8 @@ public abstract class BraveActivity extends ChromeActivity
                         .MiscAndroidMetricsConnectionErrorHandlerDelegate,
                 QuickSearchEnginesCallback,
                 KeyboardVisibilityHelper.KeyboardVisibilityListener,
-                OnSharedPreferenceChangeListener {
+                OnSharedPreferenceChangeListener,
+                BraveYouTubeScriptInjectorNativeHelper.PipStatusListener {
     public static final String BRAVE_WALLET_HOST = "wallet";
     public static final String BRAVE_WALLET_ORIGIN = "brave://wallet/";
     public static final String BRAVE_WALLET_URL = "brave://wallet/crypto/portfolio/assets";
@@ -523,14 +528,11 @@ public abstract class BraveActivity extends ChromeActivity
         if (mGlobalPipPlayer != null) return;
         ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
         mGlobalPipPlayer = (FrameLayout) getLayoutInflater().inflate(R.layout.global_pip_player, decorView, false);
-        
         mPipSurfaceView = mGlobalPipPlayer.findViewById(R.id.pip_surface_view);
         mPipPlayPauseButton = mGlobalPipPlayer.findViewById(R.id.pip_play_pause_button);
         mPipRestoreButton = mGlobalPipPlayer.findViewById(R.id.pip_restore_button);
-        
         mPipRestoreButton.setOnClickListener(v -> restorePipTab());
         mPipPlayPauseButton.setOnClickListener(v -> togglePipPlayback());
-
         decorView.addView(mGlobalPipPlayer);
     }
 
@@ -539,7 +541,7 @@ public abstract class BraveActivity extends ChromeActivity
         mPipOwningTab = tab;
         mGlobalPipPlayer.setVisibility(View.VISIBLE);
         
-        // Pass the surface to C++ once it's ready
+        // This code is now correct because of the added imports.
         mPipSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
             @Override
             public void surfaceCreated(SurfaceHolder holder) {
@@ -565,8 +567,12 @@ public abstract class BraveActivity extends ChromeActivity
 
     private void restorePipTab() {
         if (mPipOwningTab != null) {
-            // This assumes you have a TabModelSelector instance available
-            getTabModelSelector().setCurrentTab(mPipOwningTab);
+            // [!! FIX !!] Use the correct API to select the tab.
+            TabModel tabModel = getTabModelSelector().getModel(mPipOwningTab.isIncognito());
+            int index = tabModel.indexOf(mPipOwningTab);
+            if (index != TabModel.INVALID_TAB_INDEX) {
+                tabModel.setIndex(index, TabSelectionType.FROM_USER);
+            }
         }
         hideGlobalPip();
     }
@@ -978,8 +984,11 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void onPipPlaybackStateChanged(boolean isPlaying) {
-        // Now it's safe to call our internal method that updates the UI.
         setPipPlaybackState(isPlaying);
+    }
+
+    public Tab getPipOwningTab() {
+        return mPipOwningTab;
     }
 
     @Override

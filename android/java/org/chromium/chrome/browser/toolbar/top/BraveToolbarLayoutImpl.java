@@ -672,10 +672,11 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
 
-                            if (activity.mPipOwningTab != null && activity.mPipOwningTab.getId() == tab.getId()) {
+                            Tab pipTab = activity.getPipOwningTab();
+                            if (pipTab != null && pipTab.getId() == tab.getId()) {
                                 activity.hideGlobalPip();
                             }
-                        
+
                             if (accessToken != null) {
                                 Context context = ContextUtils.getApplicationContext();
                                 SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
@@ -839,7 +840,8 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         mTabsWithWalletIcon.remove(tab.getId());
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
-                            if (activity.mPipOwningTab != null && activity.mPipOwningTab.getId() == tab.getId()) {
+                            Tab pipTab = activity.getPipOwningTab();
+                            if (pipTab != null && pipTab.getId() == tab.getId()) {
                                 activity.hideGlobalPip();
                             }
                         } catch (BraveActivity.BraveActivityNotFoundException e) {
