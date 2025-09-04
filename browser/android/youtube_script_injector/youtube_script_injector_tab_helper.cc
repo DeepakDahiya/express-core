@@ -1408,36 +1408,103 @@ constexpr char16_t kYoutubeFullscreen[] =
 constexpr char16_t kYoutubeGlobalPipTrigger[] =
     uR"(
 (function() {
+    // --- PREVENTS SCRIPT FROM RUNNING MULTIPLE TIMES ---
     if (window.braveGlobalPipTriggerInitialized) return;
     window.braveGlobalPipTriggerInitialized = true;
 
+    const BUTTON_CLASS_NAME = 'yt-pip-gold';
+    const STYLE_ID = 'yt-pip-gold-styles';
+
+    // --- CORE LOGIC: Calls the native bridge for cross-tab PiP ---
     function enterGlobalPipMode() {
         if (window.BravePipBridge && window.BravePipBridge.enterGlobalPipMode) {
-            window.BravePipBridge.enterGlobalPipMode();
+            window.BBravePipBridge.enterGlobalPipMode();
         } else {
             console.error("Brave Global PiP Bridge is not available.");
         }
     }
 
-    function injectTriggerButton() {
-        if (document.querySelector('.brave-global-pip-trigger')) return;
-        const headerContent = document.querySelector('.mobile-topbar-header-content');
-        if (headerContent) {
-            const triggerButton = document.createElement('button');
-            triggerButton.className = 'brave-global-pip-trigger';
-            triggerButton.title = 'Picture-in-Picture (Global)';
-            triggerButton.style.cssText = 'background:none; border:none; padding:8px; cursor:pointer; order:6;';
-            triggerButton.innerHTML = `<svg style="width:24px; height:24px; fill:white;" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-10-7h9v6h-9z"></path></svg>`;
-            triggerButton.onclick = enterGlobalPipMode;
-            headerContent.appendChild(triggerButton);
+    // --- INJECT STYLES: This function is idempotent (safe to call multiple times) ---
+    function injectGoldenButtonStyles() {
+        if (document.getElementById(STYLE_ID)) return;
+
+        const css = `
+            .${BUTTON_CLASS_NAME} {
+                position: fixed;
+                bottom: 20px; left: 20px;
+                z-index: 2147483647 !important;
+                pointer-events: auto !important;
+                width: 60px; height: 60px; border-radius: 50%;
+                background: #D4AF37;
+                border: none; cursor: pointer; overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,.30);
+                background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 55%;
+                transition: transform .2s, box-shadow .2s, filter .2s;
+                animation: scalePulse 2.4s ease-in-out infinite;
+            }
+            .${BUTTON_CLASS_NAME}:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
+            .${BUTTON_CLASS_NAME}:active { transform: scale(0.95); }
+            .${BUTTON_CLASS_NAME}:focus { outline: 2px solid #000; outline-offset: 2px; }
+            .${BUTTON_CLASS_NAME}::before {
+                content: '';
+                position: absolute; top: 0; left: -75%;
+                width: 50%; height: 100%;
+                background: linear-gradient(120deg,
+                            rgba(255,255,255,0) 0%,
+                            rgba(255,255,255,.70) 50%,
+                            rgba(255,255,255,0) 100%);
+                transform: skewX(-25deg);
+                animation: shine 2.8s infinite;
+                pointer-events: none;
+            }
+            @keyframes shine { 0% { left: -75%; } 100% { left: 125%; } }
+            @keyframes scalePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+        `;
+        const styleTag = document.createElement('style');
+        styleTag.id = STYLE_ID;
+        styleTag.textContent = css;
+        document.head.appendChild(styleTag);
+    }
+
+    // --- BUTTON CREATION: This is also idempotent ---
+    function createOrGetButton() {
+        let button = document.querySelector(`.${BUTTON_CLASS_NAME}`);
+        if (!button) {
+            button = document.createElement('button');
+            button.className = BUTTON_CLASS_NAME;
+            button.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+            button.title = 'Picture-in-Picture';
+            button.onclick = enterGlobalPipMode;
+            document.body.appendChild(button);
+        }
+        return button;
+    }
+
+    // --- [!! NEW !!] THE RESILIENT RECONCILIATION LOOP ---
+    function ensureButtonState() {
+        const isOnWatchPage = window.location.pathname === '/watch';
+        let button = document.querySelector(`.${BUTTON_CLASS_NAME}`);
+
+        if (isOnWatchPage) {
+            // We should be on a watch page. Make sure the button and styles exist.
+            injectGoldenButtonStyles();
+            createOrGetButton(); // This will create it if it's missing
+        } else {
+            // We are not on a watch page. If the button exists, remove it.
+            if (button) {
+                button.remove();
+            }
         }
     }
 
-    const observer = new MutationObserver(() => {
-        if (window.location.pathname === '/watch') injectTriggerButton();
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-    if (window.location.pathname === '/watch') setTimeout(injectTriggerButton, 1500);
+    // --- START THE LOOP ---
+    // Run it once immediately, then every 500ms to catch any changes.
+    ensureButtonState();
+    setInterval(ensureButtonState, 500);
+
 })();
 )";
 
