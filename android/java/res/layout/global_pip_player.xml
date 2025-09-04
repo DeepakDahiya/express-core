@@ -25,7 +25,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_play_circle2"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Play/Pause"/>
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <ImageButton
             android:id="@+id/pip_restore_button"
@@ -33,7 +33,7 @@
             android:layout_height="48dp"
             android:src="@drawable/ic_play_circle2"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Restore"/>
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
     </LinearLayout>
 </FrameLayout>
