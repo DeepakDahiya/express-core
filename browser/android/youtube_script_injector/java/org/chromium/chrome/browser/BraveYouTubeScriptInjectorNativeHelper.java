@@ -17,6 +17,7 @@ import org.chromium.build.annotations.NullMarked;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import android.view.Surface;
 
 /**
  * Helper to interact with native methods. Check brave_youtube_script_injector_native_helper.{h|cc}.
