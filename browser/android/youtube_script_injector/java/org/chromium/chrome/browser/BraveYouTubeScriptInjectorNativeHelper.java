@@ -40,6 +40,26 @@ public class BraveYouTubeScriptInjectorNativeHelper {
                 .isPictureInPictureAvailable(webContents);
     }
 
+    public static void startGlobalPip(WebContents webContents, Surface surface) {
+        BraveYouTubeScriptInjectorNativeHelperJni.get().startGlobalPip(webContents, surface);
+    }
+
+    public static void stopGlobalPip(WebContents webContents) {
+        BraveYouTubeScriptInjectorNativeHelperJni.get().stopGlobalPip(webContents);
+    }
+    
+    public static void togglePipPlayback(WebContents webContents) {
+        BraveYouTubeScriptInjectorNativeHelperJni.get().togglePipPlayback(webContents);
+    }
+
+    @CalledByNative
+    public static void setPipPlaybackState(boolean isPlaying) {
+        BraveActivity activity = BraveActivity.getBraveActivity(); // Or however you get activity instance
+        if (activity != null) {
+            activity.setPipPlaybackState(isPlaying);
+        }
+    }
+
     /**
      * @noinspection unused
      */
@@ -73,5 +93,9 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         boolean hasFullscreenBeenRequested(WebContents webContents);
 
         boolean isPictureInPictureAvailable(WebContents webContents);
+
+        void startGlobalPip(WebContents webContents, Surface surface);
+        void stopGlobalPip(WebContents webContents);
+        void togglePipPlayback(WebContents webContents);
     }
 }

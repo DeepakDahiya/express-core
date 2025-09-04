@@ -297,6 +297,7 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
+import org.jni_zero.CalledByNative;
 
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
@@ -412,6 +413,12 @@ public abstract class BraveActivity extends ChromeActivity
 
     private SearchWidgetPromoPanel mSearchWidgetPromoPanel;
 
+    private FrameLayout mGlobalPipPlayer;
+    private SurfaceView mPipSurfaceView;
+    private ImageButton mPipPlayPauseButton;
+    private ImageButton mPipRestoreButton;
+    private Tab mPipOwningTab;
+
     /** Serves as a general exception for failed attempts to get BraveActivity. */
     public static class BraveActivityNotFoundException extends Exception {
         public BraveActivityNotFoundException(String message) {
@@ -505,6 +512,88 @@ public abstract class BraveActivity extends ChromeActivity
 
         // Safe update with null check
         updateBackCallbackState();
+    }
+
+    private void initializeGlobalPipPlayer() {
+        if (mGlobalPipPlayer != null) return;
+        ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
+        mGlobalPipPlayer = (FrameLayout) getLayoutInflater().inflate(R.layout.global_pip_player, decorView, false);
+        
+        mPipSurfaceView = mGlobalPipPlayer.findViewById(R.id.pip_surface_view);
+        mPipPlayPauseButton = mGlobalPipPlayer.findViewById(R.id.pip_play_pause_button);
+        mPipRestoreButton = mGlobalPipPlayer.findViewById(R.id.pip_restore_button);
+        
+        mPipRestoreButton.setOnClickListener(v -> restorePipTab());
+        mPipPlayPauseButton.setOnClickListener(v -> togglePipPlayback());
+
+        decorView.addView(mGlobalPipPlayer);
+    }
+
+    public void showGlobalPip(Tab tab) {
+        if (mGlobalPipPlayer == null) initializeGlobalPipPlayer();
+        mPipOwningTab = tab;
+        mGlobalPipPlayer.setVisibility(View.VISIBLE);
+        
+        // Pass the surface to C++ once it's ready
+        mPipSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
+            @Override
+            public void surfaceCreated(SurfaceHolder holder) {
+                BraveYouTubeScriptInjectorNativeHelper.startGlobalPip(tab.getWebContents(), holder.getSurface());
+            }
+            @Override
+            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
+            @Override
+            public void surfaceDestroyed(SurfaceHolder holder) {
+                hideGlobalPip();
+            }
+        });
+    }
+
+    public void hideGlobalPip() {
+        if (mGlobalPipPlayer == null || mGlobalPipPlayer.getVisibility() == View.GONE) return;
+        if (mPipOwningTab != null && mPipOwningTab.getWebContents() != null) {
+            BraveYouTubeScriptInjectorNativeHelper.stopGlobalPip(mPipOwningTab.getWebContents());
+        }
+        mGlobalPipPlayer.setVisibility(View.GONE);
+        mPipOwningTab = null;
+    }
+
+    private void restorePipTab() {
+        if (mPipOwningTab != null) {
+            // This assumes you have a TabModelSelector instance available
+            getTabModelSelector().setCurrentTab(mPipOwningTab);
+        }
+        hideGlobalPip();
+    }
+
+    private void togglePipPlayback() {
+        if (mPipOwningTab != null && mPipOwningTab.getWebContents() != null) {
+            BraveYouTubeScriptInjectorNativeHelper.togglePipPlayback(mPipOwningTab.getWebContents());
+        }
+    }
+
+    // C++ will call this method to update the button icon
+    @CalledByNative
+    public void setPipPlaybackState(boolean isPlaying) {
+        mPipPlayPauseButton.setImageResource(isPlaying ? R.drawable.ic_pause_white_24dp : R.drawable.ic_play_arrow_white_24dp);
+    }
+
+    public class WebAppInterface {
+        private BraveActivity mActivity;
+
+        public WebAppInterface(BraveActivity activity) {
+            mActivity = activity;
+        }
+
+        @JavascriptInterface
+        public void enterGlobalPipMode() {
+            // Post to the UI thread to be safe
+            new Handler(Looper.getMainLooper()).post(() -> {
+                if (mActivity != null) {
+                    mActivity.showGlobalPip(mActivity.getActivityTab());
+                }
+            });
+        }
     }
 
     private void setupYouTubeBackButtonHandler() {

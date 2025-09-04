@@ -1405,6 +1405,58 @@ constexpr char16_t kYoutubeFullscreen[] =
 }());
 )";
 
+constexpr char16_t kYoutubeGlobalPipTrigger[] =
+    uR"(
+(function() {
+    if (window.braveGlobalPipTriggerInitialized) return;
+    window.braveGlobalPipTriggerInitialized = true;
+
+    function enterGlobalPipMode() {
+        if (window.BravePipBridge && window.BravePipBridge.enterGlobalPipMode) {
+            window.BravePipBridge.enterGlobalPipMode();
+        } else {
+            console.error("Brave Global PiP Bridge is not available.");
+        }
+    }
+
+    function injectTriggerButton() {
+        if (document.querySelector('.brave-global-pip-trigger')) return;
+        const headerContent = document.querySelector('.mobile-topbar-header-content');
+        if (headerContent) {
+            const triggerButton = document.createElement('button');
+            triggerButton.className = 'brave-global-pip-trigger';
+            triggerButton.title = 'Picture-in-Picture (Global)';
+            triggerButton.style.cssText = 'background:none; border:none; padding:8px; cursor:pointer; order:6;';
+            triggerButton.innerHTML = `<svg style="width:24px; height:24px; fill:white;" viewBox="0 0 24 24"><path d="M21 3H3c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H3V5h18v14zm-10-7h9v6h-9z"></path></svg>`;
+            triggerButton.onclick = enterGlobalPipMode;
+            headerContent.appendChild(triggerButton);
+        }
+    }
+
+    const observer = new MutationObserver(() => {
+        if (window.location.pathname === '/watch') injectTriggerButton();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+    if (window.location.pathname === '/watch') setTimeout(injectTriggerButton, 1500);
+})();
+)";
+
+constexpr char16_t kYoutubeTogglePlayback[] =
+    uR"(
+(function() {
+    const video = document.querySelector('video.video-stream');
+    if (video) {
+        if (video.paused) {
+            video.play();
+        } else {
+            video.pause();
+        }
+        return !video.paused; // Return the new playing state
+    }
+    return false;
+}());
+)";
+
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
   PrefService* prefs =
       static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
@@ -1469,6 +1521,9 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
   content::RenderFrameHost::AllowInjectingJavaScript();
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
       kYoutubeBackgroundPlayback2, base::NullCallback());
+    
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+    kYoutubeGlobalPipTrigger, base::NullCallback());
   
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
@@ -1527,6 +1582,55 @@ void YouTubeScriptInjectorTabHelper::MaybeSetFullscreen() {
       base::BindOnce(
           &YouTubeScriptInjectorTabHelper::OnFullscreenScriptComplete,
           weak_factory_.GetWeakPtr(), rfh->GetGlobalFrameToken()));
+}
+
+void YouTubeScriptInjectorTabHelper::StartGlobalPip(
+    const base::android::JavaParamRef<jobject>& jsurface) {
+  // This is the most complex part of the implementation.
+  // It requires accessing Chromium's internal media player manager.
+  // The exact API can change between Chromium versions.
+  // This is a conceptual representation:
+  
+  // 1. Get the media player instance for the main frame.
+  // content::MediaPlayer* player = web_contents()->GetMainFrame()->GetMediaPlayer();
+  
+  // 2. Tell the player to redirect its output to the new Surface.
+  // if (player) {
+  //   player->SetSurface(jsurface);
+  // }
+  
+  // For now, we will log to show the connection is made.
+  LOG(ERROR) << "C++: StartGlobalPip called. Media pipeline redirection would happen here.";
+}
+
+void YouTubeScriptInjectorTabHelper::StopGlobalPip() {
+  // Tell the media player to stop redirecting to our surface and render
+  // back to the web page's context.
+  // content::MediaPlayer* player = web_contents()->GetMainFrame()->GetMediaPlayer();
+  // if (player) {
+  //   player->SetSurface(nullptr); // Passing null often reverts it.
+  // }
+  LOG(ERROR) << "C++: StopGlobalPip called. Media pipeline would be restored here.";
+}
+
+void YouTubeScriptInjectorTabHelper::TogglePipPlayback() {
+  content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
+  if (!rfh || !rfh->IsRenderFrameLive()) return;
+
+  EnsureBound(rfh);
+  script_injector_remote_->RequestAsyncExecuteScript(
+      ISOLATED_WORLD_ID_BRAVE_INTERNAL, kYoutubeTogglePlayback,
+      blink::mojom::UserActivationOption::kNotAllowed,
+      blink::mojom::PromiseResultOption::kAwait,
+      base::BindOnce(&YouTubeScriptInjectorTabHelper::OnTogglePlaybackScriptComplete,
+                     weak_factory_.GetWeakPtr()));
+}
+
+void YouTubeScriptInjectorTabHelper::OnTogglePlaybackScriptComplete(base::Value value) {
+    if (value.is_bool()) {
+        // Send the new playback state back up to Java to update the UI
+        youtube_script_injector::SetPipPlaybackState(web_contents(), value.GetBool());
+    }
 }
 
 bool YouTubeScriptInjectorTabHelper::IsYouTubeVideo(bool mobileOnly) const {

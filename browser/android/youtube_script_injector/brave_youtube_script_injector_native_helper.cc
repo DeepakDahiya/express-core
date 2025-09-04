@@ -10,6 +10,7 @@
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "ui/gl/android/surface_texture.h"
 
 namespace youtube_script_injector {
 
@@ -65,6 +66,42 @@ void EnterPictureInPicture(content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BraveYouTubeScriptInjectorNativeHelper_enterPictureInPicture(
       env, web_contents->GetJavaWebContents());
+}
+
+void JNI_BraveYouTubeScriptInjectorNativeHelper_StartGlobalPip(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const base::android::JavaParamRef<jobject>& jsurface) {
+  content::WebContents* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  YouTubeScriptInjectorTabHelper* helper = YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    helper->StartGlobalPip(jsurface);
+  }
+}
+
+void JNI_BraveYouTubeScriptInjectorNativeHelper_StopGlobalPip(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  content::WebContents* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  YouTubeScriptInjectorTabHelper* helper = YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    helper->StopGlobalPip();
+  }
+}
+
+void JNI_BraveYouTubeScriptInjectorNativeHelper_TogglePipPlayback(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  content::WebContents* web_contents = content::WebContents::FromJavaWebContents(jweb_contents);
+  YouTubeScriptInjectorTabHelper* helper = YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    helper->TogglePipPlayback();
+  }
+}
+
+void SetPipPlaybackState(content::WebContents* web_contents, bool is_playing) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_BraveYouTubeScriptInjectorNativeHelper_setPipPlaybackState(env, is_playing);
 }
 
 }  // namespace youtube_script_injector
