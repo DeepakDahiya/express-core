@@ -298,6 +298,9 @@ import org.chromium.content_public.browser.NavigationHandle;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
 import org.jni_zero.CalledByNative;
+import android.widget.FrameLayout;
+import android.webkit.JavascriptInterface;
+import android.view.SurfaceView;
 
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
