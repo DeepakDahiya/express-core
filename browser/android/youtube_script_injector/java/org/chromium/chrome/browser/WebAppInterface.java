@@ -5,7 +5,6 @@ import android.os.Looper;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
-import org.jni_zero.JniIdentity;
 
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.content_public.browser.WebContents;
@@ -29,7 +28,6 @@ public class WebAppInterface {
         return new WebAppInterface(webContents);
     }
 
-    @JniIdentity // Required for @JavascriptInterface
     @android.webkit.JavascriptInterface
     public void enterGlobalPipMode() {
         try{
