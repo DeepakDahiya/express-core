@@ -11,7 +11,7 @@
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
 #include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
-#include "media_session/public/mojom/media_session.mojom.h"
+#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
