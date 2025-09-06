@@ -5,18 +5,36 @@
 
 #include "brave/browser/android/youtube_script_injector/brave_youtube_script_injector_native_helper.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
 #include "base/android/jni_string.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
-#include "base/strings/utf_string_conversions.h"
+#include "base/unguessable_token.h"
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
 #include "brave/browser/android/youtube_script_injector/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
 #include "ui/android/window_android.h"
+#include "ui/gl/android/scoped_java_surface.h"
+
+// Include the generated Mojo interface
+#include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
 
 namespace youtube_script_injector {
+
+namespace {
+
+// Store the active video streamers
+std::map<content::WebContents*, mojo::Remote<brave::mojom::VideoSurfaceStreamer>> g_active_streamers;
+
+// Store surface tokens
+std::map<content::WebContents*, base::UnguessableToken> g_surface_tokens;
+
+}  // namespace
 
 void SetFullscreen(JNIEnv* env, 
                   const base::android::JavaParamRef<jobject>& j_web_contents) {
@@ -71,7 +89,22 @@ void StartGlobalPip(JNIEnv* env,
     return;
   }
 
-  LOG(INFO) << "StartGlobalPip: Starting PiP mode";
+  // Create a ScopedJavaSurface from the Java Surface object
+  gl::ScopedJavaSurface scoped_surface(j_surface, /*auto_release=*/false);
+  if (!scoped_surface.IsValid()) {
+    LOG(ERROR) << "StartGlobalPip: Invalid surface";
+    return;
+  }
+
+  // Generate a unique token for this surface
+  base::UnguessableToken surface_token = base::UnguessableToken::Create();
+  g_surface_tokens[web_contents] = surface_token;
+
+  // Register the surface with the GPU process
+  // This allows the renderer to draw to it
+  gpu::GpuSurfaceTracker::Get()->RegisterViewSurface(
+      surface_token.GetLowForSerialization(),
+      scoped_surface.j_surface().obj());
 
   // Get the render frame host
   content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
@@ -80,60 +113,28 @@ void StartGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Use JavaScript to manipulate the video element
-  // This keeps the video playing while moving it off-screen
-  const char* script = R"(
-    (function() {
-      const video = document.querySelector('video');
-      if (video) {
-        // Store original video state
-        window._pipOriginalVideo = {
-          parent: video.parentNode,
-          nextSibling: video.nextSibling,
-          style: video.style.cssText
-        };
-        
-        // Create a placeholder
-        const placeholder = document.createElement('div');
-        placeholder.id = 'pip-placeholder';
-        placeholder.style.width = video.offsetWidth + 'px';
-        placeholder.style.height = video.offsetHeight + 'px';
-        placeholder.style.background = '#000';
-        placeholder.style.display = 'flex';
-        placeholder.style.alignItems = 'center';
-        placeholder.style.justifyContent = 'center';
-        placeholder.innerHTML = '<span style="color: white;">Playing in mini-player</span>';
-        video.parentNode.insertBefore(placeholder, video);
-        
-        // Move video to an off-screen position but keep it playing
-        video.style.position = 'fixed';
-        video.style.left = '-10000px';
-        video.style.top = '-10000px';
-        video.style.width = '320px';
-        video.style.height = '180px';
-        video.style.pointerEvents = 'none';
-        document.body.appendChild(video);
-        
-        // Ensure video continues playing
-        if (video.paused) {
-          video.play();
+  // Bind the Mojo interface to communicate with the renderer
+  mojo::Remote<brave::mojom::VideoSurfaceStreamer> streamer;
+  rfh->GetRemoteInterfaces()->GetInterface(streamer.BindNewPipeAndPassReceiver());
+  
+  if (!streamer.is_bound()) {
+    LOG(ERROR) << "StartGlobalPip: Failed to bind VideoSurfaceStreamer";
+    return;
+  }
+
+  // Store the streamer for later use
+  g_active_streamers[web_contents] = std::move(streamer);
+
+  // Start streaming to the surface
+  g_active_streamers[web_contents]->StartStreaming(
+      surface_token,
+      base::BindOnce([](bool success) {
+        if (success) {
+          LOG(INFO) << "Successfully started video streaming to surface";
+        } else {
+          LOG(ERROR) << "Failed to start video streaming to surface";
         }
-        
-        // Prevent pause on visibility change
-        document.addEventListener('visibilitychange', function(e) {
-          e.stopImmediatePropagation();
-        }, true);
-        
-        console.log('Video prepared for PiP streaming');
-        return true;
-      }
-      return false;
-    })();
-  )";
-  
-  rfh->ExecuteJavaScript(base::ASCIIToUTF16(script), base::NullCallback());
-  
-  LOG(INFO) << "Global PiP JavaScript executed";
+      }));
 }
 
 void StopGlobalPip(JNIEnv* env,
@@ -144,30 +145,20 @@ void StopGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Restore video position via JavaScript
-  content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
-  if (rfh) {
-    const char* script = R"(
-      (function() {
-        const video = document.querySelector('video');
-        const placeholder = document.getElementById('pip-placeholder');
-        if (video && window._pipOriginalVideo && placeholder) {
-          // Restore video to original position
-          video.style.cssText = window._pipOriginalVideo.style;
-          if (window._pipOriginalVideo.nextSibling) {
-            window._pipOriginalVideo.parent.insertBefore(
-              video, window._pipOriginalVideo.nextSibling);
-          } else {
-            window._pipOriginalVideo.parent.appendChild(video);
-          }
-          // Remove placeholder
-          placeholder.remove();
-          delete window._pipOriginalVideo;
-          console.log('Video restored from PiP');
-        }
-      })();
-    )";
-    rfh->ExecuteJavaScript(base::ASCIIToUTF16(script), base::NullCallback());
+  // Find and stop the active streamer
+  auto it = g_active_streamers.find(web_contents);
+  if (it != g_active_streamers.end()) {
+    if (it->second.is_bound()) {
+      it->second->StopStreaming();
+    }
+    g_active_streamers.erase(it);
+  }
+
+  // Clean up the surface token
+  auto token_it = g_surface_tokens.find(web_contents);
+  if (token_it != g_surface_tokens.end()) {
+    // Clean up surface registration if needed
+    g_surface_tokens.erase(token_it);
   }
 
   LOG(INFO) << "Stopped global PiP for WebContents";
@@ -181,26 +172,11 @@ void TogglePipPlayback(JNIEnv* env,
     return;
   }
 
-  // Toggle via JavaScript
-  content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
-  if (rfh) {
-    const char* script = R"(
-      (function() {
-        const video = document.querySelector('video');
-        if (video) {
-          if (video.paused) {
-            video.play();
-            return 'playing';
-          } else {
-            video.pause();
-            return 'paused';
-          }
-        }
-        return 'no_video';
-      })();
-    )";
-    rfh->ExecuteJavaScript(base::ASCIIToUTF16(script), base::NullCallback());
-    LOG(INFO) << "Toggled PiP playback via JavaScript";
+  // Find the active streamer and toggle playback
+  auto it = g_active_streamers.find(web_contents);
+  if (it != g_active_streamers.end() && it->second.is_bound()) {
+    it->second->TogglePlayback();
+    LOG(INFO) << "Toggled PiP playback";
   }
 }
 
