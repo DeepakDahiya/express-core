@@ -628,13 +628,7 @@ bool IsYouTubeDomain(const GURL& url) {
 YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     content::WebContents* contents)
     : WebContentsObserver(contents),
-      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  
-  // Create the Java WebAppInterface object and hold a global reference to it.
-  java_web_app_interface_.Reset(
-      youtube_script_injector::Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
-}
+      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {}
 
 // [!! THIS IS THE FINAL, CORRECT IMPLEMENTATION !!]
 // This method is called when a frame is created, and it injects our bridge.
