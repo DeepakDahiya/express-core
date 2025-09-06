@@ -5,6 +5,7 @@ import android.os.Looper;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
+import org.jni_zero.NativeMethods;
 
 import org.chromium.content_public.browser.WebContents;
 
@@ -16,6 +17,23 @@ import java.lang.ref.WeakReference;
  */
 @JNINamespace("youtube_script_injector")
 public class WebAppInterface {
+
+    private long mNativePtr; // A pointer to the C++ peer.
+
+    private WebAppInterface(long nativePtr) {
+        mNativePtr = nativePtr;
+    }
+
+    @CalledByNative
+    private static WebAppInterface create(long nativePtr, WebContents webContents) {
+        return new WebAppInterface(nativePtr);
+    }
+
+    // This is called from C++ destructor.
+    @CalledByNative
+    private void destroy() {
+        mNativePtr = 0;
+    }
 
     // --- Listener Interface ---
     public interface GlobalPipListener {
@@ -48,5 +66,11 @@ public class WebAppInterface {
                 listener.enterGlobalPipMode(mWebContents);
             });
         }
+    }
+
+    @NativeMethods
+    interface Natives {
+        // This links the Java 'destroy()' to a C++ method.
+        // Even if empty, it's needed for the generator.
     }
 }
