@@ -29,6 +29,20 @@ void JNI_BraveYouTubeScriptInjectorNativeHelper_SetFullscreen(
   helper->MaybeSetFullscreen();
 }
 
+
+base::android::ScopedJavaLocalRef<jobject> JNI_BraveYouTubeScriptInjectorNativeHelper_GetOrCreateWebAppInterface(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  YouTubeScriptInjectorTabHelper* helper =
+      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    return helper->GetJavaWebAppInterface();
+  }
+  return nullptr;
+}
+
 // static
 jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_HasFullscreenBeenRequested(
     JNIEnv* env,

@@ -46,10 +46,12 @@ class YouTubeScriptInjectorTabHelper
       content::NavigationHandle* navigation_handle) override;
   void PrimaryMainDocumentElementAvailable() override;
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
+  base::android::ScopedJavaLocalRef<jobject> GetJavaWebAppInterface();
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
  private:
+  base::android::ScopedJavaGlobalRef<jobject> java_web_app_interface_;
   // Callback for when the fullscreen script completes.
   void OnFullscreenScriptComplete(content::GlobalRenderFrameHostToken token,
                                   base::Value value);

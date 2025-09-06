@@ -1552,13 +1552,18 @@ YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     content::WebContents* contents)
     : WebContentsObserver(contents),
       content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {
-        JNIEnv* env = base::android::AttachCurrentThread();
-        java_web_app_interface_.Reset(
-            Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  
+  // Create the Java WebAppInterface object and hold a global reference to it.
+  // Note the corrected namespace.
+  java_web_app_interface_.Reset(
+      youtube_script_injector::Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
+}
 
-        contents->GetPrimaryMainFrame()->AddJavaScriptInterface(
-            java_web_app_interface_, "BravePipBridge");
-      }
+// Implement the new getter method.
+base::android::ScopedJavaLocalRef<jobject> YouTubeScriptInjectorTabHelper::GetJavaWebAppInterface() {
+  return base::android::ScopedJavaLocalRef<jobject>(java_web_app_interface_);
+}
 
 YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {}
 

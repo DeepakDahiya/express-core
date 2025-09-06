@@ -66,6 +66,10 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         BraveYouTubeScriptInjectorNativeHelperJni.get().togglePipPlayback(webContents);
     }
 
+    public static WebAppInterface getOrCreateWebAppInterface(WebContents webContents) {
+        return BraveYouTubeScriptInjectorNativeHelperJni.get().getOrCreateWebAppInterface(webContents);
+    }
+
     /**
      * @noinspection unused
      */
@@ -114,5 +118,7 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         void startGlobalPip(WebContents webContents, Surface surface);
         void stopGlobalPip(WebContents webContents);
         void togglePipPlayback(WebContents webContents);
+
+        WebAppInterface getOrCreateWebAppInterface(WebContents webContents);
     }
 }
