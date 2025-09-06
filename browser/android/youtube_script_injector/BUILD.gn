@@ -47,8 +47,6 @@ source_set("youtube_script_injector") {
     "//ui/android",
     "//ui/gl",
     "//url",
-    "//chrome/android:chrome_java",
-    "//chrome/browser/tab:java",
   ]
 }
 
