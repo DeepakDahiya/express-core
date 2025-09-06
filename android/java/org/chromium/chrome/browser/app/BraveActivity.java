@@ -976,7 +976,7 @@ public abstract class BraveActivity extends ChromeActivity
     // Setup bridge for WebContents
     public void setupYouTubeBridge(WebContents webContents) {
         if (webContents != null) {
-            Log.d(TAG, "YouTube bridge ready for WebContents");
+            // Log.d(TAG, "YouTube bridge ready for WebContents");
         }
     }
 

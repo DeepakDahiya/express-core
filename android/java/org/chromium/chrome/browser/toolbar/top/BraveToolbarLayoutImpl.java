@@ -173,6 +173,7 @@ import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.base.ContextUtils;
 import android.content.SharedPreferences;
 import androidx.annotation.WorkerThread;
+import android.webkit.ValueCallback;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout,

@@ -271,7 +271,11 @@ public class BraveMiniPlayerManager implements SurfaceHolder.Callback {
                     BraveYouTubeScriptInjectorNativeHelper.stopGlobalPip(mSourceWebContents);
                 }
                 
-                activity.loadUrl(mCurrentVideo.url);
+                Tab currentTab = activity.getActivityTab();
+                if (currentTab != null) {
+                    currentTab.loadUrl(new LoadUrlParams(mCurrentVideo.url));
+                }
+
                 hideMiniPlayer();
             }
         } catch (BraveActivity.BraveActivityNotFoundException e) {
