@@ -7,7 +7,7 @@ import("//build/config/android/rules.gni")
 
 # This is the dedicated target for your Mini Player UI.
 android_library("java") {
-  sources = [ "java/src/org/chromium/chrome/browser/media/BraveMiniPlayerManager.java" ]
+  sources = [ "BraveMiniPlayerManager.java" ]
 
   deps = [
     # Provides the R class, BraveActivity, and many other core app classes.

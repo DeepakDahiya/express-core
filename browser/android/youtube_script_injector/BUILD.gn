@@ -55,7 +55,6 @@ android_library("java") {
   srcjar_deps = [ ":jni_headers" ]
   sources = [ 
     "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java",
-    "../../../android/java/org/chromium/chrome/browser/media/BraveMiniPlayerManager.java",
   ]
   deps = [
     "//base:base_java",
