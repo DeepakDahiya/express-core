@@ -173,7 +173,7 @@ import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.base.ContextUtils;
 import android.content.SharedPreferences;
 import androidx.annotation.WorkerThread;
-import android.webkit.ValueCallback;
+import org.chromium.content_public.browser.JavaScriptCallback;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout,
@@ -1406,18 +1406,19 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
             Tab currentTab = getToolbarDataProvider().getTab();
             if (currentTab != null) {
-                // Extract video data and show mini-player
                 currentTab.getWebContents().evaluateJavaScript(
                     "window.BraveYouTubeHelper && window.BraveYouTubeHelper.extractVideoData()", 
-                    new ValueCallback<String>() {
+                    new JavaScriptCallback() {
                         @Override
-                        public void onReceiveValue(String result) {
+                        public void handleJavaScriptResult(String result) {
+                            // The method name is also different, it's 'handleJavaScriptResult'.
                             if (result != null && !result.equals("null")) {
                                 try {
                                     BraveActivity activity = BraveActivity.getBraveActivity();
                                     activity.showMiniPlayerFromToolbar(result);
                                 } catch (Exception e) {
-                                    Log.e(TAG, "Failed to show mini player from toolbar", e);
+                                    // It's better to use a specific TAG for this class.
+                                    Log.e("BraveToolbar", "Failed to show mini player from toolbar", e);
                                 }
                             }
                         }

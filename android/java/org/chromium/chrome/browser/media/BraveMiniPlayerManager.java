@@ -23,6 +23,8 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
 import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.content_public.browser.WebContents;
+import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.content_public.browser.LoadUrlParams;
 
 public class BraveMiniPlayerManager implements SurfaceHolder.Callback {
     private static final String TAG = "BraveMiniPlayer";
