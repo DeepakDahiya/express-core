@@ -27,7 +27,8 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:layout_marginEnd="12dp"
-            android:scaleType="centerCrop" />
+            android:scaleType="centerCrop"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -62,8 +63,9 @@
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_pause_white_24dp"
-            android:tint="@android:color/white" />
+            android:src="@drawable/ic_pause_circle2"
+            android:tint="@android:color/white"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
         <ImageButton
             android:id="@+id/mini_player_close"
@@ -71,7 +73,8 @@
             android:layout_height="48dp"
             android:background="?android:attr/selectableItemBackgroundBorderless"
             android:src="@drawable/close"
-            android:tint="@android:color/white" />
+            android:tint="@android:color/white"
+            android:contentDescription="@string/accessibility_toolbar_btn_brave_wallet" />
 
     </LinearLayout>
 

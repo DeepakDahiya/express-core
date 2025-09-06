@@ -437,7 +437,7 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
 
-        mMiniPlayerManager = BraveMiniPlayerManager.getInstance();
+        mMiniPlayerManager = BraveMiniPlayerManager.getInstance(this);
         mMiniPlayerManager.initialize(this);
 
         // The check on mNativeInitialized is mostly to ensure that mojo
@@ -939,6 +939,10 @@ public abstract class BraveActivity extends ChromeActivity
         super.onDestroyInternal();
         cleanUpWalletNativeServices();
         cleanUpMiscAndroidMetrics();
+
+        if (mMiniPlayerManager != null) {
+            mMiniPlayerManager.destroy();
+        }
 
         try {
             // Clean up WebContents observer

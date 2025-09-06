@@ -71,11 +71,26 @@ public class BraveMiniPlayerManager implements SurfaceHolder.Callback {
         }
     }
 
-    public static BraveMiniPlayerManager getInstance() {
+    public static BraveMiniPlayerManager getInstance(Activity activity) {
         if (sInstance == null) {
             sInstance = new BraveMiniPlayerManager();
         }
+        // Always update the activity reference
+        sInstance.setActivity(activity);
         return sInstance;
+    }
+    
+    // Add a simple setter
+    private void setActivity(Activity activity) {
+        mActivity = activity;
+    }
+
+    // Add a destroy method to be called from the Activity's onDestroy
+    public void destroy() {
+        // This is not strictly necessary with the change above, but is good practice.
+        mActivity = null;
+        // If you were to null out sInstance, you would do it here,
+        // but it's often better to just update the activity reference.
     }
 
     public void initialize(Activity activity) {
@@ -148,16 +163,18 @@ public class BraveMiniPlayerManager implements SurfaceHolder.Callback {
                     return true;
                     
                 case MotionEvent.ACTION_UP:
-                    float finalDeltaY = event.getRawY() - mInitialY;
-                    if (finalDeltaY > 150) {
-                        hideMiniPlayer();
+                    if (mIsDragging) {
+                        float finalDeltaY = event.getRawY() - mInitialY;
+                        if (finalDeltaY > 150) {
+                            hideMiniPlayer();
+                        } else {
+                            mMiniPlayerView.animate().alpha(1f).translationY(0).setDuration(200).start();
+                        }
                     } else {
-                        mMiniPlayerView.animate()
-                            .alpha(1f)
-                            .translationY(0)
-                            .setDuration(200)
-                            .start();
+                        // It was not a drag, so treat it as a click.
+                        v.performClick();
                     }
+                    
                     mIsDragging = false;
                     return true;
             }
