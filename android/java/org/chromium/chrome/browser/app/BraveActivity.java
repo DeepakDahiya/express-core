@@ -980,24 +980,24 @@ public abstract class BraveActivity extends ChromeActivity
         }
     }
 
-    private void setupWebContentsForYouTube(WebContents webContents) {
-        if (webContents != null) {
-            // Add JavaScript interface for YouTube bridge
-            webContents.addJavaScriptInterface(
-                new BraveYouTubeInterface(this), 
-                "BraveYouTube"
-            );
-        }
-    }
+    // private void setupWebContentsForYouTube(WebContents webContents) {
+    //     if (webContents != null) {
+    //         // Add JavaScript interface for YouTube bridge
+    //         webContents.addJavaScriptInterface(
+    //             new BraveYouTubeInterface(this), 
+    //             "BraveYouTube"
+    //         );
+    //     }
+    // }
 
-    // Call this when creating new tabs or navigating
-    @Override
-    public void onTabCreated(Tab tab) {
-        super.onTabCreated(tab);
-        if (tab.getWebContents() != null) {
-            setupWebContentsForYouTube(tab.getWebContents());
-        }
-    }
+    // // Call this when creating new tabs or navigating
+    // @Override
+    // public void onTabCreated(Tab tab) {
+    //     super.onTabCreated(tab);
+    //     if (tab.getWebContents() != null) {
+    //         setupWebContentsForYouTube(tab.getWebContents());
+    //     }
+    // }
 
     /**
      * Gets Wallet model for Brave activity. It may be {@code null} if native initialization has not

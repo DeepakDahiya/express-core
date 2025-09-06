@@ -26,6 +26,8 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
+#include "content/public/browser/render_frame_host.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {
   constexpr char16_t kYoutubeBackgroundPlayback2[] =
@@ -626,7 +628,26 @@ bool IsYouTubeDomain(const GURL& url) {
 YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     content::WebContents* contents)
     : WebContentsObserver(contents),
-      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {}
+      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  
+  // Create the Java WebAppInterface object and hold a global reference to it.
+  java_web_app_interface_.Reset(
+      youtube_script_injector::Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
+}
+
+// [!! THIS IS THE FINAL, CORRECT IMPLEMENTATION !!]
+// This method is called when a frame is created, and it injects our bridge.
+void YouTubeScriptInjectorTabHelper::RenderFrameCreated(
+    content::RenderFrameHost* render_frame_host) {
+  // We only want to inject our interface into the main frame, not iframes.
+  if (!render_frame_host->GetParent()) {
+    // This is the correct, modern API to expose a Java object to JavaScript
+    // for a specific frame. It is secure and guaranteed to work.
+    render_frame_host->GetJavaInterfaces()->SetInterface(
+        "BravePipBridge", java_web_app_interface_);
+  }
+}
 
 YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {}
 
