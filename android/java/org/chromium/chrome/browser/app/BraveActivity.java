@@ -113,7 +113,6 @@ import org.chromium.chrome.browser.BraveRelaunchUtils;
 import org.chromium.chrome.browser.BraveRewardsHelper;
 import org.chromium.chrome.browser.BraveSyncWorker;
 import org.chromium.chrome.browser.BraveYouTubeScriptInjectorNativeHelper;
-import org.chromium.chrome.browser.WebAppInterface;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.DormantUsersEngagementDialogFragment;
 import org.chromium.chrome.browser.IntentHandler;
@@ -298,14 +297,6 @@ import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.content_public.browser.NavigationHandle;
 
 import org.chromium.base.shared_preferences.SharedPreferencesManager;
-import org.jni_zero.CalledByNative;
-import android.widget.FrameLayout;
-import android.webkit.JavascriptInterface;
-import android.view.SurfaceView;
-import android.view.Surface;
-import android.view.SurfaceHolder;
-import org.chromium.chrome.browser.tabmodel.TabModel;
-import org.chromium.chrome.browser.tab.TabSelectionType;
 
 /** Brave's extension for ChromeActivity */
 @JNINamespace("chrome::android")
@@ -320,9 +311,7 @@ public abstract class BraveActivity extends ChromeActivity
                         .MiscAndroidMetricsConnectionErrorHandlerDelegate,
                 QuickSearchEnginesCallback,
                 KeyboardVisibilityHelper.KeyboardVisibilityListener,
-                OnSharedPreferenceChangeListener,
-                BraveYouTubeScriptInjectorNativeHelper.PipStatusListener,
-                WebAppInterface.GlobalPipListener {
+                OnSharedPreferenceChangeListener {
     public static final String BRAVE_WALLET_HOST = "wallet";
     public static final String BRAVE_WALLET_ORIGIN = "brave://wallet/";
     public static final String BRAVE_WALLET_URL = "brave://wallet/crypto/portfolio/assets";
@@ -423,12 +412,6 @@ public abstract class BraveActivity extends ChromeActivity
 
     private SearchWidgetPromoPanel mSearchWidgetPromoPanel;
 
-    private FrameLayout mGlobalPipPlayer;
-    private SurfaceView mPipSurfaceView;
-    private ImageButton mPipPlayPauseButton;
-    private ImageButton mPipRestoreButton;
-    private Tab mPipOwningTab;
-
     /** Serves as a general exception for failed attempts to get BraveActivity. */
     public static class BraveActivityNotFoundException extends Exception {
         public BraveActivityNotFoundException(String message) {
@@ -446,9 +429,6 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnNativeWorker.getInstance().addObserver(this);
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
-
-        BraveYouTubeScriptInjectorNativeHelper.setListener(this);
-        WebAppInterface.setListener(this);
 
         // The check on mNativeInitialized is mostly to ensure that mojo
         // services for wallet are initialized.
@@ -525,71 +505,6 @@ public abstract class BraveActivity extends ChromeActivity
 
         // Safe update with null check
         updateBackCallbackState();
-    }
-
-    private void initializeGlobalPipPlayer() {
-        if (mGlobalPipPlayer != null) return;
-        ViewGroup decorView = (ViewGroup) getWindow().getDecorView();
-        mGlobalPipPlayer = (FrameLayout) getLayoutInflater().inflate(R.layout.global_pip_player, decorView, false);
-        mPipSurfaceView = mGlobalPipPlayer.findViewById(R.id.pip_surface_view);
-        mPipPlayPauseButton = mGlobalPipPlayer.findViewById(R.id.pip_play_pause_button);
-        mPipRestoreButton = mGlobalPipPlayer.findViewById(R.id.pip_restore_button);
-        mPipRestoreButton.setOnClickListener(v -> restorePipTab());
-        mPipPlayPauseButton.setOnClickListener(v -> togglePipPlayback());
-        decorView.addView(mGlobalPipPlayer);
-    }
-
-    public void showGlobalPip(Tab tab) {
-        Log.e("PipBridge", "SUCCESS: BraveActivity.showGlobalPip() is now running.");
-        if (mGlobalPipPlayer == null) initializeGlobalPipPlayer();
-        mPipOwningTab = tab;
-        mGlobalPipPlayer.setVisibility(View.VISIBLE);
-        
-        // This code is now correct because of the added imports.
-        mPipSurfaceView.getHolder().addCallback(new SurfaceHolder.Callback() {
-            @Override
-            public void surfaceCreated(SurfaceHolder holder) {
-                BraveYouTubeScriptInjectorNativeHelper.startGlobalPip(tab.getWebContents(), holder.getSurface());
-            }
-            @Override
-            public void surfaceChanged(SurfaceHolder holder, int format, int width, int height) {}
-            @Override
-            public void surfaceDestroyed(SurfaceHolder holder) {
-                hideGlobalPip();
-            }
-        });
-    }
-
-    public void hideGlobalPip() {
-        if (mGlobalPipPlayer == null || mGlobalPipPlayer.getVisibility() == View.GONE) return;
-        if (mPipOwningTab != null && mPipOwningTab.getWebContents() != null) {
-            BraveYouTubeScriptInjectorNativeHelper.stopGlobalPip(mPipOwningTab.getWebContents());
-        }
-        mGlobalPipPlayer.setVisibility(View.GONE);
-        mPipOwningTab = null;
-    }
-
-    private void restorePipTab() {
-        if (mPipOwningTab != null) {
-            // [!! FIX !!] Use the correct API to select the tab.
-            TabModel tabModel = getTabModelSelector().getModel(mPipOwningTab.isIncognito());
-            int index = tabModel.indexOf(mPipOwningTab);
-            if (index != TabModel.INVALID_TAB_INDEX) {
-                tabModel.setIndex(index, TabSelectionType.FROM_USER);
-            }
-        }
-        hideGlobalPip();
-    }
-
-    private void togglePipPlayback() {
-        if (mPipOwningTab != null && mPipOwningTab.getWebContents() != null) {
-            BraveYouTubeScriptInjectorNativeHelper.togglePipPlayback(mPipOwningTab.getWebContents());
-        }
-    }
-
-    public void setPipPlaybackState(boolean isPlaying) {
-        if (mPipPlayPauseButton == null) return;
-        mPipPlayPauseButton.setImageResource(isPlaying ? R.drawable.ic_pause_white_24dp : R.drawable.ic_play_arrow_white_24dp);
     }
 
     private void setupYouTubeBackButtonHandler() {
@@ -943,9 +858,6 @@ public abstract class BraveActivity extends ChromeActivity
             mNotificationPermissionController = null;
         }
 
-        BraveYouTubeScriptInjectorNativeHelper.setListener(null);
-        WebAppInterface.setListener(null);
-
         BraveSafeBrowsingApiHandler.getInstance().shutdownSafeBrowsing();
         if (ENABLE_IN_APP_UPDATE && mAppUpdateManager != null) {
             mAppUpdateManager.unregisterListener(mInstallStateUpdatedListener);
@@ -967,55 +879,6 @@ public abstract class BraveActivity extends ChromeActivity
         } catch (Exception e) {
             Log.e("BraveActivity", "Error cleaning up callback", e);
         }
-    }
-
-    @Override
-    public void enterGlobalPipMode(WebContents webContents) {
-        if (webContents == null) {
-            return;
-        }
-
-        Tab tabToPip = null;
-        TabModelSelector selector = getTabModelSelector();
-        if (selector != null) {
-            // Get the list of all available models (e.g., normal and incognito).
-            List<TabModel> models = selector.getModels();
-
-            // Iterate through each model to find the tab.
-            for (TabModel model : models) {
-                if (model == null) continue;
-
-                // Iterate through the tabs within this specific model.
-                for (int i = 0; i < model.getCount(); i++) {
-                    Tab tab = model.getTabAt(i);
-                    if (tab != null && webContents.equals(tab.getWebContents())) {
-                        tabToPip = tab;
-                        // We found the tab, so we can break out of both loops.
-                        break;
-                    }
-                }
-
-                if (tabToPip != null) {
-                    break;
-                }
-            }
-        }
-        
-        // Now that we have reliably found the correct tab, show the PiP for it.
-        if (tabToPip != null) {
-            showGlobalPip(tabToPip);
-        } else {
-            Log.e("PipBridge", "Could not find a Tab for the given WebContents. Cannot enter PiP.");
-        }
-    }
-
-    @Override
-    public void onPipPlaybackStateChanged(boolean isPlaying) {
-        setPipPlaybackState(isPlaying);
-    }
-
-    public Tab getPipOwningTab() {
-        return mPipOwningTab;
     }
 
     @Override

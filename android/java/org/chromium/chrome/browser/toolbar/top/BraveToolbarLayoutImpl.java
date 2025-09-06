@@ -671,12 +671,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         try {
                             BraveActivity activity = BraveActivity.getBraveActivity();
                             String accessToken = activity.getAccessToken();
-
-                            Tab pipTab = activity.getPipOwningTab();
-                            if (pipTab != null && pipTab.getId() == tab.getId()) {
-                                activity.hideGlobalPip();
-                            }
-
+                        
                             if (accessToken != null) {
                                 Context context = ContextUtils.getApplicationContext();
                                 SharedPreferences prefs = context.getSharedPreferences(BE_PROFILE_PREF, 0);
@@ -838,15 +833,6 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         }.start();
                         mBraveShieldsHandler.removeStat(tab.getId());
                         mTabsWithWalletIcon.remove(tab.getId());
-                        try {
-                            BraveActivity activity = BraveActivity.getBraveActivity();
-                            Tab pipTab = activity.getPipOwningTab();
-                            if (pipTab != null && pipTab.getId() == tab.getId()) {
-                                activity.hideGlobalPip();
-                            }
-                        } catch (BraveActivity.BraveActivityNotFoundException e) {
-                            Log.e(TAG, "BookmarkButton click " + e);
-                        }
                     }
                 };
 

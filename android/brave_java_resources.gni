@@ -912,7 +912,6 @@ brave_java_resources = [
   "java/res/layout/fragment_two_line_item_sheet.xml",
   "java/res/layout/fragment_unlock_wallet.xml",
   "java/res/layout/fragment_verify_recovery_phrase.xml",
-  "java/res/layout/global_pip_player.xml",
   "java/res/layout/highlight_layout.xml",
   "java/res/layout/icon_row_menu_footer.xml",
   "java/res/layout/item_create_account.xml",

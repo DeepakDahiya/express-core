@@ -17,10 +17,6 @@ import org.chromium.build.annotations.NullMarked;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
-import android.view.Surface;
-import java.lang.ref.WeakReference;
-import android.os.Looper;
-import android.os.Handler;
 
 /**
  * Helper to interact with native methods. Check brave_youtube_script_injector_native_helper.{h|cc}.
@@ -29,16 +25,6 @@ import android.os.Handler;
 @NullMarked
 public class BraveYouTubeScriptInjectorNativeHelper {
     private static final String TAG = "YouTubeNativeHelper";
-
-    public interface PipStatusListener {
-        void onPipPlaybackStateChanged(boolean isPlaying);
-    }
-
-    private static WeakReference<PipStatusListener> sListener = new WeakReference<>(null);
-
-    public static void setListener(PipStatusListener listener) {
-        sListener = new WeakReference<>(listener);
-    }
 
     public static void setFullscreen(WebContents webContents) {
         BraveYouTubeScriptInjectorNativeHelperJni.get().setFullscreen(webContents);
@@ -52,22 +38,6 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     public static boolean isPictureInPictureAvailable(WebContents webContents) {
         return BraveYouTubeScriptInjectorNativeHelperJni.get()
                 .isPictureInPictureAvailable(webContents);
-    }
-
-    public static void startGlobalPip(WebContents webContents, Surface surface) {
-        BraveYouTubeScriptInjectorNativeHelperJni.get().startGlobalPip(webContents, surface);
-    }
-
-    public static void stopGlobalPip(WebContents webContents) {
-        BraveYouTubeScriptInjectorNativeHelperJni.get().stopGlobalPip(webContents);
-    }
-    
-    public static void togglePipPlayback(WebContents webContents) {
-        BraveYouTubeScriptInjectorNativeHelperJni.get().togglePipPlayback(webContents);
-    }
-
-    public static WebAppInterface getOrCreateWebAppInterface(WebContents webContents) {
-        return BraveYouTubeScriptInjectorNativeHelperJni.get().getOrCreateWebAppInterface(webContents);
     }
 
     /**
@@ -93,17 +63,6 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         }
     }
 
-    @CalledByNative
-    public static void setPipPlaybackState(boolean isPlaying) {
-        final PipStatusListener listener = sListener.get();
-        if (listener != null) {
-            // Post to the UI thread to ensure UI updates are safe.
-            new Handler(Looper.getMainLooper()).post(() -> {
-                listener.onPipPlaybackStateChanged(isPlaying);
-            });
-        }
-    }
-
     /**
      * @noinspection unused
      */
@@ -114,11 +73,5 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         boolean hasFullscreenBeenRequested(WebContents webContents);
 
         boolean isPictureInPictureAvailable(WebContents webContents);
-
-        void startGlobalPip(WebContents webContents, Surface surface);
-        void stopGlobalPip(WebContents webContents);
-        void togglePipPlayback(WebContents webContents);
-
-        WebAppInterface getOrCreateWebAppInterface(WebContents webContents);
     }
 }

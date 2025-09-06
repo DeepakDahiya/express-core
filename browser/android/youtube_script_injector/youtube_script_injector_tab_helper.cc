@@ -26,7 +26,6 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
-#include "brave/browser/android/youtube_script_injector/jni_headers/WebAppInterface_jni.h"
 
 namespace {
   constexpr char16_t kYoutubeBackgroundPlayback2[] =
@@ -1121,142 +1120,142 @@ const char16_t kYoutubePIP[] =
         }());
     )";
 
-// const char16_t kYoutubePipButton[] = 
-//     uR"(
-//     (function() {
-//         // Store tab reference for proper restoration
-//         let originalTabId = null;
-//         let videoElement = null;
-//         let wasPlaying = false;
+const char16_t kYoutubePipButton[] = 
+    uR"(
+    (function() {
+        // Store tab reference for proper restoration
+        let originalTabId = null;
+        let videoElement = null;
+        let wasPlaying = false;
 
-//         const buttonElement = document.createElement('button');
-//         buttonElement.className = 'yt-pip-gold';
-//         buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
-//         buttonElement.title = 'Picture-in-Picture';
+        const buttonElement = document.createElement('button');
+        buttonElement.className = 'yt-pip-gold';
+        buttonElement.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
+        buttonElement.title = 'Picture-in-Picture';
 
-//         // Enhanced CSS (keeping your existing styles)
-//         if (!document.getElementById('yt-pip-gold-styles')) {
-//             const css = `
-//             .yt-pip-gold {
-//                 position: fixed;
-//                 bottom: 20px; right: 20px;
-//                 z-index: 2147483647 !important;
-//                 pointer-events: auto !important;
-//                 width: 60px; height: 60px; border-radius: 50%;
-//                 background: #D4AF37;
-//                 border: none; cursor: pointer; overflow: hidden;
-//                 box-shadow: 0 4px 12px rgba(0,0,0,.30);
-//                 background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
-//                 background-repeat: no-repeat;
-//                 background-position: center;
-//                 background-size: 55%;
-//                 transition: transform .2s, box-shadow .2s, filter .2s;
-//                 animation: scalePulse 2.4s ease-in-out infinite;
-//             }
-//             .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
-//             .yt-pip-gold:active { transform: scale(0.95); }
-//             .yt-pip-gold:focus { outline: 2px solid #000; outline-offset: 2px; }
-//             .yt-pip-gold::before {
-//                 content: '';
-//                 position: absolute; top: 0; left: -75%;
-//                 width: 50%; height: 100%;
-//                 background: linear-gradient(120deg,
-//                             rgba(255,255,255,0) 0%,
-//                             rgba(255,255,255,.70) 50%,
-//                             rgba(255,255,255,0) 100%);
-//                 transform: skewX(-25deg);
-//                 animation: shine 2.8s infinite;
-//                 pointer-events: none;
-//             }
-//             @keyframes shine {
-//                 0% { left: -75%; }
-//                 100% { left: 125%; }
-//             }
-//             @keyframes scalePulse {
-//                 0%, 100% { transform: scale(1); }
-//                 50% { transform: scale(1.1); }
-//             }
-//         `;
-//             const styleTag = document.createElement('style');
-//             styleTag.id = 'yt-pip-gold-styles';
-//             styleTag.textContent = css;
-//             document.head.appendChild(styleTag);
-//         }
+        // Enhanced CSS (keeping your existing styles)
+        if (!document.getElementById('yt-pip-gold-styles')) {
+            const css = `
+            .yt-pip-gold {
+                position: fixed;
+                bottom: 20px; right: 20px;
+                z-index: 2147483647 !important;
+                pointer-events: auto !important;
+                width: 60px; height: 60px; border-radius: 50%;
+                background: #D4AF37;
+                border: none; cursor: pointer; overflow: hidden;
+                box-shadow: 0 4px 12px rgba(0,0,0,.30);
+                background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
+                background-repeat: no-repeat;
+                background-position: center;
+                background-size: 55%;
+                transition: transform .2s, box-shadow .2s, filter .2s;
+                animation: scalePulse 2.4s ease-in-out infinite;
+            }
+            .yt-pip-gold:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
+            .yt-pip-gold:active { transform: scale(0.95); }
+            .yt-pip-gold:focus { outline: 2px solid #000; outline-offset: 2px; }
+            .yt-pip-gold::before {
+                content: '';
+                position: absolute; top: 0; left: -75%;
+                width: 50%; height: 100%;
+                background: linear-gradient(120deg,
+                            rgba(255,255,255,0) 0%,
+                            rgba(255,255,255,.70) 50%,
+                            rgba(255,255,255,0) 100%);
+                transform: skewX(-25deg);
+                animation: shine 2.8s infinite;
+                pointer-events: none;
+            }
+            @keyframes shine {
+                0% { left: -75%; }
+                100% { left: 125%; }
+            }
+            @keyframes scalePulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.1); }
+            }
+        `;
+            const styleTag = document.createElement('style');
+            styleTag.id = 'yt-pip-gold-styles';
+            styleTag.textContent = css;
+            document.head.appendChild(styleTag);
+        }
 
-//         // Enhanced PiP handling
-//         buttonElement.addEventListener('click', () => {
-//             videoElement = document.querySelector('video');
-//             if (videoElement) {
-//                 // Store current state
-//                 wasPlaying = !videoElement.paused;
-//                 originalTabId = window.location.href;
+        // Enhanced PiP handling
+        buttonElement.addEventListener('click', () => {
+            videoElement = document.querySelector('video');
+            if (videoElement) {
+                // Store current state
+                wasPlaying = !videoElement.paused;
+                originalTabId = window.location.href;
                 
-//                 videoElement.removeAttribute('disablePictureInPicture');
-//                 videoElement.requestPictureInPicture().catch(console.error);
-//             }
-//         });
+                videoElement.removeAttribute('disablePictureInPicture');
+                videoElement.requestPictureInPicture().catch(console.error);
+            }
+        });
 
-//         // Enhanced PiP event listeners
-//         if (document.pictureInPictureEnabled) {
-//             document.addEventListener('enterpictureinpicture', (event) => {
-//                 console.log('Entered PiP mode');
-//                 // Ensure video continues playing
-//                 if (event.target && wasPlaying) {
-//                     setTimeout(() => {
-//                         if (event.target.paused) {
-//                             event.target.play().catch(console.error);
-//                         }
-//                     }, 100);
-//                 }
-//             });
+        // Enhanced PiP event listeners
+        if (document.pictureInPictureEnabled) {
+            document.addEventListener('enterpictureinpicture', (event) => {
+                console.log('Entered PiP mode');
+                // Ensure video continues playing
+                if (event.target && wasPlaying) {
+                    setTimeout(() => {
+                        if (event.target.paused) {
+                            event.target.play().catch(console.error);
+                        }
+                    }, 100);
+                }
+            });
 
-//             document.addEventListener('leavepictureinpicture', (event) => {
-//                 console.log('Left PiP mode');
-//                 // Force focus back to this tab
-//                 if (window.focus) {
-//                     window.focus();
-//                 }
+            document.addEventListener('leavepictureinpicture', (event) => {
+                console.log('Left PiP mode');
+                // Force focus back to this tab
+                if (window.focus) {
+                    window.focus();
+                }
                 
-//                 // Ensure video continues playing after PiP exit
-//                 setTimeout(() => {
-//                     const video = document.querySelector('video');
-//                     if (video && wasPlaying && video.paused) {
-//                         video.play().catch(console.error);
-//                     }
+                // Ensure video continues playing after PiP exit
+                setTimeout(() => {
+                    const video = document.querySelector('video');
+                    if (video && wasPlaying && video.paused) {
+                        video.play().catch(console.error);
+                    }
                     
-//                     // Force page visibility to visible
-//                     Object.defineProperty(document, 'hidden', {
-//                         value: false,
-//                         writable: false,
-//                         configurable: true
-//                     });
-//                     Object.defineProperty(document, 'visibilityState', {
-//                         value: 'visible',
-//                         writable: false,
-//                         configurable: true
-//                     });
-//                 }, 200);
-//             });
-//         }
+                    // Force page visibility to visible
+                    Object.defineProperty(document, 'hidden', {
+                        value: false,
+                        writable: false,
+                        configurable: true
+                    });
+                    Object.defineProperty(document, 'visibilityState', {
+                        value: 'visible',
+                        writable: false,
+                        configurable: true
+                    });
+                }, 200);
+            });
+        }
 
-//         const observer = new MutationObserver(() => {
-//             const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
-//             if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
-//             buttonContainerElement.prepend(buttonElement);
-//         });
-//         observer.observe(document.documentElement, { subtree: true, childList: true });
+        const observer = new MutationObserver(() => {
+            const buttonContainerElement = document.querySelector('.mobile-topbar-header-content');
+            if (window.location.pathname !== '/watch' || !buttonContainerElement || buttonContainerElement.contains(buttonElement)) return;
+            buttonContainerElement.prepend(buttonElement);
+        });
+        observer.observe(document.documentElement, { subtree: true, childList: true });
 
-//         // Additional visibility override for problematic devices
-//         const originalAddEventListener = document.addEventListener;
-//         document.addEventListener = function(type, listener, options) {
-//             if (type === 'visibilitychange') {
-//                 return; // Block visibility change events
-//             }
-//             return originalAddEventListener.call(this, type, listener, options);
-//         };
+        // Additional visibility override for problematic devices
+        const originalAddEventListener = document.addEventListener;
+        document.addEventListener = function(type, listener, options) {
+            if (type === 'visibilitychange') {
+                return; // Block visibility change events
+            }
+            return originalAddEventListener.call(this, type, listener, options);
+        };
 
-//     })();
-// )";
+    })();
+)";
 
 constexpr char16_t kYoutubeBackgroundPlayback[] =
     uR"(
@@ -1406,127 +1405,6 @@ constexpr char16_t kYoutubeFullscreen[] =
 }());
 )";
 
-constexpr char16_t kYoutubeGlobalPipTrigger[] =
-    uR"(
-(function() {
-    // --- PREVENTS SCRIPT FROM RUNNING MULTIPLE TIMES ---
-    if (window.braveGlobalPipTriggerInitialized) return;
-    window.braveGlobalPipTriggerInitialized = true;
-
-    const BUTTON_CLASS_NAME = 'yt-pip-gold';
-    const STYLE_ID = 'yt-pip-gold-styles';
-
-    // --- CORE LOGIC: Calls the native bridge for cross-tab PiP ---
-    function enterGlobalPipMode() {
-        console.log("PipBridge: Attempting to call native enterGlobalPipMode...");
-        if (window.BravePipBridge && window.BravePipBridge.enterGlobalPipMode) {
-        console.log("PipBridge: Bridge found. Calling now.");
-            window.BravePipBridge.enterGlobalPipMode();
-        } else {
-            console.error("Brave Global PiP Bridge is not available.");
-        }
-    }
-
-    // --- INJECT STYLES: This function is idempotent (safe to call multiple times) ---
-    function injectGoldenButtonStyles() {
-        if (document.getElementById(STYLE_ID)) return;
-
-        const css = `
-            .${BUTTON_CLASS_NAME} {
-                position: fixed;
-                bottom: 20px; left: 20px;
-                z-index: 2147483647 !important;
-                pointer-events: auto !important;
-                width: 60px; height: 60px; border-radius: 50%;
-                background: #D4AF37;
-                border: none; cursor: pointer; overflow: hidden;
-                box-shadow: 0 4px 12px rgba(0,0,0,.30);
-                background-image: url("https://raw.githubusercontent.com/DeepakDahiya/DeepakDahiya.github.io/refs/heads/master/youtube-icon.svg");
-                background-repeat: no-repeat;
-                background-position: center;
-                background-size: 55%;
-                transition: transform .2s, box-shadow .2s, filter .2s;
-                animation: scalePulse 2.4s ease-in-out infinite;
-            }
-            .${BUTTON_CLASS_NAME}:hover { transform: scale(1.10); box-shadow: 0 6px 16px rgba(0,0,0,.40); }
-            .${BUTTON_CLASS_NAME}:active { transform: scale(0.95); }
-            .${BUTTON_CLASS_NAME}:focus { outline: 2px solid #000; outline-offset: 2px; }
-            .${BUTTON_CLASS_NAME}::before {
-                content: '';
-                position: absolute; top: 0; left: -75%;
-                width: 50%; height: 100%;
-                background: linear-gradient(120deg,
-                            rgba(255,255,255,0) 0%,
-                            rgba(255,255,255,.70) 50%,
-                            rgba(255,255,255,0) 100%);
-                transform: skewX(-25deg);
-                animation: shine 2.8s infinite;
-                pointer-events: none;
-            }
-            @keyframes shine { 0% { left: -75%; } 100% { left: 125%; } }
-            @keyframes scalePulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        `;
-        const styleTag = document.createElement('style');
-        styleTag.id = STYLE_ID;
-        styleTag.textContent = css;
-        document.head.appendChild(styleTag);
-    }
-
-    // --- BUTTON CREATION: This is also idempotent ---
-    function createOrGetButton() {
-        let button = document.querySelector(`.${BUTTON_CLASS_NAME}`);
-        if (!button) {
-            button = document.createElement('button');
-            button.className = BUTTON_CLASS_NAME;
-            button.setAttribute('aria-label', 'Enter Picture-in-Picture mode');
-            button.title = 'Picture-in-Picture';
-            button.onclick = enterGlobalPipMode;
-            document.body.appendChild(button);
-        }
-        return button;
-    }
-
-    // --- [!! NEW !!] THE RESILIENT RECONCILIATION LOOP ---
-    function ensureButtonState() {
-        const isOnWatchPage = window.location.pathname === '/watch';
-        let button = document.querySelector(`.${BUTTON_CLASS_NAME}`);
-
-        if (isOnWatchPage) {
-            // We should be on a watch page. Make sure the button and styles exist.
-            injectGoldenButtonStyles();
-            createOrGetButton(); // This will create it if it's missing
-        } else {
-            // We are not on a watch page. If the button exists, remove it.
-            if (button) {
-                button.remove();
-            }
-        }
-    }
-
-    // --- START THE LOOP ---
-    // Run it once immediately, then every 500ms to catch any changes.
-    ensureButtonState();
-    setInterval(ensureButtonState, 500);
-
-})();
-)";
-
-constexpr char16_t kYoutubeTogglePlayback[] =
-    uR"(
-(function() {
-    const video = document.querySelector('video.video-stream');
-    if (video) {
-        if (video.paused) {
-            video.play();
-        } else {
-            video.pause();
-        }
-        return !video.paused; // Return the new playing state
-    }
-    return false;
-}());
-)";
-
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
   PrefService* prefs =
       static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
@@ -1551,19 +1429,7 @@ bool IsYouTubeDomain(const GURL& url) {
 YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     content::WebContents* contents)
     : WebContentsObserver(contents),
-      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {
-  JNIEnv* env = base::android::AttachCurrentThread();
-  
-  // Create the Java WebAppInterface object and hold a global reference to it.
-  // Note the corrected namespace.
-  java_web_app_interface_.Reset(
-      youtube_script_injector::Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
-}
-
-// Implement the new getter method.
-base::android::ScopedJavaLocalRef<jobject> YouTubeScriptInjectorTabHelper::GetJavaWebAppInterface() {
-  return base::android::ScopedJavaLocalRef<jobject>(java_web_app_interface_);
-}
+      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {}
 
 YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {}
 
@@ -1603,9 +1469,6 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
   content::RenderFrameHost::AllowInjectingJavaScript();
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
       kYoutubeBackgroundPlayback2, base::NullCallback());
-    
-  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-    kYoutubeGlobalPipTrigger, base::NullCallback());
   
   base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
       FROM_HERE,
@@ -1615,13 +1478,13 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
       }, contents),
       base::Milliseconds(100));
       
-  // base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-  //     FROM_HERE,
-  //     base::BindOnce([](content::WebContents* contents) {
-  //       contents->GetPrimaryMainFrame()->ExecuteJavaScript(
-  //           kYoutubePipButton, base::NullCallback());
-  //     }, contents),
-  //     base::Milliseconds(200));
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](content::WebContents* contents) {
+        contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+            kYoutubePipButton, base::NullCallback());
+      }, contents),
+      base::Milliseconds(200));
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
@@ -1664,55 +1527,6 @@ void YouTubeScriptInjectorTabHelper::MaybeSetFullscreen() {
       base::BindOnce(
           &YouTubeScriptInjectorTabHelper::OnFullscreenScriptComplete,
           weak_factory_.GetWeakPtr(), rfh->GetGlobalFrameToken()));
-}
-
-void YouTubeScriptInjectorTabHelper::StartGlobalPip(
-    const base::android::JavaParamRef<jobject>& jsurface) {
-  // This is the most complex part of the implementation.
-  // It requires accessing Chromium's internal media player manager.
-  // The exact API can change between Chromium versions.
-  // This is a conceptual representation:
-  
-  // 1. Get the media player instance for the main frame.
-  // content::MediaPlayer* player = web_contents()->GetMainFrame()->GetMediaPlayer();
-  
-  // 2. Tell the player to redirect its output to the new Surface.
-  // if (player) {
-  //   player->SetSurface(jsurface);
-  // }
-  
-  // For now, we will log to show the connection is made.
-  LOG(ERROR) << "C++: StartGlobalPip called. Media pipeline redirection would happen here.";
-}
-
-void YouTubeScriptInjectorTabHelper::StopGlobalPip() {
-  // Tell the media player to stop redirecting to our surface and render
-  // back to the web page's context.
-  // content::MediaPlayer* player = web_contents()->GetMainFrame()->GetMediaPlayer();
-  // if (player) {
-  //   player->SetSurface(nullptr); // Passing null often reverts it.
-  // }
-  LOG(ERROR) << "C++: StopGlobalPip called. Media pipeline would be restored here.";
-}
-
-void YouTubeScriptInjectorTabHelper::TogglePipPlayback() {
-  content::RenderFrameHost* rfh = web_contents()->GetPrimaryMainFrame();
-  if (!rfh || !rfh->IsRenderFrameLive()) return;
-
-  EnsureBound(rfh);
-  script_injector_remote_->RequestAsyncExecuteScript(
-      ISOLATED_WORLD_ID_BRAVE_INTERNAL, kYoutubeTogglePlayback,
-      blink::mojom::UserActivationOption::kDoNotActivate,
-      blink::mojom::PromiseResultOption::kAwait,
-      base::BindOnce(&YouTubeScriptInjectorTabHelper::OnTogglePlaybackScriptComplete,
-                     weak_factory_.GetWeakPtr()));
-}
-
-void YouTubeScriptInjectorTabHelper::OnTogglePlaybackScriptComplete(base::Value value) {
-    if (value.is_bool()) {
-        // Send the new playback state back up to Java to update the UI
-        youtube_script_injector::SetPipPlaybackState(web_contents(), value.GetBool());
-    }
 }
 
 bool YouTubeScriptInjectorTabHelper::IsYouTubeVideo(bool mobileOnly) const {

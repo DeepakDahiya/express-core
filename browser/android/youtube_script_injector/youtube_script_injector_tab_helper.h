@@ -14,7 +14,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
-#include "base/android/scoped_java_ref.h"
 
 class YouTubeScriptInjectorTabHelper
     : public content::WebContentsObserver,
@@ -28,9 +27,6 @@ class YouTubeScriptInjectorTabHelper
   ~YouTubeScriptInjectorTabHelper() override;
   bool IsYouTubeVideo(bool mobileOnly = false) const;
   void MaybeSetFullscreen();
-  void StartGlobalPip(const base::android::JavaParamRef<jobject>& jsurface);
-  void StopGlobalPip();
-  void TogglePipPlayback();
 
   // Fullscreen state management using PageUserData
   bool HasFullscreenBeenRequested() const;
@@ -46,21 +42,15 @@ class YouTubeScriptInjectorTabHelper
       content::NavigationHandle* navigation_handle) override;
   void PrimaryMainDocumentElementAvailable() override;
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
-  base::android::ScopedJavaLocalRef<jobject> GetJavaWebAppInterface();
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
  private:
-  base::android::ScopedJavaGlobalRef<jobject> java_web_app_interface_;
   // Callback for when the fullscreen script completes.
   void OnFullscreenScriptComplete(content::GlobalRenderFrameHostToken token,
                                   base::Value value);
 
   void EnsureBound(content::RenderFrameHost* rfh);
-
-  base::android::ScopedJavaGlobalRef<jobject> java_web_app_interface_;
-
-  void OnTogglePlaybackScriptComplete(base::Value value);
 
   // The remote used to send the fullscreen script to the renderer.
   mojo::AssociatedRemote<script_injector::mojom::ScriptInjector>
