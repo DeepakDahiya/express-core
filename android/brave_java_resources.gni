@@ -929,6 +929,7 @@ brave_java_resources = [
   "java/res/layout/layout_search_widget_promo.xml",
   "java/res/layout/location_status_incognito_badge.xml",
   "java/res/layout/menu_separator.xml",
+  "java/res/layout/mini_player_layout.xml",
   "java/res/layout/monthly_contribution_tooltip.xml",
   "java/res/layout/network_spinner_items.xml",
   "java/res/layout/new_tab_page_incognito.xml",

@@ -1404,15 +1404,34 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             maybeShowWalletPanel();
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
             Tab currentTab = getToolbarDataProvider().getTab();
-            if (currentTab != null
-                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
-                            currentTab.getWebContents())) {
-                if (!PictureInPicture.isEnabled(getContext())) {
-                    hideYouTubePipIcon();
-                    return;
-                }
-                BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
+            if (currentTab != null) {
+                // Extract video data and show mini-player
+                currentTab.getWebContents().evaluateJavaScript(
+                    "window.BraveYouTubeHelper && window.BraveYouTubeHelper.extractVideoData()", 
+                    new ValueCallback<String>() {
+                        @Override
+                        public void onReceiveValue(String result) {
+                            if (result != null && !result.equals("null")) {
+                                try {
+                                    BraveActivity activity = BraveActivity.getBraveActivity();
+                                    activity.showMiniPlayerFromToolbar(result);
+                                } catch (Exception e) {
+                                    Log.e(TAG, "Failed to show mini player from toolbar", e);
+                                }
+                            }
+                        }
+                    });
             }
+            // Tab currentTab = getToolbarDataProvider().getTab();
+            // if (currentTab != null
+            //         && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+            //                 currentTab.getWebContents())) {
+            //     if (!PictureInPicture.isEnabled(getContext())) {
+            //         hideYouTubePipIcon();
+            //         return;
+            //     }
+            //     BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
+            // }
         }
     }
 

@@ -7,6 +7,7 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.app.PictureInPictureParams;
+import android.view.Surface;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
@@ -40,6 +41,19 @@ public class BraveYouTubeScriptInjectorNativeHelper {
                 .isPictureInPictureAvailable(webContents);
     }
 
+    // New methods for surface-based PiP
+    public static void startGlobalPip(WebContents webContents, Surface surface) {
+        BraveYouTubeScriptInjectorNativeHelperJni.get().startGlobalPip(webContents, surface);
+    }
+
+    public static void stopGlobalPip(WebContents webContents) {
+        BraveYouTubeScriptInjectorNativeHelperJni.get().stopGlobalPip(webContents);
+    }
+
+    public static void togglePipPlayback(WebContents webContents) {
+        BraveYouTubeScriptInjectorNativeHelperJni.get().togglePipPlayback(webContents);
+    }
+
     /**
      * @noinspection unused
      */
@@ -69,9 +83,12 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     @NativeMethods
     interface Natives {
         void setFullscreen(WebContents webContents);
-
         boolean hasFullscreenBeenRequested(WebContents webContents);
-
         boolean isPictureInPictureAvailable(WebContents webContents);
+        
+        // New native methods
+        void startGlobalPip(WebContents webContents, Surface surface);
+        void stopGlobalPip(WebContents webContents);
+        void togglePipPlayback(WebContents webContents);
     }
 }
