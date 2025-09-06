@@ -6,46 +6,17 @@
 #include "brave/browser/android/youtube_script_injector/brave_youtube_script_injector_native_helper.h"
 
 #include "base/android/jni_android.h"
+#include "base/logging.h"
 #include "brave/browser/android/youtube_script_injector/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
+#include "content/public/browser/media_session.h"
 #include "content/public/browser/web_contents.h"
+#include "media_session/public/mojom/media_session.mojom.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
-
-#include "base/android/scoped_java_ref.h"
-#include "content/public/browser/media_player_host.h"
-#include "content/public/browser/render_frame_host.h"
-#include "media/mojo/mojom/media_player.mojom.h"
-#include "services/media_session/public/mojom/media_session.mojom.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
-namespace {
-// Helper function to find the primary, active video player for a WebContents.
-media::mojom::MediaPlayer* GetActiveMediaPlayer(content::WebContents* web_contents) {
-  if (!web_contents) {
-    return nullptr;
-  }
-  content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
-  if (!rfh) {
-    return nullptr;
-  }
-  content::MediaPlayerHost* host = content::MediaPlayerHost::Get(rfh->GetProcess()->GetID(), rfh->GetRoutingID());
-  if (!host) {
-    return nullptr;
-  }
-
-  // Find the first player that is currently playing. This is a heuristic that
-  // works well for pages like YouTube with one primary video.
-  for (auto& player_ptr : host->GetMediaPlayers()) {
-    media::mojom::MediaPlayer* player = player_ptr.get();
-    bool is_playing = false;
-    // We need to synchronously check if the player is playing.
-    if (player->IsPlaying(&is_playing) && is_playing) {
-      return player;
-    }
-  }
-  return nullptr; // No active player found
-}
-} // namespace
+// Required for ANativeWindow_fromSurface
+#include <android/native_window_jni.h>
 
 namespace youtube_script_injector {
 
@@ -80,71 +51,6 @@ jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_HasFullscreenBeenRequested(
   return helper->HasFullscreenBeenRequested();
 }
 
-void JNI_BraveYouTubeScriptInjectorNativeHelper_StartGlobalPip(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents,
-    const base::android::JavaParamRef<jobject>& jsurface) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  
-  media::mojom::MediaPlayer* player = GetActiveMediaPlayer(web_contents);
-  if (!player) {
-    LOG(ERROR) << "StartGlobalPip: Could not find an active media player.";
-    return;
-  }
-
-  // This is the critical redirection call.
-  // We create a ScopedJavaSurface, which is a C++ wrapper around the Java Surface
-  // object, and pass it to the media player. The media pipeline will then
-  // redirect its output to this surface.
-  player->SetSurface(gl::ScopedJavaSurface(jsurface));
-  LOG(INFO) << "StartGlobalPip: Successfully redirected video stream to new surface.";
-}
-
-void JNI_BraveYouTubeScriptInjectorNativeHelper_StopGlobalPip(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-
-  media::mojom::MediaPlayer* player = GetActiveMediaPlayer(web_contents);
-  if (!player) {
-    LOG(ERROR) << "StopGlobalPip: Could not find an active media player.";
-    return;
-  }
-
-  // To restore the video to the webpage, we pass an empty/invalid surface.
-  // The media pipeline interprets this as a command to revert to its default
-  // rendering target, which is the original web view.
-  player->SetSurface(gl::ScopedJavaSurface());
-  LOG(INFO) << "StopGlobalPip: Successfully restored video stream to web page.";
-}
-
-void JNI_BraveYouTubeScriptInjectorNativeHelper_TogglePipPlayback(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-
-  media::mojom::MediaPlayer* player = GetActiveMediaPlayer(web_contents);
-  if (!player) {
-    LOG(ERROR) << "TogglePipPlayback: Could not find an active media player.";
-    return;
-  }
-
-  // Check the player's state and issue the opposite command.
-  bool is_playing = false;
-  if (player->IsPlaying(&is_playing)) {
-    if (is_playing) {
-      player->Pause(false); // `false` for "not triggered by media session"
-      LOG(INFO) << "TogglePipPlayback: Paused video.";
-    } else {
-      player->Start();
-      LOG(INFO) << "TogglePipPlayback: Started video.";
-    }
-  }
-}
-
 // static
 jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_IsPictureInPictureAvailable(
     JNIEnv* env,
@@ -166,6 +72,103 @@ void EnterPictureInPicture(content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BraveYouTubeScriptInjectorNativeHelper_enterPictureInPicture(
       env, web_contents->GetJavaWebContents());
+}
+
+// --- Implementation of New JNI Methods for Surface-based PiP ---
+
+// static
+void JNI_BraveYouTubeScriptInjectorNativeHelper_StartGlobalPip(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents,
+    const base::android::JavaParamRef<jobject>& jsurface) {
+  // ARCHITECTURAL NOTE:
+  // A direct redirection of a video stream from a <video> element to a custom
+  // native Surface is not possible through public Chromium APIs. The rendering
+  // is handled in a separate, sandboxed process for security and stability.
+  //
+  // A full implementation would require significant changes to the Chromium
+  // content/ and media/ layers to expose the underlying media player's surface
+  // target.
+  //
+  // This function will log that the process has started and ensure the media
+  // is playing, but it cannot perform the actual stream redirection. The visual
+  // video will still appear in the main WebContents. The Android PiP window
+  // will show a snapshot of the main activity, which includes the mini-player
+  // UI with the SurfaceView, but the video frames won't be on that SurfaceView.
+  LOG(WARNING) << "StartGlobalPip: Surface redirection is not implemented due "
+                  "to Chromium architectural constraints. Video will continue "
+                  "playing in the main tab.";
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    return;
+  }
+
+  // We can still control the media session to ensure it's playing.
+  content::MediaSession* media_session =
+      content::MediaSession::Get(web_contents);
+  if (media_session) {
+    media_session->Resume(content::MediaSession::SuspendType::kUI);
+  }
+
+  // The following is placeholder code for what a full implementation would need.
+  // ANativeWindow* window = ANativeWindow_fromSurface(env, jsurface);
+  // FindMediaPlayerAndRedirect(web_contents, window);
+  // ANativeWindow_release(window);
+}
+
+// static
+void JNI_BraveYouTubeScriptInjectorNativeHelper_StopGlobalPip(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  // As with StartGlobalPip, this is a placeholder. A full implementation
+  // would restore the video stream to its original target within the WebView.
+  LOG(WARNING) << "StopGlobalPip: No-op, as surface redirection is not implemented.";
+
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    return;
+  }
+
+  // We can suspend the media session as a proxy for stopping the PiP player.
+  content::MediaSession* media_session =
+      content::MediaSession::Get(web_contents);
+  if (media_session) {
+    media_session->Suspend(content::MediaSession::SuspendType::kUI);
+  }
+}
+
+// static
+void JNI_BraveYouTubeScriptInjectorNativeHelper_TogglePipPlayback(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& jweb_contents) {
+  // This function IS fully implementable using the MediaSession API.
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(jweb_contents);
+  if (!web_contents) {
+    return;
+  }
+
+  content::MediaSession* media_session =
+      content::MediaSession::Get(web_contents);
+  if (!media_session) {
+    return;
+  }
+
+  // Get the current playback state and toggle it.
+  media_session->GetMediaSessionInfo(base::BindOnce(
+      [](content::MediaSession* session,
+         media_session::mojom::MediaSessionInfoPtr info) {
+        if (info->playback_state ==
+            media_session::mojom::MediaPlaybackState::kPlaying) {
+          session->Suspend(content::MediaSession::SuspendType::kUI);
+        } else {
+          session->Resume(content::MediaSession::SuspendType::kUI);
+        }
+      },
+      media_session));
 }
 
 }  // namespace youtube_script_injector
