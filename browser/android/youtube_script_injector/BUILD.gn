@@ -42,11 +42,10 @@ source_set("youtube_script_injector") {
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//components/prefs",
-    "//gpu/ipc/common:surface_handle_type",
     "//mojo/public/cpp/bindings",
     "//net",
+    "//ui/android",
     "//ui/gl",
-    "//ui/gl/android:surface_texture",
     "//url",
   ]
 }
