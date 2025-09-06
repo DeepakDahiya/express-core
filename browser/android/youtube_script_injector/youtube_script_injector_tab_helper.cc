@@ -1552,15 +1552,23 @@ YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     content::WebContents* contents)
     : WebContentsObserver(contents),
       content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {
-        JNIEnv* env = base::android::AttachCurrentThread();
-        java_web_app_interface_.Reset(
-            Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
+  JNIEnv* env = base::android::AttachCurrentThread();
+  
+  // [!! FIX 1 !!] Add the correct namespace to the function call.
+  java_web_app_interface_.Reset(
+      youtube_script_injector::Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
 
-        contents->GetPrimaryMainFrame()->AddJavaScriptInterface(
-            java_web_app_interface_, "BravePipBridge");
-      }
+  // [!! FIX 2 !!] Call AddJavaScriptInterface on the WebContents object, not the RenderFrameHost.
+  contents->AddJavaScriptInterface(
+      java_web_app_interface_, "BravePipBridge");
+}
 
-YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {}
+YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {
+    JNIEnv* env = base::android::AttachCurrentThread();
+    if (!java_web_app_interface_.is_null()) {
+        youtube_script_injector::Java_WebAppInterface_destroy(env, java_web_app_interface_);
+    }
+}
 
 void YouTubeScriptInjectorTabHelper::PrimaryPageChanged(content::Page& page) {
   script_injector_remote_.reset();
