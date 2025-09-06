@@ -630,19 +630,6 @@ YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     : WebContentsObserver(contents),
       content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {}
 
-// [!! THIS IS THE FINAL, CORRECT IMPLEMENTATION !!]
-// This method is called when a frame is created, and it injects our bridge.
-void YouTubeScriptInjectorTabHelper::RenderFrameCreated(
-    content::RenderFrameHost* render_frame_host) {
-  // We only want to inject our interface into the main frame, not iframes.
-  if (!render_frame_host->GetParent()) {
-    // This is the correct, modern API to expose a Java object to JavaScript
-    // for a specific frame. It is secure and guaranteed to work.
-    render_frame_host->GetJavaInterfaces()->SetInterface(
-        "BravePipBridge", java_web_app_interface_);
-  }
-}
-
 YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {}
 
 void YouTubeScriptInjectorTabHelper::PrimaryPageChanged(content::Page& page) {
