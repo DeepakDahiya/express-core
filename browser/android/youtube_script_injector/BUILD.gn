@@ -77,6 +77,10 @@ source_set("browser_tests") {
 
 generate_jni("jni_headers") {
   sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java", "java/org/chromium/chrome/browser/WebAppInterface.java" ]
+  deps = [
+    "//base:jni_java",
+    "//third_party/jni_zero:jni_zero_java",
+  ]
 }
 
 source_set("unit_tests") {
