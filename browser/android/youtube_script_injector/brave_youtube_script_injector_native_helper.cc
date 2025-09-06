@@ -12,7 +12,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
 #include "base/unguessable_token.h"
-#include "brave/build/android/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
 #include "brave/browser/android/youtube_script_injector/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
