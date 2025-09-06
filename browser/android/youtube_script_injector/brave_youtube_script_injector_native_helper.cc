@@ -5,170 +5,187 @@
 
 #include "brave/browser/android/youtube_script_injector/brave_youtube_script_injector_native_helper.h"
 
+#include <memory>
+
 #include "base/android/jni_android.h"
+#include "base/android/jni_string.h"
+#include "base/android/scoped_java_ref.h"
 #include "base/logging.h"
-#include "brave/browser/android/youtube_script_injector/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
+#include "base/unguessable_token.h"
 #include "brave/browser/android/youtube_script_injector/youtube_script_injector_tab_helper.h"
-#include "content/public/browser/media_session.h"
+#include "brave/build/android/jni_headers/BraveYouTubeScriptInjectorNativeHelper_jni.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
-#include "services/media_session/public/mojom/media_session.mojom.h"
-#include "net/base/registry_controlled_domains/registry_controlled_domain.h"
+#include "mojo/public/cpp/bindings/pending_remote.h"
+#include "mojo/public/cpp/bindings/remote.h"
+#include "ui/android/window_android.h"
 #include "ui/gl/android/scoped_java_surface.h"
 
-// Required for ANativeWindow_fromSurface
-#include <android/native_window_jni.h>
+// Include the generated Mojo interface
+#include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
 
 namespace youtube_script_injector {
 
-// static
-void JNI_BraveYouTubeScriptInjectorNativeHelper_SetFullscreen(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
+namespace {
+
+// Store the active video streamers
+std::map<content::WebContents*, mojo::Remote<brave::mojom::VideoSurfaceStreamer>> g_active_streamers;
+
+// Store surface tokens
+std::map<content::WebContents*, base::UnguessableToken> g_surface_tokens;
+
+}  // namespace
+
+void SetFullscreen(JNIEnv* env, 
+                  const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  YouTubeScriptInjectorTabHelper* helper =
-      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
-  if (!helper) {
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
     return;
   }
 
-  helper->MaybeSetFullscreen();
+  YouTubeScriptInjectorTabHelper* tab_helper =
+      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  if (tab_helper) {
+    tab_helper->MaybeSetFullscreen();
+  }
 }
 
-// static
-jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_HasFullscreenBeenRequested(
+jboolean HasFullscreenBeenRequested(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-
-  YouTubeScriptInjectorTabHelper* helper =
-      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
-  if (!helper) {
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
     return false;
   }
 
-  return helper->HasFullscreenBeenRequested();
+  YouTubeScriptInjectorTabHelper* tab_helper =
+      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  return tab_helper && tab_helper->HasFullscreenBeenRequested();
 }
 
-// static
-jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_IsPictureInPictureAvailable(
+jboolean IsPictureInPictureAvailable(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-
-  YouTubeScriptInjectorTabHelper* helper =
-      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    return helper->IsPictureInPictureAvailable();
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
+    return false;
   }
 
-  return false;
+  YouTubeScriptInjectorTabHelper* tab_helper =
+      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  return tab_helper && tab_helper->IsPictureInPictureAvailable();
 }
 
-// static
+void StartGlobalPip(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& j_web_contents,
+                   const base::android::JavaParamRef<jobject>& j_surface) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
+    LOG(ERROR) << "StartGlobalPip: Invalid WebContents";
+    return;
+  }
+
+  // Create a ScopedJavaSurface from the Java Surface object
+  gl::ScopedJavaSurface scoped_surface(j_surface, /*auto_release=*/false);
+  if (!scoped_surface.IsValid()) {
+    LOG(ERROR) << "StartGlobalPip: Invalid surface";
+    return;
+  }
+
+  // Generate a unique token for this surface
+  base::UnguessableToken surface_token = base::UnguessableToken::Create();
+  g_surface_tokens[web_contents] = surface_token;
+
+  // Register the surface with the GPU process
+  // This allows the renderer to draw to it
+  gpu::GpuSurfaceTracker::Get()->RegisterViewSurface(
+      surface_token.GetLowForSerialization(),
+      scoped_surface.j_surface().obj());
+
+  // Get the render frame host
+  content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
+  if (!rfh) {
+    LOG(ERROR) << "StartGlobalPip: No primary main frame";
+    return;
+  }
+
+  // Bind the Mojo interface to communicate with the renderer
+  mojo::Remote<brave::mojom::VideoSurfaceStreamer> streamer;
+  rfh->GetRemoteInterfaces()->GetInterface(streamer.BindNewPipeAndPassReceiver());
+  
+  if (!streamer.is_bound()) {
+    LOG(ERROR) << "StartGlobalPip: Failed to bind VideoSurfaceStreamer";
+    return;
+  }
+
+  // Store the streamer for later use
+  g_active_streamers[web_contents] = std::move(streamer);
+
+  // Start streaming to the surface
+  g_active_streamers[web_contents]->StartStreaming(
+      surface_token,
+      base::BindOnce([](bool success) {
+        if (success) {
+          LOG(INFO) << "Successfully started video streaming to surface";
+        } else {
+          LOG(ERROR) << "Failed to start video streaming to surface";
+        }
+      }));
+}
+
+void StopGlobalPip(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
+    return;
+  }
+
+  // Find and stop the active streamer
+  auto it = g_active_streamers.find(web_contents);
+  if (it != g_active_streamers.end()) {
+    if (it->second.is_bound()) {
+      it->second->StopStreaming();
+    }
+    g_active_streamers.erase(it);
+  }
+
+  // Clean up the surface token
+  auto token_it = g_surface_tokens.find(web_contents);
+  if (token_it != g_surface_tokens.end()) {
+    // Unregister the surface from GPU process
+    gpu::GpuSurfaceTracker::Get()->UnregisterViewSurface(
+        token_it->second.GetLowForSerialization());
+    g_surface_tokens.erase(token_it);
+  }
+
+  LOG(INFO) << "Stopped global PiP for WebContents";
+}
+
+void TogglePipPlayback(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& j_web_contents) {
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
+    return;
+  }
+
+  // Find the active streamer and toggle playback
+  auto it = g_active_streamers.find(web_contents);
+  if (it != g_active_streamers.end() && it->second.is_bound()) {
+    it->second->TogglePlayback();
+    LOG(INFO) << "Toggled PiP playback";
+  }
+}
+
 void EnterPictureInPicture(content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BraveYouTubeScriptInjectorNativeHelper_enterPictureInPicture(
       env, web_contents->GetJavaWebContents());
-}
-
-// --- Implementation of New JNI Methods for Surface-based PiP ---
-
-// static
-void JNI_BraveYouTubeScriptInjectorNativeHelper_StartGlobalPip(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents,
-    const base::android::JavaParamRef<jobject>& jsurface) {
-  // ARCHITECTURAL NOTE:
-  // A direct redirection of a video stream from a <video> element to a custom
-  // native Surface is not possible through public Chromium APIs. The rendering
-  // is handled in a separate, sandboxed process for security and stability.
-  //
-  // A full implementation would require significant changes to the Chromium
-  // content/ and media/ layers to expose the underlying media player's surface
-  // target.
-  //
-  // This function will log that the process has started and ensure the media
-  // is playing, but it cannot perform the actual stream redirection. The visual
-  // video will still appear in the main WebContents. The Android PiP window
-  // will show a snapshot of the main activity, which includes the mini-player
-  // UI with the SurfaceView, but the video frames won't be on that SurfaceView.
-  LOG(WARNING) << "StartGlobalPip: Surface redirection is not implemented due "
-                  "to Chromium architectural constraints. Video will continue "
-                  "playing in the main tab.";
-
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  if (!web_contents) {
-    return;
-  }
-
-  // We can still control the media session to ensure it's playing.
-  content::MediaSession* media_session =
-      content::MediaSession::Get(web_contents);
-  if (media_session) {
-    media_session->Resume(content::MediaSession::SuspendType::kUI);
-  }
-
-  // The following is placeholder code for what a full implementation would need.
-  // ANativeWindow* window = ANativeWindow_fromSurface(env, jsurface);
-  // FindMediaPlayerAndRedirect(web_contents, window);
-  // ANativeWindow_release(window);
-}
-
-// static
-void JNI_BraveYouTubeScriptInjectorNativeHelper_StopGlobalPip(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
-  // As with StartGlobalPip, this is a placeholder. A full implementation
-  // would restore the video stream to its original target within the WebView.
-  LOG(WARNING) << "StopGlobalPip: No-op, as surface redirection is not implemented.";
-
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  if (!web_contents) {
-    return;
-  }
-
-  // We can suspend the media session as a proxy for stopping the PiP player.
-  content::MediaSession* media_session =
-      content::MediaSession::Get(web_contents);
-  if (media_session) {
-    media_session->Suspend(content::MediaSession::SuspendType::kUI);
-  }
-}
-
-// static
-void JNI_BraveYouTubeScriptInjectorNativeHelper_TogglePipPlayback(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& jweb_contents) {
-  // This function IS fully implementable using the MediaSession API.
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(jweb_contents);
-  if (!web_contents) {
-    return;
-  }
-
-  content::MediaSession* media_session =
-      content::MediaSession::Get(web_contents);
-  if (!media_session) {
-    return;
-  }
-
-  // Get the current playback state and toggle it.
-  media_session->GetMediaSessionInfo(base::BindOnce(
-      [](content::MediaSession* session,
-         media_session::mojom::MediaSessionInfoPtr info) {
-        if (info->playback_state ==
-            media_session::mojom::MediaPlaybackState::kPlaying) {
-          session->Suspend(content::MediaSession::SuspendType::kUI);
-        } else {
-          session->Resume(content::MediaSession::SuspendType::kUI);
-        }
-      },
-      media_session));
 }
 
 }  // namespace youtube_script_injector

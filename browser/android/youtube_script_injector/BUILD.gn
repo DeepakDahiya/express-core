@@ -1,11 +1,23 @@
-# Copyright (c) 2019 The Brave Authors. All rights reserved.
+# Copyright (c) 2025 The Brave Authors. All rights reserved.
 # This Source Code Form is subject to the terms of the Mozilla Public
 # License, v. 2.0. If a copy of the MPL was not distributed with this file,
 # You can obtain one at https://mozilla.org/MPL/2.0/.
 
 import("//build/config/android/rules.gni")
+import("//mojo/public/tools/bindings/mojom.gni")
 import("//third_party/jni_zero/jni_zero.gni")
 
+# Mojo interface definition
+mojom("mojom") {
+  sources = [ "mojom/video_surface_streamer.mojom" ]
+  
+  public_deps = [
+    "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojom",
+  ]
+}
+
+# Main source set for browser-side code
 source_set("youtube_script_injector") {
   sources = [
     "brave_youtube_script_injector_native_helper.cc",
@@ -13,9 +25,12 @@ source_set("youtube_script_injector") {
     "youtube_script_injector_tab_helper.cc",
     "youtube_script_injector_tab_helper.h",
   ]
-
-  public_deps = [ "//content/public/browser" ]
-
+  
+  public_deps = [ 
+    "//content/public/browser",
+    ":mojom",
+  ]
+  
   deps = [
     ":features",
     "//base",
@@ -23,37 +38,52 @@ source_set("youtube_script_injector") {
     "//brave/components/brave_shields/content/browser",
     "//brave/components/constants",
     "//brave/components/script_injector/common/mojom",
+    "//brave/content/public/browser",
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//components/prefs",
+    "//gpu/ipc/common:surface_handle_type",
+    "//mojo/public/cpp/bindings",
     "//net",
+    "//ui/gl",
+    "//ui/gl/android:surface_texture",
     "//url",
   ]
 }
 
+# Java library for Android
 android_library("java") {
   srcjar_deps = [ ":jni_headers" ]
-  sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java" ]
-
+  sources = [ 
+    "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java",
+    "java/org/chromium/chrome/browser/media/BraveMiniPlayerManager.java",
+  ]
   deps = [
     "//base:base_java",
     "//content/public/android:content_full_java",
     "//third_party/jni_zero:jni_zero_java",
     "//ui/android:ui_no_recycler_view_java",
   ]
-
   resources_package = "org.chromium.chrome.browser"
 }
 
+# Features configuration
 source_set("features") {
   sources = [
     "features.cc",
     "features.h",
   ]
-
   public_deps = [ "//base" ]
 }
 
+# JNI header generation
+generate_jni("jni_headers") {
+  sources = [ 
+    "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java",
+  ]
+}
+
+# Browser tests
 source_set("browser_tests") {
   defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
   testonly = true
@@ -61,7 +91,6 @@ source_set("browser_tests") {
     "youtube_script_injector_browsertest.cc",
     "youtube_script_injector_tab_helper_browsertest.cc",
   ]
-
   deps = [
     ":features",
     ":youtube_script_injector",
@@ -74,14 +103,10 @@ source_set("browser_tests") {
   ]
 }
 
-generate_jni("jni_headers") {
-  sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java" ]
-}
-
+# Unit tests
 source_set("unit_tests") {
   testonly = true
   sources = [ "youtube_script_injector_tab_helper_unittest.cc" ]
-
   deps = [
     ":youtube_script_injector",
     "//base/test:test_support",
