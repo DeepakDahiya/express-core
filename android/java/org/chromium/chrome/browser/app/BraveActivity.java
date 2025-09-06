@@ -971,10 +971,28 @@ public abstract class BraveActivity extends ChromeActivity
 
     @Override
     public void enterGlobalPipMode(WebContents webContents) {
-        // Find the tab that corresponds to the WebContents that sent the event.
-        Tab tab = getTabModelSelector().getTabByWebContents(webContents);
-        if (tab != null) {
-            showGlobalPip(tab);
+        if (webContents == null) {
+            return;
+        }
+
+        // The correct way to find a Tab from a WebContents is to iterate.
+        // This is more robust than relying on a single "current tab" method.
+        Tab tabToPip = null;
+        TabModelSelector selector = getTabModelSelector();
+        if (selector != null) {
+            for (Tab tab : selector.getTabs()) {
+                if (tab != null && webContents.equals(tab.getWebContents())) {
+                    tabToPip = tab;
+                    break;
+                }
+            }
+        }
+        
+        // Now that we have reliably found the correct tab, show the PiP for it.
+        if (tabToPip != null) {
+            showGlobalPip(tabToPip);
+        } else {
+            Log.e("PipBridge", "Could not find a Tab for the given WebContents. Cannot enter PiP.");
         }
     }
 
