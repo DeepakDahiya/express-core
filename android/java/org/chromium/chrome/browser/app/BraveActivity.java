@@ -320,7 +320,8 @@ public abstract class BraveActivity extends ChromeActivity
                 QuickSearchEnginesCallback,
                 KeyboardVisibilityHelper.KeyboardVisibilityListener,
                 OnSharedPreferenceChangeListener,
-                BraveYouTubeScriptInjectorNativeHelper.PipStatusListener {
+                BraveYouTubeScriptInjectorNativeHelper.PipStatusListener,
+                WebAppInterface.GlobalPipListener {
     public static final String BRAVE_WALLET_HOST = "wallet";
     public static final String BRAVE_WALLET_ORIGIN = "brave://wallet/";
     public static final String BRAVE_WALLET_URL = "brave://wallet/crypto/portfolio/assets";
@@ -446,6 +447,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         BraveYouTubeScriptInjectorNativeHelper.setListener(this);
+        WebAppInterface.setListener(this);
 
         // The check on mNativeInitialized is mostly to ensure that mojo
         // services for wallet are initialized.
@@ -941,6 +943,7 @@ public abstract class BraveActivity extends ChromeActivity
         }
 
         BraveYouTubeScriptInjectorNativeHelper.setListener(null);
+        WebAppInterface.setListener(null);
 
         BraveSafeBrowsingApiHandler.getInstance().shutdownSafeBrowsing();
         if (ENABLE_IN_APP_UPDATE && mAppUpdateManager != null) {
@@ -962,6 +965,15 @@ public abstract class BraveActivity extends ChromeActivity
             }
         } catch (Exception e) {
             Log.e("BraveActivity", "Error cleaning up callback", e);
+        }
+    }
+
+    @Override
+    public void enterGlobalPipMode(WebContents webContents) {
+        // Find the tab that corresponds to the WebContents that sent the event.
+        Tab tab = getTabModelSelector().getTabByWebContents(webContents);
+        if (tab != null) {
+            showGlobalPip(tab);
         }
     }
 

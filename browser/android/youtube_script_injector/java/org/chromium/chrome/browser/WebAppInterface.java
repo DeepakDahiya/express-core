@@ -6,23 +6,33 @@ import android.os.Looper;
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 
-import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.content_public.browser.WebContents;
 
+import java.lang.ref.WeakReference;
+
 /**
- * This class is the bridge between the in-page JavaScript and the native browser.
- * An instance of this class is created from the C++ layer (YouTubeScriptInjectorTabHelper).
+ * A "dumb" bridge that receives calls from JavaScript and notifies a listener.
+ * It has NO KNOWLEDGE of BraveActivity.
  */
 @JNINamespace("youtube_script_injector")
 public class WebAppInterface {
-    
+
+    // --- Listener Interface ---
+    public interface GlobalPipListener {
+        void enterGlobalPipMode(WebContents webContents);
+    }
+    private static WeakReference<GlobalPipListener> sListener = new WeakReference<>(null);
+    public static void setListener(GlobalPipListener listener) {
+        sListener = new WeakReference<>(listener);
+    }
+    // -------------------------
+
     private final WebContents mWebContents;
 
     private WebAppInterface(WebContents webContents) {
         mWebContents = webContents;
     }
 
-    // This is called from C++ to create an instance of this class.
     @CalledByNative
     private static WebAppInterface create(WebContents webContents) {
         return new WebAppInterface(webContents);
@@ -30,15 +40,13 @@ public class WebAppInterface {
 
     @android.webkit.JavascriptInterface
     public void enterGlobalPipMode() {
-        try{
-            final BraveActivity activity = BraveActivity.getBraveActivity();
-            if (activity != null) {
-                // Post to the UI thread to ensure we are interacting with Views correctly.
-                new Handler(Looper.getMainLooper()).post(() -> {
-                    activity.showGlobalPip(activity.getActivityTab());
-                });
-            }
-        } catch (BraveActivity.BraveActivityNotFoundException e) {
+        // Notify the listener that the event occurred.
+        final GlobalPipListener listener = sListener.get();
+        if (listener != null) {
+            new Handler(Looper.getMainLooper()).post(() -> {
+                // Pass our WebContents so the listener knows which tab triggered the event.
+                listener.enterGlobalPipMode(mWebContents);
+            });
         }
     }
 }
