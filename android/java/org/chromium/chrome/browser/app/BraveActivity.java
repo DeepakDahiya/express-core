@@ -508,7 +508,8 @@ public abstract class BraveActivity extends ChromeActivity
 
     public class BraveYouTubeInterface {
         private Context mContext;
-        
+        private static final String TAG = "BraveYouTubeInterface";
+
         public BraveYouTubeInterface(Context context) {
             mContext = context;
         }
