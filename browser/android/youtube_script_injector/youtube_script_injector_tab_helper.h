@@ -42,7 +42,6 @@ class YouTubeScriptInjectorTabHelper
       content::NavigationHandle* navigation_handle) override;
   void PrimaryMainDocumentElementAvailable() override;
   void MediaEffectivelyFullscreenChanged(bool is_fullscreen) override;
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
 
   WEB_CONTENTS_USER_DATA_KEY_DECL();
 
