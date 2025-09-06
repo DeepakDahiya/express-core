@@ -24,6 +24,8 @@ source_set("youtube_script_injector") {
     "brave_youtube_script_injector_native_helper.h",
     "youtube_script_injector_tab_helper.cc",
     "youtube_script_injector_tab_helper.h",
+    "//chrome/android:chrome_java",
+    "//chrome/browser/tab:java",
   ]
   
   public_deps = [ 
