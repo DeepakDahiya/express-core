@@ -514,6 +514,25 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
+    public void onUserLeaveHint() {
+        super.onUserLeaveHint();
+        
+        Tab currentTab = getActivityTab();
+        if (currentTab == null || currentTab.getWebContents() == null) {
+            return;
+        }
+
+        BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
+
+        // Check the state stored in the C++ layer
+        // if (BraveYouTubeScriptInjectorNativeHelper.isPipActive(currentTab.getWebContents())) {
+        //     // The cross-tab PiP is active, and the user is leaving.
+        //     // Initiate the handoff to the persistent PiP.
+        //     BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
+        // }
+    }
+
+    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         if (!mIsCallbackSetup) {
