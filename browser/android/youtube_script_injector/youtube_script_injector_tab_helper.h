@@ -14,6 +14,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 #include "mojo/public/cpp/bindings/associated_remote.h"
+#include "base/android/scoped_java_ref.h"
 
 class YouTubeScriptInjectorTabHelper
     : public content::WebContentsObserver,
@@ -54,6 +55,8 @@ class YouTubeScriptInjectorTabHelper
                                   base::Value value);
 
   void EnsureBound(content::RenderFrameHost* rfh);
+
+  base::android::ScopedJavaGlobalRef<jobject> java_web_app_interface_;
 
   void OnTogglePlaybackScriptComplete(base::Value value);
 

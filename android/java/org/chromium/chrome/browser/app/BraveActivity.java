@@ -514,25 +514,6 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     @Override
-    public void onUserLeaveHint() {
-        super.onUserLeaveHint();
-        
-        Tab currentTab = getActivityTab();
-        if (currentTab == null || currentTab.getWebContents() == null) {
-            return;
-        }
-
-        BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
-
-        // Check the state stored in the C++ layer
-        // if (BraveYouTubeScriptInjectorNativeHelper.isPipActive(currentTab.getWebContents())) {
-        //     // The cross-tab PiP is active, and the user is leaving.
-        //     // Initiate the handoff to the persistent PiP.
-        //     BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
-        // }
-    }
-
-    @Override
     protected void onPostCreate(Bundle savedInstanceState) {
         super.onPostCreate(savedInstanceState);
         if (!mIsCallbackSetup) {
@@ -556,6 +537,7 @@ public abstract class BraveActivity extends ChromeActivity
     }
 
     public void showGlobalPip(Tab tab) {
+        Log.e("PipBridge", "SUCCESS: BraveActivity.showGlobalPip() is now running.");
         if (mGlobalPipPlayer == null) initializeGlobalPipPlayer();
         mPipOwningTab = tab;
         mGlobalPipPlayer.setVisibility(View.VISIBLE);
@@ -605,24 +587,6 @@ public abstract class BraveActivity extends ChromeActivity
     public void setPipPlaybackState(boolean isPlaying) {
         if (mPipPlayPauseButton == null) return;
         mPipPlayPauseButton.setImageResource(isPlaying ? R.drawable.ic_pause_white_24dp : R.drawable.ic_play_arrow_white_24dp);
-    }
-
-    public class WebAppInterface {
-        private BraveActivity mActivity;
-
-        public WebAppInterface(BraveActivity activity) {
-            mActivity = activity;
-        }
-
-        @JavascriptInterface
-        public void enterGlobalPipMode() {
-            // Post to the UI thread to be safe
-            new Handler(Looper.getMainLooper()).post(() -> {
-                if (mActivity != null) {
-                    mActivity.showGlobalPip(mActivity.getActivityTab());
-                }
-            });
-        }
     }
 
     private void setupYouTubeBackButtonHandler() {

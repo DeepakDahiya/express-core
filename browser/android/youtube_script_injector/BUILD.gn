@@ -33,7 +33,7 @@ source_set("youtube_script_injector") {
 
 android_library("java") {
   srcjar_deps = [ ":jni_headers" ]
-  sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java" ]
+  sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java", "java/org/chromium/chrome/browser/WebAppInterface.java" ]
 
   deps = [
     "//base:base_java",
@@ -75,7 +75,7 @@ source_set("browser_tests") {
 }
 
 generate_jni("jni_headers") {
-  sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java" ]
+  sources = [ "java/org/chromium/chrome/browser/BraveYouTubeScriptInjectorNativeHelper.java", "java/org/chromium/chrome/browser/WebAppInterface.java" ]
 }
 
 source_set("unit_tests") {

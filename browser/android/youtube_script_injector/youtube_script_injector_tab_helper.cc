@@ -26,6 +26,7 @@
 #include "third_party/blink/public/common/associated_interfaces/associated_interface_provider.h"
 #include "url/gurl.h"
 #include "url/url_util.h"
+#include "brave/browser/android/youtube_script_injector/jni_headers/WebAppInterface_jni.h"
 
 namespace {
   constexpr char16_t kYoutubeBackgroundPlayback2[] =
@@ -1417,8 +1418,10 @@ constexpr char16_t kYoutubeGlobalPipTrigger[] =
 
     // --- CORE LOGIC: Calls the native bridge for cross-tab PiP ---
     function enterGlobalPipMode() {
+        console.log("PipBridge: Attempting to call native enterGlobalPipMode...");
         if (window.BravePipBridge && window.BravePipBridge.enterGlobalPipMode) {
-            window.BBravePipBridge.enterGlobalPipMode();
+        console.log("PipBridge: Bridge found. Calling now.");
+            window.BravePipBridge.enterGlobalPipMode();
         } else {
             console.error("Brave Global PiP Bridge is not available.");
         }
@@ -1548,7 +1551,14 @@ bool IsYouTubeDomain(const GURL& url) {
 YouTubeScriptInjectorTabHelper::YouTubeScriptInjectorTabHelper(
     content::WebContents* contents)
     : WebContentsObserver(contents),
-      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {}
+      content::WebContentsUserData<YouTubeScriptInjectorTabHelper>(*contents) {
+        JNIEnv* env = base::android::AttachCurrentThread();
+        java_web_app_interface_.Reset(
+            Java_WebAppInterface_create(env, contents->GetJavaWebContents()));
+
+        contents->GetPrimaryMainFrame()->AddJavaScriptInterface(
+            java_web_app_interface_, "BravePipBridge");
+      }
 
 YouTubeScriptInjectorTabHelper::~YouTubeScriptInjectorTabHelper() {}
 
