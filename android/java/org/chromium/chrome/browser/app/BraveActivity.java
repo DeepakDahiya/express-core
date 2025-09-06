@@ -975,14 +975,27 @@ public abstract class BraveActivity extends ChromeActivity
             return;
         }
 
-        // The correct way to find a Tab from a WebContents is to iterate.
-        // This is more robust than relying on a single "current tab" method.
         Tab tabToPip = null;
         TabModelSelector selector = getTabModelSelector();
         if (selector != null) {
-            for (Tab tab : selector.getTabs()) {
-                if (tab != null && webContents.equals(tab.getWebContents())) {
-                    tabToPip = tab;
+            // Get the list of all available models (e.g., normal and incognito).
+            List<TabModel> models = selector.getModels();
+
+            // Iterate through each model to find the tab.
+            for (TabModel model : models) {
+                if (model == null) continue;
+
+                // Iterate through the tabs within this specific model.
+                for (int i = 0; i < model.getCount(); i++) {
+                    Tab tab = model.getTabAt(i);
+                    if (tab != null && webContents.equals(tab.getWebContents())) {
+                        tabToPip = tab;
+                        // We found the tab, so we can break out of both loops.
+                        break;
+                    }
+                }
+
+                if (tabToPip != null) {
                     break;
                 }
             }
