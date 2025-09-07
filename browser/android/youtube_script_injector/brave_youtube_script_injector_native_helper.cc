@@ -24,6 +24,9 @@
 // Include the generated Mojo interface
 #include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
 
+#include "gpu/ipc/common/gpu_surface_tracker.h"
+#include "services/service_manager/public/cpp/interface_provider.h"
+
 namespace youtube_script_injector {
 
 namespace {
