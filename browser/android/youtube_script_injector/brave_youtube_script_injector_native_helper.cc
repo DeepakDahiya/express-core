@@ -26,6 +26,7 @@
 
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
+#include "gpu/ipc/common/gpu_surface_lookup.h" 
 
 namespace youtube_script_injector {
 
@@ -92,31 +93,23 @@ void StartGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Create a ScopedJavaSurface from the Java Surface object
-  gl::ScopedJavaSurface scoped_surface(j_surface, /*auto_release=*/false);
-  if (!scoped_surface.IsValid()) {
+  // Use a self-releasing ScopedJavaSurface.
+  gl::ScopedJavaSurface scoped_surface(j_surface);
+  if (!scoped_surface.is_valid()) {
     LOG(ERROR) << "StartGlobalPip: Invalid surface";
     return;
   }
 
-  // Generate a unique token for this surface
-  base::UnguessableToken surface_token = base::UnguessableToken::Create();
-  g_surface_tokens[web_contents] = surface_token;
+  // [!! CHANGE !!] Replace the entire GpuSurfaceTracker logic with this single API call.
+  gpu::SurfaceHandle surface_handle =
+      gpu::GpuSurfaceLookup::GetInstance()->GetSurfaceHandle(scoped_surface.j_surface());
 
-  // Register the surface with the GPU process
-  // This allows the renderer to draw to it
-  gpu::GpuSurfaceTracker::Get()->RegisterViewSurface(
-      surface_token.GetLowForSerialization(),
-      scoped_surface.j_surface().obj());
-
-  // Get the render frame host
   content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
   if (!rfh) {
     LOG(ERROR) << "StartGlobalPip: No primary main frame";
     return;
   }
 
-  // Bind the Mojo interface to communicate with the renderer
   mojo::Remote<brave::mojom::VideoSurfaceStreamer> streamer;
   rfh->GetRemoteInterfaces()->GetInterface(streamer.BindNewPipeAndPassReceiver());
   
@@ -125,12 +118,11 @@ void StartGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Store the streamer for later use
   g_active_streamers[web_contents] = std::move(streamer);
 
-  // Start streaming to the surface
+  // [!! CHANGE !!] Pass the correct surface_handle to the StartStreaming method.
   g_active_streamers[web_contents]->StartStreaming(
-      surface_token,
+      surface_handle,
       base::BindOnce([](bool success) {
         if (success) {
           LOG(INFO) << "Successfully started video streaming to surface";
@@ -148,7 +140,6 @@ void StopGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Find and stop the active streamer
   auto it = g_active_streamers.find(web_contents);
   if (it != g_active_streamers.end()) {
     if (it->second.is_bound()) {
@@ -157,12 +148,8 @@ void StopGlobalPip(JNIEnv* env,
     g_active_streamers.erase(it);
   }
 
-  // Clean up the surface token
-  auto token_it = g_surface_tokens.find(web_contents);
-  if (token_it != g_surface_tokens.end()) {
-    // Clean up surface registration if needed
-    g_surface_tokens.erase(token_it);
-  }
+  // [!! CHANGE !!] The surface token cleanup is no longer needed.
+  // The ScopedJavaSurface and GpuSurfaceLookup handle the lifecycle.
 
   LOG(INFO) << "Stopped global PiP for WebContents";
 }

@@ -5,13 +5,13 @@
 
 module brave.mojom;
 
-import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojom/geometry.mojom";
+import "gpu/ipc/common/surface_handle.mojom";
 
 // Interface for streaming video frames to a surface
 interface VideoSurfaceStreamer {
   // Start streaming video to the given surface token
-  StartStreaming(mojo_base.mojom.UnguessableToken surface_token) => (bool success);
+  StartStreaming(gpu.mojom.SurfaceHandle surface_handle) => (bool success);
   
   // Stop streaming video
   StopStreaming();
