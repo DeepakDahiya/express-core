@@ -12,6 +12,7 @@ mojom("mojom") {
   sources = [ "mojom/video_surface_streamer.mojom" ]
   
   public_deps = [
+    "//gpu/ipc/common:surface_handle_mojom",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
   ]
