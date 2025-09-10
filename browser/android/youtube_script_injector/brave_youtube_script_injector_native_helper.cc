@@ -36,8 +36,9 @@ std::map<content::WebContents*, mojo::Remote<brave::mojom::VideoSurfaceStreamer>
 
 }  // namespace
 
-void SetFullscreen(JNIEnv* env, 
-                  const base::android::JavaParamRef<jobject>& j_web_contents) {
+// Implementation functions (unchanged)
+void SetFullscreenImpl(JNIEnv* env, 
+                      const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents) {
@@ -51,7 +52,7 @@ void SetFullscreen(JNIEnv* env,
   }
 }
 
-jboolean HasFullscreenBeenRequested(
+jboolean HasFullscreenBeenRequestedImpl(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
@@ -65,7 +66,7 @@ jboolean HasFullscreenBeenRequested(
   return tab_helper && tab_helper->HasFullscreenBeenRequested();
 }
 
-jboolean IsPictureInPictureAvailable(
+jboolean IsPictureInPictureAvailableImpl(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
@@ -79,9 +80,9 @@ jboolean IsPictureInPictureAvailable(
   return tab_helper && tab_helper->IsPictureInPictureAvailable();
 }
 
-void StartGlobalPip(JNIEnv* env,
-                   const base::android::JavaParamRef<jobject>& j_web_contents,
-                   const base::android::JavaParamRef<jobject>& j_surface) {
+void StartGlobalPipImpl(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& j_web_contents,
+                       const base::android::JavaParamRef<jobject>& j_surface) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents) {
@@ -131,8 +132,8 @@ void StartGlobalPip(JNIEnv* env,
       }));
 }
 
-void StopGlobalPip(JNIEnv* env,
-                  const base::android::JavaParamRef<jobject>& j_web_contents) {
+void StopGlobalPipImpl(JNIEnv* env,
+                      const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents) {
@@ -150,8 +151,8 @@ void StopGlobalPip(JNIEnv* env,
   LOG(INFO) << "Stopped global PiP for WebContents";
 }
 
-void TogglePipPlayback(JNIEnv* env,
-                       const base::android::JavaParamRef<jobject>& j_web_contents) {
+void TogglePipPlaybackImpl(JNIEnv* env,
+                          const base::android::JavaParamRef<jobject>& j_web_contents) {
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents) {
@@ -170,6 +171,78 @@ void EnterPictureInPicture(content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_BraveYouTubeScriptInjectorNativeHelper_enterPictureInPicture(
       env, web_contents->GetJavaWebContents());
+}
+
+// JNI wrapper functions (these are what the JNI generator expects)
+static void JNI_BraveYouTubeScriptInjectorNativeHelper_SetFullscreen(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return SetFullscreenImpl(env, j_web_contents);
+}
+
+static jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_HasFullscreenBeenRequested(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return HasFullscreenBeenRequestedImpl(env, j_web_contents);
+}
+
+static jboolean JNI_BraveYouTubeScriptInjectorNativeHelper_IsPictureInPictureAvailable(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return IsPictureInPictureAvailableImpl(env, j_web_contents);
+}
+
+static void JNI_BraveYouTubeScriptInjectorNativeHelper_StartGlobalPip(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    const base::android::JavaParamRef<jobject>& j_surface) {
+  return StartGlobalPipImpl(env, j_web_contents, j_surface);
+}
+
+static void JNI_BraveYouTubeScriptInjectorNativeHelper_StopGlobalPip(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return StopGlobalPipImpl(env, j_web_contents);
+}
+
+static void JNI_BraveYouTubeScriptInjectorNativeHelper_TogglePipPlayback(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return TogglePipPlaybackImpl(env, j_web_contents);
+}
+
+// Legacy function names for compatibility with header file
+void SetFullscreen(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return SetFullscreenImpl(env, j_web_contents);
+}
+
+jboolean HasFullscreenBeenRequested(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return HasFullscreenBeenRequestedImpl(env, j_web_contents);
+}
+
+jboolean IsPictureInPictureAvailable(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return IsPictureInPictureAvailableImpl(env, j_web_contents);
+}
+
+void StartGlobalPip(JNIEnv* env,
+                   const base::android::JavaParamRef<jobject>& j_web_contents,
+                   const base::android::JavaParamRef<jobject>& j_surface) {
+  return StartGlobalPipImpl(env, j_web_contents, j_surface);
+}
+
+void StopGlobalPip(JNIEnv* env,
+                  const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return StopGlobalPipImpl(env, j_web_contents);
+}
+
+void TogglePipPlayback(JNIEnv* env,
+                       const base::android::JavaParamRef<jobject>& j_web_contents) {
+  return TogglePipPlaybackImpl(env, j_web_contents);
 }
 
 }  // namespace youtube_script_injector
