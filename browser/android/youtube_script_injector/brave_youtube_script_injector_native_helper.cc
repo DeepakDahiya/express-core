@@ -98,13 +98,10 @@ void StartGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Create the mojom SurfaceHandle struct
-  gpu::mojom::SurfaceHandle surface_handle_mojom;
-  
-  // For Android, we'll use a hash of the Java surface object as our handle
-  // In a real implementation, you'd register this with GpuSurfaceTracker
-  surface_handle_mojom.surface_handle = 
-      reinterpret_cast<uint64_t>(scoped_surface.j_surface().obj());
+  // Use the native SurfaceHandle type directly (int32_t on Android)
+  gpu::SurfaceHandle native_surface_handle = 
+      static_cast<gpu::SurfaceHandle>(
+          reinterpret_cast<uintptr_t>(scoped_surface.j_surface().obj()));
 
   content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
   if (!rfh) {
@@ -122,9 +119,9 @@ void StartGlobalPip(JNIEnv* env,
 
   g_active_streamers[web_contents] = std::move(streamer);
 
-  // Pass the mojom surface handle
+  // Pass the native surface handle directly
   g_active_streamers[web_contents]->StartStreaming(
-      std::move(surface_handle_mojom),
+      native_surface_handle,
       base::BindOnce([](bool success) {
         if (success) {
           LOG(INFO) << "Successfully started video streaming to surface";
