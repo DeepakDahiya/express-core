@@ -23,7 +23,7 @@ namespace brave {
 
 VideoSurfaceStreamerImpl::VideoSurfaceStreamerImpl(
     content::RenderFrame* render_frame,
-    mojo::PendingReceiver<mojom::VideoSurfaceStreamer> receiver)
+    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver)
     : render_frame_(render_frame),
       receiver_(this, std::move(receiver)) {
   DCHECK(render_frame_);
@@ -224,7 +224,7 @@ void VideoSurfaceStreamerImpl::RenderFrameToSurface(
 // Static factory method
 void VideoSurfaceStreamerImpl::Create(
     content::RenderFrame* render_frame,
-    mojo::PendingReceiver<mojom::VideoSurfaceStreamer> receiver) {
+    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver) {
   // The object will be owned by the mojo binding
   new VideoSurfaceStreamerImpl(render_frame, std::move(receiver));
 }

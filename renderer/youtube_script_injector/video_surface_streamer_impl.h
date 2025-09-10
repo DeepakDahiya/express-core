@@ -51,7 +51,7 @@ class VideoSurfaceStreamerImpl : public mojom::VideoSurfaceStreamer {
 
   // Static factory method
   static void Create(content::RenderFrame* render_frame,
-                    mojo::PendingReceiver<mojom::VideoSurfaceStreamer> receiver);
+                    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
 
  private:
   void SetupVideoFrameCallback();
