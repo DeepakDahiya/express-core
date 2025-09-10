@@ -60,7 +60,7 @@ class VideoSurfaceStreamerImpl : public mojom::VideoSurfaceStreamer {
   void RenderFrameToSurface(scoped_refptr<media::VideoFrame> frame);
 
   raw_ptr<content::RenderFrame> render_frame_;
-  mojo::Receiver<mojom::VideoSurfaceStreamer> receiver_;
+  mojo::AssociatedReceiver<mojom::VideoSurfaceStreamer> receiver_;
   
   // Video streaming state
   bool is_streaming_ = false;
