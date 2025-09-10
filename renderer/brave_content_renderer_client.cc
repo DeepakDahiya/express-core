@@ -185,7 +185,7 @@ void BraveContentRendererClient::RenderFrameCreated(
   }
 
 #if BUILDFLAG(IS_ANDROID)
-  render_frame->GetAssociatedInterfaceRegistry()->AddInterface<mojom::VideoSurfaceStreamer>(
+  render_frame->GetAssociatedInterfaceRegistry()->AddInterface<brave::mojom::VideoSurfaceStreamer>(
       base::BindRepeating(&brave::VideoSurfaceStreamerImpl::Create));
   if (brave_vpn::IsBraveVPNFeatureEnabled() ||
       ai_chat::features::IsAIChatHistoryEnabled()) {
