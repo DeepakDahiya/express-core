@@ -12,7 +12,7 @@ mojom("mojom") {
   sources = [ "mojom/video_surface_streamer.mojom" ]
   
   public_deps = [
-    "//gpu/ipc/common:surface_handle_mojom",
+    "//gpu/ipc/common:surface_handle_type",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
   ]
@@ -44,10 +44,10 @@ source_set("youtube_script_injector") {
     "//components/prefs",
 
     "//gpu/ipc/common",
-    "//gpu/ipc/common:surface_handle_mojom",
+    "//gpu/ipc/common:surface_handle_type",
     "//mojo/public/mojom/base",
     "//ui/gfx/geometry/mojom",
-    
+
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//net",
