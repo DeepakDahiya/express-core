@@ -56,6 +56,7 @@
 #include "brave/components/brave_vpn/common/brave_vpn_utils.h"
 #if BUILDFLAG(IS_ANDROID)
 #include "brave/renderer/youtube_script_injector/video_surface_streamer_impl.h"
+#include "third_party/blink/public/common/associated_interfaces/associated_interface_registry.h"
 #include "brave/components/brave_mobile_subscription/renderer/android/subscription_render_frame_observer.h"
 #endif  // BUILDFLAG(IS_ANDROID)
 #endif  // BUILDFLAG(ENABLE_BRAVE_VPN)
@@ -185,8 +186,7 @@ void BraveContentRendererClient::RenderFrameCreated(
 
 #if BUILDFLAG(IS_ANDROID)
   render_frame->GetAssociatedInterfaceRegistry()->AddInterface(
-      base::BindRepeating(&brave::VideoSurfaceStreamerImpl::Create, 
-                         render_frame));
+    base::BindRepeating(&VideoSurfaceStreamerImpl::Create));
   if (brave_vpn::IsBraveVPNFeatureEnabled() ||
       ai_chat::features::IsAIChatHistoryEnabled()) {
     new brave_subscription::SubscriptionRenderFrameObserver(

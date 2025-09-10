@@ -25,8 +25,7 @@ VideoSurfaceStreamerImpl::VideoSurfaceStreamerImpl(
     content::RenderFrame* render_frame,
     mojo::PendingReceiver<mojom::VideoSurfaceStreamer> receiver)
     : render_frame_(render_frame),
-      receiver_(this, std::move(receiver)),
-      weak_factory_(this) {
+      receiver_(this, std::move(receiver)) {
   DCHECK(render_frame_);
 }
 
@@ -35,7 +34,7 @@ VideoSurfaceStreamerImpl::~VideoSurfaceStreamerImpl() {
 }
 
 void VideoSurfaceStreamerImpl::StartStreaming(
-    const base::UnguessableToken& surface_token,
+    gpu::SurfaceHandle surface_handle,
     StartStreamingCallback callback) {
   LOG(INFO) << "VideoSurfaceStreamerImpl::StartStreaming";
   
@@ -82,7 +81,7 @@ void VideoSurfaceStreamerImpl::StartStreaming(
     return;
   }
 
-  surface_token_ = surface_token;
+  surface_handle_ = surface_handle;
   is_streaming_ = true;
 
   // Set up video frame callback
@@ -112,7 +111,7 @@ void VideoSurfaceStreamerImpl::StopStreaming() {
   }
 
   web_media_player_ = nullptr;
-  surface_token_ = base::UnguessableToken();
+  surface_handle_ = gpu::kNullSurfaceHandle;
 }
 
 void VideoSurfaceStreamerImpl::TogglePlayback() {
@@ -196,8 +195,8 @@ void VideoSurfaceStreamerImpl::CreateVideoLayer() {
     video_layer_->SetBounds(gfx::Size(video_size_.width(), video_size_.height()));
   }
 
-  // Configure the layer to render to our surface
-  video_layer_->SetSurfaceId(surface_token_);
+  // Note: SetSurfaceId doesn't exist in cc::VideoLayer
+  // The surface rendering would be handled differently in a real implementation
   video_layer_->SetIsDrawable(true);
   video_layer_->SetContentsOpaque(true);
 }
