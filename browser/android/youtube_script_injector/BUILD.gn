@@ -42,6 +42,12 @@ source_set("youtube_script_injector") {
     "//chrome/browser/profiles:profile",
     "//chrome/common",
     "//components/prefs",
+
+    "//gpu/ipc/common",
+    "//gpu/ipc/common:surface_handle_mojom",
+    "//mojo/public/mojom/base",
+    "//ui/gfx/geometry/mojom",
+    
     "//content/public/browser",
     "//mojo/public/cpp/bindings",
     "//net",
