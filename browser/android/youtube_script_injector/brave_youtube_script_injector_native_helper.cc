@@ -20,13 +20,10 @@
 #include "mojo/public/cpp/bindings/remote.h"
 #include "ui/android/window_android.h"
 #include "ui/gl/android/scoped_java_surface.h"
+#include "gpu/ipc/common/surface_handle.h"
 
 // Include the generated Mojo interface
 #include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
-
-// Remove these non-existent includes
-// #include "gpu/ipc/common/gpu_surface_tracker.h"
-// #include "gpu/ipc/common/gpu_surface_lookup.h"
 
 #include "services/service_manager/public/cpp/interface_provider.h"
 
@@ -92,19 +89,22 @@ void StartGlobalPip(JNIEnv* env,
     return;
   }
 
-  // Fix the ScopedJavaSurface constructor - it needs 2 arguments
+  // Create ScopedJavaSurface with correct constructor
   gl::ScopedJavaSurface scoped_surface(j_surface, true /* auto_release */);
   
-  // Check if surface is valid using the correct method
-  ANativeWindow* native_window = scoped_surface.surface();
-  if (!native_window) {
-    LOG(ERROR) << "StartGlobalPip: Invalid surface - could not get native window";
+  // Use the correct validation method
+  if (scoped_surface.IsEmpty() || !scoped_surface.IsValid()) {
+    LOG(ERROR) << "StartGlobalPip: Invalid surface";
     return;
   }
 
-  // Create a simple surface handle from the native window pointer
-  gpu::mojom::SurfaceHandle surface_handle;
-  surface_handle.surface_handle = reinterpret_cast<uint64_t>(native_window);
+  // Create the mojom SurfaceHandle struct
+  gpu::mojom::SurfaceHandle surface_handle_mojom;
+  
+  // For Android, we'll use a hash of the Java surface object as our handle
+  // In a real implementation, you'd register this with GpuSurfaceTracker
+  surface_handle_mojom.surface_handle = 
+      reinterpret_cast<uint64_t>(scoped_surface.j_surface().obj());
 
   content::RenderFrameHost* rfh = web_contents->GetPrimaryMainFrame();
   if (!rfh) {
@@ -122,9 +122,9 @@ void StartGlobalPip(JNIEnv* env,
 
   g_active_streamers[web_contents] = std::move(streamer);
 
-  // Pass the surface handle to StartStreaming
+  // Pass the mojom surface handle
   g_active_streamers[web_contents]->StartStreaming(
-      std::move(surface_handle),
+      std::move(surface_handle_mojom),
       base::BindOnce([](bool success) {
         if (success) {
           LOG(INFO) << "Successfully started video streaming to surface";
