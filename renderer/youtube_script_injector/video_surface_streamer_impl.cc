@@ -17,7 +17,7 @@
 #include "third_party/blink/public/web/web_frame.h"
 #include "third_party/blink/public/web/web_local_frame.h"
 #include "third_party/blink/public/web/web_node.h"
-#include "third_party/blink/renderer/core/html/media/html_video_element.h"
+#include "third_party/blink/public/web/html/html_video_element.h"
 
 namespace brave {
 
@@ -77,7 +77,7 @@ void VideoSurfaceStreamerImpl::StartStreaming(
   }
 
   // Get the media player from the video element
-  auto* html_video = video_element.Unwrap<blink::HTMLVideoElement>();
+  auto* html_video = video_element.To<blink::HTMLVideoElement>();
   if (!html_video) {
     LOG(ERROR) << "Failed to unwrap HTMLVideoElement";
     std::move(callback).Run(false);
