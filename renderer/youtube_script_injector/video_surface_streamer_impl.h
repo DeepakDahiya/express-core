@@ -6,10 +6,10 @@
 #ifndef BRAVE_RENDERER_YOUTUBE_SCRIPT_INJECTOR_VIDEO_SURFACE_STREAMER_IMPL_H_
 #define BRAVE_RENDERER_YOUTUBE_SCRIPT_INJECTOR_VIDEO_SURFACE_STREAMER_IMPL_H_
 
-#include "brave/common/media/brave_video_streamer.mojom.h" // NOTE: Adjust path to your .mojom file
 #include "content/public/renderer/render_frame_observer.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
 
 #include <memory>
 
