@@ -11,42 +11,39 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
-#include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
+#include "content/public/browser/render_frame_host.h"
 
 namespace youtube_script_injector {
 
 void JNI_BraveYouTubeScriptInjectorNativeHelper_EnterFullscreenForPip(
     JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_web_contents) {
+    const base::android::JavaParam_ref<jobject>& j_web_contents) {
   
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents) return;
 
-  // This cast is correct.
-  auto* web_contents_impl = static_cast<content::WebContentsImpl*>(web_contents);
+  // 1. ARM THE INTERCEPTOR: Set the flag so our observer knows this is a special call.
+  // This step is still critical for the handoff to work.
+  YouTubeScriptInjectorTabHelper* helper =
+      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
+  if (helper) {
+    helper->SetFullscreenRequested(true);
+  } else {
+    return; // Cannot proceed without the helper to set the flag.
+  }
 
-  // Get the main frame as the public interface type first.
-  content::RenderFrameHost* main_frame_interface = web_contents->GetPrimaryMainFrame();
-  if (!main_frame_interface) return;
+  // 2. Get the target frame for the fullscreen request.
+  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
+  if (!main_frame) return;
 
-  // [!! THIS IS THE FIX !!]
-  // Explicitly cast the interface pointer to the implementation pointer.
-  // This tells the compiler we know what we are doing.
-  content::RenderFrameHostImpl* target_frame =
-      static_cast<content::RenderFrameHostImpl*>(main_frame_interface);
+  // 3. INVOKE FULLSCREEN: Call our new, safe, public API method on the WebContents interface.
+  web_contents->EnterFullscreenModeForFrame(main_frame);
 
-  // Create a default FullscreenOptions object.
-  blink::mojom::FullscreenOptions options;
-
-  // This call will now succeed because the types match.
-  web_contents_impl->EnterFullscreenMode(target_frame, options);
-
-  LOG(INFO) << "EnterFullscreenMode called successfully for the primary main frame.";
+  LOG(INFO) << "EnterFullscreenModeForFrame called successfully.";
 }
+
 
 // static
 void JNI_BraveYouTubeScriptInjectorNativeHelper_SetFullscreen(
