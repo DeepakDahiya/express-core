@@ -173,6 +173,7 @@ import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.base.ContextUtils;
 import android.content.SharedPreferences;
 import androidx.annotation.WorkerThread;
+import org.chromium.chrome.browser.fullscreen.FullscreenManager;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout,
@@ -1404,15 +1405,22 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             maybeShowWalletPanel();
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
             Tab currentTab = getToolbarDataProvider().getTab();
-            if (currentTab != null
-                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
-                            currentTab.getWebContents())) {
-                if (!PictureInPicture.isEnabled(getContext())) {
-                    hideYouTubePipIcon();
-                    return;
-                }
-                BraveYouTubeScriptInjectorNativeHelper.enterFullscreenForPip(currentTab.getWebContents());
+            FullscreenManager fullscreenManager = getFullscreenManager();
+            if (fullscreenManager != null) {
+                fullscreenManager.onEnterFullscreen(currentTab, new FullscreenOptions())
             }
+            else {
+                Log.e("BROWSER_EXPRESS_TOOLBAR", "FullscreenManager is null");
+            }
+            // if (currentTab != null
+            //         && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+            //                 currentTab.getWebContents())) {
+            //     if (!PictureInPicture.isEnabled(getContext())) {
+            //         hideYouTubePipIcon();
+            //         return;
+            //     }
+            //     BraveYouTubeScriptInjectorNativeHelper.enterFullscreenForPip(currentTab.getWebContents());
+            // }
         }
     }
 
