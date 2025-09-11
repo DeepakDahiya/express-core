@@ -26,6 +26,7 @@ source_set("renderer") {
     "//brave/components/cosmetic_filters/renderer",
     "//brave/renderer/brave_wallet/",
     "//v8",
+    "//brave/renderer/youtube_script_injector:youtube_script_injector_renderer",
   ]
 
   if (enable_ai_rewriter) {
