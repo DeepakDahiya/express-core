@@ -38,16 +38,8 @@ source_set("renderer") {
   }
 
   if (is_android) {
-    sources += [
-      "youtube_script_injector/video_surface_streamer_impl.cc",
-      "youtube_script_injector/video_surface_streamer_impl.h",
-    ]
-
     deps += [ 
       "//brave/components/brave_mobile_subscription/renderer/android",
-      "//brave/browser/android/youtube_script_injector:mojom",
-      "//cc",
-      "//media",
-      "//gpu/ipc/common", ]
+    ]
   }
 }
