@@ -12,7 +12,6 @@
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
 #include "content/browser/web_contents/web_contents_impl.h"
-#include "content/public/android/java/jni_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
 #include "third_party/blink/public/mojom/fullscreen/fullscreen.mojom.h"
