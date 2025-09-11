@@ -14,7 +14,7 @@ source_set("youtube_script_injector_renderer") {
   deps = [
     "//base",
     "//brave/browser/android/youtube_script_injector:mojom",
-    "//cc/layers",
+    "//cc",
     "//content/public/renderer",
     "//gpu/ipc/common:surface_handle",  # Add this for SurfaceHandle
     "//media/base",
