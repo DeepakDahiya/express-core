@@ -14,6 +14,8 @@
 #include "mojo/public/cpp/bindings/pending_receiver.h"
 #include "mojo/public/cpp/bindings/receiver.h"
 #include "ui/gfx/geometry/size.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "content/public/renderer/render_frame_observer.h"
 
 namespace blink {
 class WebMediaPlayer;
