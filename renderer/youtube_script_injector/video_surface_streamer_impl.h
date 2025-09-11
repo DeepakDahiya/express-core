@@ -10,12 +10,11 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
-#include "gpu/ipc/common/surface_handle.h"
-#include "mojo/public/cpp/bindings/pending_receiver.h"
-#include "mojo/public/cpp/bindings/receiver.h"
-#include "ui/gfx/geometry/size.h"
-#include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "content/public/renderer/render_frame_observer.h"
+#include "gpu/ipc/common/surface_handle.h"
+#include "mojo/public/cpp/bindings/associated_receiver.h"
+#include "mojo/public/cpp/bindings/pending_associated_receiver.h"
+#include "ui/gfx/geometry/size.h"
 
 namespace blink {
 class WebMediaPlayer;
@@ -25,10 +24,6 @@ namespace cc {
 class VideoLayer;
 }
 
-namespace content {
-class RenderFrame;
-}
-
 namespace media {
 class VideoFrame;
 }
@@ -36,12 +31,20 @@ class VideoFrame;
 namespace brave {
 
 // Implementation of the VideoSurfaceStreamer interface in the renderer process
-class VideoSurfaceStreamerImpl : public mojom::VideoSurfaceStreamer {
+class VideoSurfaceStreamerImpl : public content::RenderFrameObserver,
+                                 public mojom::VideoSurfaceStreamer {
  public:
   VideoSurfaceStreamerImpl(
       content::RenderFrame* render_frame,
-      mojo::PendingReceiver<mojom::VideoSurfaceStreamer> receiver);
+      mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
   ~VideoSurfaceStreamerImpl() override;
+
+  // Static factory method
+  static void Create(content::RenderFrame* render_frame,
+                    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
+
+  // content::RenderFrameObserver implementation
+  void OnDestruct() override;
 
   // mojom::VideoSurfaceStreamer implementation
   void StartStreaming(gpu::SurfaceHandle surface_handle,
@@ -51,17 +54,12 @@ class VideoSurfaceStreamerImpl : public mojom::VideoSurfaceStreamer {
   void UpdateStreamingParams(const gfx::Size& video_size,
                             float frame_rate) override;
 
-  // Static factory method
-  static void Create(content::RenderFrame* render_frame,
-                    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
-
  private:
   void SetupVideoFrameCallback();
   void OnVideoFrameAvailable(base::TimeDelta timestamp);
   void CreateVideoLayer();
   void RenderFrameToSurface(scoped_refptr<media::VideoFrame> frame);
 
-  raw_ptr<content::RenderFrame> render_frame_;
   mojo::AssociatedReceiver<mojom::VideoSurfaceStreamer> receiver_;
   
   // Video streaming state
