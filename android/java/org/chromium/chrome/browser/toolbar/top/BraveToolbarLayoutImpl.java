@@ -1405,12 +1405,16 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             maybeShowWalletPanel();
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
             Tab currentTab = getToolbarDataProvider().getTab();
-            FullscreenManager fullscreenManager = getFullscreenManager();
-            if (fullscreenManager != null) {
-                fullscreenManager.onEnterFullscreen(currentTab, new FullscreenOptions());
-            }
-            else {
-                Log.e("BROWSER_EXPRESS_TOOLBAR", "FullscreenManager is null");
+            try {
+                FullscreenManager fullscreenManager = BraveActivity.getBraveActivity().getFullscreenManager();
+                if (fullscreenManager != null) {
+                    fullscreenManager.onEnterFullscreen(currentTab, new FullscreenOptions());
+                }
+                else {
+                    Log.e("BROWSER_EXPRESS_TOOLBAR", "FullscreenManager is null");
+                }
+            } catch (BraveActivity.BraveActivityNotFoundException e) {
+                Log.e(TAG, "HomeButton click " + e);
             }
             // if (currentTab != null
             //         && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
