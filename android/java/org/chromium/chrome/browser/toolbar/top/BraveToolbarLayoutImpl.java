@@ -1407,7 +1407,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             Tab currentTab = getToolbarDataProvider().getTab();
             FullscreenManager fullscreenManager = getFullscreenManager();
             if (fullscreenManager != null) {
-                fullscreenManager.onEnterFullscreen(currentTab, new FullscreenOptions())
+                fullscreenManager.onEnterFullscreen(currentTab, new FullscreenOptions());
             }
             else {
                 Log.e("BROWSER_EXPRESS_TOOLBAR", "FullscreenManager is null");
