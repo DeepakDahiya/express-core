@@ -26,25 +26,23 @@ void JNI_BraveYouTubeScriptInjectorNativeHelper_EnterFullscreenForPip(
       content::WebContents::FromJavaWebContents(j_web_contents);
   if (!web_contents) return;
 
-  // Cast to WebContentsImpl to access the internal EnterFullscreenMode method.
+  // This cast is correct.
   auto* web_contents_impl = static_cast<content::WebContentsImpl*>(web_contents);
 
-  // The target for fullscreen is the primary main frame.
-  content::RenderFrameHost* target_frame = web_contents->GetPrimaryMainFrame();
-  if (!target_frame) return;
+  // Get the main frame as the public interface type first.
+  content::RenderFrameHost* main_frame_interface = web_contents->GetPrimaryMainFrame();
+  if (!main_frame_interface) return;
 
-  // DEBUGGING: This is the correct way to iterate through all frames.
-  LOG(INFO) << "Available frames in WebContents:";
-  web_contents->ForEachRenderFrameHost([](content::RenderFrameHost* rfh) {
-      LOG(INFO) << "  Frame URL: " << rfh->GetLastCommittedURL();
-  });
+  // [!! THIS IS THE FIX !!]
+  // Explicitly cast the interface pointer to the implementation pointer.
+  // This tells the compiler we know what we are doing.
+  content::RenderFrameHostImpl* target_frame =
+      static_cast<content::RenderFrameHostImpl*>(main_frame_interface);
 
-  // [!! FIX !!] Create a default FullscreenOptions object.
-  // The .mojom file shows this is a simple struct with default values.
+  // Create a default FullscreenOptions object.
   blink::mojom::FullscreenOptions options;
 
-  // This is the direct, low-level call to initiate fullscreen for the frame.
-  // It is the correct replacement for the desktop-only FullscreenController.
+  // This call will now succeed because the types match.
   web_contents_impl->EnterFullscreenMode(target_frame, options);
 
   LOG(INFO) << "EnterFullscreenMode called successfully for the primary main frame.";
