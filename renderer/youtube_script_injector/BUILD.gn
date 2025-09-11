@@ -17,7 +17,6 @@ source_set("youtube_script_injector_renderer") {
     "//cc",
     "//content/public/renderer",
     "//gpu/ipc/common:surface_handle",  # Add this for SurfaceHandle
-    "//media/base",
     "//mojo/public/cpp/bindings",
     "//third_party/blink/public:blink",
     "//ui/gfx/geometry",
