@@ -22,40 +22,32 @@ void JNI_BraveYouTubeScriptInjectorNativeHelper_EnterFullscreenForPip(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents) {
   
-  // 1. Convert the Java WebContents reference to native WebContents
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  if (!web_contents)
-    return;
+  if (!web_contents) return;
 
-  // Cast to WebContentsImpl so we can call internal methods
+  // Cast to WebContentsImpl to access the internal EnterFullscreenMode method.
   auto* web_contents_impl = static_cast<content::WebContentsImpl*>(web_contents);
 
-  // 2. Get the correct RenderFrameHostImpl
-  // YouTube videos are usually in an iframe, but start with main frame.
-  content::RenderFrameHostImpl* target_frame =
-      static_cast<content::RenderFrameHostImpl*>(web_contents->GetPrimaryMainFrame());
+  // The target for fullscreen is the primary main frame.
+  content::RenderFrameHost* target_frame = web_contents->GetPrimaryMainFrame();
+  if (!target_frame) return;
 
-  if (!target_frame)
-    return;
+  // DEBUGGING: This is the correct way to iterate through all frames.
+  LOG(INFO) << "Available frames in WebContents:";
+  web_contents->ForEachRenderFrameHost([](content::RenderFrameHost* rfh) {
+      LOG(INFO) << "  Frame URL: " << rfh->GetLastCommittedURL();
+  });
 
-  // DEBUG: Log all frames to ensure we target the correct one.
-  for (auto* frame : web_contents->GetAllFrames()) {
-    auto* rfh = static_cast<content::RenderFrameHostImpl*>(frame);
-    LOG(INFO) << "Frame URL: " << rfh->GetLastCommittedURL();
-    // If needed, you can match against a YouTube embed URL here
-  }
-
-  // 3. Build fullscreen options
+  // [!! FIX !!] Create a default FullscreenOptions object.
+  // The .mojom file shows this is a simple struct with default values.
   blink::mojom::FullscreenOptions options;
-  options.has_toolbar = false;
-  options.prefers_video_only = true;  // Video-only fullscreen mode
-  options.display_id = 0;             // Default display
 
-  // 4. Call the internal Chromium method
+  // This is the direct, low-level call to initiate fullscreen for the frame.
+  // It is the correct replacement for the desktop-only FullscreenController.
   web_contents_impl->EnterFullscreenMode(target_frame, options);
 
-  LOG(INFO) << "EnterFullscreenMode called successfully for YouTube video.";
+  LOG(INFO) << "EnterFullscreenMode called successfully for the primary main frame.";
 }
 
 // static
