@@ -1406,29 +1406,29 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             maybeShowWalletPanel();
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
             Tab currentTab = getToolbarDataProvider().getTab();
-            try {
-                FullscreenManager fullscreenManager = BraveActivity.getBraveActivity().getFullscreenManager();
-                if (fullscreenManager != null) {
-                    FullscreenOptions options = new FullscreenOptions(
-                            false, false);
+            // try {
+            //     FullscreenManager fullscreenManager = BraveActivity.getBraveActivity().getFullscreenManager();
+            //     if (fullscreenManager != null) {
+            //         FullscreenOptions options = new FullscreenOptions(
+            //                 false, false);
                         
-                    fullscreenManager.onEnterFullscreen(currentTab, options);
-                }
-                else {
-                    Log.e("BROWSER_EXPRESS_TOOLBAR", "FullscreenManager is null");
-                }
-            } catch (BraveActivity.BraveActivityNotFoundException e) {
-                Log.e(TAG, "HomeButton click " + e);
-            }
-            // if (currentTab != null
-            //         && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
-            //                 currentTab.getWebContents())) {
-            //     if (!PictureInPicture.isEnabled(getContext())) {
-            //         hideYouTubePipIcon();
-            //         return;
+            //         fullscreenManager.onEnterFullscreen(currentTab, options);
             //     }
-            //     BraveYouTubeScriptInjectorNativeHelper.enterFullscreenForPip(currentTab.getWebContents());
+            //     else {
+            //         Log.e("BROWSER_EXPRESS_TOOLBAR", "FullscreenManager is null");
+            //     }
+            // } catch (BraveActivity.BraveActivityNotFoundException e) {
+            //     Log.e(TAG, "HomeButton click " + e);
             // }
+            if (currentTab != null
+                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                            currentTab.getWebContents())) {
+                if (!PictureInPicture.isEnabled(getContext())) {
+                    hideYouTubePipIcon();
+                    return;
+                }
+                BraveYouTubeScriptInjectorNativeHelper.enterFullscreenForPip(currentTab.getWebContents());
+            }
         }
     }
 
