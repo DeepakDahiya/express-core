@@ -166,7 +166,6 @@ import org.chromium.chrome.browser.playlist.settings.BravePlaylistPreferences;
 import org.chromium.chrome.browser.preferences.BravePref;
 import org.chromium.chrome.browser.preferences.BravePrefServiceBridge;
 import org.chromium.chrome.browser.preferences.ChromePreferenceKeys;
-import android.webkit.JavascriptInterface;
 import org.chromium.chrome.browser.preferences.ChromeSharedPreferences;
 import org.chromium.chrome.browser.preferences.Pref;
 import org.chromium.chrome.browser.preferences.PrefServiceUtil;
@@ -263,10 +262,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
-
-import org.chromium.chrome.browser.media.BraveMiniPlayerManager;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import android.util.Rational;
 import android.app.PictureInPictureParams;
@@ -369,8 +364,6 @@ public abstract class BraveActivity extends ChromeActivity
     public static final String BING_SEARCH_ENGINE_KEYWORD = ":b";
     public static final String STARTPAGE_SEARCH_ENGINE_KEYWORD = ":sp";
 
-    private BraveMiniPlayerManager mMiniPlayerManager;
-
     /** Settings for sending local notification reminders. */
     public static final String CHANNEL_ID = "com.discourse.browser";
 
@@ -437,9 +430,6 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnUtils.reportBackgroundUsageP3A();
         }
 
-        mMiniPlayerManager = BraveMiniPlayerManager.getInstance(this);
-        mMiniPlayerManager.initialize(this);
-
         // The check on mNativeInitialized is mostly to ensure that mojo
         // services for wallet are initialized.
         // TODO(sergz): verify do we need it in that phase or not.
@@ -504,70 +494,6 @@ public abstract class BraveActivity extends ChromeActivity
             BraveVpnNativeWorker.getInstance().removeObserver(this);
         }
         super.onPauseWithNative();
-    }
-
-    public class BraveYouTubeInterface {
-        private Context mContext;
-        private static final String TAG = "BraveYouTubeInterface";
-
-        public BraveYouTubeInterface(Context context) {
-            mContext = context;
-        }
-        
-        @JavascriptInterface
-        public void startMiniPlayer(String videoDataJson) {
-            Log.d(TAG, "Received mini-player request: " + videoDataJson);
-            
-            runOnUiThread(() -> {
-                try {
-                    JSONObject data = new JSONObject(videoDataJson);
-                    
-                    BraveMiniPlayerManager.VideoData videoData = new BraveMiniPlayerManager.VideoData(
-                        data.getString("url"),
-                        data.getString("title"),
-                        data.getString("channel"),
-                        data.optString("thumbnailUrl", null),
-                        data.getDouble("currentTime"),
-                        data.getDouble("duration"),
-                        data.getBoolean("isPlaying"),
-                        data.getInt("tabId")
-                    );
-                    
-                    WebContents webContents = getCurrentWebContents();
-                    if (webContents != null) {
-                        mMiniPlayerManager.showMiniPlayer(videoData, webContents);
-                    }
-                    
-                } catch (JSONException e) {
-                    Log.e(TAG, "Failed to parse video data JSON", e);
-                }
-            });
-        }
-        
-        @JavascriptInterface
-        public void updateVideoState(String stateJson) {
-            runOnUiThread(() -> {
-                try {
-                    JSONObject state = new JSONObject(stateJson);
-                    double currentTime = state.getDouble("currentTime");
-                    boolean isPlaying = state.getBoolean("isPlaying");
-                    
-                    mMiniPlayerManager.updateVideoTime(currentTime);
-                    
-                } catch (JSONException e) {
-                    Log.e(TAG, "Failed to parse video state JSON", e);
-                }
-            });
-        }
-    }
-
-    @Override
-    public void onUserLeaveHint() {
-        super.onUserLeaveHint();
-        
-        if (mMiniPlayerManager.isVisible()) {
-            mMiniPlayerManager.transitionToAndroidPip();
-        }
     }
 
     @Override
@@ -940,10 +866,6 @@ public abstract class BraveActivity extends ChromeActivity
         cleanUpWalletNativeServices();
         cleanUpMiscAndroidMetrics();
 
-        if (mMiniPlayerManager != null) {
-            mMiniPlayerManager.destroy();
-        }
-
         try {
             // Clean up WebContents observer
             if (mWebContentsObserver != null) {
@@ -963,45 +885,21 @@ public abstract class BraveActivity extends ChromeActivity
     public void onPictureInPictureModeChanged(boolean inPicture, Configuration newConfig) {
         super.onPictureInPictureModeChanged(inPicture, newConfig);
 
-        if (!inPicture && mMiniPlayerManager.getCurrentVideo() != null) {
-            View controls = findViewById(R.id.mini_player_controls);
-            if (controls != null) {
-                controls.setVisibility(View.VISIBLE);
+        if (!inPicture
+                && getCurrentWebContents() != null
+                && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                        getCurrentWebContents())) {
+            // PiP has been dismissed when watching a YT video, then pause it.
+            MediaSession mediaSession = MediaSession.fromWebContents(getCurrentWebContents());
+            if (mediaSession != null) {
+                mediaSession.suspend();
+            }
+            FullscreenManager fullscreenManager = getFullscreenManager();
+            if (fullscreenManager.getPersistentFullscreenMode()) {
+                fullscreenManager.exitPersistentFullscreenMode();
             }
         }
     }
-
-    // Method to be called from toolbar
-    public void showMiniPlayerFromToolbar(String videoDataJson) {
-        BraveYouTubeInterface bridge = new BraveYouTubeInterface(this);
-        bridge.startMiniPlayer(videoDataJson);
-    }
-
-    // Setup bridge for WebContents
-    public void setupYouTubeBridge(WebContents webContents) {
-        if (webContents != null) {
-            // Log.d(TAG, "YouTube bridge ready for WebContents");
-        }
-    }
-
-    // private void setupWebContentsForYouTube(WebContents webContents) {
-    //     if (webContents != null) {
-    //         // Add JavaScript interface for YouTube bridge
-    //         webContents.addJavaScriptInterface(
-    //             new BraveYouTubeInterface(this), 
-    //             "BraveYouTube"
-    //         );
-    //     }
-    // }
-
-    // // Call this when creating new tabs or navigating
-    // @Override
-    // public void onTabCreated(Tab tab) {
-    //     super.onTabCreated(tab);
-    //     if (tab.getWebContents() != null) {
-    //         setupWebContentsForYouTube(tab.getWebContents());
-    //     }
-    // }
 
     /**
      * Gets Wallet model for Brave activity. It may be {@code null} if native initialization has not

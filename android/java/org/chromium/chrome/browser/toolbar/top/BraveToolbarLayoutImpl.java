@@ -173,7 +173,6 @@ import org.chromium.net.NetworkTrafficAnnotationTag;
 import org.chromium.base.ContextUtils;
 import android.content.SharedPreferences;
 import androidx.annotation.WorkerThread;
-import org.chromium.content_public.browser.JavaScriptCallback;
 
 public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         implements BraveToolbarLayout,
@@ -1405,35 +1404,15 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             maybeShowWalletPanel();
         } else if (mYouTubePipButton == v && mYouTubePipButton != null) {
             Tab currentTab = getToolbarDataProvider().getTab();
-            if (currentTab != null) {
-                currentTab.getWebContents().evaluateJavaScript(
-                    "window.BraveYouTubeHelper && window.BraveYouTubeHelper.extractVideoData()", 
-                    new JavaScriptCallback() {
-                        @Override
-                        public void handleJavaScriptResult(String result) {
-                            // The method name is also different, it's 'handleJavaScriptResult'.
-                            if (result != null && !result.equals("null")) {
-                                try {
-                                    BraveActivity activity = BraveActivity.getBraveActivity();
-                                    activity.showMiniPlayerFromToolbar(result);
-                                } catch (Exception e) {
-                                    // It's better to use a specific TAG for this class.
-                                    Log.e("BraveToolbar", "Failed to show mini player from toolbar", e);
-                                }
-                            }
-                        }
-                    });
+            if (currentTab != null
+                    && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
+                            currentTab.getWebContents())) {
+                if (!PictureInPicture.isEnabled(getContext())) {
+                    hideYouTubePipIcon();
+                    return;
+                }
+                BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
             }
-            // Tab currentTab = getToolbarDataProvider().getTab();
-            // if (currentTab != null
-            //         && BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
-            //                 currentTab.getWebContents())) {
-            //     if (!PictureInPicture.isEnabled(getContext())) {
-            //         hideYouTubePipIcon();
-            //         return;
-            //     }
-            //     BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
-            // }
         }
     }
 
