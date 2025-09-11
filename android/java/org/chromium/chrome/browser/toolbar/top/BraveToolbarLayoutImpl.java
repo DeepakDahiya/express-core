@@ -1411,7 +1411,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                     hideYouTubePipIcon();
                     return;
                 }
-                BraveYouTubeScriptInjectorNativeHelper.setFullscreen(currentTab.getWebContents());
+                BraveYouTubeScriptInjectorNativeHelper.enterFullscreenForPip(currentTab.getWebContents());
             }
         }
     }
