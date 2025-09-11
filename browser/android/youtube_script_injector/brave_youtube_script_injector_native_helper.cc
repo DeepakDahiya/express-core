@@ -18,7 +18,7 @@ namespace youtube_script_injector {
 
 void JNI_BraveYouTubeScriptInjectorNativeHelper_EnterFullscreenForPip(
     JNIEnv* env,
-    const base::android::JavaParam_ref<jobject>& j_web_contents) {
+    const base::android::JavaParamRef<jobject>& j_web_contents) {
   
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
