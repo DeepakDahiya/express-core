@@ -11,10 +11,11 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
-#include "chrome/browser/ui/exclusive_access/fullscreen_controller.h"
-#include "chrome/browser/ui/exclusive_access/exclusive_access_manager.h"
-#include "chrome/browser/ui/browser_finder.h"
-#include "chrome/browser/ui/browser.h"
+#include "content/browser/web_contents/web_contents_impl.h"
+#include "content/public/android/java/jni_helper.h"
+#include "content/public/browser/web_contents.h"
+#include "content/browser/renderer_host/render_frame_host_impl.h"
+#include "third_party/blink/public/mojom/fullscreen/fullscreen.mojom.h"
 
 namespace youtube_script_injector {
 
@@ -22,32 +23,40 @@ void JNI_BraveYouTubeScriptInjectorNativeHelper_EnterFullscreenForPip(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& j_web_contents) {
   
+  // 1. Convert the Java WebContents reference to native WebContents
   content::WebContents* web_contents =
       content::WebContents::FromJavaWebContents(j_web_contents);
-  if (!web_contents) return;
+  if (!web_contents)
+    return;
 
-  // 1. ARM THE INTERCEPTOR: Set the flag so our observer knows this is a special call.
-  YouTubeScriptInjectorTabHelper* helper =
-      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    helper->SetFullscreenRequested(true);
-  } else {
-    return; // Cannot proceed without the helper to set the flag.
+  // Cast to WebContentsImpl so we can call internal methods
+  auto* web_contents_impl = static_cast<content::WebContentsImpl*>(web_contents);
+
+  // 2. Get the correct RenderFrameHostImpl
+  // YouTube videos are usually in an iframe, but start with main frame.
+  content::RenderFrameHostImpl* target_frame =
+      static_cast<content::RenderFrameHostImpl*>(web_contents->GetPrimaryMainFrame());
+
+  if (!target_frame)
+    return;
+
+  // DEBUG: Log all frames to ensure we target the correct one.
+  for (auto* frame : web_contents->GetAllFrames()) {
+    auto* rfh = static_cast<content::RenderFrameHostImpl*>(frame);
+    LOG(INFO) << "Frame URL: " << rfh->GetLastCommittedURL();
+    // If needed, you can match against a YouTube embed URL here
   }
 
-  // 2. FIND THE CONTROLLER: Get the browser's master fullscreen controller.
-  Browser* browser = chrome::FindBrowserWithWebContents(web_contents);
-  if (!browser) return;
+  // 3. Build fullscreen options
+  blink::mojom::FullscreenOptions options;
+  options.has_toolbar = false;
+  options.prefers_video_only = true;  // Video-only fullscreen mode
+  options.display_id = 0;             // Default display
 
-  FullscreenController* fullscreen_controller =
-      browser->exclusive_access_manager()->fullscreen_controller();
-  
-  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
-  
-  if (fullscreen_controller && main_frame) {
-    // 3. INVOKE FULLSCREEN: Directly trigger the browser's internal fullscreen logic.
-    fullscreen_controller->EnterFullscreenModeForTab(main_frame, FullscreenTabParams());
-  }
+  // 4. Call the internal Chromium method
+  web_contents_impl->EnterFullscreenMode(target_frame, options);
+
+  LOG(INFO) << "EnterFullscreenMode called successfully for YouTube video.";
 }
 
 // static
