@@ -6,42 +6,32 @@
 #ifndef BRAVE_RENDERER_YOUTUBE_SCRIPT_INJECTOR_VIDEO_SURFACE_STREAMER_IMPL_H_
 #define BRAVE_RENDERER_YOUTUBE_SCRIPT_INJECTOR_VIDEO_SURFACE_STREAMER_IMPL_H_
 
-#include "base/memory/raw_ptr.h"
-#include "base/memory/weak_ptr.h"
-#include "base/time/time.h"
-#include "brave/browser/android/youtube_script_injector/mojom/video_surface_streamer.mojom.h"
+#include "brave/common/media/brave_video_streamer.mojom.h" // NOTE: Adjust path to your .mojom file
 #include "content/public/renderer/render_frame_observer.h"
-#include "gpu/ipc/common/surface_handle.h"
 #include "mojo/public/cpp/bindings/associated_receiver.h"
 #include "mojo/public/cpp/bindings/pending_associated_receiver.h"
-#include "ui/gfx/geometry/size.h"
+
+#include <memory>
 
 namespace blink {
 class WebMediaPlayer;
+class WebVideoFrameSubmitter;
 }
 
-namespace cc {
-class VideoLayer;
-}
-
-namespace media {
-class VideoFrame;
+namespace content {
+class RenderFrame;
 }
 
 namespace brave {
 
-// Implementation of the VideoSurfaceStreamer interface in the renderer process
 class VideoSurfaceStreamerImpl : public content::RenderFrameObserver,
                                  public mojom::VideoSurfaceStreamer {
  public:
-  VideoSurfaceStreamerImpl(
+  static void Create(
       content::RenderFrame* render_frame,
       mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
-  ~VideoSurfaceStreamerImpl() override;
 
-  // Static factory method
-  static void Create(content::RenderFrame* render_frame,
-                    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
+  ~VideoSurfaceStreamerImpl() override;
 
   // content::RenderFrameObserver implementation
   void OnDestruct() override;
@@ -51,29 +41,16 @@ class VideoSurfaceStreamerImpl : public content::RenderFrameObserver,
                      StartStreamingCallback callback) override;
   void StopStreaming() override;
   void TogglePlayback() override;
-  void UpdateStreamingParams(const gfx::Size& video_size,
-                            float frame_rate) override;
 
  private:
-  void SetupVideoFrameCallback();
-  void OnVideoFrameAvailable(base::TimeDelta timestamp);
-  void CreateVideoLayer();
-  void RenderFrameToSurface(scoped_refptr<media::VideoFrame> frame);
+  VideoSurfaceStreamerImpl(
+      content::RenderFrame* render_frame,
+      mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver);
 
   mojo::AssociatedReceiver<mojom::VideoSurfaceStreamer> receiver_;
   
-  // Video streaming state
-  bool is_streaming_ = false;
-  gpu::SurfaceHandle surface_handle_ = gpu::kNullSurfaceHandle;
-  gfx::Size video_size_;
-  float frame_rate_ = 30.0f;
-  
-  // Media player references
   raw_ptr<blink::WebMediaPlayer> web_media_player_ = nullptr;
-  scoped_refptr<cc::VideoLayer> video_layer_;
-  uint32_t video_frame_callback_id_ = 0;
-
-  base::WeakPtrFactory<VideoSurfaceStreamerImpl> weak_factory_{this};
+  std::unique_ptr<blink::WebVideoFrameSubmitter> video_frame_submitter_;
 };
 
 }  // namespace brave

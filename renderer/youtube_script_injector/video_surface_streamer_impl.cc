@@ -5,39 +5,29 @@
 
 #include "brave/renderer/youtube_script_injector/video_surface_streamer_impl.h"
 
-#include "base/logging.h"
-#include "base/task/single_thread_task_runner.h"
-#include "cc/layers/video_layer.h"
 #include "content/public/renderer/render_frame.h"
-#include "gpu/command_buffer/client/gles2_interface.h"
-#include "media/base/video_frame.h"
 #include "third_party/blink/public/platform/web_media_player.h"
+#include "third_party/blink/public/platform/web_video_frame_submitter.h"
 #include "third_party/blink/public/web/web_document.h"
-#include "third_party/blink/public/web/web_element.h"
-#include "third_party/blink/public/web/web_frame.h"
+#include "third_party/blink/public/web/web_element_collection.h"
 #include "third_party/blink/public/web/web_local_frame.h"
-#include "third_party/blink/public/web/web_node.h"
 #include "third_party/blink/public/web/html/html_video_element.h"
 
 namespace brave {
-
-VideoSurfaceStreamerImpl::VideoSurfaceStreamerImpl(
-    content::RenderFrame* render_frame,
-    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver)
-    : content::RenderFrameObserver(render_frame),
-      receiver_(this, std::move(receiver)) {
-  DCHECK(render_frame);
-}
-
-VideoSurfaceStreamerImpl::~VideoSurfaceStreamerImpl() {
-  StopStreaming();
-}
 
 void VideoSurfaceStreamerImpl::Create(
     content::RenderFrame* render_frame,
     mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver) {
   new VideoSurfaceStreamerImpl(render_frame, std::move(receiver));
 }
+
+VideoSurfaceStreamerImpl::VideoSurfaceStreamerImpl(
+    content::RenderFrame* render_frame,
+    mojo::PendingAssociatedReceiver<mojom::VideoSurfaceStreamer> receiver)
+    : content::RenderFrameObserver(render_frame),
+      receiver_(this, std::move(receiver)) {}
+
+VideoSurfaceStreamerImpl::~VideoSurfaceStreamerImpl() = default;
 
 void VideoSurfaceStreamerImpl::OnDestruct() {
   delete this;
@@ -46,188 +36,70 @@ void VideoSurfaceStreamerImpl::OnDestruct() {
 void VideoSurfaceStreamerImpl::StartStreaming(
     gpu::SurfaceHandle surface_handle,
     StartStreamingCallback callback) {
-  LOG(INFO) << "VideoSurfaceStreamerImpl::StartStreaming";
-  
-  if (is_streaming_) {
-    LOG(WARNING) << "Already streaming, stopping existing stream";
-    StopStreaming();
-  }
+  StopStreaming();
 
-  // Find the video element in the page
-  blink::WebLocalFrame* web_frame = render_frame_->GetWebFrame();
-  if (!web_frame) {
-    LOG(ERROR) << "No web frame available";
+  blink::WebLocalFrame* frame = render_frame()->GetWebFrame();
+  if (!frame) {
     std::move(callback).Run(false);
     return;
   }
 
-  blink::WebDocument document = web_frame->GetDocument();
-  if (document.IsNull()) {
-    LOG(ERROR) << "Document is null";
+  blink::HTMLVideoElement* video_element = nullptr;
+  int max_area = 0;
+  blink::WebElementCollection videos = frame->GetDocument().GetElementsByTagName("video");
+  for (blink::WebElement element = videos.FirstItem(); !element.IsNull(); element = videos.NextItem()) {
+    auto* current_video = element.To<blink::HTMLVideoElement>();
+    if (current_video && current_video->HasVideo() && !current_video->paused()) {
+        gfx::Rect bounds = current_video->BoundsInWidget();
+        int area = bounds.width() * bounds.height();
+        if (area > max_area) {
+            max_area = area;
+            video_element = current_video;
+        }
+    }
+  }
+
+  if (!video_element) {
+    LOG(WARNING) << "BraveVideoStreamer: No suitable <video> element found.";
     std::move(callback).Run(false);
     return;
   }
 
-  // Find the first video element
-  blink::WebElement video_element = document.QuerySelector("video");
-  if (video_element.IsNull()) {
-    LOG(ERROR) << "No video element found";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  // Get the media player from the video element
-  auto* html_video = video_element.To<blink::HTMLVideoElement>();
-  if (!html_video) {
-    LOG(ERROR) << "Failed to unwrap HTMLVideoElement";
-    std::move(callback).Run(false);
-    return;
-  }
-
-  web_media_player_ = html_video->GetWebMediaPlayer();
+  web_media_player_ = video_element->GetWebMediaPlayer();
   if (!web_media_player_) {
-    LOG(ERROR) << "No WebMediaPlayer available";
+    LOG(WARNING) << "BraveVideoStreamer: No WebMediaPlayer available.";
     std::move(callback).Run(false);
     return;
   }
 
-  surface_handle_ = surface_handle;
-  is_streaming_ = true;
+  video_frame_submitter_ = blink::WebVideoFrameSubmitter::Create(
+      frame->GetTaskRunner(blink::TaskType::kMediaElementEvent),
+      base::BindRepeating([](media::VideoFrame::StorageType) { return true; }));
 
-  // Set up video frame callback
-  SetupVideoFrameCallback();
+  video_frame_submitter_->Start(web_media_player_, surface_handle);
 
-  // Create a video layer that will render to the surface
-  CreateVideoLayer();
-
-  LOG(INFO) << "Successfully started video streaming";
+  LOG(INFO) << "BraveVideoStreamer: Started streaming video frames.";
   std::move(callback).Run(true);
 }
 
 void VideoSurfaceStreamerImpl::StopStreaming() {
-  LOG(INFO) << "VideoSurfaceStreamerImpl::StopStreaming";
-  
-  is_streaming_ = false;
-  
-  if (video_frame_callback_id_) {
-    if (web_media_player_) {
-      web_media_player_->CancelVideoFrameCallback(video_frame_callback_id_);
-    }
-    video_frame_callback_id_ = 0;
+  if (video_frame_submitter_) {
+    video_frame_submitter_->Stop();
+    video_frame_submitter_.reset();
   }
-
-  if (video_layer_) {
-    video_layer_ = nullptr;
-  }
-
   web_media_player_ = nullptr;
-  surface_handle_ = gpu::kNullSurfaceHandle;
 }
 
 void VideoSurfaceStreamerImpl::TogglePlayback() {
   if (!web_media_player_) {
-    LOG(ERROR) << "No media player available";
+    LOG(WARNING) << "BraveVideoStreamer: TogglePlayback called but no media player is active.";
     return;
   }
 
   if (web_media_player_->Paused()) {
     web_media_player_->Play();
-    LOG(INFO) << "Resumed playback";
   } else {
     web_media_player_->Pause();
-    LOG(INFO) << "Paused playback";
-  }
-}
-
-void VideoSurfaceStreamerImpl::UpdateStreamingParams(
-    const gfx::Size& video_size,
-    float frame_rate) {
-  video_size_ = video_size;
-  frame_rate_ = frame_rate;
-  
-  if (video_layer_) {
-    video_layer_->SetBounds(gfx::Size(video_size.width(), video_size.height()));
-  }
-}
-
-void VideoSurfaceStreamerImpl::SetupVideoFrameCallback() {
-  if (!web_media_player_) {
-    return;
-  }
-
-  // Request video frame callbacks to get notified when new frames are available
-  auto callback = base::BindRepeating(
-      &VideoSurfaceStreamerImpl::OnVideoFrameAvailable,
-      weak_factory_.GetWeakPtr());
-  
-  video_frame_callback_id_ = web_media_player_->RequestVideoFrameCallback(
-      std::move(callback));
-}
-
-void VideoSurfaceStreamerImpl::OnVideoFrameAvailable(
-    base::TimeDelta timestamp) {
-  if (!is_streaming_ || !web_media_player_) {
-    return;
-  }
-
-  // Get the current video frame
-  scoped_refptr<media::VideoFrame> frame = web_media_player_->GetCurrentFrame();
-  if (!frame) {
-    return;
-  }
-
-  // Send the frame to the surface
-  RenderFrameToSurface(frame);
-
-  // Request the next frame callback
-  if (is_streaming_) {
-    SetupVideoFrameCallback();
-  }
-}
-
-void VideoSurfaceStreamerImpl::CreateVideoLayer() {
-  if (!web_media_player_) {
-    return;
-  }
-
-  // Create a video layer that will be composited to the surface
-  video_layer_ = cc::VideoLayer::Create(
-      web_media_player_,
-      media::VideoRotation::VIDEO_ROTATION_0);
-  
-  if (!video_layer_) {
-    LOG(ERROR) << "Failed to create video layer";
-    return;
-  }
-
-  // Set initial bounds
-  if (!video_size_.IsEmpty()) {
-    video_layer_->SetBounds(gfx::Size(video_size_.width(), video_size_.height()));
-  }
-
-  // Note: SetSurfaceId doesn't exist in cc::VideoLayer
-  // The surface rendering would be handled differently in a real implementation
-  video_layer_->SetIsDrawable(true);
-  video_layer_->SetContentsOpaque(true);
-}
-
-void VideoSurfaceStreamerImpl::RenderFrameToSurface(
-    scoped_refptr<media::VideoFrame> frame) {
-  if (!frame || !is_streaming_) {
-    return;
-  }
-
-  // Update video size if it has changed
-  gfx::Size frame_size = frame->natural_size();
-  if (frame_size != video_size_) {
-    UpdateStreamingParams(frame_size, frame_rate_);
-  }
-
-  // The actual rendering to the surface is handled by the compositor
-  // through the video layer we created. We just need to ensure the
-  // layer has the latest frame.
-  if (video_layer_) {
-    video_layer_->SetNeedsDisplay();
   }
 }
 
