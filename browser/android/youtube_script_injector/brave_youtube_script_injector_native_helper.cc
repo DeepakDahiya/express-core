@@ -14,7 +14,7 @@
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents.h"
 #include "content/browser/renderer_host/render_frame_host_impl.h"
-#include "third_party/blink/public/mojom/fullscreen/fullscreen.mojom.h"
+#include "third_party/blink/public/mojom/frame/fullscreen.mojom.h"
 
 namespace youtube_script_injector {
 
