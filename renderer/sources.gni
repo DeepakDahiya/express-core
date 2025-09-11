@@ -18,6 +18,8 @@ brave_chrome_renderer_sources = [
   "//brave/renderer/brave_render_frame_observer.h",
   "//brave/renderer/brave_render_thread_observer.cc",
   "//brave/renderer/brave_render_thread_observer.h",
+  "//brave/renderer/youtube_script_injector/video_surface_streamer_impl.cc",
+  "//brave/renderer/youtube_script_injector/video_surface_streamer_impl.h",
 ]
 
 brave_chrome_renderer_deps = [
@@ -71,7 +73,7 @@ if (enable_brave_vpn) {
 
 if (is_android) {
   brave_chrome_renderer_deps +=
-      [ "//brave/components/brave_mobile_subscription/renderer/android" ]
+      [ "//brave/components/brave_mobile_subscription/renderer/android", "//brave/renderer/youtube_script_injector:youtube_script_injector_renderer", ]
 }
 
 if (enable_web_discovery_native) {
