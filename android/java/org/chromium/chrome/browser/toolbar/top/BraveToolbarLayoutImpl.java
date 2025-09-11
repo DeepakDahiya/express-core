@@ -1410,7 +1410,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                 FullscreenManager fullscreenManager = BraveActivity.getBraveActivity().getFullscreenManager();
                 if (fullscreenManager != null) {
                     FullscreenOptions options = new FullscreenOptions(
-                            false, false, -1);
+                            false, false);
                         
                     fullscreenManager.onEnterFullscreen(currentTab, options);
                 }
