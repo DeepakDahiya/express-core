@@ -7,19 +7,19 @@ package org.chromium.chrome.browser;
 
 import android.app.Activity;
 import android.app.PictureInPictureParams;
+import android.content.Intent;
+import android.webkit.JavascriptInterface;
+import java.lang.ref.WeakReference;
 
 import org.jni_zero.CalledByNative;
 import org.jni_zero.JNINamespace;
 import org.jni_zero.NativeMethods;
-import android.content.Intent;
-import android.webkit.JavascriptInterface; 
-import java.lang.ref.WeakReference;
-
 import org.chromium.base.Log;
 import org.chromium.build.annotations.NullMarked;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.content_public.browser.InterfaceRegistrar; // Import this
 
 /**
  * Helper to interact with native methods. Check brave_youtube_script_injector_native_helper.{h|cc}.
@@ -44,56 +44,49 @@ public class BraveYouTubeScriptInjectorNativeHelper {
                 .isPictureInPictureAvailable(webContents);
     }
 
+    @CalledByNative
     public static void setupJavaScriptInterface(WebContents webContents) {
-        if (webContents != null && webContents.getTopLevelNativeWindow() != null) {
-            // Add JavaScript interface to handle tab restoration
-            webContents.addJavaScriptInterface(new PiPTabRestorer(webContents), JAVASCRIPT_INTERFACE_NAME);
+        if (webContents != null) {
+            InterfaceRegistrar.getRegistry(webContents.getMainFrame())
+                .addInterface(new PiPTabRestorer(webContents), JAVASCRIPT_INTERFACE_NAME);
         }
     }
 
     private static class PiPTabRestorer {
         private final WeakReference<WebContents> mWebContentsRef;
         
-        public PiPTabRestorer(WebContents webContents) {
+        PiPTabRestorer(WebContents webContents) {
             mWebContentsRef = new WeakReference<>(webContents);
         }
         
-        @android.webkit.JavascriptInterface
+        @JavascriptInterface
         public void restoreOriginalTab() {
             WebContents webContents = mWebContentsRef.get();
-            if (webContents != null) {
-                WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
-                if (windowAndroid != null) {
-                    Activity activity = windowAndroid.getActivity().get();
-                    if (activity != null) {
-                        // For Android 15+, we need to ensure the task is brought to foreground
-                        activity.runOnUiThread(() -> {
-                            try {
-                                // Move task to front
-                                activity.moveTaskToBack(false);
-                                
-                                // Then bring it back to ensure proper focus
-                                Intent intent = new Intent(activity, activity.getClass());
-                                intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
-                                activity.startActivity(intent);
-                                
-                                // Focus the web contents
-                                if (webContents.getTopLevelNativeWindow() != null) {
-                                    webContents.getTopLevelNativeWindow().requestFeature(WindowAndroid.FEATURE_REQUEST_FOCUS);
-                                }
-                            } catch (Exception e) {
-                                Log.e(TAG, "Error restoring original tab", e);
-                            }
-                        });
-                    }
+            if (webContents == null) return;
+
+            WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
+            if (windowAndroid == null) return;
+
+            Activity activity = windowAndroid.getActivity().get();
+            if (activity == null) return;
+            
+            activity.runOnUiThread(() -> {
+                try {
+                    // This logic to bring the activity to the front is good.
+                    Intent intent = new Intent(activity, activity.getClass());
+                    intent.addFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+                    activity.startActivity(intent);
+                    
+                    // FIX 2: Request focus on the WebContents view itself.
+                    webContents.getView().requestFocus();
+                    
+                } catch (Exception e) {
+                    Log.e(TAG, "Error restoring original tab", e);
                 }
-            }
+            });
         }
     }
 
-    /**
-     * @noinspection unused
-     */
     @CalledByNative
     public static void enterPictureInPicture(WebContents webContents) {
         MediaSession mediaSession = MediaSession.fromWebContents(webContents);
@@ -114,17 +107,11 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         }
     }
 
-    /**
-     * @noinspection unused
-     */
     @NativeMethods
     interface Natives {
         void setFullscreen(WebContents webContents);
-
         boolean hasFullscreenBeenRequested(WebContents webContents);
-
         boolean isPictureInPictureAvailable(WebContents webContents);
-
         void setupJavaScriptInterface(WebContents webContents);
     }
 }
