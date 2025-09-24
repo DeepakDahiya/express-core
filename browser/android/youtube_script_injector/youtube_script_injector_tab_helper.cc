@@ -1460,6 +1460,58 @@ constexpr char16_t kYoutubeFullscreen[] =
 }());
 )";
 
+// Add this new constant for the tab restoration fix.
+constexpr char16_t kYoutubePipNavigationFix[] =
+    uR"(
+    (function() {
+        if (window.bravePipFixAttached) return;
+        window.bravePipFixAttached = true;
+
+        let originalTabUrl = null;
+
+        const handleEnterPiP = (event) => {
+            originalTabUrl = window.location.href;
+            console.log('PiP Entered. Storing URL:', originalTabUrl);
+        };
+
+        const handleLeavePiP = (event) => {
+            if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
+                console.log('PiP Exited. Requesting focus for URL:', originalTabUrl);
+                try {
+                    window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
+                } catch (e) {
+                    console.error('Failed to call BravePiPNavigator bridge:', e);
+                }
+            }
+            originalTabUrl = null;
+        };
+
+        let videoEl = null;
+        const observer = new MutationObserver(() => {
+            const newVideoEl = document.querySelector('video');
+            if (newVideoEl && newVideoEl !== videoEl) {
+                if (videoEl) {
+                    videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
+                    videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
+                }
+                videoEl = newVideoEl;
+                videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
+                videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
+                observer.disconnect();
+            }
+        });
+
+        const initialVideoEl = document.querySelector('video');
+        if (initialVideoEl) {
+            videoEl = initialVideoEl;
+            videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
+            videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
+        } else {
+            observer.observe(document.body, { childList: true, subtree: true });
+        }
+    })();
+)";
+
 bool IsBackgroundVideoPlaybackEnabled(content::WebContents* contents) {
   PrefService* prefs =
       static_cast<Profile*>(contents->GetBrowserContext())->GetPrefs();
@@ -1550,6 +1602,9 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
+
+  contents->GetPrimaryMainFrame()->ExecuteJavaScript(
+        kYoutubePipNavigationFix, base::NullCallback());
 
   if (IsBackgroundVideoPlaybackEnabled(contents)) {
     contents->GetPrimaryMainFrame()->ExecuteJavaScript(
