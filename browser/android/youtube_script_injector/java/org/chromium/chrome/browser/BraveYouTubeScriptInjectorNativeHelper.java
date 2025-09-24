@@ -63,7 +63,7 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     public static void setupJavaScriptInterface(WebContents webContents, TabModelSelector selector) {
         if (webContents == null || selector == null) return;
 
-        JavascriptInjector injector = JavascriptInjector.fromWebContents(webContents, true);
+        JavascriptInjector injector = JavascriptInjector.fromWebContents(webContents);
         injector.addPossiblyUnsafeInterface(
                 new PiPTabRestorer(selector), JAVASCRIPT_INTERFACE_NAME, JavascriptInterface.class);
     }
