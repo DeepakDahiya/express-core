@@ -69,7 +69,7 @@ void EnterPictureInPicture(content::WebContents* web_contents) {
 
 void SetupJavaScriptInterface(content::WebContents* web_contents) {
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_BraveYouTubeScriptInjectorNativeHelper_setupJavaScriptInterface(
+  JNI_BraveYouTubeScriptInjectorNativeHelper_SetupJavaScriptInterface(
       env, web_contents->GetJavaWebContents());
 }
 

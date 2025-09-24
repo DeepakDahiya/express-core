@@ -40,6 +40,9 @@ android_library("java") {
     "//content/public/android:content_full_java",
     "//third_party/jni_zero:jni_zero_java",
     "//ui/android:ui_no_recycler_view_java",
+    "//chrome/browser/tabmodel:java",
+    "//chrome/browser/tab:java",
+    "//url:url_java",
   ]
 
   resources_package = "org.chromium.chrome.browser"

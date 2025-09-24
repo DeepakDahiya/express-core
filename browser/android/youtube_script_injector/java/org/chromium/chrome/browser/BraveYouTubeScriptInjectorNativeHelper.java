@@ -64,8 +64,10 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         if (webContents == null || selector == null) return;
 
         JavascriptInjector injector = JavascriptInjector.fromWebContents(webContents);
-        injector.addPossiblyUnsafeInterface(
+        if (injector != null) {
+            injector.addPossiblyUnsafeInterface(
                 new PiPTabRestorer(selector), JAVASCRIPT_INTERFACE_NAME, JavascriptInterface.class);
+        }
     }
 
     private static class PiPTabRestorer {
