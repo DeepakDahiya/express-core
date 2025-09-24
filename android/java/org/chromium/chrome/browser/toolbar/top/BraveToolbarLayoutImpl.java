@@ -603,6 +603,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                             dismissWalletPanelOrDialog();
                         }
                         findMediaFiles();
+
+                        if (tab.getWebContents() != null) {
+                            BraveYouTubeScriptInjectorNativeHelper.setupJavaScriptInterface(tab.getWebContents(), selector);
+                        }
                     }
 
                     @Override
