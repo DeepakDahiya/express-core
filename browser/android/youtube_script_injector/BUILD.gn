@@ -28,9 +28,6 @@ source_set("youtube_script_injector") {
     "//components/prefs",
     "//net",
     "//url",
-    "//content/browser", 
-    "//third_party/blink/public/mojom:mojom_platform",
-    "//third_party/blink/public/mojom:mojom_core",
   ]
 }
 

@@ -11,39 +11,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
 
-#include "content/public/browser/web_contents.h"
-#include "content/public/browser/render_frame_host.h"
-
 namespace youtube_script_injector {
-
-void JNI_BraveYouTubeScriptInjectorNativeHelper_EnterFullscreenForPip(
-    JNIEnv* env,
-    const base::android::JavaParamRef<jobject>& j_web_contents) {
-  
-  content::WebContents* web_contents =
-      content::WebContents::FromJavaWebContents(j_web_contents);
-  if (!web_contents) return;
-
-  // 1. ARM THE INTERCEPTOR: Set the flag so our observer knows this is a special call.
-  // This step is still critical for the handoff to work.
-  YouTubeScriptInjectorTabHelper* helper =
-      YouTubeScriptInjectorTabHelper::FromWebContents(web_contents);
-  if (helper) {
-    helper->SetFullscreenRequested(true);
-  } else {
-    return; // Cannot proceed without the helper to set the flag.
-  }
-
-  // 2. Get the target frame for the fullscreen request.
-  content::RenderFrameHost* main_frame = web_contents->GetPrimaryMainFrame();
-  if (!main_frame) return;
-
-  // 3. INVOKE FULLSCREEN: Call our new, safe, public API method on the WebContents interface.
-  web_contents->EnterFullscreenModeForFrame(main_frame);
-
-  LOG(INFO) << "EnterFullscreenModeForFrame called successfully.";
-}
-
 
 // static
 void JNI_BraveYouTubeScriptInjectorNativeHelper_SetFullscreen(
