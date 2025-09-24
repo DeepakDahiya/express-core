@@ -604,7 +604,10 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
                         }
                         findMediaFiles();
 
+                        Log.e(TAG, "onShown Tab id: " + tab.getId() + " isIncognito: " + tab.isIncognito());
+
                         if (tab.getWebContents() != null) {
+                            Log.e(TAG, "onShown Tab url: " + tab.getWebContents().getLastCommittedUrl().getSpec());
                             BraveYouTubeScriptInjectorNativeHelper.setupJavaScriptInterface(tab.getWebContents(), selector);
                         }
                     }

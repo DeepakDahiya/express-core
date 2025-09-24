@@ -61,16 +61,21 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     }
 
     public static void setupJavaScriptInterface(WebContents webContents, TabModelSelector selector) {
+        Log.e(TAG, "Setting up JavaScript interface for PiP tab restoration");
         if (webContents == null || selector == null) return;
+
+        Log.e(TAG, "WebContents and TabModelSelector are valid");
 
         JavascriptInjector injector = JavascriptInjector.fromWebContents(webContents);
         if (injector != null) {
+            Log.e(TAG, "JavascriptInjector is valid, adding interface");
             injector.addPossiblyUnsafeInterface(
                 new PiPTabRestorer(selector), JAVASCRIPT_INTERFACE_NAME, JavascriptInterface.class);
         }
     }
 
     private static class PiPTabRestorer {
+        Log.e(TAG, "PiPTabRestorer initialized");
         private final WeakReference<TabModelSelector> mTabModelSelectorRef;
         
         PiPTabRestorer(TabModelSelector selector) {
@@ -79,17 +84,24 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         
         @JavascriptInterface
         public void restoreTabWithUrl(String url) {
+            Log.e(TAG, "Request to restore tab with URL: " + url);
             final TabModelSelector selector = mTabModelSelectorRef.get();
+            Log.e(TAG, "TabModelSelector retrieved: " + (selector != null ? "valid" : "null"));
             if (url == null || url.isEmpty() || selector == null) return;
 
             ThreadUtils.runOnUiThread(() -> {
-                Log.d(TAG, "Request to focus tab with URL: " + url);
+                Log.e(TAG, "Request to focus tab with URL: " + url);
                 for (int i = 0; i < 2; i++) {
+                    Log.e(TAG, "Checking model for tab restoration");
                     TabModel model = selector.getModel(i == 1);
+                    Log.e(TAG, "TabModel retrieved: " + (model != null ? "valid" : "null"));
                     if (model == null) continue;
+                    Log.e(TAG, "Searching for tab with URL: " + url);
                     for (int j = 0; j < model.getCount(); j++) {
                         Tab tab = model.getTabAt(j);
+                        Log.e(TAG, "Checking tab at index " + j + ": " + (tab != null ? tab.getUrl().getSpec() : "null"));
                         if (tab != null && tab.getUrl().getSpec().equals(url)) {
+                            Log.e(TAG, "Found matching tab at index " + j + ", selecting it");
                             model.setIndex(j, TabSelectionType.FROM_USER);
                             return;
                         }
