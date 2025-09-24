@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.content_public.browser.JavascriptInjector;
 
 @JNINamespace("youtube_script_injector")
 @NullMarked
@@ -61,10 +62,10 @@ public class BraveYouTubeScriptInjectorNativeHelper {
 
     public static void setupJavaScriptInterface(WebContents webContents, TabModelSelector selector) {
         if (webContents == null || selector == null) return;
-        
-        // Add the bridge, passing the selector it needs.
-        webContents.addJavascriptInterface(
-            new PiPTabRestorer(selector), JAVASCRIPT_INTERFACE_NAME);
+
+        JavascriptInjector injector = JavascriptInjector.fromWebContents(webContents, true);
+        injector.addPossiblyUnsafeInterface(
+                new PiPTabRestorer(selector), JAVASCRIPT_INTERFACE_NAME, JavascriptInterface.class);
     }
 
     private static class PiPTabRestorer {
