@@ -495,20 +495,75 @@ constexpr char16_t kYoutubeInAppPIP[] =
                 });
 
                 document.addEventListener('leavepictureinpicture', (event) => {
+                    console.log('Left PiP mode - attempting tab restoration');
+                    
+                    // Store that we're exiting PiP
+                    try {
+                        const exitSignal = {
+                            action: 'PIP_EXIT',
+                            originalTabId: getTabId(),
+                            videoId: getCurrentVideoId(),
+                            timestamp: Date.now(),
+                            shouldRestoreTab: true
+                        };
+                        localStorage.setItem('pip_exit_signal', JSON.stringify(exitSignal));
+                        
+                        // Set a timeout to clean up the signal
+                        setTimeout(() => {
+                            try {
+                                localStorage.removeItem('pip_exit_signal');
+                            } catch (e) {}
+                        }, 10000);
+                    } catch (e) {
+                        console.warn('Could not set PiP exit signal:', e);
+                    }
+                    
+                    // Try to focus this window/tab
+                    if (window.focus) {
+                        window.focus();
+                    }
+                    
+                    // For Android 15+, we need to be more aggressive about tab restoration
+                    // Send a message to the native layer to restore the tab
+                    if (window.Android && window.Android.restoreOriginalTab) {
+                        window.Android.restoreOriginalTab();
+                    }
+                    
                     currentPIPVideoId = null;
                     lastPlayingVideoElement = null;
                     isOriginalPIPTab = false;
                     setPIPStatus(null, false);
-                    console.log('PIP exited');
-
+        
+                    // Ensure video continues playing after PiP exit
+                    setTimeout(() => {
+                        const video = document.querySelector('video');
+                        if (video && video.paused) {
+                            video.play().catch(console.warn);
+                        }
+                        
+                        // Force page visibility to visible
+                        Object.defineProperty(document, 'hidden', {
+                            value: false,
+                            writable: false,
+                            configurable: true
+                        });
+                        Object.defineProperty(document, 'visibilityState', {
+                            value: 'visible',
+                            writable: false,
+                            configurable: true
+                        });
+                    }, 200);
+                    
+                    // Restore the playback state if needed
                     const videoElement = document.querySelector('video');
                     if (videoElement) {
-                        // Restore the playback state if needed
                         const videoId = localStorage.getItem('pip_video_id');
                         const playbackTime = localStorage.getItem('pip_playback_time');
                         if (videoId && playbackTime) {
-                            videoElement.currentTime = playbackTime;
-                            videoElement.play();
+                            videoElement.currentTime = parseFloat(playbackTime);
+                            if (!videoElement.paused) {
+                                videoElement.play().catch(console.warn);
+                            }
                         }
                     }
                 });
@@ -1485,6 +1540,13 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
             kYoutubePipButton, base::NullCallback());
       }, contents),
       base::Milliseconds(200));
+
+  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
+      FROM_HERE,
+      base::BindOnce([](content::WebContents* contents) {
+        ::youtube_script_injector::SetupJavaScriptInterface(contents);
+      }, contents),
+      base::Milliseconds(500));
 
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
