@@ -75,7 +75,7 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     }
 
     private static class PiPTabRestorer {
-        Log.e(TAG, "PiPTabRestorer initialized");
+        private static final String TAG = "YouTubeNativeHelper";
         private final WeakReference<TabModelSelector> mTabModelSelectorRef;
         
         PiPTabRestorer(TabModelSelector selector) {
