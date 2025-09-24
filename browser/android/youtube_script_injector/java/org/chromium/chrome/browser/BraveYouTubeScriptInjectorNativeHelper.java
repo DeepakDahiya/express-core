@@ -16,7 +16,6 @@ import org.jni_zero.NativeMethods;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.build.annotations.NullMarked;
-import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -62,24 +61,10 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     }
     // --- End of unchanged methods ---
 
-    @CalledByNative
-    public static void setupJavaScriptInterface(WebContents webContents) {
-        if (webContents == null) return;
+    public static void setupJavaScriptInterface(WebContents webContents, TabModelSelector selector) {
+        if (webContents == null || selector == null) return;
         
-        WindowAndroid windowAndroid = webContents.getTopLevelNativeWindow();
-        if (windowAndroid == null) return;
-
-        Activity activity = windowAndroid.getActivity().get();
-        // We need the activity to get the TabModelSelector.
-        if (!(activity instanceof BraveActivity)) {
-            return;
-        }
-
-        BraveActivity chromeActivity = (BraveActivity) activity;
-        TabModelSelector selector = chromeActivity.getTabModelSelector();
-        if (selector == null) return;
-        
-        // This is the correct, classic way to add a JS bridge.
+        // Add the bridge, passing the selector it needs.
         webContents.addJavascriptInterface(
             new PiPTabRestorer(selector), JAVASCRIPT_INTERFACE_NAME);
     }
@@ -94,30 +79,18 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         @JavascriptInterface
         public void restoreTabWithUrl(String url) {
             final TabModelSelector selector = mTabModelSelectorRef.get();
-            if (url == null || url.isEmpty() || selector == null) {
-                return;
-            }
+            if (url == null || url.isEmpty() || selector == null) return;
 
             ThreadUtils.runOnUiThread(() -> {
                 Log.d(TAG, "Request to focus tab with URL: " + url);
-
-                // Search both regular and incognito tabs.
                 for (int i = 0; i < 2; i++) {
-                    TabModel model = selector.getModel(i == 1); // i=0 normal, i=1 incognito
+                    TabModel model = selector.getModel(i == 1);
                     if (model == null) continue;
-
                     for (int j = 0; j < model.getCount(); j++) {
                         Tab tab = model.getTabAt(j);
                         if (tab != null && tab.getUrl().getSpec().equals(url)) {
-                            Log.d(TAG, "Found matching tab at index " + j + ". Switching now.");
                             model.setIndex(j, TabSelectionType.FROM_USER);
-                            
-                            // Also request focus on the container view.
-                            WebContents wc = tab.getWebContents();
-                            if (wc != null && wc.getContainerView() != null) {
-                                wc.getContainerView().requestFocus();
-                            }
-                            return; // Success
+                            return;
                         }
                     }
                 }

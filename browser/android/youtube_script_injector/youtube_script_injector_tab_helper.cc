@@ -1593,13 +1593,6 @@ void YouTubeScriptInjectorTabHelper::PrimaryMainDocumentElementAvailable() {
       }, contents),
       base::Milliseconds(200));
 
-  base::SequencedTaskRunner::GetCurrentDefault()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce([](content::WebContents* contents) {
-        ::youtube_script_injector::SetupJavaScriptInterface(contents);
-      }, contents),
-      base::Milliseconds(500));
-
   contents->GetPrimaryMainFrame()->ExecuteJavaScript(
     kYoutubeInAppPIP, base::NullCallback());
 
