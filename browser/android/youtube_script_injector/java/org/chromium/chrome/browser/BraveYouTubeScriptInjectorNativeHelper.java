@@ -105,6 +105,5 @@ public class BraveYouTubeScriptInjectorNativeHelper {
         void setFullscreen(WebContents webContents);
         boolean hasFullscreenBeenRequested(WebContents webContents);
         boolean isPictureInPictureAvailable(WebContents webContents);
-        void setupJavaScriptInterface(WebContents webContents);
     }
 }
