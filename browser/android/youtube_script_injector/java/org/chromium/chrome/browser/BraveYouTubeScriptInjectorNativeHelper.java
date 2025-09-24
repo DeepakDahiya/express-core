@@ -19,7 +19,7 @@ import org.chromium.build.annotations.NullMarked;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabSelectionType;
+import org.chromium.chrome.browser.tab.TabSelectionType;
 import org.chromium.content_public.browser.MediaSession;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
@@ -41,7 +41,6 @@ public class BraveYouTubeScriptInjectorNativeHelper {
     }
     @CalledByNative
     public static void enterPictureInPicture(WebContents webContents) {
-        // ... (your existing implementation is fine)
         MediaSession mediaSession = MediaSession.fromWebContents(webContents);
         if (mediaSession != null) {
             mediaSession.resume();
@@ -59,7 +58,6 @@ public class BraveYouTubeScriptInjectorNativeHelper {
             }
         }
     }
-    // --- End of unchanged methods ---
 
     public static void setupJavaScriptInterface(WebContents webContents, TabModelSelector selector) {
         if (webContents == null || selector == null) return;
