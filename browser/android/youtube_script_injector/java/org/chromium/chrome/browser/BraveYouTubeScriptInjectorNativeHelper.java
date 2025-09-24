@@ -16,7 +16,7 @@ import org.jni_zero.NativeMethods;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.build.annotations.NullMarked;
-import org.chromium.chrome.browser.app.ChromeActivity;
+import org.chromium.chrome.browser.app.BraveActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -71,11 +71,11 @@ public class BraveYouTubeScriptInjectorNativeHelper {
 
         Activity activity = windowAndroid.getActivity().get();
         // We need the activity to get the TabModelSelector.
-        if (!(activity instanceof ChromeActivity)) {
+        if (!(activity instanceof BraveActivity)) {
             return;
         }
 
-        ChromeActivity chromeActivity = (ChromeActivity) activity;
+        BraveActivity chromeActivity = (BraveActivity) activity;
         TabModelSelector selector = chromeActivity.getTabModelSelector();
         if (selector == null) return;
         
