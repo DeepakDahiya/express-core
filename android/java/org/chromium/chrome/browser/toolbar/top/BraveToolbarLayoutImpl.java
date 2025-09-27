@@ -1892,24 +1892,24 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     @Override
     public void drawAnimationOverlay(ViewGroup toolbarButtonsContainer, Canvas canvas) {
-        if (mWalletLayout != null && mWalletLayout.getVisibility() != View.GONE) {
-            canvas.save();
-            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mWalletLayout, canvas);
-            mWalletLayout.draw(canvas);
-            canvas.restore();
-        }
-        if (mShieldsLayout != null && mShieldsLayout.getVisibility() != View.GONE) {
-            canvas.save();
-            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mShieldsLayout, canvas);
-            mShieldsLayout.draw(canvas);
-            canvas.restore();
-        }
-        if (mRewardsLayout != null && mRewardsLayout.getVisibility() != View.GONE) {
-            canvas.save();
-            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mRewardsLayout, canvas);
-            mRewardsLayout.draw(canvas);
-            canvas.restore();
-        }
+        // if (mWalletLayout != null && mWalletLayout.getVisibility() != View.GONE) {
+        //     canvas.save();
+        //     ViewUtils.translateCanvasToView(toolbarButtonsContainer, mWalletLayout, canvas);
+        //     mWalletLayout.draw(canvas);
+        //     canvas.restore();
+        // }
+        // if (mShieldsLayout != null && mShieldsLayout.getVisibility() != View.GONE) {
+        //     canvas.save();
+        //     ViewUtils.translateCanvasToView(toolbarButtonsContainer, mShieldsLayout, canvas);
+        //     mShieldsLayout.draw(canvas);
+        //     canvas.restore();
+        // }
+        // if (mRewardsLayout != null && mRewardsLayout.getVisibility() != View.GONE) {
+        //     canvas.save();
+        //     ViewUtils.translateCanvasToView(toolbarButtonsContainer, mRewardsLayout, canvas);
+        //     mRewardsLayout.draw(canvas);
+        //     canvas.restore();
+        // }
         // if (mYouTubePipLayout != null && mYouTubePipLayout.getVisibility() != View.GONE) {
         //     canvas.save();
         //     ViewUtils.translateCanvasToView(toolbarButtonsContainer, mYouTubePipLayout, canvas);
