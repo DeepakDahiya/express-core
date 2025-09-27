@@ -1467,16 +1467,29 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         if (window.bravePipFixAttached) return;
         window.bravePipFixAttached = true;
 
+        // --- VISUAL DEBUGGING ---
+        // We will change the border colors at each step to see what's happening.
+        
+        // VISUAL DEBUG 1: If the page border turns red, the script was injected and started.
+        document.body.style.border = '5px solid red';
+
         let originalTabUrl = null;
+        let videoEl = null;
 
         const handleEnterPiP = (event) => {
             originalTabUrl = window.location.href;
-            console.log('PiP Entered. Storing URL:', originalTabUrl);
+            console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
+            
+            // VISUAL DEBUG 3: If the video border turns blue, the 'enter' event fired successfully.
+            if (videoEl) videoEl.style.border = '5px solid blue';
         };
 
         const handleLeavePiP = (event) => {
+            // VISUAL DEBUG 4: If the video border turns magenta, the 'leave' event fired. THIS IS THE KEY TEST.
+            if (videoEl) videoEl.style.border = '5px solid magenta';
+
             if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
-                console.log('PiP Exited. Requesting focus for URL:', originalTabUrl);
+                console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
                 try {
                     window.BravePiPNavigator.restoreTabWithUrl(originalTabUrl);
                 } catch (e) {
@@ -1486,29 +1499,39 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             originalTabUrl = null;
         };
 
-        let videoEl = null;
+        const attachListeners = (vid) => {
+            if (!vid) return;
+            // Remove old listeners to be safe.
+            if (videoEl) {
+                videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
+                videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
+            }
+            videoEl = vid;
+            videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
+            videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
+            
+            // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
+            videoEl.style.border = '5px solid green';
+            console.log('Brave PiP Fix: Attached listeners to video element.');
+        };
+
+        // Use a MutationObserver to robustly find the video element as it's added to the page.
         const observer = new MutationObserver(() => {
             const newVideoEl = document.querySelector('video');
-            if (newVideoEl && newVideoEl !== videoEl) {
-                if (videoEl) {
-                    videoEl.removeEventListener('enterpictureinpicture', handleEnterPiP);
-                    videoEl.removeEventListener('leavepictureinpicture', handleLeavePiP);
-                }
-                videoEl = newVideoEl;
-                videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
-                videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-                observer.disconnect();
+            if (newVideoEl && !newVideoEl.hasAttribute('data-pip-fix-attached')) {
+                newVideoEl.setAttribute('data-pip-fix-attached', 'true');
+                attachListeners(newVideoEl);
             }
         });
 
+        // Try to find it immediately.
         const initialVideoEl = document.querySelector('video');
         if (initialVideoEl) {
-            videoEl = initialVideoEl;
-            videoEl.addEventListener('enterpictureinpicture', handleEnterPiP);
-            videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
-        } else {
-            observer.observe(document.body, { childList: true, subtree: true });
+            attachListeners(initialVideoEl);
         }
+
+        // And observe for any future changes.
+        observer.observe(document.body, { childList: true, subtree: true });
     })();
 )";
 
