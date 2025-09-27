@@ -884,7 +884,7 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
         final boolean available =
                 BraveYouTubeScriptInjectorNativeHelper.isPictureInPictureAvailable(
                         tab.getWebContents());
-        mYouTubePipLayout.setVisibility(available ? View.VISIBLE : View.GONE);
+        // mYouTubePipLayout.setVisibility(available ? View.VISIBLE : View.GONE);
     }
 
     private void hideYouTubePipIcon() {
