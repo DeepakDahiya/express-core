@@ -1873,15 +1873,15 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     @Override
     protected void onDraw(Canvas canvas) {
-        if (BraveReflectionUtil.equalTypes(this.getClass(), CustomTabToolbar.class)
-                || BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) {
-            updateMenuButtonState();
-            Tab tab = getToolbarDataProvider() != null ? getToolbarDataProvider().getTab() : null;
-            if (tab != null && tab.getWebContents() != null) {
-                updateBraveShieldsButtonState(tab);
-            }
-        }
-        super.onDraw(canvas);
+        // if (BraveReflectionUtil.equalTypes(this.getClass(), CustomTabToolbar.class)
+        //         || BraveReflectionUtil.equalTypes(this.getClass(), ToolbarPhone.class)) {
+        //     updateMenuButtonState();
+        //     Tab tab = getToolbarDataProvider() != null ? getToolbarDataProvider().getTab() : null;
+        //     if (tab != null && tab.getWebContents() != null) {
+        //         updateBraveShieldsButtonState(tab);
+        //     }
+        // }
+        // super.onDraw(canvas);
     }
 
     @Override
@@ -1920,17 +1920,17 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
 
     @Override
     public void onMediaFilesUpdated(Url pageUrl, PlaylistItem[] playlistItems) {
-        Tab currentTab = getToolbarDataProvider().getTab();
-        if (currentTab == null || !pageUrl.url.equals(currentTab.getUrl().getSpec())) {
-            return;
-        }
-        if (playlistItems.length > 0 && !UrlUtilities.isNtpUrl(currentTab.getUrl().getSpec())) {
-            mShouldShowPlaylistMenu = true;
-            if (ChromeSharedPreferences.getInstance()
-                    .readBoolean(BravePreferenceKeys.PREF_ADD_TO_PLAYLIST_BUTTON, true)) {
-                showPlaylistButton(playlistItems);
-            }
-        }
+        // Tab currentTab = getToolbarDataProvider().getTab();
+        // if (currentTab == null || !pageUrl.url.equals(currentTab.getUrl().getSpec())) {
+        //     return;
+        // }
+        // if (playlistItems.length > 0 && !UrlUtilities.isNtpUrl(currentTab.getUrl().getSpec())) {
+        //     mShouldShowPlaylistMenu = true;
+        //     if (ChromeSharedPreferences.getInstance()
+        //             .readBoolean(BravePreferenceKeys.PREF_ADD_TO_PLAYLIST_BUTTON, true)) {
+        //         showPlaylistButton(playlistItems);
+        //     }
+        // }
     }
 
     // private boolean isMenuOnBottomWithBottomAddressBar() {
