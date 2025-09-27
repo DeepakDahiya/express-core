@@ -1910,12 +1910,12 @@ public abstract class BraveToolbarLayoutImpl extends ToolbarLayout
             mRewardsLayout.draw(canvas);
             canvas.restore();
         }
-        if (mYouTubePipLayout != null && mYouTubePipLayout.getVisibility() != View.GONE) {
-            canvas.save();
-            ViewUtils.translateCanvasToView(toolbarButtonsContainer, mYouTubePipLayout, canvas);
-            mYouTubePipLayout.draw(canvas);
-            canvas.restore();
-        }
+        // if (mYouTubePipLayout != null && mYouTubePipLayout.getVisibility() != View.GONE) {
+        //     canvas.save();
+        //     ViewUtils.translateCanvasToView(toolbarButtonsContainer, mYouTubePipLayout, canvas);
+        //     mYouTubePipLayout.draw(canvas);
+        //     canvas.restore();
+        // }
     }
 
     @Override
