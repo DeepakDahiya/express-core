@@ -64,7 +64,6 @@ async function writePatchFiles(modifiedPaths, gitRepoPath, patchDirPath) {
       'diff',
       '--src-prefix=a/',
       '--dst-prefix=b/',
-      '--default-prefix',
       '--full-index',
       old,
     ]
