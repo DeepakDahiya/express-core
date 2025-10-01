@@ -72,7 +72,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
     private static final String PREF_CLOSING_ALL_TABS_CLOSES_BRAVE =
             "closing_all_tabs_closes_brave";
     private static final String PREF_PRIVACY = "privacy";
-    // private static final String PREF_SHIELDS_AND_PRIVACY = "brave_shields_and_privacy";
+    private static final String PREF_SHIELDS_AND_PRIVACY = "brave_shields_and_privacy";
     private static final String PREF_BRAVE_SEARCH_ENGINES = "brave_search_engines";
     // private static final String PREF_BRAVE_NEWS_V2 = "brave_news_v2";
     private static final String PREF_BRAVE_PLAYLIST = "brave_playlist";
@@ -287,7 +287,7 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
         int featuresSectionOrder = braveAccountSectionOrder;
         // setPreferenceOrder(PREF_FEATURES_SECTION, ++featuresSectionOrder);
 
-        // setPreferenceOrder(PREF_SHIELDS_AND_PRIVACY, ++featuresSectionOrder);
+        setPreferenceOrder(PREF_SHIELDS_AND_PRIVACY, ++featuresSectionOrder);
         // setPreferenceOrder(PREF_BRAVE_NEWS_V2, ++featuresSectionOrder);
 
         // if (ChromeFeatureList.isEnabled(BraveFeatureList.NATIVE_BRAVE_WALLET)) {
@@ -481,9 +481,9 @@ public abstract class BraveMainPreferencesBase extends BravePreferenceFragment
 
     private void overrideChromiumPreferences() {
         // Replace fragment.
-        // Preference shieldsAndPrivacyPreference = findPreference(PREF_SHIELDS_AND_PRIVACY);
-        // assumeNonNull(shieldsAndPrivacyPreference);
-        // shieldsAndPrivacyPreference.setFragment(BravePrivacySettings.class.getName());
+        Preference shieldsAndPrivacyPreference = findPreference(PREF_SHIELDS_AND_PRIVACY);
+        assumeNonNull(shieldsAndPrivacyPreference);
+        shieldsAndPrivacyPreference.setFragment(BravePrivacySettings.class.getName());
         Preference homePagePreference = findPreference(MainSettings.PREF_HOMEPAGE);
         if (homePagePreference != null) {
             homePagePreference.setFragment(BraveHomepageSettings.class.getName());
