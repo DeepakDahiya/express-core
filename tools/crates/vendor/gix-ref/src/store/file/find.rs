@@ -8,6 +8,7 @@ pub use error::Error;
 
 use crate::{
     file,
+    name::is_pseudo_ref,
     store_impl::{file::loose, packed},
     BStr, BString, FullNameRef, PartialName, PartialNameRef, Reference,
 };
@@ -103,13 +104,28 @@ impl file::Store {
         let precomposed_partial_name = precomposed_partial_name_storage
             .as_ref()
             .map(std::convert::AsRef::as_ref);
-        for inbetween in &["", "tags", "heads", "remotes"] {
-            match self.find_inner(inbetween, partial_name, precomposed_partial_name, packed, &mut buf) {
-                Ok(Some(r)) => return Ok(Some(decompose_if(r, precomposed_partial_name.is_some()))),
-                Ok(None) => {
-                    continue;
+        for consider_pseudo_ref in [true, false] {
+            if !consider_pseudo_ref && !is_pseudo_ref(partial_name.as_bstr()) {
+                break;
+            }
+            'try_directories: for inbetween in &["", "tags", "heads", "remotes"] {
+                match self.find_inner(
+                    inbetween,
+                    partial_name,
+                    precomposed_partial_name,
+                    packed,
+                    &mut buf,
+                    consider_pseudo_ref,
+                ) {
+                    Ok(Some(r)) => return Ok(Some(decompose_if(r, precomposed_partial_name.is_some()))),
+                    Ok(None) => {
+                        if consider_pseudo_ref && is_pseudo_ref(partial_name.as_bstr()) {
+                            break 'try_directories;
+                        }
+                        continue;
+                    }
+                    Err(err) => return Err(err),
                 }
-                Err(err) => return Err(err),
             }
         }
         if partial_name.as_bstr() != "HEAD" {
@@ -129,6 +145,7 @@ impl file::Store {
                     .map(std::convert::AsRef::as_ref),
                 None,
                 &mut buf,
+                true, /* consider-pseudo-ref */
             )
             .map(|res| res.map(|r| decompose_if(r, precomposed_partial_name_storage.is_some())))
         } else {
@@ -143,10 +160,11 @@ impl file::Store {
         precomposed_partial_name: Option<&PartialNameRef>,
         packed: Option<&packed::Buffer>,
         path_buf: &mut BString,
+        consider_pseudo_ref: bool,
     ) -> Result<Option<Reference>, Error> {
         let full_name = precomposed_partial_name
             .unwrap_or(partial_name)
-            .construct_full_name_ref(inbetween, path_buf);
+            .construct_full_name_ref(inbetween, path_buf, consider_pseudo_ref);
         let content_buf = self.ref_contents(full_name).map_err(|err| Error::ReadFileContents {
             source: err,
             path: self.reference_path(full_name),
@@ -170,7 +188,7 @@ impl file::Store {
                                 res.strip_namespace(namespace);
                             }
                             return Ok(Some(res));
-                        };
+                        }
                     }
                 }
                 Ok(None)
@@ -207,22 +225,26 @@ impl file::Store {
                 use crate::Category::*;
                 let sn = FullNameRef::new_unchecked(sn);
                 match c {
-                    LinkedPseudoRef { name: worktree_name } => is_reflog
-                        .then(|| (linked_git_dir(worktree_name).into(), sn))
-                        .unwrap_or((commondir.into(), name)),
+                    LinkedPseudoRef { name: worktree_name } => {
+                        if is_reflog {
+                            (linked_git_dir(worktree_name).into(), sn)
+                        } else {
+                            (commondir.into(), name)
+                        }
+                    }
                     Tag | LocalBranch | RemoteBranch | Note => (commondir.into(), name),
                     MainRef | MainPseudoRef => (commondir.into(), sn),
-                    LinkedRef { name: worktree_name } => sn
-                        .category()
-                        .map_or(false, |cat| cat.is_worktree_private())
-                        .then(|| {
+                    LinkedRef { name: worktree_name } => {
+                        if sn.category().is_some_and(|cat| cat.is_worktree_private()) {
                             if is_reflog {
                                 (linked_git_dir(worktree_name).into(), sn)
                             } else {
                                 (commondir.into(), name)
                             }
-                        })
-                        .unwrap_or((commondir.into(), sn)),
+                        } else {
+                            (commondir.into(), sn)
+                        }
+                    }
                     PseudoRef | Bisect | Rewritten | WorktreePrivate => (self.git_dir.as_path().into(), name),
                 }
             })
@@ -282,7 +304,6 @@ impl file::Store {
 }
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod existing {
     pub use error::Error;
 

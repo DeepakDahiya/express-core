@@ -180,7 +180,7 @@ impl Ignore {
                     Ok(idx) => {
                         let ignore_blob = objects
                             .find_blob(&id_mappings[idx].1, buf)
-                            .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))?;
+                            .map_err(std::io::Error::other)?;
                         let ignore_path = gix_path::from_bstring(ignore_path_relative.into_owned());
                         self.stack
                             .add_patterns_buffer(ignore_blob.data, ignore_path, Some(Path::new("")));
@@ -188,7 +188,7 @@ impl Ignore {
                     }
                     Err(_) => {
                         // Need one stack level per component so push and pop matches.
-                        self.stack.patterns.push(Default::default())
+                        self.stack.patterns.push(Default::default());
                     }
                 }
             }
@@ -208,7 +208,7 @@ impl Ignore {
                         Ok(idx) => {
                             let ignore_blob = objects
                                 .find_blob(&id_mappings[idx].1, buf)
-                                .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))?;
+                                .map_err(std::io::Error::other)?;
                             let ignore_path = gix_path::from_bstring(ignore_path_relative.into_owned());
                             self.stack
                                 .add_patterns_buffer(ignore_blob.data, ignore_path, Some(Path::new("")));
@@ -216,7 +216,7 @@ impl Ignore {
                         }
                         Err(_) => {
                             // Need one stack level per component so push and pop matches.
-                            self.stack.patterns.push(Default::default())
+                            self.stack.patterns.push(Default::default());
                         }
                     }
                 }

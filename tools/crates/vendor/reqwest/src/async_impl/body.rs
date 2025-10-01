@@ -1,13 +1,12 @@
 use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::task::{ready, Context, Poll};
 use std::time::Duration;
 
 use bytes::Bytes;
 use http_body::Body as HttpBody;
 use http_body_util::combinators::BoxBody;
-//use sync_wrapper::SyncWrapper;
 use pin_project_lite::pin_project;
 #[cfg(feature = "stream")]
 use tokio::fs::File;
@@ -155,15 +154,6 @@ impl Body {
         }
     }
 
-    pub(crate) fn try_reuse(self) -> (Option<Bytes>, Self) {
-        let reuse = match self.inner {
-            Inner::Reusable(ref chunk) => Some(chunk.clone()),
-            Inner::Streaming { .. } => None,
-        };
-
-        (reuse, self)
-    }
-
     pub(crate) fn try_clone(&self) -> Option<Body> {
         match self.inner {
             Inner::Reusable(ref chunk) => Some(Body::reusable(chunk.clone())),
@@ -273,7 +263,7 @@ impl HttpBody for Body {
                 }
             }
             Inner::Streaming(ref mut body) => Poll::Ready(
-                futures_core::ready!(Pin::new(body).poll_frame(cx))
+                ready!(Pin::new(body).poll_frame(cx))
                     .map(|opt_chunk| opt_chunk.map_err(crate::error::body)),
             ),
         }
@@ -328,7 +318,7 @@ where
             return Poll::Ready(Some(Err(crate::error::body(crate::error::TimedOut))));
         }
         Poll::Ready(
-            futures_core::ready!(this.inner.poll_frame(cx))
+            ready!(this.inner.poll_frame(cx))
                 .map(|opt_chunk| opt_chunk.map_err(crate::error::body)),
         )
     }
@@ -371,7 +361,7 @@ where
             return Poll::Ready(Some(Err(crate::error::body(crate::error::TimedOut))));
         }
 
-        let item = futures_core::ready!(this.inner.poll_frame(cx))
+        let item = ready!(this.inner.poll_frame(cx))
             .map(|opt_chunk| opt_chunk.map_err(crate::error::body));
         // a ready frame means timeout is reset
         this.sleep.set(None);
@@ -442,7 +432,7 @@ where
 
     fn poll_next(mut self: Pin<&mut Self>, cx: &mut Context) -> Poll<Option<Self::Item>> {
         loop {
-            return match futures_core::ready!(Pin::new(&mut self.0).poll_frame(cx)) {
+            return match ready!(Pin::new(&mut self.0).poll_frame(cx)) {
                 Some(Ok(frame)) => {
                     // skip non-data frames
                     if let Ok(buf) = frame.into_data() {
@@ -481,7 +471,7 @@ where
         self: Pin<&mut Self>,
         cx: &mut Context,
     ) -> Poll<Option<Result<hyper::body::Frame<Self::Data>, Self::Error>>> {
-        match futures_core::ready!(self.project().inner.poll_frame(cx)) {
+        match ready!(self.project().inner.poll_frame(cx)) {
             Some(Ok(f)) => Poll::Ready(Some(Ok(f.map_data(Into::into)))),
             Some(Err(e)) => Poll::Ready(Some(Err(e))),
             None => Poll::Ready(None),

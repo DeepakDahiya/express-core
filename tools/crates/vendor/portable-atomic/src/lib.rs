@@ -1,12 +1,16 @@
 // SPDX-License-Identifier: Apache-2.0 OR MIT
 
 /*!
-<!-- tidy:crate-doc:start -->
+<!-- Note: Document from sync-markdown-to-rustdoc:start through sync-markdown-to-rustdoc:end
+     is synchronized from README.md. Any changes to that range are not preserved. -->
+<!-- tidy:sync-markdown-to-rustdoc:start -->
+
 Portable atomic types including support for 128-bit atomics, atomic float, etc.
 
 - Provide all atomic integer types (`Atomic{I,U}{8,16,32,64}`) for all targets that can use atomic CAS. (i.e., all targets that can use `std`, and most no-std targets)
 - Provide `AtomicI128` and `AtomicU128`.
 - Provide `AtomicF32` and `AtomicF64`. ([optional, requires the `float` feature](#optional-features-float))
+- Provide `AtomicF16` and `AtomicF128` for [unstable `f16` and `f128`](https://github.com/rust-lang/rust/issues/116909). ([optional, requires the `float` feature and unstable cfgs](#optional-features-float))
 - Provide atomic load/store for targets where atomic is not available at all in the standard library. (RISC-V without A-extension, MSP430, AVR)
 - Provide atomic CAS for targets where atomic CAS is not available in the standard library. (thumbv6m, pre-v6 Arm, RISC-V without A-extension, MSP430, AVR, Xtensa, etc.) (always enabled for MSP430 and AVR, [optional](#optional-features-critical-section) otherwise)
 - Provide stable equivalents of the standard library's atomic types' unstable APIs, such as [`AtomicPtr::fetch_*`](https://github.com/rust-lang/rust/issues/99108).
@@ -48,7 +52,7 @@ portable-atomic = { version = "1.3", default-features = false, features = ["requ
 
 Native 128-bit atomic operations are available on x86_64 (Rust 1.59+), AArch64 (Rust 1.59+), riscv64 (Rust 1.59+), Arm64EC (Rust 1.84+), s390x (Rust 1.84+), and powerpc64 (nightly only), otherwise the fallback implementation is used.
 
-On x86_64, even if `cmpxchg16b` is not available at compile-time (note: `cmpxchg16b` target feature is enabled by default only on Apple and Windows (except Windows 7) targets), run-time detection checks whether `cmpxchg16b` is available. If `cmpxchg16b` is not available at either compile-time or run-time detection, the fallback implementation is used. See also [`portable_atomic_no_outline_atomics`](#optional-cfg-no-outline-atomics) cfg.
+On x86_64, even if `cmpxchg16b` is not available at compile-time (Note: `cmpxchg16b` target feature is enabled by default only on Apple, Windows (except Windows 7), and Fuchsia targets), run-time detection checks whether `cmpxchg16b` is available. If `cmpxchg16b` is not available at either compile-time or run-time detection, the fallback implementation is used. See also [`portable_atomic_no_outline_atomics`](#optional-cfg-no-outline-atomics) cfg.
 
 They are usually implemented using inline assembly, and when using Miri or ThreadSanitizer that do not support inline assembly, core intrinsics are used instead of inline assembly if possible.
 
@@ -64,7 +68,12 @@ See the [`atomic128` module's readme](https://github.com/taiki-e/portable-atomic
 - <a name="optional-features-float"></a>**`float`**<br>
   Provide `AtomicF{32,64}`.
 
-  Note that most of `fetch_*` operations of atomic floats are implemented using CAS loops, which can be slower than equivalent operations of atomic integers. ([GPU targets have atomic instructions for float, so we plan to use these instructions for GPU targets in the future.](https://github.com/taiki-e/portable-atomic/issues/34))
+  - When unstable `--cfg portable_atomic_unstable_f16` is also enabled, `AtomicF16` for [unstable `f16`](https://github.com/rust-lang/rust/issues/116909) is also provided.
+  - When unstable `--cfg portable_atomic_unstable_f128` is also enabled, `AtomicF128` for [unstable `f128`](https://github.com/rust-lang/rust/issues/116909) is also provided.
+
+  Note:
+  - Atomic float's `fetch_{add,sub,min,max}` are usually implemented using CAS loops, which can be slower than equivalent operations of atomic integers. As an exception, AArch64 with FEAT_LSFE and GPU targets have atomic float instructions and we use them on AArch64 when `lsfe` target feature is available at compile-time. We [plan to use atomic float instructions for GPU targets as well in the future.](https://github.com/taiki-e/portable-atomic/issues/34))
+  - Unstable cfgs are outside of the normal semver guarantees and minor or patch versions of portable-atomic may make breaking changes to them at any time.
 
 - **`std`**<br>
   Use `std`.
@@ -164,10 +173,10 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
   If dynamic dispatching by run-time CPU feature detection is enabled, it allows maintaining support for older CPUs while using features that are not supported on older CPUs, such as CMPXCHG16B (x86_64) and FEAT_LSE/FEAT_LSE2 (AArch64).
 
   Note:
-  - Dynamic detection is currently only supported in x86_64, AArch64, Arm, RISC-V (disabled by default), Arm64EC, and powerpc64, otherwise it works the same as when this cfg is set.
+  - Dynamic detection is currently only supported in x86_64, AArch64, Arm, RISC-V, Arm64EC, and powerpc64, otherwise it works the same as when this cfg is set.
   - If the required target features are enabled at compile-time, the atomic operations are inlined.
   - This is compatible with no-std (as with all features except `std`).
-  - On some targets, run-time detection is disabled by default mainly for incomplete build environments, and can be enabled by `--cfg portable_atomic_outline_atomics`. (When both cfg are enabled, `*_no_*` cfg is preferred.)
+  - On some targets, run-time detection is disabled by default mainly for compatibility with incomplete build environments or support for it is experimental, and can be enabled by `--cfg portable_atomic_outline_atomics`. (When both cfg are enabled, `*_no_*` cfg is preferred.)
   - Some AArch64 targets enable LLVM's `outline-atomics` target feature by default, so if you set this cfg, you may want to disable that as well. (portable-atomic's outline-atomics does not depend on the compiler-rt symbols, so even if you need to disable LLVM's outline-atomics, you may not need to disable portable-atomic's outline-atomics.)
 
   See also the [`atomic128` module's readme](https://github.com/taiki-e/portable-atomic/blob/HEAD/src/imp/atomic128/README.md).
@@ -184,7 +193,7 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
 [rust-lang/rust#100650]: https://github.com/rust-lang/rust/issues/100650
 [serde]: https://github.com/serde-rs/serde
 
-<!-- tidy:crate-doc:end -->
+<!-- tidy:sync-markdown-to-rustdoc:end -->
 */
 
 #![no_std]
@@ -212,6 +221,7 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
     clippy::float_arithmetic,
 )]
 #![cfg_attr(not(portable_atomic_no_asm), warn(missing_docs))] // module-level #![allow(missing_docs)] doesn't work for macros on old rustc
+#![cfg_attr(portable_atomic_no_strict_provenance, allow(unstable_name_collisions))]
 #![allow(clippy::inline_always, clippy::used_underscore_items)]
 // asm_experimental_arch
 // AVR, MSP430, and Xtensa are tier 3 platforms and require nightly anyway.
@@ -229,6 +239,10 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
     ),
     feature(asm_experimental_arch)
 )]
+// f16/f128
+// cfg is unstable and explicitly enabled by the user
+#![cfg_attr(portable_atomic_unstable_f16, feature(f16))]
+#![cfg_attr(portable_atomic_unstable_f128, feature(f128))]
 // Old nightly only
 // These features are already stabilized or have already been removed from compilers,
 // and can safely be enabled for old nightly as long as version detection works.
@@ -285,7 +299,6 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
             target_arch = "aarch64",
             target_arch = "arm64ec",
             target_arch = "powerpc64",
-            target_arch = "riscv64",
             target_arch = "s390x",
         ),
         any(miri, portable_atomic_sanitize_thread),
@@ -298,7 +311,6 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
             target_arch = "aarch64",
             target_arch = "arm64ec",
             target_arch = "powerpc64",
-            target_arch = "riscv64",
             target_arch = "s390x",
         ),
         any(miri, portable_atomic_sanitize_thread),
@@ -319,7 +331,7 @@ RUSTFLAGS="--cfg portable_atomic_no_outline_atomics" cargo ...
             feature = "critical-section",
         )),
     ),
-    allow(unused_imports, unused_macros)
+    allow(unused_imports, unused_macros, clippy::unused_trait_names)
 )]
 
 // There are currently no 128-bit or higher builtin targets.
@@ -451,14 +463,14 @@ extern crate std;
 
 #[macro_use]
 mod cfgs;
-#[cfg(target_pointer_width = "128")]
-pub use self::{cfg_has_atomic_128 as cfg_has_atomic_ptr, cfg_no_atomic_128 as cfg_no_atomic_ptr};
 #[cfg(target_pointer_width = "16")]
 pub use self::{cfg_has_atomic_16 as cfg_has_atomic_ptr, cfg_no_atomic_16 as cfg_no_atomic_ptr};
 #[cfg(target_pointer_width = "32")]
 pub use self::{cfg_has_atomic_32 as cfg_has_atomic_ptr, cfg_no_atomic_32 as cfg_no_atomic_ptr};
 #[cfg(target_pointer_width = "64")]
 pub use self::{cfg_has_atomic_64 as cfg_has_atomic_ptr, cfg_no_atomic_64 as cfg_no_atomic_ptr};
+#[cfg(target_pointer_width = "128")]
+pub use self::{cfg_has_atomic_128 as cfg_has_atomic_ptr, cfg_no_atomic_128 as cfg_no_atomic_ptr};
 
 #[macro_use]
 mod utils;
@@ -525,8 +537,9 @@ pub mod hint {
 use core::sync::atomic::Ordering::{AcqRel, Acquire, Relaxed, Release, SeqCst};
 use core::{fmt, ptr};
 
+#[cfg(portable_atomic_no_strict_provenance)]
 #[cfg(miri)]
-use crate::utils::strict;
+use crate::utils::ptr::PtrExt as _;
 
 cfg_has_atomic_8! {
 /// A boolean type which can be safely shared between threads.
@@ -803,14 +816,24 @@ impl AtomicBool {
     #[inline]
     #[cfg_attr(miri, track_caller)] // even without panics, this helps for Miri backtraces
     pub fn swap(&self, val: bool, order: Ordering) -> bool {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64", target_arch = "loongarch64"))]
+        #[cfg(any(
+            target_arch = "riscv32",
+            target_arch = "riscv64",
+            target_arch = "loongarch32",
+            target_arch = "loongarch64",
+        ))]
         {
             // See https://github.com/rust-lang/rust/pull/114034 for details.
-            // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/sync/atomic.rs#L233
-            // https://godbolt.org/z/Enh87Ph9b
+            // https://github.com/rust-lang/rust/blob/1.84.0/library/core/src/sync/atomic.rs#L249
+            // https://godbolt.org/z/ofbGGdx44
             if val { self.fetch_or(true, order) } else { self.fetch_and(false, order) }
         }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64", target_arch = "loongarch64")))]
+        #[cfg(not(any(
+            target_arch = "riscv32",
+            target_arch = "riscv64",
+            target_arch = "loongarch32",
+            target_arch = "loongarch64",
+        )))]
         {
             self.as_atomic_u8().swap(val as u8, order) != 0
         }
@@ -852,8 +875,8 @@ impl AtomicBool {
     /// );
     /// assert_eq!(some_bool.load(Ordering::Relaxed), false);
     /// ```
-    #[inline]
     #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+    #[inline]
     #[cfg_attr(
         any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
         track_caller
@@ -865,11 +888,16 @@ impl AtomicBool {
         success: Ordering,
         failure: Ordering,
     ) -> Result<bool, bool> {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64", target_arch = "loongarch64"))]
+        #[cfg(any(
+            target_arch = "riscv32",
+            target_arch = "riscv64",
+            target_arch = "loongarch32",
+            target_arch = "loongarch64",
+        ))]
         {
             // See https://github.com/rust-lang/rust/pull/114034 for details.
-            // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/sync/atomic.rs#L233
-            // https://godbolt.org/z/Enh87Ph9b
+            // https://github.com/rust-lang/rust/blob/1.84.0/library/core/src/sync/atomic.rs#L249
+            // https://godbolt.org/z/ofbGGdx44
             crate::utils::assert_compare_exchange_ordering(success, failure);
             let order = crate::utils::upgrade_success_ordering(success, failure);
             let old = if current == new {
@@ -882,7 +910,12 @@ impl AtomicBool {
             };
             if old == current { Ok(old) } else { Err(old) }
         }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64", target_arch = "loongarch64")))]
+        #[cfg(not(any(
+            target_arch = "riscv32",
+            target_arch = "riscv64",
+            target_arch = "loongarch32",
+            target_arch = "loongarch64",
+        )))]
         {
             match self.as_atomic_u8().compare_exchange(current as u8, new as u8, success, failure) {
                 Ok(x) => Ok(x != 0),
@@ -926,8 +959,8 @@ impl AtomicBool {
     ///     }
     /// }
     /// ```
-    #[inline]
     #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+    #[inline]
     #[cfg_attr(
         any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
         track_caller
@@ -939,14 +972,24 @@ impl AtomicBool {
         success: Ordering,
         failure: Ordering,
     ) -> Result<bool, bool> {
-        #[cfg(any(target_arch = "riscv32", target_arch = "riscv64", target_arch = "loongarch64"))]
+        #[cfg(any(
+            target_arch = "riscv32",
+            target_arch = "riscv64",
+            target_arch = "loongarch32",
+            target_arch = "loongarch64",
+        ))]
         {
             // See https://github.com/rust-lang/rust/pull/114034 for details.
-            // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/sync/atomic.rs#L233
-            // https://godbolt.org/z/Enh87Ph9b
+            // https://github.com/rust-lang/rust/blob/1.84.0/library/core/src/sync/atomic.rs#L249
+            // https://godbolt.org/z/ofbGGdx44
             self.compare_exchange(current, new, success, failure)
         }
-        #[cfg(not(any(target_arch = "riscv32", target_arch = "riscv64", target_arch = "loongarch64")))]
+        #[cfg(not(any(
+            target_arch = "riscv32",
+            target_arch = "riscv64",
+            target_arch = "loongarch32",
+            target_arch = "loongarch64",
+        )))]
         {
             match self
                 .as_atomic_u8()
@@ -1070,7 +1113,7 @@ impl AtomicBool {
     #[inline]
     #[cfg_attr(miri, track_caller)] // even without panics, this helps for Miri backtraces
     pub fn fetch_nand(&self, val: bool, order: Ordering) -> bool {
-        // https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/sync/atomic.rs#L956-L970
+        // https://github.com/rust-lang/rust/blob/1.84.0/library/core/src/sync/atomic.rs#L973-L985
         if val {
             // !(x & true) == !x
             // We must invert the bool.
@@ -1570,7 +1613,7 @@ impl<T> From<*mut T> for AtomicPtr<T> {
 impl<T> fmt::Debug for AtomicPtr<T> {
     #[inline] // fmt is not hot path, but #[inline] on fmt seems to still be useful: https://github.com/rust-lang/rust/pull/117727
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // std atomic types use Relaxed in Debug::fmt: https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/sync/atomic.rs#L2166
+        // std atomic types use Relaxed in Debug::fmt: https://github.com/rust-lang/rust/blob/1.84.0/library/core/src/sync/atomic.rs#L2188
         fmt::Debug::fmt(&self.load(Ordering::Relaxed), f)
     }
 }
@@ -1578,7 +1621,7 @@ impl<T> fmt::Debug for AtomicPtr<T> {
 impl<T> fmt::Pointer for AtomicPtr<T> {
     #[inline] // fmt is not hot path, but #[inline] on fmt seems to still be useful: https://github.com/rust-lang/rust/pull/117727
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        // std atomic types use Relaxed in Debug::fmt: https://github.com/rust-lang/rust/blob/1.80.0/library/core/src/sync/atomic.rs#L2166
+        // std atomic types use Relaxed in Debug::fmt: https://github.com/rust-lang/rust/blob/1.84.0/library/core/src/sync/atomic.rs#L2188
         fmt::Pointer::fmt(&self.load(Ordering::Relaxed), f)
     }
 }
@@ -1861,8 +1904,8 @@ impl<T> AtomicPtr<T> {
     ///
     /// let value = some_ptr.compare_exchange(ptr, other_ptr, Ordering::SeqCst, Ordering::Relaxed);
     /// ```
-    #[inline]
     #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+    #[inline]
     #[cfg_attr(
         any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
         track_caller
@@ -1912,8 +1955,8 @@ impl<T> AtomicPtr<T> {
     ///     }
     /// }
     /// ```
-    #[inline]
     #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+    #[inline]
     #[cfg_attr(
         any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
         track_caller
@@ -2048,7 +2091,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let atom = AtomicPtr::<i64>::new(core::ptr::null_mut());
@@ -2116,7 +2159,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let atom = AtomicPtr::<i64>::new(core::ptr::null_mut());
@@ -2135,11 +2178,13 @@ impl<T> AtomicPtr<T> {
         // use AtomicPtr::fetch_* in all cases from the version in which it is stabilized.
         #[cfg(miri)]
         {
-            self.fetch_update_(order, |x| strict::map_addr(x, |x| x.wrapping_add(val)))
+            self.fetch_update_(order, |x| x.with_addr(x.addr().wrapping_add(val)))
         }
         #[cfg(not(miri))]
         {
-            self.as_atomic_usize().fetch_add(val, order) as *mut T
+            crate::utils::ptr::with_exposed_provenance_mut(
+                self.as_atomic_usize().fetch_add(val, order)
+            )
         }
     }
 
@@ -2161,7 +2206,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let atom = AtomicPtr::<i64>::new(sptr::invalid_mut(1));
@@ -2179,11 +2224,13 @@ impl<T> AtomicPtr<T> {
         // use AtomicPtr::fetch_* in all cases from the version in which it is stabilized.
         #[cfg(miri)]
         {
-            self.fetch_update_(order, |x| strict::map_addr(x, |x| x.wrapping_sub(val)))
+            self.fetch_update_(order, |x| x.with_addr(x.addr().wrapping_sub(val)))
         }
         #[cfg(not(miri))]
         {
-            self.as_atomic_usize().fetch_sub(val, order) as *mut T
+            crate::utils::ptr::with_exposed_provenance_mut(
+                self.as_atomic_usize().fetch_sub(val, order)
+            )
         }
     }
 
@@ -2214,7 +2261,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let pointer = &mut 3i64 as *mut i64;
@@ -2238,11 +2285,13 @@ impl<T> AtomicPtr<T> {
         // use AtomicPtr::fetch_* in all cases from the version in which it is stabilized.
         #[cfg(miri)]
         {
-            self.fetch_update_(order, |x| strict::map_addr(x, |x| x | val))
+            self.fetch_update_(order, |x| x.with_addr(x.addr() | val))
         }
         #[cfg(not(miri))]
         {
-            self.as_atomic_usize().fetch_or(val, order) as *mut T
+            crate::utils::ptr::with_exposed_provenance_mut(
+                self.as_atomic_usize().fetch_or(val, order)
+            )
         }
     }
 
@@ -2273,7 +2322,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let pointer = &mut 3i64 as *mut i64;
@@ -2295,11 +2344,13 @@ impl<T> AtomicPtr<T> {
         // use AtomicPtr::fetch_* in all cases from the version in which it is stabilized.
         #[cfg(miri)]
         {
-            self.fetch_update_(order, |x| strict::map_addr(x, |x| x & val))
+            self.fetch_update_(order, |x| x.with_addr(x.addr() & val))
         }
         #[cfg(not(miri))]
         {
-            self.as_atomic_usize().fetch_and(val, order) as *mut T
+            crate::utils::ptr::with_exposed_provenance_mut(
+                self.as_atomic_usize().fetch_and(val, order)
+            )
         }
     }
 
@@ -2330,7 +2381,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let pointer = &mut 3i64 as *mut i64;
@@ -2351,11 +2402,13 @@ impl<T> AtomicPtr<T> {
         // use AtomicPtr::fetch_* in all cases from the version in which it is stabilized.
         #[cfg(miri)]
         {
-            self.fetch_update_(order, |x| strict::map_addr(x, |x| x ^ val))
+            self.fetch_update_(order, |x| x.with_addr(x.addr() ^ val))
         }
         #[cfg(not(miri))]
         {
-            self.as_atomic_usize().fetch_xor(val, order) as *mut T
+            crate::utils::ptr::with_exposed_provenance_mut(
+                self.as_atomic_usize().fetch_xor(val, order)
+            )
         }
     }
 
@@ -2374,7 +2427,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let pointer = &mut 3i64 as *mut i64;
@@ -2399,7 +2452,7 @@ impl<T> AtomicPtr<T> {
         #[cfg(miri)]
         {
             let mask = 1_usize.wrapping_shl(bit);
-            self.fetch_or(mask, order) as usize & mask != 0
+            self.fetch_or(mask, order).addr() & mask != 0
         }
         #[cfg(not(miri))]
         {
@@ -2422,7 +2475,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let pointer = &mut 3i64 as *mut i64;
@@ -2444,7 +2497,7 @@ impl<T> AtomicPtr<T> {
         #[cfg(miri)]
         {
             let mask = 1_usize.wrapping_shl(bit);
-            self.fetch_and(!mask, order) as usize & mask != 0
+            self.fetch_and(!mask, order).addr() & mask != 0
         }
         #[cfg(not(miri))]
         {
@@ -2467,7 +2520,7 @@ impl<T> AtomicPtr<T> {
     ///
     /// ```
     /// # #![allow(unstable_name_collisions)]
-    /// # #[allow(unused_imports)] use sptr::Strict; // strict provenance polyfill for old rustc
+    /// # #[allow(unused_imports)] use sptr::Strict as _; // strict provenance polyfill for old rustc
     /// use portable_atomic::{AtomicPtr, Ordering};
     ///
     /// let pointer = &mut 3i64 as *mut i64;
@@ -2489,7 +2542,7 @@ impl<T> AtomicPtr<T> {
         #[cfg(miri)]
         {
             let mask = 1_usize.wrapping_shl(bit);
-            self.fetch_xor(mask, order) as usize & mask != 0
+            self.fetch_xor(mask, order).addr() & mask != 0
         }
         #[cfg(not(miri))]
         {
@@ -3090,8 +3143,8 @@ assert_eq!(
 );
 assert_eq!(some_var.load(Ordering::Relaxed), 10);
 ```"),
-                #[inline]
                 #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+                #[inline]
                 #[cfg_attr(
                     any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
                     track_caller
@@ -3144,8 +3197,8 @@ loop {
     }
 }
 ```"),
-                #[inline]
                 #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+                #[inline]
                 #[cfg_attr(
                     any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
                     track_caller
@@ -4103,12 +4156,15 @@ assert_eq!(foo.load(Ordering::Relaxed), 5);
         } // cfg_no_atomic_cas!
         $(
             #[$cfg_float]
-            atomic_int!(float, $atomic_float_type, $float_type, $atomic_type, $int_type, $align);
+            atomic_int!(float,
+                #[$cfg_float] $atomic_float_type, $float_type, $atomic_type, $int_type, $align
+            );
         )?
     };
 
     // AtomicF* impls
     (float,
+        #[$cfg_float:meta]
         $atomic_type:ident,
         $float_type:ident,
         $atomic_int_type:ident,
@@ -4122,7 +4178,7 @@ This type has the same in-memory representation as the underlying floating point
 [`", stringify!($float_type), "`].
 "
             ),
-            #[cfg_attr(docsrs, doc(cfg(feature = "float")))]
+            #[cfg_attr(docsrs, doc($cfg_float))]
             // We can use #[repr(transparent)] here, but #[repr(C, align(N))]
             // will show clearer docs.
             #[repr(C, align($align))]
@@ -4368,8 +4424,8 @@ This is `const fn` on Rust 1.83+.
             /// # Panics
             ///
             /// Panics if `failure` is [`Release`], [`AcqRel`].
-            #[inline]
             #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+            #[inline]
             #[cfg_attr(
                 any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
                 track_caller
@@ -4403,8 +4459,8 @@ This is `const fn` on Rust 1.83+.
             /// # Panics
             ///
             /// Panics if `failure` is [`Release`], [`AcqRel`].
-            #[inline]
             #[cfg_attr(docsrs, doc(alias = "compare_and_swap"))]
+            #[inline]
             #[cfg_attr(
                 any(all(debug_assertions, not(portable_atomic_no_track_caller)), miri),
                 track_caller
@@ -4742,9 +4798,8 @@ cfg_has_atomic_8! {
 }
 cfg_has_atomic_16! {
     atomic_int!(AtomicI16, i16, 2, cfg_has_atomic_cas_or_amo8, cfg_no_atomic_cas_or_amo8);
-    atomic_int!(AtomicU16, u16, 2, cfg_has_atomic_cas_or_amo8, cfg_no_atomic_cas_or_amo8);
-        // TODO: support once https://github.com/rust-lang/rust/issues/116909 stabilized.
-        // #[cfg(all(feature = "float", not(portable_atomic_no_f16)))] AtomicF16, f16);
+    atomic_int!(AtomicU16, u16, 2, cfg_has_atomic_cas_or_amo8, cfg_no_atomic_cas_or_amo8,
+        #[cfg(all(feature = "float", portable_atomic_unstable_f16))] AtomicF16, f16);
 }
 cfg_has_atomic_32! {
     atomic_int!(AtomicI32, i32, 4, cfg_has_atomic_cas_or_amo32, cfg_no_atomic_cas_or_amo32);
@@ -4758,9 +4813,8 @@ cfg_has_atomic_64! {
 }
 cfg_has_atomic_128! {
     atomic_int!(AtomicI128, i128, 16, cfg_has_atomic_cas_or_amo32, cfg_no_atomic_cas_or_amo32);
-    atomic_int!(AtomicU128, u128, 16, cfg_has_atomic_cas_or_amo32, cfg_no_atomic_cas_or_amo32);
-        // TODO: support once https://github.com/rust-lang/rust/issues/116909 stabilized.
-        // #[cfg(all(feature = "float", not(portable_atomic_no_f128)))] AtomicF128, f128);
+    atomic_int!(AtomicU128, u128, 16, cfg_has_atomic_cas_or_amo32, cfg_no_atomic_cas_or_amo32,
+        #[cfg(all(feature = "float", portable_atomic_unstable_f128))] AtomicF128, f128);
 }
 
 // See https://github.com/taiki-e/portable-atomic/issues/180
@@ -4799,6 +4853,7 @@ use self::diagnostic_helper::{
     ),
     allow(dead_code, unreachable_pub)
 )]
+#[allow(unknown_lints, unnameable_types)] // Not public API. unnameable_types is available on Rust 1.79+
 mod diagnostic_helper {
     cfg_no_atomic_cas_or_amo8! {
     #[doc(hidden)]

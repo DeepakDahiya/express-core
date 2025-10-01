@@ -1,7 +1,11 @@
 use crate::{
     error::{err, ErrorContext},
     fmt::Parsed,
-    util::{escape, parse, rangeint::RFrom, t},
+    util::{
+        escape, parse,
+        rangeint::RFrom,
+        t::{self, C},
+    },
     Error, SignedDuration, Span, Unit,
 };
 
@@ -96,10 +100,40 @@ impl Decimal {
 
     /// Using the given formatter, turn the value given into a decimal
     /// representation using ASCII bytes.
+    #[cfg_attr(feature = "perf-inline", inline(always))]
     pub(crate) const fn new(
         formatter: &DecimalFormatter,
-        value: i64,
+        mut value: i64,
     ) -> Decimal {
+        // Specialize the common case to generate tighter codegen.
+        if value >= 0 && formatter.force_sign.is_none() {
+            let mut decimal = Decimal {
+                buf: [0; Self::MAX_I64_LEN as usize],
+                start: Self::MAX_I64_LEN,
+                end: Self::MAX_I64_LEN,
+            };
+            loop {
+                decimal.start -= 1;
+
+                let digit = (value % 10) as u8;
+                value /= 10;
+                decimal.buf[decimal.start as usize] = b'0' + digit;
+                if value == 0 {
+                    break;
+                }
+            }
+            while decimal.len() < formatter.minimum_digits {
+                decimal.start -= 1;
+                decimal.buf[decimal.start as usize] = formatter.padding_byte;
+            }
+            return decimal;
+        }
+        Decimal::new_cold(formatter, value)
+    }
+
+    #[cold]
+    #[inline(never)]
+    const fn new_cold(formatter: &DecimalFormatter, value: i64) -> Decimal {
         let sign = value.signum();
         let Some(mut value) = value.checked_abs() else {
             let buf = [
@@ -141,6 +175,7 @@ impl Decimal {
 
     /// Returns the total number of ASCII bytes (including the sign) that are
     /// used to represent this decimal number.
+    #[inline]
     const fn len(&self) -> u8 {
         self.end - self.start
     }
@@ -148,11 +183,13 @@ impl Decimal {
     /// Returns the ASCII representation of this decimal as a byte slice.
     ///
     /// The slice returned is guaranteed to be valid ASCII.
+    #[inline]
     pub(crate) fn as_bytes(&self) -> &[u8] {
         &self.buf[usize::from(self.start)..usize::from(self.end)]
     }
 
     /// Returns the ASCII representation of this decimal as a string slice.
+    #[inline]
     pub(crate) fn as_str(&self) -> &str {
         // SAFETY: This is safe because all bytes written to `self.buf` are
         // guaranteed to be ASCII (including in its initial state), and thus,
@@ -311,9 +348,9 @@ impl Fractional {
 /// misnomer, but the range of possible values is still correct. (That is, the
 /// fractional component of an hour is still limited to 9 decimal places per
 /// the Temporal spec.)
-#[inline(never)]
+#[cfg_attr(feature = "perf-inline", inline(always))]
 pub(crate) fn parse_temporal_fraction<'i>(
-    mut input: &'i [u8],
+    input: &'i [u8],
 ) -> Result<Parsed<'i, Option<t::SubsecNanosecond>>, Error> {
     // TimeFraction :::
     //   TemporalDecimalFraction
@@ -344,41 +381,48 @@ pub(crate) fn parse_temporal_fraction<'i>(
     // DecimalDigit :: one of
     //   0 1 2 3 4 5 6 7 8 9
 
+    #[inline(never)]
+    fn imp<'i>(
+        mut input: &'i [u8],
+    ) -> Result<Parsed<'i, Option<t::SubsecNanosecond>>, Error> {
+        let mkdigits = parse::slicer(input);
+        while mkdigits(input).len() <= 8
+            && input.first().map_or(false, u8::is_ascii_digit)
+        {
+            input = &input[1..];
+        }
+        let digits = mkdigits(input);
+        if digits.is_empty() {
+            return Err(err!(
+                "found decimal after seconds component, \
+                 but did not find any decimal digits after decimal",
+            ));
+        }
+        // I believe this error can never happen, since we know we have no more
+        // than 9 ASCII digits. Any sequence of 9 ASCII digits can be parsed
+        // into an `i64`.
+        let nanoseconds = parse::fraction(digits, 9).map_err(|err| {
+            err!(
+                "failed to parse {digits:?} as fractional component \
+                 (up to 9 digits, nanosecond precision): {err}",
+                digits = escape::Bytes(digits),
+            )
+        })?;
+        // I believe this is also impossible to fail, since the maximal
+        // fractional nanosecond is 999_999_999, and which also corresponds
+        // to the maximal expressible number with 9 ASCII digits. So every
+        // possible expressible value here is in range.
+        let nanoseconds =
+            t::SubsecNanosecond::try_new("nanoseconds", nanoseconds).map_err(
+                |err| err!("fractional nanoseconds are not valid: {err}"),
+            )?;
+        Ok(Parsed { value: Some(nanoseconds), input })
+    }
+
     if input.is_empty() || (input[0] != b'.' && input[0] != b',') {
         return Ok(Parsed { value: None, input });
     }
-    input = &input[1..];
-
-    let mkdigits = parse::slicer(input);
-    while mkdigits(input).len() <= 8
-        && input.first().map_or(false, u8::is_ascii_digit)
-    {
-        input = &input[1..];
-    }
-    let digits = mkdigits(input);
-    if digits.is_empty() {
-        return Err(err!(
-            "found decimal after seconds component, \
-             but did not find any decimal digits after decimal",
-        ));
-    }
-    // I believe this error can never happen, since we know we have no more
-    // than 9 ASCII digits. Any sequence of 9 ASCII digits can be parsed
-    // into an `i64`.
-    let nanoseconds = parse::fraction(digits, 9).map_err(|err| {
-        err!(
-            "failed to parse {digits:?} as fractional component \
-             (up to 9 digits, nanosecond precision): {err}",
-            digits = escape::Bytes(digits),
-        )
-    })?;
-    // I believe this is also impossible to fail, since the maximal
-    // fractional nanosecond is 999_999_999, and which also corresponds
-    // to the maximal expressible number with 9 ASCII digits. So every
-    // possible expressible value here is in range.
-    let nanoseconds = t::SubsecNanosecond::try_new("nanoseconds", nanoseconds)
-        .map_err(|err| err!("fractional nanoseconds are not valid: {err}"))?;
-    Ok(Parsed { value: Some(nanoseconds), input })
+    imp(&input[1..])
 }
 
 /// This routine returns a span based on the given with fractional time applied
@@ -456,7 +500,7 @@ pub(crate) fn fractional_time_to_span(
         _ => unreachable!("unsupported unit: {unit:?}"),
     };
 
-    if unit >= Unit::Hour && nanos > 0 {
+    if unit >= Unit::Hour && nanos > C(0) {
         let mut hours = nanos / t::NANOS_PER_HOUR;
         nanos %= t::NANOS_PER_HOUR;
         if hours > t::SpanHours::MAX_SELF {
@@ -466,7 +510,7 @@ pub(crate) fn fractional_time_to_span(
         // OK because we just checked that our units are in range.
         span = span.try_hours_ranged(hours).unwrap();
     }
-    if unit >= Unit::Minute && nanos > 0 {
+    if unit >= Unit::Minute && nanos > C(0) {
         let mut minutes = nanos / t::NANOS_PER_MINUTE;
         nanos %= t::NANOS_PER_MINUTE;
         if minutes > t::SpanMinutes::MAX_SELF {
@@ -477,7 +521,7 @@ pub(crate) fn fractional_time_to_span(
         // OK because we just checked that our units are in range.
         span = span.try_minutes_ranged(minutes).unwrap();
     }
-    if unit >= Unit::Second && nanos > 0 {
+    if unit >= Unit::Second && nanos > C(0) {
         let mut seconds = nanos / t::NANOS_PER_SECOND;
         nanos %= t::NANOS_PER_SECOND;
         if seconds > t::SpanSeconds::MAX_SELF {
@@ -488,7 +532,7 @@ pub(crate) fn fractional_time_to_span(
         // OK because we just checked that our units are in range.
         span = span.try_seconds_ranged(seconds).unwrap();
     }
-    if unit >= Unit::Millisecond && nanos > 0 {
+    if unit >= Unit::Millisecond && nanos > C(0) {
         let mut millis = nanos / t::NANOS_PER_MILLI;
         nanos %= t::NANOS_PER_MILLI;
         if millis > t::SpanMilliseconds::MAX_SELF {
@@ -499,7 +543,7 @@ pub(crate) fn fractional_time_to_span(
         // OK because we just checked that our units are in range.
         span = span.try_milliseconds_ranged(millis).unwrap();
     }
-    if unit >= Unit::Microsecond && nanos > 0 {
+    if unit >= Unit::Microsecond && nanos > C(0) {
         let mut micros = nanos / t::NANOS_PER_MICRO;
         nanos %= t::NANOS_PER_MICRO;
         if micros > t::SpanMicroseconds::MAX_SELF {
@@ -510,7 +554,7 @@ pub(crate) fn fractional_time_to_span(
         // OK because we just checked that our units are in range.
         span = span.try_microseconds_ranged(micros).unwrap();
     }
-    if nanos > 0 {
+    if nanos > C(0) {
         span = span.try_nanoseconds_ranged(nanos).with_context(|| {
             err!(
                 "failed to set nanosecond value {nanos} on span \

@@ -18,6 +18,8 @@ pub enum Type {
     Amazon,
     /// Android (<https://en.wikipedia.org/wiki/Android_(operating_system)>).
     Android,
+    /// AOSC OS (<https://aosc.io/aosc-os/>).
+    AOSC,
     /// Arch Linux (<https://en.wikipedia.org/wiki/Arch_Linux>).
     Arch,
     /// Artix Linux (<https://en.wikipedia.org/wiki/Artix_Linux>).
@@ -28,6 +30,8 @@ pub enum Type {
     CachyOS,
     /// CentOS (<https://en.wikipedia.org/wiki/CentOS>).
     CentOS,
+    /// Cygwin (<https://en.wikipedia.org/wiki/Cygwin>).
+    Cygwin,
     /// Debian (<https://en.wikipedia.org/wiki/Debian>).
     Debian,
     /// DragonFly BSD (<https://en.wikipedia.org/wiki/DragonFly_BSD>).
@@ -100,7 +104,7 @@ pub enum Type {
     Ubuntu,
     /// Ultramarine (<https://ultramarine-linux.org/>).
     Ultramarine,
-    /// Uos (<https://www.chinauos.com/>).
+    /// Uos (<https://uos.uniontech.com/>).
     Uos,
     /// Void Linux (<https://en.wikipedia.org/wiki/Void_Linux>).
     Void,
@@ -123,6 +127,7 @@ impl Display for Type {
             Type::Alpine => write!(f, "Alpine Linux"),
             Type::AlmaLinux => write!(f, "AlmaLinux"),
             Type::Amazon => write!(f, "Amazon Linux AMI"),
+            Type::AOSC => write!(f, "AOSC OS"),
             Type::Arch => write!(f, "Arch Linux"),
             Type::Bluefin => write!(f, "Bluefin"),
             Type::CachyOS => write!(f, "CachyOS Linux"),
@@ -170,11 +175,13 @@ mod tests {
             (Type::Alpine, "Alpine Linux"),
             (Type::Amazon, "Amazon Linux AMI"),
             (Type::Android, "Android"),
+            (Type::AOSC, "AOSC OS"),
             (Type::Arch, "Arch Linux"),
             (Type::Artix, "Artix Linux"),
             (Type::Bluefin, "Bluefin"),
             (Type::CachyOS, "CachyOS Linux"),
             (Type::CentOS, "CentOS"),
+            (Type::Cygwin, "Cygwin"),
             (Type::Debian, "Debian"),
             (Type::DragonFly, "DragonFly BSD"),
             (Type::Emscripten, "Emscripten"),

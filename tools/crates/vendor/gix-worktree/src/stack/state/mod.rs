@@ -53,7 +53,6 @@ pub struct Ignore {
 #[cfg(feature = "attributes")]
 pub mod attributes;
 ///
-#[allow(clippy::empty_docs)]
 pub mod ignore;
 
 /// Initialization
@@ -154,7 +153,7 @@ impl State {
                                     return None;
                                 }
                             }
-                        };
+                        }
                     }
                     Some((path.to_owned(), entry.id))
                 } else {

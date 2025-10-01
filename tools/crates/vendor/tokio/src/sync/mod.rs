@@ -439,7 +439,7 @@
 //! or even use them from non-Tokio runtimes.
 //!
 //! When used in a Tokio runtime, the synchronization primitives participate in
-//! [cooperative scheduling](crate::task#cooperative-scheduling) to avoid
+//! [cooperative scheduling](crate::task::coop#cooperative-scheduling) to avoid
 //! starvation. This feature does not apply when used from non-Tokio runtimes.
 //!
 //! As an exception, methods ending in `_timeout` are not runtime agnostic
@@ -449,7 +449,7 @@
 cfg_sync! {
     /// Named future types.
     pub mod futures {
-        pub use super::notify::Notified;
+        pub use super::notify::{Notified, OwnedNotified};
     }
 
     mod barrier;
@@ -487,6 +487,9 @@ cfg_sync! {
 
     mod once_cell;
     pub use self::once_cell::{OnceCell, SetError};
+
+    mod set_once;
+    pub use self::set_once::{SetOnce, SetOnceError};
 
     pub mod watch;
 }

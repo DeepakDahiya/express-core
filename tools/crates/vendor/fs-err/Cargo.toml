@@ -12,13 +12,19 @@
 [package]
 edition = "2018"
 name = "fs-err"
-version = "2.11.0"
+version = "3.1.1"
 authors = ["Andrew Hickman <andrew.hickman1@sky.com>"]
+build = "build.rs"
 exclude = [
     ".github",
     ".gitignore",
     "README.tpl",
 ]
+autolib = false
+autobins = false
+autoexamples = false
+autotests = false
+autobenches = false
 description = "A drop-in replacement for std::fs with more helpful error messages."
 documentation = "https://docs.rs/fs-err"
 readme = "README.md"
@@ -43,20 +49,24 @@ tag-name = "{{version}}"
 [[package.metadata.release.pre-release-replacements]]
 exactly = 1
 file = "src/lib.rs"
-replace = "html_root_url = \"https://docs.rs/fs-err/{{version}}\""
+replace = 'html_root_url = "https://docs.rs/fs-err/{{version}}"'
 search = 'html_root_url = "https://docs\.rs/fs-err/.*?"'
+
+[features]
+expose_original_error = []
+
+[lib]
+name = "fs_err"
+path = "src/lib.rs"
 
 [dependencies.tokio]
 version = "1.21"
 features = ["fs"]
 optional = true
-default_features = false
+default-features = false
 
 [dev-dependencies.serde_json]
 version = "1.0.64"
 
 [build-dependencies.autocfg]
 version = "1"
-
-[features]
-io_safety = []

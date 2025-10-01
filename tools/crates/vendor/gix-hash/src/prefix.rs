@@ -16,7 +16,6 @@ pub enum Error {
 }
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod from_hex {
     /// The error returned by [`Prefix::from_hex`][super::Prefix::from_hex()].
     #[derive(Debug, Eq, PartialEq, thiserror::Error)]
@@ -101,7 +100,7 @@ impl Prefix {
             return Err(from_hex::Error::TooLong { hex_len });
         } else if hex_len < Self::MIN_HEX_LEN {
             return Err(from_hex::Error::TooShort { hex_len });
-        };
+        }
 
         let src = if value.len() % 2 == 0 {
             let mut out = Vec::from_iter(std::iter::repeat(0).take(value.len() / 2));

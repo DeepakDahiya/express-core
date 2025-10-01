@@ -1,5 +1,29 @@
 # fs-err Changelog
 
+## 3.1.0
+
+* Added new wrappers for `create_new` and `options` functions on `File` ([#69](https://github.com/andrewhickman/fs-err/pull/69))
+
+## 3.0.0
+
+* Error messages now include the original message from `std::io::Error` by default ([#60](https://github.com/andrewhickman/fs-err/pull/60)). Previously this was exposed through the [`Error::source()`](https://doc.rust-lang.org/stable/std/error/trait.Error.html#method.source) method. For example, previously a message would look like:
+
+  ```
+  failed to open file `file.txt`
+  ```
+
+  and you would have to remember to print the source, or use a library like `anyhow` to print the full chain of source errors. The new error message includes the cause by default
+
+  ```
+  failed to open file `file.txt`: The system cannot find the file specified. (os error 2)
+  ```
+
+  Note that the original error is no longer exposed though [`Error::source()`](https://doc.rust-lang.org/stable/std/error/trait.Error.html#method.source) by default. If you need access to it, you can restore the previous behaviour with the `expose_original_error` feature flag.
+
+* The `io_safety` feature flag has been removed, and this functionality is now always enabled on Rust versions which support it (1.63.0 and greater).
+
+* Removed deprecated APIs: `File::from_options`, `tokio::symlink`
+
 ## 2.11.0
 
 * Added the first line of the standard library documentation to each function's rustdocs, to make them more useful in IDEs ([#50](https://github.com/andrewhickman/fs-err/issues/45))

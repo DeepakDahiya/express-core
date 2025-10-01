@@ -1,0 +1,19 @@
+diff --git a/chrome/android/java/res/anim/slide_in_right.xml b/chrome/android/java/res/anim/slide_in_right.xml
+index bb8c0ffad7cac97959ec40f6f2ff275ebfff1a27..41d01d489ba0d2bef739960ddba96b5ce2073e72 100644
+--- a/chrome/android/java/res/anim/slide_in_right.xml
++++ b/chrome/android/java/res/anim/slide_in_right.xml
+@@ -1,10 +1,6 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-Copyright 2023 The Chromium Authors
+-Use of this source code is governed by a BSD-style license that can be
+-found in the LICENSE file.
+--->
+ <set xmlns:android="http://schemas.android.com/apk/res/android">
+-    <translate android:fromXDelta="100%p" android:toXDelta="0"
+-        android:duration="@android:integer/config_mediumAnimTime"/>
++    <translate
++        android:duration="300"
++        android:fromXDelta="100%p"
++        android:toXDelta="0%p" />
+ </set>

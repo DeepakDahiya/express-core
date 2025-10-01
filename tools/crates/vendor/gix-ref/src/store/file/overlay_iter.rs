@@ -6,10 +6,13 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use gix_object::bstr::ByteSlice;
+use gix_path::RelativePath;
+
 use crate::{
-    file::{loose, loose::iter::SortedLoosePaths, path_to_name},
+    file::{loose, loose::iter::SortedLoosePaths},
     store_impl::{file, packed},
-    BString, FullName, Namespace, Reference,
+    BStr, FullName, Namespace, Reference,
 };
 
 /// An iterator stepping through sorted input of loose references and packed references, preferring loose refs over otherwise
@@ -40,7 +43,7 @@ pub struct Platform<'s> {
     packed: Option<file::packed::SharedBufferSnapshot>,
 }
 
-impl<'p, 's> LooseThenPacked<'p, 's> {
+impl<'p> LooseThenPacked<'p, '_> {
     fn strip_namespace(&self, mut r: Reference) -> Reference {
         if let Some(namespace) = &self.namespace {
             r.strip_namespace(namespace);
@@ -112,13 +115,13 @@ impl<'p, 's> LooseThenPacked<'p, 's> {
     }
 }
 
-impl<'p, 's> Iterator for LooseThenPacked<'p, 's> {
+impl Iterator for LooseThenPacked<'_, '_> {
     type Item = Result<Reference, Error>;
 
     fn next(&mut self) -> Option<Self::Item> {
         fn advance_to_non_private(iter: &mut Peekable<SortedLoosePaths>) {
             while let Some(Ok((_path, name))) = iter.peek() {
-                if name.category().map_or(false, |cat| cat.is_worktree_private()) {
+                if name.category().is_some_and(|cat| cat.is_worktree_private()) {
                     iter.next();
                 } else {
                     break;
@@ -187,7 +190,7 @@ impl<'p, 's> Iterator for LooseThenPacked<'p, 's> {
     }
 }
 
-impl<'s> Platform<'s> {
+impl Platform<'_> {
     /// Return an iterator over all references, loose or `packed`, sorted by their name.
     ///
     /// Errors are returned similarly to what would happen when loose and packed refs where iterated by themselves.
@@ -195,10 +198,15 @@ impl<'s> Platform<'s> {
         self.store.iter_packed(self.packed.as_ref().map(|b| &***b))
     }
 
-    /// As [`iter(…)`][file::Store::iter()], but filters by `prefix`, i.e. "refs/heads".
+    /// As [`iter(…)`](file::Store::iter()), but filters by `prefix`, i.e. "refs/heads/" or
+    /// "refs/heads/feature-".
     ///
-    /// Please note that "refs/heads" or "refs\\heads" is equivalent to "refs/heads/"
-    pub fn prefixed(&self, prefix: &Path) -> std::io::Result<LooseThenPacked<'_, '_>> {
+    /// Note that if a prefix isn't using a trailing `/`, like in `refs/heads/foo`, it will effectively
+    /// start the traversal in the parent directory, e.g. `refs/heads/` and list everything inside that
+    /// starts with `foo`, like `refs/heads/foo` and `refs/heads/foobar`.
+    ///
+    /// Prefixes are relative paths with slash-separated components.
+    pub fn prefixed(&self, prefix: &RelativePath) -> std::io::Result<LooseThenPacked<'_, '_>> {
         self.store
             .iter_prefixed_packed(prefix, self.packed.as_ref().map(|b| &***b))
     }
@@ -228,7 +236,7 @@ pub(crate) enum IterInfo<'a> {
     BaseAndIterRoot {
         base: &'a Path,
         iter_root: PathBuf,
-        prefix: Cow<'a, Path>,
+        prefix: PathBuf,
         precompose_unicode: bool,
     },
     PrefixAndBase {
@@ -239,25 +247,22 @@ pub(crate) enum IterInfo<'a> {
     ComputedIterationRoot {
         /// The root to iterate over
         iter_root: PathBuf,
-        /// The top-level directory as boundary of all references, used to create their short-names after iteration
+        /// The top-level directory as boundary of all references, used to create their short-names after iteration.
         base: &'a Path,
-        /// The original prefix
-        prefix: Cow<'a, Path>,
-        /// The remainder of the prefix that wasn't a valid path
-        remainder: Option<BString>,
+        /// The original prefix.
+        prefix: Cow<'a, BStr>,
         /// If `true`, we will convert decomposed into precomposed unicode.
         precompose_unicode: bool,
     },
 }
 
 impl<'a> IterInfo<'a> {
-    fn prefix(&self) -> Option<&Path> {
+    fn prefix(&self) -> Option<Cow<'_, BStr>> {
         match self {
             IterInfo::Base { .. } => None,
-            IterInfo::PrefixAndBase { prefix, .. } => Some(*prefix),
-            IterInfo::ComputedIterationRoot { prefix, .. } | IterInfo::BaseAndIterRoot { prefix, .. } => {
-                prefix.as_ref().into()
-            }
+            IterInfo::PrefixAndBase { prefix, .. } => Some(gix_path::into_bstr(*prefix)),
+            IterInfo::BaseAndIterRoot { prefix, .. } => Some(gix_path::into_bstr(prefix.clone())),
+            IterInfo::ComputedIterationRoot { prefix, .. } => Some(prefix.clone()),
         }
     }
 
@@ -281,57 +286,32 @@ impl<'a> IterInfo<'a> {
             IterInfo::ComputedIterationRoot {
                 iter_root,
                 base,
-                prefix: _,
-                remainder,
+                prefix,
                 precompose_unicode,
-            } => SortedLoosePaths::at(&iter_root, base.into(), remainder, precompose_unicode),
+            } => SortedLoosePaths::at(&iter_root, base.into(), Some(prefix.into_owned()), precompose_unicode),
         }
         .peekable()
     }
 
-    fn from_prefix(base: &'a Path, prefix: Cow<'a, Path>, precompose_unicode: bool) -> std::io::Result<Self> {
-        if prefix.is_absolute() {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "prefix must be a relative path, like 'refs/heads'",
-            ));
-        }
-        use std::path::Component::*;
-        if prefix.components().any(|c| matches!(c, CurDir | ParentDir)) {
-            return Err(std::io::Error::new(
-                std::io::ErrorKind::InvalidInput,
-                "Refusing to handle prefixes with relative path components",
-            ));
-        }
-        let iter_root = base.join(prefix.as_ref());
-        if iter_root.is_dir() {
+    fn from_prefix(base: &'a Path, prefix: &'a RelativePath, precompose_unicode: bool) -> std::io::Result<Self> {
+        let prefix_path = gix_path::from_bstr(prefix.as_ref().as_bstr());
+        let iter_root = base.join(&prefix_path);
+        if prefix.as_ref().ends_with(b"/") {
             Ok(IterInfo::BaseAndIterRoot {
                 base,
                 iter_root,
-                prefix,
+                prefix: prefix_path.into_owned(),
                 precompose_unicode,
             })
         } else {
-            let filename_prefix = iter_root
-                .file_name()
-                .map(ToOwned::to_owned)
-                .map(|p| {
-                    gix_path::try_into_bstr(PathBuf::from(p))
-                        .map(std::borrow::Cow::into_owned)
-                        .map_err(|_| {
-                            std::io::Error::new(std::io::ErrorKind::InvalidInput, "prefix contains ill-formed UTF-8")
-                        })
-                })
-                .transpose()?;
             let iter_root = iter_root
                 .parent()
                 .expect("a parent is always there unless empty")
                 .to_owned();
             Ok(IterInfo::ComputedIterationRoot {
                 base,
-                prefix,
+                prefix: prefix.as_ref().as_bstr().into(),
                 iter_root,
-                remainder: filename_prefix,
                 precompose_unicode,
             })
         }
@@ -374,30 +354,34 @@ impl file::Store {
         }
     }
 
-    /// As [`iter(…)`][file::Store::iter()], but filters by `prefix`, i.e. "refs/heads".
+    /// As [`iter(…)`](file::Store::iter()), but filters by `prefix`, i.e. `refs/heads/` or
+    /// `refs/heads/feature-`.
+    /// Note that if a prefix isn't using a trailing `/`, like in `refs/heads/foo`, it will effectively
+    /// start the traversal in the parent directory, e.g. `refs/heads/` and list everything inside that
+    /// starts with `foo`, like `refs/heads/foo` and `refs/heads/foobar`.
     ///
-    /// Please note that "refs/heads" or "refs\\heads" is equivalent to "refs/heads/"
+    /// Prefixes are relative paths with slash-separated components.
     pub fn iter_prefixed_packed<'s, 'p>(
         &'s self,
-        prefix: &Path,
+        prefix: &RelativePath,
         packed: Option<&'p packed::Buffer>,
     ) -> std::io::Result<LooseThenPacked<'p, 's>> {
         match self.namespace.as_ref() {
             None => {
-                let git_dir_info = IterInfo::from_prefix(self.git_dir(), prefix.into(), self.precompose_unicode)?;
+                let git_dir_info = IterInfo::from_prefix(self.git_dir(), prefix, self.precompose_unicode)?;
                 let common_dir_info = self
                     .common_dir()
-                    .map(|base| IterInfo::from_prefix(base, prefix.into(), self.precompose_unicode))
+                    .map(|base| IterInfo::from_prefix(base, prefix, self.precompose_unicode))
                     .transpose()?;
                 self.iter_from_info(git_dir_info, common_dir_info, packed)
             }
             Some(namespace) => {
                 let prefix = namespace.to_owned().into_namespaced_prefix(prefix);
-                let git_dir_info =
-                    IterInfo::from_prefix(self.git_dir(), prefix.clone().into(), self.precompose_unicode)?;
+                let prefix = prefix.as_bstr().try_into().map_err(std::io::Error::other)?;
+                let git_dir_info = IterInfo::from_prefix(self.git_dir(), prefix, self.precompose_unicode)?;
                 let common_dir_info = self
                     .common_dir()
-                    .map(|base| IterInfo::from_prefix(base, prefix.into(), self.precompose_unicode))
+                    .map(|base| IterInfo::from_prefix(base, prefix, self.precompose_unicode))
                     .transpose()?;
                 self.iter_from_info(git_dir_info, common_dir_info, packed)
             }
@@ -416,7 +400,7 @@ impl file::Store {
             iter_packed: match packed {
                 Some(packed) => Some(
                     match git_dir_info.prefix() {
-                        Some(prefix) => packed.iter_prefixed(path_to_name(prefix).into_owned()),
+                        Some(prefix) => packed.iter_prefixed(prefix.into_owned()),
                         None => packed.iter(),
                     }
                     .map_err(|err| std::io::Error::new(std::io::ErrorKind::Other, err))?

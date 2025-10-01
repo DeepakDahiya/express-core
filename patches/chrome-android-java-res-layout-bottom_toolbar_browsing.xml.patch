@@ -1,0 +1,12 @@
+diff --git a/chrome/android/java/res/layout/bottom_toolbar_browsing.xml b/chrome/android/java/res/layout/bottom_toolbar_browsing.xml
+index cc71ac93c6eca12274b9f6e1100893755ce1ec48..227e28feb2fa7e249034d34a8b577d5bd0fdadee 100644
+--- a/chrome/android/java/res/layout/bottom_toolbar_browsing.xml
++++ b/chrome/android/java/res/layout/bottom_toolbar_browsing.xml
+@@ -124,7 +124,6 @@
+         app:menuMaxWidth="@dimen/tab_switcher_menu_width"
+         android:visibility="gone"
+         android:background="?attr/selectableItemBackgroundBorderless"
+-        android:contentDescription="@string/accessibility_toolbar_btn_tabswitcher_toggle_default"
+         app:menuVerticalOverlapAnchor="false" />
+ 
+     <include layout="@layout/toolbar_space" />

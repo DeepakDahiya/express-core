@@ -20,7 +20,9 @@ use crate::util::libm::Float;
 /// to the entire duration. That is, either _both_ the seconds and the
 /// fractional nanoseconds are negative or _neither_ are. Stated differently,
 /// it is guaranteed that the signs of [`SignedDuration::as_secs`] and
-/// [`SignedDuration::subsec_nanos`] are always the same.
+/// [`SignedDuration::subsec_nanos`] are always the same, or one component is
+/// zero. (For example, `-1 seconds` and `0 nanoseconds`, or `0 seconds` and
+/// `-1 nanoseconds`.)
 ///
 /// # Parsing and printing
 ///
@@ -72,7 +74,7 @@ use crate::util::libm::Float;
 ///
 /// let span: Span = "P1d".parse()?;
 /// let relative = date(2024, 11, 3).in_tz("US/Eastern")?;
-/// let duration = span.to_jiff_duration(&relative)?;
+/// let duration = span.to_duration(&relative)?;
 /// // This example also motivates *why* a relative date
 /// // is required. Not all days are the same length!
 /// assert_eq!(duration.to_string(), "PT25H");
@@ -460,6 +462,8 @@ impl SignedDuration {
     /// Creates a new signed duration without handling nanosecond overflow.
     ///
     /// This might produce tighter code in some cases.
+    ///
+    /// # Panics
     ///
     /// In debug mode only, when `|nanos|` is greater than or equal to 1
     /// second.
@@ -929,34 +933,38 @@ impl SignedDuration {
         // we can skip the div and modulus operations.
 
         // When |nanos| exceeds 1 second, we balance the excess up to seconds.
-        if nanos >= NANOS_PER_SEC {
-            nanos -= NANOS_PER_SEC;
-            secs = match secs.checked_add(1) {
-                None => return None,
-                Some(secs) => secs,
-            };
-        } else if nanos <= -NANOS_PER_SEC {
-            nanos += NANOS_PER_SEC;
-            secs = match secs.checked_sub(1) {
-                None => return None,
-                Some(secs) => secs,
-            };
-        }
-        if secs != 0 && nanos != 0 && secs.signum() != (nanos.signum() as i64)
-        {
-            if secs < 0 {
-                debug_assert!(nanos > 0);
-                // OK because secs<0.
-                secs += 1;
-                // OK because nanos>0.
+        if nanos != 0 {
+            if nanos >= NANOS_PER_SEC {
                 nanos -= NANOS_PER_SEC;
-            } else {
-                debug_assert!(secs > 0);
-                debug_assert!(nanos < 0);
-                // OK because secs>0.
-                secs -= 1;
-                // OK because nanos<0.
+                secs = match secs.checked_add(1) {
+                    None => return None,
+                    Some(secs) => secs,
+                };
+            } else if nanos <= -NANOS_PER_SEC {
                 nanos += NANOS_PER_SEC;
+                secs = match secs.checked_sub(1) {
+                    None => return None,
+                    Some(secs) => secs,
+                };
+            }
+            if secs != 0
+                && nanos != 0
+                && secs.signum() != (nanos.signum() as i64)
+            {
+                if secs < 0 {
+                    debug_assert!(nanos > 0);
+                    // OK because secs<0.
+                    secs += 1;
+                    // OK because nanos>0.
+                    nanos -= NANOS_PER_SEC;
+                } else {
+                    debug_assert!(secs > 0);
+                    debug_assert!(nanos < 0);
+                    // OK because secs>0.
+                    secs -= 1;
+                    // OK because nanos<0.
+                    nanos += NANOS_PER_SEC;
+                }
             }
         }
         Some(SignedDuration::new_unchecked(secs, nanos))
@@ -1344,9 +1352,24 @@ impl SignedDuration {
                 SignedDuration::MAX,
             ));
         }
-        let nanos = (secs.fract() * (NANOS_PER_SEC as f64)).round() as i32;
-        let secs = secs.trunc() as i64;
-        Ok(SignedDuration::new_unchecked(secs, nanos))
+
+        let mut int_secs = secs.trunc() as i64;
+        let mut int_nanos =
+            (secs.fract() * (NANOS_PER_SEC as f64)).round() as i32;
+        if int_nanos.unsigned_abs() == 1_000_000_000 {
+            let increment = i64::from(int_nanos.signum());
+            int_secs = int_secs.checked_add(increment).ok_or_else(|| {
+                err!(
+                    "floating point seconds {secs} overflows signed duration \
+                     maximum value of {max:?} after rounding its fractional \
+                     component of {fract:?}",
+                    max = SignedDuration::MAX,
+                    fract = secs.fract(),
+                )
+            })?;
+            int_nanos = 0;
+        }
+        Ok(SignedDuration::new_unchecked(int_secs, int_nanos))
     }
 
     /// Returns a signed duration corresponding to the number of seconds
@@ -1401,9 +1424,24 @@ impl SignedDuration {
                 SignedDuration::MAX,
             ));
         }
-        let nanos = (secs.fract() * (NANOS_PER_SEC as f32)).round() as i32;
-        let secs = secs.trunc() as i64;
-        Ok(SignedDuration::new_unchecked(secs, nanos))
+        let mut int_nanos =
+            (secs.fract() * (NANOS_PER_SEC as f32)).round() as i32;
+        let mut int_secs = secs.trunc() as i64;
+        if int_nanos.unsigned_abs() == 1_000_000_000 {
+            let increment = i64::from(int_nanos.signum());
+            // N.B. I haven't found a way to trigger this error path in tests.
+            int_secs = int_secs.checked_add(increment).ok_or_else(|| {
+                err!(
+                    "floating point seconds {secs} overflows signed duration \
+                     maximum value of {max:?} after rounding its fractional \
+                     component of {fract:?}",
+                    max = SignedDuration::MAX,
+                    fract = secs.fract(),
+                )
+            })?;
+            int_nanos = 0;
+        }
+        Ok(SignedDuration::new_unchecked(int_secs, int_nanos))
     }
 
     /// Returns the result of multiplying this duration by the given 64-bit
@@ -1791,7 +1829,7 @@ impl SignedDuration {
     ) -> SignedDuration {
         // OK because all the difference between any two timestamp values can
         // fit into a signed duration.
-        timestamp2.as_jiff_duration() - timestamp1.as_jiff_duration()
+        timestamp2.as_duration() - timestamp1.as_duration()
     }
 
     pub(crate) fn datetime_until(
@@ -2052,9 +2090,24 @@ impl core::fmt::Debug for SignedDuration {
     fn fmt(&self, f: &mut core::fmt::Formatter) -> core::fmt::Result {
         use crate::fmt::StdFmtWrite;
 
-        friendly::DEFAULT_SPAN_PRINTER
-            .print_duration(self, StdFmtWrite(f))
-            .map_err(|_| core::fmt::Error)
+        if f.alternate() {
+            if self.subsec_nanos() == 0 {
+                write!(f, "{}s", self.as_secs())
+            } else if self.as_secs() == 0 {
+                write!(f, "{}ns", self.subsec_nanos())
+            } else {
+                write!(
+                    f,
+                    "{}s {}ns",
+                    self.as_secs(),
+                    self.subsec_nanos().unsigned_abs()
+                )
+            }
+        } else {
+            friendly::DEFAULT_SPAN_PRINTER
+                .print_duration(self, StdFmtWrite(f))
+                .map_err(|_| core::fmt::Error)
+        }
     }
 }
 
@@ -2075,6 +2128,13 @@ impl TryFrom<SignedDuration> for Duration {
     type Error = Error;
 
     fn try_from(sd: SignedDuration) -> Result<Duration, Error> {
+        // This isn't needed, but improves error messages.
+        if sd.is_negative() {
+            return Err(err!(
+                "cannot convert negative duration `{sd:?}` to \
+                 unsigned `std::time::Duration`",
+            ));
+        }
         let secs = u64::try_from(sd.as_secs()).map_err(|_| {
             err!("seconds in signed duration {sd:?} overflowed u64")
         })?;
@@ -2150,6 +2210,18 @@ impl core::ops::Mul<i32> for SignedDuration {
     fn mul(self, rhs: i32) -> SignedDuration {
         self.checked_mul(rhs)
             .expect("overflow when multiplying signed duration by scalar")
+    }
+}
+
+impl core::iter::Sum for SignedDuration {
+    fn sum<I: Iterator<Item = Self>>(iter: I) -> Self {
+        iter.fold(Self::new(0, 0), |acc, d| acc + d)
+    }
+}
+
+impl<'a> core::iter::Sum<&'a Self> for SignedDuration {
+    fn sum<I: Iterator<Item = &'a Self>>(iter: I) -> Self {
+        iter.fold(Self::new(0, 0), |acc, d| acc + *d)
     }
 }
 
@@ -2465,7 +2537,7 @@ impl From<(Unit, i64)> for SignedDurationRound {
 /// in order to ensure good error messages.
 ///
 /// (We do the same thing for `Span`.)
-#[inline(always)]
+#[cfg_attr(feature = "perf-inline", inline(always))]
 fn parse_iso_or_friendly(bytes: &[u8]) -> Result<SignedDuration, Error> {
     if bytes.is_empty() {
         return Err(err!(
@@ -2765,5 +2837,76 @@ mod tests {
         let dur = humantime::parse_duration(&formatted).unwrap();
         let expected = std::time::Duration::try_from(sdur).unwrap();
         assert_eq!(dur, expected);
+    }
+
+    #[test]
+    fn using_sum() {
+        let signed_durations = [
+            SignedDuration::new(12, 600_000_000),
+            SignedDuration::new(13, 400_000_000),
+        ];
+        let sum1: SignedDuration = signed_durations.iter().sum();
+        let sum2: SignedDuration = signed_durations.into_iter().sum();
+
+        assert_eq!(sum1, SignedDuration::new(26, 0));
+        assert_eq!(sum2, SignedDuration::new(26, 0));
+    }
+
+    #[test]
+    #[should_panic]
+    fn using_sum_when_max_exceeds() {
+        [
+            SignedDuration::new(i64::MAX, 0),
+            SignedDuration::new(0, 1_000_000_000),
+        ]
+        .iter()
+        .sum::<SignedDuration>();
+    }
+
+    /// Regression test for a case where this routine could panic, even though
+    /// it is fallible and should never panic.
+    ///
+    /// This occurred when rounding the fractional part of f64 could result in
+    /// a number of nanoseconds equivalent to 1 second. This was then fed to
+    /// a `SignedDuration` constructor that expected no nanosecond overflow.
+    /// And this triggered a panic in debug mode (and an incorrect result in
+    /// release mode).
+    ///
+    /// See: https://github.com/BurntSushi/jiff/issues/324
+    #[test]
+    fn panic_try_from_secs_f64() {
+        let sdur = SignedDuration::try_from_secs_f64(0.999999999999).unwrap();
+        assert_eq!(sdur, SignedDuration::from_secs(1));
+
+        let sdur = SignedDuration::try_from_secs_f64(-0.999999999999).unwrap();
+        assert_eq!(sdur, SignedDuration::from_secs(-1));
+
+        let max = 9223372036854775807.999999999f64;
+        let sdur = SignedDuration::try_from_secs_f64(max).unwrap();
+        assert_eq!(sdur, SignedDuration::new(9223372036854775807, 0));
+
+        let min = -9223372036854775808.999999999f64;
+        let sdur = SignedDuration::try_from_secs_f64(min).unwrap();
+        assert_eq!(sdur, SignedDuration::new(-9223372036854775808, 0));
+    }
+
+    /// See `panic_try_from_secs_f64`.
+    ///
+    /// Although note that I could never get this to panic. Perhaps the
+    /// particulars of f32 prevent the fractional part from rounding up to
+    /// 1_000_000_000?
+    #[test]
+    fn panic_try_from_secs_f32() {
+        let sdur = SignedDuration::try_from_secs_f32(0.999999999).unwrap();
+        assert_eq!(sdur, SignedDuration::from_secs(1));
+
+        let sdur = SignedDuration::try_from_secs_f32(-0.999999999).unwrap();
+        assert_eq!(sdur, SignedDuration::from_secs(-1));
+
+        // Indeed, this is why the above never panicked.
+        let x: f32 = 1.0;
+        let y: f32 = 0.999999999;
+        assert_eq!(x, y);
+        assert_eq!(y.fract(), 0.0f32);
     }
 }

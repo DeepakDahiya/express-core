@@ -81,7 +81,7 @@ impl RemoteGitIndex {
                 repo.find_remote("origin").map_or(true, |remote| {
                     remote
                         .url(DIR)
-                        .map_or(false, |remote_url| remote_url.to_bstring() == index.url)
+                        .is_some_and(|remote_url| remote_url.to_bstring() == index.url)
                 })
             })
             .or_else(|| gix::open_opts(&index.cache.path, open_with_complete_config).ok());
@@ -257,9 +257,8 @@ impl RemoteGitIndex {
             .try_into_commit()?
             .tree()?;
 
-        let mut buf = Vec::new();
         let Some(entry) = tree
-            .lookup_entry_by_path(path, &mut buf)
+            .lookup_entry_by_path(path)
             .map_err(|err| GitError::BlobLookup(Box::new(err)))?
         else {
             return Ok(None);
@@ -471,7 +470,7 @@ impl GitError {
                 }
             }
             Self::Lock(le) => {
-                return !matches!(le, gix::lock::acquire::Error::PermanentlyLocked { .. })
+                return !matches!(le, gix::lock::acquire::Error::PermanentlyLocked { .. });
             }
             _ => return false,
         };

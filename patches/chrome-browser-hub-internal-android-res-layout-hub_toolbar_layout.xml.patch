@@ -1,0 +1,38 @@
+diff --git a/chrome/browser/hub/internal/android/res/layout/hub_toolbar_layout.xml b/chrome/browser/hub/internal/android/res/layout/hub_toolbar_layout.xml
+index b21e51e73381e4725f61f8ad392c33f9ec2fb2ec..255b9a16cfcd207039e4a761c78dbd8b1e2725ff 100644
+--- a/chrome/browser/hub/internal/android/res/layout/hub_toolbar_layout.xml
++++ b/chrome/browser/hub/internal/android/res/layout/hub_toolbar_layout.xml
+@@ -1,9 +1,8 @@
+ <?xml version="1.0" encoding="utf-8"?>
+-<!--
+-Copyright 2023 The Chromium Authors
+-Use of this source code is governed by a BSD-style license that can be
+-found in the LICENSE file.
+--->
++<!-- Copyright (c) 2024 The Brave Authors. All rights reserved.
++     This Source Code Form is subject to the terms of the Mozilla Public
++     License, v. 2.0. If a copy of the MPL was not distributed with this file,
++     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+ <FrameLayout
+   xmlns:android="http://schemas.android.com/apk/res/android"
+   xmlns:app="http://schemas.android.com/apk/res-auto"
+@@ -21,7 +20,7 @@ found in the LICENSE file.
+     android:background="@android:color/white"
+     android:visibility="gone" />
+ 
+-  <org.chromium.chrome.browser.hub.HubToolbarView
++  <org.chromium.chrome.browser.hub.BraveHubToolbarView
+     android:id="@+id/hub_toolbar"
+     android:layout_width="match_parent"
+     android:layout_height="wrap_content"
+@@ -136,9 +135,8 @@ found in the LICENSE file.
+         android:ellipsize="end"
+         android:focusableInTouchMode="false"
+         android:focusable="false"
+-        android:longClickable="false"
+         android:inputType="text"
+         android:singleLine="true" />
+     </LinearLayout>
+-  </org.chromium.chrome.browser.hub.HubToolbarView>
++  </org.chromium.chrome.browser.hub.BraveHubToolbarView>
+ </FrameLayout>

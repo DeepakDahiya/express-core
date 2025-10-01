@@ -10,14 +10,13 @@ use crate::crypto::cipher::{AeadKey, Iv};
 use crate::crypto::tls13::{Hkdf, HkdfExpander, OkmBlock};
 use crate::enums::AlertDescription;
 use crate::error::Error;
+use crate::tls13::Tls13CipherSuite;
 use crate::tls13::key_schedule::{
     hkdf_expand_label, hkdf_expand_label_aead_key, hkdf_expand_label_block,
 };
-use crate::tls13::Tls13CipherSuite;
 
 #[cfg(feature = "std")]
 mod connection {
-    use alloc::vec;
     use alloc::vec::Vec;
     use core::fmt::{self, Debug};
     use core::ops::{Deref, DerefMut};
@@ -26,12 +25,15 @@ mod connection {
 
     use super::{DirectionalKeys, KeyChange, Version};
     use crate::client::{ClientConfig, ClientConnectionData};
-    use crate::common_state::{CommonState, Protocol, DEFAULT_BUFFER_LIMIT};
+    use crate::common_state::{CommonState, DEFAULT_BUFFER_LIMIT, Protocol};
     use crate::conn::{ConnectionCore, SideData};
     use crate::enums::{AlertDescription, ContentType, ProtocolVersion};
     use crate::error::Error;
+    use crate::msgs::base::Payload;
     use crate::msgs::deframer::buffers::{DeframerVecBuffer, Locator};
-    use crate::msgs::handshake::{ClientExtension, ServerExtension};
+    use crate::msgs::handshake::{
+        ClientExtensionsInput, ServerExtensionsInput, TransportParameters,
+    };
     use crate::msgs::message::InboundPlainMessage;
     use crate::server::{ServerConfig, ServerConnectionData};
     use crate::sync::Arc;
@@ -164,6 +166,23 @@ mod connection {
             name: ServerName<'static>,
             params: Vec<u8>,
         ) -> Result<Self, Error> {
+            Self::new_with_alpn(
+                config.clone(),
+                quic_version,
+                name,
+                params,
+                config.alpn_protocols.clone(),
+            )
+        }
+
+        /// Make a new QUIC ClientConnection with custom ALPN protocols.
+        pub fn new_with_alpn(
+            config: Arc<ClientConfig>,
+            quic_version: Version,
+            name: ServerName<'static>,
+            params: Vec<u8>,
+            alpn_protocols: Vec<Vec<u8>>,
+        ) -> Result<Self, Error> {
             if !config.supports_version(ProtocolVersion::TLSv1_3) {
                 return Err(Error::General(
                     "TLS 1.3 support is required for QUIC".into(),
@@ -176,12 +195,16 @@ mod connection {
                 ));
             }
 
-            let ext = match quic_version {
-                Version::V1Draft => ClientExtension::TransportParametersDraft(params),
-                Version::V1 | Version::V2 => ClientExtension::TransportParameters(params),
+            let exts = ClientExtensionsInput {
+                transport_parameters: Some(match quic_version {
+                    Version::V1Draft => TransportParameters::QuicDraft(Payload::new(params)),
+                    Version::V1 | Version::V2 => TransportParameters::Quic(Payload::new(params)),
+                }),
+
+                ..ClientExtensionsInput::from_alpn(alpn_protocols)
             };
 
-            let mut inner = ConnectionCore::for_client(config, name, vec![ext], Protocol::Quic)?;
+            let mut inner = ConnectionCore::for_client(config, name, exts, Protocol::Quic)?;
             inner.common_state.quic.version = quic_version;
             Ok(Self {
                 inner: inner.into(),
@@ -195,6 +218,11 @@ mod connection {
         /// is not an error, but you may wish to resend the data.
         pub fn is_early_data_accepted(&self) -> bool {
             self.inner.core.is_early_data_accepted()
+        }
+
+        /// Returns the number of TLS1.3 tickets that have been received.
+        pub fn tls13_tickets_received(&self) -> u32 {
+            self.inner.tls13_tickets_received
         }
     }
 
@@ -258,12 +286,14 @@ mod connection {
                 ));
             }
 
-            let ext = match quic_version {
-                Version::V1Draft => ServerExtension::TransportParametersDraft(params),
-                Version::V1 | Version::V2 => ServerExtension::TransportParameters(params),
+            let exts = ServerExtensionsInput {
+                transport_parameters: Some(match quic_version {
+                    Version::V1Draft => TransportParameters::QuicDraft(Payload::new(params)),
+                    Version::V1 | Version::V2 => TransportParameters::Quic(Payload::new(params)),
+                }),
             };
 
-            let mut core = ConnectionCore::for_server(config, vec![ext])?;
+            let mut core = ConnectionCore::for_server(config, exts)?;
             core.common_state.protocol = Protocol::Quic;
             core.common_state.quic.version = quic_version;
             Ok(Self { inner: core.into() })

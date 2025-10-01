@@ -4,11 +4,9 @@ use std::{
     task::{Context, Poll},
 };
 
-use crate::{
-    codec::Encode,
-    futures::write::{AsyncBufWrite, BufWriter},
-    util::PartialBuffer,
-};
+use crate::codecs::Encode;
+use crate::core::util::PartialBuffer;
+use crate::futures::write::{AsyncBufWrite, BufWriter};
 use futures_core::ready;
 use futures_io::{AsyncBufRead, AsyncRead, AsyncWrite, IoSliceMut};
 use pin_project_lite::pin_project;
@@ -61,6 +59,14 @@ impl<W: AsyncWrite, E: Encode> Encoder<W, E> {
         }
     }
 
+    pub fn with_capacity(writer: W, encoder: E, cap: usize) -> Self {
+        Self {
+            writer: BufWriter::with_capacity(cap, writer),
+            encoder,
+            state: State::Encoding,
+        }
+    }
+
     fn do_poll_write(
         self: Pin<&mut Self>,
         cx: &mut Context<'_>,
@@ -79,10 +85,7 @@ impl<W: AsyncWrite, E: Encode> Encoder<W, E> {
                 }
 
                 State::Finishing | State::Done => {
-                    return Poll::Ready(Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        "Write after close",
-                    )))
+                    return Poll::Ready(Err(io::Error::other("Write after close")))
                 }
             };
 
@@ -106,10 +109,7 @@ impl<W: AsyncWrite, E: Encode> Encoder<W, E> {
                 State::Encoding => this.encoder.flush(&mut output)?,
 
                 State::Finishing | State::Done => {
-                    return Poll::Ready(Err(io::Error::new(
-                        io::ErrorKind::Other,
-                        "Flush after close",
-                    )))
+                    return Poll::Ready(Err(io::Error::other("Flush after close")))
                 }
             };
 

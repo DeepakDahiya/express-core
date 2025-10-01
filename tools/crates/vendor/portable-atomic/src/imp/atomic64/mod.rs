@@ -26,14 +26,13 @@ pub(super) mod arm_linux;
 #[cfg(all(
     target_arch = "riscv32",
     not(any(miri, portable_atomic_sanitize_thread)),
-    not(portable_atomic_no_asm),
+    any(not(portable_atomic_no_asm), portable_atomic_unstable_asm),
     any(
-        target_feature = "experimental-zacas",
-        portable_atomic_target_feature = "experimental-zacas",
+        target_feature = "zacas",
+        portable_atomic_target_feature = "zacas",
         all(
             feature = "fallback",
             not(portable_atomic_no_outline_atomics),
-            any(test, portable_atomic_outline_atomics), // TODO(riscv): currently disabled by default
             any(target_os = "linux", target_os = "android"),
         ),
     ),

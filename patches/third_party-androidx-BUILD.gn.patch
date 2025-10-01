@@ -1,0 +1,12 @@
+diff --git a/third_party/androidx/BUILD.gn b/third_party/androidx/BUILD.gn
+index 8bfac1289b6644c4e8f420fd7488540c65ce54ae..1339055286d71932465927ff91d0eb6ce1e023b5 100644
+--- a/third_party/androidx/BUILD.gn
++++ b/third_party/androidx/BUILD.gn
+@@ -3390,6 +3390,7 @@ if (!limit_android_deps) {
+     visibility = [
+       ":*",
+       "//third_party/android_deps:*",
++      "//brave/third_party/android_deps:*",
+     ]
+     deps = [
+       ":androidx_annotation_annotation_java",

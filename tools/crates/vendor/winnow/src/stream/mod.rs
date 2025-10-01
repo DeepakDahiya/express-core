@@ -25,6 +25,8 @@ use crate::lib::std::str::FromStr;
 use crate::error::ErrMode;
 
 #[cfg(feature = "alloc")]
+use crate::lib::std::borrow::Cow;
+#[cfg(feature = "alloc")]
 use crate::lib::std::collections::BTreeMap;
 #[cfg(feature = "alloc")]
 use crate::lib::std::collections::BTreeSet;
@@ -32,6 +34,8 @@ use crate::lib::std::collections::BTreeSet;
 use crate::lib::std::collections::HashMap;
 #[cfg(feature = "std")]
 use crate::lib::std::collections::HashSet;
+#[cfg(feature = "alloc")]
+use crate::lib::std::collections::VecDeque;
 #[cfg(feature = "alloc")]
 use crate::lib::std::string::String;
 #[cfg(feature = "alloc")]
@@ -189,7 +193,45 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     ///
     fn next_slice(&mut self, offset: usize) -> Self::Slice;
     /// Split off a slice of tokens from the input
+    ///
+    /// <div class="warning">
+    ///
+    /// **Note:** For inputs with variable width tokens, like `&str`'s `char`, `offset` might not correspond
+    /// with the number of tokens. To get a valid offset, use:
+    /// - [`Stream::eof_offset`]
+    /// - [`Stream::iter_offsets`]
+    /// - [`Stream::offset_for`]
+    /// - [`Stream::offset_at`]
+    ///
+    /// </div>
+    ///
+    /// # Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    ///
+    /// * Indexes must be within bounds of the original input;
+    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
+    ///   sequence boundaries.
+    ///
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        // Inherent impl to allow callers to have `unsafe`-free code
+        self.next_slice(offset)
+    }
+    /// Split off a slice of tokens from the input
     fn peek_slice(&self, offset: usize) -> Self::Slice;
+    /// Split off a slice of tokens from the input
+    ///
+    /// # Safety
+    ///
+    /// Callers of this function are responsible that these preconditions are satisfied:
+    ///
+    /// * Indexes must be within bounds of the original input;
+    /// * Indexes must uphold invariants of the stream, like for `str` they must lie on UTF-8
+    ///   sequence boundaries.
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        // Inherent impl to allow callers to have `unsafe`-free code
+        self.peek_slice(offset)
+    }
 
     /// Advance to the end of the stream
     #[inline(always)]
@@ -214,8 +256,15 @@ pub trait Stream: Offset<<Self as Stream>::Checkpoint> + crate::lib::std::fmt::D
     /// May panic if an invalid [`Self::Checkpoint`] is provided
     fn reset(&mut self, checkpoint: &Self::Checkpoint);
 
-    /// Return the inner-most stream
+    /// Deprecated for callers as of 0.7.10, instead call [`Stream::trace`]
+    #[deprecated(since = "0.7.10", note = "Replaced with `Stream::trace`")]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug;
+
+    /// Write out a single-line summary of the current parse location
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        #![allow(deprecated)]
+        write!(f, "{:#?}", self.raw())
+    }
 }
 
 impl<'i, T> Stream for &'i [T]
@@ -276,8 +325,28 @@ where
         slice
     }
     #[inline(always)]
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.get_unchecked(..offset) };
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let next = unsafe { self.get_unchecked(offset..) };
+        *self = next;
+        slice
+    }
+    #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let (slice, _next) = self.split_at(offset);
+        &self[..offset]
+    }
+    #[inline(always)]
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.get_unchecked(..offset) };
         slice
     }
 
@@ -293,6 +362,10 @@ where
     #[inline(always)]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
         self
+    }
+
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        write!(f, "{self:?}")
     }
 }
 
@@ -315,9 +388,9 @@ impl<'i> Stream for &'i str {
 
     #[inline(always)]
     fn next_token(&mut self) -> Option<Self::Token> {
-        let c = self.chars().next()?;
-        let offset = c.len();
-        *self = &self[offset..];
+        let mut iter = self.chars();
+        let c = iter.next()?;
+        *self = iter.as_str();
         Some(c)
     }
 
@@ -361,8 +434,30 @@ impl<'i> Stream for &'i str {
         slice
     }
     #[inline(always)]
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds and on a UTF-8
+        // sequence boundary
+        let slice = unsafe { self.get_unchecked(..offset) };
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds and on a UTF-8
+        // sequence boundary
+        let next = unsafe { self.get_unchecked(offset..) };
+        *self = next;
+        slice
+    }
+    #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
-        let (slice, _next) = self.split_at(offset);
+        &self[..offset]
+    }
+    #[inline(always)]
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        #[cfg(debug_assertions)]
+        self.peek_slice(offset);
+
+        // SAFETY: `Stream::next_slice_unchecked` requires `offset` to be in bounds
+        let slice = unsafe { self.get_unchecked(..offset) };
         slice
     }
 
@@ -1387,6 +1482,36 @@ impl<'i> Accumulate<&'i str> for String {
 }
 
 #[cfg(feature = "alloc")]
+impl<'i> Accumulate<Cow<'i, str>> for String {
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        match capacity {
+            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+            None => String::new(),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: Cow<'i, str>) {
+        self.push_str(&acc);
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl Accumulate<String> for String {
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        match capacity {
+            Some(capacity) => String::with_capacity(clamp_capacity::<char>(capacity)),
+            None => String::new(),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: String) {
+        self.push_str(&acc);
+    }
+}
+
+#[cfg(feature = "alloc")]
 impl<K, V> Accumulate<(K, V)> for BTreeMap<K, V>
 where
     K: crate::lib::std::cmp::Ord,
@@ -1455,6 +1580,21 @@ where
     #[inline(always)]
     fn accumulate(&mut self, key: K) {
         self.insert(key);
+    }
+}
+
+#[cfg(feature = "alloc")]
+impl<'i, T: Clone> Accumulate<&'i [T]> for VecDeque<T> {
+    #[inline(always)]
+    fn initial(capacity: Option<usize>) -> Self {
+        match capacity {
+            Some(capacity) => VecDeque::with_capacity(clamp_capacity::<T>(capacity)),
+            None => VecDeque::new(),
+        }
+    }
+    #[inline(always)]
+    fn accumulate(&mut self, acc: &'i [T]) {
+        self.extend(acc.iter().cloned());
     }
 }
 

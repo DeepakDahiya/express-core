@@ -12,6 +12,29 @@ Note: In this file, do not use the hard wrap in the middle of a sentence for com
 
 ## [Unreleased]
 
+## [1.11.1] - 2025-06-06
+
+- Fix build error when building non-x86 targets for Miri or ThreadSanitizer since nightly-2025-05-31.
+
+- aarch64: Optimize atomic floats when FEAT_LSFE is enabled. ([#201](https://github.com/taiki-e/portable-atomic/pull/201))
+
+- Improve compile-time detection of RISC-V Zacas extension. ([b7634e2](https://github.com/taiki-e/portable-atomic/commit/b7634e2cd808ea118266d12f99fd8877a92e3d31))
+
+- Improve run-time detection on linux-musl. ([7fdad7f](https://github.com/taiki-e/portable-atomic/commit/7fdad7f7dd32e32ece7bd0eaf565db657b3406bb))
+
+## [1.11.0] - 2025-02-24
+
+- Work around [nightly-2025-02-24 rustc regression causing "cannot use value of type `*mut T` for inline assembly" error](https://github.com/rust-lang/rust/issues/137512) on RISC-V without A extension, MSP430, and pre-v6 no-std Arm targets. ([eeb0235](https://github.com/taiki-e/portable-atomic/commit/eeb0235b9fda4c28a56ee5a9ffe0d7fb884a50ab))
+
+- Support `AtomicF16` and `AtomicF128` for [unstable `f16` and `f128`](https://github.com/rust-lang/rust/issues/116909) under unstable cfgs. ([#200](https://github.com/taiki-e/portable-atomic/pull/200))
+
+- RISC-V Zacas extension support is no longer experimental. ([#206](https://github.com/taiki-e/portable-atomic/pull/206))
+
+- Improve support of run-time detection and outline-atomics:
+  - riscv: Enable run-time detection of Zacas extension by default on Linux/Android. ([#207](https://github.com/taiki-e/portable-atomic/pull/207))
+  - aarch64: Support run-time detection of FEAT_LRCPC3/FEAT_LSE128 on FreeBSD. ([6a5075d](https://github.com/taiki-e/portable-atomic/commit/6a5075d43543875cf38d6114f2951047e2e64f1a))
+  - powerpc64: Support run-time detection of quadword-atomics on AIX (currently disabled by default because detection support for AIX is experimental). ([#102](https://github.com/taiki-e/portable-atomic/pull/102))
+
 ## [1.10.0] - 2024-11-23
 
 - Update to stabilized [s390x](https://github.com/rust-lang/rust/pull/131258) and [Arm64EC](https://github.com/rust-lang/rust/pull/131781) inline assembly. ([97645c1](https://github.com/taiki-e/portable-atomic/commit/97645c1b2b938249f16eacb0fe696d4c7bb96754), [e1d1a97](https://github.com/taiki-e/portable-atomic/commit/e1d1a97cd1ab4bd04b45962c44ca1e9f0f9e1456))
@@ -509,7 +532,9 @@ The latest version of portable-atomic is 1.x. This release makes portable-atomic
 
 Initial release
 
-[Unreleased]: https://github.com/taiki-e/portable-atomic/compare/v1.10.0...HEAD
+[Unreleased]: https://github.com/taiki-e/portable-atomic/compare/v1.11.1...HEAD
+[1.11.1]: https://github.com/taiki-e/portable-atomic/compare/v1.11.0...v1.11.1
+[1.11.0]: https://github.com/taiki-e/portable-atomic/compare/v1.10.0...v1.11.0
 [1.10.0]: https://github.com/taiki-e/portable-atomic/compare/v1.9.0...v1.10.0
 [1.9.0]: https://github.com/taiki-e/portable-atomic/compare/v1.8.0...v1.9.0
 [1.8.0]: https://github.com/taiki-e/portable-atomic/compare/v1.7.0...v1.8.0

@@ -20,7 +20,7 @@ use pki_types::{
 
 use crate::crl::RevocationOptions;
 use crate::error::Error;
-use crate::subject_name::{verify_dns_names, verify_ip_address_names, NameIterator};
+use crate::subject_name::{verify_dns_names, verify_ip_address_names};
 use crate::verify_cert::{self, KeyUsage, VerifiedPath};
 use crate::{cert, signed_data};
 
@@ -72,7 +72,7 @@ impl<'a> TryFrom<&'a CertificateDer<'a>> for EndEntityCert<'a> {
     }
 }
 
-impl<'a> EndEntityCert<'a> {
+impl EndEntityCert<'_> {
     /// Verifies that the end-entity certificate is valid for use against the
     /// specified Extended Key Usage (EKU).
     ///
@@ -125,16 +125,10 @@ impl<'a> EndEntityCert<'a> {
         server_name: &ServerName<'_>,
     ) -> Result<(), Error> {
         match server_name {
-            ServerName::DnsName(dns_name) => verify_dns_names(
-                dns_name,
-                NameIterator::new(Some(self.inner.subject), self.inner.subject_alt_name),
-            ),
+            ServerName::DnsName(dns_name) => verify_dns_names(dns_name, &self.inner),
             // IP addresses are not compared against the subject field;
             // only against Subject Alternative Names.
-            ServerName::IpAddress(ip_address) => verify_ip_address_names(
-                ip_address,
-                NameIterator::new(None, self.inner.subject_alt_name),
-            ),
+            ServerName::IpAddress(ip_address) => verify_ip_address_names(ip_address, &self.inner),
             _ => Err(Error::UnsupportedNameType),
         }
     }
@@ -197,7 +191,7 @@ mod tests {
     fn printable_string_common_name() {
         const DNS_NAME: &str = "test.example.com";
 
-        let issuer = test_utils::make_issuer("Test");
+        let issuer = test_utils::make_issuer("Test").0;
 
         let ee_cert = {
             let mut params = test_utils::end_entity_params(vec![DNS_NAME.to_string()]);
@@ -206,14 +200,13 @@ mod tests {
             params.distinguished_name.push(
                 rcgen::DnType::CommonName,
                 rcgen::DnValue::PrintableString(
-                    rcgen::PrintableString::try_from("example.com").unwrap(),
+                    rcgen::string::PrintableString::try_from("example.com").unwrap(),
                 ),
             );
             params
                 .signed_by(
                     &rcgen::KeyPair::generate_for(RCGEN_SIGNATURE_ALG).unwrap(),
-                    &issuer.cert,
-                    &issuer.key_pair,
+                    &issuer,
                 )
                 .expect("failed to make ee cert (this is a test bug)")
         };

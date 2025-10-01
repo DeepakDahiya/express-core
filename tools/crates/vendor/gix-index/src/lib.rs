@@ -6,9 +6,9 @@
 #![cfg_attr(all(doc, feature = "document-features"), feature(doc_cfg, doc_auto_cfg))]
 #![deny(unsafe_code, missing_docs, rust_2018_idioms)]
 
-use bstr::{BStr, ByteSlice};
 use std::{ops::Range, path::PathBuf};
 
+use bstr::{BStr, ByteSlice};
 use filetime::FileTime;
 /// `gix_hash` is made available as it's part of the public API in various places.
 pub use gix_hash as hash;
@@ -16,33 +16,26 @@ pub use gix_hash as hash;
 pub use gix_validate as validate;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod file;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod extension;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod entry;
 
 mod access;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod init;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod decode;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod verify;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod write;
 
 pub mod fs;
@@ -164,10 +157,9 @@ pub struct State {
 }
 
 mod impls {
-    use crate::entry::Stage;
     use std::fmt::{Debug, Formatter};
 
-    use crate::State;
+    use crate::{entry::Stage, State};
 
     impl Debug for State {
         fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -243,13 +235,4 @@ pub(crate) mod util {
         }
         data.split_at(pos).into()
     }
-}
-
-#[test]
-fn size_of_entry() {
-    assert_eq!(std::mem::size_of::<crate::Entry>(), 80);
-
-    // the reason we have our own time is half the size.
-    assert_eq!(std::mem::size_of::<crate::entry::stat::Time>(), 8);
-    assert_eq!(std::mem::size_of::<filetime::FileTime>(), 16);
 }

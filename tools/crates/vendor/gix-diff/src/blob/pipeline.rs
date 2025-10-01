@@ -22,6 +22,7 @@ pub struct WorktreeRoots {
     pub new_root: Option<PathBuf>,
 }
 
+/// Access
 impl WorktreeRoots {
     /// Return the root path for the given `kind`
     pub fn by_kind(&self, kind: ResourceKind) -> Option<&Path> {
@@ -30,13 +31,24 @@ impl WorktreeRoots {
             ResourceKind::NewOrDestination => self.new_root.as_deref(),
         }
     }
+
+    /// Return `true` if all worktree roots are unset.
+    pub fn is_unset(&self) -> bool {
+        self.new_root.is_none() && self.old_root.is_none()
+    }
 }
 
 /// Data as part of an [Outcome].
 #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Debug)]
 pub enum Data {
     /// The data to use for diffing was written into the buffer that was passed during the call to [`Pipeline::convert_to_diffable()`].
-    Buffer,
+    Buffer {
+        /// If `true`, a [binary to text filter](Driver::binary_to_text_command) was used to obtain the buffer,
+        /// making it a derived value.
+        ///
+        /// Applications should check for this to avoid treating the buffer content as (original) resource content.
+        is_derived: bool,
+    },
     /// The size that the binary blob had at the given revision, without having applied filters, as it's either
     /// considered binary or above the big-file threshold.
     ///
@@ -111,7 +123,6 @@ impl Mode {
 }
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod convert_to_diffable {
     use std::collections::TryReserveError;
 
@@ -185,6 +196,8 @@ impl Pipeline {
 /// Access
 impl Pipeline {
     /// Return all drivers that this instance was initialized with.
+    ///
+    /// They are sorted by [`name`](Driver::name) to support binary searches.
     pub fn drivers(&self) -> &[super::Driver] {
         &self.drivers
     }
@@ -267,7 +280,7 @@ impl Pipeline {
                     })?;
                     target.map(|target| {
                         out.extend_from_slice(gix_path::into_bstr(target).as_ref());
-                        Data::Buffer
+                        Data::Buffer { is_derived: false }
                     })
                 } else {
                     let need_size_only = is_binary == Some(true);
@@ -305,7 +318,7 @@ impl Pipeline {
                                         None
                                     } else {
                                         run_cmd(rela_path, cmd, out)?;
-                                        Some(Data::Buffer)
+                                        Some(Data::Buffer { is_derived: true })
                                     }
                                 }
                                 None => {
@@ -363,7 +376,7 @@ impl Pipeline {
                                                 out.clear();
                                                 Data::Binary { size }
                                             } else {
-                                                Data::Buffer
+                                                Data::Buffer { is_derived: false }
                                             })
                                         }
                                         None => None,
@@ -388,7 +401,7 @@ impl Pipeline {
                         && header.size > self.options.large_file_threshold_bytes
                     {
                         is_binary = Some(true);
-                    };
+                    }
                     let data = if is_binary == Some(true) {
                         Data::Binary { size: header.size }
                     } else {
@@ -396,10 +409,11 @@ impl Pipeline {
                             .try_find(id, out)
                             .map_err(gix_object::find::existing_object::Error::Find)?
                             .ok_or_else(|| gix_object::find::existing_object::Error::NotFound { oid: id.to_owned() })?;
+                        let mut is_derived = false;
                         if matches!(mode, EntryKind::Blob | EntryKind::BlobExecutable)
                             && convert == Mode::ToWorktreeAndBinaryToText
                             || (convert == Mode::ToGitUnlessBinaryToTextIsPresent
-                                && driver.map_or(false, |d| d.binary_to_text_command.is_some()))
+                                && driver.is_some_and(|d| d.binary_to_text_command.is_some()))
                         {
                             let res =
                                 self.worktree_filter
@@ -446,35 +460,34 @@ impl Pipeline {
                                         }
                                     }
                                     .map_err(|err| {
-                                        convert_to_diffable::Error::CreateTempfile {
+                                        convert_to_diffable::Error::StreamCopy {
                                             source: err,
                                             rela_path: rela_path.to_owned(),
                                         }
                                     })?;
                                     out.clear();
                                     run_cmd(rela_path, cmd, out)?;
+                                    is_derived = true;
                                 }
-                                None => {
-                                    match res {
-                                        ToWorktreeOutcome::Unchanged(_) => {}
-                                        ToWorktreeOutcome::Buffer(src) => {
-                                            out.clear();
-                                            out.try_reserve(src.len())?;
-                                            out.extend_from_slice(src);
-                                        }
-                                        ToWorktreeOutcome::Process(MaybeDelayed::Immediate(mut stream)) => {
-                                            std::io::copy(&mut stream, out).map_err(|err| {
-                                                convert_to_diffable::Error::StreamCopy {
-                                                    rela_path: rela_path.to_owned(),
-                                                    source: err,
-                                                }
-                                            })?;
-                                        }
-                                        ToWorktreeOutcome::Process(MaybeDelayed::Delayed(_)) => {
-                                            unreachable!("we prohibit this")
-                                        }
-                                    };
-                                }
+                                None => match res {
+                                    ToWorktreeOutcome::Unchanged(_) => {}
+                                    ToWorktreeOutcome::Buffer(src) => {
+                                        out.clear();
+                                        out.try_reserve(src.len())?;
+                                        out.extend_from_slice(src);
+                                    }
+                                    ToWorktreeOutcome::Process(MaybeDelayed::Immediate(mut stream)) => {
+                                        std::io::copy(&mut stream, out).map_err(|err| {
+                                            convert_to_diffable::Error::StreamCopy {
+                                                rela_path: rela_path.to_owned(),
+                                                source: err,
+                                            }
+                                        })?;
+                                    }
+                                    ToWorktreeOutcome::Process(MaybeDelayed::Delayed(_)) => {
+                                        unreachable!("we prohibit this")
+                                    }
+                                },
                             }
                         }
 
@@ -485,7 +498,7 @@ impl Pipeline {
                             out.clear();
                             Data::Binary { size }
                         } else {
-                            Data::Buffer
+                            Data::Buffer { is_derived }
                         }
                     };
                     Some(data)
@@ -534,7 +547,9 @@ impl Driver {
     pub fn prepare_binary_to_text_cmd(&self, path: &Path) -> Option<std::process::Command> {
         let command: &BStr = self.binary_to_text_command.as_ref()?.as_ref();
         let cmd = gix_command::prepare(gix_path::from_bstr(command).into_owned())
-            .with_shell()
+            // TODO: Add support for an actual Context, validate it *can* match Git
+            .with_context(Default::default())
+            .command_may_be_shell_script()
             .stdin(Stdio::null())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())

@@ -19,6 +19,7 @@ fn main() {
     println!("cargo:rustc-check-cfg=cfg(shrink_to)");
     println!("cargo:rustc-check-cfg=cfg(try_reserve_2)");
     println!("cargo:rustc-check-cfg=cfg(os_str_bytes)");
+    println!("cargo:rustc-check-cfg=cfg(os_string_pathbuf_leak)");
     println!("cargo:rustc-check-cfg=cfg(absolute_path)");
 
     let compiler = match rustc_version() {
@@ -31,6 +32,9 @@ fn main() {
     // .github/workflows/ci.yml.
     if compiler.minor >= 44 {
         println!("cargo:rustc-cfg=path_buf_capacity");
+    }
+    if compiler.minor >= 45 {
+        println!("cargo:rustc-cfg=osstring_from_str");
     }
     if compiler.minor >= 56 {
         println!("cargo:rustc-cfg=shrink_to");
@@ -60,6 +64,11 @@ fn main() {
     if (compiler.minor >= 79 && compiler.channel == ReleaseChannel::Stable) || compiler.minor >= 80
     {
         println!("cargo:rustc-cfg=absolute_path");
+    }
+    // os_string_pathbuf_leak was added in 1.89.
+    if (compiler.minor >= 89 && compiler.channel == ReleaseChannel::Stable) || compiler.minor >= 90
+    {
+        println!("cargo:rustc-cfg=os_string_pathbuf_leak");
     }
 
     // Catch situations where the actual features aren't enabled. Currently, they're only shown with

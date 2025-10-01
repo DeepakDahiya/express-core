@@ -1,0 +1,34 @@
+diff --git a/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml b/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml
+index 6191cd2108c71939f442c0c31c5f89009d1388ab..aa01cacbf2e512105b85293a7aee8af9d331604f 100644
+--- a/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml
++++ b/chrome/browser/ui/android/omnibox/java/res/layout/location_status_icon.xml
+@@ -1,8 +1,9 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <!--
+-Copyright 2018 The Chromium Authors
+-Use of this source code is governed by a BSD-style license that can be
+-found in the LICENSE file.
++Copyright (c) 2023 The Brave Authors. All rights reserved.
++This Source Code Form is subject to the terms of the Mozilla Public
++License, v. 2.0. If a copy of the MPL was not distributed with this file,
++You can obtain one at https://mozilla.org/MPL/2.0/.
+ -->
+ <merge
+     xmlns:android="http://schemas.android.com/apk/res/android"
+@@ -19,13 +20,13 @@ found in the LICENSE file.
+     <org.chromium.ui.widget.ChromeImageView
+         android:id="@+id/location_bar_status_icon"
+         style="@style/OmniboxIcon"
+-        android:layout_width="@dimen/omnibox_search_engine_logo_composed_size"
+-        android:layout_height="@dimen/omnibox_search_engine_logo_composed_size"
+         android:layout_marginHorizontal="@dimen/location_bar_status_icon_margin"
+         android:layout_gravity="center"
+         android:src="@android:color/transparent"
+         android:visibility="visible"
+-        android:scaleType="center"
++        android:layout_width="@dimen/brave_omnibox_icon_size"
++        android:layout_height="@dimen/brave_omnibox_icon_size"
++        android:scaleType="fitXY"
+         android:focusable="false"
+         tools:ignore="ContentDescription" />
+ 

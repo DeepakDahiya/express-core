@@ -2,6 +2,8 @@ use std::path::{Path, PathBuf};
 
 use gix_path::realpath::MAX_SYMLINKS;
 
+use crate::bstr::BStr;
+
 impl crate::Repository {
     /// Return the path to the repository itself, containing objects, references, configuration, and more.
     ///
@@ -11,6 +13,7 @@ impl crate::Repository {
     }
 
     /// The trust we place in the git-dir, with lower amounts of trust causing access to configuration to be limited.
+    /// Note that if the git-dir is trusted but the worktree is not, the result is that the git-dir is also less trusted.
     pub fn git_dir_trust(&self) -> gix_sec::Trust {
         self.options.git_dir_trust.expect("definitely set by now")
     }
@@ -39,7 +42,7 @@ impl crate::Repository {
     /// The path to the `.gitmodules` file in the worktree, if a worktree is available.
     #[cfg(feature = "attributes")]
     pub fn modules_path(&self) -> Option<PathBuf> {
-        self.work_dir().map(|wtd| wtd.join(crate::submodule::MODULES_FILE))
+        self.workdir().map(|wtd| wtd.join(crate::submodule::MODULES_FILE))
     }
 
     /// The path to the `.git` directory itself, or equivalent if this is a bare repository.
@@ -48,9 +51,25 @@ impl crate::Repository {
     }
 
     /// Return the work tree containing all checked out files, if there is one.
+    #[deprecated = "Use `workdir()` instead"]
     #[doc(alias = "workdir", alias = "git2")]
     pub fn work_dir(&self) -> Option<&std::path::Path> {
         self.work_tree.as_deref()
+    }
+
+    /// Return the work tree containing all checked out files, if there is one.
+    pub fn workdir(&self) -> Option<&std::path::Path> {
+        self.work_tree.as_deref()
+    }
+
+    /// Turn `rela_path` into a path qualified with the [`workdir()`](Self::workdir()) of this instance,
+    /// if one is available.
+    pub fn workdir_path(&self, rela_path: impl AsRef<BStr>) -> Option<PathBuf> {
+        self.workdir().and_then(|wd| {
+            gix_path::try_from_bstr(rela_path.as_ref())
+                .ok()
+                .map(|rela| wd.join(rela))
+        })
     }
 
     // TODO: tests, respect precomposeUnicode
@@ -65,7 +84,7 @@ impl crate::Repository {
     /// Note that the CWD is obtained once upon instantiation of the repository.
     // TODO: tests, details - there is a lot about environment variables to change things around.
     pub fn prefix(&self) -> Result<Option<&Path>, gix_path::realpath::Error> {
-        let (root, current_dir) = match self.work_dir().zip(self.options.current_dir.as_deref()) {
+        let (root, current_dir) = match self.workdir().zip(self.options.current_dir.as_deref()) {
             Some((work_dir, cwd)) => (work_dir, cwd),
             None => return Ok(None),
         };

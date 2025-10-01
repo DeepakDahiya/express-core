@@ -13,7 +13,6 @@ use std::{borrow::Cow, path::PathBuf};
 use bstr::{BStr, BString};
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod expand_path;
 
 mod scheme;
@@ -21,7 +20,6 @@ pub use scheme::Scheme;
 mod impls;
 
 ///
-#[allow(clippy::empty_docs)]
 pub mod parse;
 
 /// Parse the given `bytes` as a [git url](Url).
@@ -48,9 +46,9 @@ pub fn parse(input: &BStr) -> Result<Url, parse::Error> {
 /// If more precise control of the resolution mechanism is needed, then use the [expand_path::with()] function.
 pub fn expand_path(user: Option<&expand_path::ForUser>, path: &BStr) -> Result<PathBuf, expand_path::Error> {
     expand_path::with(user, path, |user| match user {
-        expand_path::ForUser::Current => home::home_dir(),
+        expand_path::ForUser::Current => gix_path::env::home_dir(),
         expand_path::ForUser::Name(user) => {
-            home::home_dir().and_then(|home| home.parent().map(|home_dirs| home_dirs.join(user.to_string())))
+            gix_path::env::home_dir().and_then(|home| home.parent().map(|home_dirs| home_dirs.join(user.to_string())))
         }
     })
 }
@@ -85,7 +83,7 @@ pub enum ArgumentSafety<'a> {
 /// URLs may contain passwords and using standard [formatting](std::fmt::Display) will redact
 /// such password, whereas [lossless serialization](Url::to_bstring()) will contain all parts of the
 /// URL.
-/// **Beware that some URls still print secrets if they use them outside of the designated password fields.**
+/// **Beware that some URLs still print secrets if they use them outside of the designated password fields.**
 ///
 /// Also note that URLs that fail to parse are typically stored in [the resulting error](parse::Error) type
 /// and printed in full using its display implementation.
@@ -310,6 +308,10 @@ impl Url {
     }
 }
 
+fn percent_encode(s: &str) -> Cow<'_, str> {
+    percent_encoding::utf8_percent_encode(s, percent_encoding::NON_ALPHANUMERIC).into()
+}
+
 /// Serialization
 impl Url {
     /// Write this URL losslessly to `out`, ready to be parsed again.
@@ -320,10 +322,10 @@ impl Url {
         }
         match (&self.user, &self.host) {
             (Some(user), Some(host)) => {
-                out.write_all(user.as_bytes())?;
+                out.write_all(percent_encode(user).as_bytes())?;
                 if let Some(password) = &self.password {
                     out.write_all(b":")?;
-                    out.write_all(password.as_bytes())?;
+                    out.write_all(percent_encode(password).as_bytes())?;
                 }
                 out.write_all(b"@")?;
                 out.write_all(host.as_bytes())?;
@@ -333,7 +335,7 @@ impl Url {
             }
             (None, None) => {}
             (Some(_user), None) => unreachable!("BUG: should not be possible to have a user but no host"),
-        };
+        }
         if let Some(port) = &self.port {
             write!(&mut out, ":{port}")?;
         }
@@ -368,11 +370,10 @@ impl Url {
 }
 
 /// This module contains extensions to the [Url] struct which are only intended to be used
-/// for testing code. Do not use this module in production! For all intends and purposes the APIs of
+/// for testing code. Do not use this module in production! For all intents and purposes, the APIs of
 /// all functions and types exposed by this module are considered unstable and are allowed to break
 /// even in patch releases!
 #[doc(hidden)]
-#[cfg(debug_assertions)]
 pub mod testing {
     use bstr::BString;
 

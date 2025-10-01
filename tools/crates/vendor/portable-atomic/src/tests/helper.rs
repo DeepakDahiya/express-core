@@ -15,7 +15,7 @@ macro_rules! __test_atomic_common {
         }
         #[test]
         fn alignment() {
-            // https://github.com/rust-lang/rust/blob/1.80.0/library/core/tests/atomic.rs#L250
+            // https://github.com/rust-lang/rust/blob/1.84.0/library/core/tests/atomic.rs#L252
             assert_eq!(core::mem::align_of::<$atomic_type>(), core::mem::size_of::<$atomic_type>());
             assert_eq!(core::mem::size_of::<$atomic_type>(), core::mem::size_of::<$value_type>());
         }
@@ -83,8 +83,10 @@ macro_rules! __test_atomic_int_load_store {
                 VAR.store(10, store_order);
                 let a = <$atomic_type>::new(1);
                 assert_eq!(a.load(load_order), 1);
-                a.store(2, store_order);
-                assert_eq!(a.load(load_order), 2);
+                a.store($int_type::MIN, store_order);
+                assert_eq!(a.load(load_order), $int_type::MIN);
+                a.store($int_type::MAX, store_order);
+                assert_eq!(a.load(load_order), $int_type::MAX);
             }
         }
     };
@@ -94,25 +96,28 @@ macro_rules! __test_atomic_int_load_store {
         use std::{collections::BTreeSet, vec, vec::Vec};
         #[test]
         fn stress_load_store() {
-            let (iterations, threads) = stress_test_config();
-            let data1 = (0..iterations).map(|_| fastrand::$int_type(..)).collect::<Vec<_>>();
+            let mut rng = fastrand::Rng::new();
+            let (iterations, threads) = stress_test_config(&mut rng);
+            let data1 = (0..iterations).map(|_| rng.$int_type(..)).collect::<Vec<_>>();
             let set = data1.iter().copied().collect::<BTreeSet<_>>();
-            let a = <$atomic_type>::new(data1[fastrand::usize(0..iterations)]);
+            let a = <$atomic_type>::new(data1[rng.usize(0..iterations)]);
             let now = &std::time::Instant::now();
             thread::scope(|s| {
                 for _ in 0..threads {
                     s.spawn(|_| {
+                        let mut rng = fastrand::Rng::new();
                         let now = *now;
                         for i in 0..iterations {
-                            a.store(data1[i], rand_store_ordering());
+                            a.store(data1[i], rand_store_ordering(&mut rng));
                         }
                         std::eprintln!("store end={:?}", now.elapsed());
                     });
                     s.spawn(|_| {
+                        let mut rng = fastrand::Rng::new();
                         let now = *now;
                         let mut v = vec![0; iterations];
                         for i in 0..iterations {
-                            v[i] = a.load(rand_load_ordering());
+                            v[i] = a.load(rand_load_ordering(&mut rng));
                         }
                         std::eprintln!("load end={:?}", now.elapsed());
                         for v in v {
@@ -276,7 +281,9 @@ macro_rules! __test_atomic_int {
             test_swap_ordering(|order| a.swap(5, order));
             for &order in &helper::SWAP_ORDERINGS {
                 assert_eq!(a.swap(10, order), 5);
-                assert_eq!(a.swap(5, order), 10);
+                assert_eq!(a.swap($int_type::MIN, order), 10);
+                assert_eq!(a.swap($int_type::MAX, order), $int_type::MIN);
+                assert_eq!(a.swap(5, order), $int_type::MAX);
             }
         }
         #[test]
@@ -587,8 +594,9 @@ macro_rules! __test_atomic_int {
                         return true;
                     }
                 }
+                let mut rng = fastrand::Rng::new();
                 let z = loop {
-                    let z = fastrand::$int_type(..);
+                    let z = rng.$int_type(..);
                     if z != y {
                         break z;
                     }
@@ -766,6 +774,18 @@ macro_rules! __test_atomic_int {
                 true
             }
             fn quickcheck_fetch_neg(x: $int_type) -> bool {
+                #[cfg(all(
+                    target_arch = "arm",
+                    not(any(target_feature = "v6", portable_atomic_target_feature = "v6")),
+                ))]
+                {
+                    // TODO: LLVM bug:
+                    // https://github.com/llvm/llvm-project/issues/61880
+                    // https://github.com/taiki-e/portable-atomic/issues/2
+                    if core::mem::size_of::<$int_type>() <= 2 {
+                        return true;
+                    }
+                }
                 for &order in &helper::SWAP_ORDERINGS {
                     let a = <$atomic_type>::new(x);
                     assert_eq!(a.fetch_neg(order), x);
@@ -822,36 +842,39 @@ macro_rules! __test_atomic_int {
 
         #[test]
         fn stress_swap() {
-            let (iterations, threads) = stress_test_config();
+            let mut rng = fastrand::Rng::new();
+            let (iterations, threads) = stress_test_config(&mut rng);
             let data1 = &(0..threads)
-                .map(|_| (0..iterations).map(|_| fastrand::$int_type(..)).collect::<Vec<_>>())
+                .map(|_| (0..iterations).map(|_| rng.$int_type(..)).collect::<Vec<_>>())
                 .collect::<Vec<_>>();
             let data2 = &(0..threads)
-                .map(|_| (0..iterations).map(|_| fastrand::$int_type(..)).collect::<Vec<_>>())
+                .map(|_| (0..iterations).map(|_| rng.$int_type(..)).collect::<Vec<_>>())
                 .collect::<Vec<_>>();
             let set = &data1
                 .iter()
                 .flat_map(|v| v.iter().copied())
                 .chain(data2.iter().flat_map(|v| v.iter().copied()))
                 .collect::<BTreeSet<_>>();
-            let a = &<$atomic_type>::new(data2[0][fastrand::usize(0..iterations)]);
+            let a = &<$atomic_type>::new(data2[0][rng.usize(0..iterations)]);
             let now = &std::time::Instant::now();
             thread::scope(|s| {
                 for thread in 0..threads {
                     if thread % 2 == 0 {
                         s.spawn(move |_| {
+                            let mut rng = fastrand::Rng::new();
                             let now = *now;
                             for i in 0..iterations {
-                                a.store(data1[thread][i], rand_store_ordering());
+                                a.store(data1[thread][i], rand_store_ordering(&mut rng));
                             }
                             std::eprintln!("store end={:?}", now.elapsed());
                         });
                     } else {
                         s.spawn(|_| {
+                            let mut rng = fastrand::Rng::new();
                             let now = *now;
                             let mut v = vec![0; iterations];
                             for i in 0..iterations {
-                                v[i] = a.load(rand_load_ordering());
+                                v[i] = a.load(rand_load_ordering(&mut rng));
                             }
                             std::eprintln!("load end={:?}", now.elapsed());
                             for v in v {
@@ -860,10 +883,11 @@ macro_rules! __test_atomic_int {
                         });
                     }
                     s.spawn(move |_| {
+                        let mut rng = fastrand::Rng::new();
                         let now = *now;
                         let mut v = vec![0; iterations];
                         for i in 0..iterations {
-                            v[i] = a.swap(data2[thread][i], rand_swap_ordering());
+                            v[i] = a.swap(data2[thread][i], rand_swap_ordering(&mut rng));
                         }
                         std::eprintln!("swap end={:?}", now.elapsed());
                         for v in v {
@@ -876,34 +900,37 @@ macro_rules! __test_atomic_int {
         }
         #[test]
         fn stress_compare_exchange() {
-            let (iterations, threads) = stress_test_config();
+            let mut rng = fastrand::Rng::new();
+            let (iterations, threads) = stress_test_config(&mut rng);
             let data1 = &(0..threads)
-                .map(|_| (0..iterations).map(|_| fastrand::$int_type(..)).collect::<Vec<_>>())
+                .map(|_| (0..iterations).map(|_| rng.$int_type(..)).collect::<Vec<_>>())
                 .collect::<Vec<_>>();
             let data2 = &(0..threads)
-                .map(|_| (0..iterations).map(|_| fastrand::$int_type(..)).collect::<Vec<_>>())
+                .map(|_| (0..iterations).map(|_| rng.$int_type(..)).collect::<Vec<_>>())
                 .collect::<Vec<_>>();
             let set = &data1
                 .iter()
                 .flat_map(|v| v.iter().copied())
                 .chain(data2.iter().flat_map(|v| v.iter().copied()))
                 .collect::<BTreeSet<_>>();
-            let a = &<$atomic_type>::new(data2[0][fastrand::usize(0..iterations)]);
+            let a = &<$atomic_type>::new(data2[0][rng.usize(0..iterations)]);
             let now = &std::time::Instant::now();
             thread::scope(|s| {
                 for thread in 0..threads {
                     s.spawn(move |_| {
+                        let mut rng = fastrand::Rng::new();
                         let now = *now;
                         for i in 0..iterations {
-                            a.store(data1[thread][i], rand_store_ordering());
+                            a.store(data1[thread][i], rand_store_ordering(&mut rng));
                         }
                         std::eprintln!("store end={:?}", now.elapsed());
                     });
                     s.spawn(|_| {
+                        let mut rng = fastrand::Rng::new();
                         let now = *now;
                         let mut v = vec![data2[0][0]; iterations];
                         for i in 0..iterations {
-                            v[i] = a.load(rand_load_ordering());
+                            v[i] = a.load(rand_load_ordering(&mut rng));
                         }
                         std::eprintln!("load end={:?}", now.elapsed());
                         for v in v {
@@ -911,16 +938,17 @@ macro_rules! __test_atomic_int {
                         }
                     });
                     s.spawn(move |_| {
+                        let mut rng = fastrand::Rng::new();
                         let now = *now;
                         let mut v = vec![data2[0][0]; iterations];
                         for i in 0..iterations {
                             let old = if i % 2 == 0 {
-                                fastrand::$int_type(..)
+                                rng.$int_type(..)
                             } else {
                                 a.load(Ordering::Relaxed)
                             };
                             let new = data2[thread][i];
-                            let o = rand_compare_exchange_ordering();
+                            let o = rand_compare_exchange_ordering(&mut rng);
                             match a.compare_exchange(old, new, o.0, o.1) {
                                 Ok(r) => assert_eq!(old, r),
                                 Err(r) => v[i] = r,
@@ -1010,6 +1038,18 @@ macro_rules! __test_atomic_float {
         }
         #[test]
         fn fetch_max() {
+            if mem::size_of::<$float_type>() == 16
+                && cfg!(any(
+                    target_arch = "arm",
+                    target_arch = "mips",
+                    target_arch = "mips32r6",
+                    target_vendor = "apple",
+                    windows,
+                ))
+            {
+                // TODO(f128):
+                return;
+            }
             let a = <$atomic_type>::new(23.);
             test_swap_ordering(|order| a.fetch_max(23., order));
             for &order in &helper::SWAP_ORDERINGS {
@@ -1022,6 +1062,18 @@ macro_rules! __test_atomic_float {
         }
         #[test]
         fn fetch_min() {
+            if mem::size_of::<$float_type>() == 16
+                && cfg!(any(
+                    target_arch = "arm",
+                    target_arch = "mips",
+                    target_arch = "mips32r6",
+                    target_vendor = "apple",
+                    windows,
+                ))
+            {
+                // TODO(f128):
+                return;
+            }
             let a = <$atomic_type>::new(23.);
             test_swap_ordering(|order| a.fetch_min(23., order));
             for &order in &helper::SWAP_ORDERINGS {
@@ -1066,8 +1118,9 @@ macro_rules! __test_atomic_float {
                 true
             }
             fn quickcheck_compare_exchange(x: $float_type, y: $float_type) -> bool {
+                let mut rng = fastrand::Rng::new();
                 let z = loop {
-                    let z = fastrand::$float_type();
+                    let z = float_rand::$float_type(&mut rng);
                     if z != y {
                         break z;
                     }
@@ -1115,6 +1168,18 @@ macro_rules! __test_atomic_float {
                 true
             }
             fn quickcheck_fetch_max(x: $float_type, y: $float_type) -> bool {
+                if mem::size_of::<$float_type>() == 16
+                    && cfg!(any(
+                        target_arch = "arm",
+                        target_arch = "mips",
+                        target_arch = "mips32r6",
+                        target_vendor = "apple",
+                        windows,
+                    ))
+                {
+                    // TODO(f128):
+                    return true;
+                }
                 for &order in &helper::SWAP_ORDERINGS {
                     let a = <$atomic_type>::new(x);
                     assert_float_op_eq!(a.fetch_max(y, order), x);
@@ -1126,6 +1191,18 @@ macro_rules! __test_atomic_float {
                 true
             }
             fn quickcheck_fetch_min(x: $float_type, y: $float_type) -> bool {
+                if mem::size_of::<$float_type>() == 16
+                    && cfg!(any(
+                        target_arch = "arm",
+                        target_arch = "mips",
+                        target_arch = "mips32r6",
+                        target_vendor = "apple",
+                        windows,
+                    ))
+                {
+                    // TODO(f128):
+                    return true;
+                }
                 for &order in &helper::SWAP_ORDERINGS {
                     let a = <$atomic_type>::new(x);
                     assert_float_op_eq!(a.fetch_min(y, order), x);
@@ -1407,8 +1484,9 @@ macro_rules! __test_atomic_ptr {
                 true
             }
             fn quickcheck_compare_exchange(x: usize, y: usize) -> bool {
+                let mut rng = fastrand::Rng::new();
                 let z = loop {
-                    let z = fastrand::usize(..);
+                    let z = rng.usize(..);
                     if z != y {
                         break z;
                     }
@@ -1491,8 +1569,9 @@ macro_rules! __test_atomic_int_pub {
         }
         ::quickcheck::quickcheck! {
             fn quickcheck_fetch_update(x: $int_type, y: $int_type) -> bool {
+                let mut rng = fastrand::Rng::new();
                 let z = loop {
-                    let z = fastrand::$int_type(..);
+                    let z = rng.$int_type(..);
                     if z != y {
                         break z;
                     }
@@ -1688,7 +1767,7 @@ macro_rules! __test_atomic_ptr_pub {
     ($atomic_type:ty) => {
         __test_atomic_pub_common!($atomic_type, *mut u8);
         #[allow(unused_imports)]
-        use sptr::Strict; // for old rustc
+        use sptr::Strict as _; // for old rustc
         use std::{boxed::Box, mem};
         #[test]
         fn fetch_update() {
@@ -1745,7 +1824,7 @@ macro_rules! __test_atomic_ptr_pub {
                 drop(Box::from_raw(ptr));
             }
         }
-        // https://github.com/rust-lang/rust/blob/1.80.0/library/core/tests/atomic.rs#L130-L213
+        // https://github.com/rust-lang/rust/blob/1.84.0/library/core/tests/atomic.rs#L130-L213
         #[test]
         fn ptr_add_null() {
             let atom = AtomicPtr::<i64>::new(core::ptr::null_mut());
@@ -2082,8 +2161,8 @@ pub(crate) fn assert_panic<T: std::fmt::Debug>(f: impl FnOnce() -> T) -> std::st
         .cloned()
         .unwrap_or_else(|| msg.downcast_ref::<&'static str>().copied().unwrap().into())
 }
-pub(crate) fn rand_load_ordering() -> Ordering {
-    helper::LOAD_ORDERINGS[fastrand::usize(0..helper::LOAD_ORDERINGS.len())]
+pub(crate) fn rand_load_ordering(rng: &mut fastrand::Rng) -> Ordering {
+    helper::LOAD_ORDERINGS[rng.usize(0..helper::LOAD_ORDERINGS.len())]
 }
 pub(crate) fn test_load_ordering<T: std::fmt::Debug>(f: impl Fn(Ordering) -> T) {
     for &order in &helper::LOAD_ORDERINGS {
@@ -2101,8 +2180,8 @@ pub(crate) fn test_load_ordering<T: std::fmt::Debug>(f: impl Fn(Ordering) -> T) 
         );
     }
 }
-pub(crate) fn rand_store_ordering() -> Ordering {
-    helper::STORE_ORDERINGS[fastrand::usize(0..helper::STORE_ORDERINGS.len())]
+pub(crate) fn rand_store_ordering(rng: &mut fastrand::Rng) -> Ordering {
+    helper::STORE_ORDERINGS[rng.usize(0..helper::STORE_ORDERINGS.len())]
 }
 pub(crate) fn test_store_ordering<T: std::fmt::Debug>(f: impl Fn(Ordering) -> T) {
     for &order in &helper::STORE_ORDERINGS {
@@ -2120,8 +2199,8 @@ pub(crate) fn test_store_ordering<T: std::fmt::Debug>(f: impl Fn(Ordering) -> T)
         );
     }
 }
-pub(crate) fn rand_compare_exchange_ordering() -> (Ordering, Ordering) {
-    helper::COMPARE_EXCHANGE_ORDERINGS[fastrand::usize(0..helper::COMPARE_EXCHANGE_ORDERINGS.len())]
+pub(crate) fn rand_compare_exchange_ordering(rng: &mut fastrand::Rng) -> (Ordering, Ordering) {
+    helper::COMPARE_EXCHANGE_ORDERINGS[rng.usize(0..helper::COMPARE_EXCHANGE_ORDERINGS.len())]
 }
 pub(crate) fn test_compare_exchange_ordering<T: std::fmt::Debug>(
     f: impl Fn(Ordering, Ordering) -> T,
@@ -2149,8 +2228,8 @@ pub(crate) fn test_compare_exchange_ordering<T: std::fmt::Debug>(
         }
     }
 }
-pub(crate) fn rand_swap_ordering() -> Ordering {
-    helper::SWAP_ORDERINGS[fastrand::usize(0..helper::SWAP_ORDERINGS.len())]
+pub(crate) fn rand_swap_ordering(rng: &mut fastrand::Rng) -> Ordering {
+    helper::SWAP_ORDERINGS[rng.usize(0..helper::SWAP_ORDERINGS.len())]
 }
 pub(crate) fn test_swap_ordering<T: std::fmt::Debug>(f: impl Fn(Ordering) -> T) {
     for &order in &helper::SWAP_ORDERINGS {
@@ -2158,7 +2237,7 @@ pub(crate) fn test_swap_ordering<T: std::fmt::Debug>(f: impl Fn(Ordering) -> T) 
     }
 }
 // for stress test generated by __test_atomic_* macros
-pub(crate) fn stress_test_config() -> (usize, usize) {
+pub(crate) fn stress_test_config(rng: &mut fastrand::Rng) -> (usize, usize) {
     let iterations = if cfg!(miri) {
         50
     } else if cfg!(debug_assertions) {
@@ -2166,7 +2245,7 @@ pub(crate) fn stress_test_config() -> (usize, usize) {
     } else {
         25_000
     };
-    let threads = if cfg!(debug_assertions) { 2 } else { fastrand::usize(2..=8) };
+    let threads = if cfg!(debug_assertions) { 2 } else { rng.usize(2..=8) };
     std::eprintln!("threads={}", threads);
     (iterations, threads)
 }
@@ -2218,6 +2297,7 @@ macro_rules! __stress_test_acquire_release {
     (should_pass, $int_type:ident, $write:ident, $load_order:ident, $store_order:ident) => {
         paste::paste! {
             #[test]
+            #[cfg_attr(all(debug_assertions, not(miri)), ignore = "slow in some environments")] // debug mode is slow.
             #[allow(clippy::cast_possible_truncation)]
             fn [<load_ $load_order:lower _ $write _ $store_order:lower>]() {
                 __stress_test_acquire_release!([<Atomic $int_type:camel>],
@@ -2231,7 +2311,7 @@ macro_rules! __stress_test_acquire_release {
             // of iterations are needed, but this test is slow in some environments.
             // So, ignore on non-Miri environments by default. See also catch_unwind_on_weak_memory_arch.
             #[test]
-            #[cfg_attr(not(miri), ignore)]
+            #[cfg_attr(not(miri), ignore = "slow in some environments")]
             #[allow(clippy::cast_possible_truncation)]
             fn [<load_ $load_order:lower _ $write _ $store_order:lower>]() {
                 can_panic("a=", || __stress_test_acquire_release!([<Atomic $int_type:camel>],
@@ -2243,7 +2323,7 @@ macro_rules! __stress_test_acquire_release {
         use super::*;
         use crossbeam_utils::thread;
         use std::{
-            convert::TryFrom,
+            convert::TryFrom as _,
             sync::atomic::{AtomicUsize, Ordering},
         };
         let mut n: usize = if cfg!(miri) { 10 } else { 50_000 };
@@ -2281,7 +2361,7 @@ macro_rules! __stress_test_seqcst {
             // it creates two threads for each iteration.
             // So, ignore on QEMU by default.
             #[test]
-            #[cfg_attr(qemu, ignore)]
+            #[cfg_attr(any(all(debug_assertions, not(miri)), qemu), ignore = "slow in some environments")] // debug mode is slow.
             fn [<load_ $load_order:lower _ $write _ $store_order:lower>]() {
                 __stress_test_seqcst!([<Atomic $int_type:camel>],
                     $write, $load_order, $store_order);
@@ -2295,7 +2375,7 @@ macro_rules! __stress_test_seqcst {
             // it creates two threads for each iteration.
             // So, ignore on non-Miri environments by default. See also catch_unwind_on_non_seqcst_arch.
             #[test]
-            #[cfg_attr(not(miri), ignore)]
+            #[cfg_attr(not(miri), ignore = "slow in some environments")]
             fn [<load_ $load_order:lower _ $write _ $store_order:lower>]() {
                 can_panic("c=2", || __stress_test_seqcst!([<Atomic $int_type:camel>],
                     $write, $load_order, $store_order));
@@ -2410,8 +2490,6 @@ pub(crate) fn catch_unwind_on_non_seqcst_arch(pat: &str, f: impl Fn()) {
 }
 macro_rules! stress_test_load_store {
     ($int_type:ident) => {
-        // debug mode is slow.
-        #[cfg(any(not(debug_assertions), miri))]
         paste::paste! {
             #[allow(
                 clippy::alloc_instead_of_core,
@@ -2455,8 +2533,6 @@ macro_rules! stress_test_load_store {
 macro_rules! stress_test {
     ($int_type:ident) => {
         stress_test_load_store!($int_type);
-        // debug mode is slow.
-        #[cfg(any(not(debug_assertions), miri))]
         paste::paste! {
             #[allow(
                 clippy::alloc_instead_of_core,
@@ -2508,4 +2584,22 @@ macro_rules! stress_test {
             }
         }
     };
+}
+
+#[cfg(feature = "float")]
+pub(crate) mod float_rand {
+    #[cfg(portable_atomic_unstable_f16)]
+    pub(crate) fn f16(rng: &mut fastrand::Rng) -> f16 {
+        f16::from_bits(rng.u16(..))
+    }
+    pub(crate) fn f32(rng: &mut fastrand::Rng) -> f32 {
+        f32::from_bits(rng.u32(..))
+    }
+    pub(crate) fn f64(rng: &mut fastrand::Rng) -> f64 {
+        f64::from_bits(rng.u64(..))
+    }
+    #[cfg(portable_atomic_unstable_f128)]
+    pub(crate) fn f128(rng: &mut fastrand::Rng) -> f128 {
+        f128::from_bits(rng.u128(..))
+    }
 }

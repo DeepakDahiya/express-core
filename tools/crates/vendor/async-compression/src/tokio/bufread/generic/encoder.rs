@@ -1,12 +1,12 @@
+use crate::codecs::Encode;
+use crate::core::util::PartialBuffer;
 use core::{
     pin::Pin,
     task::{Context, Poll},
 };
-use std::io::{IoSlice, Result};
-
-use crate::{codec::Encode, util::PartialBuffer};
 use futures_core::ready;
 use pin_project_lite::pin_project;
+use std::io::{IoSlice, Result};
 use tokio::io::{AsyncBufRead, AsyncRead, AsyncWrite, ReadBuf};
 
 #[derive(Debug)]
@@ -33,6 +33,10 @@ impl<R: AsyncBufRead, E: Encode> Encoder<R, E> {
             encoder,
             state: State::Encoding,
         }
+    }
+
+    pub fn with_capacity(reader: R, encoder: E, _cap: usize) -> Self {
+        Self::new(reader, encoder)
     }
 }
 

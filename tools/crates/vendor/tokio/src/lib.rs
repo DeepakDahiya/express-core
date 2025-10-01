@@ -1,4 +1,3 @@
-#![allow(unknown_lints, unexpected_cfgs)]
 #![allow(
     clippy::cognitive_complexity,
     clippy::large_enum_variant,
@@ -303,7 +302,7 @@
 //! }
 //! ```
 //!
-//! ## Feature flags
+//! # Feature flags
 //!
 //! Tokio uses a set of [feature flags] to reduce the amount of compiled code. It
 //! is possible to just enable certain features over others. By default, Tokio
@@ -317,15 +316,15 @@
 //!
 //! - `full`: Enables all features listed below except `test-util` and `tracing`.
 //! - `rt`: Enables `tokio::spawn`, the current-thread scheduler,
-//!         and non-scheduler utilities.
+//!   and non-scheduler utilities.
 //! - `rt-multi-thread`: Enables the heavier, multi-threaded, work-stealing scheduler.
 //! - `io-util`: Enables the IO based `Ext` traits.
 //! - `io-std`: Enable `Stdout`, `Stdin` and `Stderr` types.
 //! - `net`: Enables `tokio::net` types such as `TcpStream`, `UnixStream` and
-//!          `UdpSocket`, as well as (on Unix-like systems) `AsyncFd` and (on
-//!          FreeBSD) `PollAio`.
+//!   `UdpSocket`, as well as (on Unix-like systems) `AsyncFd` and (on
+//!   FreeBSD) `PollAio`.
 //! - `time`: Enables `tokio::time` types and allows the schedulers to enable
-//!           the built in timer.
+//!   the built in timer.
 //! - `process`: Enables `tokio::process` types.
 //! - `macros`: Enables `#[tokio::main]` and `#[tokio::test]` macros.
 //! - `sync`: Enables all `tokio::sync` types.
@@ -333,15 +332,15 @@
 //! - `fs`: Enables `tokio::fs` types.
 //! - `test-util`: Enables testing based infrastructure for the Tokio runtime.
 //! - `parking_lot`: As a potential optimization, use the `_parking_lot_` crate's
-//!                  synchronization primitives internally. Also, this
-//!                  dependency is necessary to construct some of our primitives
-//!                  in a `const` context. `MSRV` may increase according to the
-//!                  `_parking_lot_` release in use.
+//!   synchronization primitives internally. Also, this
+//!   dependency is necessary to construct some of our primitives
+//!   in a `const` context. `MSRV` may increase according to the
+//!   `_parking_lot_` release in use.
 //!
 //! _Note: `AsyncRead` and `AsyncWrite` traits do not require any features and are
 //! always available._
 //!
-//! ### Unstable features
+//! ## Unstable features
 //!
 //! Some feature flags are only available when specifying the `tokio_unstable` flag:
 //!
@@ -393,7 +392,7 @@
 //! [unstable features]: https://internals.rust-lang.org/t/feature-request-unstable-opt-in-non-transitive-crate-features/16193#why-not-a-crate-feature-2
 //! [feature flags]: https://doc.rust-lang.org/cargo/reference/manifest.html#the-features-section
 //!
-//! ## Supported platforms
+//! # Supported platforms
 //!
 //! Tokio currently guarantees support for the following platforms:
 //!
@@ -419,7 +418,7 @@
 //!
 //! [mio-supported]: https://crates.io/crates/mio#platforms
 //!
-//! ### `WASM` support
+//! ## `WASM` support
 //!
 //! Tokio has some limited support for the `WASM` platform. Without the
 //! `tokio_unstable` flag, the following features are supported:
@@ -441,7 +440,7 @@
 //! immediately instead of blocking forever. On platforms that don't support
 //! time, this means that the runtime can never be idle in any way.
 //!
-//! ### Unstable `WASM` support
+//! ## Unstable `WASM` support
 //!
 //! Tokio also has unstable support for some additional `WASM` features. This
 //! requires the use of the `tokio_unstable` flag.

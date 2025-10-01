@@ -1,0 +1,32 @@
+diff --git a/chrome/android/java/res/drawable/arrow_forward_24px.xml b/chrome/android/java/res/drawable/arrow_forward_24px.xml
+index cba60d6cd1a9bcd3f9ceb46be0530df8bc35689a..07219166234c1af02fd85d6632241fcc9010acb3 100644
+--- a/chrome/android/java/res/drawable/arrow_forward_24px.xml
++++ b/chrome/android/java/res/drawable/arrow_forward_24px.xml
+@@ -1,17 +1,14 @@
+-<?xml version="1.0" encoding="utf-8"?>
+-<!--
+-Copyright 2025 The Chromium Authors
+-Use of this source code is governed by a BSD-style license that can be
+-found in the LICENSE file.
+--->
+-
++<!-- Copyright (c) 2025 The Brave Authors. All rights reserved.
++     This Source Code Form is subject to the terms of the Mozilla Public
++     License, v. 2.0. If a copy of the MPL was not distributed with this file,
++     You can obtain one at https://mozilla.org/MPL/2.0/. -->
+ <vector xmlns:android="http://schemas.android.com/apk/res/android"
+     android:width="24dp"
+     android:height="24dp"
+-    android:viewportWidth="960"
+-    android:viewportHeight="960"
+-    android:tint="@macro/default_icon_color">
+-    <path
+-        android:fillColor="@android:color/white"
+-        android:pathData="M647,520L160,520L160,440L647,440L423,216L480,160L800,480L480,800L423,744L647,520Z"/>
++    android:viewportWidth="24"
++    android:viewportHeight="24">
++  <path
++      android:pathData="M16.299,12.833H4.833a0.833,0.833 0,0 1,0 -1.666H16.3l-5.656,-5.221a0.833,0.833 0,1 1,1.13 -1.225l6.78,6.258a1.39,1.39 0,0 1,0 2.042l-6.78,6.258a0.833,0.833 0,1 1,-1.13 -1.225z"
++      android:fillColor="#62757E"
++      android:fillType="evenOdd"/>
+ </vector>

@@ -15,7 +15,16 @@ use crate::stream::StreamIsPartial;
 use crate::stream::UpdateSlice;
 
 /// Specialized input for parsing lexed tokens
-#[derive(Debug, Copy, Clone, PartialEq, Eq)]
+///
+/// Helpful impls
+/// - Any `PartialEq` type (e.g. a `TokenKind` or `&str`) can be used with
+///   [`literal`][crate::token::literal]
+/// - A `PartialEq` for `&str` allows for using `&str` as a parser for tokens
+/// - [`ContainsToken`][crate::stream::ContainsToken] for `T` to for parsing with token sets
+/// - [`Location`] for `T` to extract spans from tokens
+///
+/// See also [Lexing and Parsing][crate::_topic::lexing].
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub struct TokenSlice<'t, T> {
     initial: &'t [T],
     input: &'t [T],
@@ -43,6 +52,15 @@ where
     pub fn reset_to_start(&mut self) {
         let start = self.initial.checkpoint();
         self.input.reset(&start);
+    }
+
+    /// Iterate over consumed tokens starting with the last emitted
+    ///
+    /// This is intended to help build up appropriate context when reporting errors.
+    #[inline]
+    pub fn previous_tokens(&self) -> impl Iterator<Item = &'t T> {
+        let offset = self.input.offset_from(&self.initial);
+        self.initial[0..offset].iter().rev()
     }
 }
 
@@ -79,6 +97,12 @@ impl<T> crate::lib::std::ops::Deref for TokenSlice<'_, T> {
 
     fn deref(&self) -> &Self::Target {
         self.input
+    }
+}
+
+impl<T: core::fmt::Debug> core::fmt::Debug for TokenSlice<'_, T> {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.input.fmt(f)
     }
 }
 
@@ -137,8 +161,18 @@ where
         self.input.next_slice(offset)
     }
     #[inline(always)]
+    unsafe fn next_slice_unchecked(&mut self, offset: usize) -> Self::Slice {
+        // SAFETY: Passing up invariants
+        unsafe { self.input.next_slice_unchecked(offset) }
+    }
+    #[inline(always)]
     fn peek_slice(&self, offset: usize) -> Self::Slice {
         self.input.peek_slice(offset)
+    }
+    #[inline(always)]
+    unsafe fn peek_slice_unchecked(&self, offset: usize) -> Self::Slice {
+        // SAFETY: Passing up invariants
+        unsafe { self.input.peek_slice_unchecked(offset) }
     }
 
     #[inline(always)]
@@ -152,7 +186,12 @@ where
 
     #[inline(always)]
     fn raw(&self) -> &dyn crate::lib::std::fmt::Debug {
-        &self.input
+        #![allow(deprecated)]
+        self.input.raw()
+    }
+
+    fn trace(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        self.input.trace(f)
     }
 }
 
