@@ -1468,7 +1468,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
         window.bravePipFixAttached = true;
 
         // VISUAL DEBUG 1: If the page border turns red, the script was injected and started.
-        document.body.style.border = '5px solid red';
+        // document.body.style.border = '5px solid red';
 
         let originalTabUrl = null;
         let videoEl = null;
@@ -1478,12 +1478,12 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             console.log('Brave PiP Fix: Entered PiP. Storing URL:', originalTabUrl);
             
             // VISUAL DEBUG 3: If the video border turns blue, the 'enter' event fired successfully.
-            if (videoEl) videoEl.style.border = '5px solid blue';
+            // if (videoEl) videoEl.style.border = '5px solid blue';
         };
 
         const handleLeavePiP = (event) => {
             // VISUAL DEBUG 4: If the video border turns magenta, the 'leave' event fired. THIS IS THE KEY TEST.
-            if (videoEl) videoEl.style.border = '5px solid magenta';
+            // if (videoEl) videoEl.style.border = '5px solid magenta';
 
             if (originalTabUrl && window.BravePiPNavigator && window.BravePiPNavigator.restoreTabWithUrl) {
                 console.log('Brave PiP Fix: Calling native bridge with URL:', originalTabUrl);
@@ -1508,7 +1508,7 @@ constexpr char16_t kYoutubePipNavigationFix[] =
             videoEl.addEventListener('leavepictureinpicture', handleLeavePiP);
             
             // VISUAL DEBUG 2: If the video border turns green, the event listeners were attached.
-            videoEl.style.border = '5px solid green';
+            // videoEl.style.border = '5px solid green';
             console.log('Brave PiP Fix: Attached listeners to video element.');
         };
 
